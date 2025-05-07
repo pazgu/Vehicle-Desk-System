@@ -79,7 +79,7 @@ cd Backend
 pip install -r requirements.txt
 ```
 - Start the FastAPI development server:
-- ``` uvicorn main:app --reload ```
+``` uvicorn main:app --reload ```
 
 ### 4. ⚙️ Set Up the Frontend Environment
 - Open a new terminal tab and switch to PowerShell.
@@ -90,7 +90,7 @@ cd Frontend
 npm install
 ```
 - Start the Angular development server:
-- ``` ng serve ```
+``` ng serve ```
 
 ## 📌 Team Roles & Workflow
 - Code must be submitted via Pull Requests.
