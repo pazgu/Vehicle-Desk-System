@@ -1,7 +1,8 @@
 from fastapi import APIRouter
 
-@router.get("/api/departments/{department_id}/orders")
+@router.get("/api/orders/{department_id}")
 def get_department_orders():
+    
     return
 
 @router.get("/api/departments/{department_id}/orders/{order_id}")
