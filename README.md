@@ -1,4 +1,4 @@
-# Vehicle-Desk-System-
+# Vehicle-Desk-System
 # 🚗 Car Rental & Management System
 
 A smart internal car rental platform designed for enterprises and government-level use.  
@@ -41,7 +41,8 @@ This system helps manage ride requests, vehicle allocation, supervisor approvals
 ---
 
 ## 🚧 Folder Structure (Planned)
-car-rental-system/
+```
+Vehicle-Desk-System/
   ├── frontend/ # Angular App
     │ ├── src/
     │ └── ...
@@ -54,6 +55,7 @@ car-rental-system/
     ├── .github
     ├── README.md
     └── requirements.txt
+```
     
 ## 🚀 Getting Started
 
