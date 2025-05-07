@@ -1,6 +1,6 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { appConfig } from './app/app.config';
-import { AppComponent } from './app/app.component';
+import { DashboardAllOrdersComponent } from './app/components/supervisor-area/dashboard-all-orders/dashboard-all-orders.component';
 
-bootstrapApplication(AppComponent, appConfig)
+bootstrapApplication(DashboardAllOrdersComponent, appConfig)
   .catch((err) => console.error(err));

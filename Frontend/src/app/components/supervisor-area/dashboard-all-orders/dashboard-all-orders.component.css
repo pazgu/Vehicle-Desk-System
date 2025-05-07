@@ -1,0 +1,173 @@
+/* Table header styling */
+.table-header {
+  background-color: #942222; /* Red color */
+  color: white; /* White text */
+}
+
+/* Style for the table and content */
+:host ::ng-deep .p-datatable {
+  text-align: right; /* Align content to the right */
+  font-size: 14px; /* Set a readable font size */
+  width: 100%; /* Make sure the table takes the full width */
+  direction: rtl;
+}
+
+:host ::ng-deep .p-datatable .p-datatable-thead > tr > th {
+  background-color: #942222;
+  color: white;
+  padding: 10px;
+  text-align: right;
+  font-weight: bold;
+}
+
+:host ::ng-deep .p-datatable .p-datatable-tbody > tr > td {
+  padding: 10px;
+  text-align: right;
+  border-bottom: 1px solid #e9ecef;
+}
+
+:host ::ng-deep .p-datatable .p-datatable-tbody > tr:nth-child(even) {
+  background-color: #f8f9fa;
+  cursor: pointer;
+}
+
+:host ::ng-deep .p-datatable .p-datatable-tbody > tr:hover {
+  background-color: #f0f0f0;
+  cursor: pointer;
+
+}
+
+/* PrimeNG Paginator Styling */
+:host ::ng-deep .p-paginator {
+  background-color: #f5f5f5;
+  border-radius: 5px;
+  padding: 10px;
+  direction: rtl;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+/* Style for paginator buttons */
+:host ::ng-deep .p-paginator .p-paginator-button {
+  background-color: #942222;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  margin: 0 3px;
+  min-width: 2.5rem;
+  height: 2.5rem;
+  transition: background-color 0.2s;
+}
+
+:host ::ng-deep .p-paginator .p-paginator-button:hover {
+  background-color: #7a1c1c;
+}
+
+:host ::ng-deep .p-paginator .p-paginator-button:focus {
+  box-shadow: 0 0 0 2px rgba(148, 34, 34, 0.3);
+  outline: none;
+}
+
+/* Page number buttons - making all red to match header */
+:host ::ng-deep .p-paginator .p-paginator-page {
+  background-color: #942222;
+  color: white;
+  border: 1px solid #7a1c1c;
+  border-radius: 4px;
+  margin: 0 3px;
+  min-width: 2.5rem;
+  height: 2.5rem;
+  opacity: 0.7; /* Slightly transparent for inactive pages */
+  transition: all 0.2s ease;
+}
+
+/* Active page - make it stand out */
+:host ::ng-deep .p-paginator .p-paginator-page.p-highlight {
+  background-color: #942222;
+  color: white;
+  font-weight: bold;
+  border: 2px solid white;
+  opacity: 1; /* Full opacity for active page */
+  transform: scale(1.1); /* Slightly larger */
+  box-shadow: 0 0 8px rgba(148, 34, 34, 0.5); /* Subtle glow effect */
+  position: relative; /* For positioning the underline */
+}
+
+/* Red line under active page */
+:host ::ng-deep .p-paginator .p-paginator-page.p-highlight::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: #ff0000; /* Bright red for visibility */
+  border-radius: 3px;
+  box-shadow: 0 0 5px rgba(255, 0, 0, 0.7); /* Glow effect on the line */
+}
+
+:host ::ng-deep .p-paginator .p-paginator-page:hover {
+  opacity: 0.9;
+  transform: scale(1.05);
+}
+
+/* Rows per page dropdown */
+:host ::ng-deep .p-paginator .p-dropdown {
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  margin-left: 10px;
+  height: 2.5rem;
+}
+
+:host ::ng-deep .p-paginator .p-dropdown:hover {
+  border-color: #942222;
+}
+
+:host ::ng-deep .p-paginator .p-dropdown .p-dropdown-trigger {
+  color: #942222;
+}
+
+:host ::ng-deep .p-paginator .p-dropdown-panel .p-dropdown-item.p-highlight {
+  background-color: #942222;
+  color: white;
+}
+
+/* Current page report */
+:host ::ng-deep .p-paginator .p-paginator-current {
+  color: #555555;
+  margin: 0 10px;
+}
+
+/* For RTL support specific to pagination elements */
+:host ::ng-deep .p-paginator .p-paginator-first,
+:host ::ng-deep .p-paginator .p-paginator-prev,
+:host ::ng-deep .p-paginator .p-paginator-next,
+:host ::ng-deep .p-paginator .p-paginator-last {
+  transform: scaleX(-1);
+}
+
+/* Dropdown items alignment for RTL */
+:host ::ng-deep .p-dropdown-panel .p-dropdown-items {
+  text-align: right;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 640px) {
+  :host ::ng-deep .p-paginator {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  :host ::ng-deep .p-paginator .p-dropdown {
+    margin-top: 8px;
+  }
+  
+  :host ::ng-deep .p-paginator .p-paginator-current {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 8px;
+  }
+}

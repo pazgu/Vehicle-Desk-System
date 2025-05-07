@@ -1,1 +1,37 @@
-<p>dashboard-all-orders works!</p>
+<!-- HTML Component Template -->
+<p-table [value]="trips" [paginator]="true" [rows]="5" dir="rtl">
+  <ng-template pTemplate="header">
+    <tr class="table-header">
+      <th>מזהה נסיעה</th>
+      <th>שם עובד</th>
+      <th>רכב</th>
+      <th>תאריך</th>
+      <th>יעד</th>
+      <th>מרחק</th>
+      <th>סטטוס</th>
+    </tr>
+  </ng-template>
+  
+  <ng-template pTemplate="body" let-trip>
+    <tr>
+      <td>{{ trip.id }}</td>
+      <td>{{ trip.employeeName }}</td>
+      <td>{{ trip.vehicle }}</td>
+      <td>{{ trip.dateTime }}</td>
+      <td>{{ trip.destination }}</td>
+      <td>{{ trip.distance }}</td>
+      <td>{{ trip.status }}</td>
+    </tr>
+  </ng-template>
+  
+  <ng-template pTemplate="paginatorleft">
+    <!-- Optional: Custom content for left side of paginator -->
+  </ng-template>
+  
+  <ng-template pTemplate="paginatorright">
+    <!-- Optional: Custom content for right side of paginator -->
+  </ng-template>
+</p-table>
+
+<!-- Note: The p-footer tag is deprecated in newer PrimeNG versions.
+     Pagination is automatically added with the [paginator]="true" property -->
