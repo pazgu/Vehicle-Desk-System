@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from models.new_ride_model import Ride
+from models.ride_model import Ride
 from schemas.new_ride_schema import RideCreate
 
 def add_ride_service(ride_data: RideCreate, db: Session):
