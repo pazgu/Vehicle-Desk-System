@@ -1,6 +1,12 @@
 from pydantic import BaseModel, EmailStr
 from uuid import UUID
+from enum import Enum
 
+class UserRole(str, Enum):
+    employee = "employee"
+    supervisor = "supervisor"
+    admin = "admin"
+    
 class UserResponse(BaseModel):
     id: UUID
     first_name: str
