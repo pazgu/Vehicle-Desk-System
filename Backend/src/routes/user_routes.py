@@ -1,23 +1,16 @@
 from fastapi import APIRouter, HTTPException, status
 from ..schemas.register_schema import UserCreate
+from ..schemas.login_schema import UserLogin
 from ..services import register_service
 from ..services.auth_service import create_access_token
+from ..services import login_service
 
 router = APIRouter()
 
 @router.post("/api/register")
 def register_user(user: UserCreate):
     try:
-        new_user = register_service.create_user(user)
-        access_token = create_access_token(
-            data={"sub": str(new_user["id"]), "role": new_user["role"]}
-        )
-        return {
-            "message": "User registered successfully",
-            "user_id": new_user["id"],
-            "access_token": access_token,
-            "token_type": "bearer"
-        }
+        return register_service.create_user(user)
     except ValueError as ve:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -28,6 +21,13 @@ def register_user(user: UserCreate):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Registration failed due to an internal error"
         )
+
+
+@router.post("/api/login")
+def login(user: UserLogin):
+    return login_service.login_user(user.username, user.password)
+
+
 
 
 @router.get("/api/users/{user_id}/orders")
