@@ -1,7 +1,6 @@
 <div class="overlay">
     <div class="modal">
-      <button class="close-btn" routerLink="/">×</button>
-      <h2>הזמנה חדשה</h2>
+        <a routerLink="/home" routerLinkActive="active"><div class="close-btn">✕</div></a>      <h2>הזמנה חדשה</h2>
       <hr>
       <form>
         <div class="row">
@@ -35,3 +34,5 @@
       </form>
     </div>
 </div>
+
+<router-outlet></router-outlet>
