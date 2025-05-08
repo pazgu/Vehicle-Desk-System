@@ -1,12 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-
 import { ButtonModule } from 'primeng/button';
 import { CalendarModule } from 'primeng/calendar';
 import { DropdownModule } from 'primeng/dropdown';
 import { PaginatorModule } from 'primeng/paginator';
 import { TableModule } from 'primeng/table';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-dashboard-all-orders',
@@ -16,6 +16,8 @@ import { TableModule } from 'primeng/table';
   styleUrl: './dashboard-all-orders.component.css'
 })
 export class DashboardAllOrdersComponent {
+
+  constructor(private router: Router) {}
 
   rows: number = 5;
   trips = [
@@ -40,6 +42,15 @@ export class DashboardAllOrdersComponent {
     { id: 19, employeeName: 'רז יוספי', vehicle:  19, dateTime: '2025-05-16 09:30', destination: 'תל אביב', distance: 15, status: 'ממתין' },
     { id: 20, employeeName: 'עדי פרידמן', vehicle:  20, dateTime: '2025-05-16 18:00', destination: 'חולון', distance: 25, status: 'הושלם' }
   ];
+
+
+
+
+  onRowSelect(trip: any) {
+    this.router.navigate(['/order-card', trip.id]);
+  }
+  
+  
   
   
 

@@ -4,12 +4,16 @@
   color: white; /* White text */
 }
 
-/* Style for the table and content */
+/* Center the table and add rounded corners */
 :host ::ng-deep .p-datatable {
+  margin: 50px auto; /* Center the table horizontally */
+  border-radius: 10px; /* Add rounded corners */
+  overflow: hidden; /* Ensure content respects the rounded corners */
   text-align: right; /* Align content to the right */
   font-size: 14px; /* Set a readable font size */
-  width: 100%; /* Make sure the table takes the full width */
+  width: 80%; /* Adjust the width of the table */
   direction: rtl;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: Add a subtle shadow */
 }
 
 :host ::ng-deep .p-datatable .p-datatable-thead > tr > th {
@@ -18,6 +22,7 @@
   padding: 10px;
   text-align: right;
   font-weight: bold;
+  
 }
 
 :host ::ng-deep .p-datatable .p-datatable-tbody > tr > td {

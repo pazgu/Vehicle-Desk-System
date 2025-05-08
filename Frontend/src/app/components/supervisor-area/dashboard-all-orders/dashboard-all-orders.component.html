@@ -7,13 +7,13 @@
       <th pSortableColumn="vehicle">רכב <p-sortIcon field="vehicle"></p-sortIcon></th>
       <th pSortableColumn="dateTime">תאריך <p-sortIcon field="dateTime"></p-sortIcon></th>
       <th pSortableColumn="destination">יעד <p-sortIcon field="destination"></p-sortIcon></th>
-      <th pSortableColumn="distance">מרחק (ק"מ)<p-sortIcon field="distance"></p-sortIcon></th>
+      <th pSortableColumn="distance"> מרחק (ק"מ) <p-sortIcon field="distance"></p-sortIcon></th>
       <th pSortableColumn="status">סטטוס <p-sortIcon field="status"></p-sortIcon></th>
     </tr>
   </ng-template>
   
   <ng-template pTemplate="body" let-trip>
-    <tr>
+    <tr (click)="onRowSelect(trip)">
       <td>{{ trip.id }}</td>
       <td>{{ trip.employeeName }}</td>
       <td>{{ trip.vehicle }}</td>
