@@ -17,6 +17,16 @@ body {
     justify-content: center;
     align-items: center;
     height: 80vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* padding: 60px 20px; */
+    direction: rtl;
+    font-family: 'Alef', sans-serif;
+    background-color: #ccc;
+    height: 90.4vh; /* Ensures it takes full viewport height */
+    box-sizing: border-box; /* Includes padding in total height */
+    
 }
 
 .modal {

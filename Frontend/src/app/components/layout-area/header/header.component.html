@@ -9,7 +9,18 @@
 <body>
   <div class="navbar">
     <div class="nav-left">
-      <a routerLink="/login" routerLinkActive="active"><img src="/assets/images/user-icon.png" alt="User Icon" /></a>
+      <div class="user-menu-container">
+        <a routerLink="/login" routerLinkActive="active">
+          <img src="/assets/images/user-icon.png" alt="User Icon" />
+        </a>
+        <ul class="user-dropdown">
+          <li><a routerLink="/login">התחברות</a></li>
+          <li><a routerLink="/register">יצירת משתמש חדש</a></li>
+          <li><a>התנתקות</a></li>
+        </ul>
+      </div>
+      
+
       <span class="username">ישראלי ישראלי</span>
       <a [routerLink]="['/new-ride']" title="להזמין נסיעה">
         <img src="/assets/images/add-car.png" alt="Car" class="add-car" />
@@ -21,8 +32,8 @@
     </div>
 
     <div class="nav-right">
-      <a class="nav-link" href="#">  נסיעות עבר | </a>
-      <a class="nav-link" href="#">נסיעות עתידיות </a>
+      <a [routerLink]="['/future-ride']" class="nav-link" href="#">  נסיעות עבר | </a>
+      <a [routerLink]="['/past-ride']" class="nav-link" href="#">נסיעות עתידיות </a>
       <img src="/assets/images/bell-icon.png" alt="Notifications" />
     </div>
   </div>

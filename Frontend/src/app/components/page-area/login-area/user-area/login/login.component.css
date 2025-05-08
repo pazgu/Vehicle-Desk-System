@@ -1,69 +1,79 @@
 
-
 .page-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 60px 20px;
-    position: relative;
-  }
-  
-  .login-box {
-    background: white;
-    border-radius: 10px;
-    box-shadow: 4px 4px 4px 10px rgba(0,0,0,0.2);
-    padding: 30px 40px;
-    max-width: 400px;
-    width: 100%;
-    position: relative;
-    text-align: right;
-    font-family: 'Alef', sans-serif;
-  }
-  
-  .close-btn {
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    cursor: pointer;
-    font-size: 20px;
-  }
-  
-  .login-box h2 {
-    color: #942222;
-    margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* padding: 60px 20px; */
+  direction: rtl;
+  font-family: 'Alef', sans-serif;
+  background-color: #ccc;
+  height: 90.4vh; /* Ensures it takes full viewport height */
+  box-sizing: border-box; /* Includes padding in total height */
+}
 
-  }
+
+/* Modal box */
+.login-box {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2);
+  padding: 30px 40px;
+  max-width: 500px;
+  width: 100%;
+  position: relative;
+  text-align: right;
   
-  label {
-    display: block;
-    margin: 10px 0 5px;
-    font-weight: bold;
-  }
-  
-  input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    background: #e5e5e5;
-    border-radius: 5px;
-    margin-bottom: 15px;
-  }
-  
-  button {
-    width: 100%;
-    padding: 12px;
-    background: #942222;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-weight: bold;
-    margin-top: 10px;
-  }
-  
-  .register-link {
-    text-align: center;
-    color: #333;
-    margin-top: 15px;
-    font-size: 14px;
-  }
-  
+}
+
+/* Close button top-left */
+.close-btn {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+/* Form title */
+.login-box h2 {
+  color: #942222;
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+/* Label styles */
+label {
+  display: block;
+  margin: 10px 0 5px;
+  font-weight: bold;
+}
+
+/* Input fields */
+input,
+select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  background: #e5e5e5;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  font-size: 16px;
+}
+
+/* Submit button */
+button {
+  width: 100%;
+  padding: 12px;
+  background: #942222;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  font-size: 16px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #a23333;
+}
