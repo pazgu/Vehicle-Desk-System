@@ -16,6 +16,7 @@ body, html {
     justify-content: space-between;
     align-items: center;
     border: none;
+    height: 55px;
   }
   .navbar {
     margin: 0;
@@ -76,6 +77,9 @@ body, html {
   .nav-link{
     text-decoration: none;
     color: #ffffff;
+  }
+  a{
+    height: 55px;
   }
   
 
