@@ -11,8 +11,10 @@
     <div class="nav-left">
       <a routerLink="/login" routerLinkActive="active"><img src="/assets/images/user-icon.png" alt="User Icon" /></a>
       <span class="username">ישראלי ישראלי</span>
-      <img src="/assets/images/add-car.png" alt="Car" class="add-car" />
-    </div>
+      <a [routerLink]="['/new-ride']" title="להזמין נסיעה">
+        <img src="/assets/images/add-car.png" alt="Car" class="add-car" />
+      </a>
+    </div>    
 
     <div class="nav-center">
       <a routerLink="/home" routerLinkActive="active"><img src="/assets/images/bookit-logo.png" alt="Bookit Logo" class="logo"/></a>
