@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { LayoutComponent } from '../../../../layout-area/layout/layout.component';
 import { HeaderComponent } from '../../../../layout-area/header/header.component';
-import { Router, RouterLink, RouterModule } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
