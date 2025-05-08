@@ -35,7 +35,6 @@ export class NewRideComponent {
       ride_type: this.ride_type,
       start_time: this.start_time,
       end_time: this.end_time,
-      ride_type: this.ride_type
     });
 
     alert('הבקשה נשלחה!');

@@ -172,6 +172,8 @@
   
   /* Approve button (green) */
   .card-actions .approve {
+    
+    border-radius: 0.5rem;
     background-color: #28a745 !important; /* Green background */
     border-color: #218838 !important; /* Darker green border */
     color: white !important; /* White text */
@@ -184,6 +186,8 @@
   
   /* Reject button (red) */
   .card-actions .reject {
+    border-radius: 0.5rem;
+
     background-color: #dc3545 !important; /* Red background */
     border-color: #c82333 !important; /* Darker red border */
     color: white !important; /* White text */
