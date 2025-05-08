@@ -1,1 +1,26 @@
-<p>new-ride works!</p>
+<div class="overlay">
+    <div class="modal">
+      <button class="close-btn" routerLink="/">×</button>
+      <h2>הזמנה חדשה</h2>
+      <hr>
+      <form>
+        <div class="row">
+          <div class="input-group">
+            <label>שעת התחלה</label>
+            <input type="time" [(ngModel)]="start_time" name="start_time" required>
+          </div>
+          <div class="input-group">
+            <label>שעת סיום</label>
+            <input type="time" [(ngModel)]="end_time" name="end_time" required>
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-group">
+            <label>הערכת מרחק (ק"מ)</label>
+            <input type="number" [(ngModel)]="estimated_distance_km" name="estimated_distance_km" required>
+          </div>
+        </div>
+        <button type="submit" class="submit-btn" (click)="submit()">שלח</button>
+      </form>
+    </div>
+</div>
