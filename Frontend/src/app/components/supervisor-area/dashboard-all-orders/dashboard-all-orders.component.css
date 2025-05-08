@@ -49,6 +49,52 @@
   margin-top: 10px;
 }
 
+/* Style for paginator navigation buttons (arrows) */
+:host ::ng-deep .p-paginator .p-paginator-first,
+:host ::ng-deep .p-paginator .p-paginator-prev,
+:host ::ng-deep .p-paginator .p-paginator-next,
+:host ::ng-deep .p-paginator .p-paginator-last {
+  background-color: #942222;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  margin: 0 3px;
+  min-width: 2.5rem;
+  height: 2.5rem;
+  transform: scaleX(-1); /* Flip for RTL */
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+}
+
+:host ::ng-deep .p-paginator .p-paginator-first:hover,
+:host ::ng-deep .p-paginator .p-paginator-prev:hover,
+:host ::ng-deep .p-paginator .p-paginator-next:hover,
+:host ::ng-deep .p-paginator .p-paginator-last:hover {
+  background-color: #7a1c1c; /* Darker red on hover */
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
+}
+
+:host ::ng-deep .p-paginator .p-paginator-first:focus,
+:host ::ng-deep .p-paginator .p-paginator-prev:focus,
+:host ::ng-deep .p-paginator .p-paginator-next:focus,
+:host ::ng-deep .p-paginator .p-paginator-last:focus {
+  box-shadow: 0 0 0 2px rgba(148, 34, 34, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+  outline: none;
+}
+
+:host ::ng-deep .p-paginator .p-paginator-first.p-disabled,
+:host ::ng-deep .p-paginator .p-paginator-prev.p-disabled,
+:host ::ng-deep .p-paginator .p-paginator-next.p-disabled,
+:host ::ng-deep .p-paginator .p-paginator-last.p-disabled {
+  background-color: #d9d9d9; /* Light gray for disabled state */
+  color: #a0a0a0; /* Muted text color */
+  cursor: default;
+  box-shadow: none;
+}
+
 /* Style for paginator buttons */
 :host ::ng-deep .p-paginator .p-paginator-button {
   background-color: #942222;
@@ -70,47 +116,30 @@
   outline: none;
 }
 
-/* Page number buttons - making all red to match header */
+/* Pages button style */
 :host ::ng-deep .p-paginator .p-paginator-page {
   background-color: #942222;
   color: white;
-  border: 1px solid #7a1c1c;
+  border: none;
   border-radius: 4px;
   margin: 0 3px;
   min-width: 2.5rem;
   height: 2.5rem;
-  opacity: 0.7; /* Slightly transparent for inactive pages */
-  transition: all 0.2s ease;
-}
-
-/* Active page - make it stand out */
-:host ::ng-deep .p-paginator .p-paginator-page.p-highlight {
-  background-color: #942222;
-  color: white;
-  font-weight: bold;
-  border: 2px solid white;
-  opacity: 1; /* Full opacity for active page */
-  transform: scale(1.1); /* Slightly larger */
-  box-shadow: 0 0 8px rgba(148, 34, 34, 0.5); /* Subtle glow effect */
-  position: relative; /* For positioning the underline */
-}
-
-/* Red line under active page */
-:host ::ng-deep .p-paginator .p-paginator-page.p-highlight::after {
-  content: '';
-  position: absolute;
-  bottom: -8px;
-  left: 0;
-  width: 100%;
-  height: 3px;
-  background-color: #ff0000; /* Bright red for visibility */
-  border-radius: 3px;
-  box-shadow: 0 0 5px rgba(255, 0, 0, 0.7); /* Glow effect on the line */
+  position: relative;
 }
 
 :host ::ng-deep .p-paginator .p-paginator-page:hover {
-  opacity: 0.9;
-  transform: scale(1.05);
+  background-color: #7a1c1c;
+}
+
+:host ::ng-deep .p-paginator .p-paginator-page.p-highlight,
+:host ::ng-deep .p-paginator .p-paginator-page.p-paginator-page-selected {
+  background-color: transparent !important; /* No background color */
+  color: #942222 !important; /* White text */
+  font-weight: bold;
+  border: none;
+  border-bottom: 3px solid #942222 !important; /* Red underline */
+  position: relative;
 }
 
 /* Rows per page dropdown */
@@ -139,14 +168,6 @@
 :host ::ng-deep .p-paginator .p-paginator-current {
   color: #555555;
   margin: 0 10px;
-}
-
-/* For RTL support specific to pagination elements */
-:host ::ng-deep .p-paginator .p-paginator-first,
-:host ::ng-deep .p-paginator .p-paginator-prev,
-:host ::ng-deep .p-paginator .p-paginator-next,
-:host ::ng-deep .p-paginator .p-paginator-last {
-  transform: scaleX(-1);
 }
 
 /* Dropdown items alignment for RTL */
