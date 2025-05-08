@@ -17,8 +17,11 @@ class RideStatus(str, Enum):
     cancelled = "cancelled"
 
 class RideCreate(BaseModel):
-    user_id: UUID
-    vehicle_id: UUID
+    start_datetime: datetime
+    end_datetime: datetime
+    destination: str
+
+class RideCreate(BaseModel):
     ride_type: RideType
     start_datetime: datetime
     end_datetime: datetime
@@ -29,4 +32,3 @@ class RideCreate(BaseModel):
     status: RideStatus = RideStatus.pending
     license_check_passed: bool = False
     submitted_at: datetime
-    emergency_event: Optional[str] = None    

@@ -1,0 +1,90 @@
+body {
+    margin: 0px;
+    margin-top: 0px;
+    font-family: 'Alef', sans-serif;
+    background-color: #d7d1d9;
+  }
+  /* Remove default margin from body and html */
+body, html {
+    margin: 0px;
+    padding: 0px;
+  }
+  .navbar {
+    background-color: #942222;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: none;
+    height: 55px;
+  }
+  .navbar {
+    margin: 0;
+    padding: 0 20px; /* only horizontal padding if needed */
+    position: relative;
+    top: 0;
+  }
+  
+  .nav-left,
+  .nav-center,
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    text-decoration: none;
+  }
+  
+  .username {
+    font-weight: bold;
+  }
+  
+  .logo {
+    height: 56px;
+    margin: 0 20px;
+  }
+  
+  .nav-center a {
+    color: white;
+    text-decoration: none;
+    margin: 0 10px;
+  }
+  
+
+ 
+  
+  label {
+    display: block;
+    margin: 10px 0 5px;
+    font-weight: bold;
+  }
+  
+  .corner-img {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    width: 150px;
+    opacity: 30%;
+  }
+  .register-link {
+    text-decoration: underline;
+  }
+  .add-car{
+    padding: 5px;
+    padding-right: 10px;
+  }
+  
+  .nav-link{
+    text-decoration: none;
+    color: #ffffff;
+  }
+  /* a{
+    height: 55px;
+  }
+   */
+
+
+
+
+
+  

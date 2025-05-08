@@ -1,1 +1,32 @@
-<p>header works!</p>
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>Bookit Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Alef:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="header.component.css" />
+</head>
+<body>
+  <div class="navbar">
+    <div class="nav-left">
+      <a routerLink="/login" routerLinkActive="active"><img src="/assets/images/user-icon.png" alt="User Icon" /></a>
+      <span class="username">ישראלי ישראלי</span>
+      <a [routerLink]="['/new-ride']" title="להזמין נסיעה">
+        <img src="/assets/images/add-car.png" alt="Car" class="add-car" />
+      </a>
+    </div>    
+
+    <div class="nav-center">
+      <a routerLink="/home" routerLinkActive="active"><img src="/assets/images/bookit-logo.png" alt="Bookit Logo" class="logo"/></a>
+    </div>
+
+    <div class="nav-right">
+      <a class="nav-link" href="#">  נסיעות עבר | </a>
+      <a class="nav-link" href="#">נסיעות עתידיות </a>
+      <img src="/assets/images/bell-icon.png" alt="Notifications" />
+    </div>
+  </div>
+
+  <img src="/assets/images/building-graphic.png" alt="Graphic" class="corner-img" />
+</body>
+</html>
