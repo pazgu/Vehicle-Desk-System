@@ -5,7 +5,7 @@ import { RouterLink, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-login',
-  imports: [LayoutComponent, HeaderComponent,RouterModule,RouterLink],
+  imports: [RouterModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
