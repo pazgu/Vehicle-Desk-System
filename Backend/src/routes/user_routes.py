@@ -2,9 +2,13 @@
 from fastapi import APIRouter, HTTPException, status
 from ..schemas.register_schema import UserCreate
 from ..schemas.login_schema import UserLogin
+from ..schemas.new_ride_schema import RideCreate
 from ..services import register_service
 from ..services.auth_service import create_access_token
 from ..services import login_service
+from fastapi import Depends
+from ..utils.database import get_db
+from sqlalchemy.orm import Session
 
 router = APIRouter()
 
