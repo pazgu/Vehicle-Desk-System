@@ -1,8 +1,34 @@
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
-from database import SessionLocal
-from services.new_ride_service import add_ride_service
-from schemas.new_ride_schema import RideCreate
+
+from fastapi import APIRouter, HTTPException, status
+from ..schemas.register_schema import UserCreate
+from ..schemas.login_schema import UserLogin
+from ..services import register_service
+from ..services.auth_service import create_access_token
+from ..services import login_service
+
+router = APIRouter()
+
+@router.post("/api/register")
+def register_user(user: UserCreate):
+    try:
+        return register_service.create_user(user)
+    except ValueError as ve:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(ve)
+        )
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Registration failed due to an internal error"
+        )
+
+
+@router.post("/api/login")
+def login(user: UserLogin):
+    return login_service.login_user(user.username, user.password)
+
+
 
 @router.get("/api/users/{user_id}/orders")
 def get_user_orders():

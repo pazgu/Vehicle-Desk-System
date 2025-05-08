@@ -5,7 +5,7 @@ env/
 .venv/
 
 # Ignore Python cache
-_pycache_/
+__pycache__/
 *.pyc
 
 # Ignore system files
