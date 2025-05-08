@@ -9,7 +9,7 @@
 <body>
   <div class="navbar">
     <div class="nav-left">
-      <img src="/assets/images/user-icon.png" alt="User Icon" />
+      <a routerLink="/login" routerLinkActive="active"><img src="/assets/images/user-icon.png" alt="User Icon" /></a>
       <span class="username">ישראלי ישראלי</span>
       <a [routerLink]="['/new-ride']" title="להזמין נסיעה">
         <img src="/assets/images/add-car.png" alt="Car" class="add-car" />
@@ -17,7 +17,7 @@
     </div>    
 
     <div class="nav-center">
-      <img src="/assets/images/bookit-logo.png" alt="Bookit Logo" class="logo" />
+      <a routerLink="/home" routerLinkActive="active"><img src="/assets/images/bookit-logo.png" alt="Bookit Logo" class="logo"/></a>
     </div>
 
     <div class="nav-right">
