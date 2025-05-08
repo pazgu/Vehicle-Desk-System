@@ -32,5 +32,3 @@ class RideCreate(BaseModel):
     status: RideStatus = RideStatus.pending
     license_check_passed: bool = False
     submitted_at: datetime
-    emergency_event: Optional[str] = None    
-    destination: str
