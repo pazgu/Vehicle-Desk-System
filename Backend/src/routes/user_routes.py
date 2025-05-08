@@ -1,10 +1,13 @@
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status , Depends
 from ..schemas.register_schema import UserCreate
 from ..schemas.login_schema import UserLogin
+from ..schemas.new_ride_schema import RideCreate
 from ..services import register_service
 from ..services.auth_service import create_access_token
 from ..services import login_service
+from uuid import UUID
+from ..services.new_ride_service import create_ride
 
 router = APIRouter()
 
@@ -38,10 +41,17 @@ def get_user_orders():
 def get_user_2specific_order():
     return
 
-@router.post("/api/orders/{user_id}")
-def add_ride(ride: RideCreate, db: Session = Depends(get_db)):
-    return add_ride_service(ride, db)
-
+@router.post("/api/orders/{user_id}", response_model=RideCreate, status_code=status.HTTP_201_CREATED)
+def create_order(user_id: UUID, ride_request: RideCreate):
+    try:
+        new_ride = create_ride(user_id, ride_request)
+        return new_ride
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Failed to create order: {str(e)}"
+        )
+   
 @router.patch("/api/orders/{user_id}")
 def update_order():
     return
