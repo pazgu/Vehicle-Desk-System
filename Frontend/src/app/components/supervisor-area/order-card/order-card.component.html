@@ -1,1 +1,85 @@
-<p>order-card works!</p>
+<!-- order-card.component.html -->
+<div class="card-container" dir="rtl">
+    <div *ngIf="!trip" class="loading-container">
+      <p-progressSpinner></p-progressSpinner>
+      <span>טוען פרטי נסיעה...</span>
+    </div>
+  
+    <p-card *ngIf="trip" styleClass="trip-card">
+      <ng-template pTemplate="header">
+        <div class="card-header">
+          <h2>פרטי נסיעה - מספר {{ trip.id }}</h2>
+          <p-tag [value]="trip.status" [severity]="getStatusSeverity(trip.status)"></p-tag>
+        </div>
+      </ng-template>
+  
+      <div class="card-content">
+        <div class="info-row">
+          <div class="info-label">מזהה עובד:</div>
+          <div class="info-value">{{ trip.userId }}</div>
+        </div>
+  
+        <div class="info-row">
+          <div class="info-label">מזהה רכב:</div>
+          <div class="info-value">{{ trip.vehicleId }}</div>
+        </div>
+  
+        <div class="info-row">
+          <div class="info-label">סוג נסיעה:</div>
+          <div class="info-value">{{ trip.tripType }}</div>
+        </div>
+  
+        <div class="info-row">
+          <div class="info-label">תאריך התחלה:</div>
+          <div class="info-value">{{ formatDateTime(trip.startDateTime) }}</div>
+        </div>
+  
+        <div class="info-row">
+          <div class="info-label">תאריך סיום:</div>
+          <div class="info-value">{{ formatDateTime(trip.endDateTime) }}</div>
+        </div>
+  
+        <div class="info-row">
+          <div class="info-label">תחנת עצירה:</div>
+          <div class="info-value">{{ trip.stop }}</div>
+        </div>
+  
+        <div class="info-row">
+          <div class="info-label">יעד:</div>
+          <div class="info-value">{{ trip.destination }}</div>
+        </div>
+  
+        <div class="info-row">
+          <div class="info-label">מרחק מוערך:</div>
+          <div class="info-value">{{ trip.estimatedDistanceKm }} ק"מ</div>
+        </div>
+  
+        <div class="info-row">
+          <div class="info-label">מרחק בפועל:</div>
+          <div class="info-value">{{ trip.actualDistanceKm }} ק"מ</div>
+        </div>
+  
+        <div class="info-row">
+          <div class="info-label">בדיקת רישיון:</div>
+          <div class="info-value">
+            {{ trip.licenseCheckPassed ? 'עבר בהצלחה' : 'נכשל' }}
+          </div>
+        </div>
+  
+        <div class="info-row">
+          <div class="info-label">הוגש בתאריך:</div>
+          <div class="info-value">{{ trip.submittedAt }}</div>
+        </div>
+      </div>
+  
+      <ng-template pTemplate="footer">
+        <div class="card-actions">
+            <p-button class="approve" label="אישור נסיעה" icon="pi pi-check" styleClass="p-button-success" (click)="approveTrip()"></p-button>
+            <p-button class="reject" label="דחיית נסיעה" icon="pi pi-times" styleClass="p-button-danger" (click)="rejectTrip()"></p-button>
+            <p-button class="return" label="חזרה לרשימה" icon="pi pi-arrow-right" styleClass="p-button-secondary" (click)="goBack()"></p-button>
+
+        </div>
+      </ng-template>
+    </p-card>
+  </div>
+  

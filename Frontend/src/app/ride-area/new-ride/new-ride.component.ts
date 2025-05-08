@@ -17,15 +17,22 @@ export class NewRideComponent {
   public end_time: string = '';    // only time
   public ride_type: string = '';
 
+  public estimated_distance_with_buffer: number = 0;
+
   constructor(private router: Router) {}
+
+  public updateDistance(): void {
+    this.estimated_distance_with_buffer = this.estimated_distance_km * 1.1;
+  }
 
   public submit(): void {
 
-    // Add 10% to estimated distance
-    const final_distance = this.estimated_distance_km * 1.10;
+    this.updateDistance();
 
     console.log({
-      estimated_distance_km: final_distance.toFixed(2),
+      estimated_distance_km: this.estimated_distance_km,
+      estimated_distance_with_buffer: this.estimated_distance_with_buffer,
+      ride_type: this.ride_type,
       start_time: this.start_time,
       end_time: this.end_time,
       ride_type: this.ride_type
@@ -34,4 +41,5 @@ export class NewRideComponent {
     alert('הבקשה נשלחה!');
     this.router.navigate(['/']);
   }
+
 }

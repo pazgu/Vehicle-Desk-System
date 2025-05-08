@@ -16,10 +16,11 @@
         </div>
 
         <div class="row">
-          <div class="input-group">
-            <label>הערכת מרחק (ק"מ)</label>
-            <input type="number" [(ngModel)]="estimated_distance_km" name="estimated_distance_km" required>
-          </div>
+            <div class="input-group">
+                <label>הערכת מרחק (ק"מ)</label>
+                <input type="number" [(ngModel)]="estimated_distance_km" name="estimated_distance_km" required (input)="updateDistance()">
+                <small class="distance-info">המרחק לאחר תוספת סטייה: {{ estimated_distance_with_buffer }} ק"מ</small>
+            </div>            
           <div class="input-group">
             <label>סוג נסיעה</label>
             <select [(ngModel)]="ride_type" name="ride_type" required class="styled-select">
