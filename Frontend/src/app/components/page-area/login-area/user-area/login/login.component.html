@@ -13,7 +13,7 @@
                   <input type="password" [(ngModel)]="password" name="password"/>
             
                   <button (click)="onLogin()">התחבר</button>
-                  <p class="register-link">אין לי משתמש</p>
+                  <a routerLink="/register" routerLinkActive="active"><p class="register-link">אין לי משתמש</p></a>
                   <p *ngIf="errorMessage" style="color: red;">{{ errorMessage }}</p>
                 </div>
               
