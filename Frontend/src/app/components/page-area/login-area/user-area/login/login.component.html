@@ -7,13 +7,14 @@
                   <h2>התחברות</h2>
                 
                   <label>שם משתמש</label>
-                  <input type="text" />
+                  <input type="text" [(ngModel)]="username" name="username"/>
             
                   <label>סיסמה</label>
-                  <input type="password" />
+                  <input type="password" [(ngModel)]="password" name="password"/>
             
-                  <button>התחבר</button>
+                  <button (click)="onLogin()">התחבר</button>
                   <p class="register-link">אין לי משתמש</p>
+                  <p *ngIf="errorMessage" style="color: red;">{{ errorMessage }}</p>
                 </div>
               
 </div>

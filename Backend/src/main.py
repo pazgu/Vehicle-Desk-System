@@ -1,7 +1,16 @@
 from fastapi import FastAPI
 from src.routes.user_routes import router as user_route  # Adjust path if needed
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:4200"],  # Allows the frontend from localhost:4200 to make requests
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods like GET, POST, PUT, DELETE, etc.
+    allow_headers=["*"],  # Allows all headers
+)
 
 # Include user routes
 app.include_router(user_route, tags=["Users"])
