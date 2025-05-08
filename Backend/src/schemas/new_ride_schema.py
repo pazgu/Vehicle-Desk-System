@@ -20,3 +20,15 @@ class RideCreate(BaseModel):
     start_datetime: datetime
     end_datetime: datetime
     destination: str
+
+class RideCreate(BaseModel):
+    ride_type: RideType
+    start_datetime: datetime
+    end_datetime: datetime
+    start_location: str
+    stop: str
+    destination: str
+    estimated_distance_km: float
+    status: RideStatus = RideStatus.pending
+    license_check_passed: bool = False
+    submitted_at: datetime
