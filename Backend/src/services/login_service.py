@@ -1,33 +1,32 @@
 from sqlalchemy.orm import Session
-from fastapi import HTTPException
 from ..models.user_model import User
 from ..utils.auth import verify_password  # Import the verify_password function
 from ..services.auth_service import create_access_token
 from ..utils.mock_data import mock_users_db
 from ..utils.mock_data import get_user_by_username
+from fastapi import Depends, HTTPException
+from ..utils.database import get_db  # a dependency that returns a db session
 
+def login_user(username: str, password: str, db: Session = Depends(get_db)):
+    # Try to fetch the user by username or email
+    user = db.query(User).filter(
+        (User.username == username) | (User.email == username)
+    ).first()
 
-
-
-
-
-def login_user(username: str, password: str):
-    mock_user = get_user_by_username(username)
-    
-    if not mock_user or not verify_password(password, mock_user["password"]):
+    if not user or not verify_password(password, user.password):
         raise HTTPException(status_code=401, detail="Incorrect username or password.")
     
     token = create_access_token(
-    user_id=str(mock_user["id"]),
-    username=mock_user["username"],
-    role=mock_user["role"]
-        )
-
+        employee_id=str(user.employee_id),  # UUID as string
+        username=user.username,
+        role=user.role
+    )
 
     return {
-        **token,  # spread fields directly into the response
-    "token_type": "bearer"
+        **token,
+        "token_type": "bearer"
     }
+
 
 # def login(db: Session, username: str, password: str):
 #     user = db.query(User).filter(User.username == username).first()  # Look up the user by username

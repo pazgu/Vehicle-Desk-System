@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Text, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-from database import Base
+from src.models.base import Base
 import uuid
 
 class Department(Base):

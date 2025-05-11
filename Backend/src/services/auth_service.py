@@ -3,7 +3,7 @@ import jwt
 from jwt import ExpiredSignatureError, InvalidTokenError, DecodeError
 from ..schemas.user_response_schema import UserResponse
 from ..models.user_model import User
-
+from uuid import UUID
 
 SECRET_KEY = "your-secret-key"
 ALGORITHM = "HS256"
@@ -17,10 +17,10 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60
 from datetime import datetime, timedelta
 import jwt
 
-def create_access_token(user_id: str, username: str, role: str, expires_delta: timedelta = None):
+def create_access_token(employee_id: UUID, username: str, role: str, expires_delta: timedelta = None):
     expire = datetime.utcnow() + (expires_delta or timedelta(minutes=15))
     payload = {
-        "sub": user_id,
+        "sub": employee_id,
         "username": username,
         "role": role,
         "exp": expire
@@ -29,7 +29,7 @@ def create_access_token(user_id: str, username: str, role: str, expires_delta: t
     return {
         "access_token": encoded_jwt,
         "expires_at": expire.isoformat(),
-        "user_id": user_id,
+        "employee_id": employee_id,
         "username": username,
         "role": role,
         "token_type": "bearer"
