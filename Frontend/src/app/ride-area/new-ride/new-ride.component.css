@@ -44,9 +44,11 @@ body {
     left: 10px;
     background: none;
     border: none;
-    font-size: 22px;
+    font-size: 24px;
     cursor: pointer;
-}
+    z-index: 10; /* Ensure it's clickable */
+  }
+  
 
 h2 {
     color: #942222;
