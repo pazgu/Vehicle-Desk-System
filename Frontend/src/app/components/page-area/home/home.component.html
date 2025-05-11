@@ -1,60 +1,79 @@
 <div class="page-container">
-        <div class="orders-wrapper">
-            <div style="text-align: right; margin-bottom: 1rem;">
-                <label for="filter">סנן לפי: </label>
-                <select id="filter" [(ngModel)]="filterBy">
-                  <option value="date">תאריך</option>
-                  <option value="status">סטטוס</option>
-                </select>
-              </div>
-              
-            <div class="orders-title">נסיעות עתידיות</div>
-        
-            <div class="orders-table">
-                <div class="orders-header-row">
-                    <div class="icon-cell">סטטוס</div>
-                    <div class="cell">תאריך</div>
-                    <div class="cell">שעה</div>
-                    <div class="cell">סוג רכב</div>
-                    <div class="cell">מרחק הנסיעה</div>
-                  </div>
-                  
-                  <div 
-  class="orders-data-row" 
-  [ngClass]="getStatusClass(order.status)" 
-  *ngFor="let order of pagedOrders; let i = index">
+  <div class="orders-wrapper">
 
-                    <div class="icon-cell">
-                        <span
-                        class="pi"
-                        [ngClass]="{
-                          'pi-verified': order.status === 'Approved',
-                          'pi-clock': order.status === 'Pending',
-                          'pi-wrench': order.status === 'Rejected'
-                        }"
-                        [title]="getStatusTooltip(order.status)"
-                        style="font-size: 1.3rem;"
-                      ></span>
-                      
-                    </div>
-                    <div class="cell">{{ order.date }}</div>
-                    <div class="cell">{{ order.time }}</div>
-                    <div class="cell">{{ order.type }}</div>
-                    <div class="cell">{{ order.distance }}</div>
-                  </div>
-                  
-             
-            </div>
-        
-            <div class="pagination-controls">
-                <button (click)="nextPage()" [disabled]="currentPage === totalPages">
-                <i class="pi pi-arrow-right"></i>
-                </button>
-                <span>{{ currentPage }} / {{ totalPages }}</span>
-                <button (click)="prevPage()" [disabled]="currentPage === 1">
-                    <i class="pi pi-arrow-left"></i>
-                </button>
-            </div>
-            
+    <!-- Sort + Filter Toggle Bar -->
+    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; direction: rtl;">
+      <div>
+        <label for="sort">מיין לפי: </label>
+        <select id="sort" [(ngModel)]="sortBy">
+          <option value="date">תאריך</option>
+          <option value="status">סטטוס</option>
+        </select>
+      </div>
+
+      <button class="filter" (click)="showFilters = !showFilters">
+        {{ showFilters ? 'הסתר סינון' : 'הצג סינון' }}
+      </button>
+    </div>
+
+    <!-- Toggleable Filters -->
+    <div *ngIf="showFilters" style="margin-bottom: 1.5rem; background: #f7f7f7; padding: 1rem; border-radius: 8px;">
+      <div style="margin-bottom: 1rem;">
+        <label for="statusFilter">סטטוס:</label>
+        <select id="statusFilter" [(ngModel)]="statusFilter">
+          <option value="">הצג הכל</option>
+          <option value="Approved">מאושר</option>
+          <option value="Pending">ממתין</option>
+          <option value="Rejected">בוטל</option>
+        </select>
+      </div>
+
+      <div style="display: flex; gap: 1rem;">
+        <div>
+          <label for="startDate">מתאריך:</label>
+          <input id="startDate" type="date" [(ngModel)]="startDate">
         </div>
+        <div>
+          <label for="endDate">עד תאריך:</label>
+          <input id="endDate" type="date" [(ngModel)]="endDate">
+        </div>
+      </div>
+    </div>
+
+    <!-- Orders List -->
+    <div
+      class="orders-data-row"
+      *ngFor="let order of pagedOrders"
+      [ngClass]="getStatusClass(order.status)">
+
+      <div class="icon-cell">
+        <span
+          class="pi"
+          [ngClass]="{
+            'pi-verified': order.status === 'Approved',
+            'pi-clock': order.status === 'Pending',
+            'pi-times': order.status === 'Rejected'
+          }"
+          [title]="getStatusTooltip(order.status)"
+          style="font-size: 1.3rem;">
+        </span>
+      </div>
+      <div class="cell">{{ order.date }}</div>
+      <div class="cell">{{ order.time }}</div>
+      <div class="cell">{{ order.type }}</div>
+      <div class="cell">{{ order.distance }}</div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-controls">
+      <button (click)="nextPage()" [disabled]="currentPage === totalPages">
+        <i class="pi pi-arrow-right"></i>
+      </button>
+      <span>{{ currentPage }} / {{ totalPages }}</span>
+      <button (click)="prevPage()" [disabled]="currentPage === 1">
+        <i class="pi pi-arrow-left"></i>
+      </button>
+    </div>
+
+  </div>
 </div>
