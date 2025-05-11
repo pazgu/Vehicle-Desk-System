@@ -1,3 +1,62 @@
-<p>נסיעות עתיד אמורות להיוות פה!</p>
+<div class="page-container">
+        <div class="orders-wrapper">
+            <div style="text-align: right; margin-bottom: 1rem;">
+                <label for="filter">סנן לפי: </label>
+                <select id="filter" [(ngModel)]="filterBy">
+                  <option value="date">תאריך</option>
+                  <option value="status">סטטוס</option>
+                </select>
+              </div>
+              
+            <div class="orders-title">נסיעות עתידיות</div>
+        
+            <div class="orders-table">
+                <div class="orders-header-row">
+                    <div class="icon-cell">סטטוס</div>
+                    <div class="cell">תאריך</div>
+                    <div class="cell">שעה</div>
+                    <div class="cell">סוג רכב</div>
+                    <div class="cell">מרחק הנסיעה</div>
+                  </div>
+                  
+                  <div 
+  class="orders-data-row" 
+  [ngClass]="getStatusClass(order.status)" 
+  *ngFor="let order of pagedOrders; let i = index">
 
-<router-outlet></router-outlet>
+                    <div class="icon-cell">
+                        <span
+                        class="pi"
+                        [ngClass]="{
+                          'pi-verified': order.status === 'Available' || order.status === 'Synced',
+                          'pi-clock': order.status === 'Pending',
+                          'pi-exclamation-triangle': order.status === 'Problem' || order.status === 'Not Synced',
+                          'pi-car': order.status === 'In Use',
+                          'pi-wrench': order.status === 'Out of Service'
+                        }"
+                        [title]="getStatusTooltip(order.status)"
+                        style="font-size: 1.3rem;"
+                      ></span>
+                      
+                    </div>
+                    <div class="cell">{{ order.date }}</div>
+                    <div class="cell">{{ order.time }}</div>
+                    <div class="cell">{{ order.type }}</div>
+                    <div class="cell">{{ order.distance }}</div>
+                  </div>
+                  
+             
+            </div>
+        
+            <div class="pagination-controls">
+                <button (click)="nextPage()" [disabled]="currentPage === totalPages">
+                <i class="pi pi-arrow-right"></i>
+                </button>
+                <span>{{ currentPage }} / {{ totalPages }}</span>
+                <button (click)="prevPage()" [disabled]="currentPage === 1">
+                    <i class="pi pi-arrow-left"></i>
+                </button>
+            </div>
+            
+        </div>
+</div>
