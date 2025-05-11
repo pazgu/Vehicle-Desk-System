@@ -28,11 +28,9 @@
                         <span
                         class="pi"
                         [ngClass]="{
-                          'pi-verified': order.status === 'Available' || order.status === 'Synced',
+                          'pi-verified': order.status === 'Approved',
                           'pi-clock': order.status === 'Pending',
-                          'pi-exclamation-triangle': order.status === 'Problem' || order.status === 'Not Synced',
-                          'pi-car': order.status === 'In Use',
-                          'pi-wrench': order.status === 'Out of Service'
+                          'pi-wrench': order.status === 'Rejected'
                         }"
                         [title]="getStatusTooltip(order.status)"
                         style="font-size: 1.3rem;"
