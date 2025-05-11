@@ -1,0 +1,267 @@
+/* Table header styling */
+.table-header {
+  background-color: #942222; /* Red color */
+  color: white; /* White text */
+}
+
+/* Center the table and add rounded corners */
+:host ::ng-deep .p-datatable {
+  margin: 50px auto; /* Center the table horizontally */
+  border-radius: 10px; /* Add rounded corners */
+  overflow: hidden; /* Ensure content respects the rounded corners */
+  text-align: right; /* Align content to the right */
+  font-size: 14px; /* Set a readable font size */
+  width: 80%; /* Adjust the width of the table */
+  direction: rtl;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: Add a subtle shadow */
+}
+
+:host ::ng-deep .p-datatable .p-datatable-thead > tr > th {
+  background-color: #942222;
+  color: white;
+  padding: 10px;
+  text-align: right;
+  font-weight: bold;
+  
+}
+
+:host ::ng-deep .p-datatable .p-datatable-tbody > tr > td {
+  padding: 10px;
+  text-align: right;
+  border-bottom: 1px solid #e9ecef;
+}
+
+:host ::ng-deep .p-datatable .p-datatable-tbody > tr:nth-child(even) {
+  background-color: #f8f9fa;
+  cursor: pointer;
+}
+
+:host ::ng-deep .p-datatable .p-datatable-tbody > tr:hover {
+  background-color: #f0f0f0;
+  cursor: pointer;
+
+}
+
+/* PrimeNG Paginator Styling */
+:host ::ng-deep .p-paginator {
+  background-color: #f5f5f5;
+  border-radius: 5px;
+  padding: 10px;
+  direction: rtl;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+/* Style for paginator navigation buttons (arrows) */
+:host ::ng-deep .p-paginator .p-paginator-first,
+:host ::ng-deep .p-paginator .p-paginator-prev,
+:host ::ng-deep .p-paginator .p-paginator-next,
+:host ::ng-deep .p-paginator .p-paginator-last {
+  background-color: #942222;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  margin: 0 3px;
+  min-width: 2.5rem;
+  height: 2.5rem;
+  transform: scaleX(-1); /* Flip for RTL */
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+}
+
+:host ::ng-deep .p-paginator .p-paginator-first:hover,
+:host ::ng-deep .p-paginator .p-paginator-prev:hover,
+:host ::ng-deep .p-paginator .p-paginator-next:hover,
+:host ::ng-deep .p-paginator .p-paginator-last:hover {
+  background-color: #7a1c1c; /* Darker red on hover */
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
+}
+
+:host ::ng-deep .p-paginator .p-paginator-first:focus,
+:host ::ng-deep .p-paginator .p-paginator-prev:focus,
+:host ::ng-deep .p-paginator .p-paginator-next:focus,
+:host ::ng-deep .p-paginator .p-paginator-last:focus {
+  box-shadow: 0 0 0 2px rgba(148, 34, 34, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+  outline: none;
+}
+
+:host ::ng-deep .p-paginator .p-paginator-first.p-disabled,
+:host ::ng-deep .p-paginator .p-paginator-prev.p-disabled,
+:host ::ng-deep .p-paginator .p-paginator-next.p-disabled,
+:host ::ng-deep .p-paginator .p-paginator-last.p-disabled {
+  background-color: #d9d9d9; /* Light gray for disabled state */
+  color: #a0a0a0; /* Muted text color */
+  cursor: default;
+  box-shadow: none;
+}
+
+/* Style for paginator buttons */
+:host ::ng-deep .p-paginator .p-paginator-button {
+  background-color: #942222;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  margin: 0 3px;
+  min-width: 2.5rem;
+  height: 2.5rem;
+  transition: background-color 0.2s;
+}
+
+:host ::ng-deep .p-paginator .p-paginator-button:hover {
+  background-color: #7a1c1c;
+}
+
+:host ::ng-deep .p-paginator .p-paginator-button:focus {
+  box-shadow: 0 0 0 2px rgba(148, 34, 34, 0.3);
+  outline: none;
+}
+
+/* Pages button style */
+:host ::ng-deep .p-paginator .p-paginator-page {
+  background-color: #942222;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  margin: 0 3px;
+  min-width: 2.5rem;
+  height: 2.5rem;
+  position: relative;
+}
+
+:host ::ng-deep .p-paginator .p-paginator-page:hover {
+  background-color: #7a1c1c;
+}
+
+:host ::ng-deep .p-paginator .p-paginator-page.p-highlight,
+:host ::ng-deep .p-paginator .p-paginator-page.p-paginator-page-selected {
+  background-color: transparent !important; /* No background color */
+  color: #942222 !important; /* White text */
+  font-weight: bold;
+  border: none;
+  border-bottom: 3px solid #942222 !important; /* Red underline */
+  position: relative;
+}
+
+/* Rows per page dropdown */
+:host ::ng-deep .p-paginator .p-dropdown {
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  margin-left: 10px;
+  height: 2.5rem;
+}
+
+:host ::ng-deep .p-paginator .p-dropdown:hover {
+  border-color: #942222;
+}
+
+:host ::ng-deep .p-paginator .p-dropdown .p-dropdown-trigger {
+  color: #942222;
+}
+
+:host ::ng-deep .p-paginator .p-dropdown-panel .p-dropdown-item.p-highlight {
+  background-color: #942222;
+  color: white;
+}
+
+/* Current page report */
+:host ::ng-deep .p-paginator .p-paginator-current {
+  color: #555555;
+  margin: 0 10px;
+}
+
+/* Dropdown items alignment for RTL */
+:host ::ng-deep .p-dropdown-panel .p-dropdown-items {
+  text-align: right;
+}
+
+
+/* Reset button container directly under the table */
+.reset-container {
+  display: flex;
+  justify-content: center; /* Center horizontally */
+}
+
+/* Reset button styling */
+.reset {
+  border-radius: 0.5rem; /* Rounded corners */
+  background-color: #e8eded; /* Light gray background */
+  border: 1px solid #c7cacd; /* Light gray border */
+  color: #1a3d60; /* Dark gray text */
+  padding: 0.5rem 1rem; /* Padding for better spacing */
+  font-size: 1rem; /* Standard font size */
+  cursor: pointer; /* Pointer cursor on hover */
+  transition: background-color 0.3s, border-color 0.3s; /* Smooth hover transition */
+  display: inline-flex; /* Align text and icon properly */
+  align-items: center; /* Center content vertically */
+  justify-content: center; /* Center content horizontally */
+  text-align: center; /* Ensure text is centered */
+}
+
+/* Hover effect for Reset button */
+.reset:hover {
+  background-color: #e2e6ea; /* Slightly darker gray on hover */
+  border-color: #adb5bd; /* Darker gray border on hover */
+  color: #212529; /* Darker text on hover */
+}
+
+/* Focus effect for Reset button */
+.reset:focus {
+  outline: none; /* Remove default outline */
+  box-shadow: 0 0 0 3px rgba(108, 117, 125, 0.25); /* Add subtle focus ring */
+}
+
+
+
+
+/* General styling for status text */
+.status-text {
+  padding: 0.3rem 0.6rem;
+  border-radius: 0.5rem;
+  color: white;
+  font-weight: bold;
+  display: inline-block;
+  text-align: center;
+}
+
+/* Approved (Green) */
+.status-approved {
+  background-color: #2E7D32; /* Green */
+}
+
+/* Pending (Yellow) */
+.status-pending {
+  background-color: #FFB300; /* Yellow */
+}
+
+/* Rejected (Red) */
+.status-rejected {
+  background-color: #B71C1C; /* Red */
+}
+
+
+
+
+
+/* Responsive adjustments */
+@media screen and (max-width: 640px) {
+  :host ::ng-deep .p-paginator {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  :host ::ng-deep .p-paginator .p-dropdown {
+    margin-top: 8px;
+  }
+  
+  :host ::ng-deep .p-paginator .p-paginator-current {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 8px;
+  }
+}

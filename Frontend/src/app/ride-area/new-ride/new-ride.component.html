@@ -1,26 +1,70 @@
 <div class="overlay">
-    <div class="modal">
-      <button class="close-btn" routerLink="/">×</button>
-      <h2>הזמנה חדשה</h2>
-      <hr>
-      <form>
-        <div class="row">
-          <div class="input-group">
-            <label>שעת התחלה</label>
-            <input type="time" [(ngModel)]="start_time" name="start_time" required>
-          </div>
-          <div class="input-group">
-            <label>שעת סיום</label>
-            <input type="time" [(ngModel)]="end_time" name="end_time" required>
-          </div>
+  <div class="modal">
+    <button class="close-btn" (click)="close()">×</button>
+    <h2>הזמנה חדשה</h2>
+    <hr />
+    <form [formGroup]="rideForm" (ngSubmit)="submit()">
+      <div class="input-group">
+        <label>תאריך הנסיעה</label>
+        <input type="date" formControlName="ride_date" />
+        <small *ngIf="f.ride_date.touched && f.ride_date.errors?.['required']" class="distance-info">
+          חובה למלא את שדה זה
+        </small>
+        <small *ngIf="f.ride_date.errors?.['tooSoon']" class="distance-info">
+          יש להזמין נסיעה לפחות יומיים מראש
+        </small>
+        <small *ngIf="f.ride_date.errors?.['invalidYear']" class="distance-info">
+          השנה צריכה להיות בין 2025 ל-2099
+        </small>
+      </div>
+
+      <div class="row">
+        <div class="input-group">
+          <label>שעת סיום</label>
+          <input type="time" formControlName="end_time" />
+          <small *ngIf="f.end_time.touched && f.end_time.errors?.['required']" class="distance-info">
+            חובה למלא את שדה זה
+          </small>
         </div>
-        <div class="row">
-          <div class="input-group">
-            <label>הערכת מרחק (ק"מ)</label>
-            <input type="number" [(ngModel)]="estimated_distance_km" name="estimated_distance_km" required>
-          </div>
+        <div class="input-group">
+          <label>שעת התחלה</label>
+          <input type="time" formControlName="start_time" />
+          <small *ngIf="f.start_time.touched && f.start_time.errors?.['required']" class="distance-info">
+            חובה למלא את שדה זה
+          </small>
         </div>
-        <button type="submit" class="submit-btn" (click)="submit()">שלח</button>
-      </form>
-    </div>
+      </div>
+
+      <div class="row">
+        <div class="input-group">
+          <label>הערכת מרחק (ק"מ)</label>
+          <input type="number" formControlName="estimated_distance_km" />
+          <small *ngIf="f.estimated_distance_km.touched && f.estimated_distance_km.errors?.['required']" class="distance-info">
+            חובה למלא את שדה זה
+          </small>
+          <small *ngIf="f.estimated_distance_km.errors?.['min']" class="distance-info">
+            המרחק חייב להיות לפחות 1 ק״מ
+          </small>
+          <small class="distance-info">
+            המרחק לאחר תוספת סטייה: {{ estimated_distance_with_buffer }} ק"מ
+          </small>
+        </div>
+        <div class="input-group">
+          <label>סוג נסיעה</label>
+          <select formControlName="ride_type" class="styled-select">
+            <option value="" disabled>בחר סוג</option>
+            <option value="מנהלתית">מנהלתית</option>
+            <option value="תפעולית">תפעולית</option>
+          </select>
+          <small *ngIf="f.ride_type.touched && f.ride_type.errors?.['required']" class="distance-info">
+            חובה לבחור סוג נסיעה
+          </small>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn">שלח</button>
+    </form>
+  </div>
 </div>
+
+<router-outlet></router-outlet>

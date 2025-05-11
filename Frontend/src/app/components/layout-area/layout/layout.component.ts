@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-layout',
-  imports: [HeaderComponent , RouterModule],
+  imports: [HeaderComponent,RouterModule],
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.css'
 })

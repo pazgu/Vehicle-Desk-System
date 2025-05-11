@@ -8,12 +8,11 @@ class UserRole(str, Enum):
     admin = "admin"
     
 class UserResponse(BaseModel):
-    id: UUID
     first_name: str
     last_name: str
     username: str
     email: EmailStr
-    employee_id: str
+    employee_id: UUID
     role: UserRole
     department_id: UUID
 

@@ -17,6 +17,16 @@ body {
     justify-content: center;
     align-items: center;
     height: 80vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* padding: 60px 20px; */
+    direction: rtl;
+    font-family: 'Alef', sans-serif;
+    background-color: #ccc;
+    height: 90.4vh; /* Ensures it takes full viewport height */
+    box-sizing: border-box; /* Includes padding in total height */
+    
 }
 
 .modal {
@@ -34,9 +44,11 @@ body {
     left: 10px;
     background: none;
     border: none;
-    font-size: 22px;
+    font-size: 24px;
     cursor: pointer;
-}
+    z-index: 10; /* Ensure it's clickable */
+  }
+  
 
 h2 {
     color: #942222;
@@ -86,3 +98,35 @@ form .row {
 .submit-btn:hover {
     background-color: #7a1c1c;
 }
+
+/* Style select to match inputs */
+.styled-select {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #d3b1b1;
+    background-color: #e7c1c1;
+}
+
+/* Fix the time pickers to look same as inputs */
+input[type="time"], input[type="number"], input[type="text"], select {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #d3b1b1;
+    background-color: #e7c1c1;
+}
+
+.input-group select {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #d3b1b1;
+    background-color: #e7c1c1;
+    font-family: 'Assistant', sans-serif; /* Match the other inputs */
+    font-size: 16px;
+}
+
+.distance-info {
+    margin-top: 5px;
+    font-size: 14px;
+    color: #333;
+}
+
