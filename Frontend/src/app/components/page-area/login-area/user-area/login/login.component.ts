@@ -1,30 +1,59 @@
-import { Component } from '@angular/core';
-import { LayoutComponent } from '../../../../layout-area/layout/layout.component';
-import { HeaderComponent } from '../../../../layout-area/header/header.component';
-import { Router, RouterLink } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-login',
-  imports: [RouterModule,FormsModule,CommonModule],
+  standalone: true,
+  imports: [RouterModule, ReactiveFormsModule, CommonModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
-export class LoginComponent {
-  username: string = '';
-  password: string = '';
+export class LoginComponent implements OnInit {
+  loginForm!: FormGroup;
   errorMessage: string | null = null;
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private fb: FormBuilder, private http: HttpClient, private router: Router) {}
+
+  ngOnInit(): void {
+    this.loginForm = this.fb.group({
+      username: [
+        '',
+        [
+          Validators.required,
+          Validators.pattern(/^[A-Za-z֐-׿]+$/), // Hebrew + English letters
+          Validators.minLength(3),
+          Validators.maxLength(20)
+        ]
+      ],
+      password: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(6)
+        ]
+      ]
+    });
+  }
+
+  get f() {
+    return this.loginForm.controls;
+  }
 
   onLogin(): void {
-    const loginData = {
-      username: this.username,
-      password: this.password
-    };
+    this.errorMessage = null;
+
+    if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
+      this.errorMessage = 'יש למלא את כל השדות כנדרש';
+      return;
+    }
+
+    const loginData = this.loginForm.value;
 
     this.http.post<any>('http://localhost:8000/api/login', loginData).subscribe({
       next: (response) => {
@@ -35,9 +64,8 @@ export class LoginComponent {
         this.router.navigate(['/home']);  // change route as needed
       },
       error: (err) => {
-        this.errorMessage = err.error?.detail || 'Login failed';
+        this.errorMessage = err.error?.detail || 'ההתחברות נכשלה';
       }
     });
   }
 }
-
