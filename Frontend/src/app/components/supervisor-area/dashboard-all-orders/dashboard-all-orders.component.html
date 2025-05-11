@@ -1,5 +1,5 @@
 <!-- HTML Component Template -->
-<p-table [value]="trips" [paginator]="true" [rows]="5" dir="rtl">
+<p-table #table [value]="trips" [paginator]="true" [rows]="5" dir="rtl">
   <ng-template pTemplate="header">
     <tr class="table-header">
       <th pSortableColumn="id">מזהה נסיעה <p-sortIcon field="id"></p-sortIcon></th>
@@ -24,14 +24,9 @@
     </tr>
   </ng-template>
   
-  <ng-template pTemplate="paginatorleft">
-    <!-- Optional: Custom content for left side of paginator -->
-  </ng-template>
-  
-  <ng-template pTemplate="paginatorright">
-    <!-- Optional: Custom content for right side of paginator -->
-  </ng-template>
+
 </p-table>
 
-<!-- Note: The p-footer tag is deprecated in newer PrimeNG versions.
-     Pagination is automatically added with the [paginator]="true" property -->
+<div class="reset-container">
+  <p-button class="reset" label="איפוס" icon="pi pi-refresh" (click)="resetFilters(table)"></p-button>
+</div>

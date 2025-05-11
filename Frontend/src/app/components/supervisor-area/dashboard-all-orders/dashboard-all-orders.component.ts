@@ -20,7 +20,7 @@ export class DashboardAllOrdersComponent {
   constructor(private router: Router) {}
 
   rows: number = 5;
-  trips = [
+  originalTrips = [
     { id: 1, employeeName: 'ישראל ישראלי', vehicle: 1, dateTime: '2025-05-07 10:00', destination: 'תל אביב', distance: 10, status: 'הושלם' },
     { id: 2, employeeName: 'יוסי כהן', vehicle: 2, dateTime: '2025-05-07 12:00', destination: 'ירושלים', distance: 70, status: 'ממתין' },
     { id: 3, employeeName: 'דנה לוי', vehicle: 3, dateTime: '2025-05-08 09:00', destination: 'חיפה', distance: 90, status: 'בדרך' },
@@ -44,12 +44,17 @@ export class DashboardAllOrdersComponent {
   ];
 
 
+  trips = [...this.originalTrips];
 
 
   onRowSelect(trip: any) {
     this.router.navigate(['/order-card', trip.id]);
   }
   
+  resetFilters(table: any) {
+    table.clear();
+    this.trips = [...this.originalTrips];
+  }
   
   
   
