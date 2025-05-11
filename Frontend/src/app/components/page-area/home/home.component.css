@@ -111,3 +111,23 @@
     margin-left: 0.5rem;
   }
   
+  .status-green {
+    background-color: #e6f4ea; /* soft green */
+  }
+  
+  .status-yellow {
+    background-color: #fff8e1; /* soft yellow */
+  }
+  
+  .status-red {
+    background-color: #fcebea; /* soft red */
+  }
+  
+  .status-blue {
+    background-color: #e7f1ff; /* soft blue */
+  }
+  
+  .status-gray {
+    background-color: #f2f2f2; /* soft gray */
+  }
+  

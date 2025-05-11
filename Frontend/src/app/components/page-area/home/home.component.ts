@@ -74,5 +74,27 @@ export class HomeComponent {
         return 'סטטוס לא ידוע';
     }
   }
+  getStatusClass(status: string): string {
+    switch (status) {
+      case 'Available':
+      case 'Synced':
+        return 'status-green';
+      case 'Pending':
+      case 'In Review':
+        return 'status-yellow';
+      case 'Problem':
+      case 'Not Synced':
+      case 'Frozen':
+        return 'status-red';
+      case 'In Use':
+        return 'status-blue';
+      case 'Out of Service':
+      case 'Maintenance':
+        return 'status-gray';
+      default:
+        return '';
+    }
+  }
+  
   
 }

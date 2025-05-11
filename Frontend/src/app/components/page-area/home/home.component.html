@@ -19,7 +19,11 @@
                     <div class="cell">מרחק הנסיעה</div>
                   </div>
                   
-                  <div class="orders-data-row" *ngFor="let order of pagedOrders; let i = index">
+                  <div 
+  class="orders-data-row" 
+  [ngClass]="getStatusClass(order.status)" 
+  *ngFor="let order of pagedOrders; let i = index">
+
                     <div class="icon-cell">
                         <span
                         class="pi"
