@@ -8,12 +8,12 @@ from ..services.auth_service import create_access_token
 from ..services import login_service
 from uuid import UUID
 from ..services.new_ride_service import create_ride
-from typing import List
 from ..services.future_rides_service import get_future_rides_for_user  
 from ..schemas.future_rides_schema import FutureRides , RideStatus
 from fastapi.responses import JSONResponse
 from typing import List, Optional, Union
 from datetime import datetime
+from ..utils.mock_data import mock_departments
 
 router = APIRouter()
 
@@ -87,6 +87,12 @@ def create_order(user_id: UUID, ride_request: RideCreate):
             detail=f"Failed to create order: {str(e)}"
         )
    
+
+
+@router.get("/api/departments")
+def get_departments():
+    return mock_departments
+
 @router.patch("/api/orders/{user_id}")
 def update_order():
     return

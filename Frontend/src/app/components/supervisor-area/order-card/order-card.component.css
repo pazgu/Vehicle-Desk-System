@@ -22,6 +22,11 @@
   :host ::ng-deep .trip-card {
     border-radius: 8px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    min-height: 600px; /* Set a minimum height for the card */
+    padding: 1rem; /* Add padding for better spacing */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Ensure footer stays at the bottom */
   }
   
   :host ::ng-deep .trip-card .p-card-header {
@@ -164,48 +169,55 @@
 
 /* General styles for card actions */
 .card-actions {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-    gap: 1rem;
-  }
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  gap: 1rem;
+  width: 100%;
+  padding-bottom: 10px; /* Add space below the buttons */
+}
+
+.card-actions p-button {
+  flex: none; /* Prevent buttons from stretching */
+  width: 100px; /* Set a fixed width for all buttons */
+  height: 30px; /* Adjust height for better alignment */
+  display: flex; /* Use Flexbox for alignment */
+  justify-content: center; /* Center content horizontally */
+  align-items: center; /* Center content vertically */
+  text-align: center; /* Ensure text is centered */
+}
   
   /* Approve button (green) */
   .card-actions .approve {
-    
     border-radius: 0.5rem;
-    background-color: #28a745 !important; /* Green background */
-    border-color: #218838 !important; /* Darker green border */
+    background-color: #2E7D32 !important; /* Green background */
     color: white !important; /* White text */
   }
   
   .card-actions .approve:hover {
-    background-color: #218838 !important; /* Darker green on hover */
-    border-color: #1e7e34 !important; /* Even darker green border on hover */
+    background-color: rgb(18, 100, 36) !important; /* Darker green on hover */
   }
   
   /* Reject button (red) */
   .card-actions .reject {
     border-radius: 0.5rem;
-
-    background-color: #dc3545 !important; /* Red background */
-    border-color: #c82333 !important; /* Darker red border */
+    background-color: #B71C1C !important; /* Red background */
     color: white !important; /* White text */
   }
   
   .card-actions .reject:hover {
-    background-color: #c82333 !important; /* Darker red on hover */
-    border-color: #bd2130 !important; /* Even darker red border on hover */
+    background-color: #9c1717 !important; /* Darker red on hover */
   }
   
   /* Back to List button (gray) */
-  .card-actions .p-button-secondary {
+  .card-actions .return {
+    border-radius: 0.5rem;
     background-color: #6c757d !important; /* Gray background */
     border-color: #5a6268 !important; /* Darker gray border */
     color: white !important; /* White text */
   }
   
-  .card-actions .p-button-secondary:hover {
+  .card-actions .return:hover {
     background-color: #5a6268 !important; /* Darker gray on hover */
     border-color: #4e555b !important; /* Even darker gray border on hover */
   }

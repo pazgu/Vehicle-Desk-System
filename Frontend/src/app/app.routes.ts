@@ -8,16 +8,17 @@ import { FututreRideCardsComponent } from './ride-area/future-ride-cards/future-
 import { PastRideCardsComponent } from './ride-area/past-ride-cards/past-ride-cards.component';
 import { DashboardAllOrdersComponent } from './components/supervisor-area/dashboard-all-orders/dashboard-all-orders.component';
 import { OrderCardComponent } from './components/supervisor-area/order-card/order-card.component';
+import { ProtectedRouteGuard } from './components/auth-area/protectedroute/protected-route.guard';
 
 export const routes: Routes = [
     {path:"", redirectTo: "/home", pathMatch:"full"},
     {path: "login",component: LoginComponent},
     {path: "home",component: HomeComponent},
-    {path: "new-ride", component: NewRideComponent },
+    {path: "new-ride", component: NewRideComponent, canActivate: [ProtectedRouteGuard] },
     {path: "register",component:RegisterComponent},
-    {path: "future-ride",component: FututreRideCardsComponent},
-    {path: "past-ride",component: PastRideCardsComponent},
-    {path: "supervisor-dashboard",component: DashboardAllOrdersComponent},
+    {path: "future-ride",component: FututreRideCardsComponent, canActivate: [ProtectedRouteGuard]},
+    {path: "past-ride",component: PastRideCardsComponent, canActivate: [ProtectedRouteGuard]},
+    {path: "supervisor-dashboard",component: DashboardAllOrdersComponent, canActivate: [ProtectedRouteGuard]},
     {path: "order-card/:id",component: OrderCardComponent},
     {path: "**",component: Page404Component}
 ];
