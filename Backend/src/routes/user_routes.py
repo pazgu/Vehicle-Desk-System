@@ -8,6 +8,7 @@ from ..services.auth_service import create_access_token
 from ..services import login_service
 from uuid import UUID
 from ..services.new_ride_service import create_ride
+from ..utils.mock_data import mock_departments
 from src.utils.database import get_db
 import logging
 import traceback
@@ -71,6 +72,12 @@ def create_order(user_id: UUID, ride_request: RideCreate):
             detail=f"Failed to create order: {str(e)}"
         )
    
+
+
+@router.get("/api/departments")
+def get_departments():
+    return mock_departments
+
 @router.patch("/api/orders/{user_id}")
 def update_order():
     # Implementation pending
