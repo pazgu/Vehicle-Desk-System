@@ -15,7 +15,6 @@ export const routes: Routes = [
     {path: "home",component: HomeComponent},
     {path: "new-ride", component: NewRideComponent },
     {path: "register",component:RegisterComponent},
-    {path: "future-ride",component: FututreRideCardsComponent},
     {path: "past-ride",component: PastRideCardsComponent},
     {path: "supervisor-dashboard",component: DashboardAllOrdersComponent},
     {path: "order-card/:id",component: OrderCardComponent},

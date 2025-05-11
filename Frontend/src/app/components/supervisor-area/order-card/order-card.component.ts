@@ -20,7 +20,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
     DividerModule,
     ProgressSpinnerModule
   ],
-  templateUrl: './order-card.component.html',
+  templateUrl: './order-card.component.html', 
   styleUrls: ['./order-card.component.css']
 })
 export class OrderCardComponent implements OnInit {
