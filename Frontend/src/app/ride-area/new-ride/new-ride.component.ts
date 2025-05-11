@@ -42,3 +42,27 @@ export class NewRideComponent {
   }
 
 }
+
+
+
+//the structre is - componments : 
+//                 layout-area:
+//                  1.header - where the default navbar is 
+//                  2.layout 
+//                 page-area:
+//                  1.about
+//                  2.home
+//                  3.login-area/user-area : 
+//                   - login 
+//                   - register
+//                  4.page404
+//                 models : 
+//                 1.credintals.model
+//                 2.ride.model
+//                 3.user.model 
+//                ride-area:
+//                1.future-ride-cards
+//                2.new-ride
+//                3.past-ride-cards
+// app componments.css  , app componments.html , app componments.ts , app.config.ts , app.routes , index.html
+// main.ts , style.css 
