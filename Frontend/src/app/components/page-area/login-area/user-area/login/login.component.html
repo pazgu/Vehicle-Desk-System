@@ -1,22 +1,44 @@
-<div>
-    
-    
-            <div class="page-container">
-                <div class="login-box">
-                  <a routerLink="/home" routerLinkActive="active"><div class="close-btn">✕</div></a>
-                  <h2>התחברות</h2>
-                
-                  <label>שם משתמש</label>
-                  <input type="text" [(ngModel)]="username" name="username"/>
-            
-                  <label>סיסמה</label>
-                  <input type="password" [(ngModel)]="password" name="password"/>
-            
-                  <button (click)="onLogin()">התחבר</button>
-                  <a routerLink="/register" routerLinkActive="active"><p class="register-link">אין לי משתמש</p></a>
-                  <p *ngIf="errorMessage" style="color: red;">{{ errorMessage }}</p>
-                </div>
-              
+<div class="page-container">
+  <div class="login-box">
+    <a routerLink="/home" routerLinkActive="active">
+      <div class="close-btn">✕</div>
+    </a>
+    <h2>התחברות</h2>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+      <label>שם משתמש</label>
+      <input type="text" formControlName="username" />
+      <small *ngIf="f['username'].touched && f['username'].errors?.['required']" style="color:red;">
+        יש להזין שם משתמש
+      </small>
+      <small *ngIf="f['username'].touched && f['username'].errors?.['pattern']" style="color:red;">
+        שם המשתמש יכול להכיל אותיות בלבד (עברית או אנגלית)
+      </small>
+      <small *ngIf="f['username'].touched && f['username'].errors?.['minlength']" style="color:red;">
+        שם המשתמש חייב להכיל לפחות 3 תווים
+      </small>
+      <small *ngIf="f['username'].touched && f['username'].errors?.['maxlength']" style="color:red;">
+        שם המשתמש לא יכול להכיל יותר מ-20 תווים
+      </small>
+
+      <label>סיסמה</label>
+      <input type="password" formControlName="password" />
+      <small *ngIf="f['password'].touched && f['password'].errors?.['required']" style="color:red;">
+        יש להזין סיסמה
+      </small>
+      <small *ngIf="f['password'].touched && f['password'].errors?.['minlength']" style="color:red;">
+        הסיסמה חייבת להכיל לפחות 6 תווים
+      </small>
+
+      <button type="submit" [disabled]="loginForm.invalid">התחבר</button>
+
+      <a routerLink="/register" routerLinkActive="active">
+        <p class="register-link">אין לי משתמש</p>
+      </a>
+
+      <p *ngIf="errorMessage" style="color: red;">{{ errorMessage }}</p>
+    </form>
+  </div>
 </div>
 
 <router-outlet></router-outlet>

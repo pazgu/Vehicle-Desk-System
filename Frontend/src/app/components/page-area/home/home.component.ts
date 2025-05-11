@@ -16,11 +16,11 @@ export class HomeComponent {
   filterBy = 'date'; // ✅ filter option (default: date)
 
   orders = [
-    { date: '23.6.2025', time: '10:00–12:00', type: 'היברידי', distance: '26 ק״מ', status: 'Available' },
+    { date: '23.6.2025', time: '10:00–12:00', type: 'היברידי', distance: '26 ק״מ', status: 'Approved' },
     { date: '14.6.2025', time: '10:00–12:00', type: 'חשמלי', distance: '29 ק״מ', status: 'Pending' },
-    { date: '23.6.2025', time: '10:00–12:00', type: 'היברידי', distance: '45 ק״מ', status: 'Problem' },
-    { date: '14.6.2025', time: '10:00–12:00', type: 'רגלי', distance: '12 ק״מ', status: 'In Use' },
-    { date: '22.5.2025', time: '10:00–12:00', type: 'חשמלי', distance: '56 ק״מ', status: 'Out of Service' }
+    { date: '23.6.2025', time: '10:00–12:00', type: 'היברידי', distance: '45 ק״מ', status: 'Rejected' },
+    { date: '14.6.2025', time: '10:00–12:00', type: 'רגלי', distance: '12 ק״מ', status: 'Approved' },
+    { date: '22.5.2025', time: '10:00–12:00', type: 'חשמלי', distance: '56 ק״מ', status: 'Pending' }
   ];
 
   get filteredOrders() {
@@ -58,39 +58,27 @@ export class HomeComponent {
   }
   getStatusTooltip(status: string): string {
     switch (status) {
-      case 'Available':
-      case 'Synced':
+      case 'Approved':
         return 'אושר';
       case 'Pending':
         return 'בהמתנה';
-      case 'Problem':
-      case 'Not Synced':
-        return 'תקלה';
-      case 'In Use':
-        return 'בשימוש';
-      case 'Out of Service':
-        return 'לא בשימוש';
+      case 'Rejected':
+        return 'נדחה';
+
       default:
         return 'סטטוס לא ידוע';
     }
   }
   getStatusClass(status: string): string {
     switch (status) {
-      case 'Available':
-      case 'Synced':
+      
+      case 'Approved':
         return 'status-green';
       case 'Pending':
-      case 'In Review':
         return 'status-yellow';
-      case 'Problem':
-      case 'Not Synced':
-      case 'Frozen':
+      case 'Rejected':
         return 'status-red';
-      case 'In Use':
-        return 'status-blue';
-      case 'Out of Service':
-      case 'Maintenance':
-        return 'status-gray';
+  
       default:
         return '';
     }
