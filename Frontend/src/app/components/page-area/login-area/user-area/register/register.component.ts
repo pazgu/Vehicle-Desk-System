@@ -1,12 +1,63 @@
+import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../../../../../services/auth.service';
 
 @Component({
   selector: 'app-register',
-  imports: [RouterModule],
+  imports: [RouterModule,FormsModule,CommonModule],
   templateUrl: './register.component.html',
   styleUrl: './register.component.css'
 })
 export class RegisterComponent {
+   
+  randomId():string{
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000); // generates a 4-digit random number
+    const employeeId = 'EMP' + randomSuffix;
+    return employeeId
+  }
+  registerData = {
+    first_name: '',
+    last_name: '',
+    username: '',
+    email: '',
+    employee_id:`${this.randomId}`,
+    password: '',
+    department_id: '',
+    role: 'employee' // default role
+  };
+  departments: any[] = [];
 
+  constructor(private authService: AuthService, private http: HttpClient, private router: Router) {}
+
+  ngOnInit(): void {
+    this.fetchDepartments();
+  }
+
+  fetchDepartments() {
+    this.http.get<any[]>('http://localhost:8000/api/departments') // adjust backend URL if needed
+      .subscribe({
+        next: data => this.departments = data,
+        error: err => console.error('Failed to fetch departments', err)
+      });
+  }
+  register() {
+    this.authService.register(this.registerData).subscribe({
+      next: response => {
+        console.log('Registered and logged in:', response);
+        const token = response.access_token; 
+        localStorage.setItem('access_token', token);
+        localStorage.setItem('username', response.username);
+        localStorage.setItem('role', response.role);
+        this.router.navigate(['/home']);
+      },
+      error: err => {
+        console.error('Registration failed:', err);
+        alert('Registration error. Check the form or try again.');
+      }
+    });
+  }
+  
 }  
