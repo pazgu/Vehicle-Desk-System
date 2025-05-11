@@ -1,12 +1,12 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-new-ride',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './new-ride.component.html',
   styleUrl: './new-ride.component.css'
 })
@@ -26,7 +26,6 @@ export class NewRideComponent {
   }
 
   public submit(): void {
-
     this.updateDistance();
 
     console.log({
@@ -41,28 +40,7 @@ export class NewRideComponent {
     this.router.navigate(['/']);
   }
 
+  public close(): void {
+    this.router.navigate(['/home']);
+  }
 }
-
-
-
-//the structre is - componments : 
-//                 layout-area:
-//                  1.header - where the default navbar is 
-//                  2.layout 
-//                 page-area:
-//                  1.about
-//                  2.home
-//                  3.login-area/user-area : 
-//                   - login 
-//                   - register
-//                  4.page404
-//                 models : 
-//                 1.credintals.model
-//                 2.ride.model
-//                 3.user.model 
-//                ride-area:
-//                1.future-ride-cards
-//                2.new-ride
-//                3.past-ride-cards
-// app componments.css  , app componments.html , app componments.ts , app.config.ts , app.routes , index.html
-// main.ts , style.css 

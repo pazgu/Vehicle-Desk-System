@@ -1,5 +1,4 @@
-<!-- HTML Component Template -->
-<p-table [value]="trips" [paginator]="true" [rows]="5" dir="rtl">
+<p-table #table [value]="trips" [paginator]="true" [rows]="5" dir="rtl">
   <ng-template pTemplate="header">
     <tr class="table-header">
       <th pSortableColumn="id">מזהה נסיעה <p-sortIcon field="id"></p-sortIcon></th>
@@ -7,11 +6,11 @@
       <th pSortableColumn="vehicle">רכב <p-sortIcon field="vehicle"></p-sortIcon></th>
       <th pSortableColumn="dateTime">תאריך <p-sortIcon field="dateTime"></p-sortIcon></th>
       <th pSortableColumn="destination">יעד <p-sortIcon field="destination"></p-sortIcon></th>
-      <th pSortableColumn="distance"> מרחק (ק"מ) <p-sortIcon field="distance"></p-sortIcon></th>
+      <th pSortableColumn="distance">מרחק (ק"מ) <p-sortIcon field="distance"></p-sortIcon></th>
       <th pSortableColumn="status">סטטוס <p-sortIcon field="status"></p-sortIcon></th>
     </tr>
   </ng-template>
-  
+
   <ng-template pTemplate="body" let-trip>
     <tr (click)="onRowSelect(trip)">
       <td>{{ trip.id }}</td>
@@ -20,18 +19,15 @@
       <td>{{ trip.dateTime }}</td>
       <td>{{ trip.destination }}</td>
       <td>{{ trip.distance }}</td>
-      <td>{{ trip.status }}</td>
+      <td>
+        <span [ngClass]="getStatusClass(trip.status)" class="status-text">
+          {{ trip.status }}
+        </span>
+      </td>
     </tr>
-  </ng-template>
-  
-  <ng-template pTemplate="paginatorleft">
-    <!-- Optional: Custom content for left side of paginator -->
-  </ng-template>
-  
-  <ng-template pTemplate="paginatorright">
-    <!-- Optional: Custom content for right side of paginator -->
   </ng-template>
 </p-table>
 
-<!-- Note: The p-footer tag is deprecated in newer PrimeNG versions.
-     Pagination is automatically added with the [paginator]="true" property -->
+<div class="reset-container">
+  <p-button class="reset" label="איפוס" icon="pi pi-refresh" (click)="resetFilters(table)"></p-button>
+</div>

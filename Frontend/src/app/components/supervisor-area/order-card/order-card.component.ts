@@ -126,8 +126,8 @@ export class OrderCardComponent implements OnInit {
         // If trip not found, could redirect to 404 or back to dashboard
         if (!this.trip) {
           console.error('Trip not found with ID:', tripId);
-          // Optional: redirect back to dashboard
-          // this.router.navigate(['/dashboard-all-orders']);
+          this.router.navigate(['/supervisor-dashboard']);
+          alert('Trip not found! Redirecting to dashboard.');
         }
       }, 500); // Simulate network delay
     });

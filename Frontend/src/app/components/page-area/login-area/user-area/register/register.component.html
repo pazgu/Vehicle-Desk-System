@@ -7,32 +7,33 @@
     <div class="form-grid">
       <div>
         <label>שם פרטי</label>
-        <input type="text">
+        <input type="text" [(ngModel)]="registerData.first_name" name="first_name">
       </div>
       <div>
         <label>שם משפחה</label>
-        <input type="text">
+        <input type="text" [(ngModel)]="registerData.last_name" name="last_name">
       </div>
       <div>
         <label>שם משתמש</label>
-        <input type="text">
+        <input type="text" [(ngModel)]="registerData.username" name="username">
       </div>
       <div>
         <label>כתובת דואר אלקטרוני</label>
-        <input type="email">
+        <input type="email" [(ngModel)]="registerData.email" name="email">
       </div>
       <div>
         <label>סיסמה</label>
-        <input type="password">
+        <input type="password" [(ngModel)]="registerData.password" name="password">
       </div>
       <div>
         <label>מחלקה</label>
-        <select>
+        <select [(ngModel)]="registerData.department_id" name="department_id">
           <option value="">לחץ.י לבחירת מחלקה</option>
+          <option *ngFor="let dept of departments" [value]="dept.id">{{ dept.name }}</option>
         </select>
       </div>
 
-      <button>צור משתמש</button>
+      <button (click)="register()">צור משתמש</button>
     </div>
   </div>
 </div>
