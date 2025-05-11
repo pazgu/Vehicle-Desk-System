@@ -53,6 +53,26 @@ mock_orders = [
 }
 ]
 
+
+# mock_data.py
+
+mock_departments = [
+    {
+        "id": "1b47b5c2-13b7-40fd-b4f7-5e2b4a80c267",
+        "name": "Engineering"
+    },
+    {
+        "id": "2c57c6d3-24c8-40fe-c5a8-6f3d5b91d378",
+        "name": "HR"
+    },
+    {
+        "id": "3e9c8e54-9d2f-4a7b-b2fc-4a1bb60c47f9",
+        "name": "Finance"
+    }
+]
+
+
+
 # Helper to get user by username
 def get_user_by_username(username: str):
     return next((user for user in mock_users_db if user["username"] == username), None)
