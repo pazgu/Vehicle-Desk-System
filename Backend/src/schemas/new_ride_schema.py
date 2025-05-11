@@ -16,10 +16,6 @@ class RideStatus(str, Enum):
     completed = "completed"
     cancelled = "cancelled"
 
-class RideCreate(BaseModel):
-    start_datetime: datetime
-    end_datetime: datetime
-    destination: str
 
 class RideCreate(BaseModel):
     ride_type: RideType
