@@ -16,9 +16,8 @@ export const routes: Routes = [
     {path: "home",component: HomeComponent},
     {path: "new-ride", component: NewRideComponent, canActivate: [ProtectedRouteGuard] },
     {path: "register",component:RegisterComponent},
-    {path: "future-ride",component: FututreRideCardsComponent, canActivate: [ProtectedRouteGuard]},
-    {path: "past-ride",component: PastRideCardsComponent, canActivate: [ProtectedRouteGuard]},
-    {path: "supervisor-dashboard",component: DashboardAllOrdersComponent, canActivate: [ProtectedRouteGuard]},
+    {path: "past-ride",component: PastRideCardsComponent},
+    {path: "supervisor-dashboard",component: DashboardAllOrdersComponent},
     {path: "order-card/:id",component: OrderCardComponent},
     {path: "**",component: Page404Component}
 ];
