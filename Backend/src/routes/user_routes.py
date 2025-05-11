@@ -12,6 +12,8 @@ from ..utils.mock_data import mock_departments
 from src.utils.database import get_db
 import logging
 import traceback
+from ..services.register_service import get_departments
+
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -38,16 +40,16 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Registration failed: {str(e)}"  # Return the actual error for debugging
         )
-
+        
 @router.post("/api/login")
-def login(user: UserLogin):
+def login(user: UserLogin, db: Session = Depends(get_db)):
     try:
-        return login_service.login_user(user.username, user.password)
+        return login_service.login_user(user.username, user.password, db)
     except Exception as e:
         logger.error(f"Login failed: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Login failed: {str(e)}"
+            detail="Login failed: Incorrect username or password."  # Hide internal errors for security
         )
 
 @router.get("/api/users/{user_id}/orders")
@@ -75,8 +77,8 @@ def create_order(user_id: UUID, ride_request: RideCreate):
 
 
 @router.get("/api/departments")
-def get_departments():
-    return mock_departments
+def get_departments_route():
+    return get_departments()
 
 @router.patch("/api/orders/{user_id}")
 def update_order():

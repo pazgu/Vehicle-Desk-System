@@ -13,17 +13,12 @@ import { AuthService } from '../../../../../services/auth.service';
 })
 export class RegisterComponent {
    
-  randomId():string{
-    const randomSuffix = Math.floor(1000 + Math.random() * 9000); // generates a 4-digit random number
-    const employeeId = 'EMP' + randomSuffix;
-    return employeeId
-  }
+
   registerData = {
     first_name: '',
     last_name: '',
     username: '',
     email: '',
-    employee_id:`${this.randomId}`,
     password: '',
     department_id: '',
     role: 'employee' // default role
