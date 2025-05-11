@@ -34,7 +34,7 @@ export class NewRideComponent {
       estimated_distance_with_buffer: this.estimated_distance_with_buffer,
       ride_type: this.ride_type,
       start_time: this.start_time,
-      end_time: this.end_time
+      end_time: this.end_time,
     });
 
     alert('הבקשה נשלחה!');
