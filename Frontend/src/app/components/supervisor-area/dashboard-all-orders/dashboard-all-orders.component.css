@@ -190,8 +190,8 @@
 /* Reset button styling */
 .reset {
   border-radius: 0.5rem; /* Rounded corners */
-  background-color: #e0e1e1; /* Light gray background */
-  border: 1px solid #acb1b6; /* Light gray border */
+  background-color: #e8eded; /* Light gray background */
+  border: 1px solid #c7cacd; /* Light gray border */
   color: #1a3d60; /* Dark gray text */
   padding: 0.5rem 1rem; /* Padding for better spacing */
   font-size: 1rem; /* Standard font size */
@@ -215,6 +215,37 @@
   outline: none; /* Remove default outline */
   box-shadow: 0 0 0 3px rgba(108, 117, 125, 0.25); /* Add subtle focus ring */
 }
+
+
+
+
+/* General styling for status text */
+.status-text {
+  padding: 0.3rem 0.6rem;
+  border-radius: 0.5rem;
+  color: white;
+  font-weight: bold;
+  display: inline-block;
+  text-align: center;
+}
+
+/* Approved (Green) */
+.status-approved {
+  background-color: #2E7D32; /* Green */
+}
+
+/* Pending (Yellow) */
+.status-pending {
+  background-color: #FFB300; /* Yellow */
+}
+
+/* Rejected (Red) */
+.status-rejected {
+  background-color: #B71C1C; /* Red */
+}
+
+
+
 
 
 /* Responsive adjustments */
