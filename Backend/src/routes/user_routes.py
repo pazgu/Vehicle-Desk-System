@@ -14,6 +14,9 @@ from datetime import datetime
 from ..utils.mock_data import mock_departments
 from ..schemas.user_rides_schema import RideSchema, RideStatusEnum
 from ..services.user_rides_service import get_future_rides, get_past_rides , get_all_rides
+from ..utils.database import get_db
+import logging
+from src.models import ride_model, vehicle_model
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -105,9 +108,9 @@ def get_user_2specific_order():
     return {"message": "Not implemented yet"}
 
 @router.post("/api/orders/{user_id}", response_model=RideCreate, status_code=status.HTTP_201_CREATED)
-def create_order(user_id: UUID, ride_request: RideCreate):
+def create_order(user_id: UUID, ride_request: RideCreate, db: Session = Depends(get_db)):
     try:
-        new_ride = create_ride(user_id, ride_request)
+        new_ride = create_ride(db, user_id, ride_request)
         return new_ride
     except Exception as e:
         logger.error(f"Order creation failed: {str(e)}")

@@ -6,6 +6,8 @@ import os
 from sqlalchemy.exc import SQLAlchemyError
 import logging
 from src.models.base import Base  # Only import Base — NO model imports here!
+# from src.models import ride_model, vehicle_model
+
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -13,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 # Use local or Docker DB URL
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:Maysam123@localhost:5432/VehicleDB")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:Yareen2006!@localhost:5432/VehicleDB")
 
 try:
     engine = create_engine(DATABASE_URL, echo=True)

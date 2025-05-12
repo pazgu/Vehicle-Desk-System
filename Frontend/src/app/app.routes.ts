@@ -14,7 +14,7 @@ export const routes: Routes = [
     {path:"", redirectTo: "/home", pathMatch:"full"},
     {path: "login",component: LoginComponent},
     {path: "home",component: HomeComponent},
-    {path: "new-ride", component: NewRideComponent, canActivate: [ProtectedRouteGuard] },
+    {path: "new-ride", component: NewRideComponent},
     {path: "register",component:RegisterComponent},
     {path: "past-ride",component: PastRideCardsComponent},
     {path: "supervisor-dashboard",component: DashboardAllOrdersComponent},
