@@ -13,9 +13,10 @@ logger = logging.getLogger(__name__)
 
 # Use local or Docker DB URL
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:Maysam123@localhost:5432/VehicleDB")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:Pa55w.rd@localhost:5432/VehicleDB")
 
 try:
+    logger.info(f"Connecting to database at {DATABASE_URL}")
     engine = create_engine(DATABASE_URL, echo=True)
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     logger.info("Database connection established successfully")
