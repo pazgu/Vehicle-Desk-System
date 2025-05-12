@@ -71,7 +71,13 @@
     font-weight: bold;
     color: white;
   }
-  
+  .past-order {
+  opacity: 0.6;
+  background-color: #e0e0e0 !important;
+  color: #333 !important;
+}
+
+
   
   .icon-cell {
     width: 2.1rem;
@@ -98,7 +104,9 @@
     cursor: pointer;
     color: #811313;
   }
-  
+  .filter{
+    font-size: 16px;
+  }
   button:disabled {
     opacity: 0.4;
     cursor: not-allowed;
@@ -123,11 +131,7 @@
     background-color: #fcebea; /* soft red */
   }
   
-  .status-blue {
-    background-color: #e7f1ff; /* soft blue */
+ 
+  h1{
+    color: #811313;
   }
-  
-  .status-gray {
-    background-color: #f2f2f2; /* soft gray */
-  }
-  
