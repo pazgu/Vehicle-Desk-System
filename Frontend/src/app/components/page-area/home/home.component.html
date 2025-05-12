@@ -30,14 +30,24 @@
       </div>
 
       <div style="display: flex; gap: 1rem;">
-        <div>
-          <label for="startDate">מתאריך:</label>
-          <input id="startDate" type="date" [(ngModel)]="startDate">
-        </div>
-        <div>
-          <label for="endDate">עד תאריך:</label>
-          <input id="endDate" type="date" [(ngModel)]="endDate">
-        </div>
+        <input
+  id="startDate"
+  type="date"
+  [(ngModel)]="startDate"
+  [min]="minDate"
+  [max]="maxDate"
+  (change)="validateDate('start')"
+/>
+
+<input
+  id="endDate"
+  type="date"
+  [(ngModel)]="endDate"
+  [min]="minDate"
+  [max]="maxDate"
+  (change)="validateDate('end')"
+/>
+
         <label>
   <input type="checkbox" [(ngModel)]="showOldOrders" />
   הצג גם הזמנות מלפני חודש

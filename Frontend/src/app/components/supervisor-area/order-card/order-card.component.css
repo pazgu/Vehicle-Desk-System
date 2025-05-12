@@ -1,3 +1,11 @@
+:host {
+  display: block;
+  background-color: #d4d3d3; /* Light gray background */
+  min-height: 100vh; /* Ensure it covers the full viewport height */
+  padding: 20px; /* Optional: Add padding around the content */
+}
+
+
 /* order-card.component.css */
 .card-container {
     max-width: 800px;
@@ -20,6 +28,7 @@
   }
   
   :host ::ng-deep .trip-card {
+    background-color: #f3f1f1;
     border-radius: 8px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     min-height: 600px; /* Set a minimum height for the card */
@@ -179,7 +188,7 @@
 
 .card-actions p-button {
   flex: none; /* Prevent buttons from stretching */
-  width: 100px; /* Set a fixed width for all buttons */
+  width: 120px; /* Set a fixed width for all buttons */
   height: 30px; /* Adjust height for better alignment */
   display: flex; /* Use Flexbox for alignment */
   justify-content: center; /* Center content horizontally */

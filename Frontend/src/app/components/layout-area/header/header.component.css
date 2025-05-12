@@ -42,6 +42,7 @@ body, html {
   .logo {
     height: 56px;
     margin: 0 20px;
+    padding-left: 40px;
   }
   
   .nav-center a {
@@ -57,6 +58,7 @@ body, html {
     display: block;
     margin: 10px 0 5px;
     font-weight: bold;
+    
   }
   
   .corner-img {
