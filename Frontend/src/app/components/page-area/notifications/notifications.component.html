@@ -1,0 +1,12 @@
+<div class="notification-page">
+  <h2 class="title">הודעות</h2>
+
+  <div class="notification" *ngFor="let note of notifications" [ngClass]="getStatusClass(note.status)">
+    <div class="time">{{ note.timeAgo }}</div>
+    <div class="content">
+      <span class="status-icon">{{ getStatusIcon(note.status) }}</span>
+      <span class="text">{{ note.message }}</span>
+      <img src="assets/images/message.png" alt="Message Icon" class="message-icon" />
+    </div>
+  </div>
+</div>
