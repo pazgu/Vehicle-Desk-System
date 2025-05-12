@@ -16,6 +16,17 @@ import { AuthService } from '../../../../../services/auth.service';
 })
 export class RegisterComponent implements OnInit {
   registerForm!: FormGroup;
+   
+ 
+  registerData = {
+    first_name: '',
+    last_name: '',
+    username: '',
+    email: '',
+    password: '',
+    department_id: '',
+    role: 'employee' // default role
+  };
   departments: any[] = [];
   errorMessage: string | null = null;
 
@@ -61,7 +72,6 @@ export class RegisterComponent implements OnInit {
 
     const registerData = {
       ...this.registerForm.value,
-      employee_id: this.generateRandomId(),
       role: 'employee'
     };
 
@@ -79,7 +89,5 @@ export class RegisterComponent implements OnInit {
     });
   }
 
-  generateRandomId(): string {
-    return 'EMP' + Math.floor(1000 + Math.random() * 9000);
-  }
+
 }
