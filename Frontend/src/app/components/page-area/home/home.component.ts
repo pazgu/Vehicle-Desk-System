@@ -19,6 +19,11 @@ export class HomeComponent {
   endDate: string = '';
   showFilters = false; // toggle for filter panel
   showOldOrders = false;
+  minDate = '2025-01-01';
+  maxDate = new Date(new Date().setMonth(new Date().getMonth() + 2))
+  .toISOString()
+  .split('T')[0];
+
 
 
   sortBy = 'date';         // ▶ מיין לפי
@@ -134,5 +139,30 @@ isPastOrder(order: any): boolean {
   return orderDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
 }
 
+
+validateDate(type: 'start' | 'end') {
+  const value = type === 'start' ? this.startDate : this.endDate;
+
+  // If date is not valid or out of range
+  if (!this.isDateValid(value)) {
+    if (type === 'start') {
+      this.startDate = '';
+    } else {
+      this.endDate = '';
+    }
+    alert('אנא הזן תאריך תקין בין 01.01.2025 ועד היום');
+  }
+}
+
+isDateValid(dateStr: string): boolean {
+  // Check format
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return false;
+
+  // Check range
+  const min = new Date(this.minDate);
+  const max = new Date(this.maxDate);
+  return date >= min && date <= max;
+}
 
 }

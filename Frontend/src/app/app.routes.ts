@@ -9,15 +9,17 @@ import { PastRideCardsComponent } from './ride-area/past-ride-cards/past-ride-ca
 import { DashboardAllOrdersComponent } from './components/supervisor-area/dashboard-all-orders/dashboard-all-orders.component';
 import { OrderCardComponent } from './components/supervisor-area/order-card/order-card.component';
 import { ProtectedRouteGuard } from './components/auth-area/protectedroute/protected-route.guard';
+import { NotificationsComponent } from './components/page-area/notifications/notifications.component';
 
 export const routes: Routes = [
     {path:"", redirectTo: "/home", pathMatch:"full"},
     {path: "login",component: LoginComponent},
     {path: "home",component: HomeComponent},
-    {path: "new-ride", component: NewRideComponent, canActivate: [ProtectedRouteGuard] },
+    {path: "new-ride", component: NewRideComponent},
     {path: "register",component:RegisterComponent},
     {path: "past-ride",component: PastRideCardsComponent},
     {path: "supervisor-dashboard",component: DashboardAllOrdersComponent},
-    {path: "order-card/:id",component: OrderCardComponent},
+    {path: "new-ride/:id",component: OrderCardComponent},
+    { path: 'notifications', component: NotificationsComponent},
     {path: "**",component: Page404Component}
 ];

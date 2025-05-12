@@ -21,7 +21,7 @@
       </div>
       
 
-      <span class="username">ישראלי ישראלי</span>
+      <span class="username">{{ fullName$ | async }}</span>
       <a [routerLink]="['/new-ride']" title="להזמין נסיעה">
         <img src="/assets/images/add-car.png" alt="Car" class="add-car" />
       </a>
@@ -34,7 +34,9 @@
     <div class="nav-right">
       
       <a [routerLink]="['home']" class="nav-link" href="#">ההזמנות שלי  </a>
-      <img src="/assets/images/bell-icon.png" alt="Notifications" />
+     <a routerLink="/notifications">
+  <img src="/assets/images/bell-icon.png" alt="Notifications" />
+    </a>
     </div>
   </div>
 
