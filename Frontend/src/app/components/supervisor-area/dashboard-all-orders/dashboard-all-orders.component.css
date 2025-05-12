@@ -1,3 +1,14 @@
+.page-wrapper {
+  background-color: rgb(245, 241, 241);
+  padding: 1rem;
+  border-radius: 12px;
+  max-width: 1000px;
+  margin: 2rem auto;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  direction: rtl;
+  font-family: sans-serif;
+  }
+
 :host {
   display: block;
   background-color: #d4d3d3; /* Light gray background */
@@ -18,8 +29,9 @@
   overflow: hidden; /* Ensure content respects the rounded corners */
   text-align: right; /* Align content to the right */
   font-size: 14px; /* Set a readable font size */
-  width: 80%; /* Adjust the width of the table */
+  width: 85%; /* Adjust the width of the table */
   direction: rtl;
+  border: 5px solid #942222; /* Optional: Add a border */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: Add a subtle shadow */
 }
 
@@ -35,12 +47,17 @@
 :host ::ng-deep .p-datatable .p-datatable-tbody > tr > td {
   padding: 10px;
   text-align: right;
-  background-color: #f8f9fa;
   border-bottom: 1px solid #e9ecef;
 }
 
+
+:host ::ng-deep .p-datatable .p-datatable-tbody > tr:hover {
+  font-weight: bold;
+  color: #942222;
+}
+
+
 :host ::ng-deep .p-datatable .p-datatable-tbody > tr:nth-child(even) {
-  background-color: #f8f9fa;
   cursor: pointer;
 }
 
@@ -189,43 +206,6 @@
 }
 
 
-/* Reset button container directly under the table */
-.reset-container {
-  display: flex;
-  justify-content: center; /* Center horizontally */
-}
-
-/* Reset button styling */
-.reset {
-  border-radius: 0.5rem; /* Rounded corners */
-  background-color: #e8eded; /* Light gray background */
-  border: 1px solid #c7cacd; /* Light gray border */
-  color: #1a3d60; /* Dark gray text */
-  padding: 0.5rem 1rem; /* Padding for better spacing */
-  font-size: 1rem; /* Standard font size */
-  cursor: pointer; /* Pointer cursor on hover */
-  transition: background-color 0.3s, border-color 0.3s; /* Smooth hover transition */
-  display: inline-flex; /* Align text and icon properly */
-  align-items: center; /* Center content vertically */
-  justify-content: center; /* Center content horizontally */
-  text-align: center; /* Ensure text is centered */
-}
-
-/* Hover effect for Reset button */
-.reset:hover {
-  background-color: #e2e6ea; /* Slightly darker gray on hover */
-  border-color: #adb5bd; /* Darker gray border on hover */
-  color: #212529; /* Darker text on hover */
-}
-
-/* Focus effect for Reset button */
-.reset:focus {
-  outline: none; /* Remove default outline */
-  box-shadow: 0 0 0 3px rgba(108, 117, 125, 0.25); /* Add subtle focus ring */
-}
-
-
-
 
 /* General styling for status text */
 .status-text {
@@ -237,23 +217,23 @@
   text-align: center;
 }
 
-/* Approved (Green) */
-.status-approved {
-  background-color: #2E7D32; /* Green */
+
+
+:host ::ng-deep tr.row-approved {
+  background-color: #dcf1e1;
+  color: #155724;
+  border: 2px solid green; /* Debugging */
 }
 
-/* Pending (Yellow) */
-.status-pending {
-  background-color: #FFB300; /* Yellow */
+:host ::ng-deep .row-pending {
+  background-color: #fbf3da; /* Light yellow */
+  color: #856404; /* Dark yellow text */
 }
 
-/* Rejected (Red) */
-.status-rejected {
-  background-color: #B71C1C; /* Red */
+:host ::ng-deep .row-rejected {
+  background-color: #f8e2e2; /* Light red */
+  color: #721c24; /* Dark red text */
 }
-
-
-
 
 
 /* Responsive adjustments */
