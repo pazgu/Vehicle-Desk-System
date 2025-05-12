@@ -29,4 +29,9 @@ export class AuthService {
   }): Observable<any> {
     return this.http.post<any>(this.registerUrl, registerData);
   }
+  
+logout(): void {
+  localStorage.removeItem('token'); // or your token key
+}
+
 }

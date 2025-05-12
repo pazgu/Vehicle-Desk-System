@@ -14,3 +14,5 @@ __pycache__/
 # Ignore IDE/editor configs
 .vscode/
 .idea/
+
+.env
