@@ -12,8 +12,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Use local or Docker DB URL
-
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:Maysam123@localhost:5432/VehicleDB")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:Sara3211@localhost:5432/VehicleDB")
 
 try:
     engine = create_engine(DATABASE_URL, echo=True)

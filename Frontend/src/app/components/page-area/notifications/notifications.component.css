@@ -1,0 +1,71 @@
+
+.notification-page {
+  font-family: 'Alef', sans-serif;
+  background-color: #fef7ff;
+  padding: 2rem;
+  border-radius: 16px;
+  border: 8px solid #cac4d0;
+  max-width: 1000px;
+  margin: 40px auto 0 auto; /* ⬅️ Added margin-top: 40px */
+}
+
+
+.title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.notification {
+  background-color: #942222;
+  opacity: 0.2;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  font-family: 'Alef', sans-serif;
+  color: #000;
+}
+
+.notification.approved {
+  background-color: #e6f4ea !important; 
+  opacity: 1;
+}
+
+.notification.rejected {
+  background-color: #fcebea !important; 
+  opacity: 1;
+}
+
+.time {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.status-icon {
+  font-size: 1.5rem;
+}
+
+.text {
+  flex: 1;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.message-icon {
+  width: 36px;
+  height: 36px;
+  margin-inline-start: 10px;
+  vertical-align: middle;
+  margin-top: -2px; 
+
+}
