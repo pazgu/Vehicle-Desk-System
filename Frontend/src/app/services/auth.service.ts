@@ -1,14 +1,19 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
-import { Observable } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
 
   private loginUrl = `${environment.loginUrl}`;
   private registerUrl = `${environment.registerUrl}`;
-  private fullName: string | null = null;
+
+  private fullNameSubject = new BehaviorSubject<string>(
+    `${localStorage.getItem('first_name') || ''} ${localStorage.getItem('last_name') || ''}`.trim() || 'משתמש'
+  );
+
+    fullName$ = this.fullNameSubject.asObservable(); // Expose observable for components
 
   constructor(private http: HttpClient) {}
 
@@ -31,30 +36,25 @@ export class AuthService {
     return this.http.post<any>(this.registerUrl, registerData);
   }
 
-  // Set Full Name
-  setFullName(first_name: string, last_name: string) {
-    this.fullName = `${first_name} ${last_name}`;
-    localStorage.setItem('full_name', this.fullName);
-    console.log(localStorage.getItem('full_name'));
-
-    console.log(this.fullName)
+ setFullName(firstName: string, lastName: string): void {
+    localStorage.setItem('first_name', firstName);
+    localStorage.setItem('last_name', lastName);
+    const fullName = `${firstName} ${lastName}`;
+    this.fullNameSubject.next(fullName);
   }
 
-  // Get Full Name
-  getUserFullName(): string {
-    return this.fullName || localStorage.getItem('full_name') || 'משתמש';
+ getUserFullName(): string {
+    return this.fullNameSubject.value;
   }
-
-  // Optionally, clear the stored user info
-  clearUserInfo() {
-    this.fullName = null;
-    localStorage.removeItem('full_name');
-  }
+  
 
 logout(): void {
   localStorage.removeItem('access_token'); 
   localStorage.removeItem('username');
+  localStorage.removeItem('first_name');
+  localStorage.removeItem('last_name');
   localStorage.removeItem('role');
+  this.fullNameSubject.next('משתמש');
 }
 
 }
