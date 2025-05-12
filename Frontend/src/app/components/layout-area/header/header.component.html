@@ -16,7 +16,7 @@
         <ul class="user-dropdown">
           <li><a routerLink="/login">התחברות</a></li>
           <li><a routerLink="/register">יצירת משתמש חדש</a></li>
-          <li><a>התנתקות</a></li>
+          <li><a (click)="onLogout()">התנתקות</a></li>
         </ul>
       </div>
       
@@ -34,7 +34,9 @@
     <div class="nav-right">
       
       <a [routerLink]="['home']" class="nav-link" href="#">ההזמנות שלי  </a>
-      <img src="/assets/images/bell-icon.png" alt="Notifications" />
+     <a routerLink="/notifications">
+  <img src="/assets/images/bell-icon.png" alt="Notifications" />
+    </a>
     </div>
   </div>
 

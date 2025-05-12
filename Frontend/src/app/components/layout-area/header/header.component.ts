@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 
 @Component({
@@ -12,7 +12,12 @@ import { AuthService } from '../../../services/auth.service';
 export class HeaderComponent implements OnInit {
   fullName: string = '';
 
-  constructor(private authService: AuthService) {}
+constructor(private authService: AuthService, private router: Router) {}
+
+onLogout(): void {
+  this.authService.logout();
+  this.router.navigate(['/login']); 
+}
 
   ngOnInit(): void {
     // Get the full name directly from the AuthService

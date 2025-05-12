@@ -50,4 +50,11 @@ export class AuthService {
     this.fullName = null;
     localStorage.removeItem('full_name');
   }
+
+logout(): void {
+  localStorage.removeItem('access_token'); 
+  localStorage.removeItem('username');
+  localStorage.removeItem('role');
+}
+
 }
