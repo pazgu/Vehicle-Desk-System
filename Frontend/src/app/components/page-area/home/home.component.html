@@ -1,6 +1,7 @@
 <div class="page-container">
   <div class="orders-wrapper">
-
+    <h1>ההזמנות שלי</h1>
+    <br>
     <!-- Sort + Filter Toggle Bar -->
     <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; direction: rtl;">
       <div>
@@ -42,9 +43,9 @@
 
     <!-- Orders List -->
     <div
-      class="orders-data-row"
-      *ngFor="let order of pagedOrders"
-      [ngClass]="getStatusClass(order.status)">
+  class="orders-data-row"
+  *ngFor="let order of pagedOrders"
+  [ngClass]="[getStatusClass(order.status), isPastOrder(order) ? 'past-order' : '']">
 
       <div class="icon-cell">
         <span

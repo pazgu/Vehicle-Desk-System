@@ -27,7 +27,8 @@ showFilters = false; // toggle for filter panel
     { date: '14.6.2025', time: '10:00–12:00', type: 'חשמלי', distance: '29 ק״מ', status: 'Pending' },
     { date: '23.6.2025', time: '10:00–12:00', type: 'היברידי', distance: '45 ק״מ', status: 'Rejected' },
     { date: '14.6.2025', time: '10:00–12:00', type: 'רגלי', distance: '12 ק״מ', status: 'Approved' },
-    { date: '22.5.2025', time: '10:00–12:00', type: 'חשמלי', distance: '56 ק״מ', status: 'Pending' }
+    { date: '22.5.2025', time: '10:00–12:00', type: 'חשמלי', distance: '56 ק״מ', status: 'Pending' },
+    { date: '1.5.2025', time: '10:00–12:00', type: 'חשמלי', distance: '56 ק״מ', status: 'Pending' }
   ];
 
 
@@ -112,6 +113,12 @@ showFilters = false; // toggle for filter panel
 parseDate(d: string): Date {
   const [day, month, year] = d.split('.').map(Number);
   return new Date(year, month - 1, day);
+}
+
+isPastOrder(order: any): boolean {
+  const today = new Date();
+  const orderDate = this.parseDate(order.date);
+  return orderDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
 }
 
 
