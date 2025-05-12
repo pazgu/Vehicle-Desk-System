@@ -1,3 +1,10 @@
+:host {
+  display: block;
+  background-color: #d4d3d3; /* Light gray background */
+  min-height: 100vh; /* Ensure it covers the full viewport height */
+  padding: 20px; /* Optional: Add padding around the content */
+}
+
 /* Table header styling */
 .table-header {
   background-color: #942222; /* Red color */
@@ -28,6 +35,7 @@
 :host ::ng-deep .p-datatable .p-datatable-tbody > tr > td {
   padding: 10px;
   text-align: right;
+  background-color: #f8f9fa;
   border-bottom: 1px solid #e9ecef;
 }
 
