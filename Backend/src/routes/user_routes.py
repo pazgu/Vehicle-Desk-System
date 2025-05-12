@@ -14,7 +14,9 @@ from datetime import datetime
 from ..utils.mock_data import mock_departments
 from ..schemas.user_rides_schema import RideSchema, RideStatusEnum
 from ..services.user_rides_service import get_future_rides, get_past_rides , get_all_rides
-
+import logging
+from ..services.register_service import get_departments
+from ..utils.database import get_db
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

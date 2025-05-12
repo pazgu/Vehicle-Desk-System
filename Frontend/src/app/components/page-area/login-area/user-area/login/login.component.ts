@@ -5,19 +5,27 @@ import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-
+import { AuthService } from '../../../../../services/auth.service';
+ 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [RouterModule, ReactiveFormsModule, CommonModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
+  
 })
 export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
   errorMessage: string | null = null;
 
-  constructor(private fb: FormBuilder, private http: HttpClient, private router: Router) {}
+  constructor(
+  private fb: FormBuilder,
+  private http: HttpClient,
+  private router: Router,
+  private authService: AuthService // <-- Add this line
+) {}
+
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
@@ -43,7 +51,7 @@ export class LoginComponent implements OnInit {
   get f() {
     return this.loginForm.controls;
   }
-
+  
   onLogin(): void {
     this.errorMessage = null;
 
@@ -54,13 +62,15 @@ export class LoginComponent implements OnInit {
     }
 
     const loginData = this.loginForm.value;
-
+    
     this.http.post<any>('http://localhost:8000/api/login', loginData).subscribe({
       next: (response) => {
         const token = response.access_token; 
         localStorage.setItem('token', token);  // adjust key as needed
         localStorage.setItem('username', response.username);
         localStorage.setItem('role', response.role);
+        this.authService.setFullName(response.first_name, response.last_name);
+
         this.router.navigate(['/home']);  // change route as needed
       },
       error: (err) => {

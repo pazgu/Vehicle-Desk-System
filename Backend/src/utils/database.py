@@ -6,7 +6,7 @@ import os
 from sqlalchemy.exc import SQLAlchemyError
 import logging
 from src.models.base import Base  # Only import Base — NO model imports here!
-
+import logging
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

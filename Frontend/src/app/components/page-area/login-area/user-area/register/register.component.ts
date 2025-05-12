@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../../../../services/auth.service';
-
+ 
 @Component({
   selector: 'app-register',
   standalone: true,
@@ -80,6 +80,7 @@ export class RegisterComponent implements OnInit {
         localStorage.setItem('access_token', response.access_token);
         localStorage.setItem('username', response.username);
         localStorage.setItem('role', response.role);
+        this.authService.setFullName(response.first_name, response.last_name);
         this.router.navigate(['/home']);
       },
       error: err => {
