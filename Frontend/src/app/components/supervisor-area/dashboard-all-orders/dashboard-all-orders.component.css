@@ -9,6 +9,10 @@
   font-family: sans-serif;
   }
 
+  h1{
+    color: #942222;
+  }
+
 :host {
   display: block;
   background-color: #d4d3d3; /* Light gray background */
@@ -119,10 +123,7 @@
 :host ::ng-deep .p-paginator .p-paginator-prev.p-disabled,
 :host ::ng-deep .p-paginator .p-paginator-next.p-disabled,
 :host ::ng-deep .p-paginator .p-paginator-last.p-disabled {
-  background-color: #d9d9d9; /* Light gray for disabled state */
-  color: #a0a0a0; /* Muted text color */
-  cursor: default;
-  box-shadow: none;
+  display: none;
 }
 
 /* Style for paginator buttons */
@@ -157,6 +158,7 @@
   height: 2.5rem;
   position: relative;
 }
+
 
 :host ::ng-deep .p-paginator .p-paginator-page:hover {
   background-color: #7a1c1c;
