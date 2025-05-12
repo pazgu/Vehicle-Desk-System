@@ -14,10 +14,11 @@ export class HomeComponent {
   currentPage = 1;
   ordersPerPage = 3;
   filterBy = 'date'; // ✅ filter option (default: date)
- statusFilter = '';
-startDate: string = '';
-endDate: string = '';
-showFilters = false; // toggle for filter panel
+  statusFilter = '';
+  startDate: string = '';
+  endDate: string = '';
+  showFilters = false; // toggle for filter panel
+  showOldOrders = false;
 
 
   sortBy = 'date';         // ▶ מיין לפי
@@ -28,7 +29,8 @@ showFilters = false; // toggle for filter panel
     { date: '23.6.2025', time: '10:00–12:00', type: 'היברידי', distance: '45 ק״מ', status: 'Rejected' },
     { date: '14.6.2025', time: '10:00–12:00', type: 'רגלי', distance: '12 ק״מ', status: 'Approved' },
     { date: '22.5.2025', time: '10:00–12:00', type: 'חשמלי', distance: '56 ק״מ', status: 'Pending' },
-    { date: '1.5.2025', time: '10:00–12:00', type: 'חשמלי', distance: '56 ק״מ', status: 'Pending' }
+    { date: '1.5.2025', time: '10:00–12:00', type: 'חשמלי', distance: '56 ק״מ', status: 'Pending' },
+    { date: '1.5.2023', time: '10:00–12:00', type: 'חשמלי', distance: '56 ק״מ', status: 'Pending' }
   ];
 
 
@@ -78,12 +80,22 @@ showFilters = false; // toggle for filter panel
   }
   
   
-      // ▶ סנן לפי
-
-  // ...orders array here...
+  
 
   get filteredOrders() {
+  const today = new Date();
+  const oneMonthAgo = new Date(today);
+  oneMonthAgo.setMonth(today.getMonth() - 1);
+
   let filtered = this.orders;
+
+  // ✅ Exclude old orders if toggle is off
+  if (!this.showOldOrders) {
+    filtered = filtered.filter(order => {
+      const orderDate = this.parseDate(order.date);
+      return orderDate >= oneMonthAgo;
+    });
+  }
 
   // Filter by status
   if (this.statusFilter) {
@@ -108,6 +120,7 @@ showFilters = false; // toggle for filter panel
       return [...filtered].sort((a, b) => this.parseDate(a.date).getTime() - this.parseDate(b.date).getTime());
   }
 }
+
 
 // Utility function to parse "dd.mm.yyyy"
 parseDate(d: string): Date {
