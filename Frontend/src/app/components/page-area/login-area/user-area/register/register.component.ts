@@ -16,24 +16,8 @@ import { AuthService } from '../../../../../services/auth.service';
 })
 export class RegisterComponent implements OnInit {
   registerForm!: FormGroup;
-   
-  randomId():string{
-    const randomSuffix = Math.floor(1000 + Math.random() * 9000); // generates a 4-digit random number
-    const employeeId = 'EMP' + randomSuffix;
-    return employeeId
-  }
-  registerData = {
-    first_name: '',
-    last_name: '',
-    username: '',
-    email: '',
-    employee_id:`${this.randomId}`,
-    password: '',
-    department_id: '',
-    role: 'employee' // default role
-  };
-  departments: any[] = [];
   errorMessage: string | null = null;
+  departments: any[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -44,29 +28,34 @@ export class RegisterComponent implements OnInit {
 
   ngOnInit(): void {
     this.registerForm = this.fb.group({
-      first_name: ['', [Validators.required, Validators.pattern(/^[A-Za-zא-ת]+$/)]],
-      last_name: ['', [Validators.required, Validators.pattern(/^[A-Za-zא-ת]+$/)]],
-      username: ['', [Validators.required, Validators.pattern(/^[A-Za-zא-ת]+$/)]],
+      first_name: ['', [Validators.required, Validators.minLength(3), Validators.pattern(/^[A-Za-zא-ת]+$/)]],
+      last_name: ['', [Validators.required, Validators.minLength(3), Validators.pattern(/^[A-Za-zא-ת]+$/)]],
+      username: ['', [Validators.required, Validators.minLength(3), Validators.pattern(/^[A-Za-zא-ת]+$/)]],
       email: ['', [Validators.required, Validators.email, Validators.pattern(/@gmail\.com$/)]],
-      password: ['', Validators.required],
-      department_id: ['', Validators.required],
-    });
+      password: ['', [Validators.required, Validators.minLength(8), Validators.pattern(/^(?=.*[A-Z])(?=.*\d).+$/)]],
+      department_id: ['', Validators.required]
+  });
 
     this.fetchDepartments();
+  }
+
+  fetchDepartments(): void {
+    this.http.get<any[]>('http://localhost:8000/api/departments').subscribe({
+      next: (data) => {
+        this.departments = data;
+      },
+      error: (err) => {
+        console.error('Failed to fetch departments', err);
+        this.departments = []; // fallback to empty
+      }
+    });
   }
 
   get f() {
     return this.registerForm.controls;
   }
 
-  fetchDepartments() {
-    this.http.get<any[]>('http://localhost:8000/api/departments').subscribe({
-      next: data => this.departments = data,
-      error: err => console.error('Failed to fetch departments', err)
-    });
-  }
-
-  register() {
+  register(): void {
     this.errorMessage = null;
 
     if (this.registerForm.invalid) {
@@ -77,25 +66,20 @@ export class RegisterComponent implements OnInit {
 
     const registerData = {
       ...this.registerForm.value,
-      employee_id: this.generateRandomId(),
       role: 'employee'
     };
 
     this.authService.register(registerData).subscribe({
-      next: response => {
+      next: (response) => {
         localStorage.setItem('access_token', response.access_token);
         localStorage.setItem('username', response.username);
         localStorage.setItem('role', response.role);
         this.router.navigate(['/home']);
       },
-      error: err => {
+      error: (err) => {
         console.error('Registration failed:', err);
         alert('אירעה שגיאה. נסה שוב.');
       }
     });
-  }
-
-  generateRandomId(): string {
-    return 'EMP' + Math.floor(1000 + Math.random() * 9000);
   }
 }

@@ -13,7 +13,11 @@ def login_user(username: str, password: str, db: Session = Depends(get_db)):
         (User.username == username) | (User.email == username)
     ).first()
 
-    if not user or not verify_password(password, user.password):
+    print(user)
+    if not user:
+        raise HTTPException(status_code=401, detail="Incorrect username or password.")
+
+    if not verify_password(password, user.password):
         raise HTTPException(status_code=401, detail="Incorrect username or password.")
     
     token = create_access_token(

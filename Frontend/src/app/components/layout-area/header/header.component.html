@@ -16,7 +16,7 @@
         <ul class="user-dropdown">
           <li><a routerLink="/login">התחברות</a></li>
           <li><a routerLink="/register">יצירת משתמש חדש</a></li>
-          <li><a>התנתקות</a></li>
+          <li><a (click)="onLogout()">התנתקות</a></li>
         </ul>
       </div>
       
@@ -32,9 +32,11 @@
     </div>
 
     <div class="nav-right">
-      <a [routerLink]="['/past-ride']" class="nav-link" href="#">  נסיעות עבר | </a>
-      <a [routerLink]="['home']" class="nav-link" href="#">נסיעות עתידיות </a>
-      <img src="/assets/images/bell-icon.png" alt="Notifications" />
+      
+      <a [routerLink]="['home']" class="nav-link" href="#">ההזמנות שלי  </a>
+     <a routerLink="/notifications">
+  <img src="/assets/images/bell-icon.png" alt="Notifications" />
+    </a>
     </div>
   </div>
 

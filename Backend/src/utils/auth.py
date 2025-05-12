@@ -9,4 +9,5 @@ def hash_password(password: str) -> str:
 
 # Function to verify if the provided password matches the stored hashed password
 def verify_password(plain_password: str, hashed_password: str) -> bool:
+    print(pwd_context.verify(plain_password, hashed_password))
     return pwd_context.verify(plain_password, hashed_password)
