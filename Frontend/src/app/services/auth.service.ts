@@ -29,4 +29,11 @@ export class AuthService {
   }): Observable<any> {
     return this.http.post<any>(this.registerUrl, registerData);
   }
+
+logout(): void {
+  localStorage.removeItem('access_token'); 
+  localStorage.removeItem('username');
+  localStorage.removeItem('role');
+}
+
 }
