@@ -16,49 +16,52 @@ import { AuthService } from '../../../../../services/auth.service';
 })
 export class RegisterComponent implements OnInit {
   registerForm!: FormGroup;
-   
- 
-  registerData = {
-    first_name: '',
-    last_name: '',
-    username: '',
-    email: '',
-    password: '',
-    department_id: '',
-    role: 'employee' // default role
-  };
-  departments: any[] = [];
   errorMessage: string | null = null;
+
+  departments = [
+    { id: '1', name: 'מחלקה 1' },
+    { id: '2', name: 'מחלקה 2' }
+  ];
 
   constructor(
     private fb: FormBuilder,
-    private http: HttpClient,
     private authService: AuthService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     this.registerForm = this.fb.group({
-      first_name: ['', [Validators.required, Validators.pattern(/^[A-Za-zא-ת]+$/)]],
-      last_name: ['', [Validators.required, Validators.pattern(/^[A-Za-zא-ת]+$/)]],
-      username: ['', [Validators.required, Validators.pattern(/^[A-Za-zא-ת]+$/)]],
-      email: ['', [Validators.required, Validators.email, Validators.pattern(/@gmail\.com$/)]],
-      password: ['', Validators.required],
+      first_name: ['', [
+        Validators.required,
+        Validators.minLength(3),
+        Validators.pattern(/^[A-Za-zא-ת]+$/)
+      ]],
+      last_name: ['', [
+        Validators.required,
+        Validators.minLength(3),
+        Validators.pattern(/^[A-Za-zא-ת]+$/)
+      ]],
+      username: ['', [
+        Validators.required,
+        Validators.minLength(3),
+        Validators.pattern(/^[A-Za-zא-ת]+$/)
+      ]],
+      email: ['', [
+        Validators.required,
+        Validators.email,
+        Validators.pattern(/@gmail\.com$/)
+      ]],
+      password: ['', [
+        Validators.required,
+        Validators.minLength(8),
+        Validators.pattern(/^(?=.*[A-Z])(?=.*\d).+$/)
+      ]],
       department_id: ['', Validators.required],
     });
-
-    this.fetchDepartments();
   }
 
   get f() {
     return this.registerForm.controls;
-  }
-
-  fetchDepartments() {
-    this.http.get<any[]>('http://localhost:8000/api/departments').subscribe({
-      next: data => this.departments = data,
-      error: err => console.error('Failed to fetch departments', err)
-    });
   }
 
   register() {
@@ -88,6 +91,4 @@ export class RegisterComponent implements OnInit {
       }
     });
   }
-
-
 }
