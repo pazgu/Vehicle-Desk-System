@@ -17,6 +17,7 @@ import logging
 from ..utils.database import get_db
 from ..services.register_service import get_departments 
 
+
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
