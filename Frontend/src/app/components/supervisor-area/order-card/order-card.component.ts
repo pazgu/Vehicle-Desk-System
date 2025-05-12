@@ -41,7 +41,7 @@ export class OrderCardComponent implements OnInit {
       destination: 'תל אביב',
       estimatedDistanceKm: 12,
       actualDistanceKm: 10,
-      status: 'הושלם',
+      status: 'מאושר',
       licenseCheckPassed: true,
       submittedAt: '7 במאי 2025, 10:00'
     },
@@ -56,7 +56,7 @@ export class OrderCardComponent implements OnInit {
       destination: 'ירושלים',
       estimatedDistanceKm: 75,
       actualDistanceKm: 70,
-      status: 'ממתין',
+      status: 'בהמתנה',
       licenseCheckPassed: true,
       submittedAt: '7 במאי 2025, 13:00'
     },
@@ -71,7 +71,7 @@ export class OrderCardComponent implements OnInit {
       destination: 'חיפה',
       estimatedDistanceKm: 95,
       actualDistanceKm: 90,
-      status: 'בדרך',
+      status: 'נדחה',
       licenseCheckPassed: false,
       submittedAt: '8 במאי 2025, 10:20'
     },
@@ -86,7 +86,7 @@ export class OrderCardComponent implements OnInit {
       destination: 'באר שבע',
       estimatedDistanceKm: 115,
       actualDistanceKm: 110,
-      status: 'הושלם',
+      status: 'מאושר',
       licenseCheckPassed: true,
       submittedAt: '8 במאי 2025, 15:00'
     },
@@ -101,7 +101,7 @@ export class OrderCardComponent implements OnInit {
       destination: 'נתניה',
       estimatedDistanceKm: 35,
       actualDistanceKm: 30,
-      status: 'ממתין',
+      status: 'בהמתנה',
       licenseCheckPassed: true,
       submittedAt: '9 במאי 2025, 09:00'
     }
@@ -167,5 +167,18 @@ export class OrderCardComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/supervisor-dashboard']);
+  }
+
+  getCardClass(status: string): string {
+    switch (status) {
+      case 'מאושר': // Approved
+        return 'card-approved';
+      case 'בהמתנה': // Pending
+        return 'card-pending';
+      case 'נדחה': // Rejected
+        return 'card-rejected';
+      default:
+        return '';
+    }
   }
 }

@@ -1,18 +1,45 @@
 :host {
   display: block;
-  background-color: #d4d3d3; /* Light gray background */
+  background-color: #f2efef  ; /* Light gray background */
   min-height: 100vh; /* Ensure it covers the full viewport height */
   padding: 20px; /* Optional: Add padding around the content */
+  }
+
+
+.card-container {
+  max-width: 600px; /* Reduce the width of the card */
+  margin: 1rem auto; /* Center the card with smaller margins */
+  padding: 0.5rem; /* Reduce padding */
 }
 
+:host ::ng-deep .trip-card {
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  min-height: 400px; /* Reduce the minimum height */
+  padding: 0.5rem; /* Reduce padding for better spacing */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Ensure footer stays at the bottom */
+}
 
-/* order-card.component.css */
-.card-container {
-    max-width: 800px;
-    margin: 2rem auto;
-    padding: 0 1rem;
-  }
-  
+:host ::ng-deep .trip-card.card-approved {
+  background-color: #dcf1e1; /* Light green */
+  color: #155724; /* Dark green text */
+  border: 2px solid #b1d3b9; /* Light gray border */
+}
+
+:host ::ng-deep .trip-card.card-pending {
+  background-color: #fbf3da; /* Light yellow */
+  color: #856404; /* Dark yellow text */
+  border: 2px solid #e3d9ba; /* Light gray border */
+}
+
+:host ::ng-deep .trip-card.card-rejected {
+  background-color: #f8e2e2; /* Light red */
+  color: #721c24; /* Dark red text */
+  border: 2px solid #e8c5c5; /* Light gray border */
+}
+
   .loading-container {
     display: flex;
     flex-direction: column;
@@ -27,23 +54,13 @@
     color: #666;
   }
   
-  :host ::ng-deep .trip-card {
-    background-color: #f3f1f1;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    min-height: 600px; /* Set a minimum height for the card */
-    padding: 1rem; /* Add padding for better spacing */
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between; /* Ensure footer stays at the bottom */
-  }
   
   :host ::ng-deep .trip-card .p-card-header {
     padding: 0;
   }
   
   .card-header {
-    padding: 1.5rem;
+    padding: 1rem; /* Reduce padding */
     background-color: #f8f9fa;
     border-radius: 8px 8px 0 0;
     display: flex;
@@ -51,24 +68,18 @@
     align-items: center;
   }
   
-  .card-header h2 {
-    margin: 0;
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #333;
-  }
   
   .card-content {
-    padding: 1rem;
+    padding: 0.5rem; /* Reduce padding */
   }
   
   .info-row {
     display: flex;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem; /* Reduce spacing between rows */
   }
   
   .info-label {
-    min-width: 120px;
+    min-width: 100px; /* Reduce label width */
     font-weight: 600;
     color: #555;
   }
@@ -148,24 +159,6 @@
     color: #388e3c;
     font-weight: 600;
   }
-/*   
-  :host ::ng-deep .card-actions {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-  }
-
-  .card-actions {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-  }
-  
-  .card-actions p-button {
-    flex: 1;
-    margin: 0 5px;
-  }
-   */
   :host ::ng-deep .p-tag {
     font-size: 0.9rem;
     padding: 0.3rem 0.75rem;
@@ -176,59 +169,58 @@
     margin-right: 0;
   }
 
-/* General styles for card actions */
-.card-actions {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 20px;
-  gap: 1rem;
-  width: 100%;
-  padding-bottom: 10px; /* Add space below the buttons */
-}
 
-.card-actions p-button {
-  flex: none; /* Prevent buttons from stretching */
-  width: 120px; /* Set a fixed width for all buttons */
-  height: 30px; /* Adjust height for better alignment */
-  display: flex; /* Use Flexbox for alignment */
-  justify-content: center; /* Center content horizontally */
-  align-items: center; /* Center content vertically */
-  text-align: center; /* Ensure text is centered */
-}
+  .card-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px; /* Reduce spacing above actions */
+    gap: 0.5rem; /* Reduce gap between buttons */
+    width: 100%;
+    padding-bottom: 5px; /* Reduce padding below buttons */
+  }
+
+  .card-actions p-button {
+    flex: none;
+    width: 100px; /* Reduce button width */
+    height: 30px; /* Keep button height consistent */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
   
   /* Approve button (green) */
   .card-actions .approve {
     border-radius: 0.5rem;
-    background-color: #2E7D32 !important; /* Green background */
+    background-color: rgb(27, 119, 47) !important; /* Green background */
     color: white !important; /* White text */
   }
   
   .card-actions .approve:hover {
-    background-color: rgb(18, 100, 36) !important; /* Darker green on hover */
+    background-color: #155724 !important; /* Darker green on hover */
   }
   
   /* Reject button (red) */
   .card-actions .reject {
     border-radius: 0.5rem;
-    background-color: #B71C1C !important; /* Red background */
+    background-color: #ae2121 !important; /* Red background */
     color: white !important; /* White text */
   }
   
   .card-actions .reject:hover {
-    background-color: #9c1717 !important; /* Darker red on hover */
+    background-color: #721c24 !important; /* Darker red on hover */
   }
   
   /* Back to List button (gray) */
   .card-actions .return {
     border-radius: 0.5rem;
-    background-color: #6c757d !important; /* Gray background */
+    background-color: #788087 !important; /* Gray background */
     border-color: #5a6268 !important; /* Darker gray border */
     color: white !important; /* White text */
   }
   
   .card-actions .return:hover {
-    background-color: #5a6268 !important; /* Darker gray on hover */
-    border-color: #4e555b !important; /* Even darker gray border on hover */
+    background-color: #454b4f !important; /* Darker gray on hover */
   }
 
   
