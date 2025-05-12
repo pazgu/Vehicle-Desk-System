@@ -58,7 +58,7 @@ export class LoginComponent implements OnInit {
     this.http.post<any>('http://localhost:8000/api/login', loginData).subscribe({
       next: (response) => {
         const token = response.access_token; 
-        localStorage.setItem('token', token);  // adjust key as needed
+        localStorage.setItem('access_token', token);  // adjust key as needed
         localStorage.setItem('username', response.username);
         localStorage.setItem('role', response.role);
         this.router.navigate(['/home']);  // change route as needed
