@@ -61,7 +61,7 @@ def get_user_orders():
     
 
 @router.get("/api/future-orders/{user_id}", response_model=List[RideSchema])
-def get_future_orders(user_id: int, status: Optional[RideStatus] = Query(None),
+def get_future_orders(user_id: UUID, status: Optional[RideStatus] = Query(None),
                       from_date: Optional[datetime] = Query(None),
                       to_date: Optional[datetime] = Query(None),
                       db: Session = Depends(get_db)):
@@ -75,7 +75,7 @@ def get_future_orders(user_id: int, status: Optional[RideStatus] = Query(None),
     return rides
 
 @router.get("/api/orders/{user_id}/past-orders", response_model=List[RideSchema])
-def get_past_orders(user_id: int, status: Optional[RideStatus] = Query(None),
+def get_past_orders(user_id: UUID, status: Optional[RideStatus] = Query(None),
                     from_date: Optional[datetime] = Query(None),
                     to_date: Optional[datetime] = Query(None),
                     db: Session = Depends(get_db)):
@@ -87,7 +87,7 @@ def get_past_orders(user_id: int, status: Optional[RideStatus] = Query(None),
     return rides
 
 @router.get("/api/orders/{user_id}/all-orders", response_model=List[RideSchema])
-def get_all_orders(user_id: int, status: Optional[RideStatus] = Query(None),
+def get_all_orders(user_id: UUID, status: Optional[RideStatus] = Query(None),
                    from_date: Optional[datetime] = Query(None),
                    to_date: Optional[datetime] = Query(None),
                    db: Session = Depends(get_db)):

@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from enum import Enum
 from datetime import datetime
+from uuid import UUID
 # from ..schemas.new_ride_schema import RideStatus
 
 class RideStatus(str, Enum):
@@ -17,7 +18,7 @@ class FuelType(str, Enum):
     gasoline = "gasoline"    
     
 class RideSchema(BaseModel):
-    ride_id: str
+    ride_id: UUID
     vehicle: FuelType
     start_datetime : datetime
     end_datetime: datetime
