@@ -17,9 +17,9 @@ export const routes: Routes = [
     {path: "home",component: HomeComponent},
     {path: "new-ride", component: NewRideComponent, canActivate: [ProtectedRouteGuard] },
     {path: "register",component:RegisterComponent},
-    {path: "past-ride",component: PastRideCardsComponent},
-    {path: "supervisor-dashboard",component: DashboardAllOrdersComponent},
+    {path: "past-ride",component: PastRideCardsComponent ,  canActivate: [ProtectedRouteGuard]},
+    {path: "supervisor-dashboard",component: DashboardAllOrdersComponent,  canActivate: [ProtectedRouteGuard]},
     {path: "order-card/:id",component: OrderCardComponent},
-    { path: 'notifications', component: NotificationsComponent },
+    { path: 'notifications', component: NotificationsComponent ,  canActivate: [ProtectedRouteGuard]},
     {path: "**",component: Page404Component}
 ];
