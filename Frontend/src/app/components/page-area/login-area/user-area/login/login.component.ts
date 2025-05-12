@@ -5,7 +5,6 @@ import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { ToastService } from '../../../../../services/toast.service';
 
 @Component({
   selector: 'app-login',
@@ -13,17 +12,13 @@ import { ToastService } from '../../../../../services/toast.service';
   imports: [RouterModule, ReactiveFormsModule, CommonModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
+  
 })
 export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
   errorMessage: string | null = null;
 
-  constructor(
-    private fb: FormBuilder,
-    private http: HttpClient,
-    private router: Router,
-    private toastService: ToastService
-  ) {}
+  constructor(private fb: FormBuilder, private http: HttpClient, private router: Router) {}
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
@@ -51,13 +46,13 @@ export class LoginComponent implements OnInit {
   get f() {
     return this.loginForm.controls;
   }
-
+  
   onLogin(): void {
-    this.errorMessage = null;
+  this.errorMessage = null;
 
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
-      this.toastService.show('יש למלא את כל השדות כנדרש', 'error');
+      this.errorMessage = 'יש למלא את כל השדות כנדרש';
       return;
     }
 
@@ -65,32 +60,14 @@ export class LoginComponent implements OnInit {
 
     this.http.post<any>('http://localhost:8000/api/login', loginData).subscribe({
       next: (response) => {
-        if (!response || !response.access_token) {
-          this.toastService.show('שגיאה לא צפויה - נסה שוב מאוחר יותר', 'error');
-          return;
-        }
-
-        const token = response.access_token;
-        localStorage.setItem('access_token', token);
+        const token = response.access_token; 
+        localStorage.setItem('access_token', token);  // adjust key as needed
         localStorage.setItem('username', response.username);
         localStorage.setItem('role', response.role);
-        this.toastService.show('התחברת בהצלחה 🎉', 'success');
-        this.router.navigate(['/home']);
+        this.router.navigate(['/home']);  // change route as needed
       },
       error: (err) => {
-        if (err.status === 0) {
-          this.toastService.show('שרת לא זמין כרגע. נסה שוב מאוחר יותר', 'error');
-        } else if (err.status === 401) {
-          if (err.error?.detail?.includes('not found')) {
-            this.toastService.show('שם המשתמש לא קיים במערכת', 'error');
-          } else if (err.error?.detail?.includes('incorrect')) {
-            this.toastService.show('הסיסמה שגויה', 'error');
-          } else {
-            this.toastService.show('התחברות נכשלה - בדוק את הפרטים', 'error');
-          }
-        } else {
-          this.toastService.show('שגיאת התחברות כללית', 'error');
-        }
+        this.errorMessage = err.error?.detail || 'ההתחברות נכשלה';
       }
     });
   }

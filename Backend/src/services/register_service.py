@@ -43,6 +43,8 @@ def create_user(user_data: UserCreate, db: Session):
         token_data = create_access_token(
             employee_id=str(new_user.employee_id),
             username=new_user.username,
+            first_name=new_user.first_name,
+            last_name=new_user.last_name,
             role=new_user.role
         )
 

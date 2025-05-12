@@ -6,7 +6,6 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../../../../services/auth.service';
-import { ToastService } from '../../../../../services/toast.service';
 
 @Component({
   selector: 'app-register',
@@ -81,6 +80,8 @@ export class RegisterComponent implements OnInit {
 
         localStorage.setItem('access_token', response.access_token);
         localStorage.setItem('username', response.username);
+        localStorage.setItem('first_name', response.first_name);
+        localStorage.setItem('last_name', response.last_name);
         localStorage.setItem('role', response.role);
         this.toastService.show('ההרשמה בוצעה בהצלחה 🎉', 'success');
         this.router.navigate(['/home']);
