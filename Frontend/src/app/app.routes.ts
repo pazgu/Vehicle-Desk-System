@@ -20,6 +20,6 @@ export const routes: Routes = [
     {path: "past-ride",component: PastRideCardsComponent},
     {path: "supervisor-dashboard",component: DashboardAllOrdersComponent},
     {path: "order-card/:id",component: OrderCardComponent},
-    { path: 'notifications', component: NotificationsComponent, canActivate: [ProtectedRouteGuard] },
+    { path: 'notifications', component: NotificationsComponent },
     {path: "**",component: Page404Component}
 ];
