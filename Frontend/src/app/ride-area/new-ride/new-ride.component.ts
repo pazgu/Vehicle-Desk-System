@@ -6,10 +6,11 @@ import {
   AbstractControl,
   ValidatorFn,
   FormControl,
-  ReactiveFormsModule,
+  ReactiveFormsModule
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-new-ride',
@@ -22,7 +23,11 @@ export class NewRideComponent implements OnInit {
   rideForm!: FormGroup;
   public estimated_distance_with_buffer: number = 0;
 
-  constructor(private fb: FormBuilder, private router: Router) {}
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private toastService: ToastService
+  ) {}
 
   ngOnInit(): void {
     this.rideForm = this.fb.group({
@@ -64,20 +69,36 @@ export class NewRideComponent implements OnInit {
   }
 
   submit(): void {
-    if (this.rideForm.invalid) {
-      this.rideForm.markAllAsTouched();
-      return;
-    }
-
-    const formData = {
-      ...this.rideForm.value,
-      estimated_distance_with_buffer: this.estimated_distance_with_buffer,
-    };
-
-    console.log('Submitted ride:', formData);
-    alert('הבקשה נשלחה בהצלחה!');
-    this.router.navigate(['/']);
+  if (this.rideForm.invalid) {
+    this.rideForm.markAllAsTouched();
+    this.toastService.show('יש להשלים את כל שדות הטופס כנדרש', 'error');
+    return;
   }
+
+  const formData = {
+    ...this.rideForm.value,
+    estimated_distance_with_buffer: this.estimated_distance_with_buffer,
+  };
+
+  // Extra validation: end time must be after start time
+  const startTime = this.rideForm.get('start_time')?.value;
+  const endTime = this.rideForm.get('end_time')?.value;
+  if (startTime >= endTime) {
+    this.toastService.show('שעת הסיום חייבת להיות אחרי שעת ההתחלה', 'error');
+    return;
+  }
+
+  // Distance edge case (manually entered wrong value)
+  const distance = this.rideForm.get('estimated_distance_km')?.value;
+  if (distance > 1000) {
+    this.toastService.show('מרחק לא הגיוני - נא להזין ערך סביר', 'error');
+    return;
+  }
+
+  console.log('Submitted ride:', formData);
+  this.toastService.show('הבקשה נשלחה בהצלחה! ✅', 'success');
+  this.router.navigate(['/']);
+}
 
   get f() {
     return {

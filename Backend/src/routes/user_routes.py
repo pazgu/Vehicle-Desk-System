@@ -16,7 +16,9 @@ from ..services.user_rides_service import get_future_rides, get_past_rides , get
 from ..utils.database import get_db
 from src.models import ride_model, vehicle_model
 import logging
-from ..services.register_service import get_departments
+from ..utils.database import get_db
+from ..services.register_service import get_departments 
+
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
