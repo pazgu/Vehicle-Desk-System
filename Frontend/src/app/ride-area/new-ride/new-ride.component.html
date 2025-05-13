@@ -53,11 +53,38 @@
           <label>סוג נסיעה</label>
           <select formControlName="ride_type" class="styled-select">
             <option value="" disabled>בחר סוג</option>
-            <option value="מנהלתית">מנהלתית</option>
-            <option value="תפעולית">תפעולית</option>
+        <option value="administrative">מנהלתית</option>
+        <option value="operational">תפעולית</option>
+
           </select>
           <small *ngIf="f.ride_type.touched && f.ride_type.errors?.['required']" class="distance-info">
             חובה לבחור סוג נסיעה
+          </small>
+        </div>
+      </div>
+
+
+       <!-- ✅ Added location fields -->
+      <div class="row">
+        <div class="input-group">
+          <label>מיקום התחלה</label>
+          <input type="text" formControlName="start_location" />
+          <small *ngIf="f.start_location.touched && f.start_location.errors?.['required']" class="distance-info">
+            חובה למלא מיקום התחלה
+          </small>
+        </div>
+        <div class="input-group">
+          <label>תחנה</label>
+          <input type="text" formControlName="stop" />
+          <small *ngIf="f.stop.touched && f.stop.errors?.['required']" class="distance-info">
+            חובה למלא תחנה
+          </small>
+        </div>
+        <div class="input-group">
+          <label>יעד</label>
+          <input type="text" formControlName="destination" />
+          <small *ngIf="f.destination.touched && f.destination.errors?.['required']" class="distance-info">
+            חובה למלא יעד
           </small>
         </div>
       </div>
