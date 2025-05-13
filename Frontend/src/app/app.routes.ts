@@ -10,9 +10,10 @@ import { ProtectedRouteGuard } from './components/auth-area/protectedroute/prote
 import { NotificationsComponent } from './components/page-area/notifications/notifications.component';
 import { CarsComponent } from './components/admin-area/cars/cars.component';
 import { DailyChecksComponent } from './components/admin-area/daily-checks/daily-checks.component';
+import { RedirectByRoleComponent } from './services/redirect-by-role';
 
 export const routes: Routes = [
-    {path:"", redirectTo: "/home", pathMatch:"full"},
+    {path:"", component: RedirectByRoleComponent, pathMatch:"full"},
     {path: "login",component: LoginComponent},
     {path: "cars",component: CarsComponent,canActivate: [ProtectedRouteGuard]},
     {path: "home",component: HomeComponent, canActivate: [ProtectedRouteGuard]},
@@ -24,3 +25,5 @@ export const routes: Routes = [
     {path: 'daily-checks', component: DailyChecksComponent, canActivate: [ProtectedRouteGuard]},
     {path: "**",component: Page404Component}
 ];
+
+

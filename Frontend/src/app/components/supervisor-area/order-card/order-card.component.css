@@ -1,8 +1,10 @@
 :host {
   display: block;
   background-color: #f2efef  ; /* Light gray background */
-  min-height: 100vh; /* Ensure it covers the full viewport height */
   padding: 20px; /* Optional: Add padding around the content */
+   height: 530px;
+ margin-top: 0px;
+ margin-bottom: 0px;
   }
 
 
