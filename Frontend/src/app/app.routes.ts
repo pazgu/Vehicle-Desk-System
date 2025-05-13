@@ -12,7 +12,7 @@ import { CarsComponent } from './components/admin-area/cars/cars.component';
 import { DailyChecksComponent } from './components/admin-area/daily-checks/daily-checks.component';
 
 export const routes: Routes = [
-    {path:"", redirectTo: "/home", pathMatch:"full"},
+    {path:"", redirectTo: "/login", pathMatch:"full"},
     {path: "login",component: LoginComponent},
     {path: "cars",component: CarsComponent,canActivate: [ProtectedRouteGuard]},
     {path: "home",component: HomeComponent, canActivate: [ProtectedRouteGuard]},
