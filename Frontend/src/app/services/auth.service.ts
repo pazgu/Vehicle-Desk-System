@@ -61,15 +61,22 @@ export class AuthService {
   }
 
   // 🚪 Logout
-  logout(): void {
-    localStorage.removeItem('access_token'); 
-    localStorage.removeItem('username');
-    localStorage.removeItem('first_name');
-    localStorage.removeItem('last_name');
-    localStorage.removeItem('role');
-    this.fullNameSubject.next('משתמש');
-    this.setLoginState(false);
-  }
+logout(): void {
+  // Remove user-related data from localStorage
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('username');
+  localStorage.removeItem('first_name');
+  localStorage.removeItem('last_name');
+  localStorage.removeItem('role');
+
+  // Update BehaviorSubject values
+  this.fullNameSubject.next('משתמש');
+  this.roleSubject.next(''); // Clear role on logout
+
+  // Update login state
+  this.setLoginState(false);
+}
+
     getRole(): string {
     return this.roleSubject.value;
   }

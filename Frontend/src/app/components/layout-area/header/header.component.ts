@@ -15,7 +15,8 @@ import { CommonModule } from '@angular/common';
 export class HeaderComponent implements OnInit {
   fullName$: Observable<string> = of('');
   isLoggedIn = false;
-  role: string = '';
+  role$: Observable<string> = of('');
+
   constructor(
     private authService: AuthService,
     private router: Router,
@@ -24,14 +25,13 @@ export class HeaderComponent implements OnInit {
 
   ngOnInit(): void {
     this.fullName$ = this.authService.fullName$;
+    this.role$ = this.authService.role$;
 
     // ✅ Subscribe to login status
     this.authService.isLoggedIn$.subscribe(value => {
       this.isLoggedIn = value;
     });
-    console.log(this.authService.getRole())
-    this.role = this.authService.getRole();
-    
+   
   }
 
   onLogout(): void {

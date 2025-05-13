@@ -76,7 +76,7 @@ export class LoginComponent implements OnInit {
       this.authService.setFullName(response.first_name, response.last_name);
       this.authService.setLoginState(true);
       this.authService.setRole(response.role); 
-
+      
       this.router.navigate(['/home']);  // Change route as needed
     },
     error: (err) => {
