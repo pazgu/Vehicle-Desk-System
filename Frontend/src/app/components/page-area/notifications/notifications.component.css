@@ -1,13 +1,13 @@
 
 .notification-page {
   font-family: 'Alef', sans-serif;
-  height: 370px;
+  height: 400px;
   background-color: #fef7ff;
   padding: 1rem;
   border-radius: 16px;
   border: 4px solid #cac4d0;
   max-width: 1000px;
-  margin: 70px auto 0 auto; 
+  margin: 30px auto 0 auto; 
   
 }
 .wrapper{
@@ -31,8 +31,7 @@
   margin-bottom: 0.5rem;
   text-align: center;
   font-size: 15px;
-  font-weight: bold;
-  font-family: 'Alef', sans-serif;
+  
   color: #000;
 }
 
@@ -64,7 +63,7 @@
 .text {
   flex: 1;
   font-size: 1.3rem;
-  font-weight: bold;
+ 
 }
 
 .message-icon {
