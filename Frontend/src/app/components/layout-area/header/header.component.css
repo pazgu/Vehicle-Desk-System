@@ -67,8 +67,11 @@ body, html {
     left: 20px;
     width: 150px;
     opacity: 30%;
-    z-index: 0;
+    pointer-events: none;
+    z-index: -1;
   }
+
+
   .register-link {
     text-decoration: underline;
   }
