@@ -25,4 +25,4 @@ class RideCreate(BaseModel):
     stop: str
     destination: str
     estimated_distance_km: float
-    
+

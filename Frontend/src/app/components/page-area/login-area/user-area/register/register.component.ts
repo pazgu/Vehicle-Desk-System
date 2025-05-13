@@ -50,6 +50,7 @@ export class RegisterComponent implements OnInit {
         console.error('Failed to fetch departments', err);
         this.toastService.show('שגיאה בטעינת מחלקות', 'error');
         this.departments = [];
+
       }
     });
   }
@@ -87,7 +88,7 @@ export class RegisterComponent implements OnInit {
 
         this.authService.setFullName(response.first_name, response.last_name);
         this.authService.setLoginState(true);
-
+        this.authService.setRole(response.role); 
         this.toastService.show('ההרשמה בוצעה בהצלחה 🎉', 'success');
         this.router.navigate(['/home']);
       },

@@ -130,3 +130,11 @@ input[type="time"], input[type="number"], input[type="text"], select {
     color: #333;
 }
 
+/* Ensure proper spacing between two date inputs in same row */
+.row .input-group {
+    min-width: 0;
+}
+
+.row .input-group input[type="date"] {
+    width: 100%;
+}
