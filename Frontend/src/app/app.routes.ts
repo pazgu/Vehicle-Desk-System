@@ -19,7 +19,7 @@ export const routes: Routes = [
     {path: "register",component:RegisterComponent},
     {path: "past-ride",component: PastRideCardsComponent},
     {path: "supervisor-dashboard",component: DashboardAllOrdersComponent},
-    {path: "new-ride/:id",component: OrderCardComponent},
-    { path: 'notifications', component: NotificationsComponent},
+    {path: "order-card/:id",component: OrderCardComponent},
+    { path: 'notifications', component: NotificationsComponent, canActivate: [ProtectedRouteGuard] },
     {path: "**",component: Page404Component}
 ];

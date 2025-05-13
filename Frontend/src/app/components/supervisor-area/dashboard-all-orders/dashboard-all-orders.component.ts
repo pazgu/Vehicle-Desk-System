@@ -2,23 +2,21 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
-import { CalendarModule } from 'primeng/calendar';
 import { DropdownModule } from 'primeng/dropdown';
 import { PaginatorModule } from 'primeng/paginator';
 import { TableModule } from 'primeng/table';
 import { Router } from '@angular/router';
 
-
 @Component({
   selector: 'app-dashboard-all-orders',
-  imports: [TableModule, DropdownModule, CalendarModule, CommonModule, 
+  imports: [TableModule, DropdownModule, CommonModule,
     ButtonModule, PaginatorModule, FormsModule],
   templateUrl: './dashboard-all-orders.component.html',
   styleUrl: './dashboard-all-orders.component.css'
 })
 export class DashboardAllOrdersComponent {
 
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
 
   rows: number = 5;
   originalTrips = [
@@ -43,33 +41,108 @@ export class DashboardAllOrdersComponent {
     { id: 19, employeeName: 'רז יוספי', vehicle: 19, dateTime: '2025-05-16 09:30', destination: 'תל אביב', distance: 15, status: 'בהמתנה' },
     { id: 20, employeeName: 'עדי פרידמן', vehicle: 20, dateTime: '2025-05-16 18:00', destination: 'חולון', distance: 25, status: 'מאושר' }
   ];
-  
 
+  currentPage = 1;
+  ordersPerPage = 5;
+  filterBy = 'dateTime';
+  statusFilter = '';
+  startDate: string = '';
+  endDate: string = '';
+  showFilters = false;
+  showOldOrders = false;
 
-  trips = [...this.originalTrips];
+  sortBy = 'date';
 
+  get trips() {
+    return this.filteredOrders;
+  }
 
   onRowSelect(trip: any) {
     this.router.navigate(['/order-card', trip.id]);
   }
-  
+
   resetFilters(table: any) {
     table.clear();
-    this.trips = [...this.originalTrips];
+    this.statusFilter = '';
+    this.startDate = '';
+    this.endDate = '';
+    this.showOldOrders = false;
+    this.sortBy = 'date';
   }
+
   getStatusClass(status: string): string {
     switch (status) {
-      case 'מאושר': // Approved
+      case 'מאושר':
         return 'status-approved';
-      case 'בהמתנה': // Pending
+      case 'בהמתנה':
         return 'status-pending';
-      case 'נדחה': // Rejected
+      case 'נדחה':
         return 'status-rejected';
       default:
         return '';
     }
   }
-  
-  
 
+  get filteredOrders() {
+    const today = new Date();
+    const oneMonthAgo = new Date(today);
+    oneMonthAgo.setMonth(today.getMonth() - 1);
+
+    let filtered = [...this.originalTrips];
+
+    if (!this.showOldOrders) {
+      filtered = filtered.filter(order => {
+        const orderDate = this.parseDate(order.dateTime);
+        return orderDate >= oneMonthAgo;
+      });
+    }
+
+    if (this.statusFilter) {
+      filtered = filtered.filter(order => order.status === this.statusFilter);
+    }
+
+    if (this.startDate) {
+      filtered = filtered.filter(order => this.parseDate(order.dateTime) >= new Date(this.startDate));
+    }
+
+    if (this.endDate) {
+      // Create a Date object for the end of the selected end date
+      const endDateAtEndOfDay = this.endDate ? new Date(this.endDate + 'T23:59:59') : null;
+      if (endDateAtEndOfDay) {
+        filtered = filtered.filter(order => this.parseDate(order.dateTime) <= endDateAtEndOfDay);
+      }
+    }
+
+    switch (this.sortBy) {
+      case 'status':
+        return [...filtered].sort((a, b) => a.status.localeCompare(b.status));
+      case 'date':
+      default:
+        return [...filtered].sort((a, b) => this.parseDate(a.dateTime).getTime() - this.parseDate(b.dateTime).getTime());
+    }
+  }
+
+  getRowClass(status: string): string {
+    switch (status) {
+      case 'מאושר':
+        return 'row-approved';
+      case 'בהמתנה':
+        return 'row-pending';
+      case 'נדחה':
+        return 'row-rejected';
+      default:
+        return '';
+    }
+  }
+
+  onRowClick(trip: any) {
+    this.router.navigate(['/order-card', trip.id]);
+  }
+
+  parseDate(d: string): Date {
+    const [datePart, timePart] = d.split(' ');
+    const [year, month, day] = datePart.split('-').map(Number);
+    const [hours, minutes] = timePart.split(':').map(Number);
+    return new Date(year, month - 1, day, hours, minutes);
+  }
 }

@@ -145,3 +145,10 @@ body, html {
     display: block;
   }
   
+.user-dropdown li a {
+  display: block;
+  width: 100%;
+  cursor: pointer;
+}
+
+  

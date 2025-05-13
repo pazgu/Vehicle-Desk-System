@@ -1,19 +1,26 @@
-from typing import List
+from sqlalchemy.orm import Session
+from uuid import uuid4, UUID
 from ..schemas.new_ride_schema import RideCreate
-import uuid
+from ..models.ride_model import Ride,RideStatus
 from datetime import datetime
-
-mock_rides: List[dict] = []
-
-def create_ride(user_id: uuid.UUID, ride: RideCreate):
-
-    ride_id = uuid.uuid4()
-
-    new_ride = ride.dict()
-    new_ride['id'] = ride_id
-    new_ride['user_id'] = user_id  
-    
-
-    mock_rides.append(new_ride)
-    
+def create_ride(db: Session, user_id: UUID, ride: RideCreate):
+    new_ride = Ride(
+        id=uuid4(),
+        user_id=user_id,
+        ride_type=ride.ride_type,
+        start_datetime=ride.start_datetime,
+        end_datetime=ride.end_datetime,
+        start_location=ride.start_location,
+        stop=ride.stop,
+        destination=ride.destination,
+        estimated_distance_km=ride.estimated_distance_km,
+        status=RideStatus.pending,  
+        license_check_passed=False,  
+        submitted_at=datetime.utcnow(),  
+    )
+    db.add(new_ride)
+    db.commit()
+    db.refresh(new_ride)
     return new_ride
+
+    
