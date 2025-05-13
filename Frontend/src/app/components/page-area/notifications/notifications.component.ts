@@ -1,5 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NotificationService } from '../../../services/notification';
+import { formatDistanceToNow } from 'date-fns';
+import { MyNotification } from '../../../models/notification';
 
 @Component({
   selector: 'app-notifications',
@@ -9,15 +12,23 @@ import { CommonModule } from '@angular/common';
   styleUrl: './notifications.component.css'
 })
 export class NotificationsComponent {
-  notifications = [
-    { timeAgo: 'לפני 30 דק׳', message: 'בקשתך לנסיעה לתאריך 31.07.2025 אושרה', status: 'Approved' },
-    { timeAgo: 'לפני שעה', message: 'בקשתך לנסיעה בתאריך 02.6.2025 נדחתה', status: 'Rejected' },
-    { timeAgo: 'לפני 3 שע׳', message: 'בקשתך לנסיעה בתאריך 23.7.2025 נדחתה', status: 'Rejected' },
-    { timeAgo: 'אתמול, 1:59', message: 'בקשתך לנסיעה בתאריך 5.7.2025 אושרה', status: 'Approved' },
-    { timeAgo: 'לפני 3 שע׳', message: 'בקשתך לנסיעה בתאריך 23.7.2025 נדחתה', status: 'Rejected' },
-    { timeAgo: 'אתמול, 1:59', message: 'בקשתך לנסיעה בתאריך 5.7.2025 אושרה', status: 'Approved' }
-  ];
+  notifications: (MyNotification & { timeAgo: string })[] = [];
 
+  constructor(private notificationService: NotificationService) {}
+
+  ngOnInit(): void {
+    this.notificationService.getNotifications().subscribe({
+      next: (data) => {
+        this.notifications = data.map(note => ({
+          ...note,
+          timeAgo: formatDistanceToNow(new Date(note.sent_at), { addSuffix: true }),
+        }));
+      },
+      error: (err) => {
+        console.error('Failed to fetch notifications:', err);
+      }
+    });
+  }
   currentPage = 1;
   notificationsPerPage = 5;
 
@@ -38,11 +49,11 @@ export class NotificationsComponent {
     if (this.currentPage > 1) this.currentPage--;
   }
 
-  getStatusIcon(status: string): string {
-    return status === 'Approved' ? 'pi pi-check-circle' : 'pi pi-times-circle';
-  }
+  // getStatusIcon(status: string): string {
+  //   return status === 'Approved' ? 'pi pi-check-circle' : 'pi pi-times-circle';
+  // }
 
-  getStatusClass(status: string): string {
-    return status === 'Approved' ? 'approved' : 'rejected';
-  }
+  // getStatusClass(status: string): string {
+  //   return status === 'Approved' ? 'approved' : 'rejected';
+  // }
 }

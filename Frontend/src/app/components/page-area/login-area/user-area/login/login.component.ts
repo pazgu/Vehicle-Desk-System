@@ -70,6 +70,7 @@ export class LoginComponent implements OnInit {
       localStorage.setItem('username', response.username);
       localStorage.setItem('first_name', response.first_name);
       localStorage.setItem('last_name', response.last_name);
+      localStorage.setItem('employee_id', response.employee_id);
       localStorage.setItem('role', response.role);
 
       // Call the setFullName method from AuthService to update the full name
