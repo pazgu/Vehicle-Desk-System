@@ -52,14 +52,13 @@
           </tr>
         </ng-template>
         <ng-template pTemplate="body" let-trip>
-          <tr [ngClass]="getRowClass(trip.status)" (click)="onRowClick(trip)">
-            <td>{{ trip.id }}</td>
-            <td>{{ trip.employeeName }}</td>
-            <td>{{ trip.vehicle }}</td>
-            <td>{{ trip.dateTime }}</td>
-            <td>{{ trip.destination }}</td>
-            <td>{{ trip.distance }}</td>
-            <td>{{ trip.status }}</td>
+          <tr [ngClass]="getRowClass(trip.status)">
+            <td>{{ trip.ride_id }}</td>
+            <td>{{ trip.employee_name }}</td>
+            <td>{{ trip.requested_vehicle_plate }}</td>
+            <td>{{ trip.date_and_time }}</td>
+            <td>{{ trip.destination }}</td> <td>{{ trip.distance }}</td>
+            <td [ngClass]="getStatusClass(trip.status)">{{ trip.status }}</td>
           </tr>
         </ng-template>
       </p-table>
