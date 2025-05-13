@@ -7,6 +7,7 @@ import { RegisterComponent } from './components/page-area/login-area/user-area/r
 import { DashboardAllOrdersComponent } from './components/supervisor-area/dashboard-all-orders/dashboard-all-orders.component';
 import { OrderCardComponent } from './components/supervisor-area/order-card/order-card.component';
 import { NotificationsComponent } from './components/page-area/notifications/notifications.component';
+import { ProtectedRouteGuard } from './components/auth-area/protectedroute/protected-route.guard';
 
 export const routes: Routes = [
     {path:"", redirectTo: "/home", pathMatch:"full"},
