@@ -19,6 +19,8 @@ from src.models import ride_model, vehicle_model
 import logging
 from ..utils.database import get_db
 from ..services.register_service import get_departments 
+from ..schemas.notification_schema import NotificationOut
+from ..services.user_notification import get_user_notifications
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -133,7 +135,6 @@ def delete_order():
     # Implementation pending
     return {"message": "Not implemented yet"}
 
-@router.get("/api/notifications/{user_id}")
-def view_notifications():
-    # Implementation pending
-    return {"message": "Not implemented yet"}
+@router.get("/api/notifications/{user_id}", response_model=list[NotificationOut])
+def get_notifications_for_user(user_id: UUID, db: Session = Depends(get_db)):
+    return get_user_notifications(db, user_id)
