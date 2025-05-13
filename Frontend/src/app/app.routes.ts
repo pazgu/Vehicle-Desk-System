@@ -12,10 +12,10 @@ import { NotificationsComponent } from './components/page-area/notifications/not
 export const routes: Routes = [
     {path:"", redirectTo: "/home", pathMatch:"full"},
     {path: "login",component: LoginComponent},
-    {path: "home",component: HomeComponent},
-    {path: "new-ride", component: NewRideComponent},
+    {path: "home",component: HomeComponent, canActivate: [ProtectedRouteGuard]},
+    {path: "new-ride", component: NewRideComponent, canActivate: [ProtectedRouteGuard]},
     {path: "register",component:RegisterComponent},
-    {path: "supervisor-dashboard",component: DashboardAllOrdersComponent},
+    {path: "supervisor-dashboard",component: DashboardAllOrdersComponent, canActivate: [ProtectedRouteGuard]},
     {path: "order-card/:id",component: OrderCardComponent},
     { path: 'notifications', component: NotificationsComponent, canActivate: [ProtectedRouteGuard] },
     {path: "**",component: Page404Component}
