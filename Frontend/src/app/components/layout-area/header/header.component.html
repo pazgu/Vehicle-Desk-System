@@ -13,11 +13,19 @@
         <a routerLink="/login" routerLinkActive="active">
           <img src="/assets/images/user-icon.png" alt="User Icon" />
         </a>
-        <ul class="user-dropdown">
-          <li><a routerLink="/login">התחברות</a></li>
-          <li><a routerLink="/register">יצירת משתמש חדש</a></li>
-          <li><a (click)="onLogout()">התנתקות</a></li>
-        </ul>
+      <ul class="user-dropdown">
+  <!-- If not logged in -->
+  <ng-container *ngIf="!isLoggedIn">
+    <li><a routerLink="/login">התחברות</a></li>
+    <li><a routerLink="/register">יצירת משתמש חדש</a></li>
+  </ng-container>
+
+  <!-- If logged in -->
+  <ng-container *ngIf="isLoggedIn">
+    <li><a (click)="onLogout()">התנתקות</a></li>
+  </ng-container>
+</ul>
+
       </div>
       
 
@@ -43,3 +51,4 @@
   <img src="/assets/images/building-graphic.png" alt="Graphic" class="corner-img" />
 </body>
 </html>
+

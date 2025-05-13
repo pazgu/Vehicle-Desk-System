@@ -12,17 +12,19 @@ export class AuthService {
   private fullNameSubject = new BehaviorSubject<string>(
     `${localStorage.getItem('first_name') || ''} ${localStorage.getItem('last_name') || ''}`.trim() || 'משתמש'
   );
+  fullName$ = this.fullNameSubject.asObservable(); // For header display
 
-    fullName$ = this.fullNameSubject.asObservable(); // Expose observable for components
+  private loggedInSubject = new BehaviorSubject<boolean>(!!localStorage.getItem('access_token'));
+  isLoggedIn$ = this.loggedInSubject.asObservable(); // For showing/hiding nav items
 
   constructor(private http: HttpClient) {}
 
-  // Login
+  // 🔐 Login
   login(username: string, password: string): Observable<any> {
     return this.http.post<any>(this.loginUrl, { username, password });
   }
 
-  // Register
+  // 👤 Register
   register(registerData: { 
     first_name: string;
     last_name: string;
@@ -36,25 +38,31 @@ export class AuthService {
     return this.http.post<any>(this.registerUrl, registerData);
   }
 
- setFullName(firstName: string, lastName: string): void {
+  // 🧠 Update full name across the app
+  setFullName(firstName: string, lastName: string): void {
     localStorage.setItem('first_name', firstName);
     localStorage.setItem('last_name', lastName);
     const fullName = `${firstName} ${lastName}`;
     this.fullNameSubject.next(fullName);
   }
 
- getUserFullName(): string {
+  getUserFullName(): string {
     return this.fullNameSubject.value;
   }
-  
 
-logout(): void {
-  localStorage.removeItem('access_token'); 
-  localStorage.removeItem('username');
-  localStorage.removeItem('first_name');
-  localStorage.removeItem('last_name');
-  localStorage.removeItem('role');
-  this.fullNameSubject.next('משתמש');
-}
+  // 🔄 Update login state
+  setLoginState(isLoggedIn: boolean): void {
+    this.loggedInSubject.next(isLoggedIn);
+  }
 
+  // 🚪 Logout
+  logout(): void {
+    localStorage.removeItem('access_token'); 
+    localStorage.removeItem('username');
+    localStorage.removeItem('first_name');
+    localStorage.removeItem('last_name');
+    localStorage.removeItem('role');
+    this.fullNameSubject.next('משתמש');
+    this.setLoginState(false);
+  }
 }

@@ -24,7 +24,10 @@
   text-align: right;
   
 }
-
+.register-link{
+  padding-right: 165px;
+  padding-top: 10px;
+}
 /* Close button top-left */
 .close-btn {
   position: absolute;

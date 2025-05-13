@@ -1,12 +1,24 @@
+<div class="wrapper">
 <div class="notification-page">
   <h2 class="title">הודעות</h2>
 
-  <div class="notification" *ngFor="let note of notifications" [ngClass]="getStatusClass(note.status)">
+  <div class="notification" *ngFor="let note of pagedNotifications" [ngClass]="getStatusClass(note.status)">
     <div class="time">{{ note.timeAgo }}</div>
     <div class="content">
-      <span class="status-icon">{{ getStatusIcon(note.status) }}</span>
+      <i [ngClass]="getStatusIcon(note.status)" class="status-icon"></i>
       <span class="text">{{ note.message }}</span>
-      <img src="assets/images/message.png" alt="Message Icon" class="message-icon" />
+      <img src="/assets/images/message.png" alt="Message Icon" class="message-icon" />
     </div>
   </div>
+
+  <div class="pagination">
+    <button (click)="prevPage()" [disabled]="currentPage === 1">
+      ◀
+    </button>
+    <span>עמוד {{ currentPage }} מתוך {{ totalPages }}</span>
+    <button (click)="nextPage()" [disabled]="currentPage === totalPages">
+      ▶
+    </button>
+  </div>
+</div>
 </div>

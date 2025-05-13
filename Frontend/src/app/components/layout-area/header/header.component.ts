@@ -1,20 +1,39 @@
-import { Component } from '@angular/core';
-import { Router, RouterLinkActive, RouterModule } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
+import { ToastService } from '../../../services/toast.service';
+import { Observable, of } from 'rxjs';
 import { CommonModule } from '@angular/common';
-import { Observable, observable } from 'rxjs';
 
 @Component({
   selector: 'app-header',
-  imports: [RouterModule,CommonModule],
+  standalone: true,
+  imports: [RouterModule, CommonModule],
   templateUrl: './header.component.html',
-  styleUrl: './header.component.css'
+  styleUrls: ['./header.component.css']
 })
-export class HeaderComponent {
-constructor(private authService: AuthService, private router: Router) {}
-onLogout(): void {
-  this.authService.logout();
-  this.router.navigate(['/login']); 
-}
+export class HeaderComponent implements OnInit {
+  fullName$: Observable<string> = of('');
+  isLoggedIn = false;
 
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private toastService: ToastService // ✅ Add this
+  ) {}
+
+  ngOnInit(): void {
+    this.fullName$ = this.authService.fullName$;
+
+    // ✅ Subscribe to login status
+    this.authService.isLoggedIn$.subscribe(value => {
+      this.isLoggedIn = value;
+    });
+  }
+
+  onLogout(): void {
+    this.authService.logout();
+    this.toastService.show('התנתקת בהצלחה', 'success'); // ✅ Show toast
+    this.router.navigate(['/login']);
+  }
 }

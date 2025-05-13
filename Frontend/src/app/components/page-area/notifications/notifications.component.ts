@@ -16,8 +16,28 @@ export class NotificationsComponent {
     { timeAgo: 'אתמול, 1:59', message: 'בקשתך לנסיעה בתאריך 5.7.2025 אושרה', status: 'Approved' }
   ];
 
+  currentPage = 1;
+  notificationsPerPage = 3;
+
+  get totalPages(): number {
+    return Math.ceil(this.notifications.length / this.notificationsPerPage);
+  }
+
+  get pagedNotifications() {
+    const start = (this.currentPage - 1) * this.notificationsPerPage;
+    return this.notifications.slice(start, start + this.notificationsPerPage);
+  }
+
+  nextPage() {
+    if (this.currentPage < this.totalPages) this.currentPage++;
+  }
+
+  prevPage() {
+    if (this.currentPage > 1) this.currentPage--;
+  }
+
   getStatusIcon(status: string): string {
-    return status === 'Approved' ? '✅' : '❌';
+    return status === 'Approved' ? 'pi pi-check-circle' : 'pi pi-times-circle';
   }
 
   getStatusClass(status: string): string {
