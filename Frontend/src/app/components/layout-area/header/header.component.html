@@ -9,8 +9,19 @@
 <body>
   <div class="navbar">
     <div class="nav-left">
-      <a routerLink="/login" routerLinkActive="active"><img src="/assets/images/user-icon.png" alt="User Icon" /></a>
-      <span class="username">ישראלי ישראלי</span>
+      <div class="user-menu-container">
+        <a routerLink="/login" routerLinkActive="active">
+          <img src="/assets/images/user-icon.png" alt="User Icon" />
+        </a>
+        <ul class="user-dropdown">
+          <li><a routerLink="/login">התחברות</a></li>
+          <li><a routerLink="/register">יצירת משתמש חדש</a></li>
+          <li><a (click)="onLogout()">התנתקות</a></li>
+        </ul>
+      </div>
+      
+
+      <span class="username">{{ fullName$ | async }}</span>
       <a [routerLink]="['/new-ride']" title="להזמין נסיעה">
         <img src="/assets/images/add-car.png" alt="Car" class="add-car" />
       </a>
@@ -21,9 +32,11 @@
     </div>
 
     <div class="nav-right">
-      <a class="nav-link" href="#">  נסיעות עבר | </a>
-      <a class="nav-link" href="#">נסיעות עתידיות </a>
-      <img src="/assets/images/bell-icon.png" alt="Notifications" />
+      
+      <a [routerLink]="['home']" class="nav-link" href="#">ההזמנות שלי  </a>
+     <a routerLink="/notifications">
+  <img src="/assets/images/bell-icon.png" alt="Notifications" />
+    </a>
     </div>
   </div>
 

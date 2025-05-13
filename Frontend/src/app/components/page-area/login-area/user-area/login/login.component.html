@@ -1,21 +1,28 @@
-<div>
-    
-    
-            <div class="page-container">
-                <div class="login-box">
-                  <a routerLink="/home" routerLinkActive="active"><div class="close-btn">✕</div></a>
-                  <h2>התחברות</h2>
-                
-                  <label>שם משתמש</label>
-                  <input type="text" />
-            
-                  <label>סיסמה</label>
-                  <input type="password" />
-            
-                  <button>התחבר</button>
-                  <p class="register-link">אין לי משתמש</p>
-                </div>
-              
-</div>
+<!-- ✅ Updated LOGIN HTML -->
+<div class="page-container">
+  <div class="login-box">
+    <a routerLink="/home" routerLinkActive="active">
+      <div class="close-btn">✕</div>
+    </a>
+    <h2>התחברות</h2>
 
+    <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+      <label>שם משתמש</label>
+      <input type="text" formControlName="username" />
+      <small *ngIf="f['username'].touched && f['username'].errors?.['required']" style="color:red;">יש להזין שם משתמש</small>
+      <small *ngIf="f['username'].touched && f['username'].errors?.['pattern']" style="color:red;">שם המשתמש יכול לכול אותיות בלבד (עברית או אנגלית)</small>
+
+      <label>סיסמה</label>
+      <input type="password" formControlName="password" />
+      <small *ngIf="f['password'].touched && f['password'].errors?.['required']" style="color:red;">יש להזין סיסמה</small>
+
+      <button type="submit" [disabled]="loginForm.invalid">התחבר</button>
+      <a routerLink="/register" routerLinkActive="active">
+        <p class="register-link">אין לי משתמש</p>
+      </a>
+
+      <p *ngIf="errorMessage" style="color:red">{{ errorMessage }}</p>
+    </form>
+  </div>
+</div>
 <router-outlet></router-outlet>

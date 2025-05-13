@@ -1,3 +1,137 @@
-p{
-font: size 200px;;
+
+.orders-wrapper {
+    background-color: white;
+    padding: 1rem;
+    border-radius: 12px;
+    max-width: 700px;
+    margin: 2rem auto;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    direction: rtl;
+    font-family: sans-serif;
+  }
+  
+.page-container{
+    background-color: #cccccc;
+    height: 530px;
+    margin-top: 0;
+    padding-top: 10px;
 }
+  .orders-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #811313;
+    text-align: right;
+    margin-bottom: 1rem;
+  }
+  .filter-controls {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 1rem;
+    font-family: sans-serif;
+    gap: 0.5rem;
+  }
+  
+  .filter-controls select {
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
+  
+  
+  .orders-table {
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  
+  .orders-header-row {
+    background-color: #811313;
+    color: white;
+    display: flex;
+    font-weight: bold;
+    padding: 10px;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+  }
+  
+  .orders-data-row {
+    display: flex;
+    align-items: center;
+    background-color: #ede9e9;
+    border-bottom: 1px solid #ddd;
+    padding: 0.75rem;
+  }
+  
+  .cell {
+    flex: 1;
+    text-align: center;
+  }
+
+  .orders-header-row .icon-cell {
+    font-weight: bold;
+    color: white;
+  }
+  .past-order {
+  opacity: 0.6;
+  background-color: #e0e0e0 !important;
+  color: #333 !important;
+}
+
+
+  
+  .icon-cell {
+    width: 2.1rem;
+    text-align: center;
+    font-size: 1.1rem;
+    margin-left: 0.5rem;
+  }
+  
+  .pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+  }
+  .pagination-controls{
+    padding-right: 258px;
+    padding-top: 10px;
+  }
+  
+  button {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    margin: 0 1rem;
+    cursor: pointer;
+    color: #811313;
+  }
+  .filter{
+    font-size: 16px;
+  }
+  button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  td {
+    vertical-align: middle;
+  }
+  
+  .status-text {
+    margin-left: 0.5rem;
+  }
+  
+  .status-green {
+    background-color: #e6f4ea; /* soft green */
+  }
+  
+  .status-yellow {
+    background-color: #fff8e1; /* soft yellow */
+  }
+  
+  .status-red {
+    background-color: #fcebea; /* soft red */
+  }
+  
+ 
+  h1{
+    color: #811313;
+  }

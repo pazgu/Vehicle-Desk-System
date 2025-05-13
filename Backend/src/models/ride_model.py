@@ -1,9 +1,11 @@
 from sqlalchemy import Column, String, Integer, Text, Enum, Boolean, Numeric, DateTime, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-from database import Base
+from src.models.base import Base
 import enum
 import uuid
+from sqlalchemy.sql import func
+
 
 class RideType(str, enum.Enum):
     administrative = "administrative"
@@ -21,7 +23,7 @@ class Ride(Base):
     __tablename__ = "rides"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.employee_id"), nullable=False)
     vehicle_id = Column(UUID(as_uuid=True), ForeignKey("vehicles.id"), nullable=False)
     ride_type = Column(Enum(RideType), nullable=False)
     start_datetime = Column(DateTime, nullable=False)
@@ -32,5 +34,5 @@ class Ride(Base):
     estimated_distance_km = Column(Numeric, nullable=False)
     status = Column(Enum(RideStatus), default=RideStatus.pending, nullable=False)
     license_check_passed = Column(Boolean, default=False)
-    submitted_at = Column(DateTime, nullable=False)
-    emergency_event = Column(Text, nullable=True)
+    submitted_at = Column(DateTime, nullable=False, server_default=func.now())
+    emergency_event = Column(Text, nullable=True) 

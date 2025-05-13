@@ -1,0 +1,252 @@
+:host {
+  display: block;
+  background-color: #f2efef  ; /* Light gray background */
+  min-height: 100vh; /* Ensure it covers the full viewport height */
+  padding: 20px; /* Optional: Add padding around the content */
+  }
+
+
+.card-container {
+  max-width: 600px; /* Reduce the width of the card */
+  margin: 1rem auto; /* Center the card with smaller margins */
+  padding: 0.5rem; /* Reduce padding */
+}
+
+:host ::ng-deep .trip-card {
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  min-height: 400px; /* Reduce the minimum height */
+  padding: 0.5rem; /* Reduce padding for better spacing */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Ensure footer stays at the bottom */
+}
+
+:host ::ng-deep .trip-card.card-approved {
+  background-color: #dcf1e1; /* Light green */
+  color: #155724; /* Dark green text */
+  border: 2px solid #b1d3b9; /* Light gray border */
+}
+
+:host ::ng-deep .trip-card.card-pending {
+  background-color: #fbf3da; /* Light yellow */
+  color: #856404; /* Dark yellow text */
+  border: 2px solid #e3d9ba; /* Light gray border */
+}
+
+:host ::ng-deep .trip-card.card-rejected {
+  background-color: #f8e2e2; /* Light red */
+  color: #721c24; /* Dark red text */
+  border: 2px solid #e8c5c5; /* Light gray border */
+}
+
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+  }
+  
+  .loading-container span {
+    margin-top: 1rem;
+    font-size: 1rem;
+    color: #666;
+  }
+  
+  
+  :host ::ng-deep .trip-card .p-card-header {
+    padding: 0;
+  }
+  
+  .card-header {
+    padding: 1rem; /* Reduce padding */
+    background-color: #f8f9fa;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  
+  .card-content {
+    padding: 0.5rem; /* Reduce padding */
+  }
+  
+  .info-row {
+    display: flex;
+    margin-bottom: 0.5rem; /* Reduce spacing between rows */
+  }
+  
+  .info-label {
+    min-width: 100px; /* Reduce label width */
+    font-weight: 600;
+    color: #555;
+  }
+  
+  .info-value {
+    flex: 1;
+    color: #333;
+  }
+  
+  .status-details {
+    margin-top: 1rem;
+  }
+  
+  .status-details h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.2rem;
+    color: #333;
+  }
+  
+  .status-indicator {
+    margin-top: 1rem;
+  }
+  
+  .status-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  
+  .status-line::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: #e9ecef;
+    z-index: 0;
+  }
+  
+  .status-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    border: 2px solid #ccc;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .status-dot.active {
+    background-color: #4caf50;
+    border-color: #388e3c;
+  }
+  
+  .status-labels {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+  
+  .status-label {
+    text-align: center;
+    font-size: 0.9rem;
+    color: #777;
+    width: 70px;
+    margin-left: -35px;
+    margin-right: -35px;
+  }
+
+  
+  .status-label.active {
+    color: #388e3c;
+    font-weight: 600;
+  }
+  :host ::ng-deep .p-tag {
+    font-size: 0.9rem;
+    padding: 0.3rem 0.75rem;
+  }
+  
+  :host ::ng-deep .p-button .p-button-icon {
+    margin-left: 0.5rem;
+    margin-right: 0;
+  }
+
+
+  .card-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px; /* Reduce spacing above actions */
+    gap: 0.5rem; /* Reduce gap between buttons */
+    width: 100%;
+    padding-bottom: 5px; /* Reduce padding below buttons */
+  }
+
+  .card-actions p-button {
+    flex: none;
+    width: 100px; /* Reduce button width */
+    height: 30px; /* Keep button height consistent */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+  
+  /* Approve button (green) */
+  .card-actions .approve {
+    border-radius: 0.5rem;
+    background-color: rgb(27, 119, 47) !important; /* Green background */
+    color: white !important; /* White text */
+  }
+  
+  .card-actions .approve:hover {
+    background-color: #155724 !important; /* Darker green on hover */
+  }
+  
+  /* Reject button (red) */
+  .card-actions .reject {
+    border-radius: 0.5rem;
+    background-color: #ae2121 !important; /* Red background */
+    color: white !important; /* White text */
+  }
+  
+  .card-actions .reject:hover {
+    background-color: #721c24 !important; /* Darker red on hover */
+  }
+  
+  /* Back to List button (gray) */
+  .card-actions .return {
+    border-radius: 0.5rem;
+    background-color: #788087 !important; /* Gray background */
+    border-color: #5a6268 !important; /* Darker gray border */
+    color: white !important; /* White text */
+  }
+  
+  .card-actions .return:hover {
+    background-color: #454b4f !important; /* Darker gray on hover */
+  }
+
+  
+  @media (max-width: 576px) {
+    .card-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .card-header p-tag {
+      margin-top: 0.5rem;
+    }
+    
+    .info-row {
+      flex-direction: column;
+    }
+    
+    .info-label {
+      margin-bottom: 0.25rem;
+    }
+    
+    /* :host ::ng-deep .card-actions {
+      flex-direction: column;
+    }
+    
+    :host ::ng-deep .card-actions .p-button {
+      width: 100%;
+    } */
+  }
