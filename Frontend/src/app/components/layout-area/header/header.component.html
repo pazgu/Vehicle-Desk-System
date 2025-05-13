@@ -29,7 +29,7 @@
       </div>
       
 
-      <span class="username"></span>
+      <span class="username">{{ fullName$ | async }}</span>
       <a [routerLink]="['/new-ride']" title="להזמין נסיעה">
         <img src="/assets/images/add-car.png" alt="Car" class="add-car" />
       </a>
