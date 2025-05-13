@@ -1,32 +1,37 @@
 
 .notification-page {
   font-family: 'Alef', sans-serif;
+  height: 400px;
   background-color: #fef7ff;
-  padding: 2rem;
+  padding: 1rem;
   border-radius: 16px;
-  border: 8px solid #cac4d0;
+  border: 4px solid #cac4d0;
   max-width: 1000px;
-  margin: 40px auto 0 auto; /* ⬅️ Added margin-top: 40px */
+  margin: 30px auto 0 auto; 
+  
 }
-
-
+.wrapper{
+  background-color: #cccccc;
+    height: 530px;
+    margin-top: 0;
+    padding-top: 10px;
+}
 .title {
-  font-size: 2.5rem;
+  font-size: 1.5rem;
   font-weight: bold;
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 
 .notification {
   background-color: #942222;
   opacity: 0.2;
-  padding: 1rem;
+  padding: 0.5rem;
   border-radius: 8px;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   text-align: center;
-  font-size: 18px;
-  font-weight: bold;
-  font-family: 'Alef', sans-serif;
+  font-size: 15px;
+  
   color: #000;
 }
 
@@ -48,7 +53,7 @@
 .content {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.5rem;
 }
 
 .status-icon {
@@ -57,15 +62,34 @@
 
 .text {
   flex: 1;
-  font-size: 1.2rem;
-  font-weight: bold;
+  font-size: 1.3rem;
+ 
 }
 
 .message-icon {
-  width: 36px;
-  height: 36px;
+  width: 30px;
+  height: 30px;
   margin-inline-start: 10px;
   vertical-align: middle;
   margin-top: -2px; 
 
+}
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.pagination button {
+  background-color: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }

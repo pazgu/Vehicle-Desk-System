@@ -74,6 +74,8 @@ export class LoginComponent implements OnInit {
 
       // Call the setFullName method from AuthService to update the full name
       this.authService.setFullName(response.first_name, response.last_name);
+      this.authService.setLoginState(true);
+
 
       this.router.navigate(['/home']);  // Change route as needed
     },
@@ -85,3 +87,4 @@ export class LoginComponent implements OnInit {
 
   
 }
+

@@ -1,9 +1,9 @@
 from pydantic import BaseModel
 from uuid import UUID
 from datetime import datetime
-from typing import Optional
 from enum import Enum
 
+# ENUMS
 class RideType(str, Enum):
     administrative = "administrative"
     operational = "operational"
@@ -25,6 +25,4 @@ class RideCreate(BaseModel):
     stop: str
     destination: str
     estimated_distance_km: float
-    status: RideStatus = RideStatus.pending
-    license_check_passed: bool = False
-    submitted_at: datetime
+    

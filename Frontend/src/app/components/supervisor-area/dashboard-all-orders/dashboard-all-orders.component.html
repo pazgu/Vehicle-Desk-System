@@ -1,33 +1,68 @@
-<p-table #table [value]="trips" [paginator]="true" [rows]="5" dir="rtl">
-  <ng-template pTemplate="header">
-    <tr class="table-header">
-      <th pSortableColumn="id">מזהה נסיעה <p-sortIcon field="id"></p-sortIcon></th>
-      <th pSortableColumn="employeeName">שם עובד <p-sortIcon field="employeeName"></p-sortIcon></th>
-      <th pSortableColumn="vehicle">רכב <p-sortIcon field="vehicle"></p-sortIcon></th>
-      <th pSortableColumn="dateTime">תאריך <p-sortIcon field="dateTime"></p-sortIcon></th>
-      <th pSortableColumn="destination">יעד <p-sortIcon field="destination"></p-sortIcon></th>
-      <th pSortableColumn="distance">מרחק (ק"מ) <p-sortIcon field="distance"></p-sortIcon></th>
-      <th pSortableColumn="status">סטטוס <p-sortIcon field="status"></p-sortIcon></th>
-    </tr>
-  </ng-template>
+<div class="page-wrapper">
+  <div class="page-container">
+    <div class="orders-wrapper">
+      <h1>כל ההזמנות</h1>
+      <br>
+      <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; direction: rtl;">
+        <div>
+          <label for="sort">מיין לפי: </label>
+          <select id="sort" [(ngModel)]="sortBy">
+            <option value="date">תאריך</option>
+            <option value="status">סטטוס</option>
+          </select>
+        </div>
+        <button class="filter" (click)="showFilters = !showFilters">
+          {{ showFilters ? 'הסתר סינון' : 'הצג סינון' }}
+        </button>
+      </div>
 
-  <ng-template pTemplate="body" let-trip>
-    <tr (click)="onRowSelect(trip)">
-      <td>{{ trip.id }}</td>
-      <td>{{ trip.employeeName }}</td>
-      <td>{{ trip.vehicle }}</td>
-      <td>{{ trip.dateTime }}</td>
-      <td>{{ trip.destination }}</td>
-      <td>{{ trip.distance }}</td>
-      <td>
-        <span [ngClass]="getStatusClass(trip.status)" class="status-text">
-          {{ trip.status }}
-        </span>
-      </td>
-    </tr>
-  </ng-template>
-</p-table>
+      <div *ngIf="showFilters" style="margin-bottom: 1.5rem; background: #f7f7f7; padding: 1rem; border-radius: 8px;">
+        <div style="margin-bottom: 1rem;">
+          <label for="statusFilter">סטטוס:</label>
+          <select id="statusFilter" [(ngModel)]="statusFilter">
+            <option value="">הצג הכל</option>
+            <option value="מאושר">מאושר</option>
+            <option value="בהמתנה">ממתין</option>
+            <option value="נדחה">בוטל</option>
+          </select>
+        </div>
 
-<div class="reset-container">
-  <p-button class="reset" label="איפוס" icon="pi pi-refresh" (click)="resetFilters(table)"></p-button>
+        <div style="display: flex; gap: 1rem;">
+          <div>
+            <label for="startDate">מתאריך:</label>
+            <input id="startDate" type="date" [(ngModel)]="startDate">
+          </div>
+          <div>
+            <label for="endDate">עד תאריך:</label>
+            <input id="endDate" type="date" [(ngModel)]="endDate">
+          </div>
+        </div>
+      </div>
+
+      <p-table #table [value]="trips" [paginator]="true" [rows]="rows" dir="rtl">
+        <ng-template pTemplate="header">
+          <tr class="table-header">
+            <th>מזהה נסיעה</th>
+            <th>שם עובד</th>
+            <th>רכב</th>
+            <th>תאריך</th>
+            <th>יעד</th>
+            <th>מרחק (ק"מ)</th>
+            <th>סטטוס</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-trip>
+          <tr [ngClass]="getRowClass(trip.status)" (click)="onRowClick(trip)">
+            <td>{{ trip.id }}</td>
+            <td>{{ trip.employeeName }}</td>
+            <td>{{ trip.vehicle }}</td>
+            <td>{{ trip.dateTime }}</td>
+            <td>{{ trip.destination }}</td>
+            <td>{{ trip.distance }}</td>
+            <td>{{ trip.status }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
 </div>
