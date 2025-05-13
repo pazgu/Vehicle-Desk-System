@@ -15,7 +15,7 @@ class Notification(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    Notification_type = Column(Enum(NotificationType), nullable=False)
+    notification_type = Column(Enum(NotificationType), nullable=False)
     title = Column(Text, nullable=False)
     message = Column(Text, nullable=False)
     sent_at = Column(DateTime, nullable=False, default=datetime.utcnow)

@@ -12,7 +12,10 @@ import { RouterModule } from '@angular/router';
 })
 export class HomeComponent {
   currentPage = 1;
-  ordersPerPage = 3;
+  get ordersPerPage(): number {
+  return this.showFilters ? 3 : 5; // adjust values based on layout
+}
+
   filterBy = 'date'; // ✅ filter option (default: date)
   statusFilter = '';
   startDate: string = '';
@@ -41,9 +44,10 @@ export class HomeComponent {
 
 
   get pagedOrders() {
-    const start = (this.currentPage - 1) * this.ordersPerPage;
-    return this.filteredOrders.slice(start, start + this.ordersPerPage);
-  }
+  const start = (this.currentPage - 1) * this.ordersPerPage;
+  return this.filteredOrders.slice(start, start + this.ordersPerPage);
+}
+
 
   nextPage() {
     if (this.currentPage < this.totalPages) this.currentPage++;
@@ -56,6 +60,7 @@ export class HomeComponent {
   get totalPages() {
     return Math.ceil(this.filteredOrders.length / this.ordersPerPage);
   }
+  
   getStatusTooltip(status: string): string {
     switch (status) {
       case 'Approved':

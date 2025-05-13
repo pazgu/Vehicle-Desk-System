@@ -4,10 +4,11 @@
     padding: 1rem;
     border-radius: 12px;
     max-width: 700px;
-    margin: 2rem auto;
+    margin: 1.5rem auto;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     direction: rtl;
     font-family: sans-serif;
+    height: 440px;
   }
   
 .page-container{
@@ -92,7 +93,7 @@
     margin-top: 1rem;
   }
   .pagination-controls{
-    padding-right: 258px;
+    padding-right: 235px;
     padding-top: 10px;
   }
   
