@@ -11,7 +11,8 @@ from ..services.new_ride_service import create_ride
 from fastapi.responses import JSONResponse
 from typing import List, Optional, Union
 from datetime import datetime
-from ..schemas.user_rides_schema import RideSchema, RideStatusEnum
+from ..utils.mock_data import mock_departments
+from ..schemas.user_rides_schema import RideSchema, RideStatus
 from ..services.user_rides_service import get_future_rides, get_past_rides , get_all_rides
 from ..utils.database import get_db
 from src.models import ride_model, vehicle_model
@@ -63,28 +64,26 @@ def get_user_orders():
     return {"message": "Not implemented yet"}
     
 
-@router.get("/api/orders/{user_id}/future-orders", response_model=List[RideSchema])
-def get_future_orders(
-    user_id: int,
-    status: Optional[RideStatusEnum] = Query(None),
-    from_date: Optional[datetime] = Query(None),
-    to_date: Optional[datetime] = Query(None)
-):
-    rides = get_future_rides(user_id, status, from_date, to_date)
+@router.get("/api/future-orders/{user_id}", response_model=List[RideSchema])
+def get_future_orders(user_id: UUID, status: Optional[RideStatus] = Query(None),
+                      from_date: Optional[datetime] = Query(None),
+                      to_date: Optional[datetime] = Query(None),
+                      db: Session = Depends(get_db)):
+    rides = get_future_rides(user_id, db, status, from_date, to_date)
     if not rides:
+        # If filters were applied and no rides were found, return a message in the response
         if status or from_date or to_date:
-            return JSONResponse(status_code=200, content={"message": "אין הזמנות שמתאימות לסינון"})
-        raise HTTPException(status_code=404, detail="לא נמצאו נסיעות עתידיות")
+            return JSONResponse(status_code=200, content={"message": "No rides match the given filters."})
+        # If no rides were found at all, return a different message with status code 200
+        return JSONResponse(status_code=200, content={"message": "No future rides found."})
     return rides
 
 @router.get("/api/orders/{user_id}/past-orders", response_model=List[RideSchema])
-def get_past_orders(
-    user_id: int,
-    status: Optional[RideStatusEnum] = Query(None),
-    from_date: Optional[datetime] = Query(None),
-    to_date: Optional[datetime] = Query(None)
-):
-    rides = get_past_rides(user_id, status, from_date, to_date)
+def get_past_orders(user_id: UUID, status: Optional[RideStatus] = Query(None),
+                    from_date: Optional[datetime] = Query(None),
+                    to_date: Optional[datetime] = Query(None),
+                    db: Session = Depends(get_db)):
+    rides = get_past_rides(user_id, db, status, from_date, to_date)
     if not rides:
         if status or from_date or to_date:
             return JSONResponse(status_code=200, content={"message": "אין הזמנות שמתאימות לסינון"})
@@ -92,13 +91,11 @@ def get_past_orders(
     return rides
 
 @router.get("/api/orders/{user_id}/all-orders", response_model=List[RideSchema])
-def get_all_orders(
-    user_id: int,
-    status: Optional[RideStatusEnum] = Query(None),
-    from_date: Optional[datetime] = Query(None),
-    to_date: Optional[datetime] = Query(None)
-):
-    rides = get_all_rides(user_id, status, from_date, to_date)
+def get_all_orders(user_id: UUID, status: Optional[RideStatus] = Query(None),
+                   from_date: Optional[datetime] = Query(None),
+                   to_date: Optional[datetime] = Query(None),
+                   db: Session = Depends(get_db)):
+    rides = get_all_rides(user_id, db, status, from_date, to_date)
     if not rides:
         if status or from_date or to_date:
             return JSONResponse(status_code=200, content={"message": "אין הזמנות שמתאימות לסינון"})

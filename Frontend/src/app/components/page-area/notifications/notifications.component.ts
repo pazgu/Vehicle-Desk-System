@@ -16,9 +16,10 @@ export class NotificationsComponent {
     { timeAgo: 'אתמול, 1:59', message: 'בקשתך לנסיעה בתאריך 5.7.2025 אושרה', status: 'Approved' }
   ];
 
-  getStatusIcon(status: string): string {
-    return status === 'Approved' ? '✅' : '❌';
-  }
+getStatusIcon(status: string): string {
+  return status === 'Approved' ? 'pi pi-check-circle' : 'pi pi-times-circle';
+}
+
 
   getStatusClass(status: string): string {
     return status === 'Approved' ? 'approved' : 'rejected';
