@@ -4,6 +4,7 @@ from jwt import ExpiredSignatureError, InvalidTokenError, DecodeError
 from ..schemas.user_response_schema import UserResponse
 from ..models.user_model import User
 from uuid import UUID
+from datetime import datetime, timedelta
 
 SECRET_KEY = "your-secret-key"
 ALGORITHM = "HS256"
@@ -14,8 +15,6 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 
 
-from datetime import datetime, timedelta
-import jwt
 
 def create_access_token(employee_id: UUID, username: str,first_name:str,last_name:str, role: str, expires_delta: timedelta = None):
     expire = datetime.utcnow() + (expires_delta or timedelta(minutes=15))

@@ -4,7 +4,18 @@
     <h2>הזמנה חדשה</h2>
     <hr />
     <form [formGroup]="rideForm" (ngSubmit)="submit()">
+
+      <!-- Ride period selector -->
       <div class="input-group">
+        <label>סוג נסיעה (בוקר / לילה)</label>
+        <select formControlName="ride_period">
+          <option value="morning">נסיעת בוקר</option>
+          <option value="night">נסיעת לילה</option>
+        </select>
+      </div>
+
+      <!-- Morning Date -->
+      <div *ngIf="rideForm.get('ride_period')?.value === 'morning'" class="input-group">
         <label>תאריך הנסיעה</label>
         <input type="date" formControlName="ride_date" />
         <small *ngIf="f.ride_date.touched && f.ride_date.errors?.['required']" class="distance-info">
@@ -18,18 +29,31 @@
         </small>
       </div>
 
+      <!-- Nighttime Date Range -->
+      <div *ngIf="rideForm.get('ride_period')?.value === 'night'" class="row">
+        <div class="input-group">
+          <label>תאריך התחלה</label>
+          <input type="date" formControlName="ride_date" />
+        </div>
+        <div class="input-group">
+          <label>תאריך סיום</label>
+          <input type="date" formControlName="ride_date_night_end" />
+        </div>
+      </div>
+
+      <!-- Start/End Time -->
       <div class="row">
         <div class="input-group">
-          <label>שעת סיום</label>
-          <input type="time" formControlName="end_time" />
-          <small *ngIf="f.end_time.touched && f.end_time.errors?.['required']" class="distance-info">
+          <label>שעת התחלה</label>
+          <input type="time" formControlName="start_time" />
+          <small *ngIf="rideForm.get('ride_period')?.value === 'morning' && f.start_time.touched && f.start_time.errors?.['required']" class="distance-info">
             חובה למלא את שדה זה
           </small>
         </div>
         <div class="input-group">
-          <label>שעת התחלה</label>
-          <input type="time" formControlName="start_time" />
-          <small *ngIf="f.start_time.touched && f.start_time.errors?.['required']" class="distance-info">
+          <label>שעת סיום</label>
+          <input type="time" formControlName="end_time" />
+          <small *ngIf="rideForm.get('ride_period')?.value === 'morning' && f.end_time.touched && f.end_time.errors?.['required']" class="distance-info">
             חובה למלא את שדה זה
           </small>
         </div>
