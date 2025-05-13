@@ -160,7 +160,14 @@ def get_user_2specific_order():
     return {"message": "Not implemented yet"}
 
 @router.post("/api/orders/{user_id}", response_model=RideCreate, status_code=fastapi_status.HTTP_201_CREATED)
-def create_order(user_id: UUID, ride_request: RideCreate, db: Session = Depends(get_db)):
+def create_order(user_id: UUID, ride_request: RideCreate, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
+    
+    # Check if user has the right role
+    role_check(allowed_roles=["employee", "admin"], token=token)
+
+    # Check if this user is creating their own order
+    identity_check(user_id=str(user_id), token=token)
+
     try:
         new_ride = create_ride(db, user_id, ride_request)
         return new_ride
