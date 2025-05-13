@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../../../../services/auth.service';
- 
+
 @Component({
   selector: 'app-register',
   standalone: true,
@@ -23,6 +23,7 @@ export class RegisterComponent implements OnInit {
     private fb: FormBuilder,
     private http: HttpClient,
     private authService: AuthService,
+    private toastService: ToastService,
     private router: Router
   ) {}
 
@@ -34,7 +35,7 @@ export class RegisterComponent implements OnInit {
       email: ['', [Validators.required, Validators.email, Validators.pattern(/@gmail\.com$/)]],
       password: ['', [Validators.required, Validators.minLength(8), Validators.pattern(/^(?=.*[A-Z])(?=.*\d).+$/)]],
       department_id: ['', Validators.required]
-  });
+    });
 
     this.fetchDepartments();
   }
@@ -46,7 +47,8 @@ export class RegisterComponent implements OnInit {
       },
       error: (err) => {
         console.error('Failed to fetch departments', err);
-        this.departments = []; // fallback to empty
+        this.toastService.show('שגיאה בטעינת מחלקות', 'error');
+        this.departments = [];
       }
     });
   }
@@ -60,7 +62,7 @@ export class RegisterComponent implements OnInit {
 
     if (this.registerForm.invalid) {
       this.registerForm.markAllAsTouched();
-      this.errorMessage = 'יש למלא את כל השדות כנדרש ולוודא תקינות';
+      this.toastService.show('יש למלא את כל השדות כנדרש ולוודא תקינות', 'error');
       return;
     }
 
@@ -71,6 +73,11 @@ export class RegisterComponent implements OnInit {
 
     this.authService.register(registerData).subscribe({
       next: (response) => {
+        if (!response || !response.access_token) {
+          this.toastService.show('שגיאה בלתי צפויה - נסה שוב מאוחר יותר', 'error');
+          return;
+        }
+
         localStorage.setItem('access_token', response.access_token);
         localStorage.setItem('username', response.username);
         localStorage.setItem('first_name', response.first_name);
@@ -78,11 +85,26 @@ export class RegisterComponent implements OnInit {
         localStorage.setItem('role', response.role);
         this.authService.setFullName(response.first_name, response.last_name);
 
+        this.toastService.show('ההרשמה בוצעה בהצלחה 🎉', 'success');
         this.router.navigate(['/home']);
       },
       error: (err) => {
         console.error('Registration failed:', err);
-        alert('אירעה שגיאה. נסה שוב.');
+
+        if (err.status === 0) {
+          this.toastService.show('השרת אינו זמין כרגע. נסה שוב מאוחר יותר', 'error');
+        } else if (err.status === 400) {
+          if (err.error?.detail?.includes('already exists')) {
+            this.toastService.show('שם המשתמש או האימייל כבר קיימים במערכת', 'error');
+          } else if (err.error?.detail?.includes('Invalid email')) {
+            this.toastService.show('אימייל לא תקין', 'error');
+          } else {
+            this.toastService.show('שגיאה בפרטי ההרשמה - בדוק שוב את הקלט', 'error');
+          }
+        } else {
+          const errorText = err.error?.detail || 'שגיאה כללית בהרשמה';
+          this.toastService.show(errorText, 'error');
+        }
       }
     });
   }
