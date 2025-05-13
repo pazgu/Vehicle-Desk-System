@@ -94,7 +94,8 @@ body, html {
   .street-img {
     position: absolute;
     bottom: 2px;
-   width: 400px;
+   width: 900px;
+   
     opacity: 30%;
     pointer-events: none;
     
