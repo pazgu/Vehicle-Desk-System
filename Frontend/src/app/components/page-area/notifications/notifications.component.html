@@ -3,22 +3,25 @@
   <h2 class="title">הודעות</h2>
 
   <div class="notification" *ngFor="let note of pagedNotifications" [ngClass]="getStatusClass(note.status)">
-    <div class="time">{{ note.timeAgo }}</div>
+    
     <div class="content">
       <i [ngClass]="getStatusIcon(note.status)" class="status-icon"></i>
       <span class="text">{{ note.message }}</span>
-      <img src="/assets/images/message.png" alt="Message Icon" class="message-icon" />
+       <div class="time">{{ note.timeAgo }}</div>
+       <img src="/assets/images/message.png" alt="Message Icon" class="message-icon" />
+     
     </div>
   </div>
 
   <div class="pagination">
-    <button (click)="prevPage()" [disabled]="currentPage === 1">
+    <button (click)="nextPage()" [disabled]="currentPage === totalPages">
       ◀
     </button>
     <span>עמוד {{ currentPage }} מתוך {{ totalPages }}</span>
-    <button (click)="nextPage()" [disabled]="currentPage === totalPages">
+    <button (click)="prevPage()" [disabled]="currentPage === 1">
       ▶
     </button>
+    
   </div>
 </div>
 </div>
