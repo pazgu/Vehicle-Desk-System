@@ -84,6 +84,8 @@ export class RegisterComponent implements OnInit {
         localStorage.setItem('first_name', response.first_name);
         localStorage.setItem('last_name', response.last_name);
         localStorage.setItem('role', response.role);
+        localStorage.setItem('employee_id', response.employee_id);
+
 
         this.authService.setFullName(response.first_name, response.last_name);
         this.authService.setLoginState(true);
