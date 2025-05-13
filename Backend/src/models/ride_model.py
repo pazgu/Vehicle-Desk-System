@@ -3,7 +3,6 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from src.models.base import Base
 import enum
-import uuid
 
 class RideType(str, enum.Enum):
     administrative = "administrative"

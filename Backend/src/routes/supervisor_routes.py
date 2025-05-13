@@ -1,12 +1,16 @@
-from fastapi import APIRouter
 from uuid import UUID
 from src.services.supervisor_dashboard_service import get_department_orders
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from src.utils.database import get_db
+from src.models.ride_model import Ride 
 
 
 
 router = APIRouter()
 
-@router.get("/departments/{department_id}/orders")
+
+@router.get("/orders/{department_id}")
 def get_department_orders_route(department_id: UUID):
     return get_department_orders(str(department_id))
 

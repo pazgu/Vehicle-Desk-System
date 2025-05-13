@@ -2,6 +2,7 @@ from typing import List
 from datetime import datetime
 from ..schemas.ride_dashboard_item import RideDashboardItem
 from ..utils.mock_data import mock_orders, mock_users_db
+from ..models.ride_model import Ride
 
 def get_department_orders(department_id: str) -> List[RideDashboardItem]:
     # Get orders by department
