@@ -1,5 +1,5 @@
 body {
-    margin: 0px;
+   
     margin-top: 0px;
     font-family: 'Alef', sans-serif;
     background-color: #d7d1d9;
@@ -42,7 +42,7 @@ body, html {
   .logo {
     height: 56px;
     margin: 0 20px;
-    padding-left: 40px;
+    
   }
   
   .nav-center a {
@@ -51,6 +51,36 @@ body, html {
     margin: 0 10px;
   }
   
+.navbar {
+  background-color: #942222;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 55px;
+  position: relative;
+  padding: 0 20px;
+}
+
+.nav-left,
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 1;
+}
+
+/* Center the logo absolutely */
+.nav-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 0;
+}
+
+.logo {
+  height: 56px;
+}
 
  
   
@@ -67,8 +97,11 @@ body, html {
     left: 20px;
     width: 150px;
     opacity: 30%;
-    z-index: 0;
+    pointer-events: none;
+    z-index: -1;
   }
+
+
   .register-link {
     text-decoration: underline;
   }
@@ -144,4 +177,11 @@ body, html {
   .user-menu-container:hover .user-dropdown {
     display: block;
   }
+  
+.user-dropdown li a {
+  display: block;
+  width: 100%;
+  cursor: pointer;
+}
+
   

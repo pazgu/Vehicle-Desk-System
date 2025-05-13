@@ -1,58 +1,77 @@
+from sqlalchemy.orm import Session
 from typing import List, Optional
-from datetime import datetime, timedelta
-from ..schemas.user_rides_schema import RideSchema, RideStatusEnum, FuelType
+from datetime import datetime
+from ..models.ride_model import Ride , RideStatus
+from ..schemas.user_rides_schema import RideSchema
+from uuid import UUID
+from ..models.vehicle_model import Vehicle
+from sqlalchemy import String
 
-def get_all_mock_rides() -> List[RideSchema]:
-    now = datetime.utcnow()
-
-    return [
-        RideSchema(
-            ride_id="2025-00034",
-            vehicle=FuelType.hybrid,
-            start_datetime=now + timedelta(days=2),
-            end_datetime=now + timedelta(days=2, hours=2),
-            estimated_distance="45 km",
-            status=RideStatusEnum.approved
-        ),
-        RideSchema(
-            ride_id="2025-00035",
-            vehicle=FuelType.electric,
-            start_datetime=now - timedelta(days=1),
-            end_datetime=now - timedelta(days=1, hours=-1.5),
-            estimated_distance="30 km",
-            status=RideStatusEnum.pending
-        )
-    ]
-
-def filter_rides(
-    rides: List[RideSchema],
-    status: Optional[RideStatusEnum] = None,
-    from_date: Optional[datetime] = None,
-    to_date: Optional[datetime] = None
-) -> List[RideSchema]:
+def filter_rides(query, status: Optional[RideStatus], from_date, to_date):
     if status:
-        rides = [r for r in rides if r.status == status]
+        query = query.filter(Ride.status == status)
     if from_date:
-        rides = [r for r in rides if r.start_datetime >= from_date]
+        query = query.filter(Ride.start_datetime >= from_date)
     if to_date:
-        rides = [r for r in rides if r.start_datetime <= to_date]
-    rides.sort(key=lambda r: r.start_datetime)
-    status_order = {"approved": 1, "pending": 2, "rejected": 3}
-    rides.sort(key=lambda r: (status_order.get(r.status.value, 4), r.start_datetime))
-    return rides
+        query = query.filter(Ride.start_datetime <= to_date)
+    return query.order_by(Ride.start_datetime)
 
-def get_future_rides(user_id: int, status=None, from_date=None, to_date=None):
-    now = datetime.utcnow()
-    all_rides = get_all_mock_rides()
-    future = [r for r in all_rides if r.start_datetime > now]
-    return filter_rides(future, status, from_date, to_date)
+# def get_future_rides(user_id: UUID, db: Session, status=None, from_date=None, to_date=None) -> List[Ride]:
+#     query = db.query(Ride).filter(Ride.user_id == user_id, Ride.start_datetime > datetime.utcnow())
+#     return filter_rides(query, status, from_date, to_date).all()
 
-def get_past_rides(user_id: int, status=None, from_date=None, to_date=None):
-    now = datetime.utcnow()
-    all_rides = get_all_mock_rides()
-    past = [r for r in all_rides if r.start_datetime <= now]
-    return filter_rides(past, status, from_date, to_date)
 
-def get_all_rides(user_id: int, status=None, from_date=None, to_date=None):
-    all_rides = get_all_mock_rides()
-    return filter_rides(all_rides, status, from_date, to_date)
+def get_future_rides(user_id: UUID, db: Session, status=None, from_date=None, to_date=None) -> List[RideSchema]:
+    # Updated query with join and casting
+    query = db.query(
+        Ride.id.label("ride_id"),
+        Vehicle.fuel_type.label("vehicle"),
+        Ride.start_datetime,
+        Ride.end_datetime,
+        Ride.estimated_distance_km.cast(String).label("estimated_distance"),  # Casting to string
+        Ride.status
+    ).join(Vehicle, Ride.vehicle_id == Vehicle.id).filter(Ride.user_id == user_id, Ride.start_datetime > datetime.utcnow())
+
+    # Apply additional filters if necessary
+    query = filter_rides(query, status, from_date, to_date)
+
+    # Fetch and return the result as a list of RideSchema
+    return query.all()
+
+
+
+# def get_past_rides(user_id: UUID, db: Session, status=None, from_date=None, to_date=None) -> List[Ride]:
+#     query = db.query(Ride).filter(Ride.user_id == user_id, Ride.start_datetime <= datetime.utcnow())
+#     return filter_rides(query, status, from_date, to_date).all()
+
+def get_past_rides(user_id: UUID, db: Session, status=None, from_date=None, to_date=None) -> List[RideSchema]:
+    query = db.query(
+        Ride.id.label("ride_id"),
+        Vehicle.fuel_type.label("vehicle"),
+        Ride.start_datetime,
+        Ride.end_datetime,
+        Ride.estimated_distance_km.cast(String).label("estimated_distance"),  # Casting to string
+        Ride.status
+    ).join(Vehicle, Ride.vehicle_id == Vehicle.id).filter(Ride.user_id == user_id, Ride.start_datetime <= datetime.utcnow())
+
+    query = filter_rides(query, status, from_date, to_date)
+    return query.all()
+
+
+# def get_all_rides(user_id: UUID, db: Session, status=None, from_date=None, to_date=None) -> List[Ride]:
+#     query = db.query(Ride).filter(Ride.user_id == user_id)
+#     return filter_rides(query, status, from_date, to_date).all()
+
+def get_all_rides(user_id: UUID, db: Session, status=None, from_date=None, to_date=None) -> List[RideSchema]:
+    query = db.query(
+        Ride.id.label("ride_id"),
+        Vehicle.fuel_type.label("vehicle"),
+        Ride.start_datetime,
+        Ride.end_datetime,
+        Ride.estimated_distance_km.cast(String).label("estimated_distance"),  # Casting to string
+        Ride.status
+    ).join(Vehicle, Ride.vehicle_id == Vehicle.id).filter(Ride.user_id == user_id)
+
+    query = filter_rides(query, status, from_date, to_date)
+    return query.all()
+    

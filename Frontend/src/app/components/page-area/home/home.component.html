@@ -82,13 +82,17 @@
 
     <!-- Pagination -->
     <div class="pagination-controls">
-      <button (click)="nextPage()" [disabled]="currentPage === totalPages">
-        <i class="pi pi-arrow-right"></i>
-      </button>
-      <span>{{ currentPage }} / {{ totalPages }}</span>
-      <button (click)="prevPage()" [disabled]="currentPage === 1">
-        <i class="pi pi-arrow-left"></i>
-      </button>
+      
+    
+    
+    <button (click)="prevPage()" [disabled]="currentPage === 1">
+      ▶
+    </button>
+<span>עמוד {{ currentPage }} מתוך {{ totalPages }}</span>
+    
+    <button (click)="nextPage()" [disabled]="currentPage === totalPages">
+      ◀
+    </button>
     </div>
 
   </div>

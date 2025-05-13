@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
+import { ToastService } from '../../../services/toast.service';
 import { Observable, of } from 'rxjs';
 import { CommonModule } from '@angular/common';
 
@@ -12,19 +13,27 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./header.component.css']
 })
 export class HeaderComponent implements OnInit {
-  fullName$: Observable<string> = of(''); // Initialize with an empty observable
+  fullName$: Observable<string> = of('');
+  isLoggedIn = false;
 
-
-
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private toastService: ToastService // ✅ Add this
+  ) {}
 
   ngOnInit(): void {
-    // Get the full name observable from the AuthService
     this.fullName$ = this.authService.fullName$;
+
+    // ✅ Subscribe to login status
+    this.authService.isLoggedIn$.subscribe(value => {
+      this.isLoggedIn = value;
+    });
   }
 
   onLogout(): void {
     this.authService.logout();
+    this.toastService.show('התנתקת בהצלחה', 'success'); // ✅ Show toast
     this.router.navigate(['/login']);
   }
 }

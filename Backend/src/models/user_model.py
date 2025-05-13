@@ -5,6 +5,7 @@ from src.models.base import Base
 import enum
 
 class UserRole(str, enum.Enum):
+    anonymous = "anonymous"
     employee = 'employee'
     supervisor = 'supervisor'
     admin = 'admin'
