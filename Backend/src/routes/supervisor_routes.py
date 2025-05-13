@@ -11,12 +11,15 @@ router = APIRouter()
 
 
 @router.get("/orders/{department_id}")
-def get_department_orders_route(department_id: UUID):
-    return get_department_orders(str(department_id))
+def get_department_orders_route(department_id: UUID, db: Session = Depends(get_db)):
+    return get_department_orders(str(department_id), db)
 
 @router.get("/orders/{department_id}/{order_id}")
-def get_department_specific_order_route(department_id: UUID, order_id: UUID):
-    return get_department_specific_order(str(department_id), str(order_id))
+def get_department_specific_order_route(department_id: UUID, order_id: UUID, db: Session = Depends(get_db)):
+    order = get_department_specific_order(department_id, order_id, db)
+    if not order:
+        return {"error": "Order not found"}, 404
+    return order
 
 @router.get("/orders/{department_id}/{order_id}/pending")
 def get_approval_dashboard(department_id: UUID, order_id: UUID):
