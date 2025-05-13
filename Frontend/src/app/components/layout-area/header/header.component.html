@@ -29,7 +29,7 @@
       </div>
       
 
-<span class="username">{{ fullName$ | async }}</span>
+      <span class="username">{{ fullName$ | async }}</span>
       <a [routerLink]="['/new-ride']" title="להזמין נסיעה">
         <img src="/assets/images/add-car.png" alt="Car" class="add-car" />
       </a>
@@ -40,15 +40,17 @@
     </div>
 
     <div class="nav-right">
-      
-      <a [routerLink]="['home']" class="nav-link" href="#">ההזמנות שלי  </a>
+     <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/cars']" class="nav-link" href="#">רכבים | </a>
+<a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/daily-checks']" class="nav-link" href="#">בדיקות יומיות | </a>
+
+      <a [routerLink]="['home']" class="nav-link" href="#">ההזמנות שלי </a>
      <a routerLink="/notifications">
   <img src="/assets/images/bell-icon.png" alt="Notifications" />
     </a>
-    </div>
+    </div> 
   </div>
 
-  <img src="/assets/images/building-graphic.png" alt="Graphic" class="corner-img" />
+  <!-- <img src="/assets/images/street.png" alt="Graphic" class="street-img" /> -->
 </body>
 </html>
 
