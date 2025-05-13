@@ -37,6 +37,11 @@ export class AuthService {
   }): Observable<any> {
     return this.http.post<any>(this.registerUrl, registerData);
   }
+    private roleSubject = new BehaviorSubject<string>(
+    localStorage.getItem('role') || ''
+  );
+  role$ = this.roleSubject.asObservable();
+
 
   // 🧠 Update full name across the app
   setFullName(firstName: string, lastName: string): void {
@@ -65,4 +70,12 @@ export class AuthService {
     this.fullNameSubject.next('משתמש');
     this.setLoginState(false);
   }
+    getRole(): string {
+    return this.roleSubject.value;
+  }
+  setRole(role: string): void {
+  localStorage.setItem('role', role);
+  this.roleSubject.next(role);
+}
+
 }

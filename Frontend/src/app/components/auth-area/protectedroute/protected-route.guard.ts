@@ -44,4 +44,9 @@ export class ProtectedRouteGuard implements CanActivate {
     this.router.navigate(['/login']);
     return false;
   }
+
+  getRole(): string {
+  return localStorage.getItem('role') || '';
+}
+
 }
