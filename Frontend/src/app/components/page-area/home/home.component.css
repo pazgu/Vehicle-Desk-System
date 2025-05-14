@@ -13,7 +13,7 @@
   
 .page-container{
     background-color: #cccccc;
-    min-height: calc(100vh - 55px); /* subtract any fixed nav height if needed */
+    height: 530px;
     margin-top: 0;
     padding-top: 10px;
 }
@@ -136,3 +136,36 @@
   h1{
     color: #811313;
   }
+
+.no-orders-message {
+  background-color: #942222;
+  color: white;
+  font-family: 'Alef', sans-serif;
+  font-size: 22px;
+  font-weight: bold;
+  text-align: center;
+  padding: 28px 30px;
+  border-radius: 12px;
+  margin: 30px auto 20px auto;
+  max-width: 650px; /* was 520px, now a bit larger */
+}
+
+
+.new-ride-btn {
+  margin-top: 10px;
+  background-color: white;
+  color: #942222;
+  border: none;
+  padding: 14px 32px; /* Increased padding */
+  border-radius: 10px;
+  font-size: 20px; /* Bigger text */
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.new-ride-btn:hover {
+  background-color: #f0f0f0;
+}
+
+
