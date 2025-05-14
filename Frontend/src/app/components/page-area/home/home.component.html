@@ -3,13 +3,11 @@
     <h1>ההזמנות שלי</h1>
     <br>
 
-<div class="ride-filter-buttons">
-  <button [ngClass]="{ 'active': rideViewMode === 'future' }" (click)="rideViewMode = 'future'">הצג נסיעות עתידיות</button>
-  <button [ngClass]="{ 'active': rideViewMode === 'past' }" (click)="rideViewMode = 'past'">הצג נסיעות קודמות</button>
-  <button [ngClass]="{ 'active': rideViewMode === 'all' }" (click)="rideViewMode = 'all'">הצג הכל</button>
-</div>
-
-
+    <div class="ride-filter-buttons">
+      <button [ngClass]="{ 'active': rideViewMode === 'future' }" (click)="rideViewMode = 'future'; fetchRides()">הצג נסיעות עתידיות</button>
+      <button [ngClass]="{ 'active': rideViewMode === 'past' }" (click)="rideViewMode = 'past'; fetchRides()">הצג נסיעות קודמות</button>
+      <button [ngClass]="{ 'active': rideViewMode === 'all' }" (click)="rideViewMode = 'all'; fetchRides()">הצג הכל</button>
+    </div>
 
     <!-- Sort + Filter Toggle Bar -->
     <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; direction: rtl;">
@@ -30,53 +28,48 @@
     <div *ngIf="showFilters" style="margin-bottom: 1.5rem; background: #f7f7f7; padding: 1rem; border-radius: 8px;">
       <div style="margin-bottom: 1rem;">
         <label for="statusFilter">סטטוס:</label>
-        <select id="statusFilter" [(ngModel)]="statusFilter">
+        <select id="statusFilter" [(ngModel)]="statusFilter" (ngModelChange)="fetchRides()">
           <option value="">הצג הכל</option>
-          <option value="Approved">מאושר</option>
-          <option value="Pending">ממתין</option>
-          <option value="Rejected">בוטל</option>
+          <option value="approved">מאושר</option>
+          <option value="p">ממתין</option>
+          <option value="rejected">בוטל</option>
         </select>
       </div>
 
       <div style="display: flex; gap: 1rem;">
         <input
-  id="startDate"
-  type="date"
-  [(ngModel)]="startDate"
-  [min]="minDate"
-  [max]="maxDate"
-  (change)="validateDate('start')"
-/>
+          id="startDate"
+          type="date"
+          [(ngModel)]="startDate"
+          [min]="minDate"
+          [max]="maxDate"
+          (change)="validateDate('start'); fetchRides()" />
 
-<input
-  id="endDate"
-  type="date"
-  [(ngModel)]="endDate"
-  [min]="minDate"
-  [max]="maxDate"
-  (change)="validateDate('end')"
-/>
+        <input
+          id="endDate"
+          type="date"
+          [(ngModel)]="endDate"
+          [min]="minDate"
+          [max]="maxDate"
+          (change)="validateDate('end'); fetchRides()" />
 
         <label>
-  <input type="checkbox" [(ngModel)]="showOldOrders" />
-  הצג גם הזמנות מלפני חודש
-</label>
-
+          <input type="checkbox" [(ngModel)]="showOldOrders" />
+          הצג גם הזמנות מלפני חודש
+        </label>
       </div>
     </div>
 
-   <div *ngIf="filteredOrders.length === 0" class="no-orders-message">
-  לא נמצאו נסיעות עבור המשתמש הנוכחי
-  <button class="new-ride-btn" (click)="goToNewRide()"> + הזמן נסיעה חדשה</button>
-</div>
-
-
+    <div *ngIf="filteredOrders.length === 0" class="no-orders-message">
+      לא נמצאו נסיעות עבור המשתמש הנוכחי
+      <button class="new-ride-btn" (click)="goToNewRide()"> + הזמן נסיעה חדשה</button>
+    </div>
 
     <!-- Orders List -->
     <div
-  class="orders-data-row"
-  *ngFor="let order of pagedOrders"
-  [ngClass]="[getStatusClass(order.status), isPastOrder(order) ? 'past-order' : '']">
+      class="orders-data-row"
+      *ngFor="let order of pagedOrders"
+      [ngClass]="[getStatusClass(order.status), isPastOrder(order) ? 'past-order' : '']">
 
       <div class="icon-cell">
         <span
@@ -98,18 +91,9 @@
 
     <!-- Pagination -->
     <div class="pagination-controls">
-      
-    
-    
-    <button (click)="prevPage()" [disabled]="currentPage === 1">
-      ▶
-    </button>
-<span>עמוד {{ currentPage }} מתוך {{ totalPages }}</span>
-    
-    <button (click)="nextPage()" [disabled]="currentPage === totalPages">
-      ◀
-    </button>
+      <button (click)="prevPage()" [disabled]="currentPage === 1">▶</button>
+      <span>עמוד {{ currentPage }} מתוך {{ totalPages }}</span>
+      <button (click)="nextPage()" [disabled]="currentPage === totalPages">◀</button>
     </div>
-
   </div>
 </div>
