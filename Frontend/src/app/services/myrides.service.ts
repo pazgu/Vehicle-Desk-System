@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { of } from 'rxjs';
+
 
 @Injectable({
   providedIn: 'root'
@@ -29,9 +31,10 @@ export class MyRidesService {
 
   getPastOrders(userId: string, filters?: any): Observable<any> {
     const token = localStorage.getItem('access_token');
-    const headerss = new HttpHeaders({
-      Authorization: `Bearer ${token}`
-    });
+    const headerss = new HttpHeaders()
+  .set('Authorization', `Bearer ${token}`)
+  .set('Accept', 'application/json');
+
     const orders=this.http.get(`${this.pastOrdersUrl}/${userId}`, {
       params: this.buildParams(filters),
       headers: headerss
@@ -41,17 +44,23 @@ export class MyRidesService {
   }
 
   getAllOrders(userId: string, filters?: any): Observable<any> {
-    const token = localStorage.getItem('access_token');
-      const headerss = new HttpHeaders({
-      Authorization: `Bearer ${token}`
-    });
-   const orders=this.http.get(`${this.allOrdersUrl}/${userId}`, {
-      params: this.buildParams(filters),
-      headers: headerss
-    });
-    console.log(orders)
-    return orders
+  const token = localStorage.getItem('access_token');
+
+  if (!token) {
+    console.error('No token found');
+    return of([]); // <-- import { of } from 'rxjs';
   }
+
+  const headers = new HttpHeaders({
+    Authorization: `Bearer ${token}`,
+    Accept: 'application/json' // <--- Optional but helpful
+  });
+
+  return this.http.get(`${this.allOrdersUrl}/${userId}`, {
+    params: this.buildParams(filters),
+    headers
+  });
+}
 
   private buildParams(filters: any): HttpParams {
     let params = new HttpParams();
