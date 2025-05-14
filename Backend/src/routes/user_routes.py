@@ -161,7 +161,7 @@ def get_user_2specific_order():
 
 @router.post("/api/orders/{user_id}", response_model=RideCreate, status_code=fastapi_status.HTTP_201_CREATED)
 def create_order(user_id: UUID, ride_request: RideCreate, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
-    
+
     # Check if user has the right role
     role_check(allowed_roles=["employee", "admin"], token=token)
 
@@ -189,11 +189,25 @@ def update_order():
     # Implementation pending
     return {"message": "Not implemented yet"}
 
+
+#send a notification to a user
+@router.post("/api/notification/{user_id}")
+def send_notification_route():
+    # Implementation pending
+    return {"message": "Not implemented yet"}
+
+
+@router.get("/api/notifications/{user_id}", response_model=list[NotificationOut])
+def get_notifications_for_user(user_id: UUID, db: Session = Depends(get_db)):
+    return get_user_notifications(db, user_id)
+
+@router.get("/api/notification/{notification_id}/{user_id}")
+def get_notification_route():
+    # Implementation pending
+    return {"message": "Not implemented yet"}
+
 @router.delete("/api/orders/{user_id}")
 def delete_order():
     # Implementation pending
     return {"message": "Not implemented yet"}
 
-@router.get("/api/notifications/{user_id}", response_model=list[NotificationOut])
-def get_notifications_for_user(user_id: UUID, db: Session = Depends(get_db)):
-    return get_user_notifications(db, user_id)

@@ -7,16 +7,19 @@ import { RegisterComponent } from './components/page-area/login-area/user-area/r
 import { DashboardAllOrdersComponent } from './components/supervisor-area/dashboard-all-orders/dashboard-all-orders.component';
 import { OrderCardComponent } from './components/supervisor-area/order-card/order-card.component';
 import { NotificationsComponent } from './components/page-area/notifications/notifications.component';
-import { ProtectedRouteGuard } from './components/auth-area/protectedroute/protected-route.guard';
+import { CarsComponent } from './components/admin-area/cars/cars.component';
+import { DailyChecksComponent } from './components/admin-area/daily-checks/daily-checks.component';
 
 export const routes: Routes = [
-    {path:"", redirectTo: "/home", pathMatch:"full"},
+    {path:"", redirectTo: "/login", pathMatch:"full"},
     {path: "login",component: LoginComponent},
+    {path: "cars",component: CarsComponent,canActivate: [ProtectedRouteGuard]},
     {path: "home",component: HomeComponent, canActivate: [ProtectedRouteGuard]},
     {path: "new-ride", component: NewRideComponent, canActivate: [ProtectedRouteGuard]},
     {path: "register",component:RegisterComponent},
     {path: "supervisor-dashboard",component: DashboardAllOrdersComponent, canActivate: [ProtectedRouteGuard]},
     {path: "order-card/:id",component: OrderCardComponent},
-    { path: 'notifications', component: NotificationsComponent, canActivate: [ProtectedRouteGuard] },
+    {path: 'notifications', component: NotificationsComponent, canActivate: [ProtectedRouteGuard]},
+    {path: 'daily-checks', component: DailyChecksComponent, canActivate: [ProtectedRouteGuard]},
     {path: "**",component: Page404Component}
 ];

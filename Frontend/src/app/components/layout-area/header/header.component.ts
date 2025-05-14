@@ -15,6 +15,7 @@ import { CommonModule } from '@angular/common';
 export class HeaderComponent implements OnInit {
   fullName$: Observable<string> = of('');
   isLoggedIn = false;
+  role$: Observable<string> = of('');
 
   constructor(
     private authService: AuthService,
@@ -24,16 +25,22 @@ export class HeaderComponent implements OnInit {
 
   ngOnInit(): void {
     this.fullName$ = this.authService.fullName$;
+    this.role$ = this.authService.role$;
 
     // ✅ Subscribe to login status
     this.authService.isLoggedIn$.subscribe(value => {
       this.isLoggedIn = value;
     });
+   
   }
 
   onLogout(): void {
     this.authService.logout();
     this.toastService.show('התנתקת בהצלחה', 'success'); // ✅ Show toast
     this.router.navigate(['/login']);
+    // ✅ Set role after login
+
   }
+
+  
 }
