@@ -27,6 +27,8 @@
             <option value="">הצג הכל</option>
             <option value="מאושר">מאושר</option>
             <option value="בהמתנה">בהמתנה</option>
+            <option value="נדחה">בוטל</option>
+            <option value="בהמתנה">בהמתנה</option>
             <option value="נדחה">נדחה</option>
           </select>
         </div>
@@ -42,6 +44,35 @@
           </div>
         </div>
       </div>
+ <p-table #table [value]="trips" [paginator]="true" [rows]="rows" [totalRecords]="filteredOrders.length" dir="rtl">
+        <ng-template pTemplate="header">
+          <tr class="table-header">
+            <th>מזהה נסיעה</th>
+            <th>שם עובד</th>
+            <th>רכב</th>
+            <th>תאריך</th>
+            <th>מרחק (ק"מ)</th>
+            <th>סטטוס</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-trip>
+          <tr [ngClass]="getRowClass(trip.status)" (click)="onRowClick(trip)">
+            <td>{{ trip.ride_id }}</td>
+            <td>{{ trip.employee_name }}</td>
+            <td>{{ trip.requested_vehicle_plate }}</td>
+            <td>{{ trip.date_and_time | date: 'yyyy-MM-dd HH:mm' }}</td>
+            <td>{{ trip.distance }}</td>
+            <td [ngClass]="getStatusClass(trip.status)">{{translateStatus(trip.status)}}</td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="6" style="text-align: center;">לא נמצאו הזמנות</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
 
       <!-- Pagination Controls -->
       <div class="pagination-controls" dir="rtl" style="text-align: center; margin-top: 1.5rem;">
@@ -57,6 +88,8 @@
         </button>
       </div>
 
+    </div>
+  </div>
     </div>
   </div>
 </div>
