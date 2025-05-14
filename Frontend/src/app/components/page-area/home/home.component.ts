@@ -186,9 +186,12 @@ get totalPages() {
 
     fetchFn.subscribe({
       next: (res) => {
+        console.log('🧾 Raw response from backend:', res); // <- Add this line
         console.log('✅ fetchRides called');
         console.log('🚦 View Mode:', this.rideViewMode);
         console.log('📤 Filters:', filters);
+        console.log('🧾 Raw response from backend:', res);
+
 
         if (Array.isArray(res)) {
           this.orders = res.map(order => ({
