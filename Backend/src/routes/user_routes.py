@@ -26,7 +26,8 @@ from fastapi.security import OAuth2PasswordBearer
 from ..utils.auth import role_check,identity_check,get_current_user
 from ..schemas.vehicle_schema import VehicleOut
 from ..models.vehicle_model import VehicleType
-from ..services.vehicle_service import get_available_vehicles as fetch_available_vehiclesfrom src.schemas.ride_status_enum import UpdateRideStatusRequest
+from ..services.vehicle_service import get_available_vehicles as fetch_available_vehicles
+from src.schemas.ride_status_enum import UpdateRideStatusRequest
 
 
 
