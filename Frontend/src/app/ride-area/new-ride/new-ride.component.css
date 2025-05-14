@@ -16,7 +16,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 80vh;
+    height: 100vh; /* Ensures it takes full viewport height */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -33,10 +33,12 @@ body {
     background-color: white;
     padding: 20px 30px;
     border-radius: 10px;
-    width: 600px;
+    width: 900px;
+    max-height: 85vh; /* Make the card not too tall */
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
     position: relative;
 }
+
 
 .close-btn {
     position: absolute;
@@ -93,7 +95,9 @@ form .row {
     border-radius: 5px;
     cursor: pointer;
     margin-top: 10px;
+    align-self: flex-end; /* Align button to end inside flexbox */
 }
+
 
 .submit-btn:hover {
     background-color: #7a1c1c;
@@ -138,3 +142,5 @@ input[type="time"], input[type="number"], input[type="text"], select {
 .row .input-group input[type="date"] {
     width: 100%;
 }
+
+
