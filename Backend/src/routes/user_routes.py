@@ -220,4 +220,3 @@ def get_notification_route():
 def delete_order():
     # Implementation pending
     return {"message": "Not implemented yet"}
-
