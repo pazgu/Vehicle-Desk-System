@@ -7,7 +7,10 @@
   direction: rtl;
   font-family: 'Alef', sans-serif;
   background-color: #ccc;
-  height: 90.4vh; /* Ensures it takes full viewport height */
+  background-color: #cccccc;
+    min-height: calc(100vh - 55px); /* subtract any fixed nav height if needed */
+    margin-top: 0;
+    padding-top: 10px;
   box-sizing: border-box; /* Includes padding in total height */
 }
 
@@ -25,8 +28,9 @@
   
 }
 .register-link{
-  padding-right: 165px;
+  padding-right: 161px;
   padding-top: 10px;
+  color: #000;
 }
 /* Close button top-left */
 .close-btn {
