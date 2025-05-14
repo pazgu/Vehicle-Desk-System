@@ -38,8 +38,12 @@ export class DashboardAllOrdersComponent implements OnInit {
   constructor(private router: Router, private orderService: OrderService) {}
 
   ngOnInit(): void {
-    const departmentId = "912a25b9-08e7-4461-b1a3-80e66e79d29e"; // Replace with dynamic department ID
-    this.loadOrders(departmentId);
+    const departmentId = localStorage.getItem('department_id');
+    if (departmentId) {
+      this.loadOrders(departmentId); 
+    } else {
+      console.error('Department ID not found in localStorage.');
+    }
   }
 
   loadOrders(departmentId: string | null): void {
@@ -115,6 +119,11 @@ export class DashboardAllOrdersComponent implements OnInit {
       default:
         return '';
     }
+  }
+
+  onRowClick(trip: RideDashboardItem) {
+    console.log('Selected trip:', trip.ride_id); // Debugging
+    this.router.navigate(['/order-card', trip.ride_id]);
   }
 
   translateStatus(status: string | null | undefined): string {
