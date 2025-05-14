@@ -24,7 +24,7 @@ from ..services.user_notification import get_user_notifications
 from fastapi import status as fastapi_status
 from fastapi.security import OAuth2PasswordBearer
 from ..utils.auth import role_check,identity_check,get_current_user
-
+from src.schemas.ride_status_enum import UpdateRideStatusRequest
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
