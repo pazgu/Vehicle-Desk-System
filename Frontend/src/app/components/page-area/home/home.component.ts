@@ -12,6 +12,7 @@ import { Router, RouterModule } from '@angular/router';
 })
 export class HomeComponent implements OnInit {
   constructor(private router: Router) {}
+
   currentPage = 1;
 
   get ordersPerPage(): number {
@@ -30,16 +31,17 @@ export class HomeComponent implements OnInit {
     .split('T')[0];
 
   sortBy = 'date';
-
-  // ✅ Now empty, to be filled from backend
   orders: any[] = [];
+
+  // ✅ NEW: ride view mode filter state
+  rideViewMode: 'all' | 'future' | 'past' = 'all';
 
   ngOnInit(): void {
     const storedOrders = localStorage.getItem('user_orders');
     if (storedOrders) {
       this.orders = JSON.parse(storedOrders);
     } else {
-      this.orders = []; // fallback
+      this.orders = [];
     }
   }
 
@@ -104,6 +106,19 @@ export class HomeComponent implements OnInit {
       filtered = filtered.filter(order => this.parseDate(order.date) <= new Date(this.endDate));
     }
 
+    // ✅ NEW: Apply view mode (future/past)
+    switch (this.rideViewMode) {
+      case 'future':
+        filtered = filtered.filter(order => this.parseDate(order.date) >= today);
+        break;
+      case 'past':
+        filtered = filtered.filter(order => this.parseDate(order.date) < today);
+        break;
+      case 'all':
+      default:
+        break;
+    }
+
     switch (this.sortBy) {
       case 'status':
         return [...filtered].sort((a, b) => a.status.localeCompare(b.status));
@@ -144,7 +159,6 @@ export class HomeComponent implements OnInit {
   }
 
   goToNewRide(): void {
-  this.router.navigate(['/new-ride']);
-}
-
+    this.router.navigate(['/new-ride']);
+  }
 }
