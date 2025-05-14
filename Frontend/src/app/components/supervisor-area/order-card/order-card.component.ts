@@ -1,13 +1,14 @@
 // order-card.component.ts
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, LowerCasePipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { DividerModule } from 'primeng/divider';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
-
+import { OrderService } from '../../../services/order.service';
+import { OrderCardItem } from '../../../models/order-card-item/order-card-item.module';
 
 @Component({
   selector: 'app-order-card',
@@ -26,131 +27,64 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 export class OrderCardComponent implements OnInit {
 
   trip: any = null;
+  order: OrderCardItem | null = null;  
 
-  
-  // Mock data similar to the one in your dashboard component
-  trips=  [
-    {
-      id: 1,
-      userId: 'user-101',
-      vehicleId: 1,
-      tripType: 'אישי',
-      startDateTime: '2025-05-07 08:00',
-      endDateTime: '2025-05-07 09:30',
-      stop: 'מחלף השלום',
-      destination: 'תל אביב',
-      estimatedDistanceKm: 12,
-      actualDistanceKm: 10,
-      status: 'מאושר',
-      licenseCheckPassed: true,
-      submittedAt: '7 במאי 2025, 10:00'
-    },
-    {
-      id: 2,
-      userId: 'user-102',
-      vehicleId: 2,
-      tripType: 'עסקי',
-      startDateTime: '2025-05-07 11:00',
-      endDateTime: '2025-05-07 12:45',
-      stop: 'תחנת דלק מודיעין',
-      destination: 'ירושלים',
-      estimatedDistanceKm: 75,
-      actualDistanceKm: 70,
-      status: 'בהמתנה',
-      licenseCheckPassed: true,
-      submittedAt: '7 במאי 2025, 13:00'
-    },
-    {
-      id: 3,
-      userId: 'user-103',
-      vehicleId: 3,
-      tripType: 'אישי',
-      startDateTime: '2025-05-08 08:30',
-      endDateTime: '2025-05-08 10:15',
-      stop: 'תחנת רכבת חדרה',
-      destination: 'חיפה',
-      estimatedDistanceKm: 95,
-      actualDistanceKm: 90,
-      status: 'נדחה',
-      licenseCheckPassed: false,
-      submittedAt: '8 במאי 2025, 10:20'
-    },
-    {
-      id: 4,
-      userId: 'user-104',
-      vehicleId: 4,
-      tripType: 'עסקי',
-      startDateTime: '2025-05-08 13:00',
-      endDateTime: '2025-05-08 14:45',
-      stop: 'צומת להבים',
-      destination: 'באר שבע',
-      estimatedDistanceKm: 115,
-      actualDistanceKm: 110,
-      status: 'מאושר',
-      licenseCheckPassed: true,
-      submittedAt: '8 במאי 2025, 15:00'
-    },
-    {
-      id: 5,
-      userId: 'user-105',
-      vehicleId: 5,
-      tripType: 'אישי',
-      startDateTime: '2025-05-09 07:30',
-      endDateTime: '2025-05-09 08:45',
-      stop: 'מחלף פולג',
-      destination: 'נתניה',
-      estimatedDistanceKm: 35,
-      actualDistanceKm: 30,
-      status: 'בהמתנה',
-      licenseCheckPassed: true,
-      submittedAt: '9 במאי 2025, 09:00'
-    }
-  ];
-  
-
-  constructor(
+constructor(
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private orderService: OrderService
   ) {}
 
   ngOnInit(): void {
-    // Get the trip ID from the route parameter
-    this.route.params.subscribe(params => {
-      const tripId = +params['id']; // Convert to number
-      
-      // Simulate loading data
-      setTimeout(() => {
-        // Find the trip in the mock data
-        this.trip = this.trips.find(t => t.id === tripId) || null;
-        
-        // If trip not found, could redirect to 404 or back to dashboard
-        if (!this.trip) {
-          console.error('Trip not found with ID:', tripId);
-          this.router.navigate(['/supervisor-dashboard']);
-          alert('Trip not found! Redirecting to dashboard.');
-        }
-      }, 500); // Simulate network delay
+    // Fetch departmentId and orderId
+    const departmentId = "912a25b9-08e7-4461-b1a3-80e66e79d29e"
+    this.route.params.subscribe((params) => {
+      const orderId = "bd2f024e-d123-48b5-a6d0-242e594706f6"
+
+      if (departmentId && orderId) {
+        this.loadOrder(departmentId, orderId);
+      } else {
+        console.error('Missing departmentId or orderId');
+      }
     });
   }
+
+  loadOrder(departmentId: string, orderId: string): void {
+    this.orderService.getDepartmentSpecificOrder(departmentId, orderId).subscribe(
+      (response) => {
+
+        // Map the backend response to the frontend model
+        this.trip = {
+          id: response.id,
+          userId: response.user_id,
+          vehicleId: response.vehicle_id,
+          tripType: response.ride_type,
+          startDateTime: response.start_datetime,
+          endDateTime: response.end_datetime,
+          startLocation: response.start_location,
+          stop: response.stop,
+          destination: response.destination,
+          estimatedDistanceKm: response.estimated_distance_km,
+          actualDistanceKm: response.actual_distance_km,
+          status: response.status,
+          licenseCheckPassed: response.license_check_passed,
+          submittedAt: response.submitted_at,
+          emergencyEvent: response.emergency_event,
+        };
+        console.log("iddddd: ", this.trip.id);
+      },
+      (error) => {
+        console.error('Error loading order:', error);
+      }
+    );
+  }
+
 
   formatDateTime(dateTime: string): string {
     // You can format the date and time as needed
     // Here's a simple formatting example
     const [date, time] = dateTime.split(' ');
     return `${date} בשעה ${time}`;
-  }
-
-  getStatusSeverity(status: string): string {
-    switch (status) {
-      case 'הושלם':
-        return 'success';
-      case 'בדרך':
-        return 'info';
-      case 'ממתין':
-        return 'warning';
-      default:
-        return 'secondary';
-    }
   }
 
   approveTrip() {
@@ -170,15 +104,28 @@ export class OrderCardComponent implements OnInit {
   }
 
   getCardClass(status: string): string {
-    switch (status) {
-      case 'מאושר': // Approved
+    switch (status.toLowerCase()) {
+      case 'approved': // Approved
         return 'card-approved';
-      case 'בהמתנה': // Pending
+      case 'pending': // Pending
         return 'card-pending';
-      case 'נדחה': // Rejected
+      case 'rejected': // Rejected
         return 'card-rejected';
       default:
         return '';
+    }
+  }
+
+  translateStatus(status: string): string {
+    switch (status.toLowerCase()) {
+      case 'approved':
+        return 'מאושר';
+      case 'pending':
+        return 'ממתין לאישור';
+      case 'rejected':
+        return 'נדחה';
+      default:
+        return status;
     }
   }
 }

@@ -6,12 +6,17 @@
 
   <p-card *ngIf="trip" [styleClass]="'trip-card ' + getCardClass(trip?.status)">    <ng-template pTemplate="header">
       <div class="card-header">
-        <h2>פרטי נסיעה - מספר {{ trip.id }}</h2>
-        <p-tag [value]="trip.status" [severity]="getStatusSeverity(trip.status)"></p-tag>
+        <h2>פרטי נסיעה מלאים</h2>
+        <p-tag [value]="translateStatus(trip.status)"></p-tag>
       </div>
     </ng-template>
-  
+
     <div class="card-content">
+      <div class="info-row">
+        <div class="info-label">מזהה נסיעה: </div>
+        <div class="info-value">{{ trip.id }}</div>
+      </div>
+
       <div class="info-row">
         <div class="info-label">מזהה עובד:</div>
         <div class="info-value">{{ trip.userId }}</div>
@@ -35,6 +40,11 @@
       <div class="info-row">
         <div class="info-label">תאריך סיום:</div>
         <div class="info-value">{{ formatDateTime(trip.endDateTime) }}</div>
+      </div>
+
+      <div class="info-row">
+        <div class="info-label">נקודת התחלה:</div>
+        <div class="info-value">{{ trip.startLocation }}</div>
       </div>
 
       <div class="info-row">

@@ -1,8 +1,8 @@
 from typing import List
 from datetime import datetime
 from ..schemas.ride_dashboard_item import RideDashboardItem
-from ..utils.mock_data import mock_orders, mock_users_db
-from ..models.ride_model import Ride, RideStatus  # Import RideStatus
+from ..schemas.order_card_item import OrderCardItem
+from ..models.ride_model import Ride  # Import RideStatus
 from ..models.user_model import User
 from sqlalchemy.orm import Session
 
@@ -45,29 +45,40 @@ def get_department_orders(department_id: str, db: Session) -> List[RideDashboard
     return dashboard_items
 
 
-def get_department_specific_order(department_id: str, order_id: str, db: Session) -> RideDashboardItem:
-    order = db.query(Ride).filter(Ride.id == order_id).first()
+from uuid import UUID
+
+def get_department_specific_order(department_id: str, order_id: str, db: Session) -> OrderCardItem:
+    """
+    Fetch the details of a specific order for a department.
+    """
+    # Query the database for the specific order
+    order = (
+        db.query(Ride)
+        .join(User, User.employee_id == Ride.user_id)
+        .filter(Ride.id == order_id, User.department_id == department_id)
+        .first()
+    )
 
     if not order:
         return None  # Or raise an exception if the order is not found
 
-    # Query the users table to get the employee name
-    user = db.query(User).filter(User.employee_id == order.user_id).first()
-    employee_name = f"{user.first_name} {user.last_name}" if user else "Unknown"
-
-    # Get the vehicle plate (mocked for now)
-    vehicle_plate = f"Plate-{str(order.vehicle_id)[:8]}"  # Replace with actual logic if needed
-
-
-    # Create a RideDashboardItem schema for the specific order
-    order_details = RideDashboardItem(
-        ride_id=str(order.id),  # Ensure ride_id is a string
-        employee_name=employee_name,
-        requested_vehicle_plate=vehicle_plate,
-        date_and_time=order.start_datetime,
+    # Create an OrderCardItem schema for the specific order
+    order_details = OrderCardItem(
+        id=order.id,  # Pass as UUID
+        user_id=order.user_id,  # Pass as UUID
+        vehicle_id=order.vehicle_id,  # Pass as UUID
+        start_datetime=order.start_datetime,
+        end_datetime=order.end_datetime,
+        ride_type=order.ride_type.name if order.ride_type else None,  # Enum to string
+        start_location=order.start_location,
+        stop=order.stop,
         destination=order.destination,
-        distance=order.estimated_distance_km,
-        status=order.status.value
+        estimated_distance_km=float(order.estimated_distance_km),
+        actual_distance_km=float(order.actual_distance_km) if order.actual_distance_km else None,
+        status=order.status,  # Pass as RideStatusEnum
+        license_check_passed=order.license_check_passed,
+        submitted_at=order.submitted_at,
+        emergency_event=order.emergency_event,
     )
 
     return order_details
