@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, formatDate } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { MyRidesService } from '../../../services/myrides.service';
 
 @Component({
   selector: 'app-home',
@@ -11,7 +12,7 @@ import { Router, RouterModule } from '@angular/router';
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit {
-  constructor(private router: Router) {}
+  constructor(private router: Router, private rideService: MyRidesService) {}
 
   currentPage = 1;
 
@@ -32,8 +33,6 @@ export class HomeComponent implements OnInit {
 
   sortBy = 'date';
   orders: any[] = [];
-
-  // ✅ NEW: ride view mode filter state
   rideViewMode: 'all' | 'future' | 'past' = 'all';
 
   ngOnInit(): void {
@@ -43,6 +42,7 @@ export class HomeComponent implements OnInit {
     } else {
       this.orders = [];
     }
+    this.fetchRides();
   }
 
   get pagedOrders() {
@@ -58,9 +58,10 @@ export class HomeComponent implements OnInit {
     if (this.currentPage > 1) this.currentPage--;
   }
 
-  get totalPages() {
-    return Math.ceil(this.filteredOrders.length / this.ordersPerPage);
-  }
+get totalPages() {
+  return this.filteredOrders.length > 0 ? Math.ceil(this.filteredOrders.length / this.ordersPerPage) : 1;
+}
+
 
   getStatusTooltip(status: string): string {
     switch (status) {
@@ -73,9 +74,9 @@ export class HomeComponent implements OnInit {
 
   getStatusClass(status: string): string {
     switch (status) {
-      case 'Approved': return 'status-green';
-      case 'Pending': return 'status-yellow';
-      case 'Rejected': return 'status-red';
+      case 'approved': return 'status-green';
+      case 'pending': return 'status-yellow';
+      case 'rejected': return 'status-red';
       default: return '';
     }
   }
@@ -106,7 +107,6 @@ export class HomeComponent implements OnInit {
       filtered = filtered.filter(order => this.parseDate(order.date) <= new Date(this.endDate));
     }
 
-    // ✅ NEW: Apply view mode (future/past)
     switch (this.rideViewMode) {
       case 'future':
         filtered = filtered.filter(order => this.parseDate(order.date) >= today);
@@ -141,7 +141,6 @@ export class HomeComponent implements OnInit {
 
   validateDate(type: 'start' | 'end') {
     const value = type === 'start' ? this.startDate : this.endDate;
-
     if (!this.isDateValid(value)) {
       if (type === 'start') this.startDate = '';
       else this.endDate = '';
@@ -160,5 +159,59 @@ export class HomeComponent implements OnInit {
 
   goToNewRide(): void {
     this.router.navigate(['/new-ride']);
+  }
+
+  fetchRides() {
+    const userId = localStorage.getItem('employee_id');
+    if (!userId) return;
+
+    const filters: any = {};
+    if (this.statusFilter) filters.status = this.statusFilter;
+    if (this.startDate) filters.from_date = this.startDate;
+    if (this.endDate) filters.to_date = this.endDate;
+
+    let fetchFn;
+
+    switch (this.rideViewMode) {
+      case 'future':
+        fetchFn = this.rideService.getFutureOrders(userId, filters);
+        break;
+      case 'past':
+        fetchFn = this.rideService.getPastOrders(userId, filters);
+        break;
+      case 'all':
+      default:
+        fetchFn = this.rideService.getAllOrders(userId, filters);
+    }
+
+    fetchFn.subscribe({
+      next: (res) => {
+        console.log('✅ fetchRides called');
+        console.log('🚦 View Mode:', this.rideViewMode);
+        console.log('📤 Filters:', filters);
+
+        if (Array.isArray(res)) {
+          this.orders = res.map(order => ({
+            ...order,
+            date: formatDate(order.start_datetime, 'dd.MM.yyyy', 'en-US'),
+            time: formatDate(order.start_datetime, 'HH:mm', 'en-US'),
+            type: order.vehicle,
+            distance: order.estimated_distance,
+            status: this.capitalize(order.status)
+          }));
+          localStorage.setItem('user_orders', JSON.stringify(this.orders));
+          console.log('Orders from backend:', this.orders);
+        } else {
+          this.orders = [];
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching orders:', err);
+      }
+    });
+  }
+
+  capitalize(status: string): string {
+    return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
   }
 }

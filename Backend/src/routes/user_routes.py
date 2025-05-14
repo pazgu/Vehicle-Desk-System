@@ -24,9 +24,7 @@ from ..services.user_notification import get_user_notifications
 from fastapi import status as fastapi_status
 from fastapi.security import OAuth2PasswordBearer
 from ..utils.auth import role_check,identity_check,get_current_user
-from ..schemas.vehicle_schema import VehicleOut
-from ..models.vehicle_model import VehicleType
-from ..services.vehicle_service import get_available_vehicles as fetch_available_vehicles
+
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -182,14 +180,6 @@ def create_order(user_id: UUID, ride_request: RideCreate, db: Session = Depends(
    
 
 
-@router.get("/api/available-vehicles", response_model=List[VehicleOut])
-def available_vehicles(
-    type: Optional[VehicleType] = Query(None),
-    db: Session = Depends(get_db)
-):
-    return fetch_available_vehicles(db=db, type=type)
-
-
 @router.get("/api/departments")
 def get_departments_route():
     return get_departments()
@@ -220,4 +210,3 @@ def get_notification_route():
 def delete_order():
     # Implementation pending
     return {"message": "Not implemented yet"}
-

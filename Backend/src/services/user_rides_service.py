@@ -23,6 +23,8 @@ def filter_rides(query, status: Optional[RideStatus], from_date, to_date):
 
 def get_future_rides(user_id: UUID, db: Session, status=None, from_date=None, to_date=None) -> List[RideSchema]:
     # Updated query with join and casting
+    now = datetime.now()  # naive datetime for naive DB
+
     query = db.query(
         Ride.id.label("ride_id"),
         Vehicle.fuel_type.label("vehicle"),
@@ -30,7 +32,7 @@ def get_future_rides(user_id: UUID, db: Session, status=None, from_date=None, to
         Ride.end_datetime,
         Ride.estimated_distance_km.cast(String).label("estimated_distance"),  # Casting to string
         Ride.status
-    ).join(Vehicle, Ride.vehicle_id == Vehicle.id).filter(Ride.user_id == user_id, Ride.start_datetime > datetime.utcnow())
+    ).join(Vehicle, Ride.vehicle_id == Vehicle.id).filter(Ride.user_id == user_id, Ride.start_datetime > now)
 
     # Apply additional filters if necessary
     query = filter_rides(query, status, from_date, to_date)
@@ -45,6 +47,8 @@ def get_future_rides(user_id: UUID, db: Session, status=None, from_date=None, to
 #     return filter_rides(query, status, from_date, to_date).all()
 
 def get_past_rides(user_id: UUID, db: Session, status=None, from_date=None, to_date=None) -> List[RideSchema]:
+    now = datetime.now()  # naive datetime for naive DB
+
     query = db.query(
         Ride.id.label("ride_id"),
         Vehicle.fuel_type.label("vehicle"),
@@ -52,7 +56,7 @@ def get_past_rides(user_id: UUID, db: Session, status=None, from_date=None, to_d
         Ride.end_datetime,
         Ride.estimated_distance_km.cast(String).label("estimated_distance"),  # Casting to string
         Ride.status
-    ).join(Vehicle, Ride.vehicle_id == Vehicle.id).filter(Ride.user_id == user_id, Ride.start_datetime <= datetime.utcnow())
+    ).join(Vehicle, Ride.vehicle_id == Vehicle.id).filter(Ride.user_id == user_id, Ride.start_datetime <= now)
 
     query = filter_rides(query, status, from_date, to_date)
     return query.all()
