@@ -79,7 +79,6 @@ def get_user_orders():
     return {"message": "Not implemented yet"}
     
 
-
 @router.get("/api/future-orders/{user_id}", response_model=List[RideSchema])
 def get_future_orders(user_id: UUID, status: Optional[RideStatus] = Query(None),
                       from_date: Optional[datetime] = Query(None),
@@ -88,16 +87,11 @@ def get_future_orders(user_id: UUID, status: Optional[RideStatus] = Query(None),
                       token: str = Depends(oauth2_scheme)):
 
     try:
-        # First, check if the user has the required role
         role_check(allowed_roles=["employee", "admin"], token=token)
+        identity_check(user_id=str(user_id), token=token)
 
-        # Then, check if the user is trying to access their own data
-        identity_check(user_id=str(user_id), token=token)                  
-
-        # Fetch future rides based on the user's request
         rides = get_future_rides(user_id, db, status, from_date, to_date)
 
-        # Return appropriate message if no rides are found
         if not rides:
             if status or from_date or to_date:
                 return JSONResponse(status_code=200, content={"message": "No rides match the given filters."})
@@ -106,14 +100,9 @@ def get_future_orders(user_id: UUID, status: Optional[RideStatus] = Query(None),
         return rides
 
     except HTTPException as e:
-        # Handle role or identity check errors
-        raise e  # This will propagate the 403 Forbidden exception if raised
-
+        raise e
     except Exception as e:
-        # Catch unexpected errors and return a 500 Internal Server Error
         raise HTTPException(status_code=500, detail="An unexpected error occurred.")
-
-
 
 
 @router.get("/api/past-orders/{user_id}", response_model=List[RideSchema])
@@ -122,18 +111,18 @@ def get_past_orders(user_id: UUID, status: Optional[RideStatus] = Query(None),
                     to_date: Optional[datetime] = Query(None),
                     db: Session = Depends(get_db),
                     token: str = Depends(oauth2_scheme)):
-    
+
     role_check(["employee", "admin"], token)
     identity_check(str(user_id), token)
 
     rides = get_past_rides(user_id, db, status, from_date, to_date)
+
     if not rides:
         if status or from_date or to_date:
             return JSONResponse(status_code=200, content={"message": "אין הזמנות שמתאימות לסינון"})
-        return JSONResponse(status_code=200, content={"message": "לא נמצאו הזמנות עבר"})
+        return JSONResponse(status_code=200, content={"message": "לא נמצאו הזמנות"})
 
     return rides
-
 
 
 
@@ -143,17 +132,14 @@ def get_all_orders(user_id: UUID, status: Optional[RideStatus] = Query(None),
                    to_date: Optional[datetime] = Query(None),
                    db: Session = Depends(get_db),
                    token: str = Depends(oauth2_scheme)):
+
     role_check(["employee", "admin"], token)
     identity_check(str(user_id), token)
 
     rides = get_all_rides(user_id, db, status, from_date, to_date)
-    if not rides:
-        if status or from_date or to_date:
-            return JSONResponse(status_code=200, content={"message": "אין הזמנות שמתאימות לסינון"})
-        return JSONResponse(status_code=200, content={"message": "לא נמצאו הזמנות"})
-
     return rides
 
+    
 @router.get("/api/user-orders/{user_id}/{order_id}")
 def get_user_2specific_order():
     # Implementation pending
