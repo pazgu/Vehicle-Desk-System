@@ -59,7 +59,8 @@ export class NewRideComponent implements OnInit {
       start_time: [''],
       end_time: [''],
       estimated_distance_km: [null, [Validators.required, Validators.min(1)]],
-      ride_type: ['', Validators.required],
+      ride_type: ['', Validators.required], // ✅ type of ride (admin/operational)
+      vehicle_type: ['', Validators.required], // ✅ type of vehicle (small/van/large)
       car: [''], // <-- Add car field
       start_location: ['', Validators.required],
       stop: ['', Validators.required],
@@ -77,7 +78,7 @@ export class NewRideComponent implements OnInit {
     
   }
   onRideTypeChange() {
-    const selectedType = this.rideForm.value.ride_type;
+    const selectedType = this.rideForm.value.vehicle_type; 
     this.availableCars = this.allCars.filter(car => car.type === selectedType);
 
     // Reset selected car if type changes
@@ -212,6 +213,7 @@ this.rideService.createRide(formData, user_id).subscribe({
       end_time: this.rideForm.get('end_time') as FormControl,
       estimated_distance_km: this.rideForm.get('estimated_distance_km') as FormControl,
       ride_type: this.rideForm.get('ride_type') as FormControl,
+      vehicle_type: this.rideForm.get('vehicle_type') as FormControl, // ✅ add this
       start_location: this.rideForm.get('start_location') as FormControl,
       stop: this.rideForm.get('stop') as FormControl,
       destination: this.rideForm.get('destination') as FormControl
