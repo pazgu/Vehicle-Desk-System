@@ -7,7 +7,7 @@ import { he } from 'date-fns/locale';
 
 @Component({
   selector: 'app-notifications',
-  standalone: true,
+  standalone: true,  
   imports: [CommonModule],
   templateUrl: './notifications.component.html',
   styleUrl: './notifications.component.css'

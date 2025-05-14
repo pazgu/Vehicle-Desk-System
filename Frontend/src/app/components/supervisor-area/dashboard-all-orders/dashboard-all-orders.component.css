@@ -1,12 +1,13 @@
 .page-wrapper {
   background-color: rgb(245, 241, 241);
-  padding: 1rem;
+  padding: 10px;
   border-radius: 12px;
   max-width: 1000px;
   margin: 2rem auto;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   direction: rtl;
   font-family: sans-serif;
+  margin-bottom: 0px;
   }
 
   h1{
@@ -15,15 +16,20 @@
 
 :host {
   display: block;
-  background-color: #d4d3d3; /* Light gray background */
-  min-height: 100vh; /* Ensure it covers the full viewport height */
-  padding: 20px; /* Optional: Add padding around the content */
+  background-color: #cccccc;
+  min-height: calc(100vh - 55px); /* subtract any fixed nav height if needed */
+  margin-top: 0;
+  padding-top: 0px;
+  margin-bottom: 0px;
+  padding: 25px; /* Optional: Add padding around the content */
 }
 
 /* Table header styling */
 .table-header {
   background-color: #942222; /* Red color */
   color: white; /* White text */
+  margin-top: 0px;
+  margin-bottom: 0px;
 }
 
 /* Center the table and add rounded corners */
@@ -37,6 +43,8 @@
   direction: rtl;
   border: 5px solid #942222; /* Optional: Add a border */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: Add a subtle shadow */
+  margin-top: 0;
+  margin-bottom: 0px;
 }
 
 :host ::ng-deep .p-datatable .p-datatable-thead > tr > th {
@@ -56,7 +64,6 @@
 
 
 :host ::ng-deep .p-datatable .p-datatable-tbody > tr:hover {
-  font-weight: bold;
   color: #942222;
 }
 
@@ -76,11 +83,11 @@
   background-color: #f5f5f5;
   border-radius: 5px;
   padding: 10px;
-  direction: rtl;
+  /* direction: rtl; */
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 10px;
+  margin-top: 0px;
 }
 
 /* Style for paginator navigation buttons (arrows) */

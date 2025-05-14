@@ -18,7 +18,7 @@ export class DashboardAllOrdersComponent {
 
   constructor(private router: Router) { }
 
-  rows: number = 5;
+  
   originalTrips = [
     { id: 1, employeeName: 'ישראל ישראלי', vehicle: 1, dateTime: '2025-05-07 10:00', destination: 'תל אביב', distance: 10, status: 'מאושר' },
     { id: 2, employeeName: 'יוסי כהן', vehicle: 2, dateTime: '2025-05-07 12:00', destination: 'ירושלים', distance: 70, status: 'בהמתנה' },
@@ -50,6 +50,9 @@ export class DashboardAllOrdersComponent {
   endDate: string = '';
   showFilters = false;
   showOldOrders = false;
+  first: number = 0;
+rows: number = 5;
+
 
   sortBy = 'date';
 
@@ -121,6 +124,22 @@ export class DashboardAllOrdersComponent {
         return [...filtered].sort((a, b) => this.parseDate(a.dateTime).getTime() - this.parseDate(b.dateTime).getTime());
     }
   }
+  get paginatedOrders() {
+  const filtered = this.filteredOrders;
+
+  const startIndex = (this.currentPage - 1) * this.ordersPerPage;
+  const endIndex = this.currentPage * this.ordersPerPage;
+
+  // When filters are shown, we only want 2 items on the first page (shift 3 to the second)
+  if (this.showFilters) {
+    const firstPageCount = 2;
+    const adjustedStartIndex = this.currentPage === 1 ? 0 : firstPageCount + (this.currentPage - 2) * this.ordersPerPage;
+    const adjustedEndIndex = this.currentPage === 1 ? firstPageCount : adjustedStartIndex + this.ordersPerPage;
+    return filtered.slice(adjustedStartIndex, adjustedEndIndex);
+  }
+
+  return filtered.slice(startIndex, endIndex);
+}
 
   getRowClass(status: string): string {
     switch (status) {
@@ -134,6 +153,12 @@ export class DashboardAllOrdersComponent {
         return '';
     }
   }
+  getTotalRecords(): number {
+  return this.filteredOrders.length;
+}
+onPageChange(event: any) {
+  this.currentPage = event.page + 1; // PrimeNG pages are 0-based
+}
 
   onRowClick(trip: any) {
     this.router.navigate(['/order-card', trip.id]);
