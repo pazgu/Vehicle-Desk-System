@@ -6,11 +6,11 @@ import { NewRideComponent } from './ride-area/new-ride/new-ride.component';
 import { RegisterComponent } from './components/page-area/login-area/user-area/register/register.component';
 import { DashboardAllOrdersComponent } from './components/supervisor-area/dashboard-all-orders/dashboard-all-orders.component';
 import { OrderCardComponent } from './components/supervisor-area/order-card/order-card.component';
-import { ProtectedRouteGuard } from './components/auth-area/protectedroute/protected-route.guard';
 import { NotificationsComponent } from './components/page-area/notifications/notifications.component';
 import { CarsComponent } from './components/admin-area/cars/cars.component';
 import { DailyChecksComponent } from './components/admin-area/daily-checks/daily-checks.component';
 import { RedirectByRoleComponent } from './services/redirect-by-role';
+import { ProtectedRouteGuard } from './components/auth-area/protectedroute/protected-route.guard';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
