@@ -12,7 +12,7 @@ class UserRole(str, enum.Enum):
 
 class User(Base):
     __tablename__ = 'users'  
-    
+
     
     first_name = Column(String, nullable=False)
     last_name = Column(String, nullable=False)

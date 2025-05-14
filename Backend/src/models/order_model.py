@@ -7,22 +7,10 @@ import uuid
 from sqlalchemy.sql import func
 
 
-class RideType(str, enum.Enum):
-    administrative = "administrative"
-    operational = "operational"
-
-class RideStatus(str, enum.Enum):
-    pending = "pending"
-    approved = "approved"
-    rejected = "rejected"
-    in_progress = "in_progress"
-    completed = "completed"
-    cancelled = "cancelled"
-
-class Ride(Base):
+class Order(Base):
     __tablename__ = "rides"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(UUID, primary_key=True, index=True)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.employee_id"), nullable=False)
     vehicle_id = Column(UUID(as_uuid=True), ForeignKey("vehicles.id"), nullable=False)
     ride_type = Column(Enum(RideType), nullable=False)
@@ -36,4 +24,4 @@ class Ride(Base):
     status = Column(Enum(RideStatus), default=RideStatus.pending, nullable=False)
     license_check_passed = Column(Boolean, default=False)
     submitted_at = Column(DateTime, nullable=False, server_default=func.now())
-    emergency_event = Column(Text, nullable=True) 
+    emergency_event = Column(Text, nullable=True)
