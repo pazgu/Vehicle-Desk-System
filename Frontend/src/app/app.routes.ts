@@ -13,17 +13,17 @@ import { DailyChecksComponent } from './components/admin-area/daily-checks/daily
 import { RedirectByRoleComponent } from './services/redirect-by-role';
 
 export const routes: Routes = [
-    {path:"", component: RedirectByRoleComponent, pathMatch:"full"},
-    {path: "login",component: LoginComponent},
-    {path: "cars",component: CarsComponent,canActivate: [ProtectedRouteGuard]},
-    {path: "home",component: HomeComponent, canActivate: [ProtectedRouteGuard]},
-    {path: "new-ride", component: NewRideComponent, canActivate: [ProtectedRouteGuard]},
-    {path: "register",component:RegisterComponent},
-    {path: "supervisor-dashboard",component: DashboardAllOrdersComponent, canActivate: [ProtectedRouteGuard]},
-    {path: "order-card/:id",component: OrderCardComponent},
-    {path: 'notifications', component: NotificationsComponent, canActivate: [ProtectedRouteGuard]},
-    {path: 'daily-checks', component: DailyChecksComponent, canActivate: [ProtectedRouteGuard]},
-    {path: "**",component: Page404Component}
+  { path: 'login', component: LoginComponent },
+  { path: 'register', component: RegisterComponent },
+  { path: 'cars', component: CarsComponent, canActivate: [ProtectedRouteGuard] },
+  { path: 'home', component: HomeComponent, canActivate: [ProtectedRouteGuard] },
+  { path: 'new-ride', component: NewRideComponent, canActivate: [ProtectedRouteGuard] },
+  { path: 'supervisor-dashboard', component: DashboardAllOrdersComponent, canActivate: [ProtectedRouteGuard] },
+  { path: 'order-card/:id', component: OrderCardComponent },
+  { path: 'notifications', component: NotificationsComponent, canActivate: [ProtectedRouteGuard] },
+  { path: 'daily-checks', component: DailyChecksComponent, canActivate: [ProtectedRouteGuard] },
+  { path: '', component: RedirectByRoleComponent, pathMatch: 'full' }, // Moved lower
+  { path: '**', component: Page404Component }
 ];
 
 

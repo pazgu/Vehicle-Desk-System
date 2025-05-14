@@ -62,31 +62,38 @@ export class LoginComponent implements OnInit {
   }
 
   const loginData = this.loginForm.value;
-  
+
   this.http.post<any>('http://localhost:8000/api/login', loginData).subscribe({
     next: (response) => {
-      const token = response.access_token; 
-      localStorage.setItem('access_token', token);  // Save token in localStorage
+      const token = response.access_token;
+      localStorage.setItem('access_token', token);
       localStorage.setItem('username', response.username);
       localStorage.setItem('first_name', response.first_name);
       localStorage.setItem('last_name', response.last_name);
       localStorage.setItem('employee_id', response.employee_id);
       localStorage.setItem('role', response.role);
-      localStorage.setItem('employee_id', response.employee_id);
 
-
-      // Call the setFullName method from AuthService to update the full name
+      // Update AuthService state
       this.authService.setFullName(response.first_name, response.last_name);
       this.authService.setLoginState(true);
-      this.authService.setRole(response.role); 
-      
-      this.router.navigate(['/home']);  // Change route as needed
+      this.authService.setRole(response.role);
+
+      // ✅ Redirect based on role
+      const role = response.role;
+      if (role === 'admin') {
+        this.router.navigate(['/daily-checks']);
+      } else if (role === 'supervisor') {
+        this.router.navigate(['/supervisor-dashboard']);
+      } else {
+        this.router.navigate(['/home']);
+      }
     },
     error: (err) => {
       this.errorMessage = err.error?.detail || 'ההתחברות נכשלה';
     }
   });
 }
+
 
   
 }

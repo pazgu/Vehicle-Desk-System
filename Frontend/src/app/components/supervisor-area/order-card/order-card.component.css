@@ -1,16 +1,17 @@
 :host {
   display: block;
-  background-color: #f2efef  ; /* Light gray background */
+  background-color: #e7e5e5  ; /* Light gray background */
   padding: 20px; /* Optional: Add padding around the content */
-   height: 530px;
- margin-top: 0px;
- margin-bottom: 0px;
-  }
+  min-height: calc(100vh - 55px); /* subtract any fixed nav height if needed */
+  margin-top: 0;
+  padding-top: 0px;
+  margin-bottom: 0px;  }
 
 
 .card-container {
   max-width: 600px; /* Reduce the width of the card */
   margin: 1rem auto; /* Center the card with smaller margins */
+  margin-top: 0;
   padding: 0.5rem; /* Reduce padding */
 }
 

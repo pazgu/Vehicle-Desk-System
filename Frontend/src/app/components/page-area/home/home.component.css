@@ -8,12 +8,12 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     direction: rtl;
     font-family: sans-serif;
-    height: 440px;
+    min-height: 400px;
   }
   
 .page-container{
     background-color: #cccccc;
-    height: 530px;
+    min-height: calc(100vh - 55px); /* subtract any fixed nav height if needed */
     margin-top: 0;
     padding-top: 10px;
 }

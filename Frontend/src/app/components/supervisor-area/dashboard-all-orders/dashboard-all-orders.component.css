@@ -1,6 +1,6 @@
 .page-wrapper {
   background-color: rgb(245, 241, 241);
-  padding: 1rem;
+  padding: 10px;
   border-radius: 12px;
   max-width: 1000px;
   margin: 2rem auto;
@@ -16,11 +16,12 @@
 
 :host {
   display: block;
-  background-color: #d4d3d3; /* Light gray background */
- height: 530px;
- margin-top: 0px;
- margin-bottom: 0px;
-  padding: 20px; /* Optional: Add padding around the content */
+  background-color: #cccccc;
+  min-height: calc(100vh - 55px); /* subtract any fixed nav height if needed */
+  margin-top: 0;
+  padding-top: 0px;
+  margin-bottom: 0px;
+  padding: 25px; /* Optional: Add padding around the content */
 }
 
 /* Table header styling */
