@@ -26,8 +26,8 @@ def get_department_specific_order_route(department_id: UUID, order_id: UUID, db:
 def get_approval_dashboard_route(department_id: UUID, order_id: UUID):
     return {"message": f"Approval dashboard for order {order_id} in department {department_id}"}
 
-@router.patch("/orders/{department_id}/{order_id}/update")
-def edit_order_status_route(department_id: UUID, order_id: UUID, status: str,db: Session = Depends(get_db)):
+@router.patch("/orders/{department_id}/{order_id}/update/{status}")
+def edit_order_status_route(department_id: UUID, order_id: UUID, status: str, db: Session = Depends(get_db)):
     return edit_order_status(department_id, order_id, status, db)
 
 @router.get("/vehicles/{department_id}")

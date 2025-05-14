@@ -148,4 +148,19 @@ export class DashboardAllOrdersComponent implements OnInit {
   onRowClick(trip: RideDashboardItem) {
     this.router.navigate(['/order-card', trip.ride_id]);
   }
+
+  translateStatus(status: string | null | undefined): string {
+    if (!status) return '';
+    
+    switch (status.toLowerCase()) {
+      case 'approved':
+        return 'מאושר';
+      case 'pending':
+        return 'ממתין לאישור';
+      case 'rejected':
+        return 'נדחה';
+      default:
+        return status;
+    }
+  }
 }
