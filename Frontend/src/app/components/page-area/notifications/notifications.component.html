@@ -2,12 +2,17 @@
 <div class="notification-page">
   <h2 class="title">הודעות</h2>
 
-  <div class="notification" *ngFor="let note of pagedNotifications">
+  <div *ngIf="pagedNotifications.length === 0" class="no-message">
+    לא נמצאו הודעות עבורך
+  </div>
+
+  <div class="notification" *ngFor="let note of pagedNotifications" [ngClass]="getStatusClass(note.message)">
     
     <div class="content">
-      <span class="text">{{ note.message }}</span>
-       <div class="time">{{ note.timeAgo }}</div>
-       <img src="/assets/images/message.png" alt="Message Icon" class="message-icon" />
+      <img [src]="getStatusIcon(note.message)" class="status-icon" alt="Status Icon" />
+      <div class="time">{{ note.timeAgo }}</div>
+      <span class="text">{{ translateMessage(note.message) }}</span>
+       <img src="/assets/images/message.png"  alt="Message Icon" class="message-icon" />
      
     </div>
   </div>
