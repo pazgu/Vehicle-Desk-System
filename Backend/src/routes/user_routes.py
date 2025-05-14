@@ -24,6 +24,7 @@ from ..services.user_notification import get_user_notifications
 from fastapi import status as fastapi_status
 from fastapi.security import OAuth2PasswordBearer
 from ..utils.auth import role_check,identity_check,get_current_user
+from src.schemas.ride_status_enum import UpdateRideStatusRequest
 
 
 
@@ -211,3 +212,10 @@ def delete_order():
     # Implementation pending
     return {"message": "Not implemented yet"}
 
+@router.patch("/rides/{ride_id}/status")
+def user_update_ride_status(
+    ride_id: UUID,
+    req: UpdateRideStatusRequest,
+    db: Session = Depends(get_db)
+):
+    return update_ride_status(ride_id, req.status, db)
