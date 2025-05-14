@@ -91,7 +91,6 @@ def get_future_orders(user_id: UUID, status: Optional[RideStatus] = Query(None),
         identity_check(user_id=str(user_id), token=token)
 
         rides = get_future_rides(user_id, db, status, from_date, to_date)
-
         if not rides:
             if status or from_date or to_date:
                 return JSONResponse(status_code=200, content={"message": "No rides match the given filters."})
