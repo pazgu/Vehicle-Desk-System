@@ -35,17 +35,14 @@ export class DashboardAllOrdersComponent implements OnInit {
 
   ngOnInit(): void {
     const departmentId = "912a25b9-08e7-4461-b1a3-80e66e79d29e";
-    console.log('Department ID:', departmentId);
+    // console.log('Department ID:', departmentId);
     this.loadOrders(departmentId);
   }
 
   loadOrders(departmentId: string | null): void {
     if (departmentId) {
       this.orderService.getDepartmentOrders(departmentId).subscribe(
-        (data) => {
-          // Log the raw backend response for debugging
-          console.log('Raw Backend Response:', data);
-  
+        (data) => {  
           // Assign the data directly to the orders array
           this.orders = Array.isArray(data) ? data : [];
           console.log('Processed Orders:', this.orders); // Debugging
@@ -67,8 +64,20 @@ export class DashboardAllOrdersComponent implements OnInit {
   
     let filtered = [...this.orders];
   
-    if (this.statusFilter) {
-      filtered = filtered.filter(order => order.status === this.statusFilter);
+      if (this.statusFilter) {
+        switch (this.statusFilter) {
+        case 'בהמתנה':
+          filtered = filtered.filter(order => order.status === 'pending');
+          break;
+        case 'מאושר':
+          filtered = filtered.filter(order => order.status === 'approved');
+          break;
+        case 'נדחה':
+          filtered = filtered.filter(order => order.status === 'rejected');
+          break;
+        default:
+          break;
+      }
     }
   
     if (this.startDate) {
@@ -93,7 +102,6 @@ export class DashboardAllOrdersComponent implements OnInit {
 
   // Make sure this returns the filtered orders
   get trips(): RideDashboardItem[] {
-    console.log('Filtered Orders:', this.filteredOrders); // Debugging
     return this.filteredOrders;
   }
 

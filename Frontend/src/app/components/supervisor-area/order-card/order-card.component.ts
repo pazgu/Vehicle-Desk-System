@@ -9,6 +9,7 @@ import { DividerModule } from 'primeng/divider';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { OrderService } from '../../../services/order.service';
 import { OrderCardItem } from '../../../models/order-card-item/order-card-item.module';
+import { RideDashboardItem } from '../../../models/ride-dashboard-item/ride-dashboard-item.module';
 
 @Component({
   selector: 'app-order-card',
@@ -128,4 +129,7 @@ constructor(
         return status;
     }
   }
+
+  
+
 }

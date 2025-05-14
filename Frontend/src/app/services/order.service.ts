@@ -21,4 +21,7 @@ export class OrderService {
     const url = `${this.apiUrl}/orders/${departmentId}/${orderId}`;
     return this.http.get<OrderCardItem>(url);
   }
+
+  
+
 }

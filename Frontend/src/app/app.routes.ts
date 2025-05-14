@@ -10,6 +10,7 @@ import { NotificationsComponent } from './components/page-area/notifications/not
 import { CarsComponent } from './components/admin-area/cars/cars.component';
 import { DailyChecksComponent } from './components/admin-area/daily-checks/daily-checks.component';
 import { RedirectByRoleComponent } from './services/redirect-by-role';
+import { ProtectedRouteGuard } from './components/auth-area/protectedroute/protected-route.guard';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },

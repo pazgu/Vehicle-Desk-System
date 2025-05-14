@@ -82,3 +82,25 @@ def get_department_specific_order(department_id: str, order_id: str, db: Session
     )
 
     return order_details
+
+
+def edit_order_status(department_id: str, order_id: str, new_status: str, db: Session) -> bool:
+    """
+    Edit the status of a specific order for a department.
+    """
+    # Query the database for the specific order
+    order = (
+        db.query(Ride)
+        .join(User, User.employee_id == Ride.user_id)
+        .filter(Ride.id == order_id, User.department_id == department_id)
+        .first()
+    )
+
+    if not order:
+        return False  # Or raise an exception if the order is not found
+
+    # Update the status of the order
+    order.status = new_status
+    db.commit()
+
+    return True
