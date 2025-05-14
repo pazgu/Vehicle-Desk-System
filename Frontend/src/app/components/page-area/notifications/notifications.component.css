@@ -27,45 +27,60 @@
 }
 
 .notification {
-  background-color: #942222;
-  opacity: 0.2;
   padding: 0.5rem;
   border-radius: 8px;
   margin-bottom: 0.5rem;
   text-align: center;
   font-size: 15px;
-  
   color: #000;
+  opacity: 1;
 }
 
+/* Approved – Green */
 .notification.approved {
-  background-color: #e6f4ea !important; 
-  opacity: 1;
+  background-color: #e6f4ea; /* Light green background */
+  border: 1px solid #34a853; /* Google green */
+  color: #256029; /* Dark green text */
 }
 
+/* Rejected – Red */
 .notification.rejected {
-  background-color: #fcebea !important; 
-  opacity: 1;
+  background-color: #fcebea; /* Light red background */
+  border: 1px solid #d93025; /* Google red */
+  color: #a4262c; /* Dark red text */
+}
+
+/* Neutral – Gray */
+.notification.neutral {
+  background-color: #efe7e7; /* Light gray background */
+  border: 1px solid #9d9a9a;
+  color: #666;
 }
 
 .time {
   font-weight: bold;
   margin-bottom: 0.5rem;
+  color: #000;
 }
 
 .content {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  color: #000;
 }
 
 .status-icon {
-  font-size: 1.5rem;
+  height: 1.3rem;
+  width: 1.3rem;
+  margin-right: 7px;
+  
 }
 
 .text {
   flex: 1;
-  font-size: 1.3rem;
+  font-size: 1.1rem;
+  color: #000;
  
 }
 
@@ -95,4 +110,17 @@
 .pagination button:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+
+.no-message {
+  background-color: #942222;
+  color: white;
+  font-family: 'Alef', sans-serif;
+  font-size: 22px;
+  font-weight: bold;
+  text-align: center;
+  padding: 28px 30px;
+  border-radius: 12px;
+  margin: 20px auto 10px auto;
 }
