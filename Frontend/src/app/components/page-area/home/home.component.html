@@ -2,6 +2,15 @@
   <div class="orders-wrapper">
     <h1>ההזמנות שלי</h1>
     <br>
+
+<div class="ride-filter-buttons">
+  <button [ngClass]="{ 'active': rideViewMode === 'future' }" (click)="rideViewMode = 'future'">הצג נסיעות עתידיות</button>
+  <button [ngClass]="{ 'active': rideViewMode === 'past' }" (click)="rideViewMode = 'past'">הצג נסיעות קודמות</button>
+  <button [ngClass]="{ 'active': rideViewMode === 'all' }" (click)="rideViewMode = 'all'">הצג הכל</button>
+</div>
+
+
+
     <!-- Sort + Filter Toggle Bar -->
     <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; direction: rtl;">
       <div>

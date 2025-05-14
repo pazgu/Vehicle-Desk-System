@@ -24,20 +24,27 @@ body {
     direction: rtl;
     font-family: 'Alef', sans-serif;
     background-color: #ccc;
-    height: 90.4vh; /* Ensures it takes full viewport height */
-    box-sizing: border-box; /* Includes padding in total height */
-    
+    height: 100vh; /* ✅ use full viewport height */
+    padding: 0; /* ✅ nice spacing */
+    box-sizing: border-box;
 }
+
+
 
 .modal {
     background-color: white;
     padding: 20px 30px;
     border-radius: 10px;
-    width: 900px;
-    max-height: 85vh; /* Make the card not too tall */
+    width: 850px;
+    height: auto;  
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
     position: relative;
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh; /* ✅ allow content to expand */
+    justify-content: flex-start; /* ✅ normal layout flow */
 }
+
 
 
 .close-btn {
@@ -88,15 +95,16 @@ form .row {
 }
 
 .submit-btn {
-    background-color: #942222;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 10px;
-    align-self: flex-end; /* Align button to end inside flexbox */
+  background-color: #942222;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  align-self: flex-end;
+  margin-bottom: 0;
 }
+
 
 
 .submit-btn:hover {
@@ -142,5 +150,12 @@ input[type="time"], input[type="number"], input[type="text"], select {
 .row .input-group input[type="date"] {
     width: 100%;
 }
+
+.ride-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 
 
