@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../../../../services/auth.service';
+import { environment } from '../../../../../../environments/environment';
  
 @Component({
   selector: 'app-login',
@@ -62,8 +63,8 @@ export class LoginComponent implements OnInit {
   }
 
   const loginData = this.loginForm.value;
-
-  this.http.post<any>('http://localhost:8000/api/login', loginData).subscribe({
+  const loginUrl = environment.loginUrl;
+  this.http.post<any>(loginUrl, loginData).subscribe({
     next: (response) => {
       const token = response.access_token;
       localStorage.setItem('access_token', token);
