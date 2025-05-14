@@ -149,6 +149,7 @@ export class DashboardAllOrdersComponent implements OnInit {
   }
 
   onRowClick(trip: RideDashboardItem) {
+    console.log('Selected trip:', trip.ride_id); // Debugging
     this.router.navigate(['/order-card', trip.ride_id]);
   }
 
