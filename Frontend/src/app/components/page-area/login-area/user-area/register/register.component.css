@@ -6,7 +6,10 @@
   direction: rtl;
   font-family: 'Alef', sans-serif;
   background-color: #ccc;
-  height: 90.4vh; /* Ensures it takes full viewport height */
+  min-height: calc(100vh - 55px); /* subtract any fixed nav height if needed */
+  margin-top: 0;
+  padding-top: 0px;
+  margin-bottom: 0px;
   box-sizing: border-box; /* Includes padding in total height */
 }
 

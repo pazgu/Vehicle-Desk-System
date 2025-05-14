@@ -38,31 +38,41 @@
           </div>
         </div>
       </div>
+<p-table
+  [value]="filteredOrders"
+  [paginator]="true"
+  [rows]="rows"
+  [totalRecords]="getTotalRecords()"
+  (onPageChange)="onPageChange($event)"
+  [first]="first"
+  dir="rtl"
+>
 
-      <p-table #table [value]="trips" [paginator]="true" [rows]="rows" dir="rtl">
-        <ng-template pTemplate="header">
-          <tr class="table-header">
-            <th>מזהה נסיעה</th>
-            <th>שם עובד</th>
-            <th>רכב</th>
-            <th>תאריך</th>
-            <th>יעד</th>
-            <th>מרחק (ק"מ)</th>
-            <th>סטטוס</th>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-trip>
-          <tr [ngClass]="getRowClass(trip.status)" (click)="onRowClick(trip)">
-            <td>{{ trip.id }}</td>
-            <td>{{ trip.employeeName }}</td>
-            <td>{{ trip.vehicle }}</td>
-            <td>{{ trip.dateTime }}</td>
-            <td>{{ trip.destination }}</td>
-            <td>{{ trip.distance }}</td>
-            <td>{{ trip.status }}</td>
-          </tr>
-        </ng-template>
-      </p-table>
+  <ng-template pTemplate="header">
+    <tr class="table-header">
+      <th>מזהה נסיעה</th>
+      <th>שם עובד</th>
+      <th>רכב</th>
+      <th>תאריך</th>
+      <th>יעד</th>
+      <th>מרחק (ק"מ)</th>
+      <th>סטטוס</th>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="body" let-trip>
+    <tr [ngClass]="getRowClass(trip.status)" (click)="onRowClick(trip)">
+      <td>{{ trip.id }}</td>
+      <td>{{ trip.employeeName }}</td>
+      <td>{{ trip.vehicle }}</td>
+      <td>{{ trip.dateTime }}</td>
+      <td>{{ trip.destination }}</td>
+      <td>{{ trip.distance }}</td>
+      <td>{{ trip.status }}</td>
+    </tr>
+  </ng-template>
+</p-table>
+
     </div>
   </div>
 </div>
