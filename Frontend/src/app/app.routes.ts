@@ -10,6 +10,7 @@ import { ProtectedRouteGuard } from './components/auth-area/protectedroute/prote
 import { NotificationsComponent } from './components/page-area/notifications/notifications.component';
 import { CarsComponent } from './components/admin-area/cars/cars.component';
 import { DailyChecksComponent } from './components/admin-area/daily-checks/daily-checks.component';
+import { UserDataComponent } from './components/admin-area/user-data/user-data.component';
 
 export const routes: Routes = [
     {path:"", redirectTo: "/login", pathMatch:"full"},
@@ -22,5 +23,6 @@ export const routes: Routes = [
     {path: "order-card/:id",component: OrderCardComponent},
     {path: 'notifications', component: NotificationsComponent, canActivate: [ProtectedRouteGuard]},
     {path: 'daily-checks', component: DailyChecksComponent, canActivate: [ProtectedRouteGuard]},
+    {path: 'user-data', component: UserDataComponent}, //must fix permissions- admin only
     {path: "**",component: Page404Component}
 ];

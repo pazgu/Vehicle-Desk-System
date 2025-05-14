@@ -6,7 +6,8 @@ import {
   AbstractControl,
   ValidatorFn,
   FormControl,
-  ReactiveFormsModule
+  ReactiveFormsModule,
+  FormsModule
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ToastService } from '../../services/toast.service';
@@ -25,7 +26,7 @@ import { CommonModule } from '@angular/common';
     HttpClientModule
   ],
   templateUrl: './new-ride.component.html',
-  styleUrl: './new-ride.component.css',
+  styleUrl: './new-ride.component.css'
 })
 export class NewRideComponent implements OnInit {
   rideForm!: FormGroup;
@@ -40,9 +41,11 @@ export class NewRideComponent implements OnInit {
 
   ngOnInit(): void {
     this.rideForm = this.fb.group({
+      ride_period: ['morning'],
       ride_date: ['', [Validators.required, this.minDateValidator(2), this.validYearRangeValidator(2025, 2099)]],
-      start_time: ['', Validators.required],
-      end_time: ['', Validators.required],
+      ride_date_night_end: [''],
+      start_time: [''],
+      end_time: [''],
       estimated_distance_km: [null, [Validators.required, Validators.min(1)]],
       ride_type: ['', Validators.required],
       start_location: ['', Validators.required],
@@ -82,7 +85,7 @@ export class NewRideComponent implements OnInit {
 
   updateDistance(): void {
     const distance = this.rideForm.get('estimated_distance_km')?.value || 0;
-    this.estimated_distance_with_buffer = distance * 1.1;
+    this.estimated_distance_with_buffer = +(distance * 1.1).toFixed(2);
   }
 
   minDateValidator(minDaysAhead: number): ValidatorFn {
@@ -106,24 +109,22 @@ export class NewRideComponent implements OnInit {
   }
 
   submit(): void {
-  if (this.rideForm.invalid) {
-    this.rideForm.markAllAsTouched();
-    this.toastService.show('יש להשלים את כל שדות הטופס כנדרש', 'error');
-    return;
-  }
+    if (this.rideForm.invalid) {
+      this.rideForm.markAllAsTouched();
+      this.toastService.show('יש להשלים את כל שדות הטופס כנדרש', 'error');
+      return;
+    }
 
-  const formData = {
-    ...this.rideForm.value,
-    estimated_distance_with_buffer: this.estimated_distance_with_buffer,
-  };
+    const ridePeriod = this.rideForm.get('ride_period')?.value as 'morning' | 'night';
+    const rideDate = this.rideForm.get('ride_date')?.value;
+    const nightEndDate = this.rideForm.get('ride_date_night_end')?.value;
+    const startTime = this.rideForm.get('start_time')?.value;
+    const endTime = this.rideForm.get('end_time')?.value;
 
-  // Extra validation: end time must be after start time
-  const startTime = this.rideForm.get('start_time')?.value;
-  const endTime = this.rideForm.get('end_time')?.value;
-  if (startTime >= endTime) {
-    this.toastService.show('שעת הסיום חייבת להיות אחרי שעת ההתחלה', 'error');
-    return;
-  }
+    if (ridePeriod === 'morning' && startTime && endTime && startTime >= endTime) {
+      this.toastService.show('שעת הסיום חייבת להיות אחרי שעת ההתחלה', 'error');
+      return;
+    }
 
     const distance = this.rideForm.get('estimated_distance_km')?.value;
     if (distance > 1000) {
@@ -177,7 +178,9 @@ this.rideService.createRide(formData, user_id).subscribe({
 
   get f() {
     return {
+      ride_period: this.rideForm.get('ride_period') as FormControl,
       ride_date: this.rideForm.get('ride_date') as FormControl,
+      ride_date_night_end: this.rideForm.get('ride_date_night_end') as FormControl,
       start_time: this.rideForm.get('start_time') as FormControl,
       end_time: this.rideForm.get('end_time') as FormControl,
       estimated_distance_km: this.rideForm.get('estimated_distance_km') as FormControl,
