@@ -183,7 +183,8 @@ setStatusFilter(status: string): void {
     if (this.currentPage > 1) this.currentPage--;
   }
 
-  get totalPages() {
-    return Math.ceil(this.getTotalRecords() / this.ordersPerPage);
-  }
+get totalPages() {
+  return this.filteredOrders.length > 0 ? Math.ceil(this.filteredOrders.length / this.ordersPerPage) : 1;
+}
+
 }

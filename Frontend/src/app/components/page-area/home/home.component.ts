@@ -58,9 +58,10 @@ export class HomeComponent implements OnInit {
     if (this.currentPage > 1) this.currentPage--;
   }
 
-  get totalPages() {
-    return Math.ceil(this.filteredOrders.length / this.ordersPerPage);
-  }
+get totalPages() {
+  return this.filteredOrders.length > 0 ? Math.ceil(this.filteredOrders.length / this.ordersPerPage) : 1;
+}
+
 
   getStatusTooltip(status: string): string {
     switch (status) {

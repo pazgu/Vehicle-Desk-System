@@ -190,3 +190,7 @@ button {
   opacity: 0.5; /* Reduce opacity for inactive arrows */
   cursor: not-allowed; /* Optional: Make sure inactive arrows can't be clicked */
 }
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
