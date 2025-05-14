@@ -1,51 +1,52 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { DropdownModule } from 'primeng/dropdown';
 import { PaginatorModule } from 'primeng/paginator';
 import { TableModule } from 'primeng/table';
-import { Router } from '@angular/router';
 import { OrderService } from '../../../services/order.service';
 import { RideDashboardItem } from '../../../models/ride-dashboard-item/ride-dashboard-item.module';
 
 @Component({
   selector: 'app-dashboard-all-orders',
-  imports: [TableModule, DropdownModule, CommonModule,
-    ButtonModule, PaginatorModule, FormsModule],
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    TableModule,
+    ButtonModule,
+    DropdownModule,
+    PaginatorModule
+  ],
   templateUrl: './dashboard-all-orders.component.html',
-  styleUrl: './dashboard-all-orders.component.css',
-  standalone: true // Make sure this is included if using standalone components
+  styleUrls: ['./dashboard-all-orders.component.css']
 })
 export class DashboardAllOrdersComponent implements OnInit {
 
-  constructor(private router: Router, private orderService: OrderService) { }
-
   orders: RideDashboardItem[] = [];
   rows: number = 5;
-  currentPage = 1;
-  ordersPerPage = 5;
-  filterBy = 'date_and_time';
-  statusFilter = '';
+  currentPage: number = 1;
+  statusFilter: string = '';
   startDate: string = '';
   endDate: string = '';
-  showFilters = false;
-  showOldOrders = false;
-  sortBy = 'date_and_time';
+  showFilters: boolean = false;
+  showOldOrders: boolean = false;
+  sortBy: string = 'date_and_time';
+
+  constructor(private router: Router, private orderService: OrderService) {}
 
   ngOnInit(): void {
-    const departmentId = "912a25b9-08e7-4461-b1a3-80e66e79d29e";
-    // console.log('Department ID:', departmentId);
+    const departmentId = "912a25b9-08e7-4461-b1a3-80e66e79d29e"; // Replace with dynamic department ID
     this.loadOrders(departmentId);
   }
 
   loadOrders(departmentId: string | null): void {
     if (departmentId) {
       this.orderService.getDepartmentOrders(departmentId).subscribe(
-        (data) => {  
-          // Assign the data directly to the orders array
+        (data) => {
           this.orders = Array.isArray(data) ? data : [];
-          console.log('Processed Orders:', this.orders); // Debugging
         },
         (error) => {
           console.error('Error loading orders:', error);
@@ -57,15 +58,10 @@ export class DashboardAllOrdersComponent implements OnInit {
   }
 
   get filteredOrders() {
-    if (!this.orders || this.orders.length === 0) {
-      console.log('No orders available for filtering.');
-      return [];
-    }
-  
     let filtered = [...this.orders];
-  
-      if (this.statusFilter) {
-        switch (this.statusFilter) {
+
+    if (this.statusFilter) {
+      switch (this.statusFilter) {
         case 'בהמתנה':
           filtered = filtered.filter(order => order.status === 'pending');
           break;
@@ -79,18 +75,18 @@ export class DashboardAllOrdersComponent implements OnInit {
           break;
       }
     }
-  
+
     if (this.startDate) {
       filtered = filtered.filter(order => new Date(order.date_and_time) >= new Date(this.startDate));
     }
-  
+
     if (this.endDate) {
       const endDateAtEndOfDay = this.endDate ? new Date(this.endDate + 'T23:59:59') : null;
       if (endDateAtEndOfDay) {
         filtered = filtered.filter(order => new Date(order.date_and_time) <= endDateAtEndOfDay);
       }
     }
-  
+
     switch (this.sortBy) {
       case 'status':
         return [...filtered].sort((a, b) => a.status.localeCompare(b.status));
@@ -100,36 +96,12 @@ export class DashboardAllOrdersComponent implements OnInit {
     }
   }
 
-  // Make sure this returns the filtered orders
   get trips(): RideDashboardItem[] {
     return this.filteredOrders;
   }
 
   onRowSelect(trip: RideDashboardItem) {
-    console.log('Selected trip:', trip.ride_id); // Debugging
     this.router.navigate(['/order-card', trip.ride_id]);
-  }
-
-  resetFilters(table: any) {
-    table.clear();
-    this.statusFilter = '';
-    this.startDate = '';
-    this.endDate = '';
-    this.showOldOrders = false;
-    this.sortBy = 'date_and_time';
-  }
-
-  getStatusClass(status: string): string {
-    switch (status) {
-      case 'approved':
-        return 'status-approved';
-      case 'pending':
-        return 'status-pending';
-      case 'rejected':
-        return 'status-rejected';
-      default:
-        return '';
-    }
   }
 
   getRowClass(status: string): string {
@@ -145,10 +117,6 @@ export class DashboardAllOrdersComponent implements OnInit {
     }
   }
 
-  onRowClick(trip: RideDashboardItem) {
-    this.router.navigate(['/order-card', trip.ride_id]);
-  }
-
   translateStatus(status: string | null | undefined): string {
     if (!status) return '';
     
@@ -162,5 +130,52 @@ export class DashboardAllOrdersComponent implements OnInit {
       default:
         return status;
     }
+  }
+
+  getStatusClass(status: string): string {
+    switch (status) {
+      case 'approved':
+        return 'status-approved';
+      case 'pending':
+        return 'status-pending';
+      case 'rejected':
+        return 'status-rejected';
+      default:
+        return '';
+    }
+  }
+
+  parseDate(dateTime: string): Date {
+    const [datePart, timePart] = dateTime.split(' ');
+    const [year, month, day] = datePart.split('-').map(Number);
+    const [hours, minutes] = timePart.split(':').map(Number);
+    return new Date(year, month - 1, day, hours, minutes);
+  }
+
+
+
+  resetFilters() {
+    this.statusFilter = '';
+    this.startDate = '';
+    this.endDate = '';
+    this.showOldOrders = false;
+    this.sortBy = 'date_and_time';
+    this.currentPage = 1;
+  }
+
+  onPageChange(event: any) {
+    this.currentPage = event.page + 1;
+  }
+
+  nextPage() {
+    if (this.currentPage < this.totalPages) this.currentPage++;
+  }
+
+  prevPage() {
+    if (this.currentPage > 1) this.currentPage--;
+  }
+
+  get totalPages() {
+    return this.filteredOrders.length > 0 ? Math.ceil(this.filteredOrders.length / this.rows) : 1;
   }
 }
