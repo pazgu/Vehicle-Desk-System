@@ -44,7 +44,7 @@
           </div>
         </div>
       </div>
- <p-table #table [value]="trips" [paginator]="true" [rows]="rows" [totalRecords]="filteredOrders.length" dir="rtl">
+ <p-table #table [value]="trips" [rows]="rows" [totalRecords]="filteredOrders.length" dir="rtl">
         <ng-template pTemplate="header">
           <tr class="table-header">
             <th>מזהה נסיעה</th>
@@ -56,7 +56,7 @@
           </tr>
         </ng-template>
         <ng-template pTemplate="body" let-trip>
-          <tr [ngClass]="getRowClass(trip.status)" (click)="onRowClick(trip)">
+          <tr [ngClass]="getRowClass(trip.status)" (click)="onRowSelect(trip)">
             <td>{{ trip.ride_id }}</td>
             <td>{{ trip.employee_name }}</td>
             <td>{{ trip.requested_vehicle_plate }}</td>
@@ -90,6 +90,3 @@
 
     </div>
   </div>
-    </div>
-  </div>
-</div>
