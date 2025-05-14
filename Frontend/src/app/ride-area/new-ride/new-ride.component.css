@@ -16,6 +16,11 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    height: 100vh; /* Ensures it takes full viewport height */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* padding: 60px 20px; */
     direction: rtl;
     font-family: 'Alef', sans-serif;
     background-color: #ccc;
