@@ -1,89 +1,60 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { DropdownModule } from 'primeng/dropdown';
 import { PaginatorModule } from 'primeng/paginator';
 import { TableModule } from 'primeng/table';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-dashboard-all-orders',
-  imports: [TableModule, DropdownModule, CommonModule,
-    ButtonModule, PaginatorModule, FormsModule],
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    TableModule,
+    ButtonModule,
+    DropdownModule,
+    PaginatorModule
+  ],
   templateUrl: './dashboard-all-orders.component.html',
-  styleUrl: './dashboard-all-orders.component.css'
+  styleUrls: ['./dashboard-all-orders.component.css']
 })
 export class DashboardAllOrdersComponent {
+  constructor(private router: Router) {}
 
-  constructor(private router: Router) { }
-
-  
-  originalTrips = [
-    { id: 1, employeeName: 'ישראל ישראלי', vehicle: 1, dateTime: '2025-05-07 10:00', destination: 'תל אביב', distance: 10, status: 'מאושר' },
-    { id: 2, employeeName: 'יוסי כהן', vehicle: 2, dateTime: '2025-05-07 12:00', destination: 'ירושלים', distance: 70, status: 'בהמתנה' },
-    { id: 3, employeeName: 'דנה לוי', vehicle: 3, dateTime: '2025-05-08 09:00', destination: 'חיפה', distance: 90, status: 'נדחה' },
-    { id: 4, employeeName: 'אבי מזרחי', vehicle: 4, dateTime: '2025-05-08 14:30', destination: 'באר שבע', distance: 110, status: 'מאושר' },
-    { id: 5, employeeName: 'שרה כהן', vehicle: 5, dateTime: '2025-05-09 08:15', destination: 'נתניה', distance: 30, status: 'בהמתנה' },
-    { id: 6, employeeName: 'מיכאל רון', vehicle: 6, dateTime: '2025-05-09 11:45', destination: 'אשדוד', distance: 55, status: 'נדחה' },
-    { id: 7, employeeName: 'תמר אלון', vehicle: 7, dateTime: '2025-05-10 13:00', destination: 'אילת', distance: 300, status: 'בהמתנה' },
-    { id: 8, employeeName: 'נועם חן', vehicle: 8, dateTime: '2025-05-10 15:30', destination: 'רחובות', distance: 20, status: 'מאושר' },
-    { id: 9, employeeName: 'רוני ברק', vehicle: 9, dateTime: '2025-05-11 07:30', destination: 'מודיעין', distance: 45, status: 'נדחה' },
-    { id: 10, employeeName: 'גיא כהן', vehicle: 10, dateTime: '2025-05-11 17:00', destination: 'כפר סבא', distance: 25, status: 'בהמתנה' },
-    { id: 11, employeeName: 'ליהי לוי', vehicle: 11, dateTime: '2025-05-12 10:30', destination: 'חולון', distance: 35, status: 'מאושר' },
-    { id: 12, employeeName: 'אורן מזרחי', vehicle: 12, dateTime: '2025-05-12 13:00', destination: 'ראשון לציון', distance: 15, status: 'בהמתנה' },
-    { id: 13, employeeName: 'נועה ברק', vehicle: 13, dateTime: '2025-05-13 08:45', destination: 'רמת גן', distance: 25, status: 'נדחה' },
-    { id: 14, employeeName: 'שלומי יוסף', vehicle: 14, dateTime: '2025-05-13 11:30', destination: 'נתניה', distance: 40, status: 'מאושר' },
-    { id: 15, employeeName: 'מירה כהן', vehicle: 15, dateTime: '2025-05-14 09:00', destination: 'תל אביב', distance: 10, status: 'נדחה' },
-    { id: 16, employeeName: 'צוריאל בר', vehicle: 16, dateTime: '2025-05-14 14:00', destination: 'עכו', distance: 120, status: 'בהמתנה' },
-    { id: 17, employeeName: 'מיכל חן', vehicle: 17, dateTime: '2025-05-15 12:15', destination: 'חיפה', distance: 100, status: 'מאושר' },
-    { id: 18, employeeName: 'אוראל רוזן', vehicle: 18, dateTime: '2025-05-15 16:30', destination: 'הרצליה', distance: 40, status: 'נדחה' },
-    { id: 19, employeeName: 'רז יוספי', vehicle: 19, dateTime: '2025-05-16 09:30', destination: 'תל אביב', distance: 15, status: 'בהמתנה' },
-    { id: 20, employeeName: 'עדי פרידמן', vehicle: 20, dateTime: '2025-05-16 18:00', destination: 'חולון', distance: 25, status: 'מאושר' }
+  originalTrips: {
+    id: number;
+    dateTime: string;
+    status: string;
+    [key: string]: any;
+  }[] = [
+    // example data structure:
+    // { id: 1, dateTime: '2025-05-01 15:30', status: 'מאושר', ... }
   ];
 
   currentPage = 1;
   ordersPerPage = 5;
   filterBy = 'dateTime';
   statusFilter = '';
-  startDate: string = '';
-  endDate: string = '';
+  startDate = '';
+  endDate = '';
   showFilters = false;
   showOldOrders = false;
-  first: number = 0;
-rows: number = 5;
+  first = 0;
+  rows = 5;
+  sortBy = 'dateTime';
+selectedStatusFilter: string = '';
 
-
-  sortBy = 'date';
+setStatusFilter(status: string): void {
+  this.selectedStatusFilter = status;
+  this.statusFilter = status; // this will also update the filtering logic
+  this.currentPage = 1; // optional: reset to first page on new filter
+}
 
   get trips() {
-    return this.filteredOrders;
-  }
-
-  onRowSelect(trip: any) {
-    this.router.navigate(['/order-card', trip.id]);
-  }
-
-  resetFilters(table: any) {
-    table.clear();
-    this.statusFilter = '';
-    this.startDate = '';
-    this.endDate = '';
-    this.showOldOrders = false;
-    this.sortBy = 'date';
-  }
-
-  getStatusClass(status: string): string {
-    switch (status) {
-      case 'מאושר':
-        return 'status-approved';
-      case 'בהמתנה':
-        return 'status-pending';
-      case 'נדחה':
-        return 'status-rejected';
-      default:
-        return '';
-    }
+    return this.paginatedOrders;
   }
 
   get filteredOrders() {
@@ -105,41 +76,50 @@ rows: number = 5;
     }
 
     if (this.startDate) {
-      filtered = filtered.filter(order => this.parseDate(order.dateTime) >= new Date(this.startDate));
+      filtered = filtered.filter(order =>
+        this.parseDate(order.dateTime) >= new Date(this.startDate)
+      );
     }
 
     if (this.endDate) {
-      // Create a Date object for the end of the selected end date
-      const endDateAtEndOfDay = this.endDate ? new Date(this.endDate + 'T23:59:59') : null;
-      if (endDateAtEndOfDay) {
-        filtered = filtered.filter(order => this.parseDate(order.dateTime) <= endDateAtEndOfDay);
-      }
+      const endDateAtEndOfDay = new Date(this.endDate + 'T23:59:59');
+      filtered = filtered.filter(order =>
+        this.parseDate(order.dateTime) <= endDateAtEndOfDay
+      );
     }
 
     switch (this.sortBy) {
       case 'status':
         return [...filtered].sort((a, b) => a.status.localeCompare(b.status));
-      case 'date':
+      case 'dateTime':
       default:
-        return [...filtered].sort((a, b) => this.parseDate(a.dateTime).getTime() - this.parseDate(b.dateTime).getTime());
+        return [...filtered].sort((a, b) =>
+          this.parseDate(a.dateTime).getTime() -
+          this.parseDate(b.dateTime).getTime()
+        );
     }
   }
+
   get paginatedOrders() {
-  const filtered = this.filteredOrders;
+    const filtered = this.filteredOrders;
+    const startIndex = (this.currentPage - 1) * this.ordersPerPage;
+    const endIndex = this.currentPage * this.ordersPerPage;
 
-  const startIndex = (this.currentPage - 1) * this.ordersPerPage;
-  const endIndex = this.currentPage * this.ordersPerPage;
+    if (this.showFilters) {
+      const firstPageCount = 2;
+      const adjustedStartIndex =
+        this.currentPage === 1
+          ? 0
+          : firstPageCount + (this.currentPage - 2) * this.ordersPerPage;
+      const adjustedEndIndex =
+        this.currentPage === 1
+          ? firstPageCount
+          : adjustedStartIndex + this.ordersPerPage;
+      return filtered.slice(adjustedStartIndex, adjustedEndIndex);
+    }
 
-  // When filters are shown, we only want 2 items on the first page (shift 3 to the second)
-  if (this.showFilters) {
-    const firstPageCount = 2;
-    const adjustedStartIndex = this.currentPage === 1 ? 0 : firstPageCount + (this.currentPage - 2) * this.ordersPerPage;
-    const adjustedEndIndex = this.currentPage === 1 ? firstPageCount : adjustedStartIndex + this.ordersPerPage;
-    return filtered.slice(adjustedStartIndex, adjustedEndIndex);
+    return filtered.slice(startIndex, endIndex);
   }
-
-  return filtered.slice(startIndex, endIndex);
-}
 
   getRowClass(status: string): string {
     switch (status) {
@@ -153,21 +133,57 @@ rows: number = 5;
         return '';
     }
   }
-  getTotalRecords(): number {
-  return this.filteredOrders.length;
-}
-onPageChange(event: any) {
-  this.currentPage = event.page + 1; // PrimeNG pages are 0-based
-}
 
-  onRowClick(trip: any) {
-    this.router.navigate(['/order-card', trip.id]);
+  getStatusClass(status: string): string {
+    switch (status) {
+      case 'מאושר':
+        return 'status-approved';
+      case 'בהמתנה':
+        return 'status-pending';
+      case 'נדחה':
+        return 'status-rejected';
+      default:
+        return '';
+    }
   }
 
-  parseDate(d: string): Date {
-    const [datePart, timePart] = d.split(' ');
+  getTotalRecords(): number {
+    return this.filteredOrders.length;
+  }
+
+  parseDate(dateTime: string): Date {
+    const [datePart, timePart] = dateTime.split(' ');
     const [year, month, day] = datePart.split('-').map(Number);
     const [hours, minutes] = timePart.split(':').map(Number);
     return new Date(year, month - 1, day, hours, minutes);
+  }
+
+  onRowSelect(trip: any) {
+    this.router.navigate(['/order-card', trip.id]);
+  }
+
+  resetFilters() {
+    this.statusFilter = '';
+    this.startDate = '';
+    this.endDate = '';
+    this.showOldOrders = false;
+    this.sortBy = 'dateTime';
+    this.currentPage = 1;
+  }
+
+  onPageChange(event: any) {
+    this.currentPage = event.page + 1;
+  }
+
+  nextPage() {
+    if (this.currentPage < this.totalPages) this.currentPage++;
+  }
+
+  prevPage() {
+    if (this.currentPage > 1) this.currentPage--;
+  }
+
+  get totalPages() {
+    return Math.ceil(this.getTotalRecords() / this.ordersPerPage);
   }
 }

@@ -1,59 +1,52 @@
+:host {
+  display: block;
+  background-color: #cccccc;
+  min-height: calc(100vh - 55px);
+  padding: 25px;
+  direction: rtl;
+  font-family: sans-serif;
+}
+
+/* Page Wrapper */
 .page-wrapper {
   background-color: rgb(245, 241, 241);
   padding: 10px;
   border-radius: 12px;
   max-width: 1000px;
-  margin: 2rem auto;
+  margin: 2rem auto 0;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  direction: rtl;
-  font-family: sans-serif;
-  margin-bottom: 0px;
-  }
-
-  h1{
-    color: #942222;
-  }
-
-:host {
-  display: block;
-  background-color: #cccccc;
-  min-height: calc(100vh - 55px); /* subtract any fixed nav height if needed */
-  margin-top: 0;
-  padding-top: 0px;
-  margin-bottom: 0px;
-  padding: 25px; /* Optional: Add padding around the content */
 }
 
-/* Table header styling */
-.table-header {
-  background-color: #942222; /* Red color */
-  color: white; /* White text */
-  margin-top: 0px;
-  margin-bottom: 0px;
+/* Header */
+h1 {
+  color: #942222;
 }
-
-/* Center the table and add rounded corners */
+button {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    margin: 0 1rem;
+    cursor: pointer;
+    color: #811313;
+  }
+/* Table styling */
 :host ::ng-deep .p-datatable {
-  margin: 50px auto; /* Center the table horizontally */
-  border-radius: 10px; /* Add rounded corners */
-  overflow: hidden; /* Ensure content respects the rounded corners */
-  text-align: right; /* Align content to the right */
-  font-size: 14px; /* Set a readable font size */
-  width: 85%; /* Adjust the width of the table */
+  width: 85%;
+  margin: 0 auto;
+  border-radius: 10px;
+  border: 5px solid #942222;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: right;
+  font-size: 14px;
   direction: rtl;
-  border: 5px solid #942222; /* Optional: Add a border */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: Add a subtle shadow */
-  margin-top: 0;
-  margin-bottom: 0px;
 }
 
 :host ::ng-deep .p-datatable .p-datatable-thead > tr > th {
   background-color: #942222;
   color: white;
   padding: 10px;
-  text-align: right;
   font-weight: bold;
-  
+  text-align: right;
 }
 
 :host ::ng-deep .p-datatable .p-datatable-tbody > tr > td {
@@ -62,35 +55,48 @@
   border-bottom: 1px solid #e9ecef;
 }
 
-
-:host ::ng-deep .p-datatable .p-datatable-tbody > tr:hover {
-  color: #942222;
-}
-
-
-:host ::ng-deep .p-datatable .p-datatable-tbody > tr:nth-child(even) {
-  cursor: pointer;
-}
-
 :host ::ng-deep .p-datatable .p-datatable-tbody > tr:hover {
   background-color: #f0f0f0;
+  color: #942222;
   cursor: pointer;
-
 }
 
-/* PrimeNG Paginator Styling */
+/* Row color by status */
+:host ::ng-deep tr.row-approved {
+  background-color: #dcf1e1;
+  color: #155724;
+}
+
+:host ::ng-deep .row-pending {
+  background-color: #fbf3da;
+  color: #856404;
+}
+
+:host ::ng-deep .row-rejected {
+  background-color: #f8e2e2;
+  color: #721c24;
+}
+
+/* Status chip */
+.status-text {
+  padding: 0.3rem 0.6rem;
+  border-radius: 0.5rem;
+  color: white;
+  font-weight: bold;
+  text-align: center;
+  display: inline-block;
+}
+
+/* Paginator styling */
 :host ::ng-deep .p-paginator {
   background-color: #f5f5f5;
   border-radius: 5px;
   padding: 10px;
-  /* direction: rtl; */
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 0px;
 }
 
-/* Style for paginator navigation buttons (arrows) */
 :host ::ng-deep .p-paginator .p-paginator-first,
 :host ::ng-deep .p-paginator .p-paginator-prev,
 :host ::ng-deep .p-paginator .p-paginator-next,
@@ -102,38 +108,12 @@
   margin: 0 3px;
   min-width: 2.5rem;
   height: 2.5rem;
-  transform: scaleX(-1); /* Flip for RTL */
-  font-size: 1rem;
+  transform: scaleX(-1); /* RTL flip */
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
 }
 
-:host ::ng-deep .p-paginator .p-paginator-first:hover,
-:host ::ng-deep .p-paginator .p-paginator-prev:hover,
-:host ::ng-deep .p-paginator .p-paginator-next:hover,
-:host ::ng-deep .p-paginator .p-paginator-last:hover {
-  background-color: #7a1c1c; /* Darker red on hover */
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
-}
-
-:host ::ng-deep .p-paginator .p-paginator-first:focus,
-:host ::ng-deep .p-paginator .p-paginator-prev:focus,
-:host ::ng-deep .p-paginator .p-paginator-next:focus,
-:host ::ng-deep .p-paginator .p-paginator-last:focus {
-  box-shadow: 0 0 0 2px rgba(148, 34, 34, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
-  outline: none;
-}
-
-:host ::ng-deep .p-paginator .p-paginator-first.p-disabled,
-:host ::ng-deep .p-paginator .p-paginator-prev.p-disabled,
-:host ::ng-deep .p-paginator .p-paginator-next.p-disabled,
-:host ::ng-deep .p-paginator .p-paginator-last.p-disabled {
-  display: none;
-}
-
-/* Style for paginator buttons */
 :host ::ng-deep .p-paginator .p-paginator-button {
   background-color: #942222;
   color: white;
@@ -142,108 +122,35 @@
   margin: 0 3px;
   min-width: 2.5rem;
   height: 2.5rem;
-  transition: background-color 0.2s;
 }
 
+:host ::ng-deep .p-paginator .p-paginator-page:hover,
 :host ::ng-deep .p-paginator .p-paginator-button:hover {
   background-color: #7a1c1c;
 }
 
-:host ::ng-deep .p-paginator .p-paginator-button:focus {
-  box-shadow: 0 0 0 2px rgba(148, 34, 34, 0.3);
-  outline: none;
-}
-
-/* Pages button style */
-:host ::ng-deep .p-paginator .p-paginator-page {
-  background-color: #942222;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  margin: 0 3px;
-  min-width: 2.5rem;
-  height: 2.5rem;
-  position: relative;
-}
-
-
-:host ::ng-deep .p-paginator .p-paginator-page:hover {
-  background-color: #7a1c1c;
-}
-
-:host ::ng-deep .p-paginator .p-paginator-page.p-highlight,
-:host ::ng-deep .p-paginator .p-paginator-page.p-paginator-page-selected {
-  background-color: transparent !important; /* No background color */
-  color: #942222 !important; /* White text */
+:host ::ng-deep .p-paginator .p-paginator-page.p-highlight {
+  background-color: transparent !important;
+  color: #942222 !important;
   font-weight: bold;
-  border: none;
-  border-bottom: 3px solid #942222 !important; /* Red underline */
-  position: relative;
+  border-bottom: 3px solid #942222 !important;
 }
 
-/* Rows per page dropdown */
 :host ::ng-deep .p-paginator .p-dropdown {
-  background-color: white;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
   margin-left: 10px;
   height: 2.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
 }
 
-:host ::ng-deep .p-paginator .p-dropdown:hover {
-  border-color: #942222;
-}
-
-:host ::ng-deep .p-paginator .p-dropdown .p-dropdown-trigger {
-  color: #942222;
-}
-
-:host ::ng-deep .p-paginator .p-dropdown-panel .p-dropdown-item.p-highlight {
-  background-color: #942222;
-  color: white;
-}
-
-/* Current page report */
-:host ::ng-deep .p-paginator .p-paginator-current {
-  color: #555555;
-  margin: 0 10px;
-}
-
-/* Dropdown items alignment for RTL */
 :host ::ng-deep .p-dropdown-panel .p-dropdown-items {
   text-align: right;
 }
 
-
-
-/* General styling for status text */
-.status-text {
-  padding: 0.3rem 0.6rem;
-  border-radius: 0.5rem;
-  color: white;
-  font-weight: bold;
-  display: inline-block;
-  text-align: center;
+:host ::ng-deep .p-paginator .p-paginator-current {
+  color: #555555;
+  margin: 0 10px;
 }
-
-
-
-:host ::ng-deep tr.row-approved {
-  background-color: #dcf1e1;
-  color: #155724;
-  border: 2px solid green; /* Debugging */
-}
-
-:host ::ng-deep .row-pending {
-  background-color: #fbf3da; /* Light yellow */
-  color: #856404; /* Dark yellow text */
-}
-
-:host ::ng-deep .row-rejected {
-  background-color: #f8e2e2; /* Light red */
-  color: #721c24; /* Dark red text */
-}
-
 
 /* Responsive adjustments */
 @media screen and (max-width: 640px) {
@@ -251,14 +158,35 @@
     flex-wrap: wrap;
     justify-content: center;
   }
-  
+
   :host ::ng-deep .p-paginator .p-dropdown {
     margin-top: 8px;
   }
-  
+
   :host ::ng-deep .p-paginator .p-paginator-current {
     width: 100%;
     text-align: center;
     margin-bottom: 8px;
   }
+}
+.ride-filter-buttons button {
+  font-size: 14px;
+  font-weight: 500;
+  padding: 6px 14px;
+  border: none;
+  background-color: transparent;
+  color: #811313;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.ride-filter-buttons button.active {
+  background-color: #942222;
+  color: white;
+  font-weight: bold;
+}
+:host ::ng-deep .p-paginator .p-paginator-disabled {
+  opacity: 0.5; /* Reduce opacity for inactive arrows */
+  cursor: not-allowed; /* Optional: Make sure inactive arrows can't be clicked */
 }
