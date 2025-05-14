@@ -32,6 +32,7 @@ import { CommonModule } from '@angular/common';
 export class NewRideComponent implements OnInit {
   rideForm!: FormGroup;
   public estimated_distance_with_buffer: number = 0;
+  public minDate: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -49,7 +50,8 @@ export class NewRideComponent implements OnInit {
 
   availableCars: { id: string; name: string; type: string }[] = [];
 
-    ngOnInit(): void {
+  ngOnInit(): void {
+    this.minDate = this.calculateMinDate(2);
     this.rideForm = this.fb.group({
       ride_period: ['morning'],
       ride_date: ['', [Validators.required, this.minDateValidator(2), this.validYearRangeValidator(2025, 2099)]],
@@ -105,6 +107,13 @@ export class NewRideComponent implements OnInit {
     const distance = this.rideForm.get('estimated_distance_km')?.value || 0;
     this.estimated_distance_with_buffer = +(distance * 1.1).toFixed(2);
   }
+
+  calculateMinDate(daysAhead: number): string {
+  const date = new Date();
+  date.setDate(date.getDate() + daysAhead);
+  return date.toISOString().split('T')[0];
+}
+
 
   minDateValidator(minDaysAhead: number): ValidatorFn {
     return (control: AbstractControl) => {

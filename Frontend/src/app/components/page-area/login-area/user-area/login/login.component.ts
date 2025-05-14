@@ -7,26 +7,27 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../../../../services/auth.service';
 import { environment } from '../../../../../../environments/environment';
- 
+import { ToastService } from '../../../../../services/toast.service';
+
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [RouterModule, ReactiveFormsModule, CommonModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
-  
 })
 export class LoginComponent implements OnInit {
+  formSubmitted = false;
   loginForm!: FormGroup;
   errorMessage: string | null = null;
 
   constructor(
-  private fb: FormBuilder,
-  private http: HttpClient,
-  private router: Router,
-  private authService: AuthService // <-- Add this line
-) {}
-
+    private fb: FormBuilder,
+    private http: HttpClient,
+    private router: Router,
+    private authService: AuthService,
+    private toastService: ToastService
+  ) {}
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
@@ -52,13 +53,17 @@ export class LoginComponent implements OnInit {
   get f() {
     return this.loginForm.controls;
   }
-  
-  onLogin(): void {
+
+onLogin(): void {
+  this.formSubmitted = true;
   this.errorMessage = null;
 
+  // ✅ Trigger form validation first
+  this.loginForm.markAllAsTouched();
+
+  // ✅ Show toast if form is invalid
   if (this.loginForm.invalid) {
-    this.loginForm.markAllAsTouched();
-    this.errorMessage = 'יש למלא את כל השדות כנדרש';
+    this.toastService.show('יש למלא את כל השדות כנדרש', 'error');
     return;
   }
 
@@ -74,12 +79,10 @@ export class LoginComponent implements OnInit {
       localStorage.setItem('employee_id', response.employee_id);
       localStorage.setItem('role', response.role);
 
-      // Update AuthService state
       this.authService.setFullName(response.first_name, response.last_name);
       this.authService.setLoginState(true);
       this.authService.setRole(response.role);
 
-      // ✅ Redirect based on role
       const role = response.role;
       if (role === 'admin') {
         this.router.navigate(['/daily-checks']);
@@ -90,12 +93,10 @@ export class LoginComponent implements OnInit {
       }
     },
     error: (err) => {
-      this.errorMessage = err.error?.detail || 'ההתחברות נכשלה';
+      console.error('Login failed:', err);
+      this.toastService.show('שם משתמש או סיסמה שגויים', 'error');
     }
   });
 }
 
-
-  
 }
-

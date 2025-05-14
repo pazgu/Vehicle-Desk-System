@@ -42,7 +42,9 @@ body {
     display: flex;
     flex-direction: column;
     max-height: 90vh; /* ✅ allow content to expand */
-    justify-content: flex-start; /* ✅ normal layout flow */
+    justify-content: space-between; 
+    max-height: 95vh; /* was 90vh before */
+    overflow-y: auto;
 }
 
 
@@ -137,9 +139,10 @@ input[type="time"], input[type="number"], input[type="text"], select {
 }
 
 .distance-info {
-    margin-top: 5px;
-    font-size: 14px;
-    color: #333;
+  min-height: 18px; /* prevents shifting */
+  font-size: 14px;
+  margin-top: 5px;
+  color: #333;
 }
 
 /* Ensure proper spacing between two date inputs in same row */
@@ -156,6 +159,13 @@ input[type="time"], input[type="number"], input[type="text"], select {
   flex-direction: column;
   gap: 1rem;
 }
+
+.form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 
 
 
