@@ -6,12 +6,17 @@
 
   <p-card *ngIf="trip" [styleClass]="'trip-card ' + getCardClass(trip?.status)">    <ng-template pTemplate="header">
       <div class="card-header">
-        <h2>פרטי נסיעה - מספר {{ trip.id }}</h2>
-        <p-tag [value]="trip.status" [severity]="getStatusSeverity(trip.status)"></p-tag>
+        <h2>פרטי נסיעה מלאים</h2>
+        <p-tag [value]="translateStatus(trip.status)"></p-tag>
       </div>
     </ng-template>
-  
+
     <div class="card-content">
+      <div class="info-row">
+        <div class="info-label">מזהה נסיעה: </div>
+        <div class="info-value">{{ trip.id }}</div>
+      </div>
+
       <div class="info-row">
         <div class="info-label">מזהה עובד:</div>
         <div class="info-value">{{ trip.userId }}</div>
@@ -35,6 +40,11 @@
       <div class="info-row">
         <div class="info-label">תאריך סיום:</div>
         <div class="info-value">{{ formatDateTime(trip.endDateTime) }}</div>
+      </div>
+
+      <div class="info-row">
+        <div class="info-label">נקודת התחלה:</div>
+        <div class="info-value">{{ trip.startLocation }}</div>
       </div>
 
       <div class="info-row">
@@ -72,8 +82,8 @@
 
     <ng-template pTemplate="footer">
       <div class="card-actions">
-        <p-button class="approve" label=" אישור נסיעה " styleClass="p-button-success" (click)="approveTrip()"></p-button>
-        <p-button class="reject" label="דחיית נסיעה" styleClass="p-button-danger" (click)="rejectTrip()"></p-button>
+        <p-button class="approve" label=" אישור נסיעה " styleClass="p-button-success" (click)="updateStatus('approved')"></p-button>
+        <p-button class="reject" label="דחיית נסיעה" styleClass="p-button-danger" (click)="updateStatus('rejected')"></p-button>
         <p-button class="return" label="חזרה לרשימה" styleClass="p-button-secondary" (click)="goBack()"></p-button>
       </div>
     </ng-template>

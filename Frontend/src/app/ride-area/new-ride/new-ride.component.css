@@ -16,7 +16,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 80vh;
+    height: 100vh; /* Ensures it takes full viewport height */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -24,19 +24,30 @@ body {
     direction: rtl;
     font-family: 'Alef', sans-serif;
     background-color: #ccc;
-    height: 90.4vh; /* Ensures it takes full viewport height */
-    box-sizing: border-box; /* Includes padding in total height */
-    
+    height: 100vh; /* ✅ use full viewport height */
+    padding: 0; /* ✅ nice spacing */
+    box-sizing: border-box;
 }
+
+
 
 .modal {
     background-color: white;
     padding: 20px 30px;
     border-radius: 10px;
-    width: 600px;
+    width: 850px;
+    height: auto;  
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
     position: relative;
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh; /* ✅ allow content to expand */
+    justify-content: space-between; 
+    max-height: 95vh; /* was 90vh before */
+    overflow-y: auto;
 }
+
+
 
 .close-btn {
     position: absolute;
@@ -86,14 +97,17 @@ form .row {
 }
 
 .submit-btn {
-    background-color: #942222;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 10px;
+  background-color: #942222;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  align-self: flex-end;
+  margin-bottom: 0;
 }
+
+
 
 .submit-btn:hover {
     background-color: #7a1c1c;
@@ -125,8 +139,33 @@ input[type="time"], input[type="number"], input[type="text"], select {
 }
 
 .distance-info {
-    margin-top: 5px;
-    font-size: 14px;
-    color: #333;
+  min-height: 18px; /* prevents shifting */
+  font-size: 14px;
+  margin-top: 5px;
+  color: #333;
 }
+
+/* Ensure proper spacing between two date inputs in same row */
+.row .input-group {
+    min-width: 0;
+}
+
+.row .input-group input[type="date"] {
+    width: 100%;
+}
+
+.ride-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+
+
 

@@ -36,14 +36,17 @@
     </div>    
 
     <div class="nav-center">
-      <a routerLink="/home" routerLinkActive="active"><img src="/assets/images/bookit-logo.png" alt="Bookit Logo" class="logo"/></a>
+      <a [routerLink]="(role$ | async) === 'employee' ? '/home' : null"
+   [class.disabled]="(role$ | async) !== 'employee'"
+   routerLinkActive="active"><img src="/assets/images/bookit-logo.png" alt="Bookit Logo" class="logo"/></a>
     </div>
 
     <div class="nav-right">
-     <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/cars']" class="nav-link" href="#">רכבים | </a>
-<a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/daily-checks']" class="nav-link" href="#">בדיקות יומיות | </a>
+    <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/cars']" class="nav-link" href="#">רכבים | </a>
+    <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/daily-checks']" class="nav-link" href="#">בדיקות יומיות | </a>
+    <a *ngIf="(role$ | async) === 'supervisor'" [routerLink]="['/supervisor-dashboard']" class="nav-link" href="#">הזמנות מחלקה  </a>
 
-      <a [routerLink]="['home']" class="nav-link" href="#">ההזמנות שלי </a>
+      <a *ngIf="(role$ | async) === 'employee'" [routerLink]="['home']" class="nav-link" href="#">ההזמנות שלי </a>
      <a routerLink="/notifications">
   <img src="/assets/images/bell-icon.png" alt="Notifications" />
     </a>
@@ -52,5 +55,7 @@
 
   <!-- <img src="/assets/images/street.png" alt="Graphic" class="street-img" /> -->
 </body>
+<div class="navbar-spacer"></div>
+
 </html>
 

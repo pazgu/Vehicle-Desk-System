@@ -6,23 +6,24 @@ import { NewRideComponent } from './ride-area/new-ride/new-ride.component';
 import { RegisterComponent } from './components/page-area/login-area/user-area/register/register.component';
 import { DashboardAllOrdersComponent } from './components/supervisor-area/dashboard-all-orders/dashboard-all-orders.component';
 import { OrderCardComponent } from './components/supervisor-area/order-card/order-card.component';
-import { ProtectedRouteGuard } from './components/auth-area/protectedroute/protected-route.guard';
 import { NotificationsComponent } from './components/page-area/notifications/notifications.component';
 import { CarsComponent } from './components/admin-area/cars/cars.component';
 import { DailyChecksComponent } from './components/admin-area/daily-checks/daily-checks.component';
-import { UserDataComponent } from './components/admin-area/user-data/user-data.component';
+import { RedirectByRoleComponent } from './services/redirect-by-role';
+import { ProtectedRouteGuard } from './components/auth-area/protectedroute/protected-route.guard';
 
 export const routes: Routes = [
-    {path:"", redirectTo: "/login", pathMatch:"full"},
-    {path: "login",component: LoginComponent},
-    {path: "cars",component: CarsComponent,canActivate: [ProtectedRouteGuard]},
-    {path: "home",component: HomeComponent, canActivate: [ProtectedRouteGuard]},
-    {path: "new-ride", component: NewRideComponent, canActivate: [ProtectedRouteGuard]},
-    {path: "register",component:RegisterComponent},
-    {path: "supervisor-dashboard",component: DashboardAllOrdersComponent, canActivate: [ProtectedRouteGuard]},
-    {path: "order-card/:id",component: OrderCardComponent},
-    {path: 'notifications', component: NotificationsComponent, canActivate: [ProtectedRouteGuard]},
-    {path: 'daily-checks', component: DailyChecksComponent, canActivate: [ProtectedRouteGuard]},
-    {path: 'user-data', component: UserDataComponent}, //must fix permissions- admin only
-    {path: "**",component: Page404Component}
+  { path: 'login', component: LoginComponent },
+  { path: 'register', component: RegisterComponent },
+  { path: 'cars', component: CarsComponent, canActivate: [ProtectedRouteGuard] },
+  { path: 'home', component: HomeComponent, canActivate: [ProtectedRouteGuard] },
+  { path: 'new-ride', component: NewRideComponent, canActivate: [ProtectedRouteGuard] },
+  { path: 'supervisor-dashboard', component: DashboardAllOrdersComponent, canActivate: [ProtectedRouteGuard] },
+  { path: 'order-card/:id', component: OrderCardComponent },
+  { path: 'notifications', component: NotificationsComponent, canActivate: [ProtectedRouteGuard] },
+  { path: 'daily-checks', component: DailyChecksComponent, canActivate: [ProtectedRouteGuard] },
+  { path: '', component: RedirectByRoleComponent, pathMatch: 'full' }, // Moved lower
+  { path: '**', component: Page404Component }
 ];
+
+

@@ -32,7 +32,7 @@
         <label>כתובת דואר אלקטרוני</label>
         <input type="email" formControlName="email">
         <small *ngIf="f['email'].touched && f['email'].errors?.['required']" style="color:red;">יש להזין כתובת אימייל</small>
-        <small *ngIf="f['email'].errors?.['email'] || f['email'].errors?.['pattern']" style="color:red;">יש להזין כתובת Gmail חוקית</small>
+        <small *ngIf="f['email'].errors?.['email']" style="color:red;">יש להזין כתובת אימייל חוקית</small>
       </div>
 
       <div>
