@@ -56,6 +56,13 @@
       </div>
     </div>
 
+   <div *ngIf="filteredOrders.length === 0" class="no-orders-message">
+  לא נמצאו נסיעות עבור המשתמש הנוכחי
+  <button class="new-ride-btn" (click)="goToNewRide()"> + הזמן נסיעה חדשה</button>
+</div>
+
+
+
     <!-- Orders List -->
     <div
   class="orders-data-row"
