@@ -33,9 +33,16 @@ export class NotificationsComponent {
   currentPage = 1;
   notificationsPerPage = 5;
 
-  get totalPages(): number {
-    return Math.ceil(this.notifications.length / this.notificationsPerPage);
-  }
+ get totalPages(): number {
+  // Use filtered notifications length for total pages calculation
+  return this.notifications.length > 0 
+    ? Math.ceil(this.notifications.length / this.notificationsPerPage)
+    : 1; // Fallback to 1 page if no notifications
+}
+
+
+
+
 
   get pagedNotifications() {
     const start = (this.currentPage - 1) * this.notificationsPerPage;

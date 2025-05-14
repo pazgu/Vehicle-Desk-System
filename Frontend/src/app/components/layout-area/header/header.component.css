@@ -1,5 +1,6 @@
 body {
-   
+  padding-top: 55px; /* Same height as navbar */
+
     margin-top: 0px;
     font-family: 'Alef', sans-serif;
     background-color: #d7d1d9;
@@ -10,21 +11,21 @@ body, html {
     padding: 0px;
   }
   .navbar {
-    background-color: #942222;
-    color: white;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border: none;
-    height: 55px;
-  }
-  .navbar {
-    margin: 0;
-    padding: 0 20px; /* only horizontal padding if needed */
-    position: relative;
-    top: 0;
-  }
-  
+  background-color: #942222;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 55px;
+  position: fixed; /* stay at top */
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  padding: 0 20px;
+}
+
+
   .nav-left,
   .nav-center,
   .nav-right {
@@ -50,17 +51,6 @@ body, html {
     text-decoration: none;
     margin: 0 10px;
   }
-  
-.navbar {
-  background-color: #942222;
-  color: white;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 55px;
-  position: relative;
-  padding: 0 20px;
-}
 
 .nav-left,
 .nav-right {
@@ -68,6 +58,9 @@ body, html {
   align-items: center;
   gap: 10px;
   z-index: 1;
+}
+.navbar-spacer {
+  height: 55px;
 }
 
 /* Center the logo absolutely */

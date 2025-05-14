@@ -8,10 +8,5 @@ export const environment = {
     futureOrdersUrl: 'http://localhost:8000/api/future-orders',
     pastOrdersUrl: 'http://localhost:8000/api/past-orders',
 
-
-
-
-
-
   };
   

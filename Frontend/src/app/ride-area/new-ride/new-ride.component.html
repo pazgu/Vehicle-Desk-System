@@ -31,6 +31,42 @@
             השנה צריכה להיות בין 2025 ל-2099
           </small>
         </div>
+        <div class="input-group">
+          <label>סוג נסיעה</label>
+          <select formControlName="ride_type" class="styled-select">
+            <option value="" disabled>בחר סוג</option>
+        <option value="administrative">מנהלתית</option>
+        <option value="operational">תפעולית</option>
+          </select>
+          <small *ngIf="f.ride_type.touched && f.ride_type.errors?.['required']" class="distance-info">
+            חובה לבחור סוג נסיעה
+          </small>
+        </div>
+
+
+        <div class="input-group">
+  <label>סוג רכב</label>
+  <select formControlName="ride_type" class="styled-select" (change)="onRideTypeChange()">
+    <option value="" disabled selected>בחר סוג</option>
+    <option value="small">קטן</option>
+    <option value="large">גדול</option>
+    <option value="van">טנדר</option>
+  </select>
+  <small *ngIf="f.ride_type.touched && f.ride_type.errors?.['required']" class="distance-info">
+    חובה לבחור סוג רכב
+  </small>
+</div>
+
+<!-- Second dropdown appears only if there are matching cars -->
+<div class="input-group" *ngIf="availableCars.length > 0">
+  <label>בחר רכב זמין</label>
+  <select formControlName="car" class="styled-select">
+    <option value="" disabled selected>בחר רכב</option>
+    <option *ngFor="let car of availableCars" [value]="car.id">{{ car.name }}</option>
+  </select>
+</div>
+
+      </div>
 
         <!-- Nighttime Date Range -->
         <div *ngIf="rideForm.get('ride_period')?.value === 'night'" class="row">
@@ -43,6 +79,7 @@
             <input type="date" formControlName="ride_date_night_end" [min]="minDate" />
           </div>
         </div>
+
 
         <!-- Start/End Time -->
         <div class="row">

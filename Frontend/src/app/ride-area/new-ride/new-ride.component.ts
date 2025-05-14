@@ -40,6 +40,15 @@ export class NewRideComponent implements OnInit {
     private toastService: ToastService,
     private rideService: RideService // ✅ Inject the RideService
   ) {}
+    allCars = [
+    { id: '1', name: 'Toyota Yaris', type: 'small' },
+    { id: '2', name: 'Hyundai i10', type: 'small' },
+    { id: '3', name: 'Mercedes Sprinter', type: 'van' },
+    { id: '4', name: 'Ford Transit', type: 'van' },
+    { id: '5', name: 'Chevy Tahoe', type: 'large' }
+  ];
+
+  availableCars: { id: string; name: string; type: string }[] = [];
 
   ngOnInit(): void {
     this.minDate = this.calculateMinDate(2);
@@ -51,11 +60,12 @@ export class NewRideComponent implements OnInit {
       end_time: [''],
       estimated_distance_km: [null, [Validators.required, Validators.min(1)]],
       ride_type: ['', Validators.required],
+      car: [''], // <-- Add car field
       start_location: ['', Validators.required],
       stop: ['', Validators.required],
       destination: ['', Validators.required],
-
     });
+
 
     this.rideForm.get('estimated_distance_km')?.valueChanges.subscribe(() => {
       this.updateDistance();
@@ -64,8 +74,15 @@ export class NewRideComponent implements OnInit {
     this.rideForm.get('ride_period')?.valueChanges.subscribe(value => {
       this.onPeriodChange(value);
     });
+    
   }
+  onRideTypeChange() {
+    const selectedType = this.rideForm.value.ride_type;
+    this.availableCars = this.allCars.filter(car => car.type === selectedType);
 
+    // Reset selected car if type changes
+    this.rideForm.get('car')?.setValue('');
+  }
   onPeriodChange(value: string): void {
     const nightEndControl = this.rideForm.get('ride_date_night_end');
     const rideDateControl = this.rideForm.get('ride_date');
