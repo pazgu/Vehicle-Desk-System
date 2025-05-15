@@ -1,11 +1,17 @@
 from uuid import UUID
-from src.services.supervisor_dashboard_service import get_department_orders,get_department_specific_order,edit_order_status
-from fastapi import APIRouter, Depends
+from src.services.supervisor_dashboard_service import get_department_orders,get_department_specific_order,edit_order_status, get_department_notifications
+from fastapi import APIRouter, Depends, HTTPException
+
 from sqlalchemy.orm import Session
 from src.utils.database import get_db
 from src.models.ride_model import Ride 
 
+from typing import List
+from uuid import UUID
 
+from src.schemas.notification_schema import NotificationOut  # adjust path as needed
+from src.services.supervisor_dashboard_service import get_department_notifications
+from src.utils.database import get_db
 
 router = APIRouter()
 
@@ -34,7 +40,9 @@ def edit_order_status_route(department_id: UUID, order_id: UUID, status: str, db
 def get_department_vehicles_route(department_id: UUID):
     return {"message": f"Vehicles for department {department_id}"}
 
-@router.get("/notifications/{department_id}")
-def view_department_notifications_route(department_id: UUID):
-    return {"message": f"Notifications for department {department_id}"}
-
+@router.get("/notifications/{department_id}", response_model=List[NotificationOut])
+def view_department_notifications_route(department_id: UUID, db: Session = Depends(get_db)):
+    notifications = get_department_notifications(department_id, db)
+    if notifications is None or len(notifications) == 0:
+        raise HTTPException(status_code=404, detail="Notifications not found")
+    return notifications
