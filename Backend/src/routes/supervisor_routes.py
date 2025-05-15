@@ -4,6 +4,10 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from src.utils.database import get_db
 from src.models.ride_model import Ride 
+from fastapi import APIRouter
+from uuid import UUID
+from ..utils.database import get_db
+from ..services.supervisor_dashboard_service import get_department_orders
 
 
 
