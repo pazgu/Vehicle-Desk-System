@@ -1,4 +1,3 @@
-// order-card.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -9,7 +8,6 @@ import { DividerModule } from 'primeng/divider';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { OrderService } from '../../../services/order.service';
 import { OrderCardItem } from '../../../models/order-card-item/order-card-item.module';
-import { RideDashboardItem } from '../../../models/ride-dashboard-item/ride-dashboard-item.module';
 import { finalize } from 'rxjs/operators';
 
 @Component({
@@ -29,9 +27,10 @@ import { finalize } from 'rxjs/operators';
 export class OrderCardComponent implements OnInit {
   trip: any = null;
   order: OrderCardItem | null = null;
-  departmentId = "912a25b9-08e7-4461-b1a3-80e66e79d29e";
-  orderId = "bd2f024e-d123-48b5-a6d0-242e594706f6";
+  departmentId: string | null = null; // Retrieve from localStorage
   loading = false;
+  rideId!: string;
+
 
   constructor(
     private route: ActivatedRoute,
@@ -40,25 +39,31 @@ export class OrderCardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Retrieve departmentId from localStorage
+    this.departmentId = localStorage.getItem('department_id');
+    if (!this.departmentId) {
+      console.error('Department ID not found in localStorage.');
+      return;
+    }
+    this.rideId = this.route.snapshot.paramMap.get('ride_id')!;
+    console.log('Extracted ride_id:', this.rideId);
+
     // Listen for route params
     this.route.params.subscribe((params) => {
-      // Override default values if provided in the route
-      const deptId = params['departmentId'] || this.departmentId;
-      const orderIdParam = params['orderId'] || this.orderId;
-      
-      if (deptId && orderIdParam) {
-        this.departmentId = deptId;
-        this.orderId = orderIdParam;
-        this.loadOrder(this.departmentId, this.orderId);
+      const orderIdParam = params['orderId'] || this.rideId;
+
+      if (orderIdParam) {
+        this.rideId = orderIdParam;
+        this.loadOrder(this.departmentId!, this.rideId); // Use departmentId from localStorage
       } else {
-        console.error('Missing departmentId or orderId');
+        console.error('Missing orderId');
       }
     });
   }
 
   loadOrder(departmentId: string, orderId: string): void {
     this.loading = true;
-    this.orderService.getDepartmentSpecificOrder(departmentId, orderId)
+    this.orderService.getDepartmentSpecificOrder(departmentId, this.rideId)
       .pipe(
         finalize(() => this.loading = false)
       )
@@ -91,35 +96,33 @@ export class OrderCardComponent implements OnInit {
   }
 
   formatDateTime(dateTime: string): string {
-    // You can format the date and time as needed
-    // Here's a simple formatting example
     const [date, time] = dateTime.split(' ');
     return `${date} בשעה ${time}`;
   }
 
- updateStatus(status: string): void {
+  updateStatus(status: string): void {
     if (!this.trip) return;
     this.loading = true;
 
-    this.orderService.updateOrderStatus(this.departmentId, this.orderId, status)
-        .pipe(
-            finalize(() => {
-                this.loading = false;
-            })
-        )
-        .subscribe({
-            next: (response) => {
-                console.log('Order status updated successfully:', response);
-                setTimeout(() => {
-                    this.loadOrder(this.departmentId, this.orderId);
-                }, 500);
-            },
-            error: (error) => {
-                console.error('Error updating order status:', error);
-                alert(`Failed to update status: ${error.error?.detail || error.message}`);
-            }
-        });
-}
+    this.orderService.updateOrderStatus(this.departmentId!, this.rideId, status)
+      .pipe(
+        finalize(() => {
+          this.loading = false;
+        })
+      )
+      .subscribe({
+        next: (response) => {
+          console.log('Order status updated successfully:', response);
+          setTimeout(() => {
+            this.loadOrder(this.departmentId!, this.rideId);
+          }, 500);
+        },
+        error: (error) => {
+          console.error('Error updating order status:', error);
+          alert(`Failed to update status: ${error.error?.detail || error.message}`);
+        }
+      });
+  }
 
   goBack(): void {
     this.router.navigate(['/supervisor-dashboard']);

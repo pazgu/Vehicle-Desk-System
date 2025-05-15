@@ -20,7 +20,7 @@ export const routes: Routes = [
   { path: 'home', component: HomeComponent, canActivate: [ProtectedRouteGuard] },
   { path: 'new-ride', component: NewRideComponent, canActivate: [ProtectedRouteGuard] },
   { path: 'supervisor-dashboard', component: DashboardAllOrdersComponent, canActivate: [ProtectedRouteGuard] },
-  { path: 'order-card/:id', component: OrderCardComponent },
+  { path: 'order-card/:ride_id', component: OrderCardComponent },
   { path: 'notifications', component: NotificationsComponent, canActivate: [ProtectedRouteGuard] },
   { path: 'daily-checks', component: DailyChecksComponent, canActivate: [ProtectedRouteGuard] },
   { path: '', component: RedirectByRoleComponent, pathMatch: 'full' },

@@ -51,7 +51,8 @@ def create_user(user_data: UserCreate, db: Session):
         
         return {
             "employee_id": new_user.employee_id,
-            **token_data
+            **token_data,
+            "department_id": str(new_user.department_id)
         }
     
     except SQLAlchemyError as e:
