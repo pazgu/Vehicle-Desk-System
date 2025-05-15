@@ -69,22 +69,20 @@ def role_check(allowed_roles: list, token: str):
 
 def identity_check(user_id: str, token: str):
     try:
-        # Decode the token and get the payload
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        print(payload)
-        # Extract user_id from the payload
         token_user_id = payload.get("sub")
-        
+
+        print("🔎 Token user_id:", token_user_id)
+        print("🔐 Path user_id:", user_id)
+
         if not token_user_id:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token: Missing user_id")
-        
-        # Check if the user is accessing their own data
+            raise HTTPException(status_code=401, detail="Invalid token: Missing user_id")
+
         if token_user_id != user_id:
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
+                status_code=403,
                 detail="You cannot access another user's orders"
             )
-        
-        return payload  # You can return the entire payload if needed
+
     except jwt.PyJWTError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+        raise HTTPException(status_code=401, detail="Invalid token")

@@ -25,12 +25,12 @@ def login_user(username: str, password: str, db: Session = Depends(get_db)):
         username=user.username,
         first_name=user.first_name,
         last_name=user.last_name,
-        role=user.role
-    )
+        role=user.role    )
 
     return {
         **token,
-        "token_type": "bearer"
+        "token_type": "bearer",
+        "department_id": str(user.department_id),  # UUID as string
     }
 
 

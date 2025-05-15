@@ -78,7 +78,9 @@ onLogin(): void {
       localStorage.setItem('last_name', response.last_name);
       localStorage.setItem('employee_id', response.employee_id);
       localStorage.setItem('role', response.role);
-
+      localStorage.setItem('department_id', response.department_id);
+      
+            // Update AuthService state
       this.authService.setFullName(response.first_name, response.last_name);
       this.authService.setLoginState(true);
       this.authService.setRole(response.role);
