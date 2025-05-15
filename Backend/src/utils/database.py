@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 import os
 from sqlalchemy.exc import SQLAlchemyError
 import logging
-from src.models.base import Base  # Only import Base — NO model imports here!
+from ..models.base import Base  # Only import Base — NO model imports here!
 from dotenv import load_dotenv
 
 # Set up logging
