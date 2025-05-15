@@ -7,6 +7,7 @@ def create_ride(db: Session, user_id: UUID, ride: RideCreate):
     new_ride = Ride(
         id=uuid4(),
         user_id=user_id,
+        vehicle_id='0ecbc987-5c70-4b06-b11e-483a8e363279',
         ride_type=ride.ride_type,
         start_datetime=ride.start_datetime,
         end_datetime=ride.end_datetime,
