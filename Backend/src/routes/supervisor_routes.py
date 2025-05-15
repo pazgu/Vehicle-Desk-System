@@ -26,19 +26,19 @@ def get_department_specific_order_route(department_id: UUID, order_id: UUID, db:
         return {"error": "Order not found"}, 404
     return order
 
-@router.get("/orders/{department_id}/{order_id}/pending")
-def get_approval_dashboard_route(department_id: UUID, order_id: UUID):
-    return {"message": f"Approval dashboard for order {order_id} in department {department_id}"}
-
 @router.patch("/orders/{department_id}/{order_id}/update/{status}")
 def edit_order_status_route(department_id: UUID, order_id: UUID, status: str, db: Session = Depends(get_db)):
     return edit_order_status(department_id, order_id, status, db)
 
-@router.get("/vehicles/{department_id}")
-def get_department_vehicles_route(department_id: UUID):
-    return {"message": f"Vehicles for department {department_id}"}
+# @router.get("/orders/{department_id}/{order_id}/pending")
+# def get_approval_dashboard_route(department_id: UUID, order_id: UUID):
+#     return {"message": f"Approval dashboard for order {order_id} in department {department_id}"}
 
-@router.get("/notifications/{department_id}")
-def view_department_notifications_route(department_id: UUID):
-    return {"message": f"Notifications for department {department_id}"}
+# @router.get("/vehicles/{department_id}")
+# def get_department_vehicles_route(department_id: UUID):
+#     return {"message": f"Vehicles for department {department_id}"}
+
+# @router.get("/notifications/{department_id}")
+# def view_department_notifications_route(department_id: UUID):
+#     return {"message": f"Notifications for department {department_id}"}
 
