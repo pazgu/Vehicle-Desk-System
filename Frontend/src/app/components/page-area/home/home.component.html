@@ -60,10 +60,11 @@
       </div>
     </div>
 
-    <div *ngIf="filteredOrders.length === 0" class="no-orders-message">
+    <div *ngIf="!loading && filteredOrders.length === 0" class="no-orders-message">
       לא נמצאו נסיעות עבור המשתמש הנוכחי
       <button class="new-ride-btn" (click)="goToNewRide()"> + הזמן נסיעה חדשה</button>
     </div>
+    
 
     <!-- Orders List -->
     <tr *ngIf="filteredOrders.length > 0" class="table-header">
@@ -76,7 +77,6 @@
       class="orders-data-row"
       *ngFor="let order of pagedOrders"
       [ngClass]="[getStatusClass(order.status), isPastOrder(order) ? 'past-order' : '']">
-
       <div class="icon-cell">
         <span
           class="pi"

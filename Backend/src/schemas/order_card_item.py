@@ -17,7 +17,7 @@ class OrderCardItem(BaseModel):
     stop: str
     destination: str
     estimated_distance_km: float
-    actual_distance_km: Optional[float]
+    actual_distance_km:  Optional[float]
     status: RideStatusEnum
     license_check_passed: bool
     submitted_at: datetime
