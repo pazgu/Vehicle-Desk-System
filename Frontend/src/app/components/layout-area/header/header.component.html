@@ -30,8 +30,7 @@
       
 
       <span class="username">{{ fullName$ | async }}</span>
-      <a [routerLink]="(role$ | async) === 'supervisor' ? '/home':null"
-      [class.disabled]="(role$ | async) !== 'supervisor'"
+      <a [routerLink]="['/new-ride']"
        title="להזמין נסיעה">
         <img src="/assets/images/add-car.png" alt="Car" class="add-car" />
       </a>
