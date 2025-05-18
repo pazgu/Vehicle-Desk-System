@@ -20,12 +20,11 @@ import logging
 from ..utils.database import get_db
 from ..services.register_service import get_departments 
 from ..schemas.notification_schema import NotificationOut
-from ..services.user_notification import get_user_notifications
+from ..services.user_notification import get_user_notifications , send_notification
 from fastapi import status as fastapi_status
 from fastapi.security import OAuth2PasswordBearer
 from ..utils.auth import role_check,identity_check,get_current_user
-
-
+from src.schemas.ride_status_enum import UpdateRideStatusRequest
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -91,7 +90,6 @@ def get_future_orders(user_id: UUID, status: Optional[RideStatus] = Query(None),
         identity_check(user_id=str(user_id), token=token)
 
         rides = get_future_rides(user_id, db, status, from_date, to_date)
-
         if not rides:
             if status or from_date or to_date:
                 return JSONResponse(status_code=200, content={"message": "No rides match the given filters."})
@@ -178,9 +176,25 @@ def update_order():
 
 #send a notification to a user
 @router.post("/api/notification/{user_id}")
-def send_notification_route():
-    # Implementation pending
-    return {"message": "Not implemented yet"}
+def send_notification_route(
+    user_id: UUID,
+    notification_data: NotificationOut,
+    db: Session = Depends(get_db),
+    token: str = Depends(oauth2_scheme)
+):
+    role_check(["admin", "employee"], token)  # Adjust roles as needed
+    identity_check(str(user_id), token)       # Optional: can remove if not needed
+
+    try:
+        return send_notification(
+            db,
+            user_id,
+            notification_data.title,
+            notification_data.message,
+            notification_data.notification_type
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to send notification: {str(e)}")
 
 
 @router.get("/api/notifications/{user_id}", response_model=list[NotificationOut])

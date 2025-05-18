@@ -1,0 +1,49 @@
+<div class="page-wrapper">
+    <div class="page-container">
+        <div class="vehicles-wrapper">
+            <h1 style="text-align: right;">רכבי מחלקה</h1>
+            <br>
+
+            <!-- Sort + Filter Toggle -->
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; direction: rtl;">
+                <div>
+                <label for="sort">מיין לפי: </label>
+                <select id="sort" [(ngModel)]="sortBy">
+                    <option value="status">סטטוס</option>
+                </select>
+                </div>
+
+                <button class="filter" (click)="showFilters = !showFilters">
+                {{ showFilters ? 'הסתר סינון' : 'הצג סינון' }}
+                </button>
+            </div>
+
+            <!-- Filters Section -->
+            <div *ngIf="showFilters" style="margin-bottom: 1.5rem; background: #f7f7f7; padding: 1rem; border-radius: 8px; direction: rtl;">
+                <div style="margin-bottom: 1rem;">
+                <label for="statusFilter">סטטוס:</label>
+                <select id="statusFilter" [(ngModel)]="statusFilter">
+                    <option value="">הצג הכל</option>
+                    <option value="מאושר">מאושר</option>
+                    <option value="בהמתנה">בהמתנה</option>
+                    <option value="נדחה">נדחה</option>
+                </select>
+                </div>
+            </div>
+
+            <!-- Vehicles Cards -->
+            <div class="vehicles-cards" style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: flex-start; direction: rtl;">
+                <div *ngFor="let vehicle of filteredVehicles" class="vehicle-card" style="border: 1px solid #ccc; border-radius: 8px; padding: 1rem; width: 300px; background: #fff;">
+                    <h3>רכב: {{ vehicle.plate_number }}</h3>
+                    <p>סטטוס: {{ vehicle.status }}</p>
+                    <p>תאריך ושעה: {{ vehicle.last_used_at | date: 'yyyy-MM-dd HH:mm' }}</p>                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div *ngIf="filteredVehicles?.length === 0" class="empty-state" style="text-align: center; margin-top: 2rem;">
+                לא נמצאו רכבים
+            </div>
+
+        </div>
+    </div>
+</div>
