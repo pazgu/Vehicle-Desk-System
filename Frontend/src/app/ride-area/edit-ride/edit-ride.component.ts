@@ -3,14 +3,13 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
 import { RideService } from '../../services/ride.service';
 import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-edit-ride',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, HttpClientModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './edit-ride.component.html',
   styleUrl: './edit-ride.component.css'
 })
@@ -36,6 +35,12 @@ export class EditRideComponent implements OnInit {
     private rideService: RideService,
     private toastService: ToastService
   ) {}
+
+    calculateMinDate(daysAhead: number): string {
+    const date = new Date();
+    date.setDate(date.getDate() + daysAhead);
+    return date.toISOString().split('T')[0];
+  }
 
   ngOnInit(): void {
     this.rideId = this.route.snapshot.paramMap.get('id') || '';
