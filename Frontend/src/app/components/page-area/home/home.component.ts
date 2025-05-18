@@ -204,7 +204,10 @@ get totalPages() {
             time: formatDate(order.start_datetime, 'HH:mm', 'en-US'),
             type: order.vehicle,
             distance: order.estimated_distance,
-            status: this.capitalize(order.status)
+            status: this.capitalize(order.status),
+            start_datetime: order.start_datetime,       // ✅ Ensure it's passed to `canEdit`
+            submitted_at: order.submitted_at,           // ✅ Same
+            user_id: order.user_id      
           }));
           localStorage.setItem('user_orders', JSON.stringify(this.orders));
           console.log('Orders from backend:', this.orders);
