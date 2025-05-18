@@ -24,15 +24,23 @@ export class RideService {
     return this.http.post(`${this.baseUrl}/${user_id}`, data, { headers });
   }
 
-  updateRide(orderId: string, data: any): Observable<any> {
+getRideById(rideId: string): Observable<any> {
   const token = localStorage.getItem('access_token');
-  if (!token) throw new Error('Access token not found');
-  
   const headers = new HttpHeaders({
     Authorization: `Bearer ${token}`
   });
 
-  return this.http.patch(`${this.baseUrl}/${orderId}`, data, { headers });
+  return this.http.get(`http://localhost:8000/api/rides/${rideId}`, { headers });
 }
+
+updateRide(rideId: string, data: any): Observable<any> {
+  const token = localStorage.getItem('access_token');
+  const headers = new HttpHeaders({
+    Authorization: `Bearer ${token}`
+  });
+
+  return this.http.patch(`http://localhost:8000/api/orders/${rideId}`, data, { headers });
+}
+
 
 }
