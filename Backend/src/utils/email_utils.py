@@ -2,12 +2,16 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from typing import List
+from dotenv import load_dotenv
+import os
 
-SMTP_SERVER = "in-v3.mailjet.com"
-SMTP_PORT = 587
-SMTP_USERNAME = "2bf522ff628a0e9c7f8c85218e8a8558"
-SMTP_PASSWORD = "a43f320023e4e345cf92ee8355fa1ca8"
-EMAIL_FROM = "sarahmansor2580@gmail.com"
+load_dotenv()
+
+SMTP_SERVER = os.getenv("SMTP_SERVER")
+SMTP_PORT = int(os.getenv("SMTP_PORT", 587))  
+SMTP_USERNAME = os.getenv("SMTP_USERNAME")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
+EMAIL_FROM = os.getenv("EMAIL_FROM")
 
 
 def send_email(subject: str, body: str, recipients: List[str]):
