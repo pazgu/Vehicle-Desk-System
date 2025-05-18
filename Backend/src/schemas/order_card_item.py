@@ -9,7 +9,7 @@ from uuid import UUID
 class OrderCardItem(BaseModel):
     id: UUID
     user_id: UUID
-    vehicle_id: UUID
+    vehicle_id: Optional[UUID] = None
     ride_type: str
     start_datetime: datetime
     end_datetime: datetime
