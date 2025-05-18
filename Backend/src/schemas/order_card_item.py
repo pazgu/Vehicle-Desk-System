@@ -23,3 +23,5 @@ class OrderCardItem(BaseModel):
     submitted_at: datetime
     emergency_event: Optional[str] = None  # Optional field for emergency event
     
+    class Config:
+        orm_mode = True
