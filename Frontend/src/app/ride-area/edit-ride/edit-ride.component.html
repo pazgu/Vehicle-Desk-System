@@ -1,1 +1,87 @@
-<p>edit-ride works!</p>
+<div class="overlay">
+  <div class="modal">
+    <button class="close-btn" (click)="close()">&times;</button>
+    <h2>עריכת נסיעה</h2>
+    <hr />
+    <form [formGroup]="rideForm" (ngSubmit)="submit()">
+      <div class="form-content">
+        <!-- Row 1: סוג נסיעה + תאריך -->
+        <div class="row">
+          <div class="input-group">
+            <label>סוג נסיעה</label>
+            <select formControlName="ride_type" class="styled-select">
+              <option value="administrative">מנהלתית</option>
+              <option value="operational">תפעולית</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label>תאריך</label>
+            <input type="date" formControlName="ride_date" [min]="minDate" />
+          </div>
+        </div>
+
+        <!-- Row 2: שעת התחלה + סיום -->
+        <div class="row">
+          <div class="input-group">
+            <label>שעת התחלה</label>
+            <input type="time" formControlName="start_time" />
+          </div>
+
+          <div class="input-group">
+            <label>שעת סיום</label>
+            <input type="time" formControlName="end_time" />
+          </div>
+        </div>
+
+        <!-- Row 3: סוג רכב + בחר רכב -->
+        <div class="row">
+          <div class="input-group">
+            <label>סוג רכב</label>
+            <select formControlName="vehicle_type" class="styled-select">
+              <option value="small">קטן</option>
+              <option value="large">גדול</option>
+              <option value="van">טנדר</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label>בחר רכב</label>
+            <select formControlName="car" class="styled-select">
+              <option *ngFor="let car of availableCars" [value]="car.id">{{ car.name }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Row 4: מרחק -->
+        <div class="row">
+          <div class="input-group">
+            <label>מרחק (ק"מ)</label>
+            <input type="number" formControlName="estimated_distance_km" />
+            <small *ngIf="rideForm.get('estimated_distance_km')?.value" class="distance-info">
+              המרחק לאחר תוספת סטייה: {{ estimated_distance_with_buffer }} ק"מ
+            </small>
+          </div>
+        </div>
+
+        <!-- Row 5: מיקום התחלה + תחנה + יעד -->
+        <div class="row">
+          <div class="input-group">
+            <label>מיקום התחלה</label>
+            <input type="text" formControlName="start_location" />
+          </div>
+          <div class="input-group">
+            <label>תחנה</label>
+            <input type="text" formControlName="stop" />
+          </div>
+          <div class="input-group">
+            <label>יעד</label>
+            <input type="text" formControlName="destination" />
+          </div>
+        </div>
+      </div>
+
+      <button class="submit-btn" type="submit">עדכן</button>
+    </form>
+  </div>
+</div>
