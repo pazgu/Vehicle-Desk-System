@@ -7,7 +7,10 @@ from sqlalchemy.orm import Session
 from src.schemas.ride_status_enum import UpdateRideStatusRequest
 from src.services.user_rides_service import update_ride_status
 from src.utils.database import get_db
-
+from fastapi import APIRouter
+from uuid import UUID
+from ..utils.database import get_db
+from ..services.supervisor_dashboard_service import get_department_orders
 
 router = APIRouter()
 
