@@ -88,9 +88,11 @@
       <div class="cell">{{ order.type }}</div>
       <div class="cell">{{ order.distance }}</div>
 
-        <div class="cell" *ngIf="canEdit(order)">
-    <button (click)="editOrder(order)">ערוך ✏️</button>
-  </div>
+  <div class="cell">
+  <button *ngIf="canEdit(order)" (click)="editOrder(order)">ערוך ✏️</button>
+  <button *ngIf="!canEdit(order)" disabled style="opacity: 0.5; cursor: not-allowed;">ערוך 🔒</button>
+</div>
+
     </div>
 
 
