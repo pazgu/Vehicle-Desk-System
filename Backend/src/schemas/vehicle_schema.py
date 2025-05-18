@@ -18,3 +18,20 @@ class VehicleOut(BaseModel):
 
     class Config:
         use_enum_values = True  # return enums as their values in JSON
+
+
+class InUseVehicleOut(BaseModel):
+    id: UUID
+    plate_number: str
+    type: VehicleType
+    fuel_type: FuelType
+    status: VehicleStatus
+    odometer_reading: float
+    user_id: Optional[UUID] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    start_datetime: Optional[datetime] = None
+    end_datetime: Optional[datetime] = None
+
+
+
