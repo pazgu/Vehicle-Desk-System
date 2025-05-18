@@ -87,7 +87,13 @@
       <div class="cell">{{ order.time }}</div>
       <div class="cell">{{ order.type }}</div>
       <div class="cell">{{ order.distance }}</div>
+
+        <div class="cell" *ngIf="canEdit(order)">
+    <button (click)="editOrder(order)">ערוך ✏️</button>
+  </div>
     </div>
+
+
 
     <!-- Pagination -->
     <div class="pagination-controls">
