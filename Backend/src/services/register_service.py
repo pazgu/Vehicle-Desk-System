@@ -5,7 +5,7 @@ from ..models.department_model import Department  # Import the Department model
 from ..schemas.register_schema import UserCreate
 from ..utils.auth import hash_password
 from ..services.auth_service import create_access_token
-from ..utils.database import SessionLocal  # Import your SessionLocal for creating sessions
+from ..utils.database import SessionLocal
 import uuid
 
 

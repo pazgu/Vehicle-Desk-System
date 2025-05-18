@@ -1,13 +1,13 @@
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from datetime import datetime
 from ..models.ride_model import Ride , RideStatus
 from ..schemas.user_rides_schema import RideSchema
 from uuid import UUID
 from ..models.vehicle_model import Vehicle
 from sqlalchemy import String
 from datetime import datetime, timezone
-
+from fastapi import HTTPException
+from src.schemas.ride_status_enum import RideStatusEnum
 
 def filter_rides(query, status: Optional[RideStatus], from_date, to_date):
     if status:
@@ -83,3 +83,16 @@ def get_all_rides(user_id: UUID, db: Session, status=None, from_date=None, to_da
     query = filter_rides(query, status, from_date, to_date)
     return query.all()
     
+def update_ride_status(ride_id: UUID, new_status: RideStatusEnum, db: Session):
+    ride = db.query(Ride).filter(Ride.id == ride_id).first()
+
+    if not ride:
+        raise HTTPException(status_code=404, detail="Ride not found")
+
+    if ride.status in [RideStatus.cancelled, RideStatus.completed]:
+        raise HTTPException(status_code=400, detail="Cannot change status of a completed or cancelled ride")
+
+    ride.status = RideStatus(new_status.value)  
+    db.commit()
+    db.refresh(ride)
+    return {"ride_id": ride.id, "new_status": ride.status}

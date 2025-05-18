@@ -11,6 +11,7 @@ import { CarsComponent } from './components/admin-area/cars/cars.component';
 import { DailyChecksComponent } from './components/admin-area/daily-checks/daily-checks.component';
 import { RedirectByRoleComponent } from './services/redirect-by-role';
 import { ProtectedRouteGuard } from './components/auth-area/protectedroute/protected-route.guard';
+import { VehicleDashboardComponent } from './components/supervisor-area/vehicle-dashboard/vehicle-dashboard.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -19,7 +20,8 @@ export const routes: Routes = [
   { path: 'home', component: HomeComponent, canActivate: [ProtectedRouteGuard] },
   { path: 'new-ride', component: NewRideComponent, canActivate: [ProtectedRouteGuard] },
   { path: 'supervisor-dashboard', component: DashboardAllOrdersComponent, canActivate: [ProtectedRouteGuard] },
-  { path: 'order-card/:ride_id', component: OrderCardComponent },
+  { path: 'order-card/:ride_id', component: OrderCardComponent, canActivate: [ProtectedRouteGuard] },
+  { path:'vehicle-dashboard', component: VehicleDashboardComponent },
   { path: 'notifications', component: NotificationsComponent, canActivate: [ProtectedRouteGuard] },
   { path: 'daily-checks', component: DailyChecksComponent, canActivate: [ProtectedRouteGuard] },
   { path: '', component: RedirectByRoleComponent, pathMatch: 'full' }, // Moved lower
