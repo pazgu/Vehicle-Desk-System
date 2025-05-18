@@ -1,18 +1,21 @@
 import { Component } from '@angular/core';
-import { VehicleOutItem } from '../../../models/vehicle-dashboard-item/vehicle-out-item.module';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { VehicleService } from '../../../services/vehicle.service';
+import { CardModule } from 'primeng/card';
+import { VehicleOutItem } from '../../../models/vehicle-dashboard-item/vehicle-out-item.module';
+import { VehicleInItem } from '../../../models/vehicle-dashboard-item/vehicle-in-use-item.module';
+
 
 @Component({
   selector: 'app-vehicle-dashboard',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CardModule],
   templateUrl: './vehicle-dashboard.component.html',
   styleUrl: './vehicle-dashboard.component.css'
 })
 export class VehicleDashboardComponent {
 
-  vehicles: VehicleOutItem[] = [];
+  vehicles: VehicleInItem[] = [];
   statusFilter: string = '';
   showFilters: boolean = false;
   sortBy: string = 'date_and_time';
@@ -33,6 +36,34 @@ export class VehicleDashboardComponent {
         console.error('Error loading vehicles:', error);
       }
     );
+  }
+
+  getCardClass(status: string | null | undefined): string {
+  if (!status) return '';
+  switch (status) {
+    case 'available':
+      return 'card-available';
+    case 'in_use':
+      return 'card-inuse';
+    case 'frozen':
+      return 'card-frozen';
+    default:
+      return '';
+  }
+}
+
+  translateStatus(status: string | null | undefined): string {
+    if (!status) return '';
+    switch (status.toLowerCase()) {
+      case 'available':
+        return 'זמין';
+      case 'in_use':
+        return 'בשימוש';
+      case 'frozen':
+        return 'מוקפא';
+      default:
+        return status;
+    }
   }
 
 

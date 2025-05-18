@@ -1,0 +1,110 @@
+.page-wrapper {
+    min-height: 100vh;
+    background: #cccccc;
+    padding: 2rem 0;
+}
+
+.page-container {
+    max-width: 1100px;
+    margin: 0 auto;
+  background-color: rgb(245, 241, 241);
+    border-radius: 14px;
+    box-shadow: 0 2px 16px rgba(44, 62, 80, 0.07);
+    padding: 2rem 2.5rem;
+}
+
+.vehicles-wrapper h1 {
+    font-size: 2rem;
+    color: #942222;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.vehicles-cards {
+    direction: rtl;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    justify-content: flex-start;
+}
+
+:host ::ng-deep .p-card.vehicle-card {
+    border: 1px solid #232222 !important;
+    border-radius: 12px;
+    padding: 1.2rem 1rem;
+    width: 300px;
+    box-shadow: 0 2px 8px rgba(44, 62, 80, 0.06);
+    transition: box-shadow 0.2s, border 0.2s;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+:host ::ng-deep .p-card.vehicle-card.card-available {
+    background: #dcf1e1 !important;
+    border: 1.5px solid #34954b !important;
+}
+:host ::ng-deep .p-card.vehicle-card.card-inuse {
+    background: #fbf3da !important;
+    border: 1.5px solid #bd9624 !important;
+}
+:host ::ng-deep .p-card.vehicle-card.card-frozen {
+    background: #f8e2e2 !important;
+    border: 1.5px solid #b03e4a !important;
+}
+
+.vehicles-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    justify-content: flex-start;
+}
+
+
+.vehicle-card:hover {
+    box-shadow: 0 6px 24px rgba(198, 40, 40, 0.13);
+    border: 1px solid #c62828;
+}
+
+.vehicle-card h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.15rem;
+    color: #942222;
+    font-weight: 500;
+}
+
+.vehicle-card p {
+    margin: 0.2rem 0;
+    font-size: 1rem;
+    color: #374151;
+}
+
+.empty-state {
+    color: #90a4ae;
+    font-size: 1.2rem;
+    margin-top: 2rem;
+    text-align: center;
+}
+
+
+button {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    margin: 0 1rem;
+    cursor: pointer;
+    color: #811313;
+}
+
+@media (max-width: 700px) {
+    .page-container {
+        padding: 1rem 0.5rem;
+    }
+    .vehicles-cards {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    .vehicle-card {
+        width: 100%;
+    }
+}
