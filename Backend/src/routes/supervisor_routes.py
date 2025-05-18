@@ -38,6 +38,18 @@ def get_department_specific_order_route(department_id: UUID, order_id: UUID, db:
 def edit_order_status_route(department_id: UUID, order_id: UUID, status: str, db: Session = Depends(get_db)):
     return edit_order_status(department_id, order_id, status, db)
 
+@router.get("/all-vehicles")
+def read_vehicles(status: Optional[str] = Query(None), db: Session = Depends(get_db)):
+    vehicles = get_vehicles_with_optional_status(db, status)
+
+    if status == "in_use":
+        validated = [InUseVehicleOut(**v) if isinstance(v, dict) else v for v in vehicles]
+    else:
+        validated = [VehicleOut(**v) if isinstance(v, dict) else v for v in vehicles]
+
+    return validated
+
+
 # @router.get("/orders/{department_id}/{order_id}/pending")
 # def get_approval_dashboard_route(department_id: UUID, order_id: UUID):
 #     return {"message": f"Approval dashboard for order {order_id} in department {department_id}"}
@@ -105,13 +117,4 @@ def edit_order_status_route(department_id: UUID, order_id: UUID, status: str, db
 # ):
 #     return get_frozen_vehicles(db=db, type=type)
 
-@router.get("/all-vehicles")
-def read_vehicles(status: Optional[str] = Query(None), db: Session = Depends(get_db)):
-    vehicles = get_vehicles_with_optional_status(db, status)
 
-    if status == "in_use":
-        validated = [InUseVehicleOut(**v) if isinstance(v, dict) else v for v in vehicles]
-    else:
-        validated = [VehicleOut(**v) if isinstance(v, dict) else v for v in vehicles]
-
-    return validated
