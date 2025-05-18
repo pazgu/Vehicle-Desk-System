@@ -1,15 +1,16 @@
+from fastapi import APIRouter, Depends
 from uuid import UUID
 from src.services.supervisor_dashboard_service import get_department_orders,get_department_specific_order,edit_order_status
-from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from src.utils.database import get_db
 from src.models.ride_model import Ride 
+from sqlalchemy.orm import Session
+from src.schemas.ride_status_enum import UpdateRideStatusRequest
+from src.services.user_rides_service import update_ride_status
+from src.utils.database import get_db
 from fastapi import APIRouter
 from uuid import UUID
 from ..utils.database import get_db
 from ..services.supervisor_dashboard_service import get_department_orders
-
-
 
 router = APIRouter()
 
@@ -42,3 +43,11 @@ def get_department_vehicles_route(department_id: UUID):
 def view_department_notifications_route(department_id: UUID):
     return {"message": f"Notifications for department {department_id}"}
 
+@router.patch("/orders/{department_id}/{ride_id}/update")
+def supervisor_update_ride_status(
+    department_id: UUID,
+    ride_id: UUID,
+    req: UpdateRideStatusRequest,
+    db: Session = Depends(get_db)
+):
+    return update_ride_status(ride_id, req.status, db)
