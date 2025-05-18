@@ -23,4 +23,16 @@ export class RideService {
 
     return this.http.post(`${this.baseUrl}/${user_id}`, data, { headers });
   }
+
+  updateRide(orderId: string, data: any): Observable<any> {
+  const token = localStorage.getItem('access_token');
+  if (!token) throw new Error('Access token not found');
+  
+  const headers = new HttpHeaders({
+    Authorization: `Bearer ${token}`
+  });
+
+  return this.http.patch(`${this.baseUrl}/${orderId}`, data, { headers });
+}
+
 }
