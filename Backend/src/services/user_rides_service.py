@@ -96,3 +96,11 @@ def update_ride_status(ride_id: UUID, new_status: RideStatusEnum, db: Session):
     db.commit()
     db.refresh(ride)
     return {"ride_id": ride.id, "new_status": ride.status}
+
+
+
+def get_ride_by_id(db: Session, ride_id: UUID) -> Ride:
+    ride = db.query(Ride).filter(Ride.id == ride_id).first()
+    if not ride:
+        raise HTTPException(status_code=404, detail="Ride not found")
+    return ride
