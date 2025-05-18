@@ -221,4 +221,20 @@ get totalPages() {
   capitalize(status: string): string {
     return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
   }
+
+  canEdit(order: any): boolean {
+  const now = new Date();
+  const startTime = new Date(order.start_datetime);
+  const submittedAt = new Date(order.submitted_at);
+  const isFutureRide = startTime > now;
+  const isOwner = order.user_id === localStorage.getItem('employee_id');
+  const within3Hours = (now.getTime() - submittedAt.getTime()) <= 3 * 60 * 60 * 1000;
+
+  return isFutureRide && isOwner && within3Hours;
+}
+
+editOrder(order: any): void {
+  this.router.navigate(['/ride/edit', order.id]);
+}
+
 }
