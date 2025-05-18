@@ -10,6 +10,7 @@ def create_ride(db: Session, user_id: UUID, ride: RideCreate):
     new_ride = Ride(
         id=uuid4(),
         user_id=user_id,
+        vehicle_id=ride.vehicle_id,
         ride_type=ride.ride_type,
         start_datetime=ride.start_datetime,
         end_datetime=ride.end_datetime,
@@ -21,6 +22,7 @@ def create_ride(db: Session, user_id: UUID, ride: RideCreate):
         license_check_passed=False,
         submitted_at=datetime.utcnow(),
     )
+    print(new_ride)
     db.add(new_ride)
     db.commit()
     db.refresh(new_ride)

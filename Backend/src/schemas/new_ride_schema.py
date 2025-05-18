@@ -20,6 +20,7 @@ class RideStatus(str, Enum):
 class RideCreate(BaseModel):
     ride_type: RideType
     start_datetime: datetime
+    vehicle_id:UUID
     end_datetime: datetime
     start_location: str
     stop: str
