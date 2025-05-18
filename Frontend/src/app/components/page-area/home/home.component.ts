@@ -89,26 +89,7 @@ get totalPages() {
     const oneMonthAgo = new Date(today);
     oneMonthAgo.setMonth(today.getMonth() - 1);
 
-    let filtered = this.orders;
-
-    if (!this.showOldOrders) {
-      filtered = filtered.filter(order => {
-        const orderDate = this.parseDate(order.date);
-        return orderDate >= oneMonthAgo;
-      });
-    }
-
-    if (this.statusFilter) {
-      filtered = filtered.filter(order => order.status === this.statusFilter);
-    }
-
-    if (this.startDate) {
-      filtered = filtered.filter(order => this.parseDate(order.date) >= new Date(this.startDate));
-    }
-
-    if (this.endDate) {
-      filtered = filtered.filter(order => this.parseDate(order.date) <= new Date(this.endDate));
-    }
+    let filtered = this.orders
 
     switch (this.rideViewMode) {
       case 'future':
@@ -122,33 +103,62 @@ get totalPages() {
         break;
     }
 
-    switch (this.sortBy) {
+    if (!this.showOldOrders) {
+      filtered = filtered.filter(order => {
+        const orderDate = this.parseDate(order.date);
+        return orderDate >= oneMonthAgo;
+      });
+    }
+
+    if (this.statusFilter) {
+      filtered = filtered.filter(order => order.status === this.statusFilter);
+    }
+
+    if (this.startDate) {
+      const start = new Date(this.startDate);
+      start.setHours(0, 0, 0, 0); // normalize time
+      filtered = filtered.filter(order => {
+        const orderDate = this.parseDate(order.date);
+        orderDate.setHours(0, 0, 0, 0);
+        return orderDate >= start;
+      });
+    }
+
+     // Sorting
+     switch (this.sortBy) {
       case 'status':
         return [...filtered].sort((a, b) => a.status.localeCompare(b.status));
       case 'date':
       default:
-        return [...filtered].sort((a, b) => this.parseDate(a.date).getTime() - this.parseDate(b.date).getTime());
+        return [...filtered].sort(
+          (a, b) => this.parseDate(a.date).getTime() - this.parseDate(b.date).getTime()
+        );
     }
   }
 
+  
   parseDate(d: string): Date {
     const [day, month, year] = d.split('.').map(Number);
-    return new Date(year, month - 1, day);
+    const date = new Date(year, month - 1, day);
+    date.setHours(12, 0, 0, 0); // set to midday to avoid timezone shift issues
+    return date;
   }
 
+  
   isPastOrder(order: any): boolean {
     const today = new Date();
     const orderDate = this.parseDate(order.date);
     return orderDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
   }
-
-  validateDate(type: 'start' | 'end') {
+    
+  validateDate(type: 'start' | 'end'): string {
     const value = type === 'start' ? this.startDate : this.endDate;
     if (!this.isDateValid(value)) {
       if (type === 'start') this.startDate = '';
       else this.endDate = '';
-      alert('אנא הזן תאריך תקין בין 01.01.2025 ועד היום');
+      return 'אנא הזן תאריך תקין בין 01.01.2025 ועד היום';
     }
+    return '';
   }
 
   isDateValid(dateStr: string): boolean {
@@ -167,7 +177,8 @@ get totalPages() {
   fetchRides() {
     const userId = localStorage.getItem('employee_id');
     if (!userId) return;
-    this.loading = true; // Start loading
+
+    this.loading = true;
     const filters: any = {};
     if (this.statusFilter) filters.status = this.statusFilter;
     if (this.startDate) filters.from_date = this.startDate;
@@ -189,13 +200,11 @@ get totalPages() {
 
     fetchFn.subscribe({
       next: (res) => {
-        this.loading = false; // Stop loading
-        console.log('🧾 Raw response from backend:', res); // <- Add this line
+        this.loading = false;
+        console.log('🧾 Raw response from backend:', res);
         console.log('✅ fetchRides called');
         console.log('🚦 View Mode:', this.rideViewMode);
         console.log('📤 Filters:', filters);
-        console.log('🧾 Raw response from backend:', res);
-
 
         if (Array.isArray(res)) {
           this.orders = res.map(order => ({
@@ -216,6 +225,7 @@ get totalPages() {
         }
       },
       error: (err) => {
+        this.loading = false;
         console.error('Error fetching orders:', err);
       }
     });

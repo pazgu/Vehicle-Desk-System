@@ -52,11 +52,12 @@
           [min]="minDate"
           [max]="maxDate"
           (change)="validateDate('end'); fetchRides()" />
-
-        <label>
-          <input type="checkbox" [(ngModel)]="showOldOrders" />
-          הצג גם הזמנות מלפני חודש
-        </label>
+        
+          <label *ngIf="rideViewMode !== 'future'">
+            <input type="checkbox" [(ngModel)]="showOldOrders" />
+            הצג גם הזמנות מלפני חודש
+          </label>
+          
       </div>
     </div>
 
