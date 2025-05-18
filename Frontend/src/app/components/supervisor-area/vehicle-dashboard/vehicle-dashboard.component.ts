@@ -19,10 +19,15 @@ export class VehicleDashboardComponent {
 
   constructor(private vehicleService: VehicleService){}
 
+  ngOnInit(): void {
+    this.loadVehicles();
+  }
+
   loadVehicles(): void{
     this.vehicleService.getAllVehicles().subscribe(
       (data) => {
         this.vehicles = Array.isArray(data) ? data : [];
+        console.log('Vehicles loaded:', this.vehicles);
       },
       (error) => {
         console.error('Error loading vehicles:', error);
@@ -32,7 +37,7 @@ export class VehicleDashboardComponent {
 
 
   get filteredVehicles() {
-    
+
     if (!this.vehicles) {
         return [];
     }
