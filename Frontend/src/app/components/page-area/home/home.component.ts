@@ -15,6 +15,8 @@ export class HomeComponent implements OnInit {
   constructor(private router: Router, private rideService: MyRidesService) {}
 
   currentPage = 1;
+  loading: boolean = false;
+
 
   get ordersPerPage(): number {
     return this.showFilters ? 3 : 5;
@@ -64,6 +66,7 @@ get totalPages() {
 
 
   getStatusTooltip(status: string): string {
+    console.log(status)
     switch (status) {
       case 'Approved': return 'אושר';
       case 'Pending': return 'בהמתנה';
@@ -74,9 +77,9 @@ get totalPages() {
 
   getStatusClass(status: string): string {
     switch (status) {
-      case 'approved': return 'status-green';
-      case 'pending': return 'status-yellow';
-      case 'rejected': return 'status-red';
+      case 'Approved': return 'status-green';
+      case 'Pending': return 'status-yellow';
+      case 'Rejected': return 'status-red';
       default: return '';
     }
   }
@@ -164,7 +167,7 @@ get totalPages() {
   fetchRides() {
     const userId = localStorage.getItem('employee_id');
     if (!userId) return;
-
+    this.loading = true; // Start loading
     const filters: any = {};
     if (this.statusFilter) filters.status = this.statusFilter;
     if (this.startDate) filters.from_date = this.startDate;
@@ -186,6 +189,7 @@ get totalPages() {
 
     fetchFn.subscribe({
       next: (res) => {
+        this.loading = false; // Stop loading
         console.log('🧾 Raw response from backend:', res); // <- Add this line
         console.log('✅ fetchRides called');
         console.log('🚦 View Mode:', this.rideViewMode);
