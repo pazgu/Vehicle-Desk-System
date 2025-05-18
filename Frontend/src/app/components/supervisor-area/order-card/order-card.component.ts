@@ -96,8 +96,9 @@ export class OrderCardComponent implements OnInit {
   }
 
   formatDateTime(dateTime: string): string {
-    const [date, time] = dateTime.split(' ');
-    return `${date} בשעה ${time}`;
+    const [date, timeWithMs] = dateTime.split('T');
+    const time = timeWithMs?.slice(0, 5); // get HH:MM only
+    return `${date} בשעה: ${time}`;
   }
 
   updateStatus(status: string): void {
