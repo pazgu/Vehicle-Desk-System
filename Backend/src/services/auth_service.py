@@ -17,7 +17,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 
 def create_access_token(employee_id: UUID, username: str,first_name:str,last_name:str, role: str, expires_delta: timedelta = None):
-    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=60))
+    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=2))
     payload = {
         "sub": str(employee_id),
         "username": username,
