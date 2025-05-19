@@ -1,0 +1,12 @@
+<div *ngIf="vehicle" class="vehicle-details-card">
+  <img *ngIf="vehicle.image_url" [src]="vehicle.image_url" alt="תמונה של הרכב" style="width: 100%; max-width: 350px; margin-bottom: 1rem;" />
+  <h2>רכב: {{ vehicle.plate_number }}</h2>
+  <p><strong>דגם:</strong> {{ vehicle.vehicle_model }}</p>
+  <p><strong>סטטוס:</strong> {{ vehicle.status }}</p>
+  <p><strong>סוג רכב:</strong> {{ vehicle.type }}</p>
+  <p><strong>סוג דלק:</strong> {{ vehicle.fuel_type }}</p>
+  <p><strong>פעם אחרונה בשימוש:</strong> {{ vehicle.last_used_at | date: 'yyyy-MM-dd HH:mm' }}</p>
+  <p><strong>מיקום נוכחי:</strong> {{ vehicle.current_location }}</p>
+  <p><strong>ק״מ:</strong> {{ vehicle.odometer_reading }}</p>
+  <!-- Add more fields as needed -->
+</div>

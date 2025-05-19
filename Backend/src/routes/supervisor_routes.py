@@ -12,7 +12,7 @@ from ..utils.database import get_db
 from ..services.supervisor_dashboard_service import get_department_orders
 from ..schemas.vehicle_schema import VehicleOut , InUseVehicleOut
 from ..models.vehicle_model import VehicleType
-from ..services.vehicle_service import get_vehicles_with_optional_status, get_available_vehicles
+from ..services.vehicle_service import get_vehicles_with_optional_status, get_available_vehicles, get_vehicle_by_id
 from typing import List, Optional, Union
 
 from src.schemas.notification_schema import NotificationOut  # adjust path as needed
@@ -53,6 +53,12 @@ def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = De
 def get_available_vehicles_route(status: Optional[str] = Query(None), db: Session = Depends(get_db)):
     vehicles = get_available_vehicles(db)
     return vehicles
+
+from fastapi import HTTPException
+
+@router.get("/vehicle/{vehicle_id}")
+def get_vehicle_by_id_route(vehicle_id: str, db: Session = Depends(get_db)):
+    return get_vehicle_by_id(vehicle_id, db)
 
 
 

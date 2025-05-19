@@ -13,6 +13,7 @@ import { RedirectByRoleComponent } from './services/redirect-by-role';
 import { ProtectedRouteGuard } from './components/auth-area/protectedroute/protected-route.guard';
 import { UserDataComponent } from './components/admin-area/user-data/user-data.component';
 import { VehicleDashboardComponent } from './components/supervisor-area/vehicle-dashboard/vehicle-dashboard.component';
+import { VehicleCardItemComponent } from './components/vehicle-card-item/vehicle-card-item.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -26,7 +27,8 @@ export const routes: Routes = [
   { path: 'notifications', component: NotificationsComponent, canActivate: [ProtectedRouteGuard] },
   { path: 'daily-checks', component: DailyChecksComponent, canActivate: [ProtectedRouteGuard] },
   { path: '', component: RedirectByRoleComponent, pathMatch: 'full' },
-  { path: 'user-data', component: UserDataComponent }, // Moved lower
+  { path: 'user-data', component: UserDataComponent }, 
+  { path: 'vehicle-details/:id', component: VehicleCardItemComponent },
   { path: '**', component: Page404Component }
 ];
 

@@ -1,0 +1,32 @@
+.vehicle-details-card {
+  max-width: 400px;
+  margin: 2rem auto;
+  padding: 2rem 1.5rem;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(148, 34, 34, 0.10);
+  text-align: right;
+  direction: rtl;
+}
+
+.vehicle-details-card img {
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px #c6282822;
+}
+
+.vehicle-details-card h2 {
+  color: #942222;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.vehicle-details-card p {
+  margin: 0.5rem 0;
+  font-size: 1.1rem;
+}
+
+.vehicle-details-card strong {
+  color: #942222;
+}
