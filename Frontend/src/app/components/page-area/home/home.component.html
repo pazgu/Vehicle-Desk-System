@@ -31,7 +31,7 @@
         <select id="statusFilter" [(ngModel)]="statusFilter" (ngModelChange)="fetchRides()">
           <option value="">הצג הכל</option>
           <option value="approved">מאושר</option>
-          <option value="p">ממתין</option>
+          <option value="pending">ממתין</option>
           <option value="rejected">בוטל</option>
         </select>
       </div>
@@ -76,9 +76,9 @@
         <span
           class="pi"
           [ngClass]="{
-            'pi-verified': order.status === 'Approved',
-            'pi-clock': order.status === 'Pending',
-            'pi-times': order.status === 'Rejected'
+           'pi-verified': order.status.toLowerCase() === 'approved',
+           'pi-clock': order.status.toLowerCase() === 'pending',
+           'pi-times': order.status.toLowerCase() === 'rejected'
           }"
           [title]="getStatusTooltip(order.status)"
           style="font-size: 1.3rem;">
@@ -89,10 +89,9 @@
       <div class="cell">{{ order.type }}</div>
       <div class="cell">{{ order.distance }}</div>
 
-  <div class="cell">
-  <button *ngIf="canEdit(order)" (click)="editOrder(order)">ערוך ✏️</button>
-  <button *ngIf="!canEdit(order)" disabled style="opacity: 0.5; cursor: not-allowed;">ערוך 🔒</button>
-</div>
+<button *ngIf="canEdit(order)" (click)="editOrder(order)">ערוך ✏️</button>
+<button *ngIf="!canEdit(order)" disabled style="opacity: 0.5; cursor: not-allowed;">ערוך 🔒</button>
+
 
     </div>
 
