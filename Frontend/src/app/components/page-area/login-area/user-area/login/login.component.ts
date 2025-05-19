@@ -8,11 +8,16 @@ import { RouterModule } from '@angular/router';
 import { AuthService } from '../../../../../services/auth.service';
 import { environment } from '../../../../../../environments/environment';
 import { ToastService } from '../../../../../services/toast.service';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [RouterModule, ReactiveFormsModule, CommonModule],
+  imports: [RouterModule, ReactiveFormsModule, CommonModule,MatButtonModule,
+    MatIconModule,MatFormFieldModule,MatInputModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
@@ -28,7 +33,11 @@ export class LoginComponent implements OnInit {
     private authService: AuthService,
     private toastService: ToastService
   ) {}
+  showPassword = false;
 
+ 
+  
+  
   ngOnInit(): void {
     this.loginForm = this.fb.group({
       username: [
@@ -49,7 +58,9 @@ export class LoginComponent implements OnInit {
       ]
     });
   }
-
+  togglePassword() {
+    this.showPassword = !this.showPassword;
+  }
   get f() {
     return this.loginForm.controls;
   }
