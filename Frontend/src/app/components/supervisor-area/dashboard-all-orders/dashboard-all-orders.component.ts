@@ -100,9 +100,6 @@ export class DashboardAllOrdersComponent implements OnInit {
     }
   }
 
-  get trips(): RideDashboardItem[] {
-    return this.filteredOrders;
-  }
 
   onRowSelect(trip: RideDashboardItem) {
     this.router.navigate(['/order-card', trip.ride_id]);
@@ -182,6 +179,11 @@ export class DashboardAllOrdersComponent implements OnInit {
 
   prevPage() {
     if (this.currentPage > 1) this.currentPage--;
+  }
+
+  get trips() {
+    const startIndex = (this.currentPage - 1) * this.rows;
+    return this.filteredOrders.slice(startIndex, startIndex + this.rows);
   }
 
   get totalPages() {

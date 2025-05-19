@@ -37,5 +37,8 @@ class Vehicle(Base):
     last_used_at = Column(DateTime, nullable=True)
     current_location = Column(Text, nullable=False)
     odometer_reading = Column(Integer, nullable=False, default=0)
+    vehicle_model = Column(Text, nullable=False)
+    image_url = Column(Text, nullable=False)
+
 
    
