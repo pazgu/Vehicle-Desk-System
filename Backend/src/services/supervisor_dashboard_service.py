@@ -1,5 +1,5 @@
 from typing import List
-from datetime import datetime
+from datetime import datetime,timezone
 from ..schemas.ride_dashboard_item import RideDashboardItem
 from ..schemas.order_card_item import OrderCardItem
 from ..models.ride_model import Ride  # Import RideStatus
@@ -116,10 +116,37 @@ def edit_order_status(department_id: str, order_id: str, new_status: str, db: Se
         notification_type=NotificationType.system,
         title="עדכון סטטוס הזמנה",
         message=message_he,
-        sent_at=datetime.utcnow(),
+        sent_at=datetime.now(timezone.utc),
+        order_id=order.id  # <-- attach the order id here
+
     )
 
     db.add(notification)
     db.commit()
 
     return True
+
+from typing import List
+from sqlalchemy.orm import Session
+from uuid import UUID
+from src.models.notification_model import Notification
+from src.models.user_model import User  # assuming you have this model with department info and role
+
+def get_department_notifications(department_id: UUID, db: Session) -> List[Notification]:
+    # Find all supervisors in the department
+    supervisors = db.query(User).filter(
+        User.department_id == department_id,
+        User.role == 'supervisor'  # adjust this if you use enums or constants
+    ).all()
+
+    supervisor_ids = [sup.employee_id for sup in supervisors]  # use employee_id here
+
+    if not supervisor_ids:
+        return []
+
+    # Query notifications for those supervisors
+    notifications = db.query(Notification).filter(
+        Notification.user_id.in_(supervisor_ids)
+    ).order_by(Notification.sent_at.desc()).all()
+
+    return notifications

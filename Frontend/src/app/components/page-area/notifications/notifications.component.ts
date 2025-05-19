@@ -57,25 +57,32 @@ export class NotificationsComponent {
     if (this.currentPage > 1) this.currentPage--;
   }
 
-  getStatusIcon(message: string): string {
-    const lowerMessage = message.toLowerCase();
-    if (lowerMessage.includes('approved')) {
-      return '/assets/images/approved.png';
-    } else if (lowerMessage.includes('rejected')) {
-      return '/assets/images/rejected.png';
-    } else {
-      return '/assets/images/clock.png'; 
-    }
+ getStatusIcon(status: string): string {
+  switch (status) {
+    case 'approved': return '/assets/images/approved.png';
+    case 'rejected': return '/assets/images/rejected.png';
+    case 'pending': return '/assets/images/clock.png';
+    default: return '/assets/images/clock.png';
   }
-  
+}
+
+getStatusClass(status: string): string {
+  switch (status) {
+    case 'approved': return 'approved';
+    case 'rejected': return 'rejected';
+    case 'pending': return 'neutral';
+    default: return 'neutral';
+  }
+}
+
   translateMessage(message: string): string {
     const lower = message.toLowerCase();
   
-    if (lower.includes('sent successfully')) {
+    if (lower.includes('נשלחה בהצלחה')) {
       return '.ההזמנה שלך נשלחה בהצלחה. תקבל/י התראה לאחר הבדיקה והאישור';
-    } else if (lower.includes('approved')) {
+    } else if (lower.includes('אושרה')) {
       return '.ההזמנה שלך אושרה';
-    } else if (lower.includes('rejected')) {
+    } else if (lower.includes('נדחתה')) {
       return '.ההזמנה שלך נדחתה';
     } else {
       return message; 
@@ -83,15 +90,6 @@ export class NotificationsComponent {
   }
   
 
-  getStatusClass(message: string): string {
-    const lowerMessage = message.toLowerCase();
-    if (lowerMessage.includes('approved')) {
-      return 'approved';
-    } else if (lowerMessage.includes('rejected')) {
-      return 'rejected';
-    } else {
-      return 'neutral'; 
-    }
-  }
+ 
   
 }

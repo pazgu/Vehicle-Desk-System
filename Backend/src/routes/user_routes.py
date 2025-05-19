@@ -26,9 +26,10 @@ from fastapi.security import OAuth2PasswordBearer
 from ..utils.auth import role_check,identity_check,get_current_user
 from src.schemas.ride_status_enum import UpdateRideStatusRequest
 from ..schemas.order_card_item import OrderCardItem
+from ..models.ride_model import Ride
 from ..services.user_edit_ride import patch_order_in_db
 from ..services.user_rides_service import get_ride_by_id
-
+from ..services.user_notification import create_system_notification,get_supervisor_id,get_user_name
 
 
 
@@ -158,8 +159,26 @@ def create_order(user_id: UUID, ride_request: RideCreate, db: Session = Depends(
     # Check if this user is creating their own order
     identity_check(user_id=str(user_id), token=token)
 
+    supervisor_id = get_supervisor_id(user_id, db)  # You implement this logic
+
     try:
         new_ride = create_ride(db, user_id, ride_request)
+            # Send notification
+        employee_name = get_user_name(db, new_ride.user_id)
+        create_system_notification(
+            user_id=supervisor_id,
+            title="בקשת נסיעה חדשה",
+            message=f"שלח בקשה חדשה {employee_name} העובד ",
+            order_id=new_ride.id
+        )
+        create_system_notification(
+            user_id=new_ride.user_id,
+            title="שליחת בקשה",
+            message="בקשתך נשלחה בהצלחה",
+            order_id=new_ride.id
+        )
+        
+
         return new_ride
     except Exception as e:
         logger.error(f"Order creation failed: {str(e)}")

@@ -7,11 +7,13 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../../../../services/auth.service';
 import { ToastService } from '../../../../../services/toast.service';
-
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [RouterModule, ReactiveFormsModule, CommonModule],
+  imports: [RouterModule, ReactiveFormsModule, CommonModule,MatButtonModule,
+    MatIconModule,],
   templateUrl: './register.component.html',
   styleUrl: './register.component.css'
 })
@@ -27,7 +29,9 @@ export class RegisterComponent implements OnInit {
     private toastService: ToastService,
     private router: Router
   ) {}
+  showPassword = false;
 
+  
   ngOnInit(): void {
     this.registerForm = this.fb.group({
       first_name: ['', [Validators.required, Validators.minLength(3), Validators.pattern(/^[A-Za-zא-ת]+$/)]],
@@ -39,6 +43,10 @@ export class RegisterComponent implements OnInit {
     });
 
     this.fetchDepartments();
+  }
+  
+  togglePassword() {
+    this.showPassword = !this.showPassword;
   }
 
   fetchDepartments(): void {
@@ -79,7 +87,7 @@ export class RegisterComponent implements OnInit {
         this.toastService.show('שגיאה בלתי צפויה - נסה שוב מאוחר יותר', 'error');
         return;
       }
-
+      localStorage.clear();
       // Save user info
       localStorage.setItem('access_token', response.access_token);
       localStorage.setItem('username', response.username);
