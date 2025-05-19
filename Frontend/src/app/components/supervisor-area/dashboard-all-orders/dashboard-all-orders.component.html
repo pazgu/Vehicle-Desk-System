@@ -20,14 +20,15 @@
       </div>
 
       <!-- Filters Section -->
-      <div *ngIf="showFilters" style="margin-bottom: 1.5rem; background: #f7f7f7; padding: 1rem; border-radius: 8px; direction: rtl;">
+      <div *ngIf="showFilters"
+        style="margin-bottom: 1.5rem; background: #f7f7f7; padding: 1rem; border-radius: 8px; direction: rtl;">
         <div style="margin-bottom: 1rem;">
           <label for="statusFilter">סטטוס:</label>
           <select id="statusFilter" [(ngModel)]="statusFilter">
             <option value="">הצג הכל</option>
             <option value="מאושר">מאושר</option>
             <option value="בהמתנה">בהמתנה</option>
-          
+
             <option value="נדחה">נדחה</option>
           </select>
         </div>
@@ -43,7 +44,7 @@
           </div>
         </div>
       </div>
- <p-table #table [value]="trips" [rows]="rows" [totalRecords]="filteredOrders.length" dir="rtl">
+      <p-table #table [value]="trips" [rows]="rows" [totalRecords]="filteredOrders.length" dir="rtl">
         <ng-template pTemplate="header">
           <tr class="table-header">
             <th>מזהה נסיעה</th>
@@ -61,7 +62,7 @@
             <td>{{ trip.requested_vehicle_plate }}</td>
             <td>{{ trip.date_and_time | date: 'yyyy-MM-dd HH:mm' }}</td>
             <td>{{ trip.distance }}</td>
-            <td [ngClass]="getStatusClass(trip.status)">{{translateStatus(trip.status)}}</td>
+            <td [ngClass]="getStatusClass(trip.status)">{{ translateStatus(trip.status) }}</td>
           </tr>
         </ng-template>
         <ng-template pTemplate="emptymessage">
@@ -73,19 +74,13 @@
     </div>
 
 
-      <!-- Pagination Controls -->
-      <div class="pagination-controls" dir="rtl" style="text-align: center; margin-top: 1.5rem;">
-        <button (click)="prevPage()" [disabled]="currentPage === 1">
-          ▶
-        </button>
-
-        <span>עמוד {{ currentPage }} מתוך {{ totalPages }}</span>
-
-        
-        <button (click)="nextPage()" [disabled]="currentPage === totalPages">
-          ◀
-        </button>
-      </div>
-
+    <!-- Pagination Controls -->
+    <!-- Pagination Controls -->
+    <div class="pagination-controls" dir="rtl" style="text-align: center; margin-top: 1.5rem;">
+      <button (click)="prevPage()" [disabled]="currentPage === 1">▶</button>
+      <span>עמוד {{ currentPage }} מתוך {{ totalPages }}</span>
+      <button (click)="nextPage()" [disabled]="currentPage === totalPages">◀</button>
     </div>
+
   </div>
+</div>
