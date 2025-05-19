@@ -49,8 +49,8 @@
     border: 1.5px solid #bd9624 !important;
 }
 :host ::ng-deep .p-card.vehicle-card.card-frozen {
-    background: #f8e2e2 !important;
-    border: 1.5px solid #b03e4a !important;
+    background: #e2f0f8 !important;
+    border: 1.5px solid #4656be !important;
 }
 
 .vehicles-cards {

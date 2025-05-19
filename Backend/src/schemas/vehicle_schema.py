@@ -15,6 +15,8 @@ class VehicleOut(BaseModel):
     last_used_at: Optional[datetime] = None
     current_location: str
     odometer_reading: int
+    vehicle_model: str
+    image_url: str
 
     class Config:
         use_enum_values = True  # return enums as their values in JSON
@@ -27,6 +29,8 @@ class InUseVehicleOut(BaseModel):
     fuel_type: FuelType
     status: VehicleStatus
     odometer_reading: float
+    vehicle_model: str
+    image_url: str
     user_id: Optional[UUID] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None
