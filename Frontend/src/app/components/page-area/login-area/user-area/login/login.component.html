@@ -16,8 +16,18 @@
   שם המשתמש יכול לכול אותיות בלבד (עברית או אנגלית)
 </small>
 
-      <label>סיסמה</label>
-      <input type="password" formControlName="password" />
+<label>סיסמה</label>
+<div style="position: relative; display: flex; align-items: center;">
+  <input [type]="showPassword ? 'text' : 'password'" formControlName="password" style="margin-left: 7px; flex: 1;" />
+
+  <mat-icon 
+    (click)="togglePassword()" 
+    style="cursor: pointer; margin-left: 7px;">
+    {{ showPassword ? 'visibility' : 'visibility_off' }}
+  </mat-icon>
+</div>
+
+
 <small *ngIf="f['password'].invalid && (f['password'].dirty || formSubmitted)" style="color:red;">
   יש להזין סיסמה
 </small>

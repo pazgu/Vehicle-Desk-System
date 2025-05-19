@@ -36,7 +36,7 @@
         </select>
       </div>
 
-      <div style="display: flex; gap: 1rem;">
+      <div style="display: flex; gap: 1rem;">החל מ: 
         <input
           id="startDate"
           type="date"
@@ -44,7 +44,7 @@
           [min]="minDate"
           [max]="maxDate"
           (change)="validateDate('start'); fetchRides()" />
-
+עד: 
         <input
           id="endDate"
           type="date"
@@ -52,11 +52,12 @@
           [min]="minDate"
           [max]="maxDate"
           (change)="validateDate('end'); fetchRides()" />
-
-        <label>
-          <input type="checkbox" [(ngModel)]="showOldOrders" />
-          הצג גם הזמנות מלפני חודש
-        </label>
+        
+          <label *ngIf="rideViewMode !== 'future'">
+            <input type="checkbox" [(ngModel)]="showOldOrders" />
+            הצג גם הזמנות מלפני חודש
+          </label>
+          
       </div>
     </div>
 
@@ -67,6 +68,12 @@
     
 
     <!-- Orders List -->
+    <tr *ngIf="filteredOrders.length > 0" class="table-header">
+            <th>תאריך</th>
+            <th>שעה</th>
+            <th>סוג</th>
+            <th>מרחק</th>
+          </tr>
     <div
       class="orders-data-row"
       *ngFor="let order of pagedOrders"
