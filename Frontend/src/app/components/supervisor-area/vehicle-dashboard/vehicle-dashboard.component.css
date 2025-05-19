@@ -28,11 +28,13 @@
     justify-content: flex-start;
 }
 
+
 :host ::ng-deep .p-card.vehicle-card {
     border: 1px solid #232222 !important;
     border-radius: 12px;
     padding: 1.2rem 1rem;
     width: 300px;
+    height: 500px;
     box-shadow: 0 2px 8px rgba(44, 62, 80, 0.06);
     transition: box-shadow 0.2s, border 0.2s;
     display: flex;

@@ -30,45 +30,46 @@
       </div>
       <!-- Vehicles Cards -->
       <div class="vehicles-cards">
-        <p-card *ngFor="let vehicle of filteredVehicles" [styleClass]="'vehicle-card ' + getCardClass(vehicle.status)">
-          <ng-template pTemplate="header">
-            <h3>רכב: {{ vehicle.plate_number }}</h3>
-          </ng-template>
-          <div>
-            <p>סטטוס: {{ translateStatus(vehicle.status) }}</p>
-            <ng-container *ngIf="vehicle.status === 'in_use';">
-              <!-- In-use content -->
-              <p>מזהה עובד: {{ vehicle.user_id || '—' }}</p>
-              <p>שם עובד: {{ (vehicle.first_name || '') + ' ' + (vehicle.last_name || '') }}</p>
-              <p>התחלת שימוש: {{ vehicle.start_datetime ? (vehicle.start_datetime | date: 'yyyy-MM-dd HH:mm') : '—' }}
-              </p>
-              <p>סיום שימוש: {{ vehicle.end_datetime ? (vehicle.end_datetime | date: 'yyyy-MM-dd HH:mm') : '—' }}</p>
-            </ng-container>
-            <ng-container *ngIf="vehicle.status === 'frozen'; else notInUse">
-              <!-- frozen content -->
-              <p>מס רכב: {{ vehicle.plate_number }}</p>
-              <p>סוג רכב: {{ vehicle.type }}</p>
-              <p>סוג דלק: {{ vehicle.fuel_type }}</p>
-              <p>סטטוס: {{ translateStatus(vehicle.status) }}</p>
-              <p>סיבת הקפאה: {{ vehicle.freeze_reason }}</p>
-              <p>פעם אחרונה בשימוש: {{ vehicle.last_used_at ? (vehicle.last_used_at | date: 'yyyy-MM-dd HH:mm') : '—' }}
-              </p>
-              <p>מיקום נוכחי: {{ vehicle.current_location || '—' }}</p>
-              <p>ק״מ: {{ vehicle.odometer_reading }}</p>
-            </ng-container>
-            <ng-template #notInUse>
-              <!-- Available or frozen content -->
-              <p>מס רכב: {{ vehicle.plate_number }}</p>
-              <p>סוג רכב: {{ vehicle.type }}</p>
-              <p>סוג דלק: {{ vehicle.fuel_type }}</p>
-              <p>סטטוס: {{ translateStatus(vehicle.status) }}</p>
-              <p>פעם אחרונה בשימוש: {{ vehicle.last_used_at ? (vehicle.last_used_at | date: 'yyyy-MM-dd HH:mm') : '—' }}
-              </p>
-              <p>מיקום נוכחי: {{ vehicle.current_location || '—' }}</p>
-              <p>ק״מ: {{ vehicle.odometer_reading }}</p>
-            </ng-template>
+      <p-card *ngFor="let vehicle of filteredVehicles" [styleClass]="'vehicle-card ' + getCardClass(vehicle.status)">
+        <ng-template pTemplate="header">
+          <h3>רכב: {{ vehicle.plate_number }}</h3>
+          <img *ngIf="vehicle.image_url" [src]="vehicle.image_url" alt="תמונה של הרכב" style="width: 100%; max-width: 250px; margin-top: 10px;" />
+          <div *ngIf="vehicle.vehicle_model">
+            <strong>דגם:</strong> {{ vehicle.vehicle_model }}
           </div>
-        </p-card>
+        </ng-template>
+        <div>
+          <p>סטטוס: {{ translateStatus(vehicle.status) }}</p>
+          <ng-container *ngIf="vehicle.status === 'in_use';">
+            <!-- In-use content -->
+            <p>מזהה עובד: {{ vehicle.user_id || '—' }}</p>
+            <p>שם עובד: {{ (vehicle.first_name || '') + ' ' + (vehicle.last_name || '') }}</p>
+            <p>התחלת שימוש: {{ vehicle.start_datetime ? (vehicle.start_datetime | date: 'yyyy-MM-dd HH:mm') : '—' }}</p>
+            <p>סיום שימוש: {{ vehicle.end_datetime ? (vehicle.end_datetime | date: 'yyyy-MM-dd HH:mm') : '—' }}</p>
+          </ng-container>
+          <ng-container *ngIf="vehicle.status === 'frozen'; else notInUse">
+            <!-- frozen content -->
+            <p>מס רכב: {{ vehicle.plate_number }}</p>
+            <p>סוג רכב: {{ vehicle.type }}</p>
+            <p>סוג דלק: {{ vehicle.fuel_type }}</p>
+            <p>סטטוס: {{ translateStatus(vehicle.status) }}</p>
+            <p>סיבת הקפאה: {{ vehicle.freeze_reason }}</p>
+            <p>פעם אחרונה בשימוש: {{ vehicle.last_used_at ? (vehicle.last_used_at | date: 'yyyy-MM-dd HH:mm') : '—' }}</p>
+            <p>מיקום נוכחי: {{ vehicle.current_location || '—' }}</p>
+            <p>ק״מ: {{ vehicle.odometer_reading }}</p>
+          </ng-container>
+          <ng-template #notInUse>
+            <!-- Available content -->
+            <p>מס רכב: {{ vehicle.plate_number }}</p>
+            <p>סוג רכב: {{ vehicle.type }}</p>
+            <p>סוג דלק: {{ vehicle.fuel_type }}</p>
+            <p>סטטוס: {{ translateStatus(vehicle.status) }}</p>
+            <p>פעם אחרונה בשימוש: {{ vehicle.last_used_at ? (vehicle.last_used_at | date: 'yyyy-MM-dd HH:mm') : '—' }}</p>
+            <p>מיקום נוכחי: {{ vehicle.current_location || '—' }}</p>
+            <p>ק״מ: {{ vehicle.odometer_reading }}</p>
+          </ng-template>
+        </div>
+      </p-card>
       </div>
       <!-- Empty State -->
       <div *ngIf="filteredVehicles?.length === 0" class="empty-state" style="text-align: center; margin-top: 2rem;">
