@@ -168,7 +168,7 @@ export class NewRideComponent implements OnInit {
  const formData = {
   ride_type: this.rideForm.get('ride_type')?.value,
   start_datetime,
-  vehicle_id:'0ecbc987-5c70-4b06-b11e-483a8e363279',
+  vehicle_id:'9574b46e-b223-4e97-b4e5-7c8d9f16b4a1',
   end_datetime,
   start_location: this.rideForm.get('start_location')?.value,
   stop: this.rideForm.get('stop')?.value,
