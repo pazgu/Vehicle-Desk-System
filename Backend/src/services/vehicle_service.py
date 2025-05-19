@@ -111,6 +111,8 @@ def get_vehicles_with_optional_status(
         else:
             result.append(VehicleOut(**data))
 
+    print("Result:", result)
+
 
     return result
 

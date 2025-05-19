@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { VehicleOutItem } from '../models/vehicle-dashboard-item/vehicle-out-item.module';
 import { environment } from '../../environments/environment';
+import { VehicleInItem } from '../models/vehicle-dashboard-item/vehicle-in-use-item.module';
 
 @Injectable({
   providedIn: 'root'
@@ -13,8 +13,8 @@ export class VehicleService {
 
   constructor(private http: HttpClient) { }
 
-  getAllVehicles(): Observable<VehicleOutItem[]>{
+  getAllVehicles(): Observable<VehicleInItem[]>{
     const url = `${this.apiUrl}/all-vehicles`;
-    return this.http.get<VehicleOutItem[]>(url);  
+    return this.http.get<VehicleInItem[]>(url);  
   }
 }
