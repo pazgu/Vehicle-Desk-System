@@ -86,7 +86,9 @@
     <label>בחר רכב זמין</label>
     <select formControlName="car" class="styled-select">
       <option value="" disabled selected>בחר רכב</option>
-      <option *ngFor="let car of availableCars" [value]="car.id">{{ car.name }}</option>
+<option *ngFor="let car of availableCars" [value]="car.id">
+  {{ car.plate_number }} - {{ car.vehicle_model }}
+</option>
     </select>
   </div>
 </div>
