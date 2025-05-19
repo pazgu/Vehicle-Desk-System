@@ -17,15 +17,19 @@
 </small>
 
 <label>סיסמה</label>
-<div style="position: relative; display: flex; align-items: center;">
-  <input [type]="showPassword ? 'text' : 'password'" formControlName="password" style="margin-left: 7px; flex: 1;" />
-
+<div class="password-container">
+  <input 
+    [type]="showPassword ? 'text' : 'password'" 
+    formControlName="password" 
+    class="password-input"
+  />
   <mat-icon 
-    (click)="togglePassword()" 
-    style="cursor: pointer; margin-left: 7px;">
+    class="show-password"
+    (click)="togglePassword()">
     {{ showPassword ? 'visibility' : 'visibility_off' }}
   </mat-icon>
 </div>
+
 
 
 <small *ngIf="f['password'].invalid && (f['password'].dirty || formSubmitted)" style="color:red;">

@@ -37,11 +37,18 @@
 
       <div>
         <label>סיסמה</label>
-        <div style="position: relative;">
-          <input [type]="showPassword ? 'text' : 'password'" formControlName="password">
-          <button type="button" (click)="togglePassword()" style="position: absolute; top: 0; left: 0;"><mat-icon>{{ showPassword ? 'visibility' : 'visibility_off' }}</mat-icon>
-          </button>
-        </div>
+<div class="password-container">
+  <input 
+    [type]="showPassword ? 'text' : 'password'" 
+    formControlName="password" 
+    class="password-input"
+  />
+  <mat-icon 
+    class="show-password"
+    (click)="togglePassword()">
+    {{ showPassword ? 'visibility' : 'visibility_off' }}
+  </mat-icon>
+</div>
         <small *ngIf="f['password'].touched && f['password'].errors?.['required']" style="color:red;">יש להזין סיסמה</small>
         <small *ngIf="f['password'].errors?.['minlength']" style="color:red;">לפחות 8 תווים</small>
         <small *ngIf="f['password'].errors?.['pattern']" style="color:red;">חובה לכלול אות גדולה ומספר</small>
