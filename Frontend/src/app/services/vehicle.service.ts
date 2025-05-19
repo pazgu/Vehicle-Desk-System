@@ -17,4 +17,9 @@ export class VehicleService {
     const url = `${this.apiUrl}/all-vehicles`;
     return this.http.get<VehicleInItem[]>(url);  
   }
+
+  getAvailableVehicles(): Observable<VehicleInItem[]>{
+    const url = `${this.apiUrl}/all-vehicles/available`;
+    return this.http.get<VehicleInItem[]>(url);  
+  }
 }

@@ -5,8 +5,6 @@ from fastapi import APIRouter, Depends ,  Query
 from sqlalchemy.orm import Session
 from src.models.ride_model import Ride 
 from sqlalchemy.orm import Session
-from src.schemas.ride_status_enum import UpdateRideStatusRequest
-from src.services.user_rides_service import update_ride_status
 from src.utils.database import get_db
 from fastapi import APIRouter
 from uuid import UUID
@@ -14,8 +12,7 @@ from ..utils.database import get_db
 from ..services.supervisor_dashboard_service import get_department_orders
 from ..schemas.vehicle_schema import VehicleOut , InUseVehicleOut
 from ..models.vehicle_model import VehicleType
-from ..services.vehicle_service import get_vehicles_with_optional_status
-# get_available_vehicles as fetch_available_vehicles, get_in_use_vehicles, get_frozen_vehicles , get_vehicles_with_optional_status
+from ..services.vehicle_service import get_vehicles_with_optional_status, get_available_vehicles
 from typing import List, Optional, Union
 
 from src.schemas.notification_schema import NotificationOut  # adjust path as needed
@@ -42,7 +39,7 @@ def edit_order_status_route(department_id: UUID, order_id: UUID, status: str, db
     return edit_order_status(department_id, order_id, status, db)
 
 @router.get("/all-vehicles")
-def read_vehicles(status: Optional[str] = Query(None), db: Session = Depends(get_db)):
+def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = Depends(get_db)):
     vehicles = get_vehicles_with_optional_status(db, status)
 
     if status == "in_use":
@@ -51,6 +48,12 @@ def read_vehicles(status: Optional[str] = Query(None), db: Session = Depends(get
         validated = [VehicleOut(**v) if isinstance(v, dict) else v for v in vehicles]
 
     return validated
+
+@router.get("/all-vehicles/available")
+def get_available_vehicles_route(status: Optional[str] = Query(None), db: Session = Depends(get_db)):
+    vehicles = get_available_vehicles(db)
+    return vehicles
+
 
 
 # @router.get("/orders/{department_id}/{order_id}/pending")
