@@ -1,5 +1,5 @@
 from typing import List
-from datetime import datetime
+from datetime import datetime,timezone
 from ..schemas.ride_dashboard_item import RideDashboardItem
 from ..schemas.order_card_item import OrderCardItem
 from ..models.ride_model import Ride  # Import RideStatus
@@ -116,7 +116,9 @@ def edit_order_status(department_id: str, order_id: str, new_status: str, db: Se
         notification_type=NotificationType.system,
         title="עדכון סטטוס הזמנה",
         message=message_he,
-        sent_at=datetime.utcnow(),
+        sent_at=datetime.now(timezone.utc),
+        order_id=order.id  # <-- attach the order id here
+
     )
 
     db.add(notification)
