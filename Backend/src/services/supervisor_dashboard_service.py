@@ -5,6 +5,7 @@ from ..schemas.order_card_item import OrderCardItem
 from ..models.ride_model import Ride  # Import RideStatus
 from ..models.user_model import User
 from sqlalchemy.orm import Session
+from ..models.notification_model import NotificationType, Notification
 
 def get_department_orders(department_id: str, db: Session) -> List[RideDashboardItem]:
     """
@@ -86,7 +87,7 @@ def get_department_specific_order(department_id: str, order_id: str, db: Session
 
 def edit_order_status(department_id: str, order_id: str, new_status: str, db: Session) -> bool:
     """
-    Edit the status of a specific order for a department.
+    Edit the status of a specific order for a department and sends a notf.
     """
     # Query the database for the specific order
     order = (
@@ -101,6 +102,24 @@ def edit_order_status(department_id: str, order_id: str, new_status: str, db: Se
 
     # Update the status of the order
     order.status = new_status
+    db.commit()
+
+    hebrew_status_map = {
+        "approved": "אושרה",
+        "rejected": "נדחתה",
+        "pending": "ממתינה"
+    }
+    message_he = f"ההזמנה שלך {hebrew_status_map.get(new_status.lower(), new_status)}"
+
+    notification = Notification(
+        user_id=order.user_id,
+        notification_type=NotificationType.system,
+        title="עדכון סטטוס הזמנה",
+        message=message_he,
+        sent_at=datetime.utcnow(),
+    )
+
+    db.add(notification)
     db.commit()
 
     return True

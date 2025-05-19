@@ -13,43 +13,57 @@ export class ProtectedRouteGuard implements CanActivate {
   ) {}
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
-  const token = localStorage.getItem('access_token');
-  const role = localStorage.getItem('role');
-  const url = state.url;
+    const token = localStorage.getItem('access_token');
+    const role = localStorage.getItem('role');
+    const url = state.url;
 
-  // ❌ No token → block and show toast
-  if (!token) {
-    this.toastService.show('אנא התחבר כדי לגשת לעמוד זה', 'error');
-    this.router.navigate(['/login']);
-    return false;
-  }
+    // ❌ No token → block and show toast
+    if (!token) {
+      this.toastService.show('אנא התחבר כדי לגשת לעמוד זה', 'error');
+      this.router.navigate(['/login']);
+      return false;
+    }
 
-  // ✅ Allow access to /home
-  if (url.includes('/home')) {
-    return true;
-  }
+    // ✅ Admin-only routes
+    if ((url.includes('/cars') || url.includes('/daily-checks')) && role !== 'admin') {
+      this.toastService.show('העמוד מיועד למנהלים בלבד', 'error');
+      this.router.navigate(['/home']);
+      return false;
+    }
 
-  // ✅ Admin-only routes
-  if ((url.includes('/cars') || url.includes('/daily-checks')) && role !== 'admin') {
-    this.toastService.show('העמוד מיועד למנהלים בלבד', 'error');
+    // ✅ Allow access to notifications for all roles
+    if (url.includes('/notifications')) {
+      return true;
+    }
+
+    // ❌ Block supervisors from /new-ride
+    if (url.includes('/new-ride')) {
+      if (role === 'supervisor') {
+        this.toastService.show('אין לך הרשאה להזמין נסיעה', 'error');
+        this.router.navigate(['/supervisor-dashboard']);
+        return false;
+      }
+      return true;
+    }
+
+    // ❌ Block supervisors from /home, allow others
+    if (url.includes('/home')) {
+      if (role === 'supervisor') {
+        this.toastService.show('אין לך הזמנות אישיות', 'error');
+        this.router.navigate(['/supervisor-dashboard']);
+        return false;
+      }
+      return true; // allow others
+    }
+
+    // ✅ Allow admin/supervisor to access dashboards and other permitted routes
+    if (['admin', 'supervisor'].includes(role || '')) {
+      return true;
+    }
+
+    // ❌ All other cases → block access
+    this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
     this.router.navigate(['/home']);
     return false;
   }
-
-  // ✅ Allow admin/supervisor to access dashboards
-  if (['admin', 'supervisor'].includes(role || '')) {
-    return true;
-  }
-
-  // ✅ Allow access to new-ride and notifications
-  if (url.includes('/new-ride') || url.includes('/notifications')) {
-    return true;
-  }
-
-  // ❌ All other cases → block
-  this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
-  this.router.navigate(['/login']);
-  return false;
-}
-
 }

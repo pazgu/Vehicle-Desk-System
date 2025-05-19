@@ -11,7 +11,6 @@ def get_user_notifications(db: Session, user_id: UUID):
         .all()
     )
 
-
 def send_notification(
     db: Session,
     user_id: UUID,
@@ -30,4 +29,3 @@ def send_notification(
     db.commit()
     db.refresh(new_notification)
     return new_notification
-

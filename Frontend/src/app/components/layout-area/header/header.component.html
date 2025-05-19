@@ -30,7 +30,7 @@
       
 
       <span class="username">{{ fullName$ | async }}</span>
-      <a [routerLink]="['/new-ride']" title="להזמין נסיעה">
+      <a *ngIf="(role$ | async) !== 'supervisor'" [routerLink]="['/new-ride']" title="להזמין נסיעה">
         <img src="/assets/images/add-car.png" alt="Car" class="add-car" />
       </a>
     </div>    
@@ -44,7 +44,8 @@
     <div class="nav-right">
     <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/cars']" class="nav-link" href="#">רכבים | </a>
     <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/daily-checks']" class="nav-link" href="#">בדיקות יומיות | </a>
-    <a *ngIf="(role$ | async) === 'supervisor'" [routerLink]="['/supervisor-dashboard']" class="nav-link" href="#">הזמנות מחלקה  </a>
+    <a *ngIf="(role$ | async) === 'supervisor'" [routerLink]="['/supervisor-dashboard']" class="nav-link" href="#">הזמנות מחלקה  | </a>
+    <a *ngIf="(role$ | async) === 'supervisor'" [routerLink]="['/vehicle-dashboard']" class="nav-link" href="#">רכבי מחלקה  </a>
 
       <a *ngIf="(role$ | async) === 'employee'" [routerLink]="['home']" class="nav-link" href="#">ההזמנות שלי </a>
      <a routerLink="/notifications">

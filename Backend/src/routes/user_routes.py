@@ -24,8 +24,13 @@ from ..services.user_notification import get_user_notifications , send_notificat
 from fastapi import status as fastapi_status
 from fastapi.security import OAuth2PasswordBearer
 from ..utils.auth import role_check,identity_check,get_current_user
-# from ..schemas.ride_status_enum import UpdateRideStatusRequest
-import traceback
+from src.schemas.ride_status_enum import UpdateRideStatusRequest
+from ..schemas.order_card_item import OrderCardItem
+from ..services.user_edit_ride import patch_order_in_db
+from ..services.user_rides_service import get_ride_by_id
+
+
+
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -169,10 +174,11 @@ def create_order(user_id: UUID, ride_request: RideCreate, db: Session = Depends(
 def get_departments_route():
     return get_departments()
 
-@router.patch("/api/orders/{user_id}")
-def update_order():
-    # Implementation pending
-    return {"message": "Not implemented yet"}
+
+@router.patch("/api/orders/{order_id}")
+def patch_order(order_id: UUID, patch_data: OrderCardItem, db: Session = Depends(get_db)):
+    order = patch_order_in_db(order_id, patch_data, db)
+    return {"message": "ההזמנה עודכנה בהצלחה", "order": order}
 
 
 #send a notification to a user
@@ -212,3 +218,7 @@ def delete_order():
     # Implementation pending
     return {"message": "Not implemented yet"}
 
+@router.get("/api/rides/{ride_id}", response_model=OrderCardItem)
+def read_ride(ride_id: UUID, db: Session = Depends(get_db)):
+    ride = get_ride_by_id(db, ride_id)
+    return ride
