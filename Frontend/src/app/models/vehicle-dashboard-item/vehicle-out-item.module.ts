@@ -8,4 +8,6 @@ export interface VehicleOutItem{
   last_used_at?: string | null; // ISO date string or null
   current_location: string;
   odometer_reading: number;
+  vehicle_model: string;
+  image_url: string;
 }
