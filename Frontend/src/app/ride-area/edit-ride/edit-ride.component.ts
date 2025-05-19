@@ -77,36 +77,77 @@ export class EditRideComponent implements OnInit {
   }
 
   loadRide(): void {
+     const user_id = localStorage.getItem('employee_id');
+  console.log('employee_id from localStorage:', user_id);
+  if (!user_id) {
+    this.toastService.show('שגיאת זיהוי משתמש - התחבר מחדש', 'error');
+    this.router.navigate(['/login']); // Or fallback to /home
+    return;
+  }
+
     this.rideService.getRideById(this.rideId).subscribe({
       next: (ride) => {
-        const now = new Date();
-        const submitted = new Date(ride.submitted_at);
-        this.submittedAt = submitted;
-        const within3Hours = (now.getTime() - submitted.getTime()) <= 3 * 60 * 60 * 1000;
 
-        if (!within3Hours) {
-          this.toastService.show('לא ניתן לערוך הזמנה לאחר 3 שעות מהשליחה', 'error');
-          this.router.navigate(['/home']);
-          return;
-        }
+       console.log('👀 Ride status:', ride.status);
+
+       console.log('🚗 ride.vehicle_id:', ride.vehicle_id); // ✅ Add this
+
+       console.log('🚚 Full ride object:', ride); // 👈 ADD THIS
+
+
+      // const isPending = ride.status?.toLowerCase?.() === 'pending';
+      const isPending = ride.status && ride.status.toLowerCase() === 'pending';
+
+        console.log('🟡 isPending:', isPending);
+
+      
+
+// const isOwner = String(ride.user_id) === localStorage.getItem('employee_id');
+const isOwner = String(ride.user_id) === localStorage.getItem('employee_id');
+
+
+if (!isPending) {
+  this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
+  this.router.navigate(['/home']);
+  return;
+}
 
         const startDate = new Date(ride.start_datetime);
         const endDate = new Date(ride.end_datetime);
 
-        this.rideForm.patchValue({
-          ride_period: 'morning',
-          ride_date: startDate.toISOString().split('T')[0],
-          start_time: startDate.toTimeString().slice(0, 5),
-          end_time: endDate.toTimeString().slice(0, 5),
-          estimated_distance_km: ride.estimated_distance_km,
-          ride_type: ride.ride_type,
-          vehicle_type: '', // Optional: fill in based on backend data if needed
-          start_location: ride.start_location,
-          stop: ride.stop,
-          destination: ride.destination
-        });
+const vehicleType = ride.vehicle;
+this.availableCars = this.allCars.filter(car => car.type === vehicleType);
 
-        this.estimated_distance_with_buffer = +(ride.estimated_distance_km * 1.1).toFixed(2);
+if (this.availableCars.length === 0) {
+  this.toastService.show('לא נמצאו רכבים מתאימים עבור סוג הרכב שבוצעה בו ההזמנה', 'error');
+  return;
+}
+
+const selectedCar = this.availableCars[0]; // fallback to the first car of that type
+
+
+if (selectedCar) {
+  this.rideForm.patchValue({
+    ride_period: 'morning',
+    ride_date: startDate.toISOString().split('T')[0],
+    start_time: startDate.toTimeString().slice(0, 5),
+    end_time: endDate.toTimeString().slice(0, 5),
+    estimated_distance_km: parseFloat(ride.estimated_distance),
+    ride_type: ride.ride_type,
+    vehicle_type: selectedCar.type,
+    car: selectedCar.id,
+    start_location: ride.start_location,
+    stop: ride.stop,
+    destination: ride.destination
+  });
+
+  this.estimated_distance_with_buffer = +(parseFloat(ride.estimated_distance) * 1.1).toFixed(2);
+} else {
+  this.toastService.show('הרכב שבוצעה בו ההזמנה אינו זמין יותר', 'error');
+}
+
+
+
       },
       error: (err) => {
         this.toastService.show('שגיאה בטעינת ההזמנה לעריכה', 'error');
@@ -155,3 +196,4 @@ export class EditRideComponent implements OnInit {
     this.router.navigate(['/home']);
   }
 }
+
