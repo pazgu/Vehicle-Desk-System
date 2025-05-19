@@ -81,3 +81,27 @@ button {
 button:hover {
   background-color: #a23333;
 }
+
+.password-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input {
+  width: 100%;
+  padding: 10px 40px 10px 10px; /* space for the icon on the right */
+  border: 1px solid #ccc;
+  background: #e5e5e5;
+  border-radius: 5px;
+  font-size: 16px;
+  direction: rtl;
+}
+
+.show-password {
+  position: absolute;
+  left: 10px; 
+  top: 20%;
+  cursor: pointer;
+  color: #555;
+}

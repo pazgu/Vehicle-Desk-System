@@ -118,3 +118,29 @@ def get_vehicles_with_optional_status(
 
     return result
 
+def get_available_vehicles(
+    db: Session
+) -> List[VehicleOut]:
+    query = (
+        db.query(
+            Vehicle.id,
+            Vehicle.plate_number,
+            Vehicle.type,
+            Vehicle.fuel_type,
+            Vehicle.status,
+            Vehicle.freeze_reason,
+            Vehicle.last_used_at,
+            Vehicle.current_location,
+            Vehicle.odometer_reading,
+            Vehicle.vehicle_model,
+            Vehicle.image_url,
+        )
+        .filter(Vehicle.status == VehicleStatus.available)
+    )
+
+    vehicles = query.all()
+    result = []
+    for row in vehicles:
+        data = dict(row._mapping)
+        result.append(VehicleOut(**data))
+    return result
