@@ -36,7 +36,7 @@
         </select>
       </div>
 
-      <div style="display: flex; gap: 1rem;">
+      <div style="display: flex; gap: 1rem;">החל מ: 
         <input
           id="startDate"
           type="date"
@@ -44,7 +44,7 @@
           [min]="minDate"
           [max]="maxDate"
           (change)="validateDate('start'); fetchRides()" />
-
+עד: 
         <input
           id="endDate"
           type="date"
