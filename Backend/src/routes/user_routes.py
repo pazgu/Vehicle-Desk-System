@@ -218,7 +218,7 @@ def delete_order():
     # Implementation pending
     return {"message": "Not implemented yet"}
 
-@router.get("/api/rides/{ride_id}", response_model=OrderCardItem)
+@router.get("/api/rides/{ride_id}", response_model=RideSchema)
 def read_ride(ride_id: UUID, db: Session = Depends(get_db)):
     ride = get_ride_by_id(db, ride_id)
     return ride
