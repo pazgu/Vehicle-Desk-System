@@ -87,7 +87,7 @@ export class RegisterComponent implements OnInit {
         this.toastService.show('שגיאה בלתי צפויה - נסה שוב מאוחר יותר', 'error');
         return;
       }
-
+      localStorage.clear();
       // Save user info
       localStorage.setItem('access_token', response.access_token);
       localStorage.setItem('username', response.username);

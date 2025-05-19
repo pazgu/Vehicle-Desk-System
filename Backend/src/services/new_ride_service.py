@@ -7,6 +7,9 @@ from ..utils.email_utils import send_email
 from datetime import datetime
 
 def create_ride(db: Session, user_id: UUID, ride: RideCreate):
+    # Get the user info
+   
+    # Create the new ride
     new_ride = Ride(
         id=uuid4(),
         user_id=user_id,
