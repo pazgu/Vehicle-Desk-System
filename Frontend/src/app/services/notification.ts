@@ -25,4 +25,5 @@ export class NotificationService {
 
     return this.http.get<MyNotification[]>(`${this.notificationUrl}/${user_id}`, { headers });
   }
+  
 }

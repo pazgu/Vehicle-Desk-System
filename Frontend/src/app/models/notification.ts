@@ -5,5 +5,7 @@ export interface MyNotification {
     title: string;
     message: string;
     sent_at: string; // Keep this as-is from backend
+    order_id:string;
+    order_status:string;
   }
   
