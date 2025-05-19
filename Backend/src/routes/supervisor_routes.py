@@ -18,6 +18,9 @@ from ..services.vehicle_service import get_vehicles_with_optional_status
 # get_available_vehicles as fetch_available_vehicles, get_in_use_vehicles, get_frozen_vehicles , get_vehicles_with_optional_status
 from typing import List, Optional, Union
 
+from src.schemas.notification_schema import NotificationOut  # adjust path as needed
+from src.services.supervisor_dashboard_service import get_department_notifications
+from src.utils.database import get_db
 
 router = APIRouter()
 
