@@ -6,10 +6,10 @@
     לא נמצאו הודעות עבורך
   </div>
 
-  <div class="notification" *ngFor="let note of pagedNotifications" [ngClass]="getStatusClass(note.message)">
+  <div class="notification" *ngFor="let note of pagedNotifications" [ngClass]="getStatusClass(note.order_status)">
     
     <div class="content">
-      <img [src]="getStatusIcon(note.message)" class="status-icon" alt="Status Icon" />
+      <img [src]="getStatusIcon(note.order_status)" class="status-icon" alt="Status Icon" />
       <div class="time">{{ note.timeAgo }}</div>
       <span class="text">{{ translateMessage(note.message) }}</span>
        <img src="/assets/images/message.png"  alt="Message Icon" class="message-icon" />

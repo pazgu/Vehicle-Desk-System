@@ -37,5 +37,7 @@ class Ride(Base):
     license_check_passed = Column(Boolean, default=False)
     submitted_at = Column(DateTime, nullable=False, server_default=func.now())
     emergency_event = Column(Text, nullable=True) 
+    
+    notifications = relationship("Notification", back_populates="ride", lazy="dynamic")
 
     
