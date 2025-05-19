@@ -80,6 +80,8 @@ def get_vehicles_with_optional_status(
             Vehicle.last_used_at,
             Vehicle.current_location,
             Vehicle.odometer_reading,
+            Vehicle.vehicle_model,
+            Vehicle.image_url,
             User.employee_id.label("user_id"),
             User.first_name,
             User.last_name,
