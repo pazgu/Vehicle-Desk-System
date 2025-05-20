@@ -2,10 +2,13 @@ from typing import List
 from datetime import datetime,timezone
 from ..schemas.ride_dashboard_item import RideDashboardItem
 from ..schemas.order_card_item import OrderCardItem
-from ..models.ride_model import Ride  # Import RideStatus
+from ..models.ride_model import Ride , RideStatus
 from ..models.user_model import User
 from sqlalchemy.orm import Session
 from ..models.notification_model import NotificationType, Notification
+from ..models.vehicle_model import VehicleStatus
+from fastapi import HTTPException
+from .vehicle_service import update_vehicle_status
 
 def get_department_orders(department_id: str, db: Session) -> List[RideDashboardItem]:
     """
@@ -150,3 +153,24 @@ def get_department_notifications(department_id: UUID, db: Session) -> List[Notif
     ).order_by(Notification.sent_at.desc()).all()
 
     return notifications
+
+
+def end_ride_service(db: Session, ride_id: UUID, has_incident: bool):
+    ride = db.query(Ride).filter(Ride.id == ride_id).first()
+    if not ride:
+        raise HTTPException(status_code=404, detail="Ride not found")
+
+    # עדכון שעת סיום
+    ride.end_datetime = datetime.now()
+
+    if has_incident:
+        ride.emergency_event = "Incident reported on ride end"
+        update_vehicle_status(ride.vehicle_id, VehicleStatus.frozen, db)
+    else:
+        ride.emergency_event = None
+        update_vehicle_status(ride.vehicle_id, VehicleStatus.available, db)
+
+    db.commit()
+    db.refresh(ride)
+    return ride
+
