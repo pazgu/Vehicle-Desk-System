@@ -17,6 +17,11 @@ export class ProtectedRouteGuard implements CanActivate {
     const role = localStorage.getItem('role');
     const url = state.url;
 
+    console.log('🧾 Route Guard Check:');
+    console.log('🔑 Token:', token);
+    console.log('👤 Role:', role);
+    console.log('🧭 URL:', url);
+
     // ❌ No token → block and show toast
     if (!token) {
       this.toastService.show('אנא התחבר כדי לגשת לעמוד זה', 'error');
@@ -56,6 +61,19 @@ export class ProtectedRouteGuard implements CanActivate {
       return true; // allow others
     }
 
+     // ✅ ✅ ✅ NEW: Allow employees to access ride edit
+  if (url.startsWith('/ride/edit') && role === 'employee') {
+    return true;
+  }
+
+    // ✅ Allow admin/supervisor to access dashboards and other permitted routes
+  if (['admin', 'supervisor'].includes(role || '')) {
+    return true;
+  }
+
+    console.log('❌ Blocked by ProtectedRouteGuard - Unknown route or role mismatch');
+
+
     // ✅ Allow admin/supervisor to access dashboards and other permitted routes
     if (['admin', 'supervisor'].includes(role || '')) {
       return true;
@@ -66,4 +84,6 @@ export class ProtectedRouteGuard implements CanActivate {
     this.router.navigate(['/home']);
     return false;
   }
+
+  
 }
