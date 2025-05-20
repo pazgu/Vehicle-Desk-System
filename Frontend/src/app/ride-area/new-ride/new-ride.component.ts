@@ -199,6 +199,14 @@ availableCars: typeof this.allCars = [];
       return;
     }
 
+    const vehicleId = this.rideForm.get('car')?.value;
+
+if (!vehicleId) {
+  this.toastService.show('יש לבחור רכב מהתפריט', 'error');
+  return;
+}
+
+
     const start_datetime = `${rideDate}T${startTime}`;
     const end_datetime = ridePeriod === 'morning'
       ? `${rideDate}T${endTime}`
@@ -207,12 +215,13 @@ availableCars: typeof this.allCars = [];
  const formData = {
   ride_type: this.rideForm.get('ride_type')?.value,
   start_datetime,
-  vehicle_id: this.rideForm.get('car')?.value,
+  vehicle_id: vehicleId,
   end_datetime,
   start_location: this.rideForm.get('start_location')?.value,
   stop: this.rideForm.get('stop')?.value,
   destination: this.rideForm.get('destination')?.value,
-  estimated_distance_km: distance
+  estimated_distance_km: distance,
+  actual_distance_km: this.estimated_distance_with_buffer 
 };
 
 // Keep these only for display/logging, not for backend
