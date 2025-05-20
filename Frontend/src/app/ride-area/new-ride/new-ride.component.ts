@@ -15,6 +15,7 @@ import { ToastService } from '../../services/toast.service';
 import { RideService } from '../../services/ride.service'; // ✅ Import your ride service
 import { HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
+import { VehicleService } from '../../services/vehicle.service';
 
 @Component({
   selector: 'app-new-ride',
@@ -38,19 +39,28 @@ export class NewRideComponent implements OnInit {
     private fb: FormBuilder,
     private router: Router,
     private toastService: ToastService,
-    private rideService: RideService // ✅ Inject the RideService
+    private rideService: RideService,
+    private vehicleService: VehicleService 
   ) {}
-    allCars = [
-    { id: '1', name: 'Toyota Yaris', type: 'small' },
-    { id: '2', name: 'Hyundai i10', type: 'small' },
-    { id: '3', name: 'Mercedes Sprinter', type: 'van' },
-    { id: '4', name: 'Ford Transit', type: 'van' },
-    { id: '5', name: 'Chevy Tahoe', type: 'large' }
-  ];
+allCars: {
+  id: string;
+  plate_number: string;
+  type: string;
+  fuel_type: string;
+  status: string;
+  freeze_reason?: string | null;
+  last_used_at?: string;
+  current_location?: string;
+  odometer_reading: number;
+  image_url: string;
+  vehicle_model: string;
+}[] = [];
 
-  availableCars: { id: string; name: string; type: string }[] = [];
+
+availableCars: typeof this.allCars = [];
 
   ngOnInit(): void {
+    
     this.minDate = this.calculateMinDate(2);
     this.rideForm = this.fb.group({
       ride_period: ['morning'],
@@ -75,6 +85,35 @@ export class NewRideComponent implements OnInit {
     this.rideForm.get('ride_period')?.valueChanges.subscribe(value => {
       this.onPeriodChange(value);
     });
+
+   this.vehicleService.getAllVehicles().subscribe({
+  next: (vehicles) => {
+   this.allCars = vehicles
+  .filter(v =>
+    v.status === 'available' &&
+    !!v.id &&
+    !!v.type &&
+    !!v.plate_number &&
+    !!v.image_url &&
+    !!v.vehicle_model &&
+    !!v.last_used_at &&
+    !!v.current_location &&
+    typeof v.odometer_reading === 'number'
+  )
+  .map(v => ({
+    ...v,
+    freeze_reason: v.freeze_reason ?? null
+  }));
+
+
+
+  },
+  error: () => {
+    this.toastService.show('שגיאה בטעינת רכבים זמינים', 'error');
+  }
+});
+
+
     
   }
   onRideTypeChange() {
@@ -160,6 +199,14 @@ export class NewRideComponent implements OnInit {
       return;
     }
 
+    const vehicleId = this.rideForm.get('car')?.value;
+
+if (!vehicleId) {
+  this.toastService.show('יש לבחור רכב מהתפריט', 'error');
+  return;
+}
+
+
     const start_datetime = `${rideDate}T${startTime}`;
     const end_datetime = ridePeriod === 'morning'
       ? `${rideDate}T${endTime}`
@@ -168,12 +215,13 @@ export class NewRideComponent implements OnInit {
  const formData = {
   ride_type: this.rideForm.get('ride_type')?.value,
   start_datetime,
-  vehicle_id:'0ecbc987-5c70-4b06-b11e-483a8e363279',
+  vehicle_id: vehicleId,
   end_datetime,
   start_location: this.rideForm.get('start_location')?.value,
   stop: this.rideForm.get('stop')?.value,
   destination: this.rideForm.get('destination')?.value,
-  estimated_distance_km: distance
+  estimated_distance_km: distance,
+  actual_distance_km: this.estimated_distance_with_buffer 
 };
 
 // Keep these only for display/logging, not for backend

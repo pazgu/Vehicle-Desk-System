@@ -23,4 +23,24 @@ export class RideService {
 
     return this.http.post(`${this.baseUrl}/${user_id}`, data, { headers });
   }
+
+getRideById(rideId: string): Observable<any> {
+  const token = localStorage.getItem('access_token');
+  const headers = new HttpHeaders({
+    Authorization: `Bearer ${token}`
+  });
+
+  return this.http.get(`http://localhost:8000/api/rides/${rideId}`, { headers });
+}
+
+updateRide(rideId: string, data: any): Observable<any> {
+  const token = localStorage.getItem('access_token');
+  const headers = new HttpHeaders({
+    Authorization: `Bearer ${token}`
+  });
+
+  return this.http.patch(`http://localhost:8000/api/orders/${rideId}`, data, { headers });
+}
+
+
 }

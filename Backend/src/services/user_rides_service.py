@@ -33,7 +33,9 @@ def get_future_rides(user_id: UUID, db: Session, status=None, from_date=None, to
         Ride.start_datetime,
         Ride.end_datetime,
         Ride.estimated_distance_km.cast(String).label("estimated_distance"),
-        Ride.status
+        Ride.status,
+        Ride.submitted_at,
+        Ride.user_id
     ).join(Vehicle, Ride.vehicle_id == Vehicle.id).filter(
         Ride.user_id == user_id,
         Ride.start_datetime > mynow
@@ -59,11 +61,14 @@ def get_past_rides(user_id: UUID, db: Session, status=None, from_date=None, to_d
         Ride.start_datetime,
         Ride.end_datetime,
         Ride.estimated_distance_km.cast(String).label("estimated_distance"),  # Casting to string
-        Ride.status
+        Ride.status,
+        Ride.submitted_at,
+
     ).join(Vehicle, Ride.vehicle_id == Vehicle.id).filter(Ride.user_id == user_id, Ride.start_datetime <= now)
 
     query = filter_rides(query, status, from_date, to_date)
-    return query.all()
+    rows = query.all() 
+    return [RideSchema(**dict(row._mapping)) for row in rows] 
 
 
 # def get_all_rides(user_id: UUID, db: Session, status=None, from_date=None, to_date=None) -> List[Ride]:
@@ -77,11 +82,17 @@ def get_all_rides(user_id: UUID, db: Session, status=None, from_date=None, to_da
         Ride.start_datetime,
         Ride.end_datetime,
         Ride.estimated_distance_km.cast(String).label("estimated_distance"),  # Casting to string
-        Ride.status
+        Ride.status,
+        Ride.submitted_at,
+
     ).join(Vehicle, Ride.vehicle_id == Vehicle.id).filter(Ride.user_id == user_id)
 
     query = filter_rides(query, status, from_date, to_date)
-    return query.all()
+
+    rows = query.all() 
+
+    return [RideSchema(**dict(row._mapping)) for row in rows]  #convert rows to Pydantic objects
+
     
 def update_ride_status(ride_id: UUID, new_status: RideStatusEnum, db: Session):
     ride = db.query(Ride).filter(Ride.id == ride_id).first()
@@ -99,8 +110,27 @@ def update_ride_status(ride_id: UUID, new_status: RideStatusEnum, db: Session):
 
 
 
-def get_ride_by_id(db: Session, ride_id: UUID) -> Ride:
-    ride = db.query(Ride).filter(Ride.id == ride_id).first()
+# def get_ride_by_id(db: Session, ride_id: UUID) -> Ride:
+#     ride = db.query(Ride).filter(Ride.id == ride_id).first()
+#     if not ride:
+#         raise HTTPException(status_code=404, detail="Ride not found")
+#     db.refresh(ride)  
+#     return ride
+
+
+def get_ride_by_id(db: Session, ride_id: UUID) -> RideSchema:
+    ride = db.query(
+        Ride.id.label("ride_id"),
+        Vehicle.fuel_type.label("vehicle"),
+        Ride.start_datetime,
+        Ride.end_datetime,
+        Ride.estimated_distance_km.cast(String).label("estimated_distance"),
+        Ride.status,
+        Ride.submitted_at,
+        Ride.user_id
+    ).join(Vehicle, Ride.vehicle_id == Vehicle.id).filter(Ride.id == ride_id).first()
+
     if not ride:
         raise HTTPException(status_code=404, detail="Ride not found")
-    return ride
+
+    return RideSchema(**dict(ride._mapping))
