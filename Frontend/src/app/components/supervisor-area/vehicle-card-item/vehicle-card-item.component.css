@@ -41,6 +41,28 @@
   background-color: #ad3131cb
 }
 
+.unfreeze-button {
+  background-color: #ad3131;
+  color: #fff;
+  border: none;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 150px;
+  margin-top: 1rem;
+  transition: background 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px #34c75922;
+  letter-spacing: 0.3px;
+}
+
+.unfreeze-button:hover,
+.unfreezebutton:focus {
+  background-color: #973838dc;
+  box-shadow: 0 2px 8px #ad3131e3;
+}
+
 .vehicle-details-card {
   max-width: 700px;
   margin: 2.5rem auto;

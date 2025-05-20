@@ -26,4 +26,9 @@ export class VehicleService {
   getVehicleById(id: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/vehicle/${id}`);
   }
+
+  unfreezeVehicle(id: string, new_status: string): Observable<any> {
+    const url = `${this.apiUrl}/${id}/status`;
+    return this.http.patch<any>(url, { new_status }); // PATCH and correct key
+  }
 }

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { VehicleService } from '../../services/vehicle.service';
+import { VehicleService } from '../../../services/vehicle.service';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
 
@@ -35,9 +35,9 @@ export class VehicleCardItemComponent implements OnInit {
   }
 }
 
-goBack(): void {
-  window.history.back();
-}
+  goBack(): void {
+    window.history.back();
+  }
 
   translateStatus(status: string | null | undefined): string {
     if (!status) return '';
@@ -94,4 +94,18 @@ goBack(): void {
         return freezeReason;
     }
   }
+
+  unfreezeStatus(): void {
+  if (!this.vehicle?.id) return;
+  this.vehicleService.unfreezeVehicle(this.vehicle.id, 'available').subscribe({
+    next: (response) => {
+      console.log('Vehicle unfreeze response:', response);
+      this.vehicle.status = 'available';
+    },
+    error: (err) => {
+      console.error('Failed to unfreeze vehicle:', err);
+      alert(`Failed to unfreeze vehicle: ${err.error?.detail || err.message}`);
+    }
+  });
+}
 }

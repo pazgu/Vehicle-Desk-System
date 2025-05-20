@@ -27,7 +27,11 @@
         <strong>סיבת הקפאה:</strong> {{ translateFreezeReason(vehicle.freeze_reason) }}
       </p>
       <p><strong>ק״מ:</strong> {{ vehicle.odometer_reading }}</p>
+      <button class="unfreeze-button" (click)="unfreezeStatus()"   *ngIf="vehicle.status === 'frozen'">
+        שחרור מהקפאה
+      </button>
     </div>
+    
   </div>
 </p-card>
 

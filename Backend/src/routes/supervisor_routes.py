@@ -59,14 +59,14 @@ def get_vehicle_by_id_route(vehicle_id: str, db: Session = Depends(get_db)):
     return get_vehicle_by_id(vehicle_id, db)
 
 
-
 @router.patch("/{vehicle_id}/status")
-def patch_vehicle_status(
-    vehicle_id: UUID,
-    status_update: VehicleStatusUpdate,
-    db: Session = Depends(get_db)
-):
+def patch_vehicle_status(vehicle_id: UUID, status_update: VehicleStatusUpdate, db: Session = Depends(get_db)):
     return update_vehicle_status(vehicle_id, status_update.new_status, db)
+
+@router.post("/{ride_id}/end", response_model=OrderCardItem)
+def end_ride(ride_id: UUID, has_incident: Optional[bool] = False, db: Session = Depends(get_db)):
+    return end_ride_service(db=db, ride_id=ride_id, has_incident=has_incident)
+
 
 # @router.get("/orders/{department_id}/{order_id}/pending")
 # def get_approval_dashboard_route(department_id: UUID, order_id: UUID):
@@ -134,11 +134,4 @@ def patch_vehicle_status(
 #     db: Session = Depends(get_db)
 # ):
 #     return get_frozen_vehicles(db=db, type=type)
-
-
-
-
-@router.post("/{ride_id}/end", response_model=OrderCardItem)
-def end_ride(ride_id: UUID, has_incident: Optional[bool] = False, db: Session = Depends(get_db)):
-    return end_ride_service(db=db, ride_id=ride_id, has_incident=has_incident)
 

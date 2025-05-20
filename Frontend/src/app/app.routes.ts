@@ -13,7 +13,7 @@ import { RedirectByRoleComponent } from './services/redirect-by-role';
 import { ProtectedRouteGuard } from './components/auth-area/protectedroute/protected-route.guard';
 import { UserDataComponent } from './components/admin-area/user-data/user-data.component';
 import { VehicleDashboardComponent } from './components/supervisor-area/vehicle-dashboard/vehicle-dashboard.component';
-import { VehicleCardItemComponent } from './components/vehicle-card-item/vehicle-card-item.component';
+import { VehicleCardItemComponent } from './components/supervisor-area/vehicle-card-item/vehicle-card-item.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
