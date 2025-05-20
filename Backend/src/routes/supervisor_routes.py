@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends , HTTPException
 from uuid import UUID
 from src.services.supervisor_dashboard_service import get_department_orders,get_department_specific_order,edit_order_status
 from fastapi import APIRouter, Depends ,  Query
@@ -21,6 +21,8 @@ from src.services.supervisor_dashboard_service import get_department_notificatio
 from src.utils.database import get_db
 from ..schemas.order_card_item import OrderCardItem
 from ..services.supervisor_dashboard_service import end_ride_service
+from ..schemas.check_vehicle_schema import VehicleInspectionSchema
+from ..services.supervisor_dashboard_service import complete_ride_logic
 
 router = APIRouter()
 
@@ -141,3 +143,12 @@ def patch_vehicle_status(
 def end_ride(ride_id: UUID, has_incident: Optional[bool] = False, db: Session = Depends(get_db)):
     return end_ride_service(db=db, ride_id=ride_id, has_incident=has_incident)
 
+
+@router.post("/ride/complete")
+def complete_ride(data: VehicleInspectionSchema, db: Session = Depends(get_db)):
+    try:
+        return complete_ride_logic(data, db)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
