@@ -124,6 +124,9 @@ def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, db: Sessi
     if not vehicle:
         raise HTTPException(status_code=404, detail="Vehicle not found")
     try:
+        if vehicle.status == VehicleStatus.frozen and new_status != VehicleStatus.frozen:
+            vehicle.freeze_reason = None
+
         vehicle.status = new_status
         db.commit()
         db.refresh(vehicle)
