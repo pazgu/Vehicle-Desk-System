@@ -21,10 +21,13 @@ def create_ride(db: Session, user_id: UUID, ride: RideCreate):
         stop=ride.stop,
         destination=ride.destination,
         estimated_distance_km=ride.estimated_distance_km,
+        actual_distance_km=ride.actual_distance_km,  # ✅ ADD THIS LINE
         status=RideStatus.pending,
         license_check_passed=False,
         submitted_at=datetime.utcnow(),
     )
+
+    print("🚗 New ride object:", new_ride)
     print(new_ride)
     db.add(new_ride)
     db.commit()
