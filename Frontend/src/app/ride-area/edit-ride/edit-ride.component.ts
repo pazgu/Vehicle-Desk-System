@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RideService } from '../../services/ride.service';
 import { ToastService } from '../../services/toast.service';
+import { VehicleService } from '../../services/vehicle.service';
 
 @Component({
   selector: 'app-edit-ride',
@@ -19,21 +20,29 @@ export class EditRideComponent implements OnInit {
   minDate: string = '';
   estimated_distance_with_buffer: number = 0;
   submittedAt: Date | null = null;
-  allCars = [
-    { id: '1', name: 'Toyota Yaris', type: 'small' },
-    { id: '2', name: 'Hyundai i10', type: 'small' },
-    { id: '3', name: 'Mercedes Sprinter', type: 'van' },
-    { id: '4', name: 'Ford Transit', type: 'van' },
-    { id: '5', name: 'Chevy Tahoe', type: 'large' }
-  ];
-  availableCars: { id: string; name: string; type: string }[] = [];
+ allCars: {
+  id: string;
+  plate_number: string;
+  type: string;
+  fuel_type: string;
+  status: string;
+  freeze_reason?: string | null;
+  last_used_at?: string;
+  current_location?: string;
+  odometer_reading: number;
+  image_url: string;
+  vehicle_model: string;
+}[] = [];
+
+availableCars: typeof this.allCars = [];
 
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
     private rideService: RideService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private vehicleService: VehicleService
   ) {}
 
     calculateMinDate(daysAhead: number): string {
@@ -46,6 +55,22 @@ export class EditRideComponent implements OnInit {
     this.rideId = this.route.snapshot.paramMap.get('id') || '';
     this.minDate = this.calculateMinDate(2);
     this.buildForm();
+    this.vehicleService.getAllVehicles().subscribe({
+  next: (vehicles) => {
+    this.allCars = vehicles
+      .filter(v =>
+        v.status === 'available' &&
+        !!v.id &&
+        !!v.type &&
+        !!v.vehicle_model &&
+        typeof v.odometer_reading === 'number'
+      );
+  },
+  error: () => {
+    this.toastService.show('שגיאה בטעינת רכבים זמינים', 'error');
+  }
+});
+
     this.loadRide();
   }
 
