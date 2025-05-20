@@ -159,6 +159,9 @@ def create_order(user_id: UUID, ride_request: RideCreate, db: Session = Depends(
     # Check if this user is creating their own order
     identity_check(user_id=str(user_id), token=token)
 
+    print("📥 Received RideCreate object:", ride_request.dict())
+
+
     supervisor_id = get_supervisor_id(user_id, db)  # You implement this logic
 
     try:
