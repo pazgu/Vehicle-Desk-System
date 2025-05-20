@@ -35,6 +35,7 @@
     transform: scale(1.03) translateY(-6px);
     transition: transform 0.2s, box-shadow 0.2s, border 0.2s;
     z-index: 2;
+    cursor: pointer;
 }
 
 /* Make the image inside the card pop out on hover */
