@@ -38,4 +38,7 @@ class InUseVehicleOut(BaseModel):
     end_datetime: Optional[datetime] = None
 
 
+class VehicleStatusUpdate(BaseModel):
+    new_status: VehicleStatus
+
 
