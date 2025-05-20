@@ -8,7 +8,8 @@ from ..models.ride_model import Ride, RideStatus
 from ..models.user_model import User
 from datetime import datetime
 from ..schemas.vehicle_schema import VehicleOut, InUseVehicleOut
-
+from uuid import UUID
+from fastapi import HTTPException
 
 # def get_available_vehicles(db: Session, type: Optional[VehicleType] = None) -> List[Vehicle]:
 #     query = db.query(Vehicle).filter(Vehicle.status == VehicleStatus.available)
@@ -118,3 +119,16 @@ def get_vehicles_with_optional_status(
 
     return result
 
+def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, db: Session):
+    vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="Vehicle not found")
+    try:
+        vehicle.status = new_status
+        db.commit()
+        db.refresh(vehicle)
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+    return {"vehicle_id": vehicle.id, "new_status": vehicle.status}
