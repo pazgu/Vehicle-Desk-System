@@ -100,8 +100,4 @@ getStatusClass(status: string): string {
       return message; 
     }
   }
-  
-
- 
-  
 }

@@ -1,0 +1,75 @@
+
+<div class="page-container">
+<div class="user-data-container">
+    <div class="content">
+      <!-- Close button -->
+      <a routerLink="/daily-checks"><span class="close-button">✕</span></a>
+      
+      <div class="header">
+        <h2 class="edit-user-title">עריכת פרטי משתמש</h2>
+      </div>
+      
+      <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="user-form">
+        <!-- First row: Username, First Name, Last Name -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="lastName">שם משפחה</label>
+            <input type="text" id="lastName" formControlName="lastName" class="form-control">
+          </div>
+          
+          <div class="form-group">
+            <label for="firstName">שם פרטי</label>
+            <input type="text" id="firstName" formControlName="firstName" class="form-control">
+          </div>
+          
+          <div class="form-group">
+            <label for="username">שם משתמש</label>
+            <input type="text" id="username" formControlName="username" class="form-control">
+          </div>
+        </div>
+        
+        <!-- Second row: Email, Password, Role -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="role">תפקיד</label>
+            <input type="text" id="role" formControlName="role" class="form-control">
+          </div>
+          
+          <div class="form-group">
+            <label for="password">סיסמה</label>
+            <input type="password" id="password" formControlName="password" class="form-control">
+          </div>
+          
+          <div class="form-group">
+            <label for="email">כתובת דואר אלקטרוני</label>
+            <input type="email" id="email" formControlName="email" class="form-control">
+          </div>
+        </div>
+        
+        <!-- Third row: Department (dropdown) -->
+        <div class="form-row">
+          <div class="form-group department-group">
+            <label for="department">מחלקה</label>
+            <div class="select-wrapper">
+              <select id="department" formControlName="department" class="form-control select-control">
+                <option value="" disabled selected>בחר מחלקה</option>
+                <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
+              </select>
+              <div class="dropdown-arrow">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M7 10L12 15L17 10H7Z" fill="#000000"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Submit button -->
+        <div class="form-actions">
+          <button type="submit" class="btn-submit">עריכה</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  </div>
+  <router-outlet></router-outlet>
