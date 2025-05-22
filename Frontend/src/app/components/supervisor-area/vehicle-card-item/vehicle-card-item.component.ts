@@ -3,17 +3,20 @@ import { ActivatedRoute } from '@angular/router';
 import { VehicleService } from '../../../services/vehicle.service';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-vehicle-card-item',
   templateUrl: './vehicle-card-item.component.html',
   styleUrls: ['./vehicle-card-item.component.css'],
-  imports: [CommonModule, CardModule],
+  imports: [CommonModule, CardModule, FormsModule],
 })
 export class VehicleCardItemComponent implements OnInit {
   vehicle: any;
+  isFreezeReasonFieldVisible: boolean = false; // Controls visibility of the input field
+  freezeReason: string = ''; // Holds the freeze reason entered by the user
 
-  constructor(private route: ActivatedRoute, private vehicleService:  VehicleService) {}
+  constructor(private route: ActivatedRoute, private vehicleService: VehicleService) { }
 
   ngOnInit(): void {
     window.scrollTo({ top: 0, behavior: 'smooth' }); // Always scroll to top
@@ -24,16 +27,16 @@ export class VehicleCardItemComponent implements OnInit {
         console.log('Vehicle from API:', data); // See what you actually get
         this.vehicle = data;
       });
+    }
   }
-}
-    getCardClass(status: string): string {
-  switch (status) {
-    case 'available': return 'card-available';
-    case 'in_use': return 'card-inuse';
-    case 'frozen': return 'card-frozen';
-    default: return '';
+  getCardClass(status: string): string {
+    switch (status) {
+      case 'available': return 'card-available';
+      case 'in_use': return 'card-inuse';
+      case 'frozen': return 'card-frozen';
+      default: return '';
+    }
   }
-}
 
   goBack(): void {
     window.history.back();
@@ -55,7 +58,7 @@ export class VehicleCardItemComponent implements OnInit {
 
   translateType(type: string | null | undefined): string {
     if (!type) return '';
-    switch(type.toLowerCase()) {
+    switch (type.toLowerCase()) {
       case 'small':
         return 'קטן';
       case 'large':
@@ -69,7 +72,7 @@ export class VehicleCardItemComponent implements OnInit {
 
   translateFuelType(fuelType: string | null | undefined): string {
     if (!fuelType) return '';
-    switch(fuelType.toLowerCase()) {
+    switch (fuelType.toLowerCase()) {
       case 'electric':
         return 'חשמלי';
       case 'hybrid':
@@ -83,7 +86,7 @@ export class VehicleCardItemComponent implements OnInit {
 
   translateFreezeReason(freezeReason: string | null | undefined): string {
     if (!freezeReason) return '';
-    switch(freezeReason.toLowerCase()) {
+    switch (freezeReason.toLowerCase()) {
       case 'accident':
         return 'תאונה';
       case 'maintenance':
@@ -96,16 +99,38 @@ export class VehicleCardItemComponent implements OnInit {
   }
 
   unfreezeStatus(): void {
-  if (!this.vehicle?.id) return;
-  this.vehicleService.unfreezeVehicle(this.vehicle.id, 'available').subscribe({
-    next: (response) => {
-      console.log('Vehicle unfreeze response:', response);
-      this.vehicle.status = 'available';
-    },
-    error: (err) => {
-      console.error('Failed to unfreeze vehicle:', err);
-      alert(`Failed to unfreeze vehicle: ${err.error?.detail || err.message}`);
+    if (!this.vehicle?.id) return;
+    this.vehicleService.unfreezeVehicle(this.vehicle.id, 'available').subscribe({
+      next: (response) => {
+        console.log('Vehicle unfreeze response:', response);
+        this.vehicle.status = 'available';
+      },
+      error: (err) => {
+        console.error('Failed to unfreeze vehicle:', err);
+        alert(`Failed to unfreeze vehicle: ${err.error?.detail || err.message}`);
+      }
+    });
+  }
+
+  // Show the freeze reason input field
+  showFreezeReasonField(): void {
+    this.isFreezeReasonFieldVisible = true;
+  }
+
+  // Freeze the vehicle with the entered reason
+  freezeStatus(): void {
+    if (!this.freezeReason.trim()) {
+      alert('יש להזין סיבת הקפאה');
+      return;
     }
-  });
-}
+
+    console.log('Freezing vehicle with reason:', this.freezeReason);
+    // Logic to freeze the vehicle
+    this.vehicle.status = 'frozen';
+    this.vehicle.freeze_reason = this.freezeReason;
+
+    // Reset the input field and hide it
+    this.freezeReason = '';
+    this.isFreezeReasonFieldVisible = false;
+  }
 }
