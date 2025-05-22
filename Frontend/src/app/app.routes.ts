@@ -28,7 +28,7 @@ export const routes: Routes = [
   { path: 'notifications', component: NotificationsComponent, canActivate: [ProtectedRouteGuard] },
   { path: 'daily-checks', component: DailyChecksComponent, canActivate: [ProtectedRouteGuard] },
   { path: '', component: RedirectByRoleComponent, pathMatch: 'full' },
-  { path: 'user-data-edit', component: UserDataEditComponent,canActivate: [ProtectedRouteGuard] }, // Moved lower
+  { path: 'user-data-edit/:user_id', component: UserDataEditComponent,canActivate: [ProtectedRouteGuard] }, // Moved lower
   { path: 'user-data', component: UserDataComponent,canActivate: [ProtectedRouteGuard] }, // Moved lower
   { path: '**', component: Page404Component }
 ];
