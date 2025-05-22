@@ -8,7 +8,7 @@
       <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; direction: rtl;">
         <div>
           <label for="sort">מיין לפי: </label>
-          <select id="sort" [(ngModel)]="sortBy">
+          <select id="sort" [(ngModel)]="sortBy" (ngModelChange)="updateQueryParams()">
             <option value="dateTime">תאריך</option>
             <option value="status">סטטוס</option>
           </select>
@@ -24,11 +24,10 @@
         style="margin-bottom: 1.5rem; background: #f7f7f7; padding: 1rem; border-radius: 8px; direction: rtl;">
         <div style="margin-bottom: 1rem;">
           <label for="statusFilter">סטטוס:</label>
-          <select id="statusFilter" [(ngModel)]="statusFilter">
+          <select id="statusFilter" [(ngModel)]="statusFilter" (ngModelChange)="updateQueryParams()">
             <option value="">הצג הכל</option>
             <option value="מאושר">מאושר</option>
             <option value="בהמתנה">בהמתנה</option>
-
             <option value="נדחה">נדחה</option>
           </select>
         </div>
@@ -36,11 +35,11 @@
         <div style="display: flex; gap: 1rem;">
           <div>
             <label for="startDate">מתאריך:</label>
-            <input id="startDate" type="date" [(ngModel)]="startDate">
+            <input id="startDate" type="date" [(ngModel)]="startDate" (ngModelChange)="updateQueryParams()">
           </div>
           <div>
             <label for="endDate">עד תאריך:</label>
-            <input id="endDate" type="date" [(ngModel)]="endDate">
+            <input id="endDate" type="date" [(ngModel)]="endDate" (ngModelChange)="updateQueryParams()">
           </div>
         </div>
       </div>

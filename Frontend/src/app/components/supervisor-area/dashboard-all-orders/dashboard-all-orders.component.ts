@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { DropdownModule } from 'primeng/dropdown';
 import { PaginatorModule } from 'primeng/paginator';
@@ -35,16 +35,27 @@ export class DashboardAllOrdersComponent implements OnInit {
   showOldOrders: boolean = false;
   sortBy: string = 'date_and_time';
 
-  constructor(private router: Router, private orderService: OrderService) {}
+  constructor(
+    private route: ActivatedRoute, 
+    private router: Router, 
+    private orderService: OrderService
+  ) {}
 
-  ngOnInit(): void {
+ngOnInit(): void {
+  this.route.queryParams.subscribe(params => {
+    this.statusFilter = params['status'] || '';
+    this.startDate = params['startDate'] || '';
+    this.endDate = params['endDate'] || '';
+    this.sortBy = params['sortBy'] || 'date_and_time';
+
     const departmentId = localStorage.getItem('department_id');
     if (departmentId) {
       this.loadOrders(departmentId); 
     } else {
       console.error('Department ID not found in localStorage.');
     }
-  }
+  });
+}
 
   loadOrders(departmentId: string | null): void {
     if (departmentId) {
@@ -60,6 +71,41 @@ export class DashboardAllOrdersComponent implements OnInit {
       console.error('Department ID not found in local storage.');
     }
   }
+
+updateQueryParams(): void {
+  this.router.navigate([], {
+    relativeTo: this.route,
+    queryParams: {
+      status: this.statusFilter || null,
+      startDate: this.startDate || null,
+      endDate: this.endDate || null,
+      sortBy: this.sortBy || null
+    },
+    queryParamsHandling: 'merge'
+  });
+}
+
+
+  set statusFilterValue(val: string) {
+    this.statusFilter = val;
+    this.updateQueryParams();
+  }
+
+  set startDateValue(val: string) {
+    this.startDate = val;
+    this.updateQueryParams();
+  }
+
+  set endDateValue(val: string) {
+    this.endDate = val;
+    this.updateQueryParams();
+  }
+
+  set sortByValue(val: string) {
+    this.sortBy = val;
+    this.updateQueryParams();
+  }
+
 
   get filteredOrders() {
     let filtered = [...this.orders];
@@ -167,6 +213,7 @@ export class DashboardAllOrdersComponent implements OnInit {
     this.showOldOrders = false;
     this.sortBy = 'date_and_time';
     this.currentPage = 1;
+    this.updateQueryParams();
   }
 
   onPageChange(event: any) {
