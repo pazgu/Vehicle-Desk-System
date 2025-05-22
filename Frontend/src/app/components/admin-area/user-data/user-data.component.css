@@ -1,0 +1,107 @@
+body {
+  background-color: #ccc; /* ורוד בהיר מאוד כרקע */
+  direction: rtl;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* קונטיינר הראשי (כרטיס) */
+.user-data-container {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  max-width: 700px;
+  padding: 25px;
+  position: relative;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* כפתור סגירה */
+.close-button {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 20px;
+  cursor: pointer;
+  color: #800000;
+  transition: color 0.3s;
+}
+
+.close-button:hover {
+  color: #ff4040;
+}
+
+/* כותרת */
+.header-title {
+  font-size: 24px;
+  color: #800000;
+  text-align: right;
+  margin: 0 0 20px 0;
+  width: 100%;
+}
+
+/* עטיפת הטבלה */
+.table-wrapper {
+  overflow-x: auto;
+  width: 100%;
+}
+
+/* סגנון הטבלה */
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 16px;
+  table-layout: fixed;
+}
+
+/* כותרות ותאים */
+.user-table th,
+.user-table td {
+  padding: 12px;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+  word-wrap: break-word;
+}
+
+/* כותרות הטבלה */
+.user-table th {
+  background-color: #f0c8cc;
+  color: #800000;
+  font-weight: bold;
+}
+
+/* תאי תוכן - ברירת מחדל */
+.user-table td {
+  color: #333;
+}
+
+/* שורות לפי תפקיד */
+.role-supervisor td {
+  background-color: #f8e6e8; /* ורוד בהיר מאוד עבור Supervisor */
+}
+
+.role-employee td {
+  background-color: #ffffff; /* לבן עבור Employee */
+}
+
+/* שורות ריקות */
+.empty-row td {
+  border: none;
+  height: 20px;
+  background-color: #f5e6e8;
+}
+
+/* הוספת אפקט hover לשורות */
+.user-table tbody tr:hover td {
+  background-color: #f0d1d4; /* ורוד מעט כהה יותר בה Hover */
+}
