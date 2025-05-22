@@ -4,6 +4,7 @@ import { NotificationService } from '../../../services/notification';
 import { formatDistanceToNow } from 'date-fns';
 import { MyNotification } from '../../../models/notification';
 import { he } from 'date-fns/locale';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-notifications',
@@ -15,7 +16,18 @@ import { he } from 'date-fns/locale';
 export class NotificationsComponent {
   notifications: (MyNotification & { timeAgo: string })[] = [];
 
-  constructor(private notificationService: NotificationService) {}
+  constructor(private notificationService: NotificationService,private router: Router) {}
+
+goToOrder(orderId: string): void {
+  const role = localStorage.getItem('role');
+
+  if (role === 'supervisor') {
+    this.router.navigate([`/order-card/${orderId}`]);
+  } else {
+    this.router.navigate([`/home`], { queryParams: { highlight: orderId } });
+  }
+}
+
 
   ngOnInit(): void {
     this.notificationService.getNotifications().subscribe({
