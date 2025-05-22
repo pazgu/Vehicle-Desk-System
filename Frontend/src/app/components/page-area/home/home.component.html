@@ -81,7 +81,7 @@
       [ngClass]="[
     getStatusClass(order.status),
     isPastOrder(order) ? 'past-order' : '',
-    order.id === highlightedOrderId ? 'highlight highlight-background' : ''
+    order.ride_id === highlightedOrderId ? 'highlight highlight-background' : ''
   ]">
       <div class="icon-cell">
         <span
