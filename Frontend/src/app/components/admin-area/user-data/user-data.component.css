@@ -23,7 +23,7 @@ body {
   background: #fff;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-  width: 100%;
+  width: 1200px;
   max-width: 700px;
   padding: 25px;
   margin-top: 50px;
@@ -57,6 +57,7 @@ position: absolute;
   text-align: right;
   margin: 0 0 20px 0;
   width: 100%;
+  
 }
 
 /* עטיפת הטבלה */
@@ -76,7 +77,7 @@ position: absolute;
 /* כותרות ותאים */
 .user-table th,
 .user-table td {
-  padding: 12px;
+  padding:8px;
   text-align: center;
   border-bottom: 1px solid #ddd;
   word-wrap: break-word;
@@ -84,8 +85,8 @@ position: absolute;
 
 /* כותרות הטבלה */
 .user-table th {
-  background-color: #f0c8cc;
-  color: #800000;
+  color: rgb(255, 255, 255);
+  background-color: #942222;
   font-weight: bold;
 }
 
@@ -112,5 +113,5 @@ position: absolute;
 
 /* הוספת אפקט hover לשורות */
 .user-table tbody tr:hover td {
-  background-color: #f0d1d4; /* ורוד מעט כהה יותר בה Hover */
+  background-color: #f0e1e2; /* ורוד מעט כהה יותר בה Hover */
 }

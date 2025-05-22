@@ -1,39 +1,34 @@
-
-import { Component } from '@angular/core';
-import { NgFor } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { User } from '../../../models/user.model';
+import { UserService } from '../../../services/user_service';
 import { RouterModule } from '@angular/router';
-
-interface User {
-  name: string;
-  email: string;
-  role: string;
-  department: string;
-  
-}
-
+import { CommonModule } from '@angular/common';
 @Component({
-  selector: 'app-user-details',
+  selector: 'app-user-data',
   templateUrl: './user-data.component.html',
   styleUrls: ['./user-data.component.css'],
-  standalone: true,
-  imports: [NgFor, RouterModule]
+  imports: [RouterModule, CommonModule]
 })
-export class UserDataComponent {
-  users: User[] = [
-    {
-      name: 'Omer Cohen',
-      email: 'osher12@gmail.com',
-      role: 'Supervisor',
-      department: '3f67f7d5d1a4-45c2-9ae4-8b7a3c50d3fa'
-      
-    },
-    {
-      name: 'Sarah Golan',
-      email: 'sg132@gmail.com',
-      role: 'Employee',
-      department: '3f67f7d5d1a4-45c2-9ae4-8b7a3c50d3fa'
-      
-    }
-  ];
-}
+export class UserDataComponent implements OnInit {
+  users: User[] = [];
 
+  constructor(private userService: UserService) {}
+
+  
+  ngOnInit(): void {
+  this.userService.getAllUsers().subscribe({
+    next: (users) => {
+      this.users = users;  // API returns list of users
+    },
+    error: (err) => console.error('Failed to fetch users', err),
+  });
+}
+departmentNames: { [key: string]: string } = {
+  '21fed496-72a3-4551-92d6-7d6b8d979dd6': ' Security',
+  '3f67f7d5-d1a4-45c2-9ae4-8b7a3c50d3fa': 'Engineering',
+  '912a25b9-08e7-4461-b1a3-80e66e79d29e': 'HR',
+  'b3a91e1e-2f42-4e3e-bf74-49b7c8aaf1c7': 'Finance'  // Add all your departments here
+};
+
+
+}
