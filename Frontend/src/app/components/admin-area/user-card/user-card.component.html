@@ -1,0 +1,43 @@
+<div class="page-container">
+  <div class="user-data-container">
+    <div class="content">
+      <!-- כפתור חזרה -->
+      <a routerLink="/user-data" class="back-button">← חזרה לרשימה</a>
+
+      <!-- כותרת -->
+      <div class="header">
+        <h2 class="header-title">פרטי משתמש</h2>
+      </div>
+
+      <div class="user-details">
+        <div class="detail-row">
+          <span class="label">שם פרטי:</span>
+          <span class="value">{{ user?.first_name }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">שם משפחה:</span>
+          <span class="value">{{ user?.last_name }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">שם משתמש:</span>
+          <span class="value">{{ user?.username }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">תפקיד:</span>
+          <span class="value">{{ user?.role }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">מחלקה:</span>
+          <span class="value">{{ departmentNames[user?.department_id || ''] || user?.department_id }}
+</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">דוא"ל:</span>
+          <span class="value">{{ user?.email }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<router-outlet></router-outlet>

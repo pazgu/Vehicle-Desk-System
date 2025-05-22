@@ -63,7 +63,7 @@ def fetch_all_users(db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Users not found")
     return users
 
-@router.get("/user-data-edit/{user_id}", response_model=UserResponse)
+@router.get("/user-data/{user_id}", response_model=UserResponse)
 def fetch_user_by_id(user_id: UUID, db: Session = Depends(get_db)):
     result = get_user_by_id(db, user_id=user_id)
     if result is None:
