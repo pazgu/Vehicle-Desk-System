@@ -6,7 +6,7 @@
     לא נמצאו הודעות עבורך
   </div>
 
-  <div class="notification" *ngFor="let note of pagedNotifications" [ngClass]="getStatusClass(note.order_status)">
+  <div class="notification" *ngFor="let note of pagedNotifications" (click)="goToOrder(note.order_id)" [ngClass]="getStatusClass(note.order_status)">
     
     <div class="content">
       <img [src]="getStatusIcon(note.order_status)" class="status-icon" alt="Status Icon" />

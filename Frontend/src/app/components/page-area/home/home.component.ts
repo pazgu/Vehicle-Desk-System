@@ -3,6 +3,7 @@ import { CommonModule, formatDate } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { MyRidesService } from '../../../services/myrides.service';
+import { ActivatedRoute, Params } from '@angular/router';
 
 @Component({
   selector: 'app-home',
@@ -12,7 +13,8 @@ import { MyRidesService } from '../../../services/myrides.service';
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit {
-  constructor(private router: Router, private rideService: MyRidesService) {}
+  constructor(private router: Router, private rideService: MyRidesService,private route: ActivatedRoute,
+  ) {}
 
   currentPage = 1;
   loading: boolean = false;
@@ -36,17 +38,26 @@ export class HomeComponent implements OnInit {
   sortBy = 'date';
   orders: any[] = [];
   rideViewMode: 'all' | 'future' | 'past' = 'all';
+  highlightedOrderId: string | null = null;
+
 
   ngOnInit(): void {
     const storedOrders = localStorage.getItem('user_orders');
-    if (storedOrders) {
-      this.orders = JSON.parse(storedOrders);
-    } else {
-      this.orders = [];
-    }
+     this.route.queryParams.subscribe(params => {
+      const idToHighlight = params['highlight'] || null;
+      if (idToHighlight) {
+        setTimeout(() => {
+          this.highlightedOrderId = idToHighlight;
+          setTimeout(() => {
+            this.highlightedOrderId = null;
+          }, 10000); // duration matches CSS animation
+        }, 500); // allow DOM to render
+      }
+    });
+
     this.fetchRides();
   }
-
+   
   get pagedOrders() {
     const start = (this.currentPage - 1) * this.ordersPerPage;
     return this.filteredOrders.slice(start, start + this.ordersPerPage);
@@ -209,6 +220,7 @@ get totalPages() {
         if (Array.isArray(res)) {
           this.orders = res.map(order => ({
             ...order,
+            id: order.ride_id, 
             date: formatDate(order.start_datetime, 'dd.MM.yyyy', 'en-US'),
             time: formatDate(order.start_datetime, 'HH:mm', 'en-US'),
             type: order.vehicle,
