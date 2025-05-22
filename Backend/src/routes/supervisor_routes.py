@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends , HTTPException
 from uuid import UUID
 from src.services.supervisor_dashboard_service import get_department_orders,get_department_specific_order,edit_order_status
 from fastapi import APIRouter, Depends ,  Query
@@ -10,14 +10,19 @@ from fastapi import APIRouter
 from uuid import UUID
 from ..utils.database import get_db
 from ..services.supervisor_dashboard_service import get_department_orders
-from ..schemas.vehicle_schema import VehicleOut , InUseVehicleOut
+from ..schemas.vehicle_schema import VehicleOut , InUseVehicleOut , VehicleStatusUpdate
 from ..models.vehicle_model import VehicleType
-from ..services.vehicle_service import get_vehicles_with_optional_status, get_available_vehicles
+from ..services.vehicle_service import get_vehicles_with_optional_status, get_available_vehicles, update_vehicle_status
+# get_available_vehicles as fetch_available_vehicles, get_in_use_vehicles, get_frozen_vehicles , get_vehicles_with_optional_status
 from typing import List, Optional, Union
 
 from src.schemas.notification_schema import NotificationOut  # adjust path as needed
 from src.services.supervisor_dashboard_service import get_department_notifications
 from src.utils.database import get_db
+from ..schemas.order_card_item import OrderCardItem
+from ..services.supervisor_dashboard_service import end_ride_service
+from ..schemas.check_vehicle_schema import VehicleInspectionSchema
+from ..services.supervisor_dashboard_service import complete_ride_logic
 
 router = APIRouter()
 
@@ -55,6 +60,14 @@ def get_available_vehicles_route(status: Optional[str] = Query(None), db: Sessio
     return vehicles
 
 
+
+@router.patch("/{vehicle_id}/status")
+def patch_vehicle_status(
+    vehicle_id: UUID,
+    status_update: VehicleStatusUpdate,
+    db: Session = Depends(get_db)
+):
+    return update_vehicle_status(vehicle_id, status_update.new_status, db)
 
 # @router.get("/orders/{department_id}/{order_id}/pending")
 # def get_approval_dashboard_route(department_id: UUID, order_id: UUID):
@@ -124,3 +137,18 @@ def get_available_vehicles_route(status: Optional[str] = Query(None), db: Sessio
 #     return get_frozen_vehicles(db=db, type=type)
 
 
+
+
+@router.post("/{ride_id}/end", response_model=OrderCardItem)
+def end_ride(ride_id: UUID, has_incident: Optional[bool] = False, db: Session = Depends(get_db)):
+    return end_ride_service(db=db, ride_id=ride_id, has_incident=has_incident)
+
+
+@router.post("/ride/complete")
+def complete_ride(data: VehicleInspectionSchema, db: Session = Depends(get_db)):
+    try:
+        return complete_ride_logic(data, db)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

@@ -24,4 +24,5 @@ class RideSchema(BaseModel):
     end_datetime: datetime
     estimated_distance: str
     status: RideStatus
+    submitted_at: datetime
 

@@ -20,6 +20,11 @@ export const routes: Routes = [
   { path: 'cars', component: CarsComponent, canActivate: [ProtectedRouteGuard] },
   { path: 'home', component: HomeComponent, canActivate: [ProtectedRouteGuard] },
   { path: 'new-ride', component: NewRideComponent, canActivate: [ProtectedRouteGuard] },
+  {
+  path: 'ride/edit/:id',
+  loadComponent: () => import('./ride-area/edit-ride/edit-ride.component').then(m => m.EditRideComponent),
+  canActivate: [ProtectedRouteGuard]
+},
   { path: 'supervisor-dashboard', component: DashboardAllOrdersComponent, canActivate: [ProtectedRouteGuard] },
   { path: 'order-card/:ride_id', component: OrderCardComponent, canActivate: [ProtectedRouteGuard] },
   { path:'vehicle-dashboard', component: VehicleDashboardComponent },

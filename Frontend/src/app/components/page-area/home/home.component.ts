@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { MyRidesService } from '../../../services/myrides.service';
 import { ActivatedRoute, Params } from '@angular/router';
+import { ToastService } from '../../../services/toast.service';
+
 
 @Component({
   selector: 'app-home',
@@ -14,7 +16,7 @@ import { ActivatedRoute, Params } from '@angular/router';
 })
 export class HomeComponent implements OnInit {
   constructor(private router: Router, private rideService: MyRidesService,private route: ActivatedRoute,
-  ) {}
+   private toastService: ToastService) {}
 
   currentPage = 1;
   loading: boolean = false;
@@ -76,24 +78,25 @@ get totalPages() {
 }
 
 
-  getStatusTooltip(status: string): string {
-    console.log(status)
-    switch (status) {
-      case 'Approved': return 'אושר';
-      case 'Pending': return 'בהמתנה';
-      case 'Rejected': return 'נדחה';
-      default: return 'סטטוס לא ידוע';
-    }
+getStatusTooltip(status: string): string {
+  switch (status.toLowerCase()) {
+    case 'approved': return 'אושר';
+    case 'pending': return 'בהמתנה';
+    case 'rejected': return 'נדחה';
+    default: return 'סטטוס לא ידוע';
   }
+}
 
-  getStatusClass(status: string): string {
-    switch (status) {
-      case 'Approved': return 'status-green';
-      case 'Pending': return 'status-yellow';
-      case 'Rejected': return 'status-red';
-      default: return '';
-    }
+
+ getStatusClass(status: string): string {
+  switch (status.toLowerCase()) {
+    case 'approved': return 'status-green';
+    case 'pending': return 'status-yellow';
+    case 'rejected': return 'status-red';
+    default: return '';
   }
+}
+
 
   get filteredOrders() {
     const today = new Date();
@@ -219,13 +222,15 @@ get totalPages() {
 
         if (Array.isArray(res)) {
           this.orders = res.map(order => ({
-            ...order,
-            id: order.ride_id, 
+            ride_id: order.ride_id,
             date: formatDate(order.start_datetime, 'dd.MM.yyyy', 'en-US'),
             time: formatDate(order.start_datetime, 'HH:mm', 'en-US'),
             type: order.vehicle,
             distance: order.estimated_distance,
-            status: this.capitalize(order.status)
+            status: order.status.toLowerCase(), // ✅ force lowercase here
+            start_datetime: order.start_datetime,       // ✅ Ensure it's passed to `canEdit`
+            submitted_at: order.submitted_at,           // ✅ Same
+            user_id: order.user_id      
           }));
           localStorage.setItem('user_orders', JSON.stringify(this.orders));
           console.log('Orders from backend:', this.orders);
@@ -243,5 +248,32 @@ get totalPages() {
   capitalize(status: string): string {
     return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
   }
+
+canEdit(order: any): boolean {
+  const isPending = order.status.toLowerCase() === 'pending';
+  const isFuture = this.parseDate(order.date) >= new Date();
+
+  return isPending && isFuture;
+}
+
+
+
+editOrder(order: any): void {
+  const isPending = order.status.toLowerCase() === 'pending';
+  const isFuture = this.parseDate(order.date) >= new Date();
+
+  if (!isPending || !isFuture) {
+    this.toastService.show('אפשר לערוך רק הזמנות עתידיות במצב "ממתין" ❌', 'error');
+    return;
+  }
+
+  if (!order.ride_id) {
+    this.toastService.show('שגיאה בזיהוי ההזמנה', 'error');
+    return;
+  }
+
+  this.router.navigate(['/ride/edit', order.ride_id]);
+}
+
 
 }
