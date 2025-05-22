@@ -1,13 +1,13 @@
 .vehicle-details-wrapper {
   padding: 3rem 1.5rem;
-  background-color: #f9f9fb;
+  background-color: #e7e5e5;
   min-height: 100vh;
   direction: rtl;
   text-align: right;
   display: flex;
   flex-direction: column;
   align-items: center;
-  border-top: 6px solid #c62828;
+  /* border-top: 6px solid #c62828; */
 }
 
 .vehicle-wrapper-header {
@@ -17,7 +17,7 @@
   width: 100%;
   max-width: 900px;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #eee;
+  border-bottom: 2px solid #cfcece;
 }
 
 .vehicle-wrapper-header h1 {
@@ -42,7 +42,7 @@
 }
 
 .unfreeze-button {
-  background-color: #ad3131;
+  background-color: #655e5e;
   color: #fff;
   border: none;
   padding: 0.35rem 0.9rem;
