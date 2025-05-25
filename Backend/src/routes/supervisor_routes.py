@@ -16,6 +16,8 @@ from ..services.supervisor_dashboard_service import end_ride_service
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 from ..services.supervisor_dashboard_service import complete_ride_logic
 from ..utils.auth import supervisor_check, token_check
+from ..services.supervisor_dashboard_service import vehicle_inspection_logic
+
 router = APIRouter()
 
 
@@ -147,10 +149,10 @@ def end_ride(ride_id: UUID, has_incident: Optional[bool] = False, db: Session = 
     return end_ride_service(db=db, ride_id=ride_id, has_incident=has_incident)
 
 
-@router.post("/ride/complete")
-def complete_ride(data: VehicleInspectionSchema, db: Session = Depends(get_db),payload: dict = Depends(token_check)):
+@router.post("/vehicle-inspection")
+def vehicle_inspection(data: VehicleInspectionSchema, db: Session = Depends(get_db),payload: dict = Depends(token_check)):
     try:
-        return complete_ride_logic(data, db)
+        return vehicle_inspection_logic(data, db)
     except HTTPException as e:
         raise e
     except Exception as e:

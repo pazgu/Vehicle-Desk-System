@@ -11,6 +11,7 @@ from ..schemas.vehicle_schema import VehicleOut, InUseVehicleOut
 from uuid import UUID
 from fastapi import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
+
 # def get_available_vehicles(db: Session, type: Optional[VehicleType] = None) -> List[Vehicle]:
 #     query = db.query(Vehicle).filter(Vehicle.status == VehicleStatus.available)
 
