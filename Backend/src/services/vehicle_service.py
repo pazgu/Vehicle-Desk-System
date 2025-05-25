@@ -11,6 +11,7 @@ from ..schemas.vehicle_schema import VehicleOut, InUseVehicleOut
 from uuid import UUID
 from fastapi import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
+
 # def get_available_vehicles(db: Session, type: Optional[VehicleType] = None) -> List[Vehicle]:
 #     query = db.query(Vehicle).filter(Vehicle.status == VehicleStatus.available)
 
@@ -117,22 +118,28 @@ def get_vehicles_with_optional_status(
     print("Result:", result)
     return result
 
-def update_vehicle_status(vehicle_id: UUID, new_status: str, db: Session):
+def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_reason: str, db: Session):
     vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
-
     if not vehicle:
         raise HTTPException(status_code=404, detail="Vehicle not found")
 
-    if vehicle.freeze_reason and new_status == "available":
-        vehicle.freeze_reason = None  # ❄️ Automatically unfreeze it
+    try:
+        if new_status == VehicleStatus.frozen:
+            if not freeze_reason:
+                raise HTTPException(status_code=400, detail="freeze_reason is required when setting status to 'frozen'")
+            vehicle.freeze_reason = freeze_reason
 
+        elif vehicle.status == VehicleStatus.frozen and new_status != VehicleStatus.frozen:
+            vehicle.freeze_reason = None
 
+        vehicle.status = new_status
+        db.commit()
+        db.refresh(vehicle)
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
-    vehicle.status = new_status
-    db.commit()
-    db.refresh(vehicle)
-    return vehicle
-
+    return {"vehicle_id": vehicle.id, "new_status": vehicle.status, "freeze_reason": vehicle.freeze_reason}
 
 
 def get_available_vehicles(

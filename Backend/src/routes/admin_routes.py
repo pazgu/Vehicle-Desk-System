@@ -4,7 +4,7 @@ from typing import Optional
 from typing import List
 from datetime import datetime
 from sqlalchemy.orm import Session
-from src.schemas.user_response_schema import UserResponse
+from src.schemas.user_response_schema import UserResponse, UserUpdate
 from src.schemas.ride_dashboard_item import RideDashboardItem
 from src.services.user_data import get_user_by_id, get_all_users
 from src.services.admin_rides_service import (
@@ -15,6 +15,8 @@ from src.services.admin_rides_service import (
     get_order_by_ride_id
 )
 from ..utils.database import get_db
+from src.models.user_model import User
+from src.models.user_model import UserRole
 
 router = APIRouter()
 
@@ -69,3 +71,29 @@ def fetch_user_by_id(user_id: UUID, db: Session = Depends(get_db)):
     if result is None:
         raise HTTPException(status_code=404, detail="User not found")
     return result
+
+
+
+@router.patch("/user-data-edit/{user_id}", response_model=UserResponse)
+def edit_user_by_id_route(
+    user_id: UUID,
+    user_update: UserUpdate,
+    db: Session = Depends(get_db)
+):
+    user = db.query(User).filter(User.employee_id == user_id).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    update_data = user_update.dict(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(user, key, value)
+
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+@router.get("/roles")
+def get_roles():
+    return [role.value for role in UserRole]
