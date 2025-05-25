@@ -176,7 +176,7 @@ def end_ride_service(db: Session, ride_id: UUID, has_incident: bool):
     db.refresh(ride)
     return ride
 
-def complete_ride_logic(data: VehicleInspectionSchema, db: Session):
+def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
     
     inspection = VehicleInspection(
         vehicle_id=data.vehicle_id,
