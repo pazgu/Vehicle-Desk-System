@@ -80,6 +80,8 @@
     background-color: #ede9e9;
     border-bottom: 1px solid #ddd;
     padding: 0.75rem;
+    transition: border 0.5s ease-in-out;
+
   }
   
   .cell {
@@ -237,3 +239,35 @@
 
 
 
+@keyframes backgroundFade {
+  0% {
+    background-color: #8b3a44; /* dark wine red */
+  }
+  30% {
+    background-color: #a24a58;
+  }
+  50% {
+    background-color: #c37b87;
+  }
+  100% {
+    border-color: #d99ca6;
+  }
+}
+
+.highlight-background {
+  animation: backgroundFade 5s ease-in-out forwards;
+}
+
+.highlight {
+  /* Optional: fade background too */
+  animation: highlightFade 5s ease-in-out forwards;
+}
+
+@keyframes highlightFade {
+  0% {
+    background-color: #c37b87;
+  }
+  100% {
+    background-color: #e6f4ea;
+  }
+}

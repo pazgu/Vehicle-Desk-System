@@ -15,6 +15,6 @@ class UserResponse(BaseModel):
     employee_id: UUID
     role: UserRole
     department_id: UUID
-
+    
     class Config:
         orm_mode = True
