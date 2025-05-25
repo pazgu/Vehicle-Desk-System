@@ -8,6 +8,7 @@ import { PaginatorModule } from 'primeng/paginator';
 import { TableModule } from 'primeng/table';
 import { OrderService } from '../../../services/order.service';
 import { RideDashboardItem } from '../../../models/ride-dashboard-item/ride-dashboard-item.module';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-dashboard-all-orders',
@@ -18,7 +19,8 @@ import { RideDashboardItem } from '../../../models/ride-dashboard-item/ride-dash
     TableModule,
     ButtonModule,
     DropdownModule,
-    PaginatorModule
+    PaginatorModule,
+    MatTooltipModule,
   ],
   templateUrl: './dashboard-all-orders.component.html',
   styleUrls: ['./dashboard-all-orders.component.css']
@@ -194,4 +196,16 @@ export class DashboardAllOrdersComponent implements OnInit {
   get totalPages() {
     return this.filteredOrders.length > 0 ? Math.ceil(this.filteredOrders.length / this.rows) : 1;
   }
+copiedRideId: string | null = null;
+
+copyToClipboard(rideId: string) {
+  navigator.clipboard.writeText(rideId);
+  this.copiedRideId = rideId;
+ setTimeout(() => {
+    if (this.copiedRideId === rideId) {
+      this.copiedRideId = null;
+    }
+  }, 2000);}
+
+
 }

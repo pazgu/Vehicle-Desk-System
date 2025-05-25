@@ -195,3 +195,33 @@ button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
+.relative-cell {
+  position: relative;
+}
+
+.copy-button {
+  position: relative;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.copy-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.copied-message {
+  position: absolute;
+  top: -1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: black;
+  color: white;
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
