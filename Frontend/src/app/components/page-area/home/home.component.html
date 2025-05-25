@@ -77,7 +77,12 @@
     <div
       class="orders-data-row"
       *ngFor="let order of pagedOrders"
-      [ngClass]="[getStatusClass(order.status), isPastOrder(order) ? 'past-order' : '']">
+      [id]="order.ride_id"
+      [ngClass]="[
+    getStatusClass(order.status),
+    isPastOrder(order) ? 'past-order' : '',
+    order.ride_id === highlightedOrderId ? 'highlight highlight-background' : ''
+  ]">
       <div class="icon-cell">
         <span
           class="pi"
