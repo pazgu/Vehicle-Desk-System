@@ -43,16 +43,11 @@ def get_department_specific_order_route(department_id: UUID, order_id: UUID, db:
 def edit_order_status_route(department_id: UUID, order_id: UUID, status: str, db: Session = Depends(get_db)):
     return edit_order_status(department_id, order_id, status, db)
 
-@router.get("/all-vehicles")
+@router.get("/all-vehicles", response_model=List[VehicleOut])
 def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = Depends(get_db)):
     vehicles = get_vehicles_with_optional_status(db, status)
+    return vehicles
 
-    if status == "in_use":
-        validated = [InUseVehicleOut(**v) if isinstance(v, dict) else v for v in vehicles]
-    else:
-        validated = [VehicleOut(**v) if isinstance(v, dict) else v for v in vehicles]
-
-    return validated
 
 @router.get("/all-vehicles/available")
 def get_available_vehicles_route(status: Optional[str] = Query(None), db: Session = Depends(get_db)):
