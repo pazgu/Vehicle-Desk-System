@@ -17,7 +17,6 @@ import { UserDataComponent } from './components/admin-area/user-data/user-data.c
 import { UserDataEditComponent } from './components/admin-area/user-data-edit/user-data-edit.component';
 import { UserCardComponent } from './components/admin-area/user-card/user-card.component';
 
-import { VehicleCardItemComponent } from './components/supervisor-area/vehicle-card-item/vehicle-card-item.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
