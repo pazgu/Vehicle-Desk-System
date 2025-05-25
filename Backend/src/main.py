@@ -3,8 +3,13 @@ from src.routes.user_routes import router as user_route
 from src.routes.supervisor_routes import router as supervisor_route
 from src.routes.admin_routes import router as admin_route
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import Request
+
 
 app = FastAPI()
+
+print("🚀 FastAPI app starting with CORS enabled")
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -23,4 +28,13 @@ app.include_router(admin_route,tags=["Admin"])
 @app.get("/")
 def root():
     return {"message": "API is running"}
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    print(f"➡️ Request: {request.method} {request.url}")
+    response = await call_next(request)
+    print(f"⬅️ Response: {response.status_code}")
+    return response
+
 

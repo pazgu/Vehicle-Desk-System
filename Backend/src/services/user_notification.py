@@ -75,8 +75,11 @@ def create_system_notification(user_id, title, message, order_id=None):
 def get_supervisor_id(user_id: UUID, db: Session) -> UUID:
     # Step 1: Get user's department ID
     user = db.query(User).filter(User.employee_id == user_id).first()
-    if not user or not user.department_id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User or department not found.")
+    print(f"👤 User found: {user}")
+
+    if not user:
+        return None
+
 
     # Step 2: Get department's supervisor
     department = db.query(Department).filter(Department.id == user.department_id).first()
