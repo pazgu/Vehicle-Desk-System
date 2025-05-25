@@ -6,6 +6,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
+print("🚀 FastAPI app starting with CORS enabled")
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:4200"],  # Allows the frontend from localhost:4200 to make requests
@@ -21,4 +24,13 @@ app.include_router(admin_route,tags=["Admin"])
 @app.get("/")
 def root():
     return {"message": "API is running"}
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    print(f"➡️ Request: {request.method} {request.url}")
+    response = await call_next(request)
+    print(f"⬅️ Response: {response.status_code}")
+    return response
+
 
