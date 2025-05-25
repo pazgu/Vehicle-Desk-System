@@ -1,5 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi import APIRouter, Depends , HTTPException,Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from uuid import UUID
 from src.services.supervisor_dashboard_service import get_department_orders,get_department_specific_order,edit_order_status
 from sqlalchemy.orm import Session
@@ -17,6 +16,7 @@ from ..services.supervisor_dashboard_service import end_ride_service
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 from ..utils.auth import supervisor_check, token_check
 from ..services.supervisor_dashboard_service import vehicle_inspection_logic
+from ..utils.auth import supervisor_check, token_check
 
 router = APIRouter()
 
@@ -37,17 +37,12 @@ def get_department_specific_order_route(department_id: UUID, order_id: UUID, db:
 def edit_order_status_route(department_id: UUID, order_id: UUID, status: str, db: Session = Depends(get_db),payload: dict = Depends(token_check)):
     return edit_order_status(department_id, order_id, status, db)
 
-@router.get("/all-vehicles")
+@router.get("/all-vehicles", response_model=List[VehicleOut])
 def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = Depends(get_db)
     ,payload: dict = Depends(token_check)):
     vehicles = get_vehicles_with_optional_status(db, status)
+    return vehicles
 
-    if status == "in_use":
-        validated = [InUseVehicleOut(**v) if isinstance(v, dict) else v for v in vehicles]
-    else:
-        validated = [VehicleOut(**v) if isinstance(v, dict) else v for v in vehicles]
-
-    return validated
 
 @router.get("/all-vehicles/available")
 def get_available_vehicles_route(status: Optional[str] = Query(None),
