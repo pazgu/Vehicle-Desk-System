@@ -1,13 +1,14 @@
-from fastapi import APIRouter, Depends , HTTPException,Query
+from fastapi import APIRouter, Depends, HTTPException
 from uuid import UUID
 from src.services.supervisor_dashboard_service import get_department_orders,get_department_specific_order,edit_order_status
 from sqlalchemy.orm import Session
 from src.models.ride_model import Ride 
 from src.utils.database import get_db
+from ..utils.database import get_db
+from ..services.supervisor_dashboard_service import get_department_orders
 from ..schemas.vehicle_schema import VehicleOut , InUseVehicleOut , VehicleStatusUpdate
 from ..models.vehicle_model import VehicleType
-from ..services.vehicle_service import get_vehicles_with_optional_status, get_available_vehicles, update_vehicle_status
-# get_available_vehicles as fetch_available_vehicles, get_in_use_vehicles, get_frozen_vehicles , get_vehicles_with_optional_status
+from ..services.vehicle_service import get_vehicles_with_optional_status, get_available_vehicles,update_vehicle_status,get_vehicle_by_id
 from typing import List, Optional, Union
 from src.schemas.notification_schema import NotificationOut  # adjust path as needed
 from ..schemas.order_card_item import OrderCardItem
@@ -55,6 +56,10 @@ def get_available_vehicles_route(status: Optional[str] = Query(None),
     return vehicles
 
 
+@router.get("/vehicle/{vehicle_id}")
+def get_vehicle_by_id_route(vehicle_id: str, db: Session = Depends(get_db)):
+    return get_vehicle_by_id(vehicle_id, db)
+
 
 @router.patch("/{vehicle_id}/status")
 def patch_vehicle_status(
@@ -64,6 +69,11 @@ def patch_vehicle_status(
     payload: dict = Depends(token_check)
 ):
     return update_vehicle_status(vehicle_id, status_update.new_status, status_update.freeze_reason, db)
+
+@router.post("/{ride_id}/end", response_model=OrderCardItem)
+def end_ride(ride_id: UUID, has_incident: Optional[bool] = False, db: Session = Depends(get_db)):
+    return end_ride_service(db=db, ride_id=ride_id, has_incident=has_incident)
+
 
 # @router.get("/orders/{department_id}/{order_id}/pending")
 # def get_approval_dashboard_route(department_id: UUID, order_id: UUID):
@@ -131,7 +141,6 @@ def patch_vehicle_status(
 #     db: Session = Depends(get_db)
 # ):
 #     return get_frozen_vehicles(db=db, type=type)
-
 
 
 
