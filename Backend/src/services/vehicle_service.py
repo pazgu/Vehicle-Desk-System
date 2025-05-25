@@ -116,8 +116,6 @@ def get_vehicles_with_optional_status(
             result.append(VehicleOut(**data))
 
     print("Result:", result)
-
-
     return result
 
 def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_reason: str, db: Session):
@@ -170,3 +168,21 @@ def get_available_vehicles(
         data = dict(row._mapping)
         result.append(VehicleOut(**data))
     return result
+
+def get_vehicle_by_id(vehicle_id: str, db: Session):
+    vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
+    if not vehicle:
+        return None
+    return {
+        "id": str(vehicle.id),
+        "plate_number": vehicle.plate_number,
+        "type": vehicle.type,
+        "fuel_type": vehicle.fuel_type,
+        "status": vehicle.status,
+        "freeze_reason": vehicle.freeze_reason,
+        "last_used_at": vehicle.last_used_at,
+        "current_location": vehicle.current_location,
+        "odometer_reading": vehicle.odometer_reading,
+        "vehicle_model": vehicle.vehicle_model,
+        "image_url": vehicle.image_url,
+    }

@@ -17,6 +17,8 @@ app.add_middleware(
 # Include user routes
 app.include_router(user_route, tags=["Users"])
 app.include_router(supervisor_route,prefix="/api",tags=["Supervisors"])
+# app.include_router(supervisor_route,prefix="/api",tags=["Amin"])
+
 app.include_router(admin_route,tags=["Admin"])
 @app.get("/")
 def root():
