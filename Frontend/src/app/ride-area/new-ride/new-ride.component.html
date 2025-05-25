@@ -78,21 +78,26 @@
           </div>
         </div>
 
+
+        
+
    
 
-<!-- Available cars -->
-<div class="row" *ngIf="availableCars.length > 0">
-  <div class="input-group">
-    <label>בחר רכב זמין</label>
-    <select formControlName="car" class="styled-select">
-      <option value="" disabled selected>בחר רכב</option>
-<option *ngFor="let car of availableCars" [value]="car.id">
-  {{ car.vehicle_model }}
-</option>
-
-    </select>
-  </div>
-</div>
+       <!-- Available cars -->
+        <div class="row" *ngIf="availableCars.length > 0">
+          <div class="input-group">
+            <label>בחר רכב זמין</label>
+            <select formControlName="car" class="styled-select">
+              <option value="" disabled selected>בחר רכב</option>
+              <option *ngFor="let car of availableCars" [value]="car.id">
+                {{ car.vehicle_model }}
+              </option>
+            </select>
+            <small *ngIf="f.car.touched && f.car.errors?.['required']" class="distance-info">
+              חובה לבחור רכב מהתפריט
+            </small>
+          </div>
+        </div>
 
 
         <!-- Distance and Type -->
