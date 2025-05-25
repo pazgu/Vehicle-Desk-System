@@ -165,7 +165,7 @@ def create_order(user_id: UUID, ride_request: RideCreate, db: Session = Depends(
     supervisor_id = get_supervisor_id(user_id, db)  # You implement this logic
 
     if not supervisor_id:
-    raise HTTPException(status_code=404, detail="Supervisor not found for this department.")
+        raise HTTPException(status_code=404, detail="Supervisor not found for this department.")
 
     try:
         new_ride = create_ride(db, user_id, ride_request)
