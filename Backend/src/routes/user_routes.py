@@ -11,7 +11,6 @@ from ..services.new_ride_service import create_ride
 from fastapi.responses import JSONResponse
 from typing import List, Optional, Union
 from datetime import datetime
-from ..utils.mock_data import mock_departments
 from ..schemas.user_rides_schema import RideSchema, RideStatus
 from ..services.user_rides_service import get_future_rides, get_past_rides , get_all_rides
 from ..utils.database import get_db
@@ -79,18 +78,13 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
 
 
 
-@router.get("/api/users/{user_id}/orders")
-def get_user_orders():
-     # Implementation pending
-    return {"message": "Not implemented yet"}
-    
-
 @router.get("/api/future-orders/{user_id}", response_model=List[RideSchema])
 def get_future_orders(user_id: UUID, status: Optional[RideStatus] = Query(None),
                       from_date: Optional[datetime] = Query(None),
                       to_date: Optional[datetime] = Query(None),
                       db: Session = Depends(get_db),
-                      token: str = Depends(oauth2_scheme)):
+                      token: str = Depends(oauth2_scheme),
+                      ):
 
     try:
         role_check(allowed_roles=["employee", "admin"], token=token)

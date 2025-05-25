@@ -6,18 +6,20 @@ from ..models.user_model import User
 from uuid import UUID
 from datetime import datetime, timedelta
 
-SECRET_KEY = "your-secret-key"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
-
+from dotenv import load_dotenv 
+from os import environ
+load_dotenv()
+SECRET_KEY = environ.get("JWT_SECRET")
+ACCESS_TOKEN_EXPIRE_MINUTES=environ.get("ACCESS_TOKEN_EXPIRE_MINUTES")
+ALGORITHM = environ.get("ALGORITHM")
 
 
 
 
 
 def create_access_token(employee_id: UUID, username: str,first_name:str,last_name:str, role: str, expires_delta: timedelta = None):
-    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=60))
+    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES)))
     payload = {
         "sub": str(employee_id),
         "username": username,
