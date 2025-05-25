@@ -1,0 +1,58 @@
+<div class="ride-card">
+  <button class="cute-red-button" (click)="goBack()">חזרה להזמנות</button>
+
+  <h2 class="heading">פרטי הנסיעה</h2>
+
+  <div class="detail-row">
+    <span class="detail-label">תאריך:</span>
+    <span class="detail-value">{{ ride?.start_datetime | date: 'dd/MM/yyyy' }}</span>
+  </div>
+
+  <div class="detail-row">
+    <span class="detail-label">שעת התחלה:</span>
+    <span class="detail-value">{{ ride?.start_datetime | date: 'HH:mm' }}</span>
+  </div>
+
+  <div class="detail-row">
+    <span class="detail-label">שעת סיום:</span>
+    <span class="detail-value">{{ ride?.end_datetime | date: 'HH:mm' }}</span>
+  </div>
+
+  <div class="detail-row">
+    <span class="detail-label">סוג נסיעה:</span>
+    <span class="detail-value">{{ ride?.ride_type === 'operational' ? 'תפעולית' : 'מנהלתית' }}</span>
+  </div>
+
+  <div class="detail-row">
+    <span class="detail-label">מרחק מוערך:</span>
+    <span class="detail-value">{{ ride?.estimated_distance_km }} ק״מ</span>
+  </div>
+
+ <div class="detail-row">
+  <span class="detail-label">מיקום התחלה:</span>
+  <span class="detail-value">{{ ride?.start_location || 'מיקום לא זמין' }}</span>
+</div>
+
+<div class="detail-row">
+  <span class="detail-label">תחנה:</span>
+  <span class="detail-value">{{ ride?.stop || 'תחנה לא זמינה' }}</span>
+</div>
+
+<div class="detail-row">
+  <span class="detail-label">יעד:</span>
+  <span class="detail-value">{{ ride?.destination || 'יעד לא זמין' }}</span>
+</div>
+
+
+<div class="detail-row">
+  <span class="detail-label">רכב שנבחר:</span>
+  <span class="detail-value">{{ ride?.vehicle || 'לא זמין' }}</span>
+</div>
+
+
+
+  <div class="detail-row">
+    <span class="detail-label">סטטוס:</span>
+    <span class="detail-value">{{ ride?.status === 'pending' ? 'ממתין' : ride?.status === 'approved' ? 'מאושר' : 'נדחה' }}</span>
+  </div>
+</div>
