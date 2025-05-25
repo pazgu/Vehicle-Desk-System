@@ -15,6 +15,7 @@ export class VehicleService {
 
   getAllVehicles(): Observable<VehicleInItem[]>{
     const url = `${this.apiUrl}/all-vehicles`;
+    console.log('📡 GET Request to:', url);
     return this.http.get<VehicleInItem[]>(url);  
   }
 
