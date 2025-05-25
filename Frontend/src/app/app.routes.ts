@@ -15,6 +15,7 @@ import { VehicleDashboardComponent } from './components/supervisor-area/vehicle-
 import { VehicleCardItemComponent } from './components/supervisor-area/vehicle-card-item/vehicle-card-item.component';
 import { UserDataComponent } from './components/admin-area/user-data/user-data.component';
 import { UserDataEditComponent } from './components/admin-area/user-data-edit/user-data-edit.component';
+import { UserCardComponent } from './components/admin-area/user-card/user-card.component';
 
 
 export const routes: Routes = [
@@ -34,7 +35,10 @@ export const routes: Routes = [
   { path: 'notifications', component: NotificationsComponent, canActivate: [ProtectedRouteGuard] },
   { path: 'daily-checks', component: DailyChecksComponent, canActivate: [ProtectedRouteGuard] },
   { path: '', component: RedirectByRoleComponent, pathMatch: 'full' },
+  
   { path: 'user-data-edit/:user_id', component: UserDataEditComponent,canActivate: [ProtectedRouteGuard] }, // Moved lower
+  { path: 'user-data', component: UserDataComponent,canActivate: [ProtectedRouteGuard] }, // Moved lower
+  { path: 'user-card/:user_id', component: UserCardComponent,canActivate: [ProtectedRouteGuard] }, // Moved lower
   { path: 'user-data', component: UserDataComponent,canActivate: [ProtectedRouteGuard] }, 
   { path: 'vehicle-details/:id', component: VehicleCardItemComponent },
   { path: '**', component: Page404Component }

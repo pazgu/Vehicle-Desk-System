@@ -115,3 +115,6 @@ position: absolute;
 .user-table tbody tr:hover td {
   background-color: #f0e1e2; /* ורוד מעט כהה יותר בה Hover */
 }
+.clickable-row {
+  cursor: pointer;
+}

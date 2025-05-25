@@ -21,7 +21,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let user of users">
+            <tr *ngFor="let user of users"  (click)="goToUserCard(user.employee_id)" class="clickable-row">
               <td class="column-name">{{ user.first_name }} {{ user.last_name }}</td>
               <td class="column-role">{{ user.role }}</td>
               <td class="column-department">

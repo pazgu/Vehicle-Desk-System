@@ -3,6 +3,8 @@ import { User } from '../../../models/user.model';
 import { UserService } from '../../../services/user_service';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+
 @Component({
   selector: 'app-user-data',
   templateUrl: './user-data.component.html',
@@ -12,7 +14,7 @@ import { CommonModule } from '@angular/common';
 export class UserDataComponent implements OnInit {
   users: User[] = [];
 
-  constructor(private userService: UserService) {}
+constructor(private userService: UserService, private router: Router) {}
 
   
   ngOnInit(): void {
@@ -29,6 +31,9 @@ departmentNames: { [key: string]: string } = {
   '912a25b9-08e7-4461-b1a3-80e66e79d29e': 'HR',
   'b3a91e1e-2f42-4e3e-bf74-49b7c8aaf1c7': 'Finance'  // Add all your departments here
 };
+goToUserCard(userId: string): void {
+  this.router.navigate(['/user-card', userId]);
+}
 
 
 }
