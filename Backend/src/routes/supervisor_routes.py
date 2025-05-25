@@ -140,10 +140,8 @@ def end_ride(ride_id: UUID, has_incident: Optional[bool] = False, db: Session = 
     return end_ride_service(db=db, ride_id=ride_id, has_incident=has_incident)
 
 
-@router.post("/ride/complete")
-def complete_ride(data: VehicleInspectionSchema, db: Session = Depends(get_db),payload: dict = Depends(token_check)):
 @router.post("/vehicle-inspection")
-def vehicle_inspection(data: VehicleInspectionSchema, db: Session = Depends(get_db)):
+def vehicle_inspection(data: VehicleInspectionSchema, db: Session = Depends(get_db),payload: dict = Depends(token_check)):
     try:
         return vehicle_inspection_logic(data, db)
     except HTTPException as e:
