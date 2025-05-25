@@ -69,3 +69,20 @@ def fetch_user_by_id(user_id: UUID, db: Session = Depends(get_db)):
     if result is None:
         raise HTTPException(status_code=404, detail="User not found")
     return result
+
+
+@router.post("/departments/{department_id}/set-supervisor")
+def set_supervisor_for_department(
+    department_id: UUID,
+    supervisor_id: UUID,
+    db: Session = Depends(get_db)
+):
+    from src.models.department_model import Department
+
+    department = db.query(Department).filter(Department.id == department_id).first()
+    if not department:
+        raise HTTPException(status_code=404, detail="Department not found")
+
+    department.supervisor_id = supervisor_id
+    db.commit()
+    return {"message": f"Supervisor set to {supervisor_id} for department {department_id}"}
