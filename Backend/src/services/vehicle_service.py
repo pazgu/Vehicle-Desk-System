@@ -126,6 +126,8 @@ def update_vehicle_status(vehicle_id: UUID, new_status: str, db: Session):
     if vehicle.freeze_reason and new_status == "available":
         vehicle.freeze_reason = None  # ❄️ Automatically unfreeze it
 
+
+
     vehicle.status = new_status
     db.commit()
     db.refresh(vehicle)

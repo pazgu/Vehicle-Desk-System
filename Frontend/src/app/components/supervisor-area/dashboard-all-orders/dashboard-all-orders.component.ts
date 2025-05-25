@@ -38,12 +38,17 @@ export class DashboardAllOrdersComponent implements OnInit {
   constructor(private router: Router, private orderService: OrderService) {}
 
   ngOnInit(): void {
+    document.body.style.overflow = 'hidden';
     const departmentId = localStorage.getItem('department_id');
     if (departmentId) {
       this.loadOrders(departmentId); 
     } else {
       console.error('Department ID not found in localStorage.');
     }
+  }
+
+  ngOnDestroy(): void {
+   document.body.style.overflow = '';
   }
 
   loadOrders(departmentId: string | null): void {
