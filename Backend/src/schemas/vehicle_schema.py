@@ -45,5 +45,6 @@ class InUseVehicleOut(BaseModel):
 
 class VehicleStatusUpdate(BaseModel):
     new_status: VehicleStatus
+    freeze_reason: Optional[str] = None
 
 

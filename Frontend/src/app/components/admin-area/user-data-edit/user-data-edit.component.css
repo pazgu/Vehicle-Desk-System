@@ -1,10 +1,6 @@
 
 /* Base Styles */ 
-* {   
-  margin: 0;   
-  padding: 0;   
-  box-sizing: border-box; 
-}  
+
 .page-container {
   background-color: #cccccc;
   min-height: calc(100vh - 55px);
@@ -18,14 +14,15 @@
   border-radius: 12px;
   overflow: hidden;
   font-family: 'Alef', sans-serif;
-  margin: 0 auto;
+  
   position: absolute;
-  top: 55%;
+  
   left: 50%;
   transform: translate(-50%, -50%);
   max-width: 800px;
   background-color: #fff;
   border: 1px solid #e0e0e0;
+  margin-top: 250px;
 }  
 
 /* Close button */
@@ -149,6 +146,15 @@ label {
 .btn-submit:hover {
   background-color: #a83636;
 }  
+.back-button {
+  position: absolute;
+  top: 15px;
+  left: 20px;
+  color: #942222;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 14px;
+}
 
 /* Department dropdown specific styling */
 .department-group {
@@ -161,6 +167,62 @@ label {
   .user-data-container {
     width: 95%;
     padding: 15px;
+  }
+  
+  .form-row {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .form-group {
+    width: 100%;
+  }
+}
+
+.form-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 5px;
+  flex-wrap: wrap;
+}
+
+.select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.select-control {
+  width: 100%;
+  height: 40px;
+  padding: 8px 36px 8px 12px; /* extra padding right for arrow */
+  background-color: #e6e6e6;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.dropdown-arrow {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #444;
+}
+
+@media (max-width: 768px) {
+  .user-data-container {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    width: 95%;
+    padding: 15px;
+    margin: 40px auto 0 auto;
   }
   
   .form-row {

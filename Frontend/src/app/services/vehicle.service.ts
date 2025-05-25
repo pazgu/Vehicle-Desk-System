@@ -23,4 +23,15 @@ export class VehicleService {
     const url = `${this.apiUrl}/all-vehicles/available`;
     return this.http.get<VehicleInItem[]>(url);  
   }
+
+  getVehicleById(id: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/vehicle/${id}`);
+  }
+
+  updateVehicleStatus(id: string, new_status: string, freeze_reason?: string): Observable<any> {
+  const url = `${this.apiUrl}/${id}/status`;
+  const body = { new_status, freeze_reason }; // Adjust field names to match backend expectations
+  console.log('Sending payload to backend:', body); // Log the payload
+  return this.http.patch<any>(url, body);
+}
 }

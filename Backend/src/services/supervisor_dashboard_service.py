@@ -77,7 +77,7 @@ def get_department_specific_order(department_id: str, order_id: str, db: Session
         end_datetime=order.end_datetime,
         ride_type=order.ride_type.name if order.ride_type else None,  # Enum to string
         start_location=order.start_location,
-        stop=order.stop,
+        stop=order.stop or "",
         destination=order.destination,
         estimated_distance_km=float(order.estimated_distance_km),
         actual_distance_km=float(order.actual_distance_km) if order.actual_distance_km else None,
@@ -176,7 +176,7 @@ def end_ride_service(db: Session, ride_id: UUID, has_incident: bool):
     db.refresh(ride)
     return ride
 
-def complete_ride_logic(data: VehicleInspectionSchema, db: Session):
+def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
     
     inspection = VehicleInspection(
         vehicle_id=data.vehicle_id,

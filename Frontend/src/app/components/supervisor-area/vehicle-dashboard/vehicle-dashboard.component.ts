@@ -5,6 +5,7 @@ import { VehicleService } from '../../../services/vehicle.service';
 import { CardModule } from 'primeng/card';
 import { VehicleOutItem } from '../../../models/vehicle-dashboard-item/vehicle-out-item.module';
 import { VehicleInItem } from '../../../models/vehicle-dashboard-item/vehicle-in-use-item.module';
+import { Router } from '@angular/router';
 
 
 @Component({
@@ -20,10 +21,14 @@ export class VehicleDashboardComponent {
   showFilters: boolean = false;
   sortBy: string = 'date_and_time';
 
-  constructor(private vehicleService: VehicleService){}
+  constructor(private vehicleService: VehicleService, private router: Router){}
 
   ngOnInit(): void {
     this.loadVehicles();
+  }
+
+  goToVehicleDetails(vehicleId: string): void {
+    this.router.navigate(['/vehicle-details', vehicleId]);
   }
 
   loadVehicles(): void{

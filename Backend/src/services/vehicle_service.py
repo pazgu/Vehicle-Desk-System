@@ -10,6 +10,7 @@ from datetime import datetime
 from ..schemas.vehicle_schema import VehicleOut, InUseVehicleOut
 from uuid import UUID
 from fastapi import HTTPException
+from sqlalchemy.exc import SQLAlchemyError
 
 # def get_available_vehicles(db: Session, type: Optional[VehicleType] = None) -> List[Vehicle]:
 #     query = db.query(Vehicle).filter(Vehicle.status == VehicleStatus.available)
@@ -115,16 +116,20 @@ def get_vehicles_with_optional_status(
             result.append(VehicleOut(**data))
 
     print("Result:", result)
-
-
     return result
 
-def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, db: Session):
+def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_reason: str, db: Session):
     vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
     if not vehicle:
         raise HTTPException(status_code=404, detail="Vehicle not found")
+
     try:
-        if vehicle.status == VehicleStatus.frozen and new_status != VehicleStatus.frozen:
+        if new_status == VehicleStatus.frozen:
+            if not freeze_reason:
+                raise HTTPException(status_code=400, detail="freeze_reason is required when setting status to 'frozen'")
+            vehicle.freeze_reason = freeze_reason
+
+        elif vehicle.status == VehicleStatus.frozen and new_status != VehicleStatus.frozen:
             vehicle.freeze_reason = None
 
         vehicle.status = new_status
@@ -134,7 +139,7 @@ def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, db: Sessi
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
-    return {"vehicle_id": vehicle.id, "new_status": vehicle.status}
+    return {"vehicle_id": vehicle.id, "new_status": vehicle.status, "freeze_reason": vehicle.freeze_reason}
 
 
 def get_available_vehicles(
@@ -163,3 +168,21 @@ def get_available_vehicles(
         data = dict(row._mapping)
         result.append(VehicleOut(**data))
     return result
+
+def get_vehicle_by_id(vehicle_id: str, db: Session):
+    vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
+    if not vehicle:
+        return None
+    return {
+        "id": str(vehicle.id),
+        "plate_number": vehicle.plate_number,
+        "type": vehicle.type,
+        "fuel_type": vehicle.fuel_type,
+        "status": vehicle.status,
+        "freeze_reason": vehicle.freeze_reason,
+        "last_used_at": vehicle.last_used_at,
+        "current_location": vehicle.current_location,
+        "odometer_reading": vehicle.odometer_reading,
+        "vehicle_model": vehicle.vehicle_model,
+        "image_url": vehicle.image_url,
+    }
