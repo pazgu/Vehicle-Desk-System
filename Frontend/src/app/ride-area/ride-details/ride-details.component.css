@@ -1,0 +1,71 @@
+.ride-card {
+  direction: rtl;
+  background-color: rgba(255, 251, 251, 1);
+  border-radius: 16px;
+  padding: 32px;
+  margin: 40px auto;
+  max-width: 650px;
+  font-family: var(--font-family-alef);
+  color: var(--text-rgb-107-26-26);
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  border: 3px solid rgba(202, 196, 208, 1);
+}
+
+.heading {
+  font-size: 30px;
+  font-weight: bold;
+  margin-bottom: 24px;
+  text-align: center;
+  color: var(--text-rgb-107-26-26);
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #e0dcdc;
+}
+
+.detail-label {
+  font-weight: bold;
+  font-family: var(--font-family-noto-serif);
+  font-size: 20px;
+  color: var(--text-rgb-130-123-123);
+  min-width: 160px;
+}
+
+.detail-value {
+  font-size: 20px;
+  font-family: var(--font-family-alef);
+  color: var(--text-rgb-29-27-32);
+  text-align: right;
+  flex: 1;
+}
+
+
+.cute-red-button {
+  background-color: #942222; /* your theme red */
+  color: white;
+  font-family: var(--font-family-alef);
+  font-size: 16px;
+  font-weight: bold;
+  padding: 10px 22px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+  margin-top: 24px;
+  display: inline-block;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.cute-red-button:hover {
+  background-color: #7c1b1b; /* darker on hover */
+  transform: scale(1.03);
+}
+
+.cute-red-button:active {
+  transform: scale(0.97);
+}
+
+
