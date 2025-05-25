@@ -26,11 +26,23 @@
   position: relative;
 }
 
+.edit-button {
+  position: absolute;
+
+  text-decoration: none;
+  color: rgb(93, 6, 6) !important;
+  border: none;
+ 
+  background: none;
+  cursor: pointer;
+}
+
+
 .back-button {
   position: absolute;
   top: 15px;
   left: 20px;
-  color: #942222;
+  color: #942222 !important;
   text-decoration: none;
   font-weight: bold;
   font-size: 14px;

@@ -3,23 +3,24 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { UserService } from '../../../services/user_service';
-import { User } from '../../../models/user.model';
 import { ToastService } from '../../../services/toast.service';
 import { HttpClient } from '@angular/common/http';
-
+import { Injectable } from '@angular/core';
+import { RedirectByRoleComponent } from '../../../services/redirect-by-role';
+import { Router } from '@angular/router';
 @Component({
   selector: 'app-user-data',
   templateUrl: './user-data-edit.component.html',
   styleUrls: ['./user-data-edit.component.css'],
   standalone: true,
   imports: [RouterModule, ReactiveFormsModule, CommonModule]
-})
-export class UserDataEditComponent implements OnInit {
+})export class UserDataEditComponent implements OnInit {
   userForm!: FormGroup;
   userId: string | null = null;
   user: any = null;
 
-  departments: string[] = [];
+  departments: Array<{ id: string; name: string }> = [];
+  roles: string[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -27,33 +28,32 @@ export class UserDataEditComponent implements OnInit {
     private userService: UserService,
     private toastService: ToastService,
     private http: HttpClient,
-
+    private router: Router
   ) {}
 
   ngOnInit(): void {
     this.initForm();
     this.loadUserData();
+    this.fetchDepartments();
+    this.loadRoles();
   }
-  departmentNames: { [key: string]: string } = {
-    '21fed496-72a3-4551-92d6-7d6b8d979dd6': 'Security',
-    '3f67f7d5-d1a4-45c2-9ae4-8b7a3c50d3fa': 'Engineering',
-    '912a25b9-08e7-4461-b1a3-80e66e79d29e': 'HR',
-    'b3a91e1e-2f42-4e3e-bf74-49b7c8aaf1c7': 'Finance'
-    // Add more if needed
-  };
 
   initForm(): void {
     this.userForm = this.fb.group({
-      firstName: ['', Validators.required],
-      lastName: ['', Validators.required],
+      first_name: ['', Validators.required],
+      last_name: ['', Validators.required],
       username: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required],
       role: ['', Validators.required],
-      department: ['', Validators.required],
+      department_id: ['', Validators.required],
     });
   }
- fetchDepartments(): void {
+
+  get f() {
+    return this.userForm.controls;
+  }
+
+  fetchDepartments(): void {
     this.http.get<any[]>('http://localhost:8000/api/departments').subscribe({
       next: (data) => {
         this.departments = data;
@@ -62,7 +62,19 @@ export class UserDataEditComponent implements OnInit {
         console.error('Failed to fetch departments', err);
         this.toastService.show('שגיאה בטעינת מחלקות', 'error');
         this.departments = [];
+      }
+    });
+  }
 
+  loadRoles(): void {
+    this.userService.getRoles().subscribe({
+      next: (rolesData) => {
+        this.roles = rolesData;
+      },
+      error: (err) => {
+        console.error('Failed to load roles', err);
+        this.toastService.show('שגיאה בטעינת תפקידים', 'error');
+        this.roles = [];
       }
     });
   }
@@ -76,7 +88,15 @@ export class UserDataEditComponent implements OnInit {
         next: (user) => {
           console.log('User data:', user);
           this.user = user;
-          this.userForm.patchValue(user); // Assuming keys match form controls
+
+          this.userForm.patchValue({
+            first_name: user.first_name,
+            last_name: user.last_name,
+            username: user.username,
+            email: user.email,
+            role: user.role,
+            department_id: user.department_id
+          });
         },
         error: (err) => {
           console.error('Failed to load user:', err);
@@ -84,15 +104,39 @@ export class UserDataEditComponent implements OnInit {
       });
     }
   }
-
-  onSubmit(): void {
-    if (this.userForm.valid) {
-      console.log('Form submitted:', this.userForm.value);
-      // Add submit logic here (e.g., userService.updateUser)
-    } else {
-      Object.keys(this.userForm.controls).forEach(key => {
-        this.userForm.get(key)?.markAsTouched();
-      });
-    }
+  updateUser(userId: string, updateData: any) {
+    return this.http.patch(`http://localhost:8000/api/user-data-edit/${userId}`, updateData);
   }
+
+  
+  onSubmit(): void {
+  if (this.userForm.valid && this.userId) {
+    // Exclude password if empty or handle appropriately
+    const updatePayload = { ...this.userForm.value };
+    if (!updatePayload.password) {
+      delete updatePayload.password;
+    }
+
+    this.userService.updateUser(this.userId, updatePayload).subscribe({
+      next: (updatedUser) => {
+        console.log('User updated:', updatedUser);
+        this.toastService.show('המשתמש עודכן בהצלחה', 'success');
+         setTimeout(() => {
+    this.router.navigate(['/user-data']);
+  }, 500);
+      },
+      error: (err) => {
+        console.error('Failed to update user:', err);
+        this.toastService.show('שגיאה בעדכון המשתמש', 'error');
+      }
+    });
+  } else {
+    Object.keys(this.userForm.controls).forEach(key => {
+      this.userForm.get(key)?.markAsTouched();
+    });
+  }
+ 
+}
+
+
 }

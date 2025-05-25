@@ -16,7 +16,7 @@ from src.services.admin_rides_service import (
 )
 from ..utils.database import get_db
 from src.models.user_model import User
-
+from src.models.user_model import UserRole
 
 router = APIRouter()
 
@@ -92,3 +92,8 @@ def edit_user_by_id_route(
     db.commit()
     db.refresh(user)
     return user
+
+
+@router.get("/roles")
+def get_roles():
+    return [role.value for role in UserRole]
