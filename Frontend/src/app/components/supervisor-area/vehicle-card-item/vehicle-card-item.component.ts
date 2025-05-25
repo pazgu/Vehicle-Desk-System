@@ -4,6 +4,7 @@ import { VehicleService } from '../../../services/vehicle.service';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
 import { FormsModule } from '@angular/forms';
+// import { th } from 'date-fns/locale'; // This import seems unused and might be causing a warning if not needed.
 
 @Component({
   selector: 'app-vehicle-card-item',
@@ -29,6 +30,7 @@ export class VehicleCardItemComponent implements OnInit {
       });
     }
   }
+
   getCardClass(status: string): string {
     switch (status) {
       case 'available': return 'card-available';
@@ -98,20 +100,30 @@ export class VehicleCardItemComponent implements OnInit {
     }
   }
 
-  unfreezeStatus(): void {
+  // Modified updateVehicleStatus to accept the new status and optionally the freeze reason
+  updateVehicleStatus(newStatus: string, reason?: string): void {
     if (!this.vehicle?.id) return;
-    this.vehicleService.unfreezeVehicle(this.vehicle.id, 'available').subscribe({
+  
+    this.vehicleService.updateVehicleStatus(this.vehicle.id, newStatus, reason).subscribe({
       next: (response) => {
-        console.log('Vehicle unfreeze response:', response);
-        this.vehicle.status = 'available';
+        console.log(`Vehicle status updated to '${newStatus}':`, response);
+        this.vehicle.status = newStatus; // Update the local status
+        this.vehicle.freeze_reason = newStatus === 'frozen' ? reason : null; // Clear freeze reason if unfreezing
+  
+        // Reset the dropdown and hide it if freezing
+        if (newStatus === 'frozen') {
+          this.freezeReason = '';
+          this.isFreezeReasonFieldVisible = false;
+        }
       },
       error: (err) => {
-        console.error('Failed to unfreeze vehicle:', err);
-        alert(`Failed to unfreeze vehicle: ${err.error?.detail || err.message}`);
+        console.error(`Failed to update vehicle status to '${newStatus}':`, err);
+        alert(`Failed to update vehicle status: ${err.error?.detail || err.message}`);
       }
     });
   }
 
+  
   // Show the freeze reason input field
   showFreezeReasonField(): void {
     this.isFreezeReasonFieldVisible = true;
@@ -124,12 +136,12 @@ export class VehicleCardItemComponent implements OnInit {
       return;
     }
 
-    console.log('Freezing vehicle with reason:', this.freezeReason);
-    // Logic to freeze the vehicle
-    this.vehicle.status = 'frozen';
-    this.vehicle.freeze_reason = this.freezeReason;
+    console.log('Freezing vehicle with reason:', this.freezeReason); // Log the freeze reason
 
-    // Reset the input field and hide it
+    // Call the common updateVehicleStatus method with 'frozen' status and the reason
+    this.updateVehicleStatus('frozen', this.freezeReason);
+
+    // Reset the dropdown and hide it after successful freeze (or if error occurs, the UI will reflect actual state)
     this.freezeReason = '';
     this.isFreezeReasonFieldVisible = false;
   }

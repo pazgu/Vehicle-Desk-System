@@ -62,8 +62,12 @@ def get_vehicle_by_id_route(vehicle_id: str, db: Session = Depends(get_db)):
 
 
 @router.patch("/{vehicle_id}/status")
-def patch_vehicle_status(vehicle_id: UUID, status_update: VehicleStatusUpdate, db: Session = Depends(get_db)):
-    return update_vehicle_status(vehicle_id, status_update.new_status, db)
+def patch_vehicle_status(
+    vehicle_id: UUID,
+    status_update: VehicleStatusUpdate,
+    db: Session = Depends(get_db)
+):
+    return update_vehicle_status(vehicle_id, status_update.new_status, status_update.freeze_reason, db)
 
 @router.post("/{ride_id}/end", response_model=OrderCardItem)
 def end_ride(ride_id: UUID, has_incident: Optional[bool] = False, db: Session = Depends(get_db)):

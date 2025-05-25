@@ -5,12 +5,7 @@
       <br>
       <!-- Sort + Filter Toggle -->
       <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; direction: rtl;">
-        <div>
-          <label for="sort">מיין לפי: </label>
-          <select id="sort" [(ngModel)]="sortBy">
-            <option value="status">סטטוס</option>
-          </select>
-        </div>
+        <!--  -->
         <button class="filter" (click)="showFilters = !showFilters">
           {{ showFilters ? 'הסתר סינון' : 'הצג סינון' }}
         </button>
