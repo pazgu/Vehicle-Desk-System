@@ -60,6 +60,9 @@ allCars: {
 availableCars: typeof this.allCars = [];
 
   ngOnInit(): void {
+
+    console.log('🔍 ngOnInit started'); // <== ADD THIS FIRST
+
     
     this.minDate = this.calculateMinDate(2);
     this.rideForm = this.fb.group({
@@ -86,34 +89,32 @@ availableCars: typeof this.allCars = [];
       this.onPeriodChange(value);
     });
 
- this.vehicleService.getAllVehicles().subscribe({
+this.vehicleService.getAllVehicles().subscribe({
   next: (vehicles) => {
+console.log('🚀 Raw vehicles from backend:', vehicles)
+    // ✅ Do the filtering here
+    this.allCars = vehicles
+      .filter(v =>
+        v.status === 'available' &&
+        !!v.id &&
+        !!v.type &&
+        !!v.plate_number &&
+        typeof v.odometer_reading === 'number'
+      )
+      .map(v => ({
+        ...v,
+        image_url: v.image_url || 'assets/default-car.png',
+        vehicle_model: v.vehicle_model || 'רכב ללא דגם',
+        freeze_reason: v.freeze_reason ?? null
+      }));
 
-    console.log('🚗 Raw vehicle data from backend:', vehicles); // ✅ ADD THIS
-
- this.allCars = vehicles
-  .filter(v =>
-    v.status === 'available' &&
-    !!v.id &&
-    !!v.type &&
-    !!v.plate_number &&
-    typeof v.odometer_reading === 'number'
-  )
-  .map(v => ({
-    ...v,
-    image_url: v.image_url || 'assets/default-car.png',  // Optional fallback
-    vehicle_model: v.vehicle_model || 'רכב ללא דגם',
-    freeze_reason: v.freeze_reason ?? null
-  }));
-
-  console.log('✅ Filtered available cars after .filter():', this.allCars); // ✅ ADD THIS
-
-
+    console.log('✅ Filtered allCars after filtering:', this.allCars);
   },
   error: () => {
     this.toastService.show('שגיאה בטעינת רכבים זמינים', 'error');
   }
 });
+
 
 
 
@@ -126,9 +127,11 @@ availableCars: typeof this.allCars = [];
     // Reset selected car if type changes
     this.rideForm.get('car')?.setValue('');
 
-  console.log('All cars:', this.allCars);
-  console.log('Selected type:', selectedType);
-  console.log('Filtered available cars:', this.availableCars);
+ console.log('All cars:', this.allCars);
+console.log('Selected type:', selectedType);
+console.log('Filtered available cars:', this.availableCars);
+
+  
 
   }
   onPeriodChange(value: string): void {
