@@ -22,7 +22,7 @@ from src.utils.database import get_db
 from ..schemas.order_card_item import OrderCardItem
 from ..services.supervisor_dashboard_service import end_ride_service
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
-from ..services.supervisor_dashboard_service import complete_ride_logic
+from ..services.supervisor_dashboard_service import vehicle_inspection_logic
 
 router = APIRouter()
 
@@ -67,7 +67,7 @@ def patch_vehicle_status(
     status_update: VehicleStatusUpdate,
     db: Session = Depends(get_db)
 ):
-    return update_vehicle_status(vehicle_id, status_update.new_status, db)
+    return update_vehicle_status(vehicle_id, status_update.new_status, status_update.freeze_reason, db)
 
 # @router.get("/orders/{department_id}/{order_id}/pending")
 # def get_approval_dashboard_route(department_id: UUID, order_id: UUID):
@@ -144,10 +144,10 @@ def end_ride(ride_id: UUID, has_incident: Optional[bool] = False, db: Session = 
     return end_ride_service(db=db, ride_id=ride_id, has_incident=has_incident)
 
 
-@router.post("/ride/complete")
-def complete_ride(data: VehicleInspectionSchema, db: Session = Depends(get_db)):
+@router.post("/vehicle-inspection")
+def vehicle_inspection(data: VehicleInspectionSchema, db: Session = Depends(get_db)):
     try:
-        return complete_ride_logic(data, db)
+        return vehicle_inspection_logic(data, db)
     except HTTPException as e:
         raise e
     except Exception as e:
