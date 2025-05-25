@@ -20,6 +20,10 @@ class VehicleOut(BaseModel):
 
     class Config:
         use_enum_values = True  # return enums as their values in JSON
+        orm_mode = True         # 👈 ADD this line!
+
+        
+
 
 
 class InUseVehicleOut(BaseModel):
