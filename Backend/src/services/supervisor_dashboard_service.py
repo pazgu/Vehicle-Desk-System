@@ -160,7 +160,6 @@ def end_ride_service(db: Session, ride_id: UUID, has_incident: bool):
     if not ride:
         raise HTTPException(status_code=404, detail="Ride not found")
 
-    # עדכון שעת סיום
     ride.end_datetime = datetime.now()
 
     if has_incident:

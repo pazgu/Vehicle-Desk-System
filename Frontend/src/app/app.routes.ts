@@ -15,6 +15,7 @@ import { UserDataEditComponent } from './components/admin-area/user-data-edit/us
 import { UserCardComponent } from './components/admin-area/user-card/user-card.component';
 import { VehicleCardItemComponent } from './components/admin-area/vehicle-card-item/vehicle-card-item.component';
 import { VehicleDashboardComponent } from './components/admin-area/vehicle-dashboard/vehicle-dashboard.component';
+import { RideCompletionFormComponent } from './components/page-area/ride-completion-form/ride-completion-form.component';
 
 
 export const routes: Routes = [
@@ -40,6 +41,7 @@ export const routes: Routes = [
   { path: 'user-data', component: UserDataComponent,canActivate: [ProtectedRouteGuard] }, 
   { path: 'vehicle-details/:id', component: VehicleCardItemComponent },
   { path: 'vehicle-dashboard', component: VehicleDashboardComponent },
+  { path: 'ride-completion-form', component: RideCompletionFormComponent },
 {
   path: 'ride/details/:id',
   loadComponent: () => import('./ride-area/ride-details/ride-details.component').then(m => m.RideDetailsComponent)
