@@ -42,5 +42,21 @@ updateRide(rideId: string, data: any): Observable<any> {
   return this.http.patch(`http://localhost:8000/api/orders/${rideId}`, data, { headers });
 }
 
+getArchivedOrders(userId: string): Observable<any[]> {
+  const token = localStorage.getItem('access_token');
+
+  if (!token) {
+    throw new Error('Access token not found in localStorage.');
+  }
+
+  const headers = new HttpHeaders({
+    Authorization: `Bearer ${token}`
+  });
+
+  return this.http.get<any[]>(`http://localhost:8000/api/archived-orders/${userId}`, { headers });
+}
+
+
+
 
 }

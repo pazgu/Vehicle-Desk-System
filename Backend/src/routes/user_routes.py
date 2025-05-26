@@ -28,7 +28,7 @@ from src.schemas.ride_status_enum import UpdateRideStatusRequest
 from ..schemas.order_card_item import OrderCardItem
 from ..models.ride_model import Ride
 from ..services.user_edit_ride import patch_order_in_db
-from ..services.user_rides_service import get_ride_by_id
+from ..services.user_rides_service import get_ride_by_id , get_archived_rides
 from ..services.user_notification import create_system_notification,get_supervisor_id,get_user_name
 import traceback
 from ..models.user_model import User
@@ -241,7 +241,6 @@ def read_ride(ride_id: UUID, db: Session = Depends(get_db)):
     ride = get_ride_by_id(db, ride_id)
     return ride
 
-
 @router.post("/api/complete-ride-form", status_code=fastapi_status.HTTP_200_OK)
 def submit_completion_form(
     form_data: CompletionFormData,
@@ -249,3 +248,16 @@ def submit_completion_form(
     user: User = Depends(get_current_user)
 ):
     return process_completion_form(db, user, form_data)
+
+
+@router.get("/api/archived-orders/{user_id}", response_model=List[RideSchema])
+def get_archived_orders_route(
+    user_id: UUID,
+    db: Session = Depends(get_db),
+    token: str = Depends(oauth2_scheme)
+):
+    role_check(["employee", "admin"], token)
+    identity_check(str(user_id), token)
+
+    return get_archived_rides(user_id, db)
+
