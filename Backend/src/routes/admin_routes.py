@@ -74,7 +74,7 @@ def fetch_user_by_id(user_id: UUID, db: Session = Depends(get_db)):
 
 
 
-@router.patch("/user-edit-data/{user_id}", response_model=UserResponse)
+@router.patch("/user-data-edit/{user_id}", response_model=UserResponse)
 def edit_user_by_id_route(
     user_id: UUID,
     user_update: UserUpdate,

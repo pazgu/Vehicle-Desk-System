@@ -41,6 +41,10 @@ export const routes: Routes = [
   { path: 'user-card/:user_id', component: UserCardComponent,canActivate: [ProtectedRouteGuard] }, // Moved lower
   { path: 'user-data', component: UserDataComponent,canActivate: [ProtectedRouteGuard] }, 
   { path: 'vehicle-details/:id', component: VehicleCardItemComponent },
+{
+  path: 'ride/details/:id',
+  loadComponent: () => import('./ride-area/ride-details/ride-details.component').then(m => m.RideDetailsComponent)
+},
   { path: '**', component: Page404Component }
 ];
 

@@ -275,5 +275,15 @@ editOrder(order: any): void {
   this.router.navigate(['/ride/edit', order.ride_id]);
 }
 
+viewRide(order: any): void {
+  if (!order.ride_id) {
+    this.toastService.show('שגיאה בזיהוי ההזמנה', 'error');
+    return;
+  }
+
+  this.router.navigate(['/ride/details', order.ride_id]);
+}
+
+
 
 }
