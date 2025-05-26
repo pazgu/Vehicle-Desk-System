@@ -115,7 +115,8 @@
 }
 
 .confirm-freeze-button:hover {
-  background-color: #973838dc;
+  background-color: #973838dc; /* Darker red on hover */
+  box-shadow: 0 2px 8px #ad3131e3; /* Stronger shadow on hover */
 }
 
 .vehicle-details-card {
