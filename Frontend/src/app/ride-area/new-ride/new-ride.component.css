@@ -27,14 +27,13 @@ html, body {
   direction: rtl;
   padding: 0;
   margin: 0;
-  position: absolute; /* or relative, depending on context */
+  position: fixed; /* or relative, depending on context */
   top: 0;
   left: 0;
-  width: 100%;
+  width: 100vw;
   min-height: 100vh;
   z-index: 10;
 }
-
 
 
 
@@ -43,23 +42,21 @@ html, body {
     padding: 20px 28px;
     border-radius: 10px;
     width: 750px;
-    overflow-y: auto; /* 👈 allow internal scroll */
-    height: auto;  
-    overflow-y: auto; /* 👈 allow internal scroll */
+    min-height: 0;
+    max-height: 90vh;         /* Prevents modal from overflowing viewport */
+    overflow-y: auto;         /* Enables scroll inside modal if needed */
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
     position: relative;
     display: flex;
     flex-direction: column;
-    max-height: none;     /* ✅ let it grow freely */
-    overflow: visible; 
-    justify-content: space-between; 
-    margin-top: 40px;
+    justify-content: flex-start;
+    margin-top: 60px;
 }
 
 
 .close-btn {
     position: absolute;
-    top: 10px;
+    top: 15px;
     left: 10px;
     background: none;
     border: none;
@@ -110,6 +107,9 @@ form .row {
   background-color: #942222;
   color: white;
   border: none;
+  align-self: flex-end;
+  margin-top: auto;
+
   padding: 12px 24px;
   border-radius: 6px;
   cursor: pointer;
@@ -165,20 +165,22 @@ input[type="time"], input[type="number"], input[type="text"], select {
 }
 
 .ride-form {
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
 }
 
+
 .form-content {
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  overflow-y: visible; /* ✅ disables internal scroll */
-  max-height: none; 
-  max-height: calc(90vh - 140px); /* leave room for title, hr, button */
+  overflow-y: visible;
+  max-height: none;
   padding-right: 4px;
 }
+
 
 @media (max-width: 600px) {
   .modal {
