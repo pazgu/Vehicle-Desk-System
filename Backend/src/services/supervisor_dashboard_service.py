@@ -9,8 +9,6 @@ from ..models.notification_model import NotificationType, Notification
 from ..models.vehicle_model import VehicleStatus
 from fastapi import HTTPException
 from .vehicle_service import update_vehicle_status
-from ..models.vehicle_inspection_model import VehicleInspection 
-from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 
 def get_department_orders(department_id: str, db: Session) -> List[RideDashboardItem]:
     """
@@ -175,23 +173,4 @@ def end_ride_service(db: Session, ride_id: UUID, has_incident: bool):
     db.commit()
     db.refresh(ride)
     return ride
-
-def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
-    
-    inspection = VehicleInspection(
-        vehicle_id=data.vehicle_id,
-        inspected_by=data.inspected_by,
-        fuel_level=data.fuel_level,
-        tires_ok=data.tires_ok,
-        clean=data.clean,
-        issues_found=data.issues_found,
-        inspection_date=datetime.utcnow()
-    )
-
-    db.add(inspection)
-
-    db.commit()
-
-    return {"message": "Ride completed and vehicle inspection recorded successfully"}
-
 
