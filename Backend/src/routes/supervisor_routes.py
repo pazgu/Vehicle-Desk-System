@@ -16,7 +16,7 @@ from ..services.supervisor_dashboard_service import end_ride_service
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 # from ..services.supervisor_dashboard_service import complete_ride_logic
 from ..utils.auth import supervisor_check, token_check
-from ..services.supervisor_dashboard_service import vehicle_inspection_logic
+from ..services.supervisor_dashboard_service import vehicle_inspection_logic , start_ride
 from ..utils.auth import supervisor_check, token_check
 
 router = APIRouter()
@@ -158,3 +158,11 @@ def vehicle_inspection(data: VehicleInspectionSchema, db: Session = Depends(get_
 @router.post("/vehicles/freeze")
 def freeze_vehicle(request: FreezeVehicleRequest, db: Session = Depends(get_db)):
     return freeze_vehicle_service(db, request.vehicle_id, request.reason)
+
+@router.post("/rides/{ride_id}/start")
+def start_ride_route(ride_id: UUID, db: Session = Depends(get_db)):
+    try:
+        start_ride(db, ride_id)
+        return {"message": "Ride started, vehicle marked as in use"}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
