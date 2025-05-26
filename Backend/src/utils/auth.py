@@ -32,6 +32,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 
 def token_check(request: Request):
+    print("token_check called")
     auth_header = request.headers.get("Authorization")
     if not auth_header or not auth_header.startswith("Bearer "):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing or Invalid token")
