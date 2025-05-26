@@ -45,6 +45,12 @@ export const routes: Routes = [
   path: 'ride/details/:id',
   loadComponent: () => import('./ride-area/ride-details/ride-details.component').then(m => m.RideDetailsComponent)
 },
+{
+  path: 'archived-orders',
+  loadComponent: () =>
+    import('./ride-area/archived-orders/archived-orders.component').then(m => m.ArchivedOrdersComponent)
+},
+
   { path: '**', component: Page404Component }
 ];
 
