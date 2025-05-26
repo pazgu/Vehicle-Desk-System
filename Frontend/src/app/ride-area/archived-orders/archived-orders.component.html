@@ -1,0 +1,50 @@
+<div class="archived-container">
+  <div class="title-bar">
+    <h1>הזמנות בארכיון</h1>
+    <button (click)="goBack()" class="cute-red-button"> חזרה להזמנות</button>
+  </div>
+
+  <div *ngIf="loading" class="loading-message">טוען נתונים...</div>
+
+  <div *ngIf="!loading && archivedOrders.length === 0" class="no-archive-message">
+    אין הזמנות בארכיון.
+  </div>
+
+  <div *ngIf="archivedOrders.length > 0" class="archived-list">
+    <div
+      class="archived-card"
+      *ngFor="let order of archivedOrders"
+      (click)="viewRide(order)"
+    >
+      <div class="row">
+        <span class="label">תאריך:</span>
+        <span>{{ order.start_datetime | date: 'dd/MM/yyyy' }}</span>
+      </div>
+      <div class="row">
+        <span class="label">שעה:</span>
+        <span>{{ order.start_datetime | date: 'HH:mm' }}</span>
+      </div>
+      <div class="row">
+        <span class="label">סוג:</span>
+        <span>{{ order.ride_type === 'operational' ? 'תפעולית' : 'מנהלתית' }}</span>
+      </div>
+      <div class="row">
+        <span class="label">מרחק:</span>
+        <span>{{ order.estimated_distance }} ק״מ</span>
+      </div>
+      <div class="row">
+  <span class="label">מוצא:</span>
+  <span>{{ order.start_location }}</span>
+</div>
+<div class="row">
+  <span class="label">עצירה:</span>
+  <span>{{ order.stop }}</span>
+</div>
+<div class="row">
+  <span class="label">יעד:</span>
+  <span>{{ order.destination }}</span>
+</div>
+
+    </div>
+  </div>
+</div>
