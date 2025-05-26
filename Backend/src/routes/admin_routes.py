@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from uuid import UUID
 from typing import Optional
 from typing import List
@@ -17,6 +17,12 @@ from src.services.admin_rides_service import (
 from ..utils.database import get_db
 from src.models.user_model import User
 from src.models.user_model import UserRole
+from ..schemas.check_vehicle_schema import VehicleInspectionSchema
+from ..services.vehicle_service import vehicle_inspection_logic
+from ..schemas.vehicle_schema import VehicleOut , InUseVehicleOut , VehicleStatusUpdate
+from ..utils.auth import token_check
+from ..services.vehicle_service import get_vehicles_with_optional_status, get_available_vehicles,update_vehicle_status,get_vehicle_by_id
+
 
 router = APIRouter()
 
@@ -73,7 +79,6 @@ def fetch_user_by_id(user_id: UUID, db: Session = Depends(get_db)):
     return result
 
 
-
 @router.patch("/user-data-edit/{user_id}", response_model=UserResponse)
 def edit_user_by_id_route(
     user_id: UUID,
@@ -86,10 +91,23 @@ def edit_user_by_id_route(
         raise HTTPException(status_code=404, detail="User not found")
 
     update_data = user_update.dict(exclude_unset=True)
-    for key, value in update_data.items():
-        setattr(user, key, value)
+    print("🟡 Incoming update:", update_data)
 
-    db.commit()
+    # Check attributes before applying them
+    for key, value in update_data.items():
+        if not hasattr(user, key):
+            print(f"⚠️ WARNING: User has no attribute '{key}' — skipping.")
+        else:
+            print(f"✅ Updating '{key}' to '{value}'")
+            setattr(user, key, value)
+
+    try:
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        print("❌ Commit failed:", e)
+        raise HTTPException(status_code=500, detail="Failed to update user")
+
     db.refresh(user)
     return user
 
@@ -97,3 +115,40 @@ def edit_user_by_id_route(
 @router.get("/roles")
 def get_roles():
     return [role.value for role in UserRole]
+
+
+@router.post("/vehicle-inspection")
+def vehicle_inspection(data: VehicleInspectionSchema, db: Session = Depends(get_db),payload: dict = Depends(token_check)):
+    try:
+        return vehicle_inspection_logic(data, db)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+
+@router.patch("/{vehicle_id}/status")
+def patch_vehicle_status(
+    vehicle_id: UUID,
+    status_update: VehicleStatusUpdate,
+    db: Session = Depends(get_db),
+    payload: dict = Depends(token_check)
+):
+    return update_vehicle_status(vehicle_id, status_update.new_status, status_update.freeze_reason, db)
+
+@router.get("/vehicle/{vehicle_id}")
+def get_vehicle_by_id_route(vehicle_id: str, db: Session = Depends(get_db)):
+    return get_vehicle_by_id(vehicle_id, db)
+
+@router.get("/all-vehicles/available")
+def get_available_vehicles_route(status: Optional[str] = Query(None),
+ db: Session = Depends(get_db),payload: dict = Depends(token_check)):
+    vehicles = get_available_vehicles(db)
+    return vehicles
+
+@router.get("/all-vehicles", response_model=List[VehicleOut])
+def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = Depends(get_db)
+    ,payload: dict = Depends(token_check)):
+    vehicles = get_vehicles_with_optional_status(db, status)
+    return vehicles
+

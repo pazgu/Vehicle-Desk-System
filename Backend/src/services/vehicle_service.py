@@ -11,6 +11,8 @@ from ..schemas.vehicle_schema import VehicleOut, InUseVehicleOut
 from uuid import UUID
 from fastapi import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
+from ..models.vehicle_inspection_model import VehicleInspection 
+from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 
 # def get_available_vehicles(db: Session, type: Optional[VehicleType] = None) -> List[Vehicle]:
 #     query = db.query(Vehicle).filter(Vehicle.status == VehicleStatus.available)
@@ -66,6 +68,25 @@ from sqlalchemy.exc import SQLAlchemyError
 
 #     # הופך את הרשומות לדיקטים
 #     return [dict(r._mapping) for r in result]
+
+def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
+    
+    inspection = VehicleInspection(
+        vehicle_id=data.vehicle_id,
+        inspected_by=data.inspected_by,
+        fuel_level=data.fuel_level,
+        tires_ok=data.tires_ok,
+        clean=data.clean,
+        issues_found=data.issues_found,
+        inspection_date=datetime.utcnow()
+    )
+
+    db.add(inspection)
+
+    db.commit()
+
+    return {"message": "Ride completed and vehicle inspection recorded successfully"}
+
 
 
 def get_vehicles_with_optional_status(
@@ -186,3 +207,15 @@ def get_vehicle_by_id(vehicle_id: str, db: Session):
         "vehicle_model": vehicle.vehicle_model,
         "image_url": vehicle.image_url,
     }
+
+def freeze_vehicle_service(db: Session, vehicle_id: UUID, reason: str):
+    vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="Vehicle not found")
+
+    vehicle.status = VehicleStatus.frozen
+    vehicle.freeze_reason = reason
+
+    db.commit()
+    db.refresh(vehicle)
+    return {"message": f"Vehicle {vehicle_id} has been frozen successfully."}
