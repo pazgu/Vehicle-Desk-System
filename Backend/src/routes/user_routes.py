@@ -1,3 +1,4 @@
+import traceback
 from fastapi import APIRouter, HTTPException, Depends , Query
 from sqlalchemy.orm import Session
 from ..schemas.register_schema import UserCreate
@@ -30,8 +31,9 @@ from ..services.user_edit_ride import patch_order_in_db
 from ..services.user_rides_service import get_ride_by_id
 from ..services.user_notification import create_system_notification,get_supervisor_id,get_user_name
 import traceback
-
-
+from ..models.user_model import User
+from ..services.user_form import process_completion_form
+from ..schemas.form_schema import CompletionFormData
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -238,3 +240,12 @@ def delete_order():
 def read_ride(ride_id: UUID, db: Session = Depends(get_db)):
     ride = get_ride_by_id(db, ride_id)
     return ride
+
+
+@router.post("/api/complete-ride-form", status_code=fastapi_status.HTTP_200_OK)
+def submit_completion_form(
+    form_data: CompletionFormData,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
+):
+    return process_completion_form(db, user, form_data)
