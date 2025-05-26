@@ -247,4 +247,4 @@ def submit_completion_form(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user)
 ):
-    return process_completion_form(db, user, form_data
+    return process_completion_form(db, user, form_data)
