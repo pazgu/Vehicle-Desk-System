@@ -27,8 +27,9 @@ from src.schemas.ride_status_enum import UpdateRideStatusRequest
 from ..schemas.order_card_item import OrderCardItem
 from ..models.ride_model import Ride
 from ..services.user_edit_ride import patch_order_in_db
-from ..services.user_rides_service import get_ride_by_id
+from ..services.user_rides_service import get_ride_by_id , get_archived_rides
 from ..services.user_notification import create_system_notification,get_supervisor_id,get_user_name
+import traceback
 
 
 
@@ -237,3 +238,21 @@ def delete_order():
 def read_ride(ride_id: UUID, db: Session = Depends(get_db)):
     ride = get_ride_by_id(db, ride_id)
     return ride
+
+
+@router.get("/api/archived-orders/{user_id}", response_model=List[RideSchema])
+def get_archived_orders(user_id: UUID,
+                        db: Session = Depends(get_db),
+                        token: str = Depends(oauth2_scheme)):
+    print(f"📦 Fetching archived rides for user: {user_id}")
+
+    role_check(["employee", "admin"], token)
+    identity_check(str(user_id), token)
+
+    try:
+        return get_archived_rides(user_id, db)
+    except Exception as e:
+        print("🔥 Error while fetching archived rides:", str(e))
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
+
