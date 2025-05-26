@@ -42,7 +42,7 @@
     </div>
 
     <div class="nav-right">
-    <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/cars']" class="nav-link" href="#">רכבים | </a>
+    <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/vehicle-dashboard']" class="nav-link" href="#">רכבים | </a>
     <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/daily-checks']" class="nav-link" href="#">בדיקות יומיות | </a>
     <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/user-data']" class="nav-link" href="#"> נתוני עובדים | </a>
 
