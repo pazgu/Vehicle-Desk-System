@@ -6,45 +6,32 @@
 
   <div *ngIf="loading" class="loading-message">טוען נתונים...</div>
 
-  <div *ngIf="!loading && archivedOrders.length === 0" class="no-archive-message">
+  <div *ngIf="!loading && archivedOrders.length === 0" class="no-orders-message">
     אין הזמנות בארכיון.
   </div>
 
-  <div *ngIf="archivedOrders.length > 0" class="archived-list">
-    <div
-      class="archived-card"
+  <table *ngIf="archivedOrders.length > 0" class="orders-table">
+    <tr class="table-header">
+      <th>תאריך</th>
+      <th>שעה</th>
+      <th>סוג</th>
+      <th>מרחק</th>
+      <th>מוצא</th>
+      <th>עצירה</th>
+      <th>יעד</th>
+    </tr>
+    <tr
       *ngFor="let order of archivedOrders"
+      class="orders-data-row"
       (click)="viewRide(order)"
     >
-      <div class="row">
-        <span class="label">תאריך:</span>
-        <span>{{ order.start_datetime | date: 'dd/MM/yyyy' }}</span>
-      </div>
-      <div class="row">
-        <span class="label">שעה:</span>
-        <span>{{ order.start_datetime | date: 'HH:mm' }}</span>
-      </div>
-      <div class="row">
-        <span class="label">סוג:</span>
-        <span>{{ order.ride_type === 'operational' ? 'תפעולית' : 'מנהלתית' }}</span>
-      </div>
-      <div class="row">
-        <span class="label">מרחק:</span>
-        <span>{{ order.estimated_distance }} ק״מ</span>
-      </div>
-      <div class="row">
-  <span class="label">מוצא:</span>
-  <span>{{ order.start_location }}</span>
-</div>
-<div class="row">
-  <span class="label">עצירה:</span>
-  <span>{{ order.stop }}</span>
-</div>
-<div class="row">
-  <span class="label">יעד:</span>
-  <span>{{ order.destination }}</span>
-</div>
-
-    </div>
-  </div>
+      <td class="cell">{{ order.start_datetime | date: 'dd/MM/yyyy' }}</td>
+      <td class="cell">{{ order.start_datetime | date: 'HH:mm' }}</td>
+      <td class="cell">{{ order.ride_type === 'operational' ? 'תפעולית' : 'מנהלתית' }}</td>
+      <td class="cell">{{ order.estimated_distance }} ק״מ</td>
+      <td class="cell">{{ order.start_location }}</td>
+      <td class="cell">{{ order.stop }}</td>
+      <td class="cell">{{ order.destination }}</td>
+    </tr>
+  </table>
 </div>

@@ -172,6 +172,8 @@ def get_archived_rides(user_id: UUID, db: Session) -> List[RideSchema]:
     ).join(Vehicle, Ride.vehicle_id == Vehicle.id).filter(
         Ride.user_id == user_id,
         Ride.start_datetime < cutoff_date,
+        Ride.is_archive.is_(True)
+
     ).order_by(Ride.start_datetime)
 
     rows = query.all()

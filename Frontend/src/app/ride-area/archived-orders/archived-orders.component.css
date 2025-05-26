@@ -1,6 +1,6 @@
 .archived-container {
   direction: rtl;
-  max-width: 700px;
+  max-width: 720px;
   margin: 2rem auto;
   padding: 2rem;
   background: rgba(255, 251, 251, 1);
@@ -16,40 +16,47 @@
   margin-bottom: 1.5rem;
 }
 
-.archived-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.archived-card {
-  background: #fef7ff;
-  border: 2px solid rgba(202, 196, 208, 1);
+/* ✨ New: table layout for archived orders */
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
   border-radius: 12px;
-  padding: 1rem;
-  cursor: pointer;
-  transition: transform 0.2s;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
-.archived-card:hover {
-  transform: scale(1.01);
-}
-
-.row {
-  display: flex;
-  justify-content: space-between;
-  padding: 4px 0;
-  font-size: 18px;
-}
-
-.label {
+.table-header {
+  background-color: #811313;
+  color: white;
   font-weight: bold;
-  color: var(--text-rgb-130-123-123);
+  font-size: 1rem;
 }
 
+.table-header th {
+  padding: 12px;
+  text-align: center;
+  border-bottom: 2px solid #811313;
+}
 
+.orders-data-row {
+  background-color: #f9f9f9;
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+}
+
+.orders-data-row:hover {
+  background-color: #ececec;
+}
+
+.orders-data-row td {
+  padding: 10px;
+  text-align: center;
+  font-size: 16px;
+}
+
+/* ✅ Already present */
 .cute-red-button {
-  background-color: #942222; /* your theme red */
+  background-color: #942222;
   color: white;
   font-family: var(--font-family-alef);
   font-size: 16px;
@@ -65,7 +72,7 @@
 }
 
 .cute-red-button:hover {
-  background-color: #7c1b1b; /* darker on hover */
+  background-color: #7c1b1b;
   transform: scale(1.03);
 }
 
@@ -78,4 +85,15 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+}
+
+.no-orders-message {
+  background-color: #942222;
+  color: white;
+  font-family: var(--font-family-alef);
+  font-size: 20px;
+  font-weight: bold;
+  text-align: center;
+  padding: 20px;
+  border-radius: 12px;
 }
