@@ -29,6 +29,7 @@ from ..models.ride_model import Ride
 from ..services.user_edit_ride import patch_order_in_db
 from ..services.user_rides_service import get_ride_by_id
 from ..services.user_notification import create_system_notification,get_supervisor_id,get_user_name
+import traceback
 
 
 
