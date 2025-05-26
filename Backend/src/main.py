@@ -4,8 +4,6 @@ from src.routes.supervisor_routes import router as supervisor_route
 from src.routes.admin_routes import router as admin_route
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Request
-
-
 app = FastAPI()
 
 print("🚀 FastAPI app starting with CORS enabled")
