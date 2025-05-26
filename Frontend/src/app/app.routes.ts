@@ -16,12 +16,12 @@ import { UserCardComponent } from './components/admin-area/user-card/user-card.c
 import { VehicleCardItemComponent } from './components/admin-area/vehicle-card-item/vehicle-card-item.component';
 import { VehicleDashboardComponent } from './components/admin-area/vehicle-dashboard/vehicle-dashboard.component';
 import { RideCompletionFormComponent } from './components/page-area/ride-completion-form/ride-completion-form.component';
+import { AuditLogsComponent } from './components/admin-area/audit-logs/audit-logs.component';
 
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
-  // { path: 'cars', component: CarsComponent, canActivate: [ProtectedRouteGuard] },
   { path: 'home', component: HomeComponent, canActivate: [ProtectedRouteGuard] },
   { path: 'new-ride', component: NewRideComponent, canActivate: [ProtectedRouteGuard] },
   {
@@ -36,12 +36,12 @@ export const routes: Routes = [
   { path: '', component: RedirectByRoleComponent, pathMatch: 'full' },
   
   { path: 'user-data-edit/:user_id', component: UserDataEditComponent,canActivate: [ProtectedRouteGuard] }, // Moved lower
-  { path: 'user-data', component: UserDataComponent,canActivate: [ProtectedRouteGuard] }, // Moved lower
   { path: 'user-card/:user_id', component: UserCardComponent,canActivate: [ProtectedRouteGuard] }, // Moved lower
   { path: 'user-data', component: UserDataComponent,canActivate: [ProtectedRouteGuard] }, 
   { path: 'vehicle-details/:id', component: VehicleCardItemComponent },
   { path: 'vehicle-dashboard', component: VehicleDashboardComponent },
   { path: 'ride-completion-form', component: RideCompletionFormComponent },
+  { path: 'audit-logs', component: AuditLogsComponent },
 {
   path: 'ride/details/:id',
   loadComponent: () => import('./ride-area/ride-details/ride-details.component').then(m => m.RideDetailsComponent)

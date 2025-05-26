@@ -1,0 +1,62 @@
+<div class="page-wrapper">
+  <div class="page-container">
+    <div class="audit-wrapper">
+      <h1>צפייה ביומני ביקורת</h1>
+      
+      <!-- Filter Toggle Button -->
+      <div class="filter-section">
+        <button class="filter-button" (click)="showFilters = !showFilters">
+          {{ showFilters ? 'הסתר חיפוש' : 'הצג חיפוש' }}
+        </button>
+      </div>
+
+      <!-- Search Section -->
+      <div *ngIf="showFilters" class="search-container">
+        <input 
+          type="text" 
+          class="audit-search-input" 
+          placeholder="חיפוש לפי סוג ישות, מזהה ישות או מי שינה"
+          [(ngModel)]="searchTerm"
+          (input)="filterLogs()" 
+        />
+      </div>
+
+      <!-- Table Container -->
+      <div class="table-container">
+        <table class="audit-table">
+          <thead class="audit-thead">
+            <tr>
+              <th class="audit-th">מספר מזהה</th>
+              <th class="audit-th">פעולה</th>
+              <th class="audit-th">סוג ישות</th>
+              <th class="audit-th">מזהה ישות</th>
+              <th class="audit-th">נתוני שינוי</th>
+              <th class="audit-th">שונה על ידי</th>
+              <th class="audit-th">תאריך יצירה</th>
+            </tr>
+          </thead>
+          <tbody class="audit-tbody">
+            <tr *ngFor="let log of filteredLogs" class="audit-tr">
+              <td class="audit-td">{{ log.id }}</td>
+              <td class="audit-td">
+                <span [class]="'action-' + log.action.toLowerCase()">
+                  {{ log.action }}
+                </span>
+              </td>
+              <td class="audit-td">{{ log.entityType }}</td>
+              <td class="audit-td">{{ log.entityId }}</td>
+              <td class="audit-td">{{ log.changeData }}</td>
+              <td class="audit-td">{{ log.changedBy }}</td>
+              <td class="audit-td">{{ log.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="filteredLogs?.length === 0" class="empty-state">
+        לא נמצאו רשומות ביקורת
+      </div>
+    </div>
+  </div>
+</div>

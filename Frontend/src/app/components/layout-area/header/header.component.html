@@ -43,11 +43,10 @@
 
     <div class="nav-right">
     <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/vehicle-dashboard']" class="nav-link" href="#">רכבים | </a>
-    <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/daily-checks']" class="nav-link" href="#">בדיקות יומיות | </a>
+    <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/audit-logs']" class="nav-link" href="#"> מעקב פעולות | </a>
     <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/user-data']" class="nav-link" href="#"> נתוני עובדים | </a>
 
-    <a *ngIf="(role$ | async) === 'supervisor'" [routerLink]="['/supervisor-dashboard']" class="nav-link" href="#">הזמנות מחלקה  | </a>
-    <a *ngIf="(role$ | async) === 'supervisor'" [routerLink]="['/vehicle-dashboard']" class="nav-link" href="#">רכבי מחלקה  </a>
+    <a *ngIf="(role$ | async) === 'supervisor'" [routerLink]="['/supervisor-dashboard']" class="nav-link" href="#">הזמנות מחלקה   </a>
 
       <a *ngIf="(role$ | async) === 'employee'" [routerLink]="['home']" class="nav-link" href="#">ההזמנות שלי </a>
      <a routerLink="/notifications">

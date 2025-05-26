@@ -100,6 +100,8 @@ def edit_user_by_id_route(
     return user
 
 
+
+
 @router.get("/roles")
 def get_roles():
     return [role.value for role in UserRole]
