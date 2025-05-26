@@ -186,3 +186,15 @@ def get_vehicle_by_id(vehicle_id: str, db: Session):
         "vehicle_model": vehicle.vehicle_model,
         "image_url": vehicle.image_url,
     }
+
+def freeze_vehicle_service(db: Session, vehicle_id: UUID, reason: str):
+    vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="Vehicle not found")
+
+    vehicle.status = VehicleStatus.frozen
+    vehicle.freeze_reason = reason
+
+    db.commit()
+    db.refresh(vehicle)
+    return {"message": f"Vehicle {vehicle_id} has been frozen successfully."}
