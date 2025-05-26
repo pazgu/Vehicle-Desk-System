@@ -9,7 +9,7 @@ import { Observable } from 'rxjs';
 })
 
 export class UserService {
-private apiUrl = 'http://localhost:8000'; // or your actual backend base URL
+private apiUrl = 'http://localhost:8000/api'; // or your actual backend base URL
 
   constructor(private http: HttpClient) {}
 

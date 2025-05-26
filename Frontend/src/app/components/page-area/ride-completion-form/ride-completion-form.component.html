@@ -1,48 +1,86 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>טופס חווית נסיעה</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>טופס חווית נסיעה</title>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div class="review-form">
-    <div class="header"></div>
-    <div class="subheader"></div>
+    <div class="container">
+        <div class="form-card">
+            <div class="header">
+                <h1 class="form-title">טופס חווית נסיעה</h1>
+                <p class="form-subtitle">אנא מלא את הפרטים הבאים</p>
+            </div>
+            
+            <div class="form-content">
+                <div class="question">
+                    <p class="question-text">האם החזרת את הרכב?</p>
+                    <div class="options">
+                        <div class="option" data-value="yes">כן</div>
+                        <div class="option" data-value="no">לא</div>
+                    </div>
+                    <div class="divider"></div>
+                </div>
 
-    <p class="form-title">טופס חווית נסיעה</p>
-    
-    <div class="question">
-      <p>האם החזרת את הרכב?</p>
-      <div class="options">
-        <span class="option">כן</span>
-        <span class="option">לא</span>
-      </div>
-      <hr class="line" />
+                <div class="question">
+                    <p class="question-text">האם הטענת/תדלקת את הרכב?</p>
+                    <div class="options">
+                        <div class="option" data-value="yes">כן</div>
+                        <div class="option" data-value="no">לא</div>
+                    </div>
+                    <div class="divider"></div>
+                </div>
+                
+<div class="question" [formGroup]="form">
+  <p class="question-text">האם קרה דבר שונה מהרגיל במהלך הנסיעה?</p>
+
+  <div class="options">
+    <div
+      class="option"
+      [ngClass]="{ selected: form.get('incident')?.value === 'yes' }"
+      (click)="setIncident('yes')"
+    >
+      כן
     </div>
-
-    <div class="question">
-      <p>האם הטענת/תדלקת את הרכב?</p>
-      <div class="options">
-        <span class="option">כן</span>
-        <span class="option">לא</span>
-      </div>
-      <hr class="line" />
-    </div>
-
-    <div class="question">
-      <p>האם קרה דבר שונה מהרגיל במהלך הנסיעה?</p>
-      <div class="options">
-        <span class="option">כן</span>
-        <span class="option">לא</span>
-      </div>
-      <hr class="line" />
-    </div>
-
-    <div class="submit-wrapper">
-      <button class="submit-btn">שלח</button>
+    <div
+      class="option"
+      [ngClass]="{ selected: form.get('incident')?.value === 'no' }"
+      (click)="setIncident('no')"
+    >
+      לא
     </div>
   </div>
+
+  <!-- Conditional input if 'yes' is selected -->
+  <div *ngIf="form.get('incident')?.value === 'yes'" style="margin-top: 10px;">
+    <label for="elaborateText">אנא פרט:</label>
+    <input
+      id="elaborateText"
+      type="text"
+      class="form-control"
+      formControlName="elaborate"
+      placeholder="פרטים נוספים"
+    />
+  </div>
+
+  <div class="divider"></div>
+</div>
+
+
+                <div class="submit-section">
+                    <button class="submit-btn" id="submitBtn">
+                        <span class="btn-text">שלח</span>
+                        <div class="btn-loading">
+                            <div class="spinner"></div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
-<router-outlet></router-outlet>
