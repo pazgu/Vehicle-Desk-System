@@ -6,16 +6,18 @@ from src.models.ride_model import Ride
 from src.utils.database import get_db
 from ..utils.database import get_db
 from ..services.supervisor_dashboard_service import get_department_orders
-from ..schemas.vehicle_schema import VehicleOut , InUseVehicleOut , VehicleStatusUpdate
+from ..schemas.vehicle_schema import VehicleOut , InUseVehicleOut , VehicleStatusUpdate , FreezeVehicleRequest
 from ..models.vehicle_model import VehicleType
-from ..services.vehicle_service import get_vehicles_with_optional_status, get_available_vehicles,update_vehicle_status,get_vehicle_by_id
+from ..services.vehicle_service import get_vehicles_with_optional_status, get_available_vehicles,update_vehicle_status,get_vehicle_by_id , freeze_vehicle_service
 from typing import List, Optional, Union
 from src.schemas.notification_schema import NotificationOut  # adjust path as needed
 from ..schemas.order_card_item import OrderCardItem
 from ..services.supervisor_dashboard_service import end_ride_service
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
+# from ..services.supervisor_dashboard_service import complete_ride_logic
 from ..utils.auth import supervisor_check, token_check
 from ..services.supervisor_dashboard_service import vehicle_inspection_logic
+from ..utils.auth import supervisor_check, token_check
 
 router = APIRouter()
 
@@ -151,3 +153,8 @@ def vehicle_inspection(data: VehicleInspectionSchema, db: Session = Depends(get_
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/vehicles/freeze")
+def freeze_vehicle(request: FreezeVehicleRequest, db: Session = Depends(get_db)):
+    return freeze_vehicle_service(db, request.vehicle_id, request.reason)

@@ -47,4 +47,9 @@ class VehicleStatusUpdate(BaseModel):
     new_status: VehicleStatus
     freeze_reason: Optional[str] = None
 
+class FreezeVehicleRequest(BaseModel):
+    vehicle_id: UUID
+    reason: str
+
+
 
