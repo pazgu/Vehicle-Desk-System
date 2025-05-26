@@ -17,3 +17,14 @@ export interface LoginResponse {
     // No need to include `employee_id` or `role`, those are handled by the backend
   }  
   
+  // user.model.ts
+export interface User {
+ 
+  first_name: string;
+  last_name: string;
+  username: string;
+  email: string;
+  employee_id: string;     // UUID string
+  role: string;            // Could be 'Employee', 'Supervisor', etc.
+  department_id: string;   // UUID string
+}

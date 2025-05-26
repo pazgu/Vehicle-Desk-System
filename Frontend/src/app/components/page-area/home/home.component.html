@@ -74,15 +74,19 @@
             <th>סוג</th>
             <th>מרחק</th>
           </tr>
-    <div
-      class="orders-data-row"
-      *ngFor="let order of pagedOrders"
-      [id]="order.ride_id"
-      [ngClass]="[
+   <div
+  class="orders-data-row"
+  *ngFor="let order of pagedOrders"
+  [id]="order.ride_id"
+  (click)="viewRide(order)"
+  [ngClass]="[
     getStatusClass(order.status),
     isPastOrder(order) ? 'past-order' : '',
     order.ride_id === highlightedOrderId ? 'highlight highlight-background' : ''
-  ]">
+  ]"
+  style="cursor: pointer;"
+>
+
       <div class="icon-cell">
         <span
           class="pi"
@@ -100,7 +104,11 @@
       <div class="cell">{{ order.type }}</div>
       <div class="cell">{{ order.distance }}</div>
 
-<button *ngIf="canEdit(order)" (click)="editOrder(order)">ערוך ✏️</button>
+<button
+  *ngIf="canEdit(order)"
+  (click)="editOrder(order); $event.stopPropagation()">
+  ערוך ✏️
+</button>
 <button *ngIf="!canEdit(order)" disabled style="opacity: 0.5; cursor: not-allowed;">ערוך 🔒</button>
 
 

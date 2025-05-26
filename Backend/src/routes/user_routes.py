@@ -11,7 +11,6 @@ from ..services.new_ride_service import create_ride
 from fastapi.responses import JSONResponse
 from typing import List, Optional, Union
 from datetime import datetime
-from ..utils.mock_data import mock_departments
 from ..schemas.user_rides_schema import RideSchema, RideStatus
 from ..services.user_rides_service import get_future_rides, get_past_rides , get_all_rides
 from ..utils.database import get_db
@@ -79,18 +78,13 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
 
 
 
-@router.get("/api/users/{user_id}/orders")
-def get_user_orders():
-     # Implementation pending
-    return {"message": "Not implemented yet"}
-    
-
 @router.get("/api/future-orders/{user_id}", response_model=List[RideSchema])
 def get_future_orders(user_id: UUID, status: Optional[RideStatus] = Query(None),
                       from_date: Optional[datetime] = Query(None),
                       to_date: Optional[datetime] = Query(None),
                       db: Session = Depends(get_db),
-                      token: str = Depends(oauth2_scheme)):
+                      token: str = Depends(oauth2_scheme),
+                      ):
 
     try:
         role_check(allowed_roles=["employee", "admin"], token=token)
@@ -152,44 +146,43 @@ def get_user_2specific_order():
 
 @router.post("/api/orders/{user_id}", response_model=RideCreate, status_code=fastapi_status.HTTP_201_CREATED)
 def create_order(user_id: UUID, ride_request: RideCreate, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
-
-    # Check if user has the right role
     role_check(allowed_roles=["employee", "admin"], token=token)
-
-    # Check if this user is creating their own order
     identity_check(user_id=str(user_id), token=token)
 
     print("📥 Received RideCreate object:", ride_request.dict())
 
-
-    supervisor_id = get_supervisor_id(user_id, db)  # You implement this logic
-
     try:
         new_ride = create_ride(db, user_id, ride_request)
-            # Send notification
+
+        supervisor_id = get_supervisor_id(user_id, db)
         employee_name = get_user_name(db, new_ride.user_id)
-        create_system_notification(
-            user_id=supervisor_id,
-            title="בקשת נסיעה חדשה",
-            message=f"שלח בקשה חדשה {employee_name} העובד ",
-            order_id=new_ride.id
-        )
+
+        if supervisor_id:
+            create_system_notification(
+                user_id=supervisor_id,
+                title="בקשת נסיעה חדשה",
+                message=f"העובד {employee_name} שלח בקשה חדשה",
+                order_id=new_ride.id
+            )
+        else:
+            logger.warning("No supervisor found — skipping supervisor notification.")
+
         create_system_notification(
             user_id=new_ride.user_id,
             title="שליחת בקשה",
             message="בקשתך נשלחה בהצלחה",
             order_id=new_ride.id
         )
-        
 
         return new_ride
+
     except Exception as e:
         logger.error(f"Order creation failed: {str(e)}")
         raise HTTPException(
             status_code=fastapi_status.HTTP_400_BAD_REQUEST,
             detail=f"Failed to create order: {str(e)}"
         )
-   
+
 
 
 @router.get("/api/departments")

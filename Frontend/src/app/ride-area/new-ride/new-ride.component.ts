@@ -60,6 +60,9 @@ allCars: {
 availableCars: typeof this.allCars = [];
 
   ngOnInit(): void {
+
+    console.log('🔍 ngOnInit started'); // <== ADD THIS FIRST
+
     
     this.minDate = this.calculateMinDate(2);
     this.rideForm = this.fb.group({
@@ -71,7 +74,7 @@ availableCars: typeof this.allCars = [];
       estimated_distance_km: [null, [Validators.required, Validators.min(1)]],
       ride_type: ['', Validators.required], // ✅ type of ride (admin/operational)
       vehicle_type: ['', Validators.required], // ✅ type of vehicle (small/van/large)
-      car: [''], // <-- Add car field
+      car: ['', Validators.required], // ✅ Add required validation
       start_location: ['', Validators.required],
       stop: ['', Validators.required],
       destination: ['', Validators.required],
@@ -86,32 +89,33 @@ availableCars: typeof this.allCars = [];
       this.onPeriodChange(value);
     });
 
-   this.vehicleService.getAllVehicles().subscribe({
+this.vehicleService.getAllVehicles().subscribe({
   next: (vehicles) => {
-   this.allCars = vehicles
-  .filter(v =>
-    v.status === 'available' &&
-    !!v.id &&
-    !!v.type &&
-    !!v.plate_number &&
-    !!v.image_url &&
-    !!v.vehicle_model &&
-    !!v.last_used_at &&
-    !!v.current_location &&
-    typeof v.odometer_reading === 'number'
-  )
-  .map(v => ({
-    ...v,
-    freeze_reason: v.freeze_reason ?? null
-  }));
+console.log('🚀 Raw vehicles from backend:', vehicles)
+    // ✅ Do the filtering here
+    this.allCars = vehicles
+      .filter(v =>
+        v.status === 'available' &&
+        !!v.id &&
+        !!v.type &&
+        !!v.plate_number &&
+        typeof v.odometer_reading === 'number'
+      )
+      .map(v => ({
+        ...v,
+        image_url: v.image_url || 'assets/default-car.png',
+        vehicle_model: v.vehicle_model || 'רכב ללא דגם',
+        freeze_reason: v.freeze_reason ?? null
+      }));
 
-
-
+    console.log('✅ Filtered allCars after filtering:', this.allCars);
   },
   error: () => {
     this.toastService.show('שגיאה בטעינת רכבים זמינים', 'error');
   }
 });
+
+
 
 
     
@@ -122,6 +126,13 @@ availableCars: typeof this.allCars = [];
 
     // Reset selected car if type changes
     this.rideForm.get('car')?.setValue('');
+
+ console.log('All cars:', this.allCars);
+console.log('Selected type:', selectedType);
+console.log('Filtered available cars:', this.availableCars);
+
+  
+
   }
   onPeriodChange(value: string): void {
     const nightEndControl = this.rideForm.get('ride_date_night_end');
@@ -262,7 +273,8 @@ this.rideService.createRide(formData, user_id).subscribe({
       end_time: this.rideForm.get('end_time') as FormControl,
       estimated_distance_km: this.rideForm.get('estimated_distance_km') as FormControl,
       ride_type: this.rideForm.get('ride_type') as FormControl,
-      vehicle_type: this.rideForm.get('vehicle_type') as FormControl, // ✅ add this
+      vehicle_type: this.rideForm.get('vehicle_type') as FormControl, 
+      car: this.rideForm.get('car') as FormControl, 
       start_location: this.rideForm.get('start_location') as FormControl,
       stop: this.rideForm.get('stop') as FormControl,
       destination: this.rideForm.get('destination') as FormControl
