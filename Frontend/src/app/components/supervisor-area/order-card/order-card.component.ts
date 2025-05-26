@@ -40,6 +40,7 @@ export class OrderCardComponent implements OnInit {
 
   ngOnInit(): void {
     // Retrieve departmentId from localStorage
+    document.body.style.overflow = 'hidden';
     this.departmentId = localStorage.getItem('department_id');
     if (!this.departmentId) {
       console.error('Department ID not found in localStorage.');
@@ -59,6 +60,10 @@ export class OrderCardComponent implements OnInit {
         console.error('Missing orderId');
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    document.body.style.overflow = '';
   }
 
   loadOrder(departmentId: string, orderId: string): void {
