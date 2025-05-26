@@ -10,6 +10,10 @@ from typing import Optional
 from ..schemas.order_card_item import OrderCardItem
 from ..services.supervisor_dashboard_service import end_ride_service
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
+from ..utils.auth import supervisor_check, token_check
+from ..services.supervisor_dashboard_service import vehicle_inspection_logic , start_ride
+from ..utils.auth import supervisor_check, token_check
+from ..schemas.vehicle_schema import FreezeVehicleRequest
 
 router = APIRouter()
 
@@ -105,3 +109,30 @@ def end_ride(ride_id: UUID, has_incident: Optional[bool] = False, db: Session = 
 #     return get_frozen_vehicles(db=db, type=type)
 
 
+
+@router.post("/{ride_id}/end", response_model=OrderCardItem)
+def end_ride(ride_id: UUID, has_incident: Optional[bool] = False, db: Session = Depends(get_db),payload: dict = Depends(token_check)):
+    return end_ride_service(db=db, ride_id=ride_id, has_incident=has_incident)
+
+
+@router.post("/vehicle-inspection")
+def vehicle_inspection(data: VehicleInspectionSchema, db: Session = Depends(get_db),payload: dict = Depends(token_check)):
+    try:
+        return vehicle_inspection_logic(data, db)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/vehicles/freeze")
+def freeze_vehicle(request: FreezeVehicleRequest, db: Session = Depends(get_db)):
+    return freeze_vehicle_service(db, request.vehicle_id, request.reason)
+
+@router.post("/rides/{ride_id}/start")
+def start_ride_route(ride_id: UUID, db: Session = Depends(get_db)):
+    try:
+        start_ride(db, ride_id)
+        return {"message": "Ride started, vehicle marked as in use"}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))

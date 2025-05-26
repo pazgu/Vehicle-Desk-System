@@ -78,7 +78,6 @@ def fetch_user_by_id(user_id: UUID, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="User not found")
     return result
 
-
 @router.patch("/user-data-edit/{user_id}", response_model=UserResponse)
 def edit_user_by_id_route(
     user_id: UUID,
@@ -110,7 +109,6 @@ def edit_user_by_id_route(
 
     db.refresh(user)
     return user
-
 
 @router.get("/roles")
 def get_roles():

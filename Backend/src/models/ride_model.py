@@ -39,5 +39,7 @@ class Ride(Base):
     emergency_event = Column(Text, nullable=True) 
     
     notifications = relationship("Notification", back_populates="ride", lazy="dynamic")
+    is_archive = Column(Boolean, default=False, name="isArchive")
+
 
     
