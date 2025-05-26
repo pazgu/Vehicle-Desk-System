@@ -8,6 +8,7 @@ from sqlalchemy import String
 from datetime import datetime, timezone
 from fastapi import HTTPException
 from src.schemas.ride_status_enum import RideStatusEnum
+from datetime import timedelta
 
 def filter_rides(query, status: Optional[RideStatus], from_date, to_date):
     if status:
@@ -29,16 +30,21 @@ def get_future_rides(user_id: UUID, db: Session, status=None, from_date=None, to
 
     query = db.query(
         Ride.id.label("ride_id"),
-        Vehicle.fuel_type.label("vehicle"),
+        Ride.ride_type,
+        Ride.start_location,
+        Ride.stop,
+        Ride.destination,
         Ride.start_datetime,
         Ride.end_datetime,
         Ride.estimated_distance_km.cast(String).label("estimated_distance"),
         Ride.status,
         Ride.submitted_at,
-        Ride.user_id
+        Ride.user_id,
+        Vehicle.fuel_type.label("vehicle")
     ).join(Vehicle, Ride.vehicle_id == Vehicle.id).filter(
         Ride.user_id == user_id,
-        Ride.start_datetime > mynow
+        Ride.start_datetime > mynow,
+        Ride.is_archive == False 
     )
 
     # Apply additional filters if necessary
@@ -52,18 +58,22 @@ def get_future_rides(user_id: UUID, db: Session, status=None, from_date=None, to
 #     return filter_rides(query, status, from_date, to_date).all()
 
 def get_past_rides(user_id: UUID, db: Session, status=None, from_date=None, to_date=None) -> List[RideSchema]:
-    now = datetime.now(timezone.utc)
+    now = datetime.utcnow().replace(tzinfo=None)
  # naive datetime for naive DB
 
     query = db.query(
         Ride.id.label("ride_id"),
-        Vehicle.fuel_type.label("vehicle"),
+        Ride.ride_type,
+        Ride.start_location,
+        Ride.stop,
+        Ride.destination,
         Ride.start_datetime,
         Ride.end_datetime,
-        Ride.estimated_distance_km.cast(String).label("estimated_distance"),  # Casting to string
+        Ride.estimated_distance_km.cast(String).label("estimated_distance"),
         Ride.status,
         Ride.submitted_at,
-
+        Ride.user_id,
+        Vehicle.fuel_type.label("vehicle")
     ).join(Vehicle, Ride.vehicle_id == Vehicle.id).filter(Ride.user_id == user_id, Ride.start_datetime <= now)
 
     query = filter_rides(query, status, from_date, to_date)
@@ -77,14 +87,18 @@ def get_past_rides(user_id: UUID, db: Session, status=None, from_date=None, to_d
 
 def get_all_rides(user_id: UUID, db: Session, status=None, from_date=None, to_date=None) -> List[RideSchema]:
     query = db.query(
-        Ride.id.label("ride_id"),
-        Vehicle.fuel_type.label("vehicle"),
-        Ride.start_datetime,
-        Ride.end_datetime,
-        Ride.estimated_distance_km.cast(String).label("estimated_distance"),  # Casting to string
-        Ride.status,
-        Ride.submitted_at,
-
+       Ride.id.label("ride_id"),
+       Ride.ride_type,
+       Ride.start_location,
+       Ride.stop,
+       Ride.destination,
+       Ride.start_datetime,
+       Ride.end_datetime,
+       Ride.estimated_distance_km.cast(String).label("estimated_distance"),
+       Ride.status,
+       Ride.submitted_at,
+       Ride.user_id,
+       Vehicle.fuel_type.label("vehicle")
     ).join(Vehicle, Ride.vehicle_id == Vehicle.id).filter(Ride.user_id == user_id)
 
     query = filter_rides(query, status, from_date, to_date)
@@ -121,16 +135,49 @@ def update_ride_status(ride_id: UUID, new_status: RideStatusEnum, db: Session):
 def get_ride_by_id(db: Session, ride_id: UUID) -> RideSchema:
     ride = db.query(
         Ride.id.label("ride_id"),
-        Vehicle.fuel_type.label("vehicle"),
+        Ride.ride_type,
+        Ride.start_location,
+        Ride.stop,
+        Ride.destination,
         Ride.start_datetime,
         Ride.end_datetime,
         Ride.estimated_distance_km.cast(String).label("estimated_distance"),
         Ride.status,
         Ride.submitted_at,
-        Ride.user_id
+        Ride.user_id,
+        Vehicle.fuel_type.label("vehicle")
     ).join(Vehicle, Ride.vehicle_id == Vehicle.id).filter(Ride.id == ride_id).first()
 
     if not ride:
         raise HTTPException(status_code=404, detail="Ride not found")
 
     return RideSchema(**dict(ride._mapping))
+
+def get_archived_rides(user_id: UUID, db: Session) -> List[RideSchema]:
+    # Get current datetime and subtract 2 months
+    cutoff_date = datetime.utcnow().replace(tzinfo=None) - timedelta(days=60)
+    query = db.query(
+        Ride.id.label("ride_id"),
+        Ride.ride_type,
+        Ride.start_location,
+        Ride.stop,
+        Ride.destination,
+        Ride.start_datetime,
+        Ride.end_datetime,
+        Ride.estimated_distance_km.cast(String).label("estimated_distance"),
+        Ride.status,
+        Ride.submitted_at,
+        Ride.user_id,
+        Vehicle.fuel_type.label("vehicle")
+    ).join(Vehicle, Ride.vehicle_id == Vehicle.id).filter(
+        Ride.user_id == user_id,
+        Ride.start_datetime < cutoff_date,
+    ).order_by(Ride.start_datetime)
+
+    rows = query.all()
+    return [RideSchema(**dict(row._mapping)) for row in rows]
+
+
+
+
+
