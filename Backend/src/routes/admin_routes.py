@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
+
+from fastapi import APIRouter, Depends, HTTPException,status
 from uuid import UUID
-from typing import Optional
-from typing import List
+from typing import Optional, List
 from datetime import datetime
 from sqlalchemy.orm import Session
 from src.schemas.user_response_schema import UserResponse, UserUpdate
@@ -15,12 +15,13 @@ from src.services.admin_rides_service import (
     get_order_by_ride_id
 )
 from ..utils.database import get_db
-from src.models.user_model import User
-from src.models.user_model import UserRole
+from src.models.user_model import User, UserRole
 
 router = APIRouter()
 
-@router.get("/orders", response_model=list[RideDashboardItem])
+
+@router.get("/orders", response_model=List[RideDashboardItem])
+
 def fetch_all_orders(
     status: Optional[str] = None,
     from_date: Optional[datetime] = None,
@@ -29,7 +30,8 @@ def fetch_all_orders(
 ):
     return get_all_orders(db, status=status, from_date=from_date, to_date=to_date)
 
-@router.get("/orders/future", response_model=list[RideDashboardItem])
+@router.get("/orders/future", response_model=List[RideDashboardItem])
+
 def fetch_future_orders(
     status: Optional[str] = None,
     from_date: Optional[datetime] = None,
@@ -38,7 +40,8 @@ def fetch_future_orders(
 ):
     return get_future_orders(db, status=status, from_date=from_date, to_date=to_date)
 
-@router.get("/orders/past", response_model=list[RideDashboardItem])
+@router.get("/orders/past", response_model=List[RideDashboardItem])
+
 def fetch_past_orders(
     status: Optional[str] = None,
     from_date: Optional[datetime] = None,
@@ -47,7 +50,7 @@ def fetch_past_orders(
 ):
     return get_past_orders(db, status=status, from_date=from_date, to_date=to_date)
 
-@router.get("/orders/user/{user_id}", response_model=list[RideDashboardItem])
+@router.get("/orders/user/{user_id}", response_model=List[RideDashboardItem])
 def fetch_orders_by_user(user_id: UUID, db: Session = Depends(get_db)):
     return get_orders_by_user(db, user_id=user_id)
 
@@ -72,8 +75,6 @@ def fetch_user_by_id(user_id: UUID, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="User not found")
     return result
 
-
-
 @router.patch("/user-data-edit/{user_id}", response_model=UserResponse)
 def edit_user_by_id_route(
     user_id: UUID,
@@ -86,10 +87,23 @@ def edit_user_by_id_route(
         raise HTTPException(status_code=404, detail="User not found")
 
     update_data = user_update.dict(exclude_unset=True)
-    for key, value in update_data.items():
-        setattr(user, key, value)
+    print("🟡 Incoming update:", update_data)
 
-    db.commit()
+    # Check attributes before applying them
+    for key, value in update_data.items():
+        if not hasattr(user, key):
+            print(f"⚠️ WARNING: User has no attribute '{key}' — skipping.")
+        else:
+            print(f"✅ Updating '{key}' to '{value}'")
+            setattr(user, key, value)
+
+    try:
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        print("❌ Commit failed:", e)
+        raise HTTPException(status_code=500, detail="Failed to update user")
+
     db.refresh(user)
     return user
 
@@ -97,3 +111,4 @@ def edit_user_by_id_route(
 @router.get("/roles")
 def get_roles():
     return [role.value for role in UserRole]
+
