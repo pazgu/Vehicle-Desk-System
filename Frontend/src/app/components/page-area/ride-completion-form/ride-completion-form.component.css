@@ -1,0 +1,90 @@
+
+:root {
+  --font-family-alef: 'Alef', sans-serif;
+  --text-dark-red: #9A2D2D;
+  --text-black: #000;
+  --background-color: #fff;
+  --line-color: #9A2D2D;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family-alef);
+  background-color: #cccccc;
+  min-height: calc(100vh - 55px); /* subtract any fixed nav height if needed */
+  margin-top: 0;
+  color: var(--text-dark-red);
+  direction: rtl;
+}
+
+.review-form {
+  max-width: 600px;
+  margin: 40px auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  background: #fff;
+}
+
+.form-title {
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.question {
+  margin-bottom: 24px;
+}
+
+.question p {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.options {
+  display: flex;
+  justify-content: flex-start;
+  gap: 20px;
+  margin-bottom: 10px;
+}
+
+.option {
+  font-size: 16px;
+  padding: 8px 16px;
+  border: 1px solid var(--text-dark-red);
+  border-radius: 20px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.option:hover {
+  background-color: #fbeaea;
+}
+
+.line {
+  border: none;
+  border-top: 2px solid var(--line-color);
+  margin: 10px 0;
+}
+
+.submit-wrapper {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.submit-btn {
+  background-color: var(--text-black);
+  color: #fff;
+  font-size: 18px;
+  font-family: var(--font-family-alef);
+  padding: 12px 30px;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.submit-btn:hover {
+  background-color: #333;
+}
