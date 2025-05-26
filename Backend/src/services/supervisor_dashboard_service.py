@@ -6,11 +6,12 @@ from ..models.ride_model import Ride , RideStatus
 from ..models.user_model import User
 from sqlalchemy.orm import Session
 from ..models.notification_model import NotificationType, Notification
-from ..models.vehicle_model import VehicleStatus
+from ..models.vehicle_model import VehicleStatus , Vehicle
 from fastapi import HTTPException
 from .vehicle_service import update_vehicle_status
 from ..models.vehicle_inspection_model import VehicleInspection 
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
+from sqlalchemy import String , func
 
 def get_department_orders(department_id: str, db: Session) -> List[RideDashboardItem]:
     """
@@ -174,6 +175,29 @@ def end_ride_service(db: Session, ride_id: UUID, has_incident: bool):
     db.commit()
     db.refresh(ride)
     return ride
+
+def start_ride(db: Session, ride_id: UUID):
+    ride = db.query(Ride).filter(Ride.id == ride_id).first()
+    if not ride:
+        raise HTTPException(status_code=404, detail="Ride not found")
+
+    if ride.status != RideStatus.approved:
+        raise HTTPException(status_code=400, detail="Ride must be approved before starting")
+
+    vehicle = db.query(Vehicle).filter(Vehicle.id == ride.vehicle_id).first()
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="Assigned vehicle not found")
+
+    if vehicle.status != VehicleStatus.available:
+        raise HTTPException(status_code=400, detail="Vehicle is not available")
+
+    # vehicle.status = VehicleStatus.in_use
+
+    update_vehicle_status(vehicle.id, VehicleStatus.in_use, freeze_reason=None, db=db)
+    vehicle.last_used_at = func.now()
+    
+    db.commit()
+
 
 def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
     
