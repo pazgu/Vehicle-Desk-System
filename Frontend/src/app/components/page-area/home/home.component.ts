@@ -117,12 +117,6 @@ getStatusTooltip(status: string): string {
         break;
     }
 
-    if (!this.showOldOrders) {
-      filtered = filtered.filter(order => {
-        const orderDate = this.parseDate(order.date);
-        return orderDate >= oneMonthAgo;
-      });
-    }
 
     if (this.statusFilter) {
       filtered = filtered.filter(order => order.status === this.statusFilter);
@@ -283,6 +277,11 @@ viewRide(order: any): void {
 
   this.router.navigate(['/ride/details', order.ride_id]);
 }
+
+goToArchivedOrders() {
+  this.router.navigate(['/archived-orders']);
+}
+
 
 
 

@@ -1,7 +1,7 @@
-
-from fastapi import APIRouter, Depends, HTTPException,status
+from fastapi import APIRouter, Depends, HTTPException, Query
 from uuid import UUID
-from typing import Optional, List
+from typing import Optional
+from typing import List
 from datetime import datetime
 from sqlalchemy.orm import Session
 from src.schemas.user_response_schema import UserResponse, UserUpdate
@@ -15,13 +15,18 @@ from src.services.admin_rides_service import (
     get_order_by_ride_id
 )
 from ..utils.database import get_db
-from src.models.user_model import User, UserRole
+from src.models.user_model import User
+from src.models.user_model import UserRole
+from ..schemas.check_vehicle_schema import VehicleInspectionSchema
+from ..services.vehicle_service import vehicle_inspection_logic
+from ..schemas.vehicle_schema import VehicleOut , InUseVehicleOut , VehicleStatusUpdate
+from ..utils.auth import token_check
+from ..services.vehicle_service import get_vehicles_with_optional_status, get_available_vehicles,update_vehicle_status,get_vehicle_by_id
+
 
 router = APIRouter()
 
-
-@router.get("/orders", response_model=List[RideDashboardItem])
-
+@router.get("/orders", response_model=list[RideDashboardItem])
 def fetch_all_orders(
     status: Optional[str] = None,
     from_date: Optional[datetime] = None,
@@ -30,8 +35,7 @@ def fetch_all_orders(
 ):
     return get_all_orders(db, status=status, from_date=from_date, to_date=to_date)
 
-@router.get("/orders/future", response_model=List[RideDashboardItem])
-
+@router.get("/orders/future", response_model=list[RideDashboardItem])
 def fetch_future_orders(
     status: Optional[str] = None,
     from_date: Optional[datetime] = None,
@@ -40,8 +44,7 @@ def fetch_future_orders(
 ):
     return get_future_orders(db, status=status, from_date=from_date, to_date=to_date)
 
-@router.get("/orders/past", response_model=List[RideDashboardItem])
-
+@router.get("/orders/past", response_model=list[RideDashboardItem])
 def fetch_past_orders(
     status: Optional[str] = None,
     from_date: Optional[datetime] = None,
@@ -50,7 +53,7 @@ def fetch_past_orders(
 ):
     return get_past_orders(db, status=status, from_date=from_date, to_date=to_date)
 
-@router.get("/orders/user/{user_id}", response_model=List[RideDashboardItem])
+@router.get("/orders/user/{user_id}", response_model=list[RideDashboardItem])
 def fetch_orders_by_user(user_id: UUID, db: Session = Depends(get_db)):
     return get_orders_by_user(db, user_id=user_id)
 
@@ -107,8 +110,43 @@ def edit_user_by_id_route(
     db.refresh(user)
     return user
 
-
 @router.get("/roles")
 def get_roles():
     return [role.value for role in UserRole]
+
+
+@router.post("/vehicle-inspection")
+def vehicle_inspection(data: VehicleInspectionSchema, db: Session = Depends(get_db),payload: dict = Depends(token_check)):
+    try:
+        return vehicle_inspection_logic(data, db)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+
+@router.patch("/{vehicle_id}/status")
+def patch_vehicle_status(
+    vehicle_id: UUID,
+    status_update: VehicleStatusUpdate,
+    db: Session = Depends(get_db),
+    payload: dict = Depends(token_check)
+):
+    return update_vehicle_status(vehicle_id, status_update.new_status, status_update.freeze_reason, db)
+
+@router.get("/vehicle/{vehicle_id}")
+def get_vehicle_by_id_route(vehicle_id: str, db: Session = Depends(get_db)):
+    return get_vehicle_by_id(vehicle_id, db)
+
+@router.get("/all-vehicles/available")
+def get_available_vehicles_route(status: Optional[str] = Query(None),
+ db: Session = Depends(get_db),payload: dict = Depends(token_check)):
+    vehicles = get_available_vehicles(db)
+    return vehicles
+
+@router.get("/all-vehicles", response_model=List[VehicleOut])
+def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = Depends(get_db)
+    ,payload: dict = Depends(token_check)):
+    vehicles = get_vehicles_with_optional_status(db, status)
+    return vehicles
 

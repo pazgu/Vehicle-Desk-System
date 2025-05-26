@@ -5,8 +5,6 @@ from ..schemas.user_response_schema import UserResponse
 from ..models.user_model import User
 from uuid import UUID
 from datetime import datetime, timedelta
-
-
 from dotenv import load_dotenv 
 from os import environ
 load_dotenv()
