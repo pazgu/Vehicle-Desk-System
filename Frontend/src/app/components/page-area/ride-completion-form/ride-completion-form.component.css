@@ -2,7 +2,7 @@
     --primary-color: #eb2525;
     --primary-hover: #d81d1d;
     --text-primary: #ffffff;
-    --text-secondary: #6b7280;
+    --text-secondary: #806b6b;
     --border-color: #e5e7eb;
     --success-color: #059669;
     --background: #f8fafc;
@@ -20,10 +20,11 @@
 body {
     font-family: 'Heebo', sans-serif;
     background: linear-gradient(135deg, #ea6666 0%, #a24b4b 100%);
-   
-    padding: 20px;
+    height: 110%;;
+    padding: 10px;
     color: var(--text-primary);
     direction: rtl;
+    margin-bottom: 0px;
 }
 
 .container {
@@ -87,7 +88,7 @@ body {
 }
 
 .form-content {
-    padding: 20px 15px;
+    padding: 10px 7.5px;
 }
 
 .question {
@@ -126,16 +127,17 @@ body {
 
 .option {
     flex: 1;
-    padding: 12px 20px;
+    padding: 6px 10px;
     border: 2px solid var(--border-color);
     border-radius: 12px;
-    background: white;
+    background: rgb(137, 74, 74);
     font-size: 16px;
     font-weight: 500;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s ease;
     user-select: none;
+    color: white;
 }
 
 .option:hover {
@@ -146,10 +148,10 @@ body {
 
 .option.selected {
     background: var(--primary-color);
-    border-color: var(--primary-color);
+    border-color: rgb(9, 1, 1);
     color: white;
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
+    box-shadow: 0 8px 25px rgba(82, 55, 55, 0.3);
 }
 
 .divider {
@@ -160,14 +162,14 @@ body {
 
 .submit-section {
     text-align: center;
-    margin-top: 40px;
+    
 }
 
 .submit-btn {
     background: linear-gradient(135deg, var(--text-primary), #374151);
     color: white;
     border: none;
-    padding: 16px 40px;
+    padding: 8px 20px;
     border-radius: 16px;
     font-size: 18px;
     font-weight: 600;
@@ -180,7 +182,7 @@ body {
 }
 
 .submit-btn:hover {
-    background: linear-gradient(135deg, #374151, #4b5563);
+    background: linear-gradient(135deg, #513737, #634b4b);
     transform: translateY(-2px);
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 }
