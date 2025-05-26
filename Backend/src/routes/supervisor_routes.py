@@ -156,5 +156,33 @@ def vehicle_inspection(data: VehicleInspectionSchema, db: Session = Depends(get_
 
 
 @router.post("/vehicles/freeze")
-def freeze_vehicle(request: FreezeVehicleRequest, db: Session = Depends(get_db)):
-    return freeze_vehicle_service(db, request.vehicle_id, request.reason)
+def freeze_vehicle(
+    request: FreezeVehicleRequest,
+    db: Session = Depends(get_db),
+    #payload: dict = Depends(token_check)
+):
+    return freeze_vehicle_service(db, request.vehicle_id, request.reason, user_id=payload["sub"])
+
+
+@router.post("/vehicles/{vehicle_id}/unfreeze")
+def unfreeze_vehicle(
+    vehicle_id: UUID,
+    db: Session = Depends(get_db),
+    payload: dict = Depends(token_check)
+):
+    return unfreeze_vehicle_service(db, vehicle_id, user_id=payload["sub"])
+
+@router.patch("/vehicles/{vehicle_id}/status")
+def patch_vehicle_status(
+    vehicle_id: UUID,
+    status_update: VehicleStatusUpdate,
+    db: Session = Depends(get_db),
+    payload: dict = Depends(token_check)
+):
+    return update_vehicle_status(
+        vehicle_id,
+        status_update.new_status,
+        status_update.freeze_reason,
+        db,
+        user_id=payload["sub"]
+    )

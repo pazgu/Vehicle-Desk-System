@@ -25,6 +25,7 @@ def create_ride(db: Session, user_id: UUID, ride: RideCreate):
         status=RideStatus.pending,
         license_check_passed=False,
         submitted_at=datetime.utcnow(),
+        override_user_id=user_id
     )
 
     print("🚗 New ride object:", new_ride)

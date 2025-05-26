@@ -187,7 +187,7 @@ def get_vehicle_by_id(vehicle_id: str, db: Session):
         "image_url": vehicle.image_url,
     }
 
-def freeze_vehicle_service(db: Session, vehicle_id: UUID, reason: str):
+def freeze_vehicle_service(db: Session, vehicle_id: UUID, reason: str, user_id: UUID):
     vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
     if not vehicle:
         raise HTTPException(status_code=404, detail="Vehicle not found")
@@ -197,4 +197,85 @@ def freeze_vehicle_service(db: Session, vehicle_id: UUID, reason: str):
 
     db.commit()
     db.refresh(vehicle)
+
+    log_action(
+        db=db,
+        action="FREEZE",
+        entity_type="Vehicle",
+        entity_id=str(vehicle.id),
+        change_data={"status": "frozen", "freeze_reason": reason},
+        changed_by=user_id
+    )
+
     return {"message": f"Vehicle {vehicle_id} has been frozen successfully."}
+
+
+
+def unfreeze_vehicle_service(db: Session, vehicle_id: UUID, user_id: UUID):
+    vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="Vehicle not found")
+
+    if vehicle.status != VehicleStatus.frozen:
+        raise HTTPException(status_code=400, detail="Vehicle is not frozen")
+
+    vehicle.status = VehicleStatus.available
+    vehicle.freeze_reason = None
+
+    db.commit()
+    db.refresh(vehicle)
+
+    log_action(
+        db=db,
+        action="UNFREEZE",
+        entity_type="Vehicle",
+        entity_id=str(vehicle.id),
+        change_data={"status": "available", "freeze_reason": None},
+        changed_by=user_id
+    )
+
+    return {"message": f"Vehicle {vehicle_id} has been unfrozen."}
+
+
+
+def update_vehicle_status(
+    vehicle_id: UUID,
+    new_status: VehicleStatus,
+    freeze_reason: str,
+    db: Session,
+    user_id: UUID
+):
+    vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="Vehicle not found")
+
+    old_status = vehicle.status
+    old_reason = vehicle.freeze_reason
+
+    if new_status == VehicleStatus.frozen:
+        if not freeze_reason:
+            raise HTTPException(status_code=400, detail="freeze_reason is required")
+        vehicle.freeze_reason = freeze_reason
+    elif vehicle.status == VehicleStatus.frozen and new_status != VehicleStatus.frozen:
+        vehicle.freeze_reason = None
+
+    vehicle.status = new_status
+    db.commit()
+    db.refresh(vehicle)
+
+    log_action(
+        db=db,
+        action="UPDATE",
+        entity_type="Vehicle",
+        entity_id=str(vehicle.id),
+        change_data={
+            "old_status": str(old_status),
+            "new_status": str(vehicle.status),
+            "old_freeze_reason": old_reason,
+            "new_freeze_reason": vehicle.freeze_reason
+        },
+        changed_by=user_id
+    )
+
+    return {"vehicle_id": vehicle.id, "new_status": vehicle.status, "freeze_reason": vehicle.freeze_reason}
+
