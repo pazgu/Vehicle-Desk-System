@@ -35,6 +35,7 @@ class Vehicle(Base):
     status = Column(Enum(VehicleStatus), nullable=False, default=VehicleStatus.available)
     status = Column(Enum(VehicleStatus), nullable=False, default=VehicleStatus.available, index=True)
     freeze_reason = Column(Enum(FreezeReason), nullable=True)
+    freeze_details = Column(Text, nullable=True) 
     last_used_at = Column(DateTime, nullable=True)
     current_location = Column(Text, nullable=False)
     odometer_reading = Column(Integer, nullable=False, default=0)
