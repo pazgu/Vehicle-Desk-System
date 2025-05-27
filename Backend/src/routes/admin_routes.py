@@ -21,7 +21,8 @@ from ..services.vehicle_service import vehicle_inspection_logic, get_available_v
 from ..schemas.vehicle_schema import VehicleOut , InUseVehicleOut , VehicleStatusUpdate
 from ..utils.auth import token_check
 from ..services.vehicle_service import get_vehicles_with_optional_status,update_vehicle_status,get_vehicle_by_id
-
+from ..schemas.audit_schema import AuditLogsSchema
+from src.services.audit_service import get_all_audit_logs
 
 router = APIRouter()
 
@@ -155,3 +156,16 @@ def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = De
     vehicles = get_vehicles_with_optional_status(db, status)
     return vehicles
 
+@router.get("/all-audit-logs", response_model=List[AuditLogsSchema])
+def get_all_audit_logs_route(
+    from_date: Optional[datetime] = None,
+    to_date: Optional[datetime] = None,
+    db: Session = Depends(get_db),
+    payload: dict = Depends(token_check)
+):
+    try:
+        return get_all_audit_logs(db, from_date=from_date, to_date=to_date)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
