@@ -65,6 +65,31 @@ def create_system_notification(user_id, title, message, order_id=None):
     return notif
 
 
+def send_admin_odometer_notification(vehicle_id: UUID, odometer_reading: float):
+    db = SessionLocal()
+    try:
+        admins = db.query(User).filter(User.role == 'admin').all()
+
+        if not admins or odometer_reading < 10000:
+            return None
+
+        notifications = []
+        for admin in admins:
+            notif = Notification(
+                user_id=admin.employee_id,
+                notification_type=NotificationType.system,
+                title="Vehicle Odometer Update",
+                message=f"Vehicle {vehicle_id} has an odometer reading of {odometer_reading} km.",
+                sent_at=datetime.now(timezone.utc)
+            )
+            db.add(notif)
+            notifications.append(notif)
+
+        db.commit()
+        return notifications
+
+    finally:
+        db.close()
 
 
 

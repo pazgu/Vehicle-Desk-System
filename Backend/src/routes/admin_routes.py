@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query,Header
 from uuid import UUID
 from typing import Optional
 from typing import List
@@ -17,12 +17,13 @@ from src.services.admin_rides_service import (
 from ..utils.database import get_db
 from src.models.user_model import User
 from src.models.user_model import UserRole
+from src.models.vehicle_model import Vehicle
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 from ..services.vehicle_service import vehicle_inspection_logic
 from ..schemas.vehicle_schema import VehicleOut , InUseVehicleOut , VehicleStatusUpdate
 from ..utils.auth import token_check
 from ..services.vehicle_service import get_vehicles_with_optional_status, get_available_vehicles,update_vehicle_status,get_vehicle_by_id
-
+from ..services.user_notification import send_admin_odometer_notification
 
 router = APIRouter()
 
@@ -150,3 +151,24 @@ def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = De
     vehicles = get_vehicles_with_optional_status(db, status)
     return vehicles
 
+
+
+
+@router.post("/notifications/admin", include_in_schema=True,   dependencies=[] )
+def send_admin_notification_simple_route(db: Session = Depends(get_db)):
+    vehicle = db.query(Vehicle).first()  # Get any vehicle (you can adjust logic later if needed)
+    
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="No vehicle found.")
+
+    notifications = send_admin_odometer_notification(vehicle.id, vehicle.odometer_reading)
+
+    if not notifications:
+        raise HTTPException(status_code=204, detail="No admins found or odometer below threshold.")
+
+    return {
+        "detail": "Notifications sent",
+        "count": len(notifications),
+        "vehicle_id": str(vehicle.id),
+        "odometer_reading": vehicle.odometer_reading
+    }
