@@ -1,35 +1,33 @@
 <div class="archived-container">
   <h1>טופס בדיקת רכב</h1>
 
-  <form [formGroup]="inspectionForm" (ngSubmit)="submitInspection()">
-    <label for="vehicle_id">בחר רכב:</label>
-    <select formControlName="vehicle_id">
-      <option *ngFor="let v of vehicleOptions" [value]="v.id">
-        {{ v.plate_number }} - {{ v.vehicle_model }}
-      </option>
-    </select>
+    <form [formGroup]="inspectionForm" (ngSubmit)="submitInspection()">
 
-    <label for="fuel_level">רמת דלק:</label>
-    <select formControlName="fuel_level">
-      <option value="Full">מלא</option>
-      <option value="Medium">בינוני</option>
-      <option value="Low">נמוך</option>
-      <option value="Empty">ריק</option>
-    </select>
 
-    <label>
-      <input type="checkbox" formControlName="tires_ok" />
-      צמיגים תקינים
-    </label>
 
-    <label>
-      <input type="checkbox" formControlName="clean" />
-      רכב נקי
-    </label>
+<label>
+  <input type="checkbox" formControlName="clean" />
+  רכב נקי
+</label>
 
-    <label for="issues_found">הערות:</label>
-    <textarea formControlName="issues_found"></textarea>
+<label>
+  <input type="checkbox" formControlName="fuel_checked" />
+  נבדקה רמת דלק
+</label>
 
-    <button type="submit" class="cute-red-button">שלח בדיקה</button>
+<label>
+  <input type="checkbox" formControlName="no_items_left" />
+  אין חפצים שנשכחו
+</label>
+
+<label for="critical_issue">אירוע חריג (אם קיים):</label>
+<input type="text" formControlName="critical_issue" placeholder="כתוב כאן אם קרה משהו חשוב לדיווח..." />
+
+
+<button type="submit" [disabled]="inspectionForm.invalid" class="cute-red-button">
+  שלח בדיקה
+</button>
   </form>
+
+
 </div>
