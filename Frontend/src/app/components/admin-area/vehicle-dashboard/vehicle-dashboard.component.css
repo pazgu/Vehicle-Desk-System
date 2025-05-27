@@ -153,13 +153,13 @@ button {
 }
 
 .status-indicator.available {
-  background-color: #34954b;
+  background-color: #3fb35a;
 }
 .status-indicator.in-use {
-  background-color: #bd9624;
+  background-color: #dbb646;
 }
 .status-indicator.frozen {
-  background-color: #4656be;
+  background-color:   #6978d9;
 }
 
 
