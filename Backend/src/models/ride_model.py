@@ -26,8 +26,8 @@ class Ride(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.employee_id"), nullable=False)
     vehicle_id = Column(UUID(as_uuid=True), ForeignKey("vehicles.id"), nullable=False)
     ride_type = Column(Enum(RideType), nullable=False, index=True)
-    start_datetime = Column(DateTime, nullable=False)
-    end_datetime = Column(DateTime, nullable=False)
+    start_datetime = Column(DateTime, nullable=False, index=True)
+    end_datetime = Column(DateTime, nullable=False, index=True)
     start_location = Column(Text, nullable=False)
     stop = Column(Text, nullable=False)
     destination = Column(Text, nullable=False)
@@ -40,6 +40,6 @@ class Ride(Base):
     
     notifications = relationship("Notification", back_populates="ride", lazy="dynamic")
     is_archive = Column(Boolean, default=False, name="isArchive")
-
+    override_user_id = Column(UUID(as_uuid=True), ForeignKey("users.employee_id"), nullable=True)
 
     

@@ -65,6 +65,8 @@ def get_current_user(request: Request) -> User:
             first_name=payload["first_name"],
             last_name=payload["last_name"],
             role=payload["role"],
+            department_id=payload.get("department_id")
+
         )
     except PyJWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
