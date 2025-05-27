@@ -40,7 +40,7 @@ export const routes: Routes = [
   { path: 'user-data', component: UserDataComponent,canActivate: [ProtectedRouteGuard] }, 
   { path: 'vehicle-details/:id', component: VehicleCardItemComponent },
   { path: 'vehicle-dashboard', component: VehicleDashboardComponent },
-  { path: 'ride-completion-form', component: RideCompletionFormComponent },
+  { path: 'ride-completion-form/:ride_id', component: RideCompletionFormComponent },
   { path: 'audit-logs', component: AuditLogsComponent },
 {
   path: 'ride/details/:id',
