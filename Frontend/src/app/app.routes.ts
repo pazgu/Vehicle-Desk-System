@@ -7,7 +7,6 @@ import { RegisterComponent } from './components/page-area/login-area/user-area/r
 import { DashboardAllOrdersComponent } from './components/supervisor-area/dashboard-all-orders/dashboard-all-orders.component';
 import { OrderCardComponent } from './components/supervisor-area/order-card/order-card.component';
 import { NotificationsComponent } from './components/page-area/notifications/notifications.component';
-import { DailyChecksComponent } from './components/admin-area/daily-checks/daily-checks.component';
 import { RedirectByRoleComponent } from './services/redirect-by-role';
 import { ProtectedRouteGuard } from './components/auth-area/protectedroute/protected-route.guard';
 import { UserDataComponent } from './components/admin-area/user-data/user-data.component';
@@ -32,7 +31,6 @@ export const routes: Routes = [
   { path: 'supervisor-dashboard', component: DashboardAllOrdersComponent, canActivate: [ProtectedRouteGuard] },
   { path: 'order-card/:ride_id', component: OrderCardComponent, canActivate: [ProtectedRouteGuard] },
   { path: 'notifications', component: NotificationsComponent, canActivate: [ProtectedRouteGuard] },
-  { path: 'daily-checks', component: DailyChecksComponent, canActivate: [ProtectedRouteGuard] },
   { path: '', component: RedirectByRoleComponent, pathMatch: 'full' },
   
   { path: 'user-data-edit/:user_id', component: UserDataEditComponent,canActivate: [ProtectedRouteGuard] }, // Moved lower
@@ -50,6 +48,20 @@ export const routes: Routes = [
   path: 'archived-orders',
   loadComponent: () =>
     import('./ride-area/archived-orders/archived-orders.component').then(m => m.ArchivedOrdersComponent)
+},
+{
+  path: 'inspector/inspection',
+  loadComponent: () => import('./inspector-area/vehicle-inspection/vehicle-inspection.component')
+    .then(m => m.VehicleInspectionComponent),
+  canActivate: [ProtectedRouteGuard] // optional if you're using role checks
+},
+
+{
+  path: 'admin/daily-inspections',
+  loadComponent: () =>
+    import('./components/admin-area/admin-inspections/admin-inspections.component')
+      .then(m => m.AdminInspectionsComponent),
+  canActivate: [ProtectedRouteGuard]
 },
 
   { path: '**', component: Page404Component }

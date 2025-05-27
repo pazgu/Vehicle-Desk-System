@@ -137,4 +137,20 @@ getStatusIcon(status?: string): string {
   }
 }
 
+
+  handleNotificationClick(notif: MyNotification): void {
+  const role = localStorage.getItem('role');
+  
+  // If this is a critical vehicle inspection message and the user is admin:
+  if (role === 'admin' && notif.message.includes('בעיה חמורה')) {
+    this.router.navigate(['/admin/daily-inspections'], {
+      queryParams: { highlight: '1' }
+    });
+  } else if (notif.order_id) {
+    this.goToOrder(notif.order_id);
+  } else {
+    console.log('ℹ️ Notification has no specific route.');
+  }
+}
+
 }
