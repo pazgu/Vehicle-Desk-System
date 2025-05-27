@@ -5,6 +5,7 @@ from ..models.ride_model import Ride, RideStatus
 from ..models.user_model import User  
 from ..utils.email_utils import send_email  
 from datetime import datetime
+from ..utils.audit_utils import log_action
 
 def create_ride(db: Session, user_id: UUID, ride: RideCreate):
     # Get the user info
@@ -36,6 +37,21 @@ def create_ride(db: Session, user_id: UUID, ride: RideCreate):
 
     # Fetch the user who submitted the ride
     user = db.query(User).filter(User.employee_id == user_id).first()
+
+    log_action(
+        db=db,
+        action="create_ride",
+        entity_type="Ride",
+        entity_id=str(new_ride.id),
+        change_data={
+            "start_location": new_ride.start_location,
+            "destination": new_ride.destination,
+            "start_datetime": new_ride.start_datetime.isoformat(),
+            "end_datetime": new_ride.end_datetime.isoformat(),
+            "submitted_by": str(user_id)
+        },
+        changed_by=user_id
+    )
 
     # Fetch all admin users
     admins = db.query(User).filter(User.role == "admin").all()
