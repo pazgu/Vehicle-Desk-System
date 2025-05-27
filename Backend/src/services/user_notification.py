@@ -65,6 +65,19 @@ def create_system_notification(user_id, title, message, order_id=None):
     return notif
 
 
+#this was created to be used in the completion form function since ->
+# using the original create_system_notification is problematic 
+def create_system_notification_with_db(db: Session, user_id, title, message, order_id=None):
+    notif = Notification(
+        user_id=user_id,
+        notification_type=NotificationType.system,
+        title=title,
+        message=message,
+        sent_at=datetime.now(timezone.utc),
+        order_id=order_id
+    )
+    db.add(notif)
+    return notif  # don't commit here — let caller handle it
 
 
 
