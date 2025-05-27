@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query,Header
 from uuid import UUID
-from typing import Optional
-from typing import List
+from typing import Optional , List
 from datetime import datetime
 from sqlalchemy.orm import Session
 from src.schemas.user_response_schema import UserResponse, UserUpdate
@@ -19,9 +18,11 @@ from src.models.user_model import User
 from src.models.user_model import UserRole
 from src.models.vehicle_model import Vehicle
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
-from ..services.vehicle_service import vehicle_inspection_logic
+from ..services.vehicle_service import vehicle_inspection_logic, get_available_vehicles_for_ride_by_id
 from ..schemas.vehicle_schema import VehicleOut , InUseVehicleOut , VehicleStatusUpdate
 from ..utils.auth import token_check
+from ..services.vehicle_service import get_vehicles_with_optional_status,update_vehicle_status,get_vehicle_by_id
+
 from ..services.vehicle_service import get_vehicles_with_optional_status, get_available_vehicles,update_vehicle_status,get_vehicle_by_id
 from ..services.user_notification import send_admin_odometer_notification
 
@@ -139,11 +140,17 @@ def patch_vehicle_status(
 def get_vehicle_by_id_route(vehicle_id: str, db: Session = Depends(get_db)):
     return get_vehicle_by_id(vehicle_id, db)
 
-@router.get("/all-vehicles/available")
-def get_available_vehicles_route(status: Optional[str] = Query(None),
- db: Session = Depends(get_db),payload: dict = Depends(token_check)):
-    vehicles = get_available_vehicles(db)
-    return vehicles
+@router.get("/{ride_id}/available-vehicles", response_model=List[VehicleOut])
+def available_vehicles_for_ride(
+    ride_id: UUID,
+    db: Session = Depends(get_db)
+):
+    try:
+        return get_available_vehicles_for_ride_by_id(db, ride_id)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
 
 @router.get("/all-vehicles", response_model=List[VehicleOut])
 def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = Depends(get_db)
