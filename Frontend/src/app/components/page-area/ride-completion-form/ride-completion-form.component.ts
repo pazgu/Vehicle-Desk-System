@@ -51,10 +51,12 @@ setFormValue(controlName: string, value: string): void {
     if (this.form.invalid) {
       return;
     }
-    this.loading = true;
-     const formData = {
-    ...this.form.value,
+    const rawForm = this.form.value;
+
+  const formData = {
+    ...rawForm,
     ride_id: this.rideId,
+    completed: rawForm.completed === 'true' || rawForm.completed === true,  // ✅ convert to boolean
   };
     const token = localStorage.getItem('access_token') || ''   
     this.rideReportService.submitCompletionForm(formData,token).subscribe({
