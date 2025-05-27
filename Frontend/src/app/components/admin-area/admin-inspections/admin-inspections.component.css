@@ -1,0 +1,23 @@
+.admin-inspections-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background: #fdfdfd;
+  border-radius: 12px;
+  font-family: 'Alef', sans-serif;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  direction: rtl;
+}
+
+.inspection-card {
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+}
+
+.highlight {
+  background-color: #ffe9e9;
+  border: 2px solid #e03131;
+  padding: 10px;
+  border-radius: 8px;
+}

@@ -1,0 +1,33 @@
+<div class="archived-container">
+  <h1>טופס בדיקת רכב</h1>
+
+    <form [formGroup]="inspectionForm" (ngSubmit)="submitInspection()">
+
+
+
+<label>
+  <input type="checkbox" formControlName="clean" />
+  רכב נקי
+</label>
+
+<label>
+  <input type="checkbox" formControlName="fuel_checked" />
+  נבדקה רמת דלק
+</label>
+
+<label>
+  <input type="checkbox" formControlName="no_items_left" />
+  אין חפצים שנשכחו
+</label>
+
+<label for="critical_issue">אירוע חריג (אם קיים):</label>
+<input type="text" formControlName="critical_issue" placeholder="כתוב כאן אם קרה משהו חשוב לדיווח..." />
+
+
+<button type="submit" [disabled]="inspectionForm.invalid" class="cute-red-button">
+  שלח בדיקה
+</button>
+  </form>
+
+
+</div>
