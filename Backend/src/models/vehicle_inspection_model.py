@@ -15,6 +15,6 @@ class VehicleInspection(Base):
     fuel_level = Column(Integer, nullable=False)
     tires_ok = Column(Boolean, nullable=False)
     clean = Column(Boolean, nullable=False)
-    issues_found = Column(JSONB, nullable=True)  # אפשר גם לשנות ל-Text אם את מעדיפה
+    issues_found = Column(JSONB, nullable=True)  
 
     
