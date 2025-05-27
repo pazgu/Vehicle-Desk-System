@@ -18,6 +18,10 @@
           (input)="filterLogs()"
         />
       </div>
+<div class="export-buttons">
+  <button class="export-button" (click)="exportToPDF()">ייצוא PDF</button>
+  <button class="export-button" (click)="exportToCSV()">ייצוא CSV</button>
+</div>
 
       <div class="table-container" *ngIf="!selectedLog">
         <table class="audit-table">
