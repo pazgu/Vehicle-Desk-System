@@ -13,6 +13,7 @@ from fastapi import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 from ..models.vehicle_inspection_model import VehicleInspection 
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
+from ..utils.audit_utils import log_action 
 from ..schemas.user_rides_schema import RideSchema 
 
 # def get_available_vehicles(db: Session, type: Optional[VehicleType] = None) -> List[Vehicle]:
@@ -140,7 +141,7 @@ def get_vehicles_with_optional_status(
     print("Result:", result)
     return result
 
-def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_reason: str, db: Session):
+def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_reason: str, db: Session, changed_by: Optional[UUID] = None):
     vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
     if not vehicle:
         raise HTTPException(status_code=404, detail="Vehicle not found")
@@ -161,6 +162,17 @@ def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_re
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
+    log_action(
+        db=db,
+        action="update_vehicle_status",
+        entity_type="Vehicle",
+        entity_id=str(vehicle.id),
+        change_data={
+            "new_status": str(vehicle.status),
+            "freeze_reason": vehicle.freeze_reason
+        },
+        changed_by=changed_by  
+    )
     return {"vehicle_id": vehicle.id, "new_status": vehicle.status, "freeze_reason": vehicle.freeze_reason}
 
 
