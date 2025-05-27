@@ -96,14 +96,18 @@ onLogin(): void {
       this.authService.setLoginState(true);
       this.authService.setRole(response.role);
 
-      const role = response.role;
-      if (role === 'admin') {
-        this.router.navigate(['/audit-logs']);
-      } else if (role === 'supervisor') {
-        this.router.navigate(['/supervisor-dashboard']);
-      } else {
-        this.router.navigate(['/home']);
-      }
+    const role = response.role;
+
+if (role === 'admin') {
+  this.router.navigate(['/admin/daily-inspections']);
+} else if (role === 'supervisor') {
+  this.router.navigate(['/supervisor-dashboard']);
+} else if (role === 'inspector') {
+  this.router.navigate(['/inspector/inspection']);
+} else {
+  this.router.navigate(['/home']);
+}
+
     },
     error: (err) => {
       console.error('Login failed:', err);
