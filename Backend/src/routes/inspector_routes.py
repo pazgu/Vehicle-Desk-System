@@ -7,10 +7,4 @@ from datetime import date
 
 router = APIRouter()
 
-@router.post("/")
-def create_inspection(inspection: VehicleInspectionSchema):
-    return {
-        "message": "Inspection received",
-        "data": inspection
-    }
 
