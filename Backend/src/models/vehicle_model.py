@@ -32,7 +32,6 @@ class Vehicle(Base):
     plate_number = Column(Text, nullable=False, unique=True)
     type = Column(Enum(VehicleType), nullable=False, index=True)
     fuel_type = Column(Enum(FuelType), nullable=False)
-    status = Column(Enum(VehicleStatus), nullable=False, default=VehicleStatus.available)
     status = Column(Enum(VehicleStatus), nullable=False, default=VehicleStatus.available, index=True)
     freeze_reason = Column(Enum(FreezeReason), nullable=True)
     freeze_details = Column(Text, nullable=True) 

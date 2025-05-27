@@ -12,7 +12,7 @@ from .vehicle_service import update_vehicle_status
 from ..models.vehicle_inspection_model import VehicleInspection 
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 from sqlalchemy import String , func
-
+from ..utils.audit_utils import log_action
 def get_department_orders(department_id: str, db: Session) -> List[RideDashboardItem]:
     """
     Fetch all orders for a specific department by joining the Ride and User tables.
@@ -109,6 +109,15 @@ def edit_order_status(department_id: str, order_id: str, new_status: str, db: Se
     # Update the status of the order
     order.status = new_status
     db.commit()
+
+    log_action(
+        db=db,
+        action="update_ride_status",
+        entity_type="Ride",
+        entity_id=str(order.id),
+        change_data={"new_status": new_status},
+        changed_by=order.override_user_id  # or another field if you track who approved
+    )
 
     hebrew_status_map = {
         "approved": "אושרה",

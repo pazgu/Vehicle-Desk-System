@@ -25,7 +25,8 @@ def login_user(username: str, password: str, db: Session = Depends(get_db)):
         username=user.username,
         first_name=user.first_name,
         last_name=user.last_name,
-        role=user.role    )
+        role=user.role,
+        department_id=user.department_id     )
 
     return {
         **token,
