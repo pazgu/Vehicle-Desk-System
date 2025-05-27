@@ -181,3 +181,14 @@ def send_admin_notification_simple_route(db: Session = Depends(get_db)):
         "odometer_reading": vehicle.odometer_reading
 
     }
+
+
+@router.get("/inspections/today", response_model=List[VehicleInspectionSchema])
+def get_today_inspections(db: Session = Depends(get_db)):
+    today = date.today()
+    inspections = db.query(VehicleInspection).filter(
+        VehicleInspection.inspection_date == today
+    ).all()
+    return inspections
+
+
