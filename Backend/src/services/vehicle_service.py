@@ -3,7 +3,7 @@ from sqlalchemy.types import String  # To cast to string
 from typing import Optional, List , Dict , Union
 from ..models.vehicle_model import Vehicle, VehicleType, VehicleStatus
 from sqlalchemy import func, cast 
-from sqlalchemy import and_ , or_
+from sqlalchemy import and_ , or_ , select
 from ..models.ride_model import Ride, RideStatus
 from ..models.user_model import User
 from datetime import datetime
@@ -13,6 +13,7 @@ from fastapi import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 from ..models.vehicle_inspection_model import VehicleInspection 
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
+from ..schemas.user_rides_schema import RideSchema 
 
 # def get_available_vehicles(db: Session, type: Optional[VehicleType] = None) -> List[Vehicle]:
 #     query = db.query(Vehicle).filter(Vehicle.status == VehicleStatus.available)
@@ -163,32 +164,46 @@ def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_re
     return {"vehicle_id": vehicle.id, "new_status": vehicle.status, "freeze_reason": vehicle.freeze_reason}
 
 
-def get_available_vehicles(
-    db: Session
-) -> List[VehicleOut]:
-    query = (
-        db.query(
-            Vehicle.id,
-            Vehicle.plate_number,
-            Vehicle.type,
-            Vehicle.fuel_type,
-            Vehicle.status,
-            Vehicle.freeze_reason,
-            Vehicle.last_used_at,
-            Vehicle.current_location,
-            Vehicle.odometer_reading,
-            Vehicle.vehicle_model,
-            Vehicle.image_url,
+def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID) -> List[VehicleOut]:
+    ride = db.query(
+        Ride.id,
+        Ride.start_datetime,
+        Ride.end_datetime,
+        Ride.status
+    ).filter(Ride.id == ride_id).first()
+
+    if not ride:
+        raise HTTPException(status_code=404, detail="Ride not found")
+
+    if ride.status != "approved":
+        raise HTTPException(status_code=400, detail="Ride is not approved")
+
+    start_datetime = ride.start_datetime
+    end_datetime = ride.end_datetime
+
+    conflicting_vehicles_subquery = (
+        db.query(Ride.vehicle_id)
+        .filter(
+            Ride.status.in_(["approved", "in_progress"]),
+            or_(
+                and_(Ride.start_datetime <= start_datetime, Ride.end_datetime > start_datetime),
+                and_(Ride.start_datetime < end_datetime, Ride.end_datetime >= end_datetime),
+                and_(Ride.start_datetime >= start_datetime, Ride.end_datetime <= end_datetime),
+                and_(Ride.start_datetime <= start_datetime, Ride.end_datetime >= end_datetime),
+            )
         )
-        .filter(Vehicle.status == VehicleStatus.available)
+        .subquery()
     )
 
-    vehicles = query.all()
-    result = []
-    for row in vehicles:
-        data = dict(row._mapping)
-        result.append(VehicleOut(**data))
-    return result
+    vehicles = (
+        db.query(Vehicle)
+        .filter(
+            Vehicle.status == "available",
+            ~Vehicle.id.in_(select(conflicting_vehicles_subquery.c.vehicle_id))
+        )
+        .all()
+    )
+    return [VehicleOut.from_orm(vehicle) for vehicle in vehicles]
 
 def get_vehicle_by_id(vehicle_id: str, db: Session):
     vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
