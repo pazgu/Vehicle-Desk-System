@@ -44,9 +44,9 @@
 
       <div *ngIf="selectedLog" class="log-details-card">
         <h2>פרטי יומן ביקורת</h2>
-        <p><strong>סוג פעולה:</strong> {{ selectedLog.action }}</p>
-        <p><strong>שם מלא:</strong> {{ selectedLog.full_name }}</p>
-        <p><strong>תאריך יצירה:</strong> {{ selectedLog.created_at | date:'dd/MM/yyyy HH:mm' }}</p>
+        <p><strong>סוג פעולה:</strong> {{ selectedLog.change_data }}</p>
+        <!-- <p><strong>שם מלא:</strong> {{ selectedLog.full_name }}</p>
+        <p><strong>תאריך יצירה:</strong> {{ selectedLog.created_at | date:'dd/MM/yyyy HH:mm' }}</p> -->
         <button class="close-details-button" (click)="closeDetails()">סגור</button>
       </div>
     </div>
