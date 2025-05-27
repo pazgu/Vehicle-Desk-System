@@ -1,4 +1,5 @@
 from ..models.audit_log_model import AuditLog
+from ..models.user_model import User  # Import the User model
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from typing import List, Optional
@@ -15,15 +16,36 @@ def get_all_audit_logs(db: Session, from_date: datetime = None, to_date: datetim
     result = []
     for log in logs:
         change_data = log.change_data or {}
-        # Try to extract full name from change_data, fallback to changed_by or empty string
+        
+        # Extract first and last name from change_data
         first = change_data.get("first_name") or ""
         last = change_data.get("last_name") or ""
-        full_name = (first + " " + last).strip()
-        if not full_name:
-            # fallback: try full_name key, or just show empty string or "Unknown"
-            full_name = change_data.get("full_name") or ""
-            if not full_name:
-                full_name = "Unknown"
+        
+        # Check nested 'new' or 'old' keys if first_name/last_name are not found
+        if not first and not last:
+            nested_data = change_data.get("new") or change_data.get("old") or {}
+            first = nested_data.get("first_name") or ""
+            last = nested_data.get("last_name") or ""
+        
+        # If still no name, fetch from the users table using changed_by
+        if not first and not last:
+            user = db.query(User).filter(User.employee_id == log.changed_by).first()
+            if user:
+                first = user.first_name or ""
+                last = user.last_name or ""
+        
+        # If entity_type is not User, attempt to fetch name from other fields
+        if not first and not last and log.entity_type != "User":
+            user_id = change_data.get("user_id")
+            if user_id:
+                user = db.query(User).filter(User.employee_id == user_id).first()
+                if user:
+                    first = user.first_name or ""
+                    last = user.last_name or ""
+        
+        # Construct full_name or fallback to "Unknown"
+        full_name = (first + " " + last).strip() or change_data.get("full_name") or "Unknown"
+        
         result.append(AuditLogsSchema(
             id=log.id,
             full_name=full_name,
@@ -34,4 +56,5 @@ def get_all_audit_logs(db: Session, from_date: datetime = None, to_date: datetim
             created_at=log.created_at,
             changed_by=log.changed_by
         ))
+    print(f"!!!!!!!!!!!!!!!!!!!!!!!\n {result}\n")
     return result
