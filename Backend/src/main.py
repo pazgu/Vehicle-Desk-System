@@ -22,7 +22,7 @@ app.add_middleware(
 app.include_router(user_route, tags=["Users"])
 app.include_router(supervisor_route,prefix="/api",tags=["Supervisors"])
 app.include_router(admin_route,prefix="/api",tags=["Admin"])
-app.include_router(Inspector_route,prefix="/api",tags=["Inspector"])
+app.include_router(inspector_route,prefix="/api",tags=["Inspector"])
 
 @app.get("/")
 def root():
