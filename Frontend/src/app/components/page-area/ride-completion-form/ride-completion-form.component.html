@@ -14,25 +14,48 @@
                 <p class="form-subtitle">אנא מלא את הפרטים הבאים</p>
             </div>
             
-            <div class="form-content">
-                <div class="question">
-                    <p class="question-text">האם החזרת את הרכב?</p>
-                    <div class="options">
-                        <div class="option" data-value="yes">כן</div>
-                        <div class="option" data-value="no">לא</div>
-                    </div>
-                    <div class="divider"></div>
-                </div>
+            <div class="question" [formGroup]="form">
+  <p class="question-text">האם החזרת את הרכב?</p>
+  <div class="options">
+    <div
+      class="option"
+      [ngClass]="{ selected: form.get('carReturned')?.value === 'yes' }"
+      (click)="setFormValue('carReturned', 'yes')"
+    >
+      כן
+    </div>
+    <div
+      class="option"
+      [ngClass]="{ selected: form.get('carReturned')?.value === 'no' }"
+      (click)="setFormValue('carReturned', 'no')"
+    >
+      לא
+    </div>
+  </div>
+  <div class="divider"></div>
+</div>
 
-                <div class="question">
-                    <p class="question-text">האם הטענת/תדלקת את הרכב?</p>
-                    <div class="options">
-                        <div class="option" data-value="yes">כן</div>
-                        <div class="option" data-value="no">לא</div>
-                    </div>
-                    <div class="divider"></div>
-                </div>
-                
+<div class="question" [formGroup]="form">
+  <p class="question-text">האם הטענת/תדלקת את הרכב?</p>
+  <div class="options">
+    <div
+      class="option"
+      [ngClass]="{ selected: form.get('carFueled')?.value === 'yes' }"
+      (click)="setFormValue('carFueled', 'yes')"
+    >
+      כן
+    </div>
+    <div
+      class="option"
+      [ngClass]="{ selected: form.get('carFueled')?.value === 'no' }"
+      (click)="setFormValue('carFueled', 'no')"
+    >
+      לא
+    </div>
+  </div>
+  <div class="divider"></div>
+</div>
+
 <div class="question" [formGroup]="form">
   <p class="question-text">האם קרה דבר שונה מהרגיל במהלך הנסיעה?</p>
 
@@ -79,7 +102,7 @@
                 </div>
             </div>
         </div>
-    </div>
+ 
 
     <script src="script.js"></script>
 </body>

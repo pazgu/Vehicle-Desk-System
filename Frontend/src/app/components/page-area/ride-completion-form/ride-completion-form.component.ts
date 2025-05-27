@@ -17,10 +17,12 @@ export class RideCompletionFormComponent implements OnInit {
   ngOnInit(): void {
     this.form = this.fb.group({
       incident: [''],
-      elaborate: ['']
+      elaborate: [''],
+      carReturned: [''],
+    carFueled: [''],
     });
   }
-
+ 
   setIncident(value: string): void {
     this.form.get('incident')?.setValue(value);
 
@@ -28,4 +30,12 @@ export class RideCompletionFormComponent implements OnInit {
       this.form.get('elaborate')?.setValue('');
     }
   }
+  setFormValue(controlName: string, value: string): void {
+  this.form.get(controlName)?.setValue(value);
+
+  // clear elaborate if incident is 'no'
+  if (controlName === 'incident' && value === 'no') {
+    this.form.get('elaborate')?.setValue('');
+  }
+}
 }
