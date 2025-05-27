@@ -10,6 +10,23 @@
           {{ showFilters ? 'הסתר סינון' : 'הצג סינון' }}
         </button>
       </div>
+
+   <div class="status-indicators">
+  <p style="margin-bottom: 0.75rem; font-weight: 600;">מקרא צבעים</p>
+  <div class="status-box">
+    <div class="status-item">
+      <span class="status-indicator available"></span> זמין
+    </div>
+    <div class="status-item">
+      <span class="status-indicator in-use"></span> בשימוש
+    </div>
+    <div class="status-item">
+      <span class="status-indicator frozen"></span> מוקפא
+    </div>
+  </div>
+</div>
+
+
       <!-- Filters Section -->
       <div *ngIf="showFilters"
         style="margin-bottom: 1.5rem; background: #f7f7f7; padding: 1rem; border-radius: 8px; direction: rtl;">
