@@ -1,0 +1,13 @@
+<h2>בדיקות רכבים שבוצעו היום</h2>
+
+<div *ngIf="loading">טוען...</div>
+<div *ngIf="!loading && inspections.length === 0">אין בדיקות להצגה</div>
+
+<ul *ngIf="!loading && inspections.length > 0">
+  <li *ngFor="let item of inspections" [class.highlight]="highlighted">
+    🛠️ רכב: {{ item.vehicle_id }} |
+    🧪 בודק: {{ item.inspected_by }} |
+    📅 תאריך: {{ item.inspection_date | date: 'short' }} <br />
+    📍 הערות: {{ item.issues_found?.critical_event || 'אין' }}
+  </li>
+</ul>
