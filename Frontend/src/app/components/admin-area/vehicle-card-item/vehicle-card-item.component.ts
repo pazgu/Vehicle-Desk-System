@@ -1,10 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { VehicleService } from '../../../services/vehicle.service';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
 import { FormsModule } from '@angular/forms';
-// import { th } from 'date-fns/locale'; // This import seems unused and might be causing a warning if not needed.
 
 @Component({
   selector: 'app-vehicle-card-item',
@@ -17,7 +16,7 @@ export class VehicleCardItemComponent implements OnInit {
   isFreezeReasonFieldVisible: boolean = false; // Controls visibility of the input field
   freezeReason: string = ''; // Holds the freeze reason entered by the user
 
-  constructor(private route: ActivatedRoute, private vehicleService: VehicleService) { }
+  constructor(private navigateRouter: Router, private route: ActivatedRoute, private vehicleService: VehicleService) { }
 
   ngOnInit(): void {
     window.scrollTo({ top: 0, behavior: 'smooth' }); // Always scroll to top
@@ -121,6 +120,7 @@ export class VehicleCardItemComponent implements OnInit {
         alert(`Failed to update vehicle status: ${err.error?.detail || err.message}`);
       }
     });
+    this.navigateRouter.navigate(['/vehicle-dashboard']); // או הנתיב המתאים שלך
   }
 
   
@@ -134,7 +134,7 @@ export class VehicleCardItemComponent implements OnInit {
     if (!this.freezeReason.trim()) {
       alert('יש להזין סיבת הקפאה');
       return;
-    }
+  }
 
     console.log('Freezing vehicle with reason:', this.freezeReason); // Log the freeze reason
 
@@ -144,5 +144,6 @@ export class VehicleCardItemComponent implements OnInit {
     // Reset the dropdown and hide it after successful freeze (or if error occurs, the UI will reflect actual state)
     this.freezeReason = '';
     this.isFreezeReasonFieldVisible = false;
+
   }
 }

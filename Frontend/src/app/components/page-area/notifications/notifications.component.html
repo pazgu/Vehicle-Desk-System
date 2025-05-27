@@ -1,31 +1,33 @@
 <div class="wrapper">
-<div class="notification-page">
-  <h2 class="title">הודעות</h2>
+  <div class="notification-page">
+    <h2 class="title">הודעות</h2>
 
-  <div *ngIf="pagedNotifications.length === 0" class="no-message">
-    לא נמצאו הודעות עבורך
-  </div>
+    <div *ngIf="pagedNotifications.length === 0" class="no-message">
+      לא נמצאו הודעות עבורך
+    </div>
 
-  <div class="notification" *ngFor="let note of pagedNotifications" (click)="goToOrder(note.order_id)" [ngClass]="getStatusClass(note.order_status)">
-    
-    <div class="content">
-      <img [src]="getStatusIcon(note.order_status)" class="status-icon" alt="Status Icon" />
-      <div class="time">{{ note.timeAgo }}</div>
-      <span class="text">{{ translateMessage(note.message) }}</span>
-       <img src="/assets/images/message.png"  alt="Message Icon" class="message-icon" />
-     
+    <div
+      class="notification"
+      *ngFor="let note of pagedNotifications"
+      (click)="note.order_id ? goToOrder(note.order_id) : null"
+      [ngClass]="note.order_status ? getStatusClass(note.order_status) : 'neutral'"
+    >
+      <div class="content">
+        <!-- <img
+          [src]="note.order_status ? getStatusIcon(note.order_status) : '/assets/images/message.png'"
+          class="status-icon"
+          alt="Status Icon"
+        /> -->
+        <div class="time">{{ note.timeAgo }}</div>
+        <span class="text">{{ translateMessage(note.message) }}</span>
+        <img src="/assets/images/message.png" alt="Message Icon" class="message-icon" />
+      </div>
+    </div>
+
+    <div class="pagination">
+      <button (click)="prevPage()" [disabled]="currentPage === 1">◀</button>
+      <span>עמוד {{ currentPage }} מתוך {{ totalPages }}</span>
+      <button (click)="nextPage()" [disabled]="currentPage === totalPages">▶</button>
     </div>
   </div>
-
-  <div class="pagination">
-    <button (click)="nextPage()" [disabled]="currentPage === totalPages">
-      ◀
-    </button>
-    <span>עמוד {{ currentPage }} מתוך {{ totalPages }}</span>
-    <button (click)="prevPage()" [disabled]="currentPage === 1">
-      ▶
-    </button>
-    
-  </div>
-</div>
 </div>

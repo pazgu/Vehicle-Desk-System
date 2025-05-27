@@ -12,7 +12,7 @@ from .vehicle_service import update_vehicle_status
 from ..models.vehicle_inspection_model import VehicleInspection 
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 from sqlalchemy import String , func
-
+from ..utils.audit_utils import log_action
 def get_department_orders(department_id: str, db: Session) -> List[RideDashboardItem]:
     """
     Fetch all orders for a specific department by joining the Ride and User tables.
@@ -110,6 +110,15 @@ def edit_order_status(department_id: str, order_id: str, new_status: str, db: Se
     order.status = new_status
     db.commit()
 
+    log_action(
+        db=db,
+        action="update_ride_status",
+        entity_type="Ride",
+        entity_id=str(order.id),
+        change_data={"new_status": new_status},
+        changed_by=order.override_user_id  # or another field if you track who approved
+    )
+
     hebrew_status_map = {
         "approved": "אושרה",
         "rejected": "נדחתה",
@@ -157,24 +166,6 @@ def get_department_notifications(department_id: UUID, db: Session) -> List[Notif
 
     return notifications
 
-
-def end_ride_service(db: Session, ride_id: UUID, has_incident: bool):
-    ride = db.query(Ride).filter(Ride.id == ride_id).first()
-    if not ride:
-        raise HTTPException(status_code=404, detail="Ride not found")
-
-    ride.end_datetime = datetime.now()
-
-    if has_incident:
-        ride.emergency_event = "Incident reported on ride end"
-        update_vehicle_status(ride.vehicle_id, VehicleStatus.frozen, db)
-    else:
-        ride.emergency_event = None
-        update_vehicle_status(ride.vehicle_id, VehicleStatus.available, db)
-
-    db.commit()
-    db.refresh(ride)
-    return ride
 
 def start_ride(db: Session, ride_id: UUID):
     ride = db.query(Ride).filter(Ride.id == ride_id).first()

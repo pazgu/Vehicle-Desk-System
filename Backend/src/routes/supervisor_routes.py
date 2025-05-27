@@ -8,7 +8,6 @@ from ..utils.database import get_db
 from ..services.supervisor_dashboard_service import get_department_orders
 from typing import Optional
 from ..schemas.order_card_item import OrderCardItem
-from ..services.supervisor_dashboard_service import end_ride_service
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 from ..services.supervisor_dashboard_service import vehicle_inspection_logic , start_ride
 from ..schemas.vehicle_schema import FreezeVehicleRequest
@@ -31,12 +30,6 @@ def get_department_specific_order_route(department_id: UUID, order_id: UUID, db:
 @router.patch("/orders/{department_id}/{order_id}/update/{status}")
 def edit_order_status_route(department_id: UUID, order_id: UUID, status: str, db: Session = Depends(get_db)):
     return edit_order_status(department_id, order_id, status, db)
-
-
-
-@router.post("/{ride_id}/end", response_model=OrderCardItem)
-def end_ride(ride_id: UUID, has_incident: Optional[bool] = False, db: Session = Depends(get_db)):
-    return end_ride_service(db=db, ride_id=ride_id, has_incident=has_incident)
 
 
 # @router.get("/orders/{department_id}/{order_id}/pending")
@@ -108,9 +101,6 @@ def end_ride(ride_id: UUID, has_incident: Optional[bool] = False, db: Session = 
 
 
 
-@router.post("/{ride_id}/end", response_model=OrderCardItem)
-def end_ride(ride_id: UUID, has_incident: Optional[bool] = False, db: Session = Depends(get_db)):
-    return end_ride_service(db=db, ride_id=ride_id, has_incident=has_incident)
 
 
 # @router.post("/vehicle-inspection")
