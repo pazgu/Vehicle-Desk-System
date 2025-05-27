@@ -5,7 +5,9 @@ from ..schemas.user_response_schema import UserResponse
 from ..models.user_model import User
 from uuid import UUID
 from datetime import datetime, timedelta
+from typing import Optional
 from dotenv import load_dotenv 
+
 from os import environ
 load_dotenv()
 SECRET_KEY = environ.get("JWT_SECRET")
@@ -16,9 +18,7 @@ ALGORITHM = environ.get("ALGORITHM")
 
 
 
-def create_access_token(employee_id: UUID, username: str,first_name:str,last_name:str, role: str, expires_delta: timedelta = None):
-    print("ACCESS_TOKEN_EXPIRE_MINUTES =", ACCESS_TOKEN_EXPIRE_MINUTES)
-
+def create_access_token(employee_id: UUID, username: str,first_name:str,last_name:str, role: str,department_id: Optional[UUID] = None, expires_delta: timedelta = None):
     expire = datetime.utcnow() + (expires_delta or timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES)))
 
     payload = {
@@ -27,6 +27,7 @@ def create_access_token(employee_id: UUID, username: str,first_name:str,last_nam
         "first_name":first_name,
         "last_name":last_name,
         "role": role,
+        "department_id": str(department_id) if department_id else None,
         "exp": expire
     }
     encoded_jwt = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
@@ -38,6 +39,7 @@ def create_access_token(employee_id: UUID, username: str,first_name:str,last_nam
         "first_name":first_name,
         "last_name":last_name,
         "role": role,
+        "department_id": department_id,
         "token_type": "bearer"
     }
 
