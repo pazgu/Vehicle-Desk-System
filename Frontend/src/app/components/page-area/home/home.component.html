@@ -7,7 +7,19 @@
       <button [ngClass]="{ 'active': rideViewMode === 'future' }" (click)="rideViewMode = 'future'; fetchRides()">הצג נסיעות עתידיות</button>
       <button [ngClass]="{ 'active': rideViewMode === 'past' }" (click)="rideViewMode = 'past'; fetchRides()">הצג נסיעות קודמות</button>
       <button [ngClass]="{ 'active': rideViewMode === 'all' }" (click)="rideViewMode = 'all'; fetchRides()">הצג הכל</button>
-    </div>
+   
+
+      <!-- Archive Icon Button -->
+      <img
+       src="assets/images/trash_icon.png"
+       alt="הזמנות בארכיון"
+       width="26"
+       height="26"
+       title="הזמנות בארכיון"
+       style="cursor: pointer; margin-right: 4px;"
+       (click)="goToArchivedOrders()"
+       />
+</div>
 
     <!-- Sort + Filter Toggle Bar -->
     <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; direction: rtl;">

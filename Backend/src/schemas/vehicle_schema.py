@@ -12,6 +12,7 @@ class VehicleOut(BaseModel):
     fuel_type: FuelType
     status: VehicleStatus
     freeze_reason: Optional[FreezeReason] = None
+    freeze_details: Optional[str] = None
     last_used_at: Optional[datetime] = None
     current_location: str
     odometer_reading: int

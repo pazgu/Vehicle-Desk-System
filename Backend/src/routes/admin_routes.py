@@ -78,8 +78,6 @@ def fetch_user_by_id(user_id: UUID, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="User not found")
     return result
 
-
-
 @router.patch("/user-data-edit/{user_id}", response_model=UserResponse)
 def edit_user_by_id_route(
     user_id: UUID,
@@ -92,15 +90,25 @@ def edit_user_by_id_route(
         raise HTTPException(status_code=404, detail="User not found")
 
     update_data = user_update.dict(exclude_unset=True)
-    for key, value in update_data.items():
-        setattr(user, key, value)
+    print("🟡 Incoming update:", update_data)
 
-    db.commit()
+    # Check attributes before applying them
+    for key, value in update_data.items():
+        if not hasattr(user, key):
+            print(f"⚠️ WARNING: User has no attribute '{key}' — skipping.")
+        else:
+            print(f"✅ Updating '{key}' to '{value}'")
+            setattr(user, key, value)
+
+    try:
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        print("❌ Commit failed:", e)
+        raise HTTPException(status_code=500, detail="Failed to update user")
+
     db.refresh(user)
     return user
-
-
-
 
 @router.get("/roles")
 def get_roles():

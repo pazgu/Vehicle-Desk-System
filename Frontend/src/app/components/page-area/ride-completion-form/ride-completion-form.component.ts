@@ -1,12 +1,41 @@
-import { Component } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 
 @Component({
-  selector: 'app-ride-completion-form',
-  imports: [RouterModule],
+  selector: 'app-your-component',
   templateUrl: './ride-completion-form.component.html',
-  styleUrl: './ride-completion-form.component.css'
+  styleUrls: ['./ride-completion-form.component.css'],
+  imports: [ReactiveFormsModule,CommonModule]
 })
-export class RideCompletionFormComponent {
+export class RideCompletionFormComponent implements OnInit {
+  form!: FormGroup;
 
+  constructor(private fb: FormBuilder) {}
+
+  ngOnInit(): void {
+    this.form = this.fb.group({
+      incident: [''],
+      elaborate: [''],
+      carReturned: [''],
+    carFueled: [''],
+    });
+  }
+ 
+  setIncident(value: string): void {
+    this.form.get('incident')?.setValue(value);
+
+    if (value === 'no') {
+      this.form.get('elaborate')?.setValue('');
+    }
+  }
+  setFormValue(controlName: string, value: string): void {
+  this.form.get(controlName)?.setValue(value);
+
+  // clear elaborate if incident is 'no'
+  if (controlName === 'incident' && value === 'no') {
+    this.form.get('elaborate')?.setValue('');
+  }
+}
 }
