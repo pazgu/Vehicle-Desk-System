@@ -5,6 +5,8 @@ from src.routes.admin_routes import router as admin_route
 from src.routes.inspector_routes import router as inspector_route
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Request
+from src.utils.scheduler import start_scheduler
+
 app = FastAPI()
 
 print("🚀 FastAPI app starting with CORS enabled")
@@ -23,6 +25,9 @@ app.include_router(user_route, tags=["Users"])
 app.include_router(supervisor_route,prefix="/api",tags=["Supervisors"])
 app.include_router(admin_route,prefix="/api",tags=["Admin"])
 app.include_router(inspector_route,prefix="/api",tags=["Inspector"])
+
+start_scheduler()
+
 
 @app.get("/")
 def root():
