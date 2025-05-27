@@ -20,6 +20,7 @@ ALGORITHM = environ.get("ALGORITHM")
 
 def create_access_token(employee_id: UUID, username: str,first_name:str,last_name:str, role: str,department_id: Optional[UUID] = None, expires_delta: timedelta = None):
     expire = datetime.utcnow() + (expires_delta or timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES)))
+
     payload = {
         "sub": str(employee_id),
         "username": username,
