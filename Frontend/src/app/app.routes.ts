@@ -51,6 +51,12 @@ export const routes: Routes = [
   loadComponent: () =>
     import('./ride-area/archived-orders/archived-orders.component').then(m => m.ArchivedOrdersComponent)
 },
+{
+  path: 'inspector/inspection',
+  loadComponent: () => import('./inspector-area/vehicle-inspection/vehicle-inspection.component')
+    .then(m => m.VehicleInspectionComponent),
+  canActivate: [ProtectedRouteGuard] // optional if you're using role checks
+},
 
   { path: '**', component: Page404Component }
 ];
