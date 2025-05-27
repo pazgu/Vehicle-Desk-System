@@ -4,7 +4,7 @@ from datetime import datetime
 from uuid import UUID
 class AuditLogsSchema(BaseModel):
     id: int
-    # full_name: str
+    full_name: str
     action: str
     entity_type: str
     entity_id: str

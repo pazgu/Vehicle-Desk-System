@@ -156,6 +156,7 @@ def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = De
     vehicles = get_vehicles_with_optional_status(db, status)
     return vehicles
 
+
 @router.get("/all-audit-logs", response_model=List[AuditLogsSchema])
 def get_all_audit_logs_route(
     from_date: Optional[datetime] = None,

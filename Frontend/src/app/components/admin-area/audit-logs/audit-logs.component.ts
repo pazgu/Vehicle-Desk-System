@@ -15,34 +15,6 @@ export class AuditLogsComponent implements OnInit {
   showFilters = false;
   searchTerm = '';
 
-  // logs: any[] = [
-  //   // Sample data - replace with your actual data service
-  //   {
-  //     id: 1,
-  //     actionType: 'CREATE',
-  //     fullName: 'Mickey Mouse',
-  //     description: 'User Mickey Mouse created a new report on financial data. The report includes quarterly earnings and expenditure analysis.',
-  //     createdAt: new Date('2024-01-15T10:30:00')
-  //   },
-  //   {
-  //     id: 2,
-  //     actionType: 'UPDATE',
-  //     fullName: 'Donald Duck',
-  //     description: 'User Donald Duck updated the inventory count for warehouse A. Stock levels for item #345 and #678 were adjusted.',
-  //     createdAt: new Date('2024-01-16T14:45:00')
-  //   },
-  //   {
-  //     id: 3,
-  //     actionType: 'DELETE',
-  //     fullName: 'Goofy Goof',
-  //     description: 'User Goofy Goof deleted an old project file named "Legacy_Project_X.zip" from the archive server.',
-  //     createdAt: new Date('2024-01-17T09:00:00')
-  //   }
-  // ];
-  // filteredLogs: any[] = [];
-  // // Property to hold the selected log for detailed view
-  // selectedLog: any | null = null;
-
   constructor(private auditLogService: AuditLogsService) { }
   logs: AuditLogs[] = [];
   filteredLogs: any[] = [];
