@@ -3,7 +3,7 @@ from sqlalchemy.types import String  # To cast to string
 from typing import Optional, List , Dict , Union
 from ..models.vehicle_model import Vehicle, VehicleType, VehicleStatus
 from sqlalchemy import func, cast 
-from sqlalchemy import and_
+from sqlalchemy import and_ , or_
 from ..models.ride_model import Ride, RideStatus
 from ..models.user_model import User
 from datetime import datetime
