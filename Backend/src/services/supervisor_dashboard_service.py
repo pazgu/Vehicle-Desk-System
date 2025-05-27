@@ -158,24 +158,6 @@ def get_department_notifications(department_id: UUID, db: Session) -> List[Notif
     return notifications
 
 
-def end_ride_service(db: Session, ride_id: UUID, has_incident: bool):
-    ride = db.query(Ride).filter(Ride.id == ride_id).first()
-    if not ride:
-        raise HTTPException(status_code=404, detail="Ride not found")
-
-    ride.end_datetime = datetime.now()
-
-    if has_incident:
-        ride.emergency_event = "Incident reported on ride end"
-        update_vehicle_status(ride.vehicle_id, VehicleStatus.frozen, db)
-    else:
-        ride.emergency_event = None
-        update_vehicle_status(ride.vehicle_id, VehicleStatus.available, db)
-
-    db.commit()
-    db.refresh(ride)
-    return ride
-
 def start_ride(db: Session, ride_id: UUID):
     ride = db.query(Ride).filter(Ride.id == ride_id).first()
     if not ride:
