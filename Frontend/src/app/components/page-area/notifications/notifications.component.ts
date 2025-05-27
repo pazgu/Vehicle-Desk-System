@@ -29,7 +29,7 @@ export class NotificationsComponent implements OnInit {
     if (role === 'admin') {
   this.notificationService.getAdminNotifications().subscribe({
     next: (data) => {
-      const message = ` עבר יותר מ-10000 קילומטר ${data.plate_number} רכב בעל מזהה`;
+      const message = ` עבר יותר מ-10000 קילומטר ${data.plate_number} הרכב בעל לוחית הרישוי`;
 
       this.notifications = [{
         id: 'admin-generated',

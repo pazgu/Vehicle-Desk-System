@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient,HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { MyNotification } from '../models/notification';
 
@@ -16,11 +16,12 @@ export interface AdminNotificationResponse {
 })
 export class NotificationService {
   private apiBase = 'http://127.0.0.1:8000/api';
-
+  
   constructor(private http: HttpClient) {}
 
   getNotifications(): Observable<MyNotification[]> {
-    return this.http.get<MyNotification[]>(`${this.apiBase}/notifications`);
+    const user_id = localStorage.getItem('employee_id') || ''; // Ensure user_id is defined
+    return this.http.get<MyNotification[]>(`${this.apiBase}/notifications/${user_id}`);
   }
 
   getAdminNotifications(): Observable<AdminNotificationResponse> {
