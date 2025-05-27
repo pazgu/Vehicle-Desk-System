@@ -27,8 +27,14 @@ def hash_password(password: str) -> str:
 
 # Function to verify if the provided password matches the stored hashed password
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    print(pwd_context.verify(plain_password, hashed_password))
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        is_valid = pwd_context.verify(plain_password, hashed_password)
+        print("✅ Password match result:", is_valid)
+        return is_valid
+    except Exception as e:
+        print("❌ bcrypt verify error:", str(e))
+        return False
+
 
 
 def token_check(request: Request):
