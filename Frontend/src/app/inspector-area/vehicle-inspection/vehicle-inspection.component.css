@@ -1,0 +1,101 @@
+/* Container styling */
+.archived-container {
+  direction: rtl;
+  max-width: 720px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: rgba(255, 251, 251, 1);
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  font-family: var(--font-family-alef);
+  color: var(--text-rgb-107-26-26);
+}
+
+/* Header */
+.archived-container h1 {
+  text-align: center;
+  font-size: 28px;
+  margin-bottom: 1.5rem;
+}
+
+/* Labels and Inputs */
+label {
+  display: block;
+  font-size: 18px;
+  margin-top: 1rem;
+  margin-bottom: 0.3rem;
+}
+
+select,
+textarea,
+input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  font-family: var(--font-family-alef);
+}
+
+/* Checkboxes inline */
+input[type="checkbox"] {
+  margin-left: 0.5rem;
+  transform: scale(1.2);
+}
+
+/* Textarea styling */
+textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Submit button */
+.cute-red-button {
+  background-color: #942222;
+  color: white;
+  font-family: var(--font-family-alef);
+  font-size: 16px;
+  font-weight: bold;
+  padding: 10px 22px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+  margin-top: 24px;
+  display: inline-block;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.cute-red-button:hover {
+  background-color: #7c1b1b;
+  transform: scale(1.03);
+}
+
+.cute-red-button:active {
+  transform: scale(0.97);
+}
+
+.error-msg {
+  color: red;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.fuel-level-display {
+  font-size: 16px;
+  margin-bottom: 10px;
+  font-weight: bold;
+  color: #333;
+}
+input[type="range"] {
+  width: 100%;
+}
+
+.fuel-bar {
+  height: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+
