@@ -170,5 +170,7 @@ def send_admin_notification_simple_route(db: Session = Depends(get_db)):
         "detail": "Notifications sent",
         "count": len(notifications),
         "vehicle_id": str(vehicle.id),
+        "plate_number": vehicle.plate_number,
         "odometer_reading": vehicle.odometer_reading
+
     }
