@@ -74,3 +74,28 @@ textarea {
 .cute-red-button:active {
   transform: scale(0.97);
 }
+
+.error-msg {
+  color: red;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.fuel-level-display {
+  font-size: 16px;
+  margin-bottom: 10px;
+  font-weight: bold;
+  color: #333;
+}
+input[type="range"] {
+  width: 100%;
+}
+
+.fuel-bar {
+  height: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+
