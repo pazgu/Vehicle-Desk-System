@@ -34,5 +34,5 @@ class RideSchema(BaseModel):
     vehicle: FuelType
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
