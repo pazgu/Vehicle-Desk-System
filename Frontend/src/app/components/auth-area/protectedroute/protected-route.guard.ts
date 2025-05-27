@@ -30,7 +30,7 @@ export class ProtectedRouteGuard implements CanActivate {
     }
 
     // ✅ Admin-only routes
-    if ((url.includes('/cars') || url.includes('/daily-checks')) && role !== 'admin') {
+    if ((url.includes('/vehicle-dashboard') || url.includes('/audit-logs')) && role !== 'admin') {
       this.toastService.show('העמוד מיועד למנהלים בלבד', 'error');
       this.router.navigate(['/home']);
       return false;

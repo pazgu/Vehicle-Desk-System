@@ -105,7 +105,7 @@ export class RegisterComponent implements OnInit {
       // ✅ Redirect based on role
       const role = response.role;
       if (role === 'admin') {
-        this.router.navigate(['/daily-checks']);
+        this.router.navigate(['/audit-logs']);
       } else if (role === 'supervisor') {
         this.router.navigate(['/supervisor-dashboard']);
       } else {
