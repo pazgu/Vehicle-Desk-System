@@ -11,8 +11,9 @@ from ..schemas.order_card_item import OrderCardItem
 from ..services.supervisor_dashboard_service import end_ride_service
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 from ..utils.auth import supervisor_check, token_check
-from ..services.supervisor_dashboard_service import vehicle_inspection_logic
+from ..services.supervisor_dashboard_service import vehicle_inspection_logic , start_ride
 from ..utils.auth import supervisor_check, token_check
+from ..schemas.vehicle_schema import FreezeVehicleRequest
 
 router = APIRouter()
 
