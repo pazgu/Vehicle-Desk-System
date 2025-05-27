@@ -99,7 +99,7 @@ onLogin(): void {
     const role = response.role;
 
 if (role === 'admin') {
-  this.router.navigate(['/daily-checks']);
+  this.router.navigate(['/admin/daily-inspections']);
 } else if (role === 'supervisor') {
   this.router.navigate(['/supervisor-dashboard']);
 } else if (role === 'inspector') {
