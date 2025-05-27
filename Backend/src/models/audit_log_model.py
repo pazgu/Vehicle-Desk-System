@@ -7,10 +7,9 @@ from ..utils.database import Base
 class AuditLog(Base):
     __tablename__ = "audit_logs"
 
-    id = Column(pgUUID(as_uuid=True), primary_key=True, default=uuid4)
-    user_id = Column(String, nullable=True) 
-    action = Column(String, nullable=False)  
-    target_type = Column(String, nullable=False)  
-    target_id = Column(String, nullable=True)  
-    description = Column(String, nullable=True)
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    id = Column(Integer, primary_key=True, autoincrement=True)  
+    action = Column(Text, nullable=False)
+    entity_type = Column(Text, nullable=False)
+    entity_id = Column(String, nullable=True)
+    change_data = Column(JSON, nullable=True)  
+    created_at = Column(DateTime, default=datetime.utcnow)
