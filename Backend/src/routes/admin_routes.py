@@ -150,3 +150,14 @@ def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = De
     vehicles = get_vehicles_with_optional_status(db, status)
     return vehicles
 
+
+
+@router.get("/inspections/today", response_model=List[VehicleInspectionSchema])
+def get_today_inspections(db: Session = Depends(get_db)):
+    today = date.today()
+    inspections = db.query(VehicleInspection).filter(
+        VehicleInspection.inspection_date == today
+    ).all()
+    return inspections
+
+
