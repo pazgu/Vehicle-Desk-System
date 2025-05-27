@@ -40,6 +40,6 @@ class Ride(Base):
     
     notifications = relationship("Notification", back_populates="ride", lazy="dynamic")
     is_archive = Column(Boolean, default=False, name="isArchive")
-
+    override_user_id = Column(UUID(as_uuid=True), ForeignKey("users.employee_id"), nullable=True)
 
     
