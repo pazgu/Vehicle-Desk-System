@@ -21,7 +21,7 @@ private apiUrl = 'http://localhost:8000/api'; // or your actual backend base URL
 }
 getRoles() {
   // This should return Observable<string[]> or your role type
-  return this.http.get<string[]>('http://localhost:8000/roles');
+  return this.http.get<string[]>('http://localhost:8000/api/roles');
 }
   updateUser(userId: string, updateData: any) {
     return this.http.patch(`${this.apiUrl}/user-data-edit/${userId}`, updateData);

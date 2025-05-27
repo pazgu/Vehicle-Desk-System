@@ -113,6 +113,55 @@ button {
     cursor: pointer;
     color: #811313;
 }
+.status-indicators {
+  text-align: right;
+  direction: rtl;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 12px 16px;
+  max-width: fit-content;
+  background-color: rgb(249, 245, 245);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.5rem;
+  margin-left: auto; /* Pushes it to the left in RTL layout */
+}
+
+.status-box {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.status-item {
+  background-color: rgb(245, 241, 241);
+  padding: 6px 10px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.status-indicator {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-inline-start: 4px;
+  vertical-align: middle;
+  border-radius: 50%;
+}
+
+.status-indicator.available {
+  background-color: #34954b;
+}
+.status-indicator.in-use {
+  background-color: #bd9624;
+}
+.status-indicator.frozen {
+  background-color: #4656be;
+}
+
 
 @media (max-width: 700px) {
     .page-container {
@@ -126,3 +175,4 @@ button {
         width: 100%;
     }
 }
+
