@@ -28,15 +28,20 @@ def get_all_audit_logs(db: Session, from_date: datetime = None, to_date: datetim
             last = nested_data.get("last_name") or ""
         
         # If still no name, fetch from the users table using changed_by
-        if not first and not last:
+        if not first and not last and log.changed_by:
             user = db.query(User).filter(User.employee_id == log.changed_by).first()
             if user:
                 first = user.first_name or ""
                 last = user.last_name or ""
         
-        # If entity_type is not User, attempt to fetch name from other fields
-        if not first and not last and log.entity_type != "User":
-            user_id = change_data.get("user_id")
+        # Handle Ride entity type for INSERT and UPDATE actions
+        if not first and not last and log.entity_type == "Ride":
+            user_id = None
+            if log.action == "INSERT":
+                user_id = change_data.get("user_id")
+            elif log.action == "UPDATE":
+                user_id = change_data.get("new", {}).get("user_id") or change_data.get("old", {}).get("user_id")
+            
             if user_id:
                 user = db.query(User).filter(User.employee_id == user_id).first()
                 if user:
@@ -44,7 +49,7 @@ def get_all_audit_logs(db: Session, from_date: datetime = None, to_date: datetim
                     last = user.last_name or ""
         
         # Construct full_name or fallback to "Unknown"
-        full_name = (first + " " + last).strip() or change_data.get("full_name") or "Unknown"
+        full_name = (first + " " + last).strip() or "Unknown"
         
         result.append(AuditLogsSchema(
             id=log.id,
@@ -56,5 +61,4 @@ def get_all_audit_logs(db: Session, from_date: datetime = None, to_date: datetim
             created_at=log.created_at,
             changed_by=log.changed_by
         ))
-    print(f"!!!!!!!!!!!!!!!!!!!!!!!\n{json.dumps(change_data, indent=4)}\n")
     return result
