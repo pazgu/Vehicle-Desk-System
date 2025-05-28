@@ -19,14 +19,14 @@
   <div class="options">
     <div
       class="option"
-      [ngClass]="{ selected: form.get('completed')?.value === true }"
+      [ngClass]="{ selected: form.get('completed')?.value === 'true' }"
       (click)="setFormValue('completed', 'true')"
     >
       כן
     </div>
     <div
       class="option"
-      [ngClass]="{ selected: form.get('completed')?.value === false }"
+      [ngClass]="{ selected: form.get('completed')?.value === 'false' }"
       (click)="setFormValue('completed', 'false')"
     >
       לא
@@ -40,14 +40,14 @@
   <div class="options">
     <div
       class="option"
-      [ngClass]="{ selected: form.get('fueled')?.value === true }"
+      [ngClass]="{ selected: form.get('fueled')?.value === 'true' }"
       (click)="setFormValue('fueled', 'true')"
     >
       כן
     </div>
     <div
       class="option"
-      [ngClass]="{ selected: form.get('fueled')?.value === false }"
+      [ngClass]="{ selected: form.get('fueled')?.value === 'false' }"
       (click)="setFormValue('fueled', 'false')"
     >
       לא

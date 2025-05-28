@@ -108,7 +108,9 @@ export class RegisterComponent implements OnInit {
         this.router.navigate(['/audit-logs']);
       } else if (role === 'supervisor') {
         this.router.navigate(['/supervisor-dashboard']);
-      } else {
+      }else if (role === 'inspector') {
+  this.router.navigate(['/inspector/vehicles']); // correct redirect for inspector
+} else {
         this.router.navigate(['/home']);
       }
     },
