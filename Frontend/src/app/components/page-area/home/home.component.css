@@ -261,8 +261,195 @@
 .highlight {
   /* Optional: fade background too */
   animation: highlightFade 5s ease-in-out forwards;
+}/* Minimalistic warning message - overlay style *//* Minimalistic warning message - overlay style */
+.exceeded-rides-warming {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #942222 0%, #81131371 100%);
+  color: white;
+  font-family: 'Alef', sans-serif;
+  border-radius: 8px;
+  padding: 12px 16px;
+  max-width: 280px;
+  box-shadow: 0 4px 20px rgba(129, 19, 19, 0.4);
+  direction: rtl;
+  text-align: right;
+  z-index: 1001;
+  animation: slideInFromRight 0.5s ease-out;
 }
 
+.exceeded-rides-warming h2 {
+  margin: 0 0 6px 0;
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.exceeded-rides-warming p {
+  margin: 0 0 10px 0;
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+.exceeded-rides-warming button {
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #942222;
+  border: none;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Alef', sans-serif;
+}
+
+.exceeded-rides-warming button:hover {
+  background-color: white;
+  transform: translateY(-1px);
+}
+
+/* Show warning again button - small floating icon */
+button[ng-click="showWarning()"] {
+  position: fixed !important;
+  top: 20px !important;
+  right: 20px !important;
+  background: #942222 !important;
+  color: white !important;
+  border: none !important;
+  padding: 8px !important;
+  border-radius: 50% !important;
+  font-size: 16px !important;
+  cursor: pointer !important;
+  box-shadow: 0 2px 8px rgba(129, 19, 19, 0.3) !important;
+  transition: all 0.2s ease !important;
+  z-index: 1000 !important;
+  width: 36px !important;
+  height: 36px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  float: none !important;
+    box-shadow: #811313 0px 2px 8px rgba(129, 19, 19, 0.3);
+
+}
+
+button[ng-click="showWarning()"]:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(129, 19, 19, 0.4);
+}
+.floating-warning-container {
+  position: fixed !important;
+  top: 80px !important;
+  left: 20px !important;
+  z-index: 1000 !important;
+  box-shadow: #811313 0px 2px 8px rgba(129, 19, 19, 0.3);
+  animation: appear 0.5s ease-out;
+
+
+}
+.archive-icon{
+  width: 40px;
+  height:40px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+/* Slide in animation */
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+@keyframes appear {
+  from {
+    transform: translateX(0%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .exceeded-rides-warming {
+    top: 15px;
+    right: 15px;
+    left: 15px;
+    max-width: none;
+    padding: 10px 14px;
+  }
+  
+  .exceeded-rides-warming h2 {
+    font-size: 14px;
+  }
+  
+  .exceeded-rides-warming p {
+    font-size: 12px;
+  }
+  
+  button[ng-click="showWarning()"] {
+    top: 15px !important;
+    right: 15px !important;
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 14px !important;
+    margin: 0 !important;
+  }
+}
+/* Animations */
+@keyframes warningPulse {
+  0% {
+    box-shadow: 0 4px 15px rgba(129, 19, 19, 0.3);
+  }
+  100% {
+    box-shadow: 0 8px 25px rgba(129, 19, 19, 0.5);
+  }
+}
+
+@keyframes warningBounce {
+  0%, 50%, 100% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-3px);
+  }
+  75% {
+    transform: translateY(-1px);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .exceeded-rides-warming {
+    margin: 15px 10px;
+    padding: 18px 20px;
+    max-width: calc(100% - 20px);
+  }
+  
+  .exceeded-rides-warming h2 {
+    font-size: 20px;
+  }
+  
+  .exceeded-rides-warming p {
+    font-size: 14px;
+  }
+  
+  button[ng-click="showWarning()"] {
+    top: 70px;
+    right: 15px;
+    padding: 10px 12px;
+    font-size: 18px;
+  }
+}
 @keyframes highlightFade {
   0% {
     background-color: #c37b87;

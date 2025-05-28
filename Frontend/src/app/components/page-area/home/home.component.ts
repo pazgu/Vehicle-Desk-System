@@ -281,8 +281,57 @@ viewRide(order: any): void {
 goToArchivedOrders() {
   this.router.navigate(['/archived-orders']);
 }
+warningVisible = true;  // controls visibility
+exceededMaxRides(): boolean {
+  const maxRides = 6;
+  const userOrders = JSON.parse(localStorage.getItem('user_orders') || '[]');
 
+  const oneMonthAgo = new Date();
+  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
 
+  const recentOrders = userOrders.filter((order: any) => {
+    const orderDate = this.parseDate(order.date);  // use parseDate here!
+    return orderDate >= oneMonthAgo;
+  });
 
+  console.log('🗓️ Recent orders in the last month:', recentOrders);
+  
+  // Simply return whether user exceeded max rides, regardless of warning visibility
+  return recentOrders.length >= maxRides;
+}
 
+// In your component class:
+hideWarning() {
+  this.warningVisible = false;
+}
+
+showWarning() {
+  this.warningVisible = true;
+}
+
+isPaidOrder(order: any): boolean {
+  const maxFreeRides = 6;
+  const userOrders = JSON.parse(localStorage.getItem('user_orders') || '[]');
+
+  const oneMonthAgo = new Date();
+  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+  const recentOrders = userOrders
+    .filter((o: any) => {
+      const orderDate = this.parseDate(o.date);
+      return orderDate >= oneMonthAgo;
+    })
+    .sort((a: any, b: any) => {
+      const dateA = this.parseDate(a.date);
+      const dateB = this.parseDate(b.date);
+      return dateA.getTime() - dateB.getTime();
+    });
+
+  const orderIndex = recentOrders.findIndex((o: any) => 
+    o.ride_id === order.ride_id || 
+    (o.date === order.date && o.time === order.time)
+  );
+
+  return orderIndex >= maxFreeRides;
+}
 }
