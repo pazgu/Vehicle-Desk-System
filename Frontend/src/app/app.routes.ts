@@ -16,6 +16,7 @@ import { VehicleCardItemComponent } from './components/admin-area/vehicle-card-i
 import { VehicleDashboardComponent } from './components/admin-area/vehicle-dashboard/vehicle-dashboard.component';
 import { RideCompletionFormComponent } from './components/page-area/ride-completion-form/ride-completion-form.component';
 import { AuditLogsComponent } from './components/admin-area/audit-logs/audit-logs.component';
+import { AvailableAndFrozenCarsComponent } from './inspector-area/available-and-frozen-cars/available-and-frozen-cars.component';
 
 
 export const routes: Routes = [
@@ -51,9 +52,8 @@ export const routes: Routes = [
 },
 {
   path: 'inspector/inspection',
-  loadComponent: () => import('./inspector-area/vehicle-inspection/vehicle-inspection.component')
-    .then(m => m.VehicleInspectionComponent),
-  canActivate: [ProtectedRouteGuard] // optional if you're using role checks
+  loadComponent: () =>
+    import('./inspector-area/vehicle-inspection/vehicle-inspection.component').then(m => m.VehicleInspectionComponent)
 },
 
 {
@@ -63,6 +63,11 @@ export const routes: Routes = [
       .then(m => m.AdminInspectionsComponent),
   canActivate: [ProtectedRouteGuard]
 },
+{
+  path: 'inspector/vehicles',
+  component: AvailableAndFrozenCarsComponent
+},
+
 
   { path: '**', component: Page404Component }
 ];

@@ -5,8 +5,7 @@ from enum import Enum
 from datetime import datetime
 
 class VehicleInspectionSchema(BaseModel):
-    ride_id: UUID
-    vehicle_id: UUID
+    ride_id: Optional[UUID] = None
     inspection_date: Optional[datetime] = None
     inspected_by: Optional[UUID] 
     fuel_level: int = Field(..., ge=0, le=100)

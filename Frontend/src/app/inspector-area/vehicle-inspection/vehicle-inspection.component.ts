@@ -27,7 +27,6 @@ export class VehicleInspectionComponent implements OnInit {
 
 ngOnInit(): void {
   this.inspectionForm = this.fb.group({
-  vehicle_id: ['', Validators.required],
   fuel_level: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
   tires_ok: [false],
   clean: [false],
@@ -43,7 +42,8 @@ ngOnInit(): void {
 
 
 fetchVehicles(): void {
-  this.http.get<any[]>('/api/all-vehicles').subscribe({
+  this.http.get<any[]>(`${environment.apiUrl}/all-vehicles`)
+.subscribe({
     next: (vehicles) => {
       this.vehicleOptions = vehicles;
       this.loading = false;
@@ -58,41 +58,50 @@ fetchVehicles(): void {
   });
 }
 
-
 submitInspection(): void {
-  if (this.inspectionForm.invalid) {
-    // Show toast if fuel_level is invalid
-   if (this.inspectionForm.invalid) {
-  this.toastService.show('יש שגיאה בטופס, בדוק שוב את הערכים', 'error');
-  return;
-}
+  console.log('🧪 Submit clicked');
 
+  if (this.inspectionForm.invalid) {
+    console.warn('🛑 FORM IS INVALID', this.inspectionForm.value);
+    this.toastService.show('יש שגיאה בטופס, בדוק שוב את הערכים', 'error');
+    return;
   }
 
   const form = this.inspectionForm.value;
 
-const data = {
-  ride_id: crypto.randomUUID(), // ✅ must be included
-  vehicle_id: form.vehicle_id, // ✅ must match DB ID
-  inspected_by: localStorage.getItem('employee_id'), // ✅ UUID string
-  fuel_level: form.fuel_level,
-  tires_ok: form.tires_ok,
-  clean: form.clean,
-  issues_found: form.critical_issue?.trim()
-    ? { critical_event: form.critical_issue.trim() }
-    : null
-};
+  const data = {
+    ride_id: crypto.randomUUID(),
+    inspected_by: localStorage.getItem('employee_id'),
+    fuel_level: form.fuel_level,
+    tires_ok: form.tires_ok,
+    clean: form.clean,
+    issues_found: form.critical_issue?.trim()
+      ? { critical_event: form.critical_issue.trim() }
+      : null
+  };
+
+this.http.post(`${environment.apiUrl}/vehicle-inspections`, data).subscribe({
+next: () => {
+  this.toastService.show('הבדיקה נשלחה בהצלחה', 'success');
+  const role = localStorage.getItem('role');
+  if (role === 'inspector') {
+    this.router.navigate(['/inspector/vehicles']);
+  } else {
+    this.router.navigate(['/home']);
+  }
+},
+  error: (err) => {
+    if (err.status === 401) {
+      this.toastService.show('הסתיים תוקף ההתחברות שלך. התחבר מחדש.', 'error');
+    } else {
+      this.toastService.show('שליחה נכשלה', 'error');
+    }
+  }
+});
 
 
-this.http.post(`${environment.apiUrl}/vehicle-inspections`, data)
-.subscribe({
-    next: () => {
-      this.toastService.show('הבדיקה נשלחה בהצלחה', 'success');
-      this.router.navigate(['/home']);
-    },
-    error: () => this.toastService.show('שליחה נכשלה', 'error')
-  });
 }
+
 
 updateFuelDisplay(): void {
   const level = this.inspectionForm.get('fuel_level')?.value;
@@ -105,6 +114,10 @@ getFuelColor(value: number): string {
   if (value < 25) return 'red';
   if (value < 50) return 'orange';
   return 'green';
+}
+
+logClick() {
+  alert('🔍 Click detected!');
 }
 
 
