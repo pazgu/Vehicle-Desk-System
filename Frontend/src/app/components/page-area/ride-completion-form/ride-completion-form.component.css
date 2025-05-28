@@ -153,7 +153,10 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(82, 55, 55, 0.3);
 }
-
+#elaborateText{
+    width: 300px;
+    height: 100px;
+}
 .divider {
     height: 1px;
     background: linear-gradient(90deg, transparent, var(--border-color), transparent);

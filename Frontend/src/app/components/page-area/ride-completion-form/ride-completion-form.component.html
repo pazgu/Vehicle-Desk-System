@@ -79,13 +79,13 @@
   <!-- Conditional input if 'yes' is selected -->
   <div *ngIf="form.get('emergency_event')?.value === 'true'" style="margin-top: 10px;">
     <label for="elaborateText">אנא פרט:</label>
-    <input
+    <textarea
       id="elaborateText"
       type="text"
       class="form-control"
       formControlName="freeze_details"
       placeholder="פרטים נוספים"
-    />
+    ></textarea>
   </div>
 
   <div class="divider"></div>
