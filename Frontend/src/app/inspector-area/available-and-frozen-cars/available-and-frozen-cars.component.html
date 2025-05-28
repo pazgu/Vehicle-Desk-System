@@ -1,0 +1,22 @@
+<div class="container">
+  <h2>🚗 רכבים זמינים שדורשים חנייה</h2>
+  <div *ngIf="loading">טוען...</div>
+  <div *ngIf="!loading && availableNotParkedCars.length === 0">
+    אין רכבים זמינים שדורשים חנייה.
+  </div>
+  <ul *ngIf="availableNotParkedCars.length > 0">
+    <li *ngFor="let car of availableNotParkedCars">
+      🅿️ לוחית: {{ car.plate_number }} | מיקום: {{ car.current_location }}
+    </li>
+  </ul>
+
+  <hr />
+
+  <h2>❄️ רכבים מוקפאים</h2>
+  <div *ngIf="!loading && frozenCars.length === 0">אין רכבים מוקפאים.</div>
+  <ul *ngIf="frozenCars.length > 0">
+    <li *ngFor="let car of frozenCars">
+      ❗ לוחית: {{ car.plate_number }} | סיבה: {{ car.freeze_reason || 'לא צוינה' }}
+    </li>
+  </ul>
+</div>
