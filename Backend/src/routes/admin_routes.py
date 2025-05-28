@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query,Header
+from fastapi import APIRouter, Depends, HTTPException, Query,Header, status
 from uuid import UUID
 from typing import Optional , List
 from datetime import datetime
@@ -25,6 +25,7 @@ from ..services.vehicle_service import get_vehicles_with_optional_status,update_
 
 from ..services.vehicle_service import get_vehicles_with_optional_status ,update_vehicle_status,get_vehicle_by_id
 from ..services.user_notification import send_admin_odometer_notification
+from ..services.monthly_trip_counts import update_monthly_trip_counts
 
 router = APIRouter()
 
@@ -159,8 +160,6 @@ def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = De
     return vehicles
 
 
-
-
 @router.post("/notifications/admin", include_in_schema=True,   dependencies=[] )
 def send_admin_notification_simple_route(db: Session = Depends(get_db)):
     vehicle = db.query(Vehicle).first()  # Get any vehicle (you can adjust logic later if needed)
@@ -181,3 +180,11 @@ def send_admin_notification_simple_route(db: Session = Depends(get_db)):
         "odometer_reading": vehicle.odometer_reading
 
     }
+
+@router.post("/update-monthly-trip-counts")
+def monthly_trip_count_update(db: Session = Depends(get_db)):
+    try:
+        update_monthly_trip_counts(db)
+        return {"message": "Monthly trip counts updated successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
