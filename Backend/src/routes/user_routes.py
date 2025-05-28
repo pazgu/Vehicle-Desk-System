@@ -20,7 +20,7 @@ import logging
 from ..utils.database import get_db
 from ..services.register_service import get_departments 
 from ..schemas.notification_schema import NotificationOut
-from ..services.user_notification import get_user_notifications , send_notification
+from ..services.user_notification import get_user_notifications ,send_notification_async
 from fastapi import status as fastapi_status
 from fastapi.security import OAuth2PasswordBearer
 from ..utils.auth import role_check,identity_check,get_current_user
@@ -34,7 +34,8 @@ import traceback
 from ..models.user_model import User
 from ..services.user_form import process_completion_form
 from ..schemas.form_schema import CompletionFormData
-
+from ..utils.socket_manager import sio  # ✅ import this
+from ..utils.socket_utils import convert_decimal
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 # Set up logging
@@ -148,7 +149,7 @@ def get_user_2specific_order():
     return {"message": "Not implemented yet"}
 
 @router.post("/api/orders/{user_id}", response_model=RideCreate, status_code=fastapi_status.HTTP_201_CREATED)
-def create_order(user_id: UUID, ride_request: RideCreate, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
+async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
     role_check(allowed_roles=["employee", "admin"], token=token)
     identity_check(user_id=str(user_id), token=token)
 
@@ -157,6 +158,14 @@ def create_order(user_id: UUID, ride_request: RideCreate, db: Session = Depends(
     try:
         new_ride = create_ride(db, user_id, ride_request)
 
+        # ✅ Emit real-time event
+        await sio.emit("ride_created", {
+            "ride_id": str(new_ride.id),
+            "user_id": str(user_id),
+            "status": new_ride.status,
+            "destination": new_ride.destination
+        })
+
         supervisor_id = get_supervisor_id(user_id, db)
         employee_name = get_user_name(db, new_ride.user_id)
 
@@ -164,7 +173,7 @@ def create_order(user_id: UUID, ride_request: RideCreate, db: Session = Depends(
             create_system_notification(
                 user_id=supervisor_id,
                 title="בקשת נסיעה חדשה",
-                message=f"שלח בקשה חדשה ${employee_name} העובד ",
+                message=f"שלח בקשה חדשה {employee_name} העובד",
                 order_id=new_ride.id
             )
         else:
@@ -186,38 +195,70 @@ def create_order(user_id: UUID, ride_request: RideCreate, db: Session = Depends(
             detail=f"Failed to create order: {str(e)}"
         )
 
-
-
 @router.get("/api/departments")
 def get_departments_route():
     return get_departments()
 
-
 @router.patch("/api/orders/{order_id}")
-def patch_order(order_id: UUID, patch_data: OrderCardItem, db: Session = Depends(get_db)):
-    order = patch_order_in_db(order_id, patch_data, db)
-    return {"message": "ההזמנה עודכנה בהצלחה", "order": order}
+async def patch_order(order_id: UUID, patch_data: OrderCardItem, db: Session = Depends(get_db)):
+    # Update the order
+    updated_order = patch_order_in_db(order_id, patch_data, db)
+    
+    # Emit the updated order to the user's room
+    order_data = {
+    "id": str(updated_order.id),
+    "user_id": str(updated_order.user_id),
+    "vehicle_id": str(updated_order.vehicle_id) if updated_order.vehicle_id else None,
+    "ride_type": updated_order.ride_type,
+    "start_datetime": updated_order.start_datetime.isoformat(),
+    "end_datetime": updated_order.end_datetime.isoformat(),
+    "start_location": updated_order.start_location,
+    "stop": updated_order.stop,
+    "destination": updated_order.destination,
+    "estimated_distance_km": updated_order.estimated_distance_km,
+    "actual_distance_km": updated_order.actual_distance_km,
+    "status": updated_order.status.value,
+    "license_check_passed": updated_order.license_check_passed,
+    "submitted_at": updated_order.submitted_at.isoformat(),
+    "emergency_event": updated_order.emergency_event,
+}
 
+    await sio.emit("order_updated", convert_decimal(order_data), room=str(updated_order.user_id))
+    return {
+        "message": "ההזמנה עודכנה בהצלחה",
+        "order": updated_order
+    }
 
-#send a notification to a user
 @router.post("/api/notification/{user_id}")
-def send_notification_route(
+async def send_notification_route(
     user_id: UUID,
     notification_data: NotificationOut,
     db: Session = Depends(get_db),
     token: str = Depends(oauth2_scheme)
 ):
     role_check(["admin", "employee"], token)  # Adjust roles as needed
-    identity_check(str(user_id), token)       # Optional: can remove if not needed
+    identity_check(str(user_id), token)       # Optional
 
     try:
-        return send_notification(
+        notification = await send_notification_async(
             db,
             user_id,
             notification_data.title,
             notification_data.message,
             notification_data.notification_type
         )
+
+        # Emit the notification to the user's Socket.IO room
+        await sio.emit("notification", {
+            "id": str(notification.id),
+            "title": notification.title,
+            "message": notification.message,
+            "notification_type": notification.notification_type.value,  # if enum
+            "sent_at": notification.sent_at.isoformat()
+        }, room=str(user_id))
+
+        return {"message": "Notification sent successfully", "notification": notification}
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to send notification: {str(e)}")
 
@@ -226,10 +267,6 @@ def send_notification_route(
 def get_notifications_for_user(user_id: UUID, db: Session = Depends(get_db)):
     return get_user_notifications(db, user_id)
 
-@router.get("/api/notification/{notification_id}/{user_id}")
-def get_notification_route():
-    # Implementation pending
-    return {"message": "Not implemented yet"}
 
 @router.delete("/api/orders/{user_id}")
 def delete_order():

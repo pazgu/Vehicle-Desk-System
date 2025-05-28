@@ -46,6 +46,10 @@ def send_notification(
     db.refresh(new_notification)
     return new_notification
 
+import asyncio
+
+async def send_notification_async(*args, **kwargs):
+    return await asyncio.to_thread(send_notification, *args, **kwargs)
 
 
 def create_system_notification(user_id, title, message, order_id=None):
