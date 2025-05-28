@@ -6,8 +6,13 @@ from src.routes.inspector_routes import router as inspector_route
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Request
 from src.utils.scheduler import start_scheduler
+from fastapi_socketio import SocketManager
+from .utils.socket_events import init_socket_events
+import asyncio
+from .utils.tests import test_emit
 
 app = FastAPI()
+socket_manager = SocketManager(app=app)  # 🔌 Add this
 
 print("🚀 FastAPI app starting with CORS enabled")
 
@@ -27,6 +32,7 @@ app.include_router(admin_route,prefix="/api",tags=["Admin"])
 app.include_router(inspector_route,prefix="/api",tags=["Inspector"])
 
 start_scheduler()
+init_socket_events(socket_manager)
 
 
 @app.get("/")
@@ -42,3 +48,4 @@ async def log_requests(request: Request, call_next):
     return response
 
 
+asyncio.create_task(test_emit())

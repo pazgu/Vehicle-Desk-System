@@ -65,7 +65,7 @@ canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean 
     }
     if (role === 'inspector') {
       this.toastService.show('עמוד זה אינו רלוונטי לבודק רכב', 'error');
-      this.router.navigate(['/inspector/inspection']);
+      this.router.navigate(['/inspector/vehicles']);
       return false;
     }
     return true; // allow others
@@ -81,10 +81,11 @@ canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean 
     return true;
   }
 
-  // ✅ Allow inspector to access inspection page
-  if (role === 'inspector' && url.startsWith('/inspector/inspection')) {
-    return true;
-  }
+  // ✅ Allow inspector to access their pages
+if (role === 'inspector' && (url.startsWith('/inspector/inspection') || url.startsWith('/inspector/vehicles'))) {
+  return true;
+}
+
 
   // ❌ All other cases → block access
   console.log('❌ Blocked by ProtectedRouteGuard - Unknown route or role mismatch');
