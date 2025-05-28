@@ -13,6 +13,13 @@ from ..models.vehicle_inspection_model import VehicleInspection
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 from sqlalchemy import String , func
 from ..utils.audit_utils import log_action
+from typing import List
+from sqlalchemy.orm import Session
+from uuid import UUID
+from src.models.notification_model import Notification
+from src.models.user_model import User  # assuming you have this model with department info and role
+
+
 def get_department_orders(department_id: str, db: Session) -> List[RideDashboardItem]:
     """
     Fetch all orders for a specific department by joining the Ride and User tables.
@@ -161,11 +168,6 @@ def edit_order_status(department_id: str, order_id: str, new_status: str, db: Se
 
     return True
 
-from typing import List
-from sqlalchemy.orm import Session
-from uuid import UUID
-from src.models.notification_model import Notification
-from src.models.user_model import User  # assuming you have this model with department info and role
 
 def get_department_notifications(department_id: UUID, db: Session) -> List[Notification]:
     # Find all supervisors in the department
