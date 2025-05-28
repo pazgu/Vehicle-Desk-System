@@ -283,7 +283,7 @@ goToArchivedOrders() {
 }
 warningVisible = true;  // controls visibility
 exceededMaxRides(): boolean {
-  const maxRides = 3;
+  const maxRides = 6;
   const userOrders = JSON.parse(localStorage.getItem('user_orders') || '[]');
 
   const oneMonthAgo = new Date();
@@ -310,7 +310,7 @@ showWarning() {
 }
 
 isPaidOrder(order: any): boolean {
-  const maxFreeRides = 3;
+  const maxFreeRides = 6;
   const userOrders = JSON.parse(localStorage.getItem('user_orders') || '[]');
 
   const oneMonthAgo = new Date();
