@@ -1,0 +1,53 @@
+.section-title {
+  text-align: center;
+  font-size: 26px;
+  color: #942222;
+  font-family: 'Alef', sans-serif;
+  margin-bottom: 1.5rem;
+}
+
+.admin-inspections-container {
+  max-width: 950px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  font-family: 'Alef', sans-serif;
+  direction: rtl;
+}
+
+.inspection-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 16px;
+  text-align: right;
+}
+
+.inspection-table th,
+.inspection-table td {
+  border-bottom: 1px solid #e0e0e0;
+  padding: 12px 16px;
+}
+
+.inspection-table th {
+  background-color: #f5f5f5;
+  font-weight: bold;
+}
+
+.inspection-table tr:hover {
+  background-color: #f9f9f9;
+}
+
+.highlight {
+  background-color: #ffe9e9;
+  border-right: 5px solid #e03131;
+}
+
+.loading,
+.empty {
+  text-align: center;
+  font-size: 18px;
+  color: #888;
+  margin-top: 2rem;
+}

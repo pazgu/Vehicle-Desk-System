@@ -1,4 +1,19 @@
 <div class="page-container">
+  <!-- Warning Message -->
+  <div class="exceeded-rides-warming" *ngIf="exceededMaxRides() && warningVisible">
+    <h2>⚠️שים לב⚠️</h2>
+    <p>
+      בחודש האחרון ביצעת מעל 6 הזמנות רכב פרטי. <br>
+      על פי התקנון מכאן תצטרך לשלם עצמאית על נסיעות פרטיות נוספות לחודש זה
+    </p>
+    <button (click)="hideWarning()">הסתר</button>
+  </div>
+
+  <!-- Show Warning Again Button -->
+  <div class="floating-warning-container" *ngIf="!warningVisible && exceededMaxRides()">
+    <button (click)="showWarning()">⚠️</button>
+  </div>
+  
   <div class="orders-wrapper">
     <h1>ההזמנות שלי</h1>
     <br>
@@ -7,7 +22,6 @@
       <button [ngClass]="{ 'active': rideViewMode === 'future' }" (click)="rideViewMode = 'future'; fetchRides()">הצג נסיעות עתידיות</button>
       <button [ngClass]="{ 'active': rideViewMode === 'past' }" (click)="rideViewMode = 'past'; fetchRides()">הצג נסיעות קודמות</button>
       <button [ngClass]="{ 'active': rideViewMode === 'all' }" (click)="rideViewMode = 'all'; fetchRides()">הצג הכל</button>
-   
 
       <!-- Archive Icon Button -->
       <img
@@ -19,7 +33,7 @@
        style="cursor: pointer; margin-right: 4px;"
        (click)="goToArchivedOrders()"
        />
-</div>
+    </div>
 
     <!-- Sort + Filter Toggle Bar -->
     <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; direction: rtl;">
@@ -56,7 +70,7 @@
           [min]="minDate"
           [max]="maxDate"
           (change)="validateDate('start'); fetchRides()" />
-עד: 
+        עד: 
         <input
           id="endDate"
           type="date"
@@ -65,11 +79,10 @@
           [max]="maxDate"
           (change)="validateDate('end'); fetchRides()" />
         
-          <label *ngIf="rideViewMode !== 'future'">
-            <input type="checkbox" [(ngModel)]="showOldOrders" />
-            הצג גם הזמנות מלפני חודש
-          </label>
-          
+        <label *ngIf="rideViewMode !== 'future'">
+          <input type="checkbox" [(ngModel)]="showOldOrders" />
+          הצג גם הזמנות מלפני חודש
+        </label>
       </div>
     </div>
 
@@ -77,67 +90,82 @@
       לא נמצאו נסיעות עבור המשתמש הנוכחי
       <button class="new-ride-btn" (click)="goToNewRide()"> + הזמן נסיעה חדשה</button>
     </div>
-    
 
     <!-- Orders List -->
-    <tr *ngIf="filteredOrders.length > 0" class="table-header">
-            <th>תאריך</th>
-            <th>שעה</th>
-            <th>סוג</th>
-            <th>מרחק</th>
-          </tr>
-   <div
-  class="orders-data-row"
-  *ngFor="let order of pagedOrders"
-  [id]="order.ride_id"
-  (click)="viewRide(order)"
-  [ngClass]="[
-    getStatusClass(order.status),
-    isPastOrder(order) ? 'past-order' : '',
-    order.ride_id === highlightedOrderId ? 'highlight highlight-background' : ''
-  ]"
-  style="cursor: pointer;"
->
-
-      <div class="icon-cell">
-        <span
-          class="pi"
-          [ngClass]="{
-           'pi-verified': order.status.toLowerCase() === 'approved',
-           'pi-clock': order.status.toLowerCase() === 'pending',
-           'pi-times': order.status.toLowerCase() === 'rejected'
-          }"
-          [title]="getStatusTooltip(order.status)"
-          style="font-size: 1.3rem;">
-        </span>
+    <div *ngIf="filteredOrders.length > 0">
+      <!-- Header Row -->
+      <div class="orders-header-row">
+        <div class="icon-cell">סטטוס</div>
+        <div class="cell">תאריך</div>
+        <div class="cell">שעה</div>
+        <div class="cell">סוג</div>
+        <div class="cell">מרחק</div>
+        <div class="cell">פעולות</div>
       </div>
-      <div class="cell">{{ order.date }}</div>
-      <div class="cell">{{ order.time }}</div>
-      <div class="cell">{{ order.type }}</div>
-      <div class="cell">{{ order.distance }}</div>
 
-<button
-  *ngIf="canEdit(order)"
-  (click)="editOrder(order); $event.stopPropagation()">
-  ערוך ✏️
-</button>
-<button *ngIf="!canEdit(order)" disabled style="opacity: 0.5; cursor: not-allowed;">ערוך 🔒</button>
+      <!-- Data Rows -->
+      <div
+        class="orders-data-row"
+        *ngFor="let order of pagedOrders"
+        [id]="order.ride_id"
+        (click)="viewRide(order)"
+        [ngClass]="[
+          getStatusClass(order.status),
+          isPastOrder(order) ? 'past-order' : '',
+          isPaidOrder(order) ? 'paid-order' : '',
+          order.ride_id === highlightedOrderId ? 'highlight highlight-background' : ''
+        ]"
+        [title]="isPaidOrder(order) ? 'הזמנה זו בתשלום עצמי - מעל 6 הזמנות החודש' : ''"
+        style="cursor: pointer;">
 
+        <div class="icon-cell">
+          <span
+            class="pi"
+            [ngClass]="{
+             'pi-verified': order.status.toLowerCase() === 'approved',
+             'pi-clock': order.status.toLowerCase() === 'pending',
+             'pi-times': order.status.toLowerCase() === 'rejected'
+            }"
+            [title]="getStatusTooltip(order.status)"
+            style="font-size: 1.3rem;">
+          </span>
+        </div>
+        
+        <div class="cell">{{ order.date }}</div>
+        
+        <div class="cell">{{ order.time }}</div>
+        
+        <div class="cell">
+          {{ order.type }}
+          <span *ngIf="isPaidOrder(order)" style="color: #ffc107; font-weight: bold; margin-right: 8px;">
+            💲
+          </span>
+        </div>
+        
+        <div class="cell">{{ order.distance }}</div>
 
+        <div class="cell">
+          <button
+            *ngIf="canEdit(order)"
+            (click)="editOrder(order); $event.stopPropagation()">
+            ערוך ✏️
+          </button>
+          <button *ngIf="!canEdit(order)" disabled style="opacity: 0.5; cursor: not-allowed;">
+            ערוך 🔒
+          </button>
+        </div>
+      </div>
     </div>
-
-
 
     <!-- Pagination -->
     <div class="pagination-controls">
-    <button (click)="prevPage()" [disabled]="currentPage === 1">
-      ▶
-    </button>
-<span>עמוד {{ currentPage }} מתוך {{ totalPages }}</span>
-    
-    <button (click)="nextPage()" [disabled]="currentPage === totalPages">
-      ◀
-    </button>
+      <button (click)="prevPage()" [disabled]="currentPage === 1">
+        ▶
+      </button>
+      <span>עמוד {{ currentPage }} מתוך {{ totalPages }}</span>
+      <button (click)="nextPage()" [disabled]="currentPage === totalPages">
+        ◀
+      </button>
     </div>
   </div>
 </div>

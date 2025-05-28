@@ -34,4 +34,9 @@ export class VehicleService {
   console.log('Sending payload to backend:', body); // Log the payload
   return this.http.patch<any>(url, body);
 }
+
+getTodayInspections(): Observable<any[]> {
+  return this.http.get<any[]>(`${environment.apiUrl}/inspections/today`);
+}
+
 }

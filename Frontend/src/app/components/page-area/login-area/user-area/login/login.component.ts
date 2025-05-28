@@ -82,28 +82,42 @@ onLogin(): void {
   const loginUrl = environment.loginUrl;
   this.http.post<any>(loginUrl, loginData).subscribe({
     next: (response) => {
-      const token = response.access_token;
-      localStorage.setItem('access_token', token);
-      localStorage.setItem('username', response.username);
-      localStorage.setItem('first_name', response.first_name);
-      localStorage.setItem('last_name', response.last_name);
-      localStorage.setItem('employee_id', response.employee_id);
-      localStorage.setItem('role', response.role);
-      localStorage.setItem('department_id', response.department_id);
-      
-            // Update AuthService state
-      this.authService.setFullName(response.first_name, response.last_name);
-      this.authService.setLoginState(true);
-      this.authService.setRole(response.role);
+ const token = response.access_token;
+localStorage.setItem('access_token', token);
 
-      const role = response.role;
-      if (role === 'admin') {
-        this.router.navigate(['/audit-logs']);
-      } else if (role === 'supervisor') {
-        this.router.navigate(['/supervisor-dashboard']);
-      } else {
-        this.router.navigate(['/home']);
-      }
+// Decode token payload
+const tokenParts = token.split('.');
+if (tokenParts.length === 3) {
+  const payload = JSON.parse(atob(tokenParts[1]));
+  localStorage.setItem('employee_id', payload.sub);
+  localStorage.setItem('username', payload.username);
+  localStorage.setItem('first_name', payload.first_name);
+  localStorage.setItem('last_name', payload.last_name);
+  localStorage.setItem('role', payload.role);
+  localStorage.setItem('department_id', payload.department_id);
+
+  // Update AuthService state
+  this.authService.setFullName(payload.first_name, payload.last_name);
+  this.authService.setLoginState(true);
+  this.authService.setRole(payload.role);
+
+  const role = payload.role;
+
+  if (role === 'admin') {
+    this.router.navigate(['/admin/daily-inspections']);
+  } else if (role === 'supervisor') {
+    this.router.navigate(['/supervisor-dashboard']);
+ } else if (role === 'inspector') {
+  this.router.navigate(['/inspector/vehicles']);
+}
+ else {
+    this.router.navigate(['/home']);
+  }
+} else {
+  this.toastService.show('שגיאה בעיבוד פרטי ההתחברות', 'error');
+}
+
+
     },
     error: (err) => {
       console.error('Login failed:', err);

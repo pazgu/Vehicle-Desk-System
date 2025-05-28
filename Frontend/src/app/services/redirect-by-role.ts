@@ -16,10 +16,12 @@ export class RedirectByRoleComponent implements OnInit {
       // No role found in localStorage, redirect to login page
       this.router.navigate(['/login']);
     } else if (role === 'admin') {
-      this.router.navigate(['/daily-checks']);
+      this.router.navigate(['/admin/daily-inspections']);
     } else if (role === 'supervisor') {
       this.router.navigate(['/supervisor-dashboard']);
-    } else {
+    } else if (role === 'inspector') {
+    this.router.navigate(['/inspector/vehicles']); // ✅ FIXED HERE
+  } else {
       this.router.navigate(['/home']);
     }
   }
