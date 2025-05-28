@@ -2,8 +2,8 @@ from ..models.audit_log_model import AuditLog
 from ..models.user_model import User  # Import the User model
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
-from typing import List, Optional
 from ..schemas.audit_schema import AuditLogsSchema
+import json
 
 def get_all_audit_logs(db: Session, from_date: datetime = None, to_date: datetime = None) -> list[AuditLogsSchema]:
     query = db.query(AuditLog)
@@ -56,5 +56,5 @@ def get_all_audit_logs(db: Session, from_date: datetime = None, to_date: datetim
             created_at=log.created_at,
             changed_by=log.changed_by
         ))
-    print(f"!!!!!!!!!!!!!!!!!!!!!!!\n {result}\n")
+    print(f"!!!!!!!!!!!!!!!!!!!!!!!\n{json.dumps(change_data, indent=4)}\n")
     return result
