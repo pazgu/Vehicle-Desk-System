@@ -1,0 +1,62 @@
+<div class="page-wrapper">
+  <div class="page-container">
+    <div class="audit-wrapper">
+      <h1>צפייה ביומני ביקורת</h1>
+
+      <div class="filter-section">
+        <button class="filter-button" (click)="showFilters = !showFilters">
+          {{ showFilters ? 'הסתר חיפוש' : 'הצג חיפוש' }}
+        </button>
+      </div>
+
+      <div *ngIf="showFilters" class="search-container">
+        <input
+          type="text"
+          class="audit-search-input"
+          placeholder="חיפוש לפי סוג ישות, מזהה ישות או מי שינה"
+          [(ngModel)]="searchTerm"
+          (input)="filterLogs()"
+        />
+      </div>
+<div class="export-buttons">
+  <h3>דיווחים מהשבוע האחרון</h3>
+  <button class="export-button" (click)="exportToPDF()">ייצוא PDF</button>
+  <button class="export-button" (click)="exportToCSV()">ייצוא CSV</button>
+</div>
+
+      <div class="table-container" *ngIf="!selectedLog">
+        <table class="audit-table">
+          <thead class="audit-thead">
+            <tr>
+              <th class="audit-th">סוג פעולה</th>
+              <th class="audit-th">שם מלא</th>
+              <th class="audit-th">תיאור</th>
+              <th class="audit-th">תאריך יצירה</th>
+            </tr>
+          </thead>
+          <tbody class="audit-tbody">
+            <tr *ngFor="let log of filteredLogs" class="audit-tr" (click)="showDetails(log)">
+              <td class="audit-td">{{ log.actionType }}</td>
+              <td class="audit-td">{{ log.fullName }}</td>
+              <td class="audit-td">{{ log.description.length > 50 ? (log.description | slice:0:50) + '...' : log.description }}</td>
+              <td class="audit-td">{{ log.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div *ngIf="filteredLogs?.length === 0 && !selectedLog" class="empty-state">
+        לא נמצאו רשומות ביקורת
+      </div>
+
+      <div *ngIf="selectedLog" class="log-details-card">
+        <h2>פרטי יומן ביקורת</h2>
+        <p><strong>סוג פעולה:</strong> {{ selectedLog.actionType }}</p>
+        <p><strong>שם מלא:</strong> {{ selectedLog.fullName }}</p>
+        <p><strong>תיאור:</strong> {{ selectedLog.description }}</p>
+        <p><strong>תאריך יצירה:</strong> {{ selectedLog.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
+        <button class="close-details-button" (click)="closeDetails()">סגור</button>
+      </div>
+    </div>
+  </div>
+</div>

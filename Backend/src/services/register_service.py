@@ -45,7 +45,8 @@ def create_user(user_data: UserCreate, db: Session):
             username=new_user.username,
             first_name=new_user.first_name,
             last_name=new_user.last_name,
-            role=new_user.role
+            role=new_user.role,
+            department_id=new_user.department_id  
         )
 
         

@@ -6,12 +6,13 @@ from ..models.ride_model import Ride , RideStatus
 from ..models.user_model import User
 from sqlalchemy.orm import Session
 from ..models.notification_model import NotificationType, Notification
-from ..models.vehicle_model import VehicleStatus
+from ..models.vehicle_model import VehicleStatus , Vehicle
 from fastapi import HTTPException
 from .vehicle_service import update_vehicle_status
 from ..models.vehicle_inspection_model import VehicleInspection 
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
-
+from sqlalchemy import String , func
+from ..utils.audit_utils import log_action
 def get_department_orders(department_id: str, db: Session) -> List[RideDashboardItem]:
     """
     Fetch all orders for a specific department by joining the Ride and User tables.
@@ -77,7 +78,7 @@ def get_department_specific_order(department_id: str, order_id: str, db: Session
         end_datetime=order.end_datetime,
         ride_type=order.ride_type.name if order.ride_type else None,  # Enum to string
         start_location=order.start_location,
-        stop=order.stop,
+        stop=order.stop or "",
         destination=order.destination,
         estimated_distance_km=float(order.estimated_distance_km),
         actual_distance_km=float(order.actual_distance_km) if order.actual_distance_km else None,
@@ -108,6 +109,15 @@ def edit_order_status(department_id: str, order_id: str, new_status: str, db: Se
     # Update the status of the order
     order.status = new_status
     db.commit()
+
+    log_action(
+        db=db,
+        action="update_ride_status",
+        entity_type="Ride",
+        entity_id=str(order.id),
+        change_data={"new_status": new_status},
+        changed_by=order.override_user_id  # or another field if you track who approved
+    )
 
     hebrew_status_map = {
         "approved": "אושרה",
@@ -157,26 +167,30 @@ def get_department_notifications(department_id: UUID, db: Session) -> List[Notif
     return notifications
 
 
-def end_ride_service(db: Session, ride_id: UUID, has_incident: bool):
+def start_ride(db: Session, ride_id: UUID):
     ride = db.query(Ride).filter(Ride.id == ride_id).first()
     if not ride:
         raise HTTPException(status_code=404, detail="Ride not found")
 
-    # עדכון שעת סיום
-    ride.end_datetime = datetime.now()
+    if ride.status != RideStatus.approved:
+        raise HTTPException(status_code=400, detail="Ride must be approved before starting")
 
-    if has_incident:
-        ride.emergency_event = "Incident reported on ride end"
-        update_vehicle_status(ride.vehicle_id, VehicleStatus.frozen, db)
-    else:
-        ride.emergency_event = None
-        update_vehicle_status(ride.vehicle_id, VehicleStatus.available, db)
+    vehicle = db.query(Vehicle).filter(Vehicle.id == ride.vehicle_id).first()
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="Assigned vehicle not found")
 
+    if vehicle.status != VehicleStatus.available:
+        raise HTTPException(status_code=400, detail="Vehicle is not available")
+
+    # vehicle.status = VehicleStatus.in_use
+
+    update_vehicle_status(vehicle.id, VehicleStatus.in_use, freeze_reason=None, db=db)
+    vehicle.last_used_at = func.now()
+    
     db.commit()
-    db.refresh(ride)
-    return ride
 
-def complete_ride_logic(data: VehicleInspectionSchema, db: Session):
+
+def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
     
     inspection = VehicleInspection(
         vehicle_id=data.vehicle_id,

@@ -7,7 +7,19 @@
       <button [ngClass]="{ 'active': rideViewMode === 'future' }" (click)="rideViewMode = 'future'; fetchRides()">הצג נסיעות עתידיות</button>
       <button [ngClass]="{ 'active': rideViewMode === 'past' }" (click)="rideViewMode = 'past'; fetchRides()">הצג נסיעות קודמות</button>
       <button [ngClass]="{ 'active': rideViewMode === 'all' }" (click)="rideViewMode = 'all'; fetchRides()">הצג הכל</button>
-    </div>
+   
+
+      <!-- Archive Icon Button -->
+      <img
+       src="assets/images/trash_icon.png"
+       alt="הזמנות בארכיון"
+       width="26"
+       height="26"
+       title="הזמנות בארכיון"
+       style="cursor: pointer; margin-right: 4px;"
+       (click)="goToArchivedOrders()"
+       />
+</div>
 
     <!-- Sort + Filter Toggle Bar -->
     <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; direction: rtl;">
@@ -74,15 +86,19 @@
             <th>סוג</th>
             <th>מרחק</th>
           </tr>
-    <div
-      class="orders-data-row"
-      *ngFor="let order of pagedOrders"
-      [id]="order.ride_id"
-      [ngClass]="[
+   <div
+  class="orders-data-row"
+  *ngFor="let order of pagedOrders"
+  [id]="order.ride_id"
+  (click)="viewRide(order)"
+  [ngClass]="[
     getStatusClass(order.status),
     isPastOrder(order) ? 'past-order' : '',
     order.ride_id === highlightedOrderId ? 'highlight highlight-background' : ''
-  ]">
+  ]"
+  style="cursor: pointer;"
+>
+
       <div class="icon-cell">
         <span
           class="pi"
@@ -100,7 +116,11 @@
       <div class="cell">{{ order.type }}</div>
       <div class="cell">{{ order.distance }}</div>
 
-<button *ngIf="canEdit(order)" (click)="editOrder(order)">ערוך ✏️</button>
+<button
+  *ngIf="canEdit(order)"
+  (click)="editOrder(order); $event.stopPropagation()">
+  ערוך ✏️
+</button>
 <button *ngIf="!canEdit(order)" disabled style="opacity: 0.5; cursor: not-allowed;">ערוך 🔒</button>
 
 

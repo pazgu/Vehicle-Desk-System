@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>טופס חווית נסיעה</title>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="form-card">
+            <div class="header">
+                <h1 class="form-title">טופס חווית נסיעה</h1>
+                <p class="form-subtitle">אנא מלא את הפרטים הבאים</p>
+            </div>
+            
+            <div class="question" [formGroup]="form">
+  <p class="question-text">האם החזרת את הרכב?</p>
+  <div class="options">
+    <div
+      class="option"
+      [ngClass]="{ selected: form.get('completed')?.value === true }"
+      (click)="setFormValue('completed', 'true')"
+    >
+      כן
+    </div>
+    <div
+      class="option"
+      [ngClass]="{ selected: form.get('completed')?.value === false }"
+      (click)="setFormValue('completed', 'false')"
+    >
+      לא
+    </div>
+  </div>
+  <div class="divider"></div>
+</div>
+
+<div class="question" [formGroup]="form">
+  <p class="question-text">האם הטענת/תדלקת את הרכב?</p>
+  <div class="options">
+    <div
+      class="option"
+      [ngClass]="{ selected: form.get('fueled')?.value === true }"
+      (click)="setFormValue('fueled', 'true')"
+    >
+      כן
+    </div>
+    <div
+      class="option"
+      [ngClass]="{ selected: form.get('fueled')?.value === false }"
+      (click)="setFormValue('fueled', 'false')"
+    >
+      לא
+    </div>
+  </div>
+  <div class="divider"></div>
+</div>
+
+<div class="question" [formGroup]="form">
+  <p class="question-text">האם קרה דבר שונה מהרגיל במהלך הנסיעה?</p>
+
+  <div class="options">
+    <div
+      class="option"
+      [ngClass]="{ selected: form.get('emergency_event')?.value === 'true' }"
+      (click)="setEmergencyEvent('true')"
+    >
+      כן
+    </div>
+    <div
+      class="option"
+      [ngClass]="{ selected: form.get('emergency_event')?.value === 'false' }"
+      (click)="setEmergencyEvent('false')"
+    >
+      לא
+    </div>
+  </div>
+
+  <!-- Conditional input if 'yes' is selected -->
+  <div *ngIf="form.get('emergency_event')?.value === 'true'" style="margin-top: 10px;">
+    <label for="elaborateText">אנא פרט:</label>
+    <input
+      id="elaborateText"
+      type="text"
+      class="form-control"
+      formControlName="freeze_details"
+      placeholder="פרטים נוספים"
+    />
+  </div>
+
+  <div class="divider"></div>
+</div>
+
+
+                <div class="submit-section">
+                    <button class="submit-btn" id="submitBtn"
+                    id="submitBtn"
+                    (click)="onSubmit()"
+                    [disabled]="loading"
+                    type="button">
+                        <span class="btn-text">שלח</span>
+                        <div class="btn-loading" *ngIf="loading">
+                            <div class="spinner"></div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+ 
+
+    <script src="script.js"></script>
+</body>
+</html>

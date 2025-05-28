@@ -9,7 +9,7 @@ import { Observable } from 'rxjs';
 })
 
 export class UserService {
-private apiUrl = 'http://localhost:8000'; // or your actual backend base URL
+private apiUrl = 'http://localhost:8000/api'; // or your actual backend base URL
 
   constructor(private http: HttpClient) {}
 
@@ -19,5 +19,12 @@ private apiUrl = 'http://localhost:8000'; // or your actual backend base URL
   getUserById(id: string): Observable<User> {
   return this.http.get<User>(`${this.apiUrl}/user-data/${id}`);
 }
+getRoles() {
+  // This should return Observable<string[]> or your role type
+  return this.http.get<string[]>('http://localhost:8000/api/roles');
+}
+  updateUser(userId: string, updateData: any) {
+    return this.http.patch(`${this.apiUrl}/user-data-edit/${userId}`, updateData);
+  }
 
 }

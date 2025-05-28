@@ -1,0 +1,99 @@
+.archived-container {
+  direction: rtl;
+  max-width: 720px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: rgba(255, 251, 251, 1);
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  font-family: var(--font-family-alef);
+  color: var(--text-rgb-107-26-26);
+}
+
+.archived-container h1 {
+  text-align: center;
+  font-size: 28px;
+  margin-bottom: 1.5rem;
+}
+
+/* ✨ New: table layout for archived orders */
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.table-header {
+  background-color: #811313;
+  color: white;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.table-header th {
+  padding: 12px;
+  text-align: center;
+  border-bottom: 2px solid #811313;
+}
+
+.orders-data-row {
+  background-color: #f9f9f9;
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+}
+
+.orders-data-row:hover {
+  background-color: #ececec;
+}
+
+.orders-data-row td {
+  padding: 10px;
+  text-align: center;
+  font-size: 16px;
+}
+
+/* ✅ Already present */
+.cute-red-button {
+  background-color: #942222;
+  color: white;
+  font-family: var(--font-family-alef);
+  font-size: 16px;
+  font-weight: bold;
+  padding: 10px 22px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+  margin-top: 24px;
+  display: inline-block;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.cute-red-button:hover {
+  background-color: #7c1b1b;
+  transform: scale(1.03);
+}
+
+.cute-red-button:active {
+  transform: scale(0.97);
+}
+
+.title-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.no-orders-message {
+  background-color: #942222;
+  color: white;
+  font-family: var(--font-family-alef);
+  font-size: 20px;
+  font-weight: bold;
+  text-align: center;
+  padding: 20px;
+  border-radius: 12px;
+}

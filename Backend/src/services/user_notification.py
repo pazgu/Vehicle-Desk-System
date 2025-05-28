@@ -65,6 +65,44 @@ def create_system_notification(user_id, title, message, order_id=None):
     return notif
 
 
+#this was created to be used in the completion form function since ->
+# using the original create_system_notification is problematic 
+def create_system_notification_with_db(db: Session, user_id, title, message, order_id=None):
+    notif = Notification(
+        user_id=user_id,
+        notification_type=NotificationType.system,
+        title=title,
+        message=message,
+        sent_at=datetime.now(timezone.utc),
+        order_id=order_id
+    )
+    db.add(notif)
+    return notif  # don't commit here — let caller handle it
+def send_admin_odometer_notification(vehicle_id: UUID, odometer_reading: float):
+    db = SessionLocal()
+    try:
+        admins = db.query(User).filter(User.role == 'admin').all()
+
+        if not admins or odometer_reading < 10000:
+            return None
+
+        notifications = []
+        for admin in admins:
+            notif = Notification(
+                user_id=admin.employee_id,
+                notification_type=NotificationType.system,
+                title="Vehicle Odometer Update",
+                message=f"Vehicle {vehicle_id} has an odometer reading of {odometer_reading} km.",
+                sent_at=datetime.now(timezone.utc)
+            )
+            db.add(notif)
+            notifications.append(notif)
+
+        db.commit()
+        return notifications
+
+    finally:
+        db.close()
 
 
 
@@ -75,8 +113,11 @@ def create_system_notification(user_id, title, message, order_id=None):
 def get_supervisor_id(user_id: UUID, db: Session) -> UUID:
     # Step 1: Get user's department ID
     user = db.query(User).filter(User.employee_id == user_id).first()
-    if not user or not user.department_id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User or department not found.")
+    print(f"👤 User found: {user}")
+
+    if not user:
+        return None
+
 
     # Step 2: Get department's supervisor
     department = db.query(Department).filter(Department.id == user.department_id).first()

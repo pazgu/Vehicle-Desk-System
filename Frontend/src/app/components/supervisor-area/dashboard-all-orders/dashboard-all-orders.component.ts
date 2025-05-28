@@ -50,6 +50,7 @@ ngOnInit(): void {
     this.endDate = params['endDate'] || '';
     this.sortBy = params['sortBy'] || 'date_and_time';
 
+    document.body.style.overflow = 'hidden';
     const departmentId = localStorage.getItem('department_id');
     if (departmentId) {
       this.loadOrders(departmentId); 
@@ -58,6 +59,10 @@ ngOnInit(): void {
     }
   });
 }
+
+  ngOnDestroy(): void {
+   document.body.style.overflow = '';
+  }
 
   loadOrders(departmentId: string | null): void {
     if (departmentId) {

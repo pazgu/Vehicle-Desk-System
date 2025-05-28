@@ -27,11 +27,18 @@ def hash_password(password: str) -> str:
 
 # Function to verify if the provided password matches the stored hashed password
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    print(pwd_context.verify(plain_password, hashed_password))
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        is_valid = pwd_context.verify(plain_password, hashed_password)
+        print("✅ Password match result:", is_valid)
+        return is_valid
+    except Exception as e:
+        print("❌ bcrypt verify error:", str(e))
+        return False
+
 
 
 def token_check(request: Request):
+    print("token_check called")
     auth_header = request.headers.get("Authorization")
     if not auth_header or not auth_header.startswith("Bearer "):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing or Invalid token")
@@ -58,6 +65,8 @@ def get_current_user(request: Request) -> User:
             first_name=payload["first_name"],
             last_name=payload["last_name"],
             role=payload["role"],
+            department_id=payload.get("department_id")
+
         )
     except PyJWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")

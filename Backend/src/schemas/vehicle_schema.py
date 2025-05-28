@@ -12,14 +12,19 @@ class VehicleOut(BaseModel):
     fuel_type: FuelType
     status: VehicleStatus
     freeze_reason: Optional[FreezeReason] = None
+    freeze_details: Optional[str] = None
     last_used_at: Optional[datetime] = None
     current_location: str
     odometer_reading: int
-    vehicle_model: str
-    image_url: str
+    vehicle_model: Optional[str] = None
+    image_url: Optional[str] = None
 
     class Config:
         use_enum_values = True  # return enums as their values in JSON
+        from_attributes = True  
+
+        
+
 
 
 class InUseVehicleOut(BaseModel):
@@ -29,8 +34,9 @@ class InUseVehicleOut(BaseModel):
     fuel_type: FuelType
     status: VehicleStatus
     odometer_reading: float
-    vehicle_model: str
-    image_url: str
+    vehicle_model: Optional[str] = None  
+    image_url: Optional[str] = None  
+    current_location: Optional[str] = None 
     user_id: Optional[UUID] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None
@@ -40,5 +46,11 @@ class InUseVehicleOut(BaseModel):
 
 class VehicleStatusUpdate(BaseModel):
     new_status: VehicleStatus
+    freeze_reason: Optional[FreezeReason] = None
+
+class FreezeVehicleRequest(BaseModel):
+    vehicle_id: UUID
+    reason: str
+
 
 

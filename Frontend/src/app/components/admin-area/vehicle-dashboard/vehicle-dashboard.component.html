@@ -1,0 +1,66 @@
+<div class="page-wrapper">
+  <div class="page-container">
+    <div class="vehicles-wrapper">
+      <h1 style="text-align: right;">רכבי מחלקה</h1>
+      <br>
+      <!-- Sort + Filter Toggle -->
+      <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; direction: rtl;">
+        <!--  -->
+        <button class="filter" (click)="showFilters = !showFilters">
+          {{ showFilters ? 'הסתר סינון' : 'הצג סינון' }}
+        </button>
+      </div>
+
+   <div class="status-indicators">
+  <p style="margin-bottom: 0.75rem; font-weight: 600;">מקרא צבעים</p>
+  <div class="status-box">
+    <div class="status-item">
+      <span class="status-indicator available"></span> זמין
+    </div>
+    <div class="status-item">
+      <span class="status-indicator in-use"></span> בשימוש
+    </div>
+    <div class="status-item">
+      <span class="status-indicator frozen"></span> מוקפא
+    </div>
+  </div>
+</div>
+
+
+      <!-- Filters Section -->
+      <div *ngIf="showFilters"
+        style="margin-bottom: 1.5rem; background: #f7f7f7; padding: 1rem; border-radius: 8px; direction: rtl;">
+        <div style="margin-bottom: 1rem;">
+          <label for="statusFilter">סטטוס:</label>
+          <select id="statusFilter" [(ngModel)]="statusFilter">
+            <option value="">הצג הכל</option>
+            <option value="זמין">זמין</option>
+            <option value="בשימוש">בשימוש</option>
+            <option value="מוקפא">מוקפא</option>
+          </select>
+        </div>
+      </div>
+      <div class="vehicles-cards">
+        <p-card *ngFor="let vehicle of filteredVehicles"
+                [styleClass]="'vehicle-card ' + getCardClass(vehicle.status)"
+                (click)="goToVehicleDetails(vehicle.id)">
+          <ng-template pTemplate="header">
+            <img *ngIf="vehicle.image_url"
+                 [src]="vehicle.image_url"
+                 alt="תמונה של הרכב"
+                 style="width: 100%; max-width: 250px; margin-top: 10px;" />
+          </ng-template>
+          <div>
+            <h3>רכב: {{ vehicle.plate_number }}</h3>
+            <div *ngIf="vehicle.vehicle_model">
+              <strong>דגם:</strong> {{ vehicle.vehicle_model }}
+            </div>
+          </div>
+        </p-card>
+      </div>
+      <div *ngIf="filteredVehicles?.length === 0" class="empty-state" style="text-align: center; margin-top: 2rem;">
+        לא נמצאו רכבים
+      </div>
+    </div>
+  </div>
+</div>

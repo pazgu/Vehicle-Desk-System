@@ -7,7 +7,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  min-height: 60vh;
   box-sizing: border-box;
 }
 .page-container {
@@ -44,6 +44,15 @@ position: absolute;
   cursor: pointer;
   color: #666;
   height: 20px;
+}
+.back-button {
+  position: absolute;
+  top: 15px;
+  left: 20px;
+  color: #942222 !important;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 14px;
 }
 
 .close-button:hover {

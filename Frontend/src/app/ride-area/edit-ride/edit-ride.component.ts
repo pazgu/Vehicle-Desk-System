@@ -15,11 +15,14 @@ import { VehicleService } from '../../services/vehicle.service';
   styleUrl: './edit-ride.component.css'
 })
 export class EditRideComponent implements OnInit {
+  status: string = 'pending';
+  licenseCheckPassed: boolean = true;
+  submittedAt: string = new Date().toISOString();
+
   rideForm!: FormGroup;
   rideId!: string;
   minDate: string = '';
   estimated_distance_with_buffer: number = 0;
-  submittedAt: Date | null = null;
  allCars: {
   id: string;
   plate_number: string;
@@ -32,6 +35,7 @@ export class EditRideComponent implements OnInit {
   odometer_reading: number;
   image_url: string;
   vehicle_model: string;
+  
 }[] = [];
 
 availableCars: typeof this.allCars = [];
@@ -55,25 +59,26 @@ availableCars: typeof this.allCars = [];
     this.rideId = this.route.snapshot.paramMap.get('id') || '';
     this.minDate = this.calculateMinDate(2);
     this.buildForm();
-    this.vehicleService.getAllVehicles().subscribe({
+
+this.vehicleService.getAllVehicles().subscribe({
   next: (vehicles) => {
-    this.allCars = vehicles
-      .filter(v =>
-        v.status === 'available' &&
-        !!v.id &&
-        !!v.type &&
-        !!v.vehicle_model &&
-        typeof v.odometer_reading === 'number'
-      );
+    this.allCars = vehicles.filter(v =>
+      !!v.id &&
+      !!v.type &&
+      !!v.vehicle_model &&
+      typeof v.odometer_reading === 'number'
+    );
+
+    // 🔑 Only call loadRide after cars are loaded
+    this.loadRide();
   },
   error: () => {
     this.toastService.show('שגיאה בטעינת רכבים זמינים', 'error');
   }
 });
-
-    this.loadRide();
   }
 
+  
   buildForm(): void {
     this.rideForm = this.fb.group({
       ride_period: ['morning'],
@@ -119,6 +124,11 @@ availableCars: typeof this.allCars = [];
 
        console.log('🚚 Full ride object:', ride); // 👈 ADD THIS
 
+      this.status = ride.status || 'pending';
+      this.submittedAt = ride.submitted_at || new Date().toISOString();
+      this.licenseCheckPassed = ride.license_check_passed ?? true;
+
+
 
       // const isPending = ride.status?.toLowerCase?.() === 'pending';
       const isPending = ride.status && ride.status.toLowerCase() === 'pending';
@@ -140,31 +150,41 @@ if (!isPending) {
         const startDate = new Date(ride.start_datetime);
         const endDate = new Date(ride.end_datetime);
 
-const vehicleType = ride.vehicle;
-this.availableCars = this.allCars.filter(car => car.type === vehicleType);
+// ✅ MODIFIED: Try to find car by multiple fallbacks
+      const selectedVehicle = this.allCars.find(car =>
+        car.id === ride.vehicle_id ||
+        car.vehicle_model === ride.vehicle ||
+        car.fuel_type === ride.vehicle ||
+        car.type === ride.vehicle
+      );
 
-if (this.availableCars.length === 0) {
-  this.toastService.show('לא נמצאו רכבים מתאימים עבור סוג הרכב שבוצעה בו ההזמנה', 'error');
-  return;
-}
+      if (!selectedVehicle) {
+        this.toastService.show('הרכב שבוצעה בו ההזמנה אינו זמין יותר', 'error');
+        return;
+      }
 
-const selectedCar = this.availableCars[0]; // fallback to the first car of that type
+      // ✅ MODIFIED: Only now filter available cars by type
+      this.availableCars = this.allCars.filter(car =>
+        car.status === 'available' && car.type === selectedVehicle.type
+      );
+
+if (selectedVehicle) {
+this.rideForm.patchValue({
+  ride_period: 'morning',
+  ride_date: startDate.toISOString().split('T')[0],
+  start_time: startDate.toTimeString().slice(0, 5),
+  end_time: endDate.toTimeString().slice(0, 5),
+  estimated_distance_km: parseFloat(ride.estimated_distance || '0'),
+  ride_type: ride.ride_type || 'operational',
+  vehicle_type: selectedVehicle.type,
+  car: selectedVehicle.id,
+  start_location: ride.start_location ?? 'מיקום התחלה לא ידוע',
+  stop: ride.stop ?? 'תחנה לא ידועה',
+  destination: ride.destination ?? 'יעד לא ידוע'
+});
 
 
-if (selectedCar) {
-  this.rideForm.patchValue({
-    ride_period: 'morning',
-    ride_date: startDate.toISOString().split('T')[0],
-    start_time: startDate.toTimeString().slice(0, 5),
-    end_time: endDate.toTimeString().slice(0, 5),
-    estimated_distance_km: parseFloat(ride.estimated_distance),
-    ride_type: ride.ride_type,
-    vehicle_type: selectedCar.type,
-    car: selectedCar.id,
-    start_location: ride.start_location,
-    stop: ride.stop,
-    destination: ride.destination
-  });
+
 
   this.estimated_distance_with_buffer = +(parseFloat(ride.estimated_distance) * 1.1).toFixed(2);
 } else {
@@ -182,6 +202,7 @@ if (selectedCar) {
   }
 
   submit(): void {
+    
     if (this.rideForm.invalid) {
       this.rideForm.markAllAsTouched();
       this.toastService.show('נא למלא את כל השדות הנדרשים', 'error');
@@ -195,16 +216,26 @@ if (selectedCar) {
     const start_datetime = `${rideDate}T${startTime}`;
     const end_datetime = `${rideDate}T${endTime}`;
 
-    const payload = {
-      ride_type: this.rideForm.get('ride_type')?.value,
-      vehicle_id: this.rideForm.get('car')?.value,
-      start_datetime,
-      end_datetime,
-      estimated_distance_km: this.rideForm.get('estimated_distance_km')?.value,
-      start_location: this.rideForm.get('start_location')?.value,
-      stop: this.rideForm.get('stop')?.value,
-      destination: this.rideForm.get('destination')?.value
-    };
+const payload = {
+  id: this.rideId,
+  user_id: localStorage.getItem('employee_id'),
+  vehicle_id: this.rideForm.get('car')?.value,
+  ride_type: this.rideForm.get('ride_type')?.value,
+  start_datetime,
+  end_datetime,
+  estimated_distance_km: this.rideForm.get('estimated_distance_km')?.value,
+  start_location: this.rideForm.get('start_location')?.value,
+  stop: this.rideForm.get('stop')?.value,
+  destination: this.rideForm.get('destination')?.value,
+  status: this.status,
+  license_check_passed: this.licenseCheckPassed,
+  submitted_at: this.submittedAt
+};
+
+
+
+    console.log("📤 PATCH Payload:", payload);
+
 
     this.rideService.updateRide(this.rideId, payload).subscribe({
       next: () => {
