@@ -147,9 +147,9 @@ body {
 }
 
 .option.selected {
-    background: var(--primary-color);
+    background: rgb(255, 208, 208);
     border-color: rgb(9, 1, 1);
-    color: white;
+    color: rgb(0, 0, 0);
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(82, 55, 55, 0.3);
 }
@@ -191,13 +191,6 @@ body {
     pointer-events: none;
 }
 
-/* .submit-btn.loading .btn-text {
-    opacity: 0;
-} */
-
-/* .submit-btn.loading .btn-loading {
-    opacity: 1;
-} */
 
 .submit-btn.success {
     background: linear-gradient(135deg, var(--success-color), #047857);
