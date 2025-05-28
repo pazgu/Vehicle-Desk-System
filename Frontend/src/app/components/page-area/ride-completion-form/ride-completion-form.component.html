@@ -19,15 +19,15 @@
   <div class="options">
     <div
       class="option"
-      [ngClass]="{ selected: form.get('carReturned')?.value === 'yes' }"
-      (click)="setFormValue('carReturned', 'yes')"
+      [ngClass]="{ selected: form.get('completed')?.value === true }"
+      (click)="setFormValue('completed', 'true')"
     >
       כן
     </div>
     <div
       class="option"
-      [ngClass]="{ selected: form.get('carReturned')?.value === 'no' }"
-      (click)="setFormValue('carReturned', 'no')"
+      [ngClass]="{ selected: form.get('completed')?.value === false }"
+      (click)="setFormValue('completed', 'false')"
     >
       לא
     </div>
@@ -40,15 +40,15 @@
   <div class="options">
     <div
       class="option"
-      [ngClass]="{ selected: form.get('carFueled')?.value === 'yes' }"
-      (click)="setFormValue('carFueled', 'yes')"
+      [ngClass]="{ selected: form.get('fueled')?.value === true }"
+      (click)="setFormValue('fueled', 'true')"
     >
       כן
     </div>
     <div
       class="option"
-      [ngClass]="{ selected: form.get('carFueled')?.value === 'no' }"
-      (click)="setFormValue('carFueled', 'no')"
+      [ngClass]="{ selected: form.get('fueled')?.value === false }"
+      (click)="setFormValue('fueled', 'false')"
     >
       לא
     </div>
@@ -62,28 +62,28 @@
   <div class="options">
     <div
       class="option"
-      [ngClass]="{ selected: form.get('incident')?.value === 'yes' }"
-      (click)="setIncident('yes')"
+      [ngClass]="{ selected: form.get('emergency_event')?.value === 'true' }"
+      (click)="setEmergencyEvent('true')"
     >
       כן
     </div>
     <div
       class="option"
-      [ngClass]="{ selected: form.get('incident')?.value === 'no' }"
-      (click)="setIncident('no')"
+      [ngClass]="{ selected: form.get('emergency_event')?.value === 'false' }"
+      (click)="setEmergencyEvent('false')"
     >
       לא
     </div>
   </div>
 
   <!-- Conditional input if 'yes' is selected -->
-  <div *ngIf="form.get('incident')?.value === 'yes'" style="margin-top: 10px;">
+  <div *ngIf="form.get('emergency_event')?.value === 'true'" style="margin-top: 10px;">
     <label for="elaborateText">אנא פרט:</label>
     <input
       id="elaborateText"
       type="text"
       class="form-control"
-      formControlName="elaborate"
+      formControlName="freeze_details"
       placeholder="פרטים נוספים"
     />
   </div>
@@ -93,9 +93,13 @@
 
 
                 <div class="submit-section">
-                    <button class="submit-btn" id="submitBtn">
+                    <button class="submit-btn" id="submitBtn"
+                    id="submitBtn"
+                    (click)="onSubmit()"
+                    [disabled]="loading"
+                    type="button">
                         <span class="btn-text">שלח</span>
-                        <div class="btn-loading">
+                        <div class="btn-loading" *ngIf="loading">
                             <div class="spinner"></div>
                         </div>
                     </button>

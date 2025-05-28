@@ -164,7 +164,7 @@ def create_order(user_id: UUID, ride_request: RideCreate, db: Session = Depends(
             create_system_notification(
                 user_id=supervisor_id,
                 title="בקשת נסיעה חדשה",
-                message=f"העובד {employee_name} שלח בקשה חדשה",
+                message=f"שלח בקשה חדשה ${employee_name} העובד ",
                 order_id=new_ride.id
             )
         else:

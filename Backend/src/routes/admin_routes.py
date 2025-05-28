@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query,Header
 from uuid import UUID
 from typing import Optional , List
 from datetime import datetime
@@ -16,13 +16,13 @@ from src.services.admin_rides_service import (
 from ..utils.database import get_db
 from src.models.user_model import User
 from src.models.user_model import UserRole
+from src.models.vehicle_model import Vehicle
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 from ..services.vehicle_service import vehicle_inspection_logic, get_available_vehicles_for_ride_by_id
 from ..schemas.vehicle_schema import VehicleOut , InUseVehicleOut , VehicleStatusUpdate
 from ..utils.auth import token_check
 from ..services.vehicle_service import get_vehicles_with_optional_status,update_vehicle_status,get_vehicle_by_id
-from ..schemas.audit_schema import AuditLogsSchema
-from src.services.audit_service import get_all_audit_logs
+
 
 router = APIRouter()
 
@@ -155,6 +155,40 @@ def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = De
     ,payload: dict = Depends(token_check)):
     vehicles = get_vehicles_with_optional_status(db, status)
     return vehicles
+
+
+
+
+@router.post("/notifications/admin", include_in_schema=True,   dependencies=[] )
+def send_admin_notification_simple_route(db: Session = Depends(get_db)):
+    vehicle = db.query(Vehicle).first()  # Get any vehicle (you can adjust logic later if needed)
+    
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="No vehicle found.")
+
+    notifications = send_admin_odometer_notification(vehicle.id, vehicle.odometer_reading)
+
+    if not notifications:
+        raise HTTPException(status_code=204, detail="No admins found or odometer below threshold.")
+
+    return {
+        "detail": "Notifications sent",
+        "count": len(notifications),
+        "vehicle_id": str(vehicle.id),
+        "plate_number": vehicle.plate_number,
+        "odometer_reading": vehicle.odometer_reading
+
+    }
+
+
+@router.get("/inspections/today", response_model=List[VehicleInspectionSchema])
+def get_today_inspections(db: Session = Depends(get_db)):
+    today = date.today()
+    inspections = db.query(VehicleInspection).filter(
+        VehicleInspection.inspection_date == today
+    ).all()
+    return inspections
+
 
 
 @router.get("/all-audit-logs", response_model=List[AuditLogsSchema])

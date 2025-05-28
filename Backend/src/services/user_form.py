@@ -11,16 +11,20 @@ from .user_notification import create_system_notification_with_db
 def process_completion_form(db: Session, user: User, form_data: CompletionFormData):
     print("this is the current user:",user.username)
     print("dep id:",user.department_id)
+    print("user id:",user.employee_id)
+ 
     # 1. Get the ride for this user
     ride = db.query(Ride).filter_by(id=form_data.ride_id, user_id=user.employee_id).first()
     if not ride:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ride not found")
 
+    print ("ride id",ride.id)
     # 2. Set emergency event if provided
     if form_data.emergency_event:
         ride.emergency_event = form_data.emergency_event
 
     # 3. If ride is completed, update ride status and vehicle status
+    print("completed?",form_data.completed)
     if form_data.completed:
         ride.status = RideStatus.completed
 

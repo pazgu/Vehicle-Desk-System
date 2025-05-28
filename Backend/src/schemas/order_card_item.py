@@ -24,4 +24,4 @@ class OrderCardItem(BaseModel):
     emergency_event: Optional[str] = None  # Optional field for emergency event
     
     class Config:
-        orm_mode = True
+        from_attributes = True

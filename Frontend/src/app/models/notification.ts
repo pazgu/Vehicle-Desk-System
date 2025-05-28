@@ -7,5 +7,6 @@ export interface MyNotification {
     sent_at: string; // Keep this as-is from backend
     order_id:string;
     order_status:string;
+    vehicle_id: string;
   }
   
