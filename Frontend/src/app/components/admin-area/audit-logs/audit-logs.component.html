@@ -18,11 +18,6 @@
           (input)="filterLogs()"
         />
       </div>
-<div class="export-buttons">
-  <h3>דיווחים מהשבוע האחרון</h3>
-  <button class="export-button" (click)="exportToPDF()">ייצוא PDF</button>
-  <button class="export-button" (click)="exportToCSV()">ייצוא CSV</button>
-</div>
 
       <div class="table-container" *ngIf="!selectedLog">
         <table class="audit-table">
@@ -52,116 +47,368 @@
       <div *ngIf="selectedLog" class="log-details-card">
         <h2>פרטי יומן ביקורת</h2>
 
-        <p><strong>מזהה יומן:</strong> {{ selectedLog.id }}</p>
-        <p><strong>סוג פעולה:</strong> {{ selectedLog.action }}</p>
-        <p><strong>סוג ישות:</strong> {{ selectedLog.entity_type }}</p>
-        <p><strong>מזהה ישות:</strong> {{ selectedLog.entity_id }}</p>
-        <p><strong>שם מלא:</strong> {{ selectedLog.full_name }}</p>
-        <p><strong>תאריך יצירה:</strong> {{ selectedLog.created_at | date:'dd/MM/yyyy HH:mm:ss' }}</p>
-        <p><strong>שונה על ידי:</strong> {{ selectedLog.changed_by }}</p>
-
-        <h3>נתוני שינוי:</h3>
-
-        <div *ngIf="selectedLog.action === 'INSERT'">
-          <div *ngIf="selectedLog.entity_type === 'User'">
-            <p><strong>תפקיד:</strong> {{ selectedLog.change_data.role }}</p>
-            <p><strong>אימייל:</strong> {{ selectedLog.change_data.email }}</p>
-            <p><strong>שם משתמש:</strong> {{ selectedLog.change_data.username }}</p>
-            <p><strong>שם פרטי:</strong> {{ selectedLog.change_data.first_name }}</p>
-            <p><strong>שם משפחה:</strong> {{ selectedLog.change_data.last_name }}</p>
-            <p><strong>מזהה עובד:</strong> {{ selectedLog.change_data.employee_id }}</p>
-            <p><strong>מזהה מחלקה:</strong> {{ selectedLog.change_data.department_id }}</p>
+        <!-- Main Info Section -->
+        <div class="main-info">
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">מזהה יומן</div>
+              <div class="info-value">{{ selectedLog.id }}</div>
             </div>
-          <div *ngIf="selectedLog.entity_type === 'Ride'">
-            <p><strong>מזהה נסיעה:</strong> {{ selectedLog.change_data.id }}</p>
-            <p><strong>סטטוס:</strong> {{ selectedLog.change_data.status }}</p>
-            <p><strong>סוג נסיעה:</strong> {{ selectedLog.change_data.ride_type }}</p>
-            <p><strong>מיקום התחלה:</strong> {{ selectedLog.change_data.start_location }}</p>
-            <p><strong>יעד:</strong> {{ selectedLog.change_data.destination }}</p>
-            <p><strong>תאריך התחלה:</strong> {{ selectedLog.change_data.start_datetime | date:'dd/MM/yyyy HH:mm' }}</p>
-            <p><strong>תאריך סיום:</strong> {{ selectedLog.change_data.end_datetime | date:'dd/MM/yyyy HH:mm' }}</p>
-            <p><strong>מזהה משתמש:</strong> {{ selectedLog.change_data.user_id }}</p>
-            <p><strong>מזהה רכב:</strong> {{ selectedLog.change_data.vehicle_id }}</p>
-            <p><strong>עצירה:</strong> {{ selectedLog.change_data.stop }}</p>
-            <p><strong>מרחק משוער (ק"מ):</strong> {{ selectedLog.change_data.estimated_distance_km }}</p>
-            <p><strong>מרחק בפועל (ק"מ):</strong> {{ selectedLog.change_data.actual_distance_km }}</p>
-            <p><strong>אירוע חירום:</strong> {{ selectedLog.change_data.emergency_event }}</p>
-            <p><strong>עבר בדיקת רישיון:</strong> {{ selectedLog.change_data.license_check_passed ? 'כן' : 'לא' }}</p>
-            <p><strong>ארכיון:</strong> {{ selectedLog.change_data.isArchive ? 'כן' : 'לא' }}</p>
-            <p *ngIf="selectedLog.change_data.override_user_id">
-              <strong>מזהה משתמש עוקף:</strong> {{ selectedLog.change_data.override_user_id }}
-            </p>
+            <div class="info-item">
+              <div class="info-label">סוג פעולה</div>
+              <div class="info-value">{{ selectedLog.action }}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">סוג ישות</div>
+              <div class="info-value">{{ selectedLog.entity_type }}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">מזהה ישות</div>
+              <div class="info-value">{{ selectedLog.entity_id }}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">שם מלא</div>
+              <div class="info-value">{{ selectedLog.full_name }}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">תאריך יצירה</div>
+              <div class="info-value">{{ selectedLog.created_at | date:'dd/MM/yyyy HH:mm:ss' }}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">שונה על ידי</div>
+              <div class="info-value">{{ selectedLog.changed_by }}</div>
+            </div>
           </div>
-          </div>
-
-        <div *ngIf="selectedLog.action === 'UPDATE'">
-          <h4>נתונים ישנים:</h4>
-          <div *ngIf="selectedLog.entity_type === 'User'">
-            <p><strong>תפקיד:</strong> {{ selectedLog.change_data.old.role }}</p>
-            <p><strong>אימייל:</strong> {{ selectedLog.change_data.old.email }}</p>
-            <p><strong>שם משתמש:</strong> {{ selectedLog.change_data.old.username }}</p>
-            <p><strong>שם פרטי:</strong> {{ selectedLog.change_data.old.first_name }}</p>
-            <p><strong>שם משפחה:</strong> {{ selectedLog.change_data.old.last_name }}</p>
-            <p><strong>מזהה עובד:</strong> {{ selectedLog.change_data.old.employee_id }}</p>
-            <p><strong>מזהה מחלקה:</strong> {{ selectedLog.change_data.old.department_id }}</p>
-          </div>
-          <div *ngIf="selectedLog.entity_type === 'Ride'">
-            <p><strong>מזהה נסיעה:</strong> {{ selectedLog.change_data.old.id }}</p>
-            <p><strong>סטטוס:</strong> {{ selectedLog.change_data.old.status }}</p>
-            <p><strong>סוג נסיעה:</strong> {{ selectedLog.change_data.old.ride_type }}</p>
-            <p><strong>מיקום התחלה:</strong> {{ selectedLog.change_data.old.start_location }}</p>
-            <p><strong>יעד:</strong> {{ selectedLog.change_data.old.destination }}</p>
-            <p><strong>תאריך התחלה:</strong> {{ selectedLog.change_data.old.start_datetime | date:'dd/MM/yyyy HH:mm' }}</p>
-            <p><strong>תאריך סיום:</strong> {{ selectedLog.change_data.old.end_datetime | date:'dd/MM/yyyy HH:mm' }}</p>
-            <p><strong>מזהה משתמש:</strong> {{ selectedLog.change_data.old.user_id }}</p>
-            <p><strong>מזהה רכב:</strong> {{ selectedLog.change_data.old.vehicle_id }}</p>
-            <p><strong>עצירה:</strong> {{ selectedLog.change_data.old.stop }}</p>
-            <p><strong>מרחק משוער (ק"מ):</strong> {{ selectedLog.change_data.old.estimated_distance_km }}</p>
-            <p><strong>מרחק בפועל (ק"מ):</strong> {{ selectedLog.change_data.old.actual_distance_km }}</p>
-            <p><strong>אירוע חירום:</strong> {{ selectedLog.change_data.old.emergency_event }}</p>
-            <p><strong>עבר בדיקת רישיון:</strong> {{ selectedLog.change_data.old.license_check_passed ? 'כן' : 'לא' }}</p>
-            <p><strong>ארכיון:</strong> {{ selectedLog.change_data.old.isArchive ? 'כן' : 'לא' }}</p>
-            <p *ngIf="selectedLog.change_data.old.override_user_id">
-              <strong>מזהה משתמש עוקף:</strong> {{ selectedLog.change_data.old.override_user_id }}
-            </p>
-          </div>
-          <h4>נתונים חדשים:</h4>
-          <div *ngIf="selectedLog.entity_type === 'User'">
-            <p><strong>תפקיד:</strong> {{ selectedLog.change_data.new.role }}</p>
-            <p><strong>אימייל:</strong> {{ selectedLog.change_data.new.email }}</p>
-            <p><strong>שם משתמש:</strong> {{ selectedLog.change_data.new.username }}</p>
-            <p><strong>שם פרטי:</strong> {{ selectedLog.change_data.new.first_name }}</p>
-            <p><strong>שם משפחה:</strong> {{ selectedLog.change_data.new.last_name }}</p>
-            <p><strong>מזהה עובד:</strong> {{ selectedLog.change_data.new.employee_id }}</p>
-            <p><strong>מזהה מחלקה:</strong> {{ selectedLog.change_data.new.department_id }}</p>
-          </div>
-          <div *ngIf="selectedLog.entity_type === 'Ride'">
-            <p><strong>מזהה נסיעה:</strong> {{ selectedLog.change_data.new.id }}</p>
-            <p><strong>סטטוס:</strong> {{ selectedLog.change_data.new.status }}</p>
-            <p><strong>סוג נסיעה:</strong> {{ selectedLog.change_data.new.ride_type }}</p>
-            <p><strong>מיקום התחלה:</strong> {{ selectedLog.change_data.new.start_location }}</p>
-            <p><strong>יעד:</strong> {{ selectedLog.change_data.new.destination }}</p>
-            <p><strong>תאריך התחלה:</strong> {{ selectedLog.change_data.new.start_datetime | date:'dd/MM/yyyy HH:mm' }}</p>
-            <p><strong>תאריך סיום:</strong> {{ selectedLog.change_data.new.end_datetime | date:'dd/MM/yyyy HH:mm' }}</p>
-            <p><strong>מזהה משתמש:</strong> {{ selectedLog.change_data.new.user_id }}</p>
-            <p><strong>מזהה רכב:</strong> {{ selectedLog.change_data.new.vehicle_id }}</p>
-            <p><strong>עצירה:</strong> {{ selectedLog.change_data.new.stop }}</p>
-            <p><strong>מרחק משוער (ק"מ):</strong> {{ selectedLog.change_data.new.estimated_distance_km }}</p>
-            <p><strong>מרחק בפועל (ק"מ):</strong> {{ selectedLog.change_data.new.actual_distance_km }}</p>
-            <p><strong>אירוע חירום:</strong> {{ selectedLog.change_data.new.emergency_event }}</p>
-            <p><strong>עבר בדיקת רישיון:</strong> {{ selectedLog.change_data.new.license_check_passed ? 'כן' : 'לא' }}</p>
-            <p><strong>ארכיון:</strong> {{ selectedLog.change_data.new.isArchive ? 'כן' : 'לא' }}</p>
-            <p *ngIf="selectedLog.change_data.new.override_user_id">
-              <strong>מזהה משתמש עוקף:</strong> {{ selectedLog.change_data.new.override_user_id }}
-            </p>
-          </div>
-          </div>
-
-        <div *ngIf="selectedLog.action !== 'INSERT' && selectedLog.action !== 'UPDATE'">
-          <p><strong>נתוני שינוי גולמיים:</strong></p>
-          <pre>{{ selectedLog.change_data | json }}</pre>
         </div>
 
+        <!-- Change Data Section -->
+        <div class="change-section">
+          <h3>נתוני שינוי</h3>
+
+          <!-- INSERT Action -->
+          <div *ngIf="selectedLog.action === 'INSERT'">
+            <div class="data-card insert-data">
+              <h4>נתונים חדשים</h4>
+              
+              <!-- User Entity -->
+              <div *ngIf="selectedLog.entity_type === 'User'" class="entity-fields">
+                <div class="field-row">
+                  <div class="field-label">תפקיד</div>
+                  <div class="field-value">{{ selectedLog.change_data.role }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">אימייל</div>
+                  <div class="field-value">{{ selectedLog.change_data.email }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">שם משתמש</div>
+                  <div class="field-value">{{ selectedLog.change_data.username }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">שם פרטי</div>
+                  <div class="field-value">{{ selectedLog.change_data.first_name }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">שם משפחה</div>
+                  <div class="field-value">{{ selectedLog.change_data.last_name }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">מזהה עובד</div>
+                  <div class="field-value">{{ selectedLog.change_data.employee_id }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">מזהה מחלקה</div>
+                  <div class="field-value">{{ selectedLog.change_data.department_id }}</div>
+                </div>
+              </div>
+
+              <!-- Ride Entity -->
+              <div *ngIf="selectedLog.entity_type === 'Ride'" class="entity-fields">
+                <div class="field-row">
+                  <div class="field-label">מזהה נסיעה</div>
+                  <div class="field-value">{{ selectedLog.change_data.id }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">סטטוס</div>
+                  <div class="field-value">{{ selectedLog.change_data.status }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">סוג נסיעה</div>
+                  <div class="field-value">{{ selectedLog.change_data.ride_type }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">מיקום התחלה</div>
+                  <div class="field-value">{{ selectedLog.change_data.start_location }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">יעד</div>
+                  <div class="field-value">{{ selectedLog.change_data.destination }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">תאריך התחלה</div>
+                  <div class="field-value">{{ selectedLog.change_data.start_datetime | date:'dd/MM/yyyy HH:mm' }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">תאריך סיום</div>
+                  <div class="field-value">{{ selectedLog.change_data.end_datetime | date:'dd/MM/yyyy HH:mm' }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">מזהה משתמש</div>
+                  <div class="field-value">{{ selectedLog.change_data.user_id }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">מזהה רכב</div>
+                  <div class="field-value">{{ selectedLog.change_data.vehicle_id }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">עצירה</div>
+                  <div class="field-value">{{ selectedLog.change_data.stop }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">מרחק משוער (ק"מ)</div>
+                  <div class="field-value">{{ selectedLog.change_data.estimated_distance_km }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">מרחק בפועל (ק"מ)</div>
+                  <div class="field-value">{{ selectedLog.change_data.actual_distance_km }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">אירוע חירום</div>
+                  <div class="field-value">{{ selectedLog.change_data.emergency_event }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">עבר בדיקת רישיון</div>
+                  <div class="field-value" [ngClass]="selectedLog.change_data.license_check_passed ? 'boolean-yes' : 'boolean-no'">
+                    {{ selectedLog.change_data.license_check_passed ? 'כן' : 'לא' }}
+                  </div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">ארכיון</div>
+                  <div class="field-value" [ngClass]="selectedLog.change_data.isArchive ? 'boolean-yes' : 'boolean-no'">
+                    {{ selectedLog.change_data.isArchive ? 'כן' : 'לא' }}
+                  </div>
+                </div>
+                <div *ngIf="selectedLog.change_data.override_user_id" class="field-row">
+                  <div class="field-label">מזהה משתמש עוקף</div>
+                  <div class="field-value">{{ selectedLog.change_data.override_user_id }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- UPDATE Action -->
+          <div *ngIf="selectedLog.action === 'UPDATE'">
+            <!-- Old Data -->
+            <div class="data-card old-data">
+              <h4>נתונים ישנים</h4>
+              
+              <div *ngIf="selectedLog.entity_type === 'User'" class="entity-fields">
+                <div class="field-row">
+                  <div class="field-label">תפקיד</div>
+                  <div class="field-value">{{ selectedLog.change_data.old.role }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">אימייל</div>
+                  <div class="field-value">{{ selectedLog.change_data.old.email }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">שם משתמש</div>
+                  <div class="field-value">{{ selectedLog.change_data.old.username }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">שם פרטי</div>
+                  <div class="field-value">{{ selectedLog.change_data.old.first_name }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">שם משפחה</div>
+                  <div class="field-value">{{ selectedLog.change_data.old.last_name }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">מזהה עובד</div>
+                  <div class="field-value">{{ selectedLog.change_data.old.employee_id }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">מזהה מחלקה</div>
+                  <div class="field-value">{{ selectedLog.change_data.old.department_id }}</div>
+                </div>
+              </div>
+
+              <div *ngIf="selectedLog.entity_type === 'Ride'" class="entity-fields">
+                <div class="field-row">
+                  <div class="field-label">מזהה נסיעה</div>
+                  <div class="field-value">{{ selectedLog.change_data.old.id }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">עצירה</div>
+                  <div class="field-value">{{ selectedLog.change_data.old.stop }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">סטטוס</div>
+                  <div class="field-value">{{ selectedLog.change_data.old.status }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">סוג נסיעה</div>
+                  <div class="field-value">{{ selectedLog.change_data.old.ride_type }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">מיקום התחלה</div>
+                  <div class="field-value">{{ selectedLog.change_data.old.start_location }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">יעד</div>
+                  <div class="field-value">{{ selectedLog.change_data.old.destination }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">תאריך התחלה</div>
+                  <div class="field-value">{{ selectedLog.change_data.old.start_datetime | date:'dd/MM/yyyy HH:mm' }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">תאריך סיום</div>
+                  <div class="field-value">{{ selectedLog.change_data.old.end_datetime | date:'dd/MM/yyyy HH:mm' }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">מזהה משתמש</div>
+                  <div class="field-value">{{ selectedLog.change_data.old.user_id }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">מזהה רכב</div>
+                  <div class="field-value">{{ selectedLog.change_data.old.vehicle_id }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">מרחק משוער (ק"מ)</div>
+                  <div class="field-value">{{ selectedLog.change_data.old.estimated_distance_km }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">מרחק בפועל (ק"מ)</div>
+                  <div class="field-value">{{ selectedLog.change_data.old.actual_distance_km }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">אירוע חירום</div>
+                  <div class="field-value">{{ selectedLog.change_data.old.emergency_event }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">עבר בדיקת רישיון</div>
+                  <div class="field-value" [ngClass]="selectedLog.change_data.old.license_check_passed ? 'boolean-yes' : 'boolean-no'">
+                    {{ selectedLog.change_data.old.license_check_passed ? 'כן' : 'לא' }}
+                  </div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">מזהה משתמש עוקף</div>
+                  <div class="field-value">{{ selectedLog.change_data.old.override_user_id }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- New Data -->
+            <div class="data-card new-data">
+              <h4>נתונים חדשים</h4>
+              
+              <div *ngIf="selectedLog.entity_type === 'User'" class="entity-fields">
+                <div class="field-row">
+                  <div class="field-label">תפקיד</div>
+                  <div class="field-value">{{ selectedLog.change_data.new.role }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">אימייל</div>
+                  <div class="field-value">{{ selectedLog.change_data.new.email }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">שם משתמש</div>
+                  <div class="field-value">{{ selectedLog.change_data.new.username }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">שם פרטי</div>
+                  <div class="field-value">{{ selectedLog.change_data.new.first_name }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">שם משפחה</div>
+                  <div class="field-value">{{ selectedLog.change_data.new.last_name }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">מזהה עובד</div>
+                  <div class="field-value">{{ selectedLog.change_data.new.employee_id }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">מזהה מחלקה</div>
+                  <div class="field-value">{{ selectedLog.change_data.new.department_id }}</div>
+                </div>
+              </div>
+
+              <div *ngIf="selectedLog.entity_type === 'Ride'" class="entity-fields">
+                <div class="field-row">
+                  <div class="field-label">מזהה נסיעה</div>
+                  <div class="field-value">{{ selectedLog.change_data.new.id }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">עצירה</div>
+                  <div class="field-value">{{ selectedLog.change_data.new.stop }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">סטטוס</div>
+                  <div class="field-value">{{ selectedLog.change_data.new.status }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">סוג נסיעה</div>
+                  <div class="field-value">{{ selectedLog.change_data.new.ride_type }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">מיקום התחלה</div>
+                  <div class="field-value">{{ selectedLog.change_data.new.start_location }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">יעד</div>
+                  <div class="field-value">{{ selectedLog.change_data.new.destination }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">תאריך התחלה</div>
+                  <div class="field-value">{{ selectedLog.change_data.new.start_datetime | date:'dd/MM/yyyy HH:mm' }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">תאריך סיום</div>
+                  <div class="field-value">{{ selectedLog.change_data.new.end_datetime | date:'dd/MM/yyyy HH:mm' }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">מזהה משתמש</div>
+                  <div class="field-value">{{ selectedLog.change_data.new.user_id }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">מזהה רכב</div>
+                  <div class="field-value">{{ selectedLog.change_data.new.vehicle_id }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">מרחק משוער (ק"מ)</div>
+                  <div class="field-value">{{ selectedLog.change_data.new.estimated_distance_km }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">מרחק בפועל (ק"מ)</div>
+                  <div class="field-value">{{ selectedLog.change_data.new.actual_distance_km }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">אירוע חירום</div>
+                  <div class="field-value">{{ selectedLog.change_data.new.emergency_event }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">עבר בדיקת רישיון</div>
+                  <div class="field-value" [ngClass]="selectedLog.change_data.new.license_check_passed ? 'boolean-yes' : 'boolean-no'">
+                    {{ selectedLog.change_data.new.license_check_passed ? 'כן' : 'לא' }}
+                  </div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">מזהה משתמש עוקף</div>
+                  <div class="field-value">{{ selectedLog.change_data.new.override_user_id }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Other Actions (DELETE, etc.) -->
+          <div *ngIf="selectedLog.action !== 'INSERT' && selectedLog.action !== 'UPDATE'" class="data-card">
+            <h4>נתוני שינוי גולמיים</h4>
+            <div class="json-container">
+              <pre>{{ selectedLog.change_data | json }}</pre>
+            </div>
+          </div>
+        </div>
 
         <button class="close-details-button" (click)="closeDetails()">סגור</button>
       </div>

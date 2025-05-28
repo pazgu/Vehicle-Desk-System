@@ -23,6 +23,10 @@ from ..schemas.vehicle_schema import VehicleOut , InUseVehicleOut , VehicleStatu
 from ..utils.auth import token_check
 from ..services.vehicle_service import get_vehicles_with_optional_status,update_vehicle_status,get_vehicle_by_id
 
+from ..services.vehicle_service import get_vehicles_with_optional_status ,update_vehicle_status,get_vehicle_by_id
+from ..services.user_notification import send_admin_odometer_notification
+from ..schemas.audit_schema import AuditLogsSchema
+from src.services.audit_service import get_all_audit_logs
 
 router = APIRouter()
 
