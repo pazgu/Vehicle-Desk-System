@@ -1,3 +1,4 @@
+// src/app/audit-logs/audit-logs.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -18,7 +19,7 @@ import type { TDocumentDefinitions } from 'pdfmake/interfaces';
   }
 };
 import { AuditLogsService } from '../../../services/audit-logs.service';
-import { AuditLogs } from '../../../models/audit-logs/audit-logs.module';
+import { AuditLogs } from '../../../models/audit-logs/audit-logs.module'; // Ensure this path is correct
 
 @Component({
   selector: 'app-audit-logs',
@@ -31,57 +32,11 @@ export class AuditLogsComponent implements OnInit {
 
   showFilters = false;
   searchTerm = '';
-
-  logs: any[] = [
-    {
-      id: 1,
-      actionType: 'CREATE',
-      fullName: 'Mickey Mouse',
-      description: 'User Mickey Mouse created a new report on financial data. The report includes quarterly earnings and expenditure analysis.',
-      createdAt: new Date('2024-01-15T10:30:00')
-    },
-    {
-      id: 2,
-      actionType: 'UPDATE',
-      fullName: 'Donald Duck',
-      description: 'User Donald Duck updated the inventory count for warehouse A. Stock levels for item #345 and #678 were adjusted.',
-      createdAt: new Date('2024-01-16T14:45:00')
-    },
-    {
-      id: 2,
-      actionType: 'DELETE',
-      fullName: 'Donald Duck',
-      description: 'User Donald Duck updated the inventory count for warehouse A. Stock levels for item #345 and #678 were adjusted.',
-      createdAt: new Date('2025-05-26T14:45:00')
-    },
-    {
-      id: 2,
-      actionType: 'DELETE',
-      fullName: 'Donald Duck',
-      description: 'quack quack quack quack quack quack quack quack quack quack quack quack quack quack quack',
-      createdAt: new Date('2025-05-26T14:45:00')
-    },
-    {
-      id: 2,
-      actionType: 'CREATE',
-      fullName: 'Donald Duck',
-      description: 'BLAHHHHHHBLAHBLAHHHH',
-      createdAt: new Date('2025-05-26T14:45:00')
-    },
-    {
-      id: 3,
-      actionType: 'DELETE',
-      fullName: 'Goofy Goof',
-      description: 'User Goofy Goof deleted an old project file named "Legacy_Project_X.zip" from the archive server.',
-      createdAt: new Date('2024-01-17T09:00:00')
-    }
-  ];
-
+  objectKeys = Object.keys; // Still useful if you need to iterate over object keys dynamically
 
   constructor(private auditLogService: AuditLogsService) { }
   logs: AuditLogs[] = [];
-  filteredLogs: any[] = [];
-  selectedLog: any | null = null;
+  filteredLogs: AuditLogs[] = []; // Type this correctly
   selectedLog: AuditLogs | null = null; // Property to hold the selected log for detailed view
 
   ngOnInit() {
@@ -93,10 +48,13 @@ export class AuditLogsComponent implements OnInit {
       (data) => {
         this.logs = data.map(log => ({
           ...log,
-          createdAt: new Date(log.created_at) // Convert string to Date object
+          // 'createdAt' property was not used in the provided JSON,
+          // sticking to 'created_at' as per your API response for consistency
+          // If you need a Date object, you can add it:
+          // createdAt: new Date(log.created_at)
         }));
         this.filteredLogs = [...this.logs]; // Initialize filtered logs
-      })
+      });
   }
 
   filterLogs() {
@@ -108,11 +66,14 @@ export class AuditLogsComponent implements OnInit {
     const searchLower = this.searchTerm.toLowerCase();
     this.filteredLogs = this.logs.filter(log =>
       log.action?.toLowerCase().includes(searchLower) ||
-      log.full_name?.toString().toLowerCase().includes(searchLower) 
+      log.entity_type?.toLowerCase().includes(searchLower) || // Added entity_type to search
+      log.entity_id?.toLowerCase().includes(searchLower) || // Added entity_id to search
+      log.full_name?.toString().toLowerCase().includes(searchLower)
     );
   }
 
-  showDetails(log: any) {
+  // Method to show details of a selected log
+  showDetails(log: AuditLogs) { // Type the 'log' parameter
     this.selectedLog = log;
   }
 
