@@ -1,6 +1,22 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import pdfMake from 'pdfmake/build/pdfmake';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
+import { saveAs } from 'file-saver';
+import Papa from 'papaparse';
+import type { TDocumentDefinitions } from 'pdfmake/interfaces';
+
+// Set pdfMake fonts to use the embedded Roboto font
+(pdfMake as any).vfs = pdfFonts.vfs;
+(pdfMake as any).fonts = {
+  Roboto: {
+    normal: 'Roboto-Regular.ttf',
+    bold: 'Roboto-Medium.ttf',
+    italics: 'Roboto-Italic.ttf',
+    bolditalics: 'Roboto-MediumItalic.ttf',
+  }
+};
 
 @Component({
   selector: 'app-audit-logs',
@@ -10,10 +26,11 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./audit-logs.component.css']
 })
 export class AuditLogsComponent implements OnInit {
+
   showFilters = false;
   searchTerm = '';
+
   logs: any[] = [
-    // Sample data - replace with your actual data service
     {
       id: 1,
       actionType: 'CREATE',
@@ -29,6 +46,27 @@ export class AuditLogsComponent implements OnInit {
       createdAt: new Date('2024-01-16T14:45:00')
     },
     {
+      id: 2,
+      actionType: 'DELETE',
+      fullName: 'Donald Duck',
+      description: 'User Donald Duck updated the inventory count for warehouse A. Stock levels for item #345 and #678 were adjusted.',
+      createdAt: new Date('2025-05-26T14:45:00')
+    },
+    {
+      id: 2,
+      actionType: 'DELETE',
+      fullName: 'Donald Duck',
+      description: 'quack quack quack quack quack quack quack quack quack quack quack quack quack quack quack',
+      createdAt: new Date('2025-05-26T14:45:00')
+    },
+    {
+      id: 2,
+      actionType: 'CREATE',
+      fullName: 'Donald Duck',
+      description: 'BLAHHHHHHBLAHBLAHHHH',
+      createdAt: new Date('2025-05-26T14:45:00')
+    },
+    {
       id: 3,
       actionType: 'DELETE',
       fullName: 'Goofy Goof',
@@ -36,8 +74,8 @@ export class AuditLogsComponent implements OnInit {
       createdAt: new Date('2024-01-17T09:00:00')
     }
   ];
+
   filteredLogs: any[] = [];
-  // Property to hold the selected log for detailed view
   selectedLog: any | null = null;
 
   ngOnInit() {
@@ -59,13 +97,81 @@ export class AuditLogsComponent implements OnInit {
     );
   }
 
-  // Method to show details of a selected log
   showDetails(log: any) {
     this.selectedLog = log;
   }
 
-  // Method to close the details card
   closeDetails() {
     this.selectedLog = null;
+  }
+
+  private getLogsForThisWeek(): any[] {
+    const now = new Date();
+    const dayOfWeek = (now.getDay() + 6) % 7; // 0 = Monday, 6 = Sunday
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - dayOfWeek);
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    endOfWeek.setHours(23, 59, 59, 999);
+
+    return this.logs.filter(log => {
+      const created = new Date(log.createdAt);
+      return created >= startOfWeek && created <= endOfWeek;
+    });
+  }
+
+  exportToPDF() {
+    const weeklyLogs = this.getLogsForThisWeek();
+
+    const docDefinition: TDocumentDefinitions = {
+      content: [
+        { text: `Weekly report of system logs`, style: 'header', alignment: 'center' },
+        { text: '\n' },
+        {
+          table: {
+            headerRows: 1,
+            body: [
+              ['Action type', 'Full name', 'Description', 'Date created'],
+              ...weeklyLogs.map(log => [
+                log.actionType,
+                log.fullName,
+                log.description.length > 100 ? log.description.slice(0, 100) + '...' : log.description,
+                new Date(log.createdAt).toLocaleString('he-IL')
+              ])
+            ]
+          },
+          layout: 'lightHorizontalLines'
+        }
+      ],
+      defaultStyle: {
+        font: 'Roboto',
+        alignment: 'right'
+      },
+      styles: {
+        header: {
+          fontSize: 18,
+          bold: true
+        }
+      }
+    };
+
+    pdfMake.createPdf(docDefinition).download('audit_logs_weekly.pdf');
+  }
+
+  exportToCSV() {
+    const weeklyLogs = this.getLogsForThisWeek();
+
+    const csvData = weeklyLogs.map(log => ({
+      actionType: log.actionType,
+      fullName: log.fullName,
+      description: log.description,
+      createdAt: new Date(log.createdAt).toLocaleString('he-IL')
+    }));
+
+    const csv = Papa.unparse(csvData);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    saveAs(blob, 'audit_logs_weekly.csv');
   }
 }
