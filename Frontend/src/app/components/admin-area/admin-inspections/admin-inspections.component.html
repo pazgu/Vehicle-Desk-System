@@ -1,13 +1,29 @@
-<h2>בדיקות רכבים שבוצעו היום</h2>
+<h2 class="section-title">בדיקות רכבים שבוצעו היום</h2>
 
-<div *ngIf="loading">טוען...</div>
-<div *ngIf="!loading && inspections.length === 0">אין בדיקות להצגה</div>
+<div *ngIf="loading" class="loading">טוען...</div>
+<div *ngIf="!loading && inspections.length === 0" class="empty">אין בדיקות להצגה</div>
 
-<ul *ngIf="!loading && inspections.length > 0">
-  <li *ngFor="let item of inspections" [class.highlight]="highlighted">
-    🛠️ רכב: {{ item.vehicle_id }} |
-    🧪 בודק: {{ item.inspected_by }} |
-    📅 תאריך: {{ item.inspection_date | date: 'short' }} <br />
-    📍 הערות: {{ item.issues_found?.critical_event || 'אין' }}
-  </li>
-</ul>
+<div class="admin-inspections-container" *ngIf="!loading && inspections.length > 0">
+  <table class="inspection-table">
+    <thead>
+      <tr>
+        <th>📅 תאריך</th>
+        <th>🧪 בודק</th>
+        <th>📍 הערות</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of inspections" [class.highlight]="highlighted">
+        <td>{{ item.inspection_date | date: 'short' }}</td>
+        <td>{{ item.inspected_by }}</td>
+        <td>
+          {{
+            item.issues_found?.critical_event ||
+            item.issues_found?.notes ||
+            (item.issues_found?.issues?.length ? item.issues_found.issues.join(', ') : 'אין')
+          }}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
