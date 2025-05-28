@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RideService } from '../../services/ride.service';
 import { ToastService } from '../../services/toast.service';
 import { Router, RouterModule } from '@angular/router';
+import { SocketService } from '../../services/socket.service';
 
 @Component({
   selector: 'app-archived-orders',
@@ -18,7 +19,8 @@ export class ArchivedOrdersComponent implements OnInit {
   constructor(
     private rideService: RideService,
     private toastService: ToastService,
-    private router: Router
+    private router: Router,
+    private socketService: SocketService 
   ) {}
 
   ngOnInit(): void {
@@ -40,6 +42,21 @@ export class ArchivedOrdersComponent implements OnInit {
       this.loading = false;
     }
   });
+
+   // ✅ Listen for new ride requests
+    this.socketService.rideRequests$.subscribe((rideData) => {
+      if (rideData) {
+        this.toastService.show('🚗 התקבלה הזמנת נסיעה חדשה', 'success');
+
+        // Optional sound effect
+        const audio = new Audio('assets/sounds/notif.mp3');
+        audio.play();
+
+        // Optional: Re-fetch data if needed (not always relevant for archived view)
+        // this.rideService.getArchivedOrders(userId).subscribe(...);
+      }
+    });
+  
 }
 
 

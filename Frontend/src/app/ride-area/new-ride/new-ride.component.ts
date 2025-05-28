@@ -16,6 +16,7 @@ import { RideService } from '../../services/ride.service'; // ✅ Import your ri
 import { HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { VehicleService } from '../../services/vehicle.service';
+import { SocketService } from '../../services/socket.service';
 
 @Component({
   selector: 'app-new-ride',
@@ -40,7 +41,9 @@ export class NewRideComponent implements OnInit {
     private router: Router,
     private toastService: ToastService,
     private rideService: RideService,
-    private vehicleService: VehicleService 
+    private vehicleService: VehicleService,
+    private socketService: SocketService,
+
   ) {}
 allCars: {
   id: string;
@@ -186,83 +189,86 @@ console.log('Filtered available cars:', this.availableCars);
     };
   }
 
-  submit(): void {
-    if (this.rideForm.invalid) {
-      this.rideForm.markAllAsTouched();
-      this.toastService.show('יש להשלים את כל שדות הטופס כנדרש', 'error');
-      return;
+submit(): void {
+  if (this.rideForm.invalid) {
+    this.rideForm.markAllAsTouched();
+    this.toastService.show('יש להשלים את כל שדות הטופס כנדרש', 'error');
+    return;
+  }
+
+  const ridePeriod = this.rideForm.get('ride_period')?.value as 'morning' | 'night';
+  const rideDate = this.rideForm.get('ride_date')?.value;
+  const nightEndDate = this.rideForm.get('ride_date_night_end')?.value;
+  const startTime = this.rideForm.get('start_time')?.value;
+  const endTime = this.rideForm.get('end_time')?.value;
+
+  if (ridePeriod === 'morning' && startTime && endTime && startTime >= endTime) {
+    this.toastService.show('שעת הסיום חייבת להיות אחרי שעת ההתחלה', 'error');
+    return;
+  }
+
+  const distance = this.rideForm.get('estimated_distance_km')?.value;
+  if (distance > 1000) {
+    this.toastService.show('מרחק לא הגיוני - נא להזין ערך סביר', 'error');
+    return;
+  }
+
+  const vehicleId = this.rideForm.get('car')?.value;
+  if (!vehicleId) {
+    this.toastService.show('יש לבחור רכב מהתפריט', 'error');
+    return;
+  }
+
+  const user_id = localStorage.getItem('employee_id');
+  if (!user_id) {
+    this.toastService.show('שגיאת זיהוי משתמש - התחבר מחדש', 'error');
+    return;
+  }
+
+  const start_datetime = `${rideDate}T${startTime}`;
+  const end_datetime = ridePeriod === 'morning'
+    ? `${rideDate}T${endTime}`
+    : `${nightEndDate}T${endTime}`;
+
+  const formData = {
+    ride_type: this.rideForm.get('ride_type')?.value,
+    start_datetime,
+    vehicle_id: vehicleId,
+    end_datetime,
+    start_location: this.rideForm.get('start_location')?.value,
+    stop: this.rideForm.get('stop')?.value,
+    destination: this.rideForm.get('destination')?.value,
+    estimated_distance_km: distance,
+    actual_distance_km: this.estimated_distance_with_buffer 
+  };
+
+  const clientMeta = {
+    estimated_distance_with_buffer: this.estimated_distance_with_buffer,
+    ride_period: ridePeriod
+  };
+
+  console.log('Ride for backend:', formData);
+  console.log('Client-only metadata:', clientMeta);
+
+  // ✅ Emit socket message to backend
+  this.socketService.sendMessage('new_ride_request', {
+    ...formData,
+    user_id
+  });
+
+  // ✅ Proceed with HTTP request
+  this.rideService.createRide(formData, user_id).subscribe({
+    next: () => {
+      this.toastService.show('הבקשה נשלחה בהצלחה! ✅', 'success');
+      this.router.navigate(['/']);
+    },
+    error: (err) => {
+      this.toastService.show('שגיאה בשליחת הבקשה', 'error');
+      console.error(err);
     }
-
-    const ridePeriod = this.rideForm.get('ride_period')?.value as 'morning' | 'night';
-    const rideDate = this.rideForm.get('ride_date')?.value;
-    const nightEndDate = this.rideForm.get('ride_date_night_end')?.value;
-    const startTime = this.rideForm.get('start_time')?.value;
-    const endTime = this.rideForm.get('end_time')?.value;
-
-    if (ridePeriod === 'morning' && startTime && endTime && startTime >= endTime) {
-      this.toastService.show('שעת הסיום חייבת להיות אחרי שעת ההתחלה', 'error');
-      return;
-    }
-
-    const distance = this.rideForm.get('estimated_distance_km')?.value;
-    if (distance > 1000) {
-      this.toastService.show('מרחק לא הגיוני - נא להזין ערך סביר', 'error');
-      return;
-    }
-
-    const vehicleId = this.rideForm.get('car')?.value;
-
-if (!vehicleId) {
-  this.toastService.show('יש לבחור רכב מהתפריט', 'error');
-  return;
+  });
 }
 
-
-    const start_datetime = `${rideDate}T${startTime}`;
-    const end_datetime = ridePeriod === 'morning'
-      ? `${rideDate}T${endTime}`
-      : `${nightEndDate}T${endTime}`;
-
- const formData = {
-  ride_type: this.rideForm.get('ride_type')?.value,
-  start_datetime,
-  vehicle_id: vehicleId,
-  end_datetime,
-  start_location: this.rideForm.get('start_location')?.value,
-  stop: this.rideForm.get('stop')?.value,
-  destination: this.rideForm.get('destination')?.value,
-  estimated_distance_km: distance,
-  actual_distance_km: this.estimated_distance_with_buffer 
-};
-
-// Keep these only for display/logging, not for backend
-const clientMeta = {
-  estimated_distance_with_buffer: this.estimated_distance_with_buffer,
-  ride_period: ridePeriod
-};
-
-console.log('Ride for backend:', formData);
-console.log('Client-only metadata:', clientMeta);
-
-
-    const user_id = localStorage.getItem('employee_id'); // ✅ make sure this is stored at login
-    console.log('employee_id from localStorage:', user_id);
-    if (!user_id) {
-      this.toastService.show('שגיאת זיהוי משתמש - התחבר מחדש', 'error');
-      return;
-    }
-
-this.rideService.createRide(formData, user_id).subscribe({
-      next: () => {
-        this.toastService.show('הבקשה נשלחה בהצלחה! ✅', 'success');
-        this.router.navigate(['/']);
-      },
-      error: (err) => {
-        this.toastService.show('שגיאה בשליחת הבקשה', 'error');
-        console.error(err);
-      }
-    });
-  }
 
   get f() {
     return {
