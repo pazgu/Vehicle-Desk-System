@@ -123,20 +123,20 @@ console.log('🚀 Raw vehicles from backend:', vehicles)
 
     
   }
-  onRideTypeChange() {
-    const selectedType = this.rideForm.value.vehicle_type; 
-    this.availableCars = this.allCars.filter(car => car.type === selectedType);
+ onRideTypeChange() {
+  const selectedType = this.rideForm.value.vehicle_type;
+  this.availableCars = this.allCars.filter(car => car.type === selectedType);
+  this.rideForm.get('car')?.setValue('');
 
-    // Reset selected car if type changes
-    this.rideForm.get('car')?.setValue('');
+  if (this.availableCars.length === 0) {
+    this.toastService.show('אין רכבים זמינים מסוג זה', 'error');
+  }
+}
 
- console.log('All cars:', this.allCars);
-console.log('Selected type:', selectedType);
-console.log('Filtered available cars:', this.availableCars);
 
   
 
-  }
+  
   onPeriodChange(value: string): void {
     const nightEndControl = this.rideForm.get('ride_date_night_end');
     const rideDateControl = this.rideForm.get('ride_date');
@@ -257,16 +257,25 @@ submit(): void {
   });
 
   // ✅ Proceed with HTTP request
-  this.rideService.createRide(formData, user_id).subscribe({
-    next: () => {
-      this.toastService.show('הבקשה נשלחה בהצלחה! ✅', 'success');
-      this.router.navigate(['/']);
-    },
-    error: (err) => {
-      this.toastService.show('שגיאה בשליחת הבקשה', 'error');
-      console.error(err);
-    }
-  });
+// ✅ Proceed with HTTP request
+this.rideService.createRide(formData, user_id).subscribe({
+  next: (createdRide) => {
+    this.toastService.show('הבקשה נשלחה בהצלחה! ✅', 'success');
+
+    // ✅ Only emit ride request after success
+    this.socketService.sendMessage('new_ride_request', {
+      ...createdRide, // send back full ride from backend
+      user_id
+    });
+
+    this.router.navigate(['/']);
+  },
+  error: (err) => {
+    this.toastService.show('שגיאה בשליחת הבקשה', 'error');
+    console.error(err);
+  }
+});
+
 }
 
 

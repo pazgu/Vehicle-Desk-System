@@ -27,14 +27,21 @@ export class NotificationsComponent implements OnInit {
     private router: Router
   ) {}
 
-  ngOnInit(): void {
-    
-    const role = localStorage.getItem('role');
+ ngOnInit(): void {
+  // ✅ Join user's Socket.IO room for live updates
+  const userId = localStorage.getItem('employee_id'); // make sure this key matches your localStorage
+  if (userId) {
+    this.socketService.joinRoom(userId);
+  }
+  console.log('👤 Joining socket room for user:', userId);
 
-    if (role === 'admin') {
-  this.notificationService.getAdminNotifications().subscribe({
-    next: (data) => {
-      console.log('🛠 Admin notification raw data:', data);
+
+  const role = localStorage.getItem('role');
+
+  if (role === 'admin') {
+    this.notificationService.getAdminNotifications().subscribe({
+      next: (data) => {
+        console.log('🛠 Admin notification raw data:', data);
 
      // Step 1: Declare and assign mock if needed
     let safeData: AdminNotificationResponse;
