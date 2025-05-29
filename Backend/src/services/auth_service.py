@@ -13,7 +13,7 @@ load_dotenv()
 SECRET_KEY = environ.get("JWT_SECRET")
 ACCESS_TOKEN_EXPIRE_MINUTES=environ.get("ACCESS_TOKEN_EXPIRE_MINUTES")
 ALGORITHM = environ.get("ALGORITHM")
-
+RESET_TOKEN_EXPIRE_MINUTES =environ.get("RESET_TOKEN_EXPIRE_MINUTES")
 
 
 
@@ -53,6 +53,27 @@ def validate_token(token: str) -> bool:
         return True
     except (ExpiredSignatureError, InvalidTokenError, DecodeError):
         return False
+
+
+
+
+def create_reset_token(user_id: str) -> str:
+    expire = datetime.utcnow() + timedelta(minutes=RESET_TOKEN_EXPIRE_MINUTES)
+    payload = {
+        "sub": user_id,
+        "exp": expire
+    }
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+def verify_reset_token(token: str) -> str:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload["sub"]
+    except ExpiredSignatureError:
+        raise ValueError("Reset token has expired")
+    except InvalidTokenError:
+        raise ValueError("Invalid reset token")
+
 
 # def create_access_token(data: dict, expires_delta: timedelta = None):
 #     to_encode = data.copy()
