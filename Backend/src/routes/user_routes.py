@@ -159,7 +159,7 @@ async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = De
         new_ride = create_ride(db, user_id, ride_request)
 
         # ✅ Emit real-time event
-        await sio.emit("ride_created", {
+        await sio.emit("new_ride_request", {
             "ride_id": str(new_ride.id),
             "user_id": str(user_id),
             "status": new_ride.status,
@@ -179,12 +179,25 @@ async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = De
         else:
             logger.warning("No supervisor found — skipping supervisor notification.")
 
-        create_system_notification(
+
+        confirmation = create_system_notification(
             user_id=new_ride.user_id,
             title="שליחת בקשה",
             message="בקשתך נשלחה בהצלחה",
             order_id=new_ride.id
         )
+
+        # 🔥 Emit the notification over Socket.IO to the user's room
+        await sio.emit("new_notification", {
+            "id": str(confirmation.id),
+            "user_id": str(confirmation.user_id),
+            "title": confirmation.title,
+            "message": confirmation.message,
+            "notification_type": confirmation.notification_type.value,
+            "sent_at": confirmation.sent_at.isoformat(),
+            "order_id": str(confirmation.order_id) if confirmation.order_id else None
+        }, room=str(confirmation.user_id))
+
 
         return new_ride
 
