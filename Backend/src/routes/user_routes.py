@@ -32,6 +32,7 @@ from ..services.user_rides_service import get_ride_by_id , get_archived_rides
 from ..services.user_notification import create_system_notification,get_supervisor_id,get_user_name
 import traceback
 from ..models.user_model import User
+from ..models.order_model import Order
 from ..services.user_form import process_completion_form
 from ..schemas.form_schema import CompletionFormData
 from ..utils.socket_manager import sio  # ✅ import this
@@ -311,3 +312,10 @@ def get_archived_orders_route(
 
     return get_archived_rides(user_id, db)
 
+@router.get("/orders/pending-cars")
+def get_pending_car_orders(db: Session = Depends(get_db)):
+    pending_orders = db.query(Order).filter(
+        Order.status == "pending",
+        Order.deleted == False
+    ).all()
+    return pending_orders

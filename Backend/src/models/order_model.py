@@ -5,7 +5,7 @@ from src.models.base import Base
 import enum
 import uuid
 from sqlalchemy.sql import func
-
+from ..models.ride_model import RideType, RideStatus
 
 class Order(Base):
     __tablename__ = "rides"
