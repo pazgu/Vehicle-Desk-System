@@ -8,6 +8,10 @@ from ..models.user_model import User  # adjust import if needed
 from ..models.department_model import Department  # adjust import if needed
 from fastapi import HTTPException, status
 from ..models.ride_model import Ride
+from ..utils.socket_manager import sio  # ✅ CORRECT
+import asyncio
+
+
 
 def get_user_notifications(db: Session, user_id: UUID):
     results = (
@@ -26,47 +30,62 @@ def get_user_notifications(db: Session, user_id: UUID):
 
     return notifications
 
-
-def send_notification(
+async def send_notification_async(
     db: Session,
     user_id: UUID,
     title: str,
     message: str,
     notification_type: NotificationType
-) -> Notification:
-    new_notification = Notification(
-        user_id=user_id,
-        title=title,
-        message=message,
-        notification_type=notification_type,
-        sent_at=datetime.utcnow()
-    )
-    db.add(new_notification)
-    db.commit()
-    db.refresh(new_notification)
+):
+    new_notification = await asyncio.to_thread(send_notification, db, user_id, title, message, notification_type)
+
+    notif_data = {
+        "id": str(new_notification.id),
+        "title": title,
+        "message": message,
+        "notification_type": notification_type.value,
+        "sent_at": new_notification.sent_at.isoformat(),
+        "order_id": str(new_notification.order_id) if new_notification.order_id else None,
+    }
+
+    await sio.emit("new_notification", notif_data, room=str(user_id))
+    print(f"📢 Emitted new_notification to room {user_id}")
+
     return new_notification
 
-import asyncio
 
-async def send_notification_async(*args, **kwargs):
-    return await asyncio.to_thread(send_notification, *args, **kwargs)
+
 
 
 def create_system_notification(user_id, title, message, order_id=None):
     db = SessionLocal()
-    notif = Notification(
-        user_id=user_id,
-        notification_type=NotificationType.system,
-        title=title,
-        message=message,
-        sent_at=datetime.now(timezone.utc),
-        order_id=order_id
-    )
-    db.add(notif)
-    db.commit()
-    db.refresh(notif)
-    db.close()
-    return notif
+    try:
+        notif = Notification(
+            user_id=user_id,
+            notification_type=NotificationType.system,
+            title=title,
+            message=message,
+            sent_at=datetime.now(timezone.utc),
+            order_id=order_id
+        )
+        db.add(notif)
+        db.commit()
+        db.refresh(notif)
+
+        # ✅ Emit via Socket.IO to user's room
+        asyncio.create_task(sio.emit("new_notification", {
+            "id": str(notif.id),
+            "title": notif.title,
+            "message": notif.message,
+            "notification_type": notif.notification_type.value,
+            "sent_at": notif.sent_at.isoformat(),
+            "order_id": str(notif.order_id) if notif.order_id else None,
+        }, room=str(user_id)))
+
+        return notif
+    finally:
+        db.close()
+
 
 
 #this was created to be used in the completion form function since ->
