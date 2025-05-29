@@ -17,6 +17,8 @@ import { VehicleDashboardComponent } from './components/admin-area/vehicle-dashb
 import { RideCompletionFormComponent } from './components/page-area/ride-completion-form/ride-completion-form.component';
 import { AuditLogsComponent } from './components/admin-area/audit-logs/audit-logs.component';
 import { AvailableAndFrozenCarsComponent } from './inspector-area/available-and-frozen-cars/available-and-frozen-cars.component';
+import { ForgotPasswordComponent } from './components/auth-area/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './components/auth-area/reset-password/reset-password.component';
 
 
 export const routes: Routes = [
@@ -41,6 +43,9 @@ export const routes: Routes = [
   { path: 'vehicle-dashboard', component: VehicleDashboardComponent },
   { path: 'ride-completion-form/:ride_id', component: RideCompletionFormComponent },
   { path: 'audit-logs', component: AuditLogsComponent },
+  { path: 'forgot-password', component: ForgotPasswordComponent },
+  { path: 'reset-password/:token', component: ResetPasswordComponent },
+
 {
   path: 'ride/details/:id',
   loadComponent: () => import('./ride-area/ride-details/ride-details.component').then(m => m.RideDetailsComponent)

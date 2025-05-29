@@ -1,11 +1,10 @@
 import traceback
-from fastapi import APIRouter, HTTPException, Depends , Query
+from fastapi import APIRouter, HTTPException, Depends , Query,Form
 from sqlalchemy.orm import Session
 from ..schemas.register_schema import UserCreate
 from ..schemas.login_schema import UserLogin
 from ..schemas.new_ride_schema import RideCreate
 from ..services import register_service
-from ..services.auth_service import create_access_token
 from ..services import login_service
 from uuid import UUID
 from ..services.new_ride_service import create_ride 
@@ -23,7 +22,7 @@ from ..schemas.notification_schema import NotificationOut
 from ..services.user_notification import get_user_notifications ,send_notification_async
 from fastapi import status as fastapi_status
 from fastapi.security import OAuth2PasswordBearer
-from ..utils.auth import role_check,identity_check,get_current_user
+from ..utils.auth import role_check,identity_check,get_current_user,hash_password
 from src.schemas.ride_status_enum import UpdateRideStatusRequest
 from ..schemas.order_card_item import OrderCardItem
 from ..models.ride_model import Ride
@@ -36,6 +35,9 @@ from ..services.user_form import process_completion_form
 from ..schemas.form_schema import CompletionFormData
 from ..utils.socket_manager import sio  # ✅ import this
 from ..utils.socket_utils import convert_decimal
+from ..utils.email_utils import send_email
+from ..services.auth_service import create_reset_token,verify_reset_token
+from ..schemas.reset_password import ResetPasswordInput,ForgotPasswordRequest
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 # Set up logging
@@ -316,3 +318,41 @@ def get_pending_car_orders(db: Session = Depends(get_db)):
     # Fetch only vehicle_ids of pending rides
     vehicle_ids = db.query(Ride.vehicle_id).filter(Ride.status == "pending").distinct().all()
     return [str(v[0]) for v in vehicle_ids if v[0] is not None]
+
+
+
+@router.post("/api/forgot-password")
+def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    email = request.email
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    token = create_reset_token(str(user.employee_id))
+    reset_link = f"http://localhost:8000/reset-password?token={token}"
+    send_email(
+        subject="Password Reset for Vehicle Desk System",
+        body=f"Hi, click the following link to reset your password:\n\n{reset_link}\n\nIf you didn’t request this, ignore this email.",
+        recipients=[user.email]
+    )
+    return {"message": "Reset email sent"}
+
+
+@router.post("/api/reset-password")
+def reset_password(
+    data: ResetPasswordInput,
+    db: Session = Depends(get_db)
+):
+    try:
+        user_id: UUID = verify_reset_token(data.token)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Invalid or expired reset token")
+
+    user = db.query(User).filter(User.employee_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user.password = hash_password(data.new_password)
+    db.commit()
+
+    return {"message": "Password reset successfully"}
