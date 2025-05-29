@@ -40,13 +40,7 @@ export class DashboardAllOrdersComponent implements OnInit {
 
   constructor(private router: Router, private orderService: OrderService,  private socketService: SocketService ) {}
 
-ngOnInit(): void {
-  this.route.queryParams.subscribe(params => {
-    this.statusFilter = params['status'] || '';
-    this.startDate = params['startDate'] || '';
-    this.endDate = params['endDate'] || '';
-    this.sortBy = params['sortBy'] || 'date_and_time';
-
+  ngOnInit(): void {
     document.body.style.overflow = 'hidden';
     const departmentId = localStorage.getItem('department_id');
     if (departmentId) {
@@ -87,41 +81,6 @@ ngOnInit(): void {
       console.error('Department ID not found in local storage.');
     }
   }
-
-updateQueryParams(): void {
-  this.router.navigate([], {
-    relativeTo: this.route,
-    queryParams: {
-      status: this.statusFilter || null,
-      startDate: this.startDate || null,
-      endDate: this.endDate || null,
-      sortBy: this.sortBy || null
-    },
-    queryParamsHandling: 'merge'
-  });
-}
-
-
-  set statusFilterValue(val: string) {
-    this.statusFilter = val;
-    this.updateQueryParams();
-  }
-
-  set startDateValue(val: string) {
-    this.startDate = val;
-    this.updateQueryParams();
-  }
-
-  set endDateValue(val: string) {
-    this.endDate = val;
-    this.updateQueryParams();
-  }
-
-  set sortByValue(val: string) {
-    this.sortBy = val;
-    this.updateQueryParams();
-  }
-
 
   get filteredOrders() {
     let filtered = [...this.orders];
@@ -229,7 +188,6 @@ updateQueryParams(): void {
     this.showOldOrders = false;
     this.sortBy = 'date_and_time';
     this.currentPage = 1;
-    this.updateQueryParams();
   }
 
   onPageChange(event: any) {
