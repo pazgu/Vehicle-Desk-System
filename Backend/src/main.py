@@ -7,12 +7,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Request
 from src.utils.scheduler import start_scheduler
 from fastapi_socketio import SocketManager
-from .utils.socket_events import init_socket_events
+from .utils.socket_manager import connect
 import asyncio
-from .utils.tests import test_emit
-
+from socketio import ASGIApp
+from .utils.socket_manager import sio
 app = FastAPI()
-socket_manager = SocketManager(app=app)  # 🔌 Add this
+sio_app = ASGIApp(sio, other_asgi_app=app)
 
 print("🚀 FastAPI app starting with CORS enabled")
 
@@ -32,7 +32,6 @@ app.include_router(admin_route,prefix="/api",tags=["Admin"])
 app.include_router(inspector_route,prefix="/api",tags=["Inspector"])
 
 start_scheduler()
-init_socket_events(socket_manager)
 
 
 @app.get("/")
@@ -48,4 +47,11 @@ async def log_requests(request: Request, call_next):
     return response
 
 
-asyncio.create_task(test_emit())
+@sio.on("join")
+async def join_room(sid, data):
+    room = data.get("room")
+    if room:
+        await sio.enter_room(sid, room)
+        print(f"👥 Socket {sid} joined room {room}")
+
+
