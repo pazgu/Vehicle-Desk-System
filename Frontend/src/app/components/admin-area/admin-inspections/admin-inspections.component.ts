@@ -16,49 +16,45 @@ import { ToastService } from '../../../services/toast.service';
 export class AdminInspectionsComponent implements OnInit {
   inspections: any[] = [];
   loading = true;
+  highlighted = false;
 
-  constructor(private http: HttpClient, private route: ActivatedRoute ,   private socketService: SocketService,
-  private toastService: ToastService
-) {}
+  constructor(
+    private http: HttpClient,
+    private route: ActivatedRoute,
+    private socketService: SocketService,
+    private toastService: ToastService
+  ) {}
 
-highlighted = false;
+  ngOnInit(): void {
+    // Highlight row if query param exists
+    this.route.queryParams.subscribe(params => {
+      this.highlighted = params['highlight'] === '1';
+    });
 
-ngOnInit(): void {
-  this.route.queryParams.subscribe(params => {
-    this.highlighted = params['highlight'] === '1';
-  });
+    // 🔁 Load inspections on component mount
+    this.loadInspections();
 
-  // 🔹 1. Initial load of inspections on page entry
-  this.http.get<any[]>(`${environment.apiUrl}/inspections/today`).subscribe({
-    next: (data) => {
-      this.inspections = data;
-      this.loading = false;
-    },
-    error: () => {
-      this.loading = false;
-      alert('שגיאה בטעינת בדיקות רכבים להיום');
-    }
-  });
+    // 🔔 Listen for critical notifications via socket
+    this.socketService.notifications$.subscribe((notif) => {
+      if (notif?.message?.includes('בעיה חמורה')) {
+        this.toastService.show('📢 בדיקה חדשה עם בעיה חמורה התקבלה', 'error');
+        new Audio('assets/sounds/notif.mp3').play();
+        this.loadInspections(); // Re-fetch
+      }
+    });
+  }
 
-  // 🔹 2. Listen for critical inspections via socket
-  this.socketService.notifications$.subscribe((notif) => {
-    if (notif && notif.message.includes('בעיה חמורה')) {
-this.toastService.show('📢 בדיקה חדשה עם בעיה חמורה התקבלה', 'error'); // <-- changed from 'warning'
-
-      const audio = new Audio('assets/sounds/notif.mp3');
-      audio.play();
-
-      // Re-fetch inspections from backend
-      this.http.get<any[]>(`${environment.apiUrl}/inspections/today`).subscribe({
-        next: (data) => {
-          this.inspections = data;
-          console.log('🔁 Inspections updated from socket event');
-        },
-        error: () => {
-          this.toastService.show('❌ שגיאה ברענון הבדיקות', 'error');
-        }
-      });
-    }
-  });
-}
+  private loadInspections(): void {
+    this.loading = true;
+    this.http.get<any[]>(`${environment.apiUrl}/inspections/today`).subscribe({
+      next: (data) => {
+        this.inspections = data;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+        this.toastService.show('❌ שגיאה בטעינת בדיקות רכבים להיום', 'error');
+      }
+    });
+  }
 }
