@@ -85,5 +85,16 @@ logout(): void {
   localStorage.setItem('role', role);
   this.roleSubject.next(role);
 }
+ requestPasswordReset(email: string): Observable<any> {
+    return this.http.post(environment.forgotPassUrl, { email });
+  }
+
+  resetPassword(token: string, newPassword: string) {
+  return this.http.post(environment.resertPassUrl, {
+    token,
+    new_password: newPassword
+  });
+}
+
 
 }

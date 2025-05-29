@@ -37,7 +37,7 @@ from ..utils.socket_manager import sio  # ✅ import this
 from ..utils.socket_utils import convert_decimal
 from ..utils.email_utils import send_email
 from ..services.auth_service import create_reset_token,verify_reset_token
-from ..schemas.reset_password import ResetPasswordInput
+from ..schemas.reset_password import ResetPasswordInput,ForgotPasswordRequest
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 # Set up logging
@@ -317,20 +317,20 @@ def get_archived_orders_route(
 
 
 @router.post("/api/forgot-password")
-def forgot_password(email: str = Form(...), db: Session = Depends(get_db)):
+def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    email = request.email
     user = db.query(User).filter(User.email == email).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    token = create_reset_token(str(user.id))
-    reset_link = f"http://localhost:3000/reset-password?token={token}"
+    token = create_reset_token(str(user.employee_id))
+    reset_link = f"http://localhost:8000/reset-password?token={token}"
     send_email(
-        to_email=user.email,
-        subject="Reset Your Password",
-        body=f"Click here to reset your password: {reset_link}"
+        subject="Password Reset for Vehicle Desk System",
+        body=f"Hi, click the following link to reset your password:\n\n{reset_link}\n\nIf you didn’t request this, ignore this email.",
+        recipients=[user.email]
     )
     return {"message": "Reset email sent"}
-
 
 
 @router.post("/api/reset-password")

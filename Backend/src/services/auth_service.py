@@ -58,7 +58,7 @@ def validate_token(token: str) -> bool:
 
 
 def create_reset_token(user_id: str) -> str:
-    expire = datetime.utcnow() + timedelta(minutes=RESET_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.utcnow() + timedelta(minutes=int(RESET_TOKEN_EXPIRE_MINUTES))
     payload = {
         "sub": user_id,
         "exp": expire
