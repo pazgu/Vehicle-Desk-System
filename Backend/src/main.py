@@ -47,3 +47,11 @@ async def log_requests(request: Request, call_next):
     return response
 
 
+@sio.on("join")
+async def join_room(sid, data):
+    room = data.get("room")
+    if room:
+        await sio.enter_room(sid, room)
+        print(f"👥 Socket {sid} joined room {room}")
+
+
