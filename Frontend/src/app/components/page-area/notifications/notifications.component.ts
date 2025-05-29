@@ -1,10 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NotificationService } from '../../../services/notification';
+import { AdminNotificationResponse, NotificationService } from '../../../services/notification';
 import { formatDistanceToNow } from 'date-fns';
 import { MyNotification } from '../../../models/notification';
 import { he } from 'date-fns/locale';
 import { Router } from '@angular/router';
+import { SocketService } from '../../../services/socket.service';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-notifications',
@@ -20,37 +22,69 @@ export class NotificationsComponent implements OnInit {
 
   constructor(
     private notificationService: NotificationService,
+    private socketService: SocketService,
+    private toastService: ToastService,
     private router: Router
   ) {}
 
-  ngOnInit(): void {
-    const role = localStorage.getItem('role');
+ ngOnInit(): void {
+  // ✅ Join user's Socket.IO room for live updates
+  const userId = localStorage.getItem('employee_id'); // make sure this key matches your localStorage
+  if (userId) {
+    this.socketService.joinRoom(userId);
+  }
+  console.log('👤 Joining socket room for user:', userId);
 
-    if (role === 'admin') {
-  this.notificationService.getAdminNotifications().subscribe({
-    next: (data) => {
-      const message = ` עבר יותר מ-10000 קילומטר ${data.plate_number} הרכב בעל לוחית הרישוי`;
 
-      this.notifications = [{
-        id: 'admin-generated',
-        user_id: '',
-        notification_type: 'admin',
-        title: 'התראה מנהלתית',
-        message: message,
-        sent_at: new Date().toISOString(),
-        order_id: '',
-        order_status: '',
-        vehicle_id: data.vehicle_id,
-        timeAgo: formatDistanceToNow(new Date(), {
-          addSuffix: true,
-          locale: he,
-        }),
-      }];
-    },
-    error: (err) => {
-      console.error('Failed to fetch admin notifications:', err);
+  const role = localStorage.getItem('role');
+
+  if (role === 'admin') {
+    this.notificationService.getAdminNotifications().subscribe({
+      next: (data) => {
+        console.log('🛠 Admin notification raw data:', data);
+
+     // Step 1: Declare and assign mock if needed
+    let safeData: AdminNotificationResponse;
+
+ if (!data) {
+      safeData = {
+        plate_number: '123-456-78',
+        detail: 'fallback',
+        count: 0,
+        vehicle_id: 'mock-id',
+        odometer_reading: 10001
+      };
+    } else {
+      safeData = data;
     }
-      });
+
+
+
+// Step 2: Use it as normal
+    const message = safeData.plate_number
+      ? `עבר יותר מ-10000 קילומטר - לוחית: ${safeData.plate_number}`
+      : 'התראה מנהלתית - פרטי הרכב אינם זמינים כרגע';
+
+   this.notifications = [{
+      id: 'admin-generated',
+      user_id: '',
+      notification_type: 'admin',
+      title: 'התראה מנהלתית',
+      message,
+      sent_at: new Date().toISOString(),
+      order_id: '',
+      order_status: '',
+      vehicle_id: '',
+      timeAgo: formatDistanceToNow(new Date(), {
+        addSuffix: true,
+        locale: he,
+      }),
+    }];
+  },
+  error: (err) => {
+    console.error('Failed to fetch admin notifications:', err);
+  }
+});
     } else {
       this.notificationService.getNotifications().subscribe({
         next: (data) => {
@@ -67,6 +101,33 @@ export class NotificationsComponent implements OnInit {
         }
       });
     }
+    this.socketService.notifications$.subscribe((newNotif) => {
+  if (newNotif) {
+    const notifWithTimeAgo = {
+      ...newNotif,
+      timeAgo: formatDistanceToNow(new Date(newNotif.sent_at), {
+        addSuffix: true,
+        locale: he,
+      }),
+    };
+
+    // Add to the top of the list
+    this.notifications.unshift(notifWithTimeAgo);
+
+   if (newNotif.message.includes('בעיה חמורה') || newNotif.notification_type === 'critical') {
+  const audio = new Audio('assets/sounds/notif.mp3');
+  audio.play();
+}
+
+
+
+    this.toastService.show(newNotif.message, 'success');
+
+    // Optional: log or show toast
+    console.log('🟢 Live notification added:', notifWithTimeAgo);
+  }
+});
+
   }
 
   goToOrder(orderId: string): void {

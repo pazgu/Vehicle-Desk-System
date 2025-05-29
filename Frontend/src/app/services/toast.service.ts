@@ -9,6 +9,10 @@ export class ToastService {
     toast.innerText = message;
     document.body.appendChild(toast);
 
+     // ✅ Play sound when showing toast
+    const sound = new Audio('assets/sounds/notif.mp3');
+    sound.play().catch(e => console.warn('Sound play failed:', e));
+
     setTimeout(() => {
       toast.remove();
     }, 3000);

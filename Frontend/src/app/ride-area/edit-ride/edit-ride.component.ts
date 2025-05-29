@@ -6,6 +6,8 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { RideService } from '../../services/ride.service';
 import { ToastService } from '../../services/toast.service';
 import { VehicleService } from '../../services/vehicle.service';
+import { SocketService } from '../../services/socket.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-edit-ride',
@@ -23,6 +25,7 @@ export class EditRideComponent implements OnInit {
   rideId!: string;
   minDate: string = '';
   estimated_distance_with_buffer: number = 0;
+  rideRequestSub!: Subscription; 
  allCars: {
   id: string;
   plate_number: string;
@@ -46,7 +49,8 @@ availableCars: typeof this.allCars = [];
     private router: Router,
     private rideService: RideService,
     private toastService: ToastService,
-    private vehicleService: VehicleService
+    private vehicleService: VehicleService,
+    private socketService: SocketService 
   ) {}
 
     calculateMinDate(daysAhead: number): string {
@@ -60,6 +64,16 @@ availableCars: typeof this.allCars = [];
     this.minDate = this.calculateMinDate(2);
     this.buildForm();
 
+    // ✅ Socket listener moved outside vehicle block
+    this.rideRequestSub = this.socketService.rideRequests$.subscribe((rideData) => {
+      if (rideData) {
+        this.toastService.show('🚗 התקבלה הזמנת נסיעה חדשה', 'success');
+        const audio = new Audio('assets/sounds/notif.mp3');
+        audio.play();
+      }
+    });
+
+
 this.vehicleService.getAllVehicles().subscribe({
   next: (vehicles) => {
     this.allCars = vehicles.filter(v =>
@@ -71,6 +85,16 @@ this.vehicleService.getAllVehicles().subscribe({
 
     // 🔑 Only call loadRide after cars are loaded
     this.loadRide();
+    // ✅ Socket listener for new ride requests
+this.socketService.rideRequests$.subscribe((rideData) => {
+  if (rideData) {
+    this.toastService.show('🚗 התקבלה הזמנת נסיעה חדשה', 'success');
+
+    const audio = new Audio('assets/sounds/notif.mp3');
+    audio.play();
+  }
+});
+
   },
   error: () => {
     this.toastService.show('שגיאה בטעינת רכבים זמינים', 'error');

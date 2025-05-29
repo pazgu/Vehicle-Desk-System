@@ -9,6 +9,7 @@ import { TableModule } from 'primeng/table';
 import { OrderService } from '../../../services/order.service';
 import { RideDashboardItem } from '../../../models/ride-dashboard-item/ride-dashboard-item.module';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { SocketService } from '../../../services/socket.service';
 
 @Component({
   selector: 'app-dashboard-all-orders',
@@ -37,11 +38,7 @@ export class DashboardAllOrdersComponent implements OnInit {
   showOldOrders: boolean = false;
   sortBy: string = 'date_and_time';
 
-  constructor(
-    private route: ActivatedRoute, 
-    private router: Router, 
-    private orderService: OrderService
-  ) {}
+  constructor(private router: Router, private orderService: OrderService,  private socketService: SocketService ) {}
 
 ngOnInit(): void {
   this.route.queryParams.subscribe(params => {
@@ -57,8 +54,20 @@ ngOnInit(): void {
     } else {
       console.error('Department ID not found in localStorage.');
     }
-  });
-}
+
+    this.socketService.rideRequests$.subscribe((newRide) => {
+  if (newRide) {
+    console.log('🆕 New ride request received on dashboard:', newRide);
+
+    // Optional: Push directly to UI
+    this.orders.unshift(newRide);
+
+    // Optional: toast message (if you use a toast service)
+    alert('💡בקשה חדשה לנסיעה התקבלה!'); // or use your `ToastService` if available
+  }
+});
+
+  }
 
   ngOnDestroy(): void {
    document.body.style.overflow = '';

@@ -5,6 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { MyRidesService } from '../../../services/myrides.service';
 import { ActivatedRoute, Params } from '@angular/router';
 import { ToastService } from '../../../services/toast.service';
+import { SocketService } from '../../../services/socket.service';
 
 
 @Component({
@@ -16,7 +17,10 @@ import { ToastService } from '../../../services/toast.service';
 })
 export class HomeComponent implements OnInit {
   constructor(private router: Router, private rideService: MyRidesService,private route: ActivatedRoute,
-   private toastService: ToastService) {}
+   private toastService: ToastService,
+  private socketService: SocketService 
+  
+  ) {}
 
   currentPage = 1;
   loading: boolean = false;
@@ -45,6 +49,10 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     const storedOrders = localStorage.getItem('user_orders');
+     const userId = localStorage.getItem('employee_id');
+  if (userId) {
+    this.socketService.joinRoom(userId); // 💥 Join the user's socket room!
+  }
      this.route.queryParams.subscribe(params => {
       const idToHighlight = params['highlight'] || null;
       if (idToHighlight) {
@@ -58,6 +66,40 @@ export class HomeComponent implements OnInit {
     });
 
     this.fetchRides();
+
+    this.socketService.rideRequests$.subscribe((newRide) => {
+  if (newRide) {
+    console.log('🔁 New ride event received - refreshing rides...');
+    this.fetchRides();
+  }
+  
+});
+
+this.socketService.orderUpdated$.subscribe((updatedRide) => {
+  if (updatedRide) {
+    console.log('✏️ Ride update received in HomeComponent:', updatedRide);
+
+    const index = this.orders.findIndex(o => o.ride_id === updatedRide.id);
+    if (index !== -1) {
+      const newDate = formatDate(updatedRide.start_datetime, 'dd.MM.yyyy', 'en-US');
+      const newTime = formatDate(updatedRide.start_datetime, 'HH:mm', 'en-US');
+
+      this.orders[index] = {
+        ...this.orders[index],
+        date: newDate,
+        time: newTime,
+        status: updatedRide.status.toLowerCase(),
+        distance: updatedRide.estimated_distance_km,
+        start_datetime: updatedRide.start_datetime,
+        submitted_at: updatedRide.submitted_at
+      };
+
+      console.log(`✅ Ride ${updatedRide.id} updated in local state`);
+    }
+  }
+});
+
+
   }
    
   get pagedOrders() {
@@ -283,7 +325,7 @@ goToArchivedOrders() {
 }
 warningVisible = true;  // controls visibility
 exceededMaxRides(): boolean {
-  const maxRides = 3;
+  const maxRides = 6;
   const userOrders = JSON.parse(localStorage.getItem('user_orders') || '[]');
 
   const oneMonthAgo = new Date();
@@ -310,7 +352,7 @@ showWarning() {
 }
 
 isPaidOrder(order: any): boolean {
-  const maxFreeRides = 3;
+  const maxFreeRides = 6;
   const userOrders = JSON.parse(localStorage.getItem('user_orders') || '[]');
 
   const oneMonthAgo = new Date();
