@@ -313,6 +313,11 @@ def get_archived_orders_route(
 
     return get_archived_rides(user_id, db)
 
+@router.get("/api/orders/pending-cars", response_model=List[str])
+def get_pending_car_orders(db: Session = Depends(get_db)):
+    # Fetch only vehicle_ids of pending rides
+    vehicle_ids = db.query(Ride.vehicle_id).filter(Ride.status == "pending").distinct().all()
+    return [str(v[0]) for v in vehicle_ids if v[0] is not None]
 
 
 

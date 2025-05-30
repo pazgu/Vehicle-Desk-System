@@ -328,19 +328,20 @@ exceededMaxRides(): boolean {
   const maxRides = 6;
   const userOrders = JSON.parse(localStorage.getItem('user_orders') || '[]');
 
-  const oneMonthAgo = new Date();
-  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+  const beginningOfMonth = new Date();
+  beginningOfMonth.setDate(1);
+  beginningOfMonth.setHours(0, 0, 0, 0);
 
   const recentOrders = userOrders.filter((order: any) => {
-    const orderDate = this.parseDate(order.date);  // use parseDate here!
-    return orderDate >= oneMonthAgo;
+    const orderDate = this.parseDate(order.date);
+    return orderDate >= beginningOfMonth;
   });
 
-  console.log('🗓️ Recent orders in the last month:', recentOrders);
-  
-  // Simply return whether user exceeded max rides, regardless of warning visibility
+  console.log('🗓️ Recent orders in the current month:', recentOrders);
+
   return recentOrders.length >= maxRides;
 }
+
 
 // In your component class:
 hideWarning() {
@@ -350,18 +351,18 @@ hideWarning() {
 showWarning() {
   this.warningVisible = true;
 }
-
 isPaidOrder(order: any): boolean {
   const maxFreeRides = 6;
   const userOrders = JSON.parse(localStorage.getItem('user_orders') || '[]');
 
-  const oneMonthAgo = new Date();
-  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+  const beginningOfMonth = new Date();
+  beginningOfMonth.setDate(1);
+  beginningOfMonth.setHours(0, 0, 0, 0);
 
   const recentOrders = userOrders
     .filter((o: any) => {
       const orderDate = this.parseDate(o.date);
-      return orderDate >= oneMonthAgo;
+      return orderDate >= beginningOfMonth;
     })
     .sort((a: any, b: any) => {
       const dateA = this.parseDate(a.date);
@@ -376,4 +377,5 @@ isPaidOrder(order: any): boolean {
 
   return orderIndex >= maxFreeRides;
 }
+
 }
