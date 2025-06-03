@@ -27,7 +27,7 @@ export class VehicleInspectionComponent implements OnInit {
 
 ngOnInit(): void {
   this.inspectionForm = this.fb.group({
-  fuel_level: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
+  fuel_level: [false, [Validators.required]],
   tires_ok: [false],
   clean: [false],
   critical_issue: [''],
@@ -113,18 +113,18 @@ next: () => {
 }
 
 
-updateFuelDisplay(): void {
-  const level = this.inspectionForm.get('fuel_level')?.value;
-  if (level < 15) {
-    console.warn('🔴 Fuel critically low!');
-  }
-}
+// updateFuelDisplay(): void {
+//   const level = this.inspectionForm.get('fuel_level')?.value;
+//   if (level < 15) {
+//     console.warn('🔴 Fuel critically low!');
+//   }
+// }
 
-getFuelColor(value: number): string {
-  if (value < 25) return 'red';
-  if (value < 50) return 'orange';
-  return 'green';
-}
+// getFuelColor(value: number): string {
+//   if (value < 25) return 'red';
+//   if (value < 50) return 'orange';
+//   return 'green';
+// }
 
 logClick() {
   alert('🔍 Click detected!');

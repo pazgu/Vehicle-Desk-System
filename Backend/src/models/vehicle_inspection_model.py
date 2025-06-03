@@ -11,7 +11,7 @@ class VehicleInspection(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     inspection_date = Column(DateTime, nullable=False, default=datetime.utcnow)
     inspected_by = Column(UUID(as_uuid=True), ForeignKey("users.employee_id"), nullable=True)
-    fuel_level = Column(Integer, nullable=False)
+    fuel_level = Column(Boolean, nullable=False)
     tires_ok = Column(Boolean, nullable=False)
     clean = Column(Boolean, nullable=False)
     issues_found = Column(JSONB, nullable=True)  

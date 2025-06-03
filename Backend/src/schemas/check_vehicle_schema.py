@@ -8,7 +8,7 @@ class VehicleInspectionSchema(BaseModel):
     ride_id: Optional[UUID] = None
     inspection_date: Optional[datetime] = None
     inspected_by: Optional[UUID] 
-    fuel_level: int = Field(..., ge=0, le=100)
+    fuel_level: bool
     tires_ok: bool
     clean: bool
     issues_found: Optional[Dict[str, str]] = None 
