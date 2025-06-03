@@ -166,6 +166,25 @@
     color: #942222;
 }
 
+.emergency-row {
+  background-color: #feaf66 !important;
+}
+.frozen-vehicle-row {
+  background-color: #e2f0f8 !important;
+}
+.pending-row {
+  background-color: #fbf3da !important;
+}
+.approved-row {
+  background-color: #dcf1e1 !important; /* light green */
+}
+.rejected-row {
+  background-color: #f8e2e2 !important;
+}
+.user-insert-row {
+  background-color: #dcf1e1 !important; /* light green */
+}
+
 .empty-state {
     color: #90a4ae;
     font-size: 1.2rem;
