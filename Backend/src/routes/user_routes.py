@@ -172,12 +172,22 @@ async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = De
         employee_name = get_user_name(db, new_ride.user_id)
 
         if supervisor_id:
-            create_system_notification(
+           supervisor_notification= create_system_notification(
                 user_id=supervisor_id,
                 title="בקשת נסיעה חדשה",
                 message=f"שלח בקשה חדשה {employee_name} העובד",
                 order_id=new_ride.id
             )
+            # 🔥 Emit to supervisor
+           await sio.emit("new_notification", {
+                "id": str(supervisor_notification.id),
+                "user_id": str(supervisor_notification.user_id),
+                "title": supervisor_notification.title,
+                "message": supervisor_notification.message,
+                "notification_type": supervisor_notification.notification_type.value,
+                "sent_at": supervisor_notification.sent_at.isoformat(),
+                "order_id": str(supervisor_notification.order_id) if supervisor_notification.order_id else None
+            }, room=str(supervisor_notification.user_id))
         else:
             logger.warning("No supervisor found — skipping supervisor notification.")
 
