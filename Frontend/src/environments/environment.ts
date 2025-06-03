@@ -10,6 +10,8 @@ export const environment = {
     pastOrdersUrl: 'http://localhost:8000/api/past-orders',
     CompletionFormUrl:'http://localhost:8000/api/complete-ride-form',
     socketUrl: 'http://localhost:8000',
+    forgotPassUrl:'http://localhost:8000/api/forgot-password',
+    resertPassUrl:'http://localhost:8000/api/reset-password'
 
 
 
