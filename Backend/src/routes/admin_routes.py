@@ -25,7 +25,6 @@ from datetime import date, datetime, timedelta
 from src.models.vehicle_inspection_model import VehicleInspection
 
 
-from ..services.monthly_trip_counts import update_monthly_trip_counts
 
 router = APIRouter()
 
@@ -193,12 +192,3 @@ def get_today_inspections(db: Session = Depends(get_db)):
     ).all()
 
     return inspections
-
-
-@router.post("/update-monthly-trip-counts")
-def monthly_trip_count_update(db: Session = Depends(get_db)):
-    try:
-        update_monthly_trip_counts(db)
-        return {"message": "Monthly trip counts updated successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
