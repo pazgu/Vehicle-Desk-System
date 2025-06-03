@@ -25,6 +25,8 @@ from ..services.vehicle_service import get_vehicles_with_optional_status,update_
 
 from ..services.vehicle_service import get_vehicles_with_optional_status ,update_vehicle_status,get_vehicle_by_id
 from ..services.user_notification import send_admin_odometer_notification
+from src.schemas.vehicle_schema import VehicleOut, VehicleAvailabilityRequest
+from src.services.vehicle_service import get_available_vehicles_by_type_and_time
 
 router = APIRouter()
 
@@ -192,3 +194,15 @@ def get_today_inspections(db: Session = Depends(get_db)):
     return inspections
 
 
+@router.post("/vehicles/available", response_model=List[VehicleOut])
+def available_vehicles(
+    request: VehicleAvailabilityRequest,
+    db: Session = Depends(get_db),
+):
+    vehicles = get_available_vehicles_by_type_and_time(
+        db=db,
+        vehicle_type=request.vehicle_type,
+        start_datetime=request.start_datetime,
+        end_datetime=request.end_datetime,
+    )
+    return vehicles
