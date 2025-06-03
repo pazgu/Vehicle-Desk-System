@@ -36,9 +36,19 @@ ngOnInit(): void {
 });
 
 
+  this.inspectionForm.get('critical_issue')?.valueChanges.subscribe(value => {
+    const field = this.inspectionForm.get('critical_issue');
+    if (value && value.trim() !== '') {
+      field?.setValidators([Validators.required]);
+    } else {
+      field?.clearValidators();
+    }
+      field?.updateValueAndValidity();
+  });
 
-  this.fetchVehicles();
-}
+
+    this.fetchVehicles();
+  }
 
 
 fetchVehicles(): void {

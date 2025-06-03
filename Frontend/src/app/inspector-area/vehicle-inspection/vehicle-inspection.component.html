@@ -7,12 +7,12 @@
 
 <label>
   <input type="checkbox" formControlName="clean" />
-  רכב נקי
+  רכבים נקיים
 </label>
 
 <label>
   <input type="checkbox" formControlName="fuel_checked" />
-  נבדקה רמת דלק
+   נבדקה רמת דלק בכל הרכבים
 </label>
 
 <label>
@@ -22,6 +22,10 @@
 
 <label for="critical_issue">אירוע חריג (אם קיים):</label>
 <input id="critical_issue" type="text" formControlName="critical_issue" placeholder="..." />
+<div class="error-msg" *ngIf="inspectionForm.get('critical_issue')?.touched && inspectionForm.get('critical_issue')?.invalid">
+  יש למלא תיאור של האירוע החריג
+</div>
+
 
 
 
