@@ -9,7 +9,7 @@ class NotificationType(str, Enum):
     system = "system"
 
 class NotificationOut(BaseModel):
-    id: UUID
+    id: Optional[UUID]
     user_id: UUID
     notification_type: NotificationType
     title: str

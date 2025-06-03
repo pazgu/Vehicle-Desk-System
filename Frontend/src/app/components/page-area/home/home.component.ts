@@ -5,6 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { MyRidesService } from '../../../services/myrides.service';
 import { ActivatedRoute, Params } from '@angular/router';
 import { ToastService } from '../../../services/toast.service';
+import { SocketService } from '../../../services/socket.service';
 
 
 @Component({
@@ -16,7 +17,10 @@ import { ToastService } from '../../../services/toast.service';
 })
 export class HomeComponent implements OnInit {
   constructor(private router: Router, private rideService: MyRidesService,private route: ActivatedRoute,
-   private toastService: ToastService) {}
+   private toastService: ToastService,
+  private socketService: SocketService 
+  
+  ) {}
 
   currentPage = 1;
   loading: boolean = false;
@@ -45,6 +49,10 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     const storedOrders = localStorage.getItem('user_orders');
+     const userId = localStorage.getItem('employee_id');
+  if (userId) {
+    this.socketService.joinRoom(userId); // 💥 Join the user's socket room!
+  }
      this.route.queryParams.subscribe(params => {
       const idToHighlight = params['highlight'] || null;
       if (idToHighlight) {
@@ -58,6 +66,40 @@ export class HomeComponent implements OnInit {
     });
 
     this.fetchRides();
+
+    this.socketService.rideRequests$.subscribe((newRide) => {
+  if (newRide) {
+    console.log('🔁 New ride event received - refreshing rides...');
+    this.fetchRides();
+  }
+  
+});
+
+this.socketService.orderUpdated$.subscribe((updatedRide) => {
+  if (updatedRide) {
+    console.log('✏️ Ride update received in HomeComponent:', updatedRide);
+
+    const index = this.orders.findIndex(o => o.ride_id === updatedRide.id);
+    if (index !== -1) {
+      const newDate = formatDate(updatedRide.start_datetime, 'dd.MM.yyyy', 'en-US');
+      const newTime = formatDate(updatedRide.start_datetime, 'HH:mm', 'en-US');
+
+      this.orders[index] = {
+        ...this.orders[index],
+        date: newDate,
+        time: newTime,
+        status: updatedRide.status.toLowerCase(),
+        distance: updatedRide.estimated_distance_km,
+        start_datetime: updatedRide.start_datetime,
+        submitted_at: updatedRide.submitted_at
+      };
+
+      console.log(`✅ Ride ${updatedRide.id} updated in local state`);
+    }
+  }
+});
+
+
   }
    
   get pagedOrders() {
@@ -281,8 +323,59 @@ viewRide(order: any): void {
 goToArchivedOrders() {
   this.router.navigate(['/archived-orders']);
 }
+warningVisible = true;  // controls visibility
+exceededMaxRides(): boolean {
+  const maxRides = 6;
+  const userOrders = JSON.parse(localStorage.getItem('user_orders') || '[]');
+
+  const beginningOfMonth = new Date();
+  beginningOfMonth.setDate(1);
+  beginningOfMonth.setHours(0, 0, 0, 0);
+
+  const recentOrders = userOrders.filter((order: any) => {
+    const orderDate = this.parseDate(order.date);
+    return orderDate >= beginningOfMonth;
+  });
+
+  console.log('🗓️ Recent orders in the current month:', recentOrders);
+
+  return recentOrders.length >= maxRides;
+}
 
 
+// In your component class:
+hideWarning() {
+  this.warningVisible = false;
+}
 
+showWarning() {
+  this.warningVisible = true;
+}
+isPaidOrder(order: any): boolean {
+  const maxFreeRides = 6;
+  const userOrders = JSON.parse(localStorage.getItem('user_orders') || '[]');
+
+  const beginningOfMonth = new Date();
+  beginningOfMonth.setDate(1);
+  beginningOfMonth.setHours(0, 0, 0, 0);
+
+  const recentOrders = userOrders
+    .filter((o: any) => {
+      const orderDate = this.parseDate(o.date);
+      return orderDate >= beginningOfMonth;
+    })
+    .sort((a: any, b: any) => {
+      const dateA = this.parseDate(a.date);
+      const dateB = this.parseDate(b.date);
+      return dateA.getTime() - dateB.getTime();
+    });
+
+  const orderIndex = recentOrders.findIndex((o: any) => 
+    o.ride_id === order.ride_id || 
+    (o.date === order.date && o.time === order.time)
+  );
+
+  return orderIndex >= maxFreeRides;
+}
 
 }

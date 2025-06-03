@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RideService } from '../../services/ride.service';
 import { ToastService } from '../../services/toast.service';
+import { SocketService } from '../../services/socket.service';
 
 @Component({
   selector: 'app-ride-details',
@@ -19,7 +20,8 @@ export class RideDetailsComponent implements OnInit {
     private route: ActivatedRoute,
     private rideService: RideService,
     private toastService: ToastService,
-    private router: Router 
+    private router: Router,
+    private socketService: SocketService
   ) {}
 
   ngOnInit(): void {
@@ -38,6 +40,16 @@ export class RideDetailsComponent implements OnInit {
         this.toastService.show('שגיאה בטעינת פרטי הנסיעה', 'error');
       }
     });
+     // ✅ Socket: react to new ride request while on this page
+    this.socketService.rideRequests$.subscribe((rideData) => {
+      if (rideData) {
+        this.toastService.show('🚗 התקבלה הזמנת נסיעה חדשה', 'success');
+
+        const audio = new Audio('assets/sounds/notif.mp3');
+        audio.play();
+      }
+    });
+  
   }
 
   goBack(): void {

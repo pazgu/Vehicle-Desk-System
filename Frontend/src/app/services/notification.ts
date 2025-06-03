@@ -19,6 +19,8 @@ export class NotificationService {
   
   constructor(private http: HttpClient) {}
 
+  
+
   getNotifications(): Observable<MyNotification[]> {
     const user_id = localStorage.getItem('employee_id') || ''; // Ensure user_id is defined
     return this.http.get<MyNotification[]>(`${this.apiBase}/notifications/${user_id}`);

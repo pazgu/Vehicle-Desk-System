@@ -1,16 +1,15 @@
-/* You can add global styles to this file, and also import other style files */
 @import "primeicons/primeicons.css";
 
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Alef', sans-serif;
-  }
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Alef', sans-serif;
+}
 
 .custom-toast {
   position: fixed;
-  top: 80px; /* push below navbar */
+  top: 80px;
   right: 20px;
   padding: 1rem 1.5rem;
   border-radius: 8px;
@@ -18,13 +17,14 @@
   font-family: 'Alef', sans-serif;
   font-size: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  z-index: 99999; /* <-- bump this up! */
-  animation: slideIn 0.3s ease;
+  z-index: 99999;
+  animation: slideIn 0.3s ease, fadeOut 0.5s ease 2.5s;
   max-width: 300px;
-  opacity: 1; /* <-- ensure visibility */
-  pointer-events: none; /* <-- avoid blocking interactions */
+  opacity: 1;
+  pointer-events: none;
+  direction: rtl;
+  text-align: right;
 }
-
 
 .custom-toast.success {
   background-color: #38a169;
@@ -45,11 +45,17 @@
   }
 }
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
-
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Alef, sans-serif;
+}

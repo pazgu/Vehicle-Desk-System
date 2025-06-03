@@ -21,12 +21,18 @@
 </label>
 
 <label for="critical_issue">אירוע חריג (אם קיים):</label>
-<input type="text" formControlName="critical_issue" placeholder="כתוב כאן אם קרה משהו חשוב לדיווח..." />
+<input id="critical_issue" type="text" formControlName="critical_issue" placeholder="..." />
 
 
-<button type="submit" [disabled]="inspectionForm.invalid" class="cute-red-button">
+
+<button type="submit" class="cute-red-button" [disabled]="inspectionForm.invalid">
   שלח בדיקה
 </button>
+
+
+
+
+
   </form>
 
 

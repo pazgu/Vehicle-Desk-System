@@ -38,5 +38,8 @@ export class VehicleService {
 getTodayInspections(): Observable<any[]> {
   return this.http.get<any[]>(`${environment.apiUrl}/inspections/today`);
 }
+ getPendingCars(): Observable<string[]> {
+  return this.http.get<string[]>(`${environment.apiUrl}/orders/pending-cars`);
+}
 
 }

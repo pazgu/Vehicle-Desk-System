@@ -6,8 +6,13 @@ from src.routes.inspector_routes import router as inspector_route
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Request
 from src.utils.scheduler import start_scheduler
-
+from fastapi_socketio import SocketManager
+from .utils.socket_manager import connect
+import asyncio
+from socketio import ASGIApp
+from .utils.socket_manager import sio
 app = FastAPI()
+sio_app = ASGIApp(sio, other_asgi_app=app)
 
 print("🚀 FastAPI app starting with CORS enabled")
 
@@ -40,5 +45,13 @@ async def log_requests(request: Request, call_next):
     response = await call_next(request)
     print(f"⬅️ Response: {response.status_code}")
     return response
+
+
+@sio.on("join")
+async def join_room(sid, data):
+    room = data.get("room")
+    if room:
+        await sio.enter_room(sid, room)
+        print(f"👥 Socket {sid} joined room {room}")
 
 
