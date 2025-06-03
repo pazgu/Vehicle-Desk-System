@@ -10,10 +10,10 @@ from dotenv import load_dotenv
 
 from os import environ
 load_dotenv()
-SECRET_KEY = environ.get("JWT_SECRET")
-ACCESS_TOKEN_EXPIRE_MINUTES=environ.get("ACCESS_TOKEN_EXPIRE_MINUTES")
-ALGORITHM = environ.get("ALGORITHM")
-RESET_TOKEN_EXPIRE_MINUTES =environ.get("RESET_TOKEN_EXPIRE_MINUTES")
+SECRET_KEY = environ.get("JWT_SECRET", "hellogirl")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(environ.get("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
+RESET_TOKEN_EXPIRE_MINUTES = int(environ.get("RESET_TOKEN_EXPIRE_MINUTES", "30"))
+ALGORITHM = environ.get("ALGORITHM", "HS256")
 
 
 
