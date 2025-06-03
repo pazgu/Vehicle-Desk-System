@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query,Header
+from fastapi import APIRouter, Depends, HTTPException, Query,Header, status
 from uuid import UUID
 from typing import Optional , List
 from datetime import datetime
@@ -14,17 +14,17 @@ from src.services.admin_rides_service import (
     get_order_by_ride_id
 )
 from ..utils.database import get_db
-from src.models.user_model import User
-from src.models.user_model import UserRole
+from src.models.user_model import User , UserRole
 from src.models.vehicle_model import Vehicle
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
-from ..services.vehicle_service import vehicle_inspection_logic, get_available_vehicles_for_ride_by_id
 from ..schemas.vehicle_schema import VehicleOut , InUseVehicleOut , VehicleStatusUpdate
 from ..utils.auth import token_check
-from ..services.vehicle_service import get_vehicles_with_optional_status,update_vehicle_status,get_vehicle_by_id
-
-from ..services.vehicle_service import get_vehicles_with_optional_status ,update_vehicle_status,get_vehicle_by_id
+from ..services.vehicle_service import get_vehicles_with_optional_status,update_vehicle_status,get_vehicle_by_id, vehicle_inspection_logic, get_available_vehicles_for_ride_by_id
 from ..services.user_notification import send_admin_odometer_notification
+from datetime import date, datetime, timedelta
+from src.models.vehicle_inspection_model import VehicleInspection
+
+
 from src.schemas.vehicle_schema import VehicleOut, VehicleAvailabilityRequest
 from src.services.vehicle_service import get_available_vehicles_by_type_and_time
 
@@ -161,8 +161,6 @@ def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = De
     return vehicles
 
 
-
-
 @router.post("/notifications/admin", include_in_schema=True,   dependencies=[] )
 def send_admin_notification_simple_route(db: Session = Depends(get_db)):
     vehicle = db.query(Vehicle).first()  # Get any vehicle (you can adjust logic later if needed)
@@ -187,11 +185,16 @@ def send_admin_notification_simple_route(db: Session = Depends(get_db)):
 
 @router.get("/inspections/today", response_model=List[VehicleInspectionSchema])
 def get_today_inspections(db: Session = Depends(get_db)):
-    today = date.today()
+    today_start = datetime.combine(date.today(), datetime.min.time())
+    tomorrow_start = today_start + timedelta(days=1)
+
     inspections = db.query(VehicleInspection).filter(
-        VehicleInspection.inspection_date == today
+        VehicleInspection.inspection_date >= today_start,
+        VehicleInspection.inspection_date < tomorrow_start
     ).all()
+
     return inspections
+
 
 
 @router.post("/vehicles/available", response_model=List[VehicleOut])

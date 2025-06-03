@@ -1,11 +1,10 @@
 import traceback
-from fastapi import APIRouter, HTTPException, Depends , Query
+from fastapi import APIRouter, HTTPException, Depends , Query,Form
 from sqlalchemy.orm import Session
 from ..schemas.register_schema import UserCreate
 from ..schemas.login_schema import UserLogin
 from ..schemas.new_ride_schema import RideCreate
 from ..services import register_service
-from ..services.auth_service import create_access_token
 from ..services import login_service
 from uuid import UUID
 from ..services.new_ride_service import create_ride 
@@ -20,10 +19,10 @@ import logging
 from ..utils.database import get_db
 from ..services.register_service import get_departments 
 from ..schemas.notification_schema import NotificationOut
-from ..services.user_notification import get_user_notifications , send_notification
+from ..services.user_notification import get_user_notifications ,send_notification_async
 from fastapi import status as fastapi_status
 from fastapi.security import OAuth2PasswordBearer
-from ..utils.auth import role_check,identity_check,get_current_user
+from ..utils.auth import role_check,identity_check,get_current_user,hash_password
 from src.schemas.ride_status_enum import UpdateRideStatusRequest
 from ..schemas.order_card_item import OrderCardItem
 from ..models.ride_model import Ride
@@ -34,7 +33,11 @@ import traceback
 from ..models.user_model import User
 from ..services.user_form import process_completion_form
 from ..schemas.form_schema import CompletionFormData
-
+from ..utils.socket_manager import sio  # ✅ import this
+from ..utils.socket_utils import convert_decimal
+from ..utils.email_utils import send_email
+from ..services.auth_service import create_reset_token,verify_reset_token
+from ..schemas.reset_password import ResetPasswordInput,ForgotPasswordRequest
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 # Set up logging
@@ -148,7 +151,7 @@ def get_user_2specific_order():
     return {"message": "Not implemented yet"}
 
 @router.post("/api/orders/{user_id}", response_model=RideCreate, status_code=fastapi_status.HTTP_201_CREATED)
-def create_order(user_id: UUID, ride_request: RideCreate, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
+async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
     role_check(allowed_roles=["employee", "admin"], token=token)
     identity_check(user_id=str(user_id), token=token)
 
@@ -157,25 +160,56 @@ def create_order(user_id: UUID, ride_request: RideCreate, db: Session = Depends(
     try:
         new_ride = create_ride(db, user_id, ride_request)
 
+        # ✅ Emit real-time event
+        await sio.emit("new_ride_request", {
+            "ride_id": str(new_ride.id),
+            "user_id": str(user_id),
+            "status": new_ride.status,
+            "destination": new_ride.destination
+        })
+
         supervisor_id = get_supervisor_id(user_id, db)
         employee_name = get_user_name(db, new_ride.user_id)
 
         if supervisor_id:
-            create_system_notification(
+           supervisor_notification= create_system_notification(
                 user_id=supervisor_id,
                 title="בקשת נסיעה חדשה",
-                message=f"שלח בקשה חדשה ${employee_name} העובד ",
+                message=f"שלח בקשה חדשה {employee_name} העובד",
                 order_id=new_ride.id
             )
+            # 🔥 Emit to supervisor
+           await sio.emit("new_notification", {
+                "id": str(supervisor_notification.id),
+                "user_id": str(supervisor_notification.user_id),
+                "title": supervisor_notification.title,
+                "message": supervisor_notification.message,
+                "notification_type": supervisor_notification.notification_type.value,
+                "sent_at": supervisor_notification.sent_at.isoformat(),
+                "order_id": str(supervisor_notification.order_id) if supervisor_notification.order_id else None
+            }, room=str(supervisor_notification.user_id))
         else:
             logger.warning("No supervisor found — skipping supervisor notification.")
 
-        create_system_notification(
+
+        confirmation = create_system_notification(
             user_id=new_ride.user_id,
             title="שליחת בקשה",
             message="בקשתך נשלחה בהצלחה",
             order_id=new_ride.id
         )
+
+        # 🔥 Emit the notification over Socket.IO to the user's room
+        await sio.emit("new_notification", {
+            "id": str(confirmation.id),
+            "user_id": str(confirmation.user_id),
+            "title": confirmation.title,
+            "message": confirmation.message,
+            "notification_type": confirmation.notification_type.value,
+            "sent_at": confirmation.sent_at.isoformat(),
+            "order_id": str(confirmation.order_id) if confirmation.order_id else None
+        }, room=str(confirmation.user_id))
+
 
         return new_ride
 
@@ -186,38 +220,70 @@ def create_order(user_id: UUID, ride_request: RideCreate, db: Session = Depends(
             detail=f"Failed to create order: {str(e)}"
         )
 
-
-
 @router.get("/api/departments")
 def get_departments_route():
     return get_departments()
 
-
 @router.patch("/api/orders/{order_id}")
-def patch_order(order_id: UUID, patch_data: OrderCardItem, db: Session = Depends(get_db)):
-    order = patch_order_in_db(order_id, patch_data, db)
-    return {"message": "ההזמנה עודכנה בהצלחה", "order": order}
+async def patch_order(order_id: UUID, patch_data: OrderCardItem, db: Session = Depends(get_db)):
+    # Update the order
+    updated_order = patch_order_in_db(order_id, patch_data, db)
+    
+    # Emit the updated order to the user's room
+    order_data = {
+    "id": str(updated_order.id),
+    "user_id": str(updated_order.user_id),
+    "vehicle_id": str(updated_order.vehicle_id) if updated_order.vehicle_id else None,
+    "ride_type": updated_order.ride_type,
+    "start_datetime": updated_order.start_datetime.isoformat(),
+    "end_datetime": updated_order.end_datetime.isoformat(),
+    "start_location": updated_order.start_location,
+    "stop": updated_order.stop,
+    "destination": updated_order.destination,
+    "estimated_distance_km": updated_order.estimated_distance_km,
+    "actual_distance_km": updated_order.actual_distance_km,
+    "status": updated_order.status.value,
+    "license_check_passed": updated_order.license_check_passed,
+    "submitted_at": updated_order.submitted_at.isoformat(),
+    "emergency_event": updated_order.emergency_event,
+}
 
+    await sio.emit("order_updated", convert_decimal(order_data), room=str(updated_order.user_id))
+    return {
+        "message": "ההזמנה עודכנה בהצלחה",
+        "order": updated_order
+    }
 
-#send a notification to a user
 @router.post("/api/notification/{user_id}")
-def send_notification_route(
+async def send_notification_route(
     user_id: UUID,
     notification_data: NotificationOut,
     db: Session = Depends(get_db),
     token: str = Depends(oauth2_scheme)
 ):
     role_check(["admin", "employee"], token)  # Adjust roles as needed
-    identity_check(str(user_id), token)       # Optional: can remove if not needed
+    identity_check(str(user_id), token)       # Optional
 
     try:
-        return send_notification(
+        notification = await send_notification_async(
             db,
             user_id,
             notification_data.title,
             notification_data.message,
             notification_data.notification_type
         )
+
+        # Emit the notification to the user's Socket.IO room
+        await sio.emit("notification", {
+            "id": str(notification.id),
+            "title": notification.title,
+            "message": notification.message,
+            "notification_type": notification.notification_type.value,  # if enum
+            "sent_at": notification.sent_at.isoformat()
+        }, room=str(user_id))
+
+        return {"message": "Notification sent successfully", "notification": notification}
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to send notification: {str(e)}")
 
@@ -226,10 +292,6 @@ def send_notification_route(
 def get_notifications_for_user(user_id: UUID, db: Session = Depends(get_db)):
     return get_user_notifications(db, user_id)
 
-@router.get("/api/notification/{notification_id}/{user_id}")
-def get_notification_route():
-    # Implementation pending
-    return {"message": "Not implemented yet"}
 
 @router.delete("/api/orders/{user_id}")
 def delete_order():
@@ -261,3 +323,46 @@ def get_archived_orders_route(
 
     return get_archived_rides(user_id, db)
 
+@router.get("/api/orders/pending-cars", response_model=List[str])
+def get_pending_car_orders(db: Session = Depends(get_db)):
+    # Fetch only vehicle_ids of pending rides
+    vehicle_ids = db.query(Ride.vehicle_id).filter(Ride.status == "pending").distinct().all()
+    return [str(v[0]) for v in vehicle_ids if v[0] is not None]
+
+
+
+@router.post("/api/forgot-password")
+def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    email = request.email
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    token = create_reset_token(str(user.employee_id))
+    reset_link = f"http://localhost:8000/reset-password?token={token}"
+    send_email(
+        subject="Password Reset for Vehicle Desk System",
+        body=f"Hi, click the following link to reset your password:\n\n{reset_link}\n\nIf you didn’t request this, ignore this email.",
+        recipients=[user.email]
+    )
+    return {"message": "Reset email sent"}
+
+
+@router.post("/api/reset-password")
+def reset_password(
+    data: ResetPasswordInput,
+    db: Session = Depends(get_db)
+):
+    try:
+        user_id: UUID = verify_reset_token(data.token)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Invalid or expired reset token")
+
+    user = db.query(User).filter(User.employee_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user.password = hash_password(data.new_password)
+    db.commit()
+
+    return {"message": "Password reset successfully"}

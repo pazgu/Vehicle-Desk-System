@@ -7,6 +7,7 @@ from ..schemas.form_schema import CompletionFormData
 from fastapi import HTTPException, status
 from datetime import datetime, timezone
 from .user_notification import create_system_notification_with_db
+from .monthly_trip_counts import increment_completed_trip_stat
 
 def process_completion_form(db: Session, user: User, form_data: CompletionFormData):
     print("this is the current user:",user.username)
@@ -27,6 +28,9 @@ def process_completion_form(db: Session, user: User, form_data: CompletionFormDa
     print("completed?",form_data.completed)
     if form_data.completed:
         ride.status = RideStatus.completed
+
+        # Increment completed trips count for the employee immediately.
+        increment_completed_trip_stat(db, ride.user_id, ride.start_datetime)
 
         # 4. Update vehicle status
         vehicle = db.query(Vehicle).filter_by(id=ride.vehicle_id).first()

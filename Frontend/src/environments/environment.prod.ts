@@ -7,6 +7,10 @@ export const environment = {
     allOrdersUrl: 'http://localhost:8000/api/all-orders',
     futureOrdersUrl: 'http://localhost:8000/api/future-orders',
     pastOrdersUrl: 'http://localhost:8000/api/past-orders',
+    socketUrl: 'http://localhost:8000',
+    forgotPassUrl:'http://localhost:8000/api/forgot-password',
+    resertPassUrl:'http://localhost:8000/api/reset-password'
+
 
   };
   
