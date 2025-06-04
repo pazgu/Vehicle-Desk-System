@@ -23,6 +23,7 @@ from ..services.vehicle_service import get_vehicles_with_optional_status,update_
 from ..services.user_notification import send_admin_odometer_notification
 from datetime import date, datetime, timedelta
 from src.models.vehicle_inspection_model import VehicleInspection
+from ..services.monthly_trip_counts import archive_last_month_stats
 
 
 from ..services.monthly_trip_counts import update_monthly_trip_counts

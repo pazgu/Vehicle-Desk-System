@@ -8,6 +8,11 @@
   direction: rtl;
   font-family: sans-serif;
   min-height: 420px;
+
+   /* ✅ Scroll settings */
+  max-height: 500px; /* or whatever fits your page nicely */
+  overflow-y: auto;
+  overflow-x: hidden;
 }
   
 .page-container {

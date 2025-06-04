@@ -6,57 +6,42 @@ from ..models.monthly_employee_trip_stats_model import MonthlyEmployeeTripStats
 from src.models.user_model import User 
 from collections import defaultdict
 
-def update_monthly_trip_counts(db: Session):
-    results = db.query(
-        Ride.user_id.label("employee_id"),
-        extract('year', Ride.start_datetime).label('year'),
-        extract('month', Ride.start_datetime).label('month'),
-        Ride.status,
-        func.count().label('trip_count')
-    ).filter(
-        Ride.status.in_(['approved', 'completed']),
-        Ride.is_archive == False
-    ).group_by(
-        Ride.user_id,
-        'year',
-        'month',
-        Ride.status
-    ).all()
+def increment_completed_trip_stat(db: Session, user_id: int, ride_start_datetime: datetime):
+    year = ride_start_datetime.year
+    month = ride_start_datetime.month
+    month_year_date = date(year, month, 1)
 
-    stats = defaultdict(lambda: {'approved': 0, 'completed': 0})
+    stat = db.query(MonthlyEmployeeTripStats).filter_by(
+        employee_id=user_id,
+        month_year=month_year_date
+    ).first()
 
-    for row in results:
-        key = (row.employee_id, int(row.year), int(row.month))
-        stats[key][row.status] = row.trip_count
+    if stat:
+        stat.completed_trip_count += 1
+        stat.last_updated = datetime.utcnow()
+    else:
+        stat = MonthlyEmployeeTripStats(
+            employee_id=user_id,
+            month_year=month_year_date,
+            approved_trip_count=0,
+            completed_trip_count=1,
+            last_updated=datetime.utcnow()
+        )
+        db.add(stat)
 
-    for (employee_id, year, month), counts in stats.items():
-        user_exists = db.query(User).filter(User.employee_id == employee_id).first()
-        if not user_exists:
-            print(f"User {employee_id} not found in users table. Skipping.")
-            continue
+def archive_last_month_stats(db: Session):
 
-        month_year_date = date(year, month, 1) 
+    today = date.today()
+    first_day_of_current_month = date(today.year, today.month, 1)
 
-        stat = db.query(MonthlyEmployeeTripStats).filter_by(
-            employee_id=employee_id,
-            month_year=month_year_date
-        ).first()
-
-        if stat:
-            stat.approved_trip_count = counts['approved']
-            stat.completed_trip_count = counts['completed']
-            stat.last_updated = datetime.utcnow()
-        else:
-            stat = MonthlyEmployeeTripStats(
-                employee_id=employee_id,
-                month_year=month_year_date,
-                approved_trip_count=counts['approved'],
-                completed_trip_count=counts['completed'],
-                last_updated=datetime.utcnow()
-            )
-            db.add(stat)
+    db.query(MonthlyEmployeeTripStats).filter(
+        MonthlyEmployeeTripStats.month_year < first_day_of_current_month,
+        MonthlyEmployeeTripStats.is_archived == False
+    ).update(
+        {MonthlyEmployeeTripStats.is_archived: True},
+        synchronize_session=False
+    )
 
     db.commit()
-
 
 
