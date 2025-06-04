@@ -341,10 +341,23 @@ def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db
     token = create_reset_token(str(user.employee_id))
     reset_link = f"http://localhost:8000/reset-password?token={token}"
     send_email(
-        subject="Password Reset for Vehicle Desk System",
-        body=f"Hi, click the following link to reset your password:\n\n{reset_link}\n\nIf you didn’t request this, ignore this email.",
-        recipients=[user.email]
-    )
+    subject="🚗 Reset Your Password - Vehicle Desk System",
+    body=f"""
+Hi {user.first_name},
+
+We received a request to reset your password for your Vehicle Desk System account.
+
+To reset your password, click the link below:
+{reset_link}
+
+This link will expire in 30 minutes. If you didn’t request this, you can safely ignore it.
+
+Thanks,  
+Vehicle Desk Support Team  
+    """,
+    recipients=[user.email]
+)
+
     return {"message": "Reset email sent"}
 
 

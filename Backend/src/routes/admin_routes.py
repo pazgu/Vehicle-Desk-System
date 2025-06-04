@@ -23,10 +23,8 @@ from ..services.vehicle_service import get_vehicles_with_optional_status,update_
 from ..services.user_notification import send_admin_odometer_notification
 from datetime import date, datetime, timedelta
 from src.models.vehicle_inspection_model import VehicleInspection
+from ..services.monthly_trip_counts import archive_last_month_stats
 
-
-from src.schemas.vehicle_schema import VehicleOut, VehicleAvailabilityRequest
-from src.services.vehicle_service import get_available_vehicles_by_type_and_time
 
 router = APIRouter()
 
@@ -195,17 +193,8 @@ def get_today_inspections(db: Session = Depends(get_db)):
 
     return inspections
 
-
-
-@router.post("/vehicles/available", response_model=List[VehicleOut])
-def available_vehicles(
-    request: VehicleAvailabilityRequest,
-    db: Session = Depends(get_db),
-):
-    vehicles = get_available_vehicles_by_type_and_time(
-        db=db,
-        vehicle_type=request.vehicle_type,
-        start_datetime=request.start_datetime,
-        end_datetime=request.end_datetime,
-    )
-    return vehicles
+# This function will be called later by another function with a GET route.
+@router.post("/stats/archive-last-month")
+def archive_last_month_endpoint(db: Session = Depends(get_db)):
+    archive_last_month_stats(db)
+    return {"detail": "Archiving completed successfully"}

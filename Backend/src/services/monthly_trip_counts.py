@@ -29,6 +29,19 @@ def increment_completed_trip_stat(db: Session, user_id: int, ride_start_datetime
         )
         db.add(stat)
 
+def archive_last_month_stats(db: Session):
 
+    today = date.today()
+    first_day_of_current_month = date(today.year, today.month, 1)
+
+    db.query(MonthlyEmployeeTripStats).filter(
+        MonthlyEmployeeTripStats.month_year < first_day_of_current_month,
+        MonthlyEmployeeTripStats.is_archived == False
+    ).update(
+        {MonthlyEmployeeTripStats.is_archived: True},
+        synchronize_session=False
+    )
+
+    db.commit()
 
 
