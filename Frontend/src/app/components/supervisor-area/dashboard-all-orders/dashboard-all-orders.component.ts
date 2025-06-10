@@ -41,7 +41,6 @@ export class DashboardAllOrdersComponent implements OnInit {
   constructor(private router: Router, private orderService: OrderService,  private socketService: SocketService ) {}
 
   ngOnInit(): void {
-    document.body.style.overflow = 'hidden';
     const departmentId = localStorage.getItem('department_id');
     if (departmentId) {
       this.loadOrders(departmentId); 
@@ -96,6 +95,9 @@ export class DashboardAllOrdersComponent implements OnInit {
         case 'נדחה':
           filtered = filtered.filter(order => order.status === 'rejected');
           break;
+        case 'בוצע':
+          filtered = filtered.filter(order => order.status === 'completed');
+          break;
         default:
           break;
       }
@@ -134,6 +136,8 @@ export class DashboardAllOrdersComponent implements OnInit {
         return 'row-pending';
       case 'rejected':
         return 'row-rejected';
+      case 'completed':
+        return 'row-completed';
       default:
         return '';
     }
@@ -154,6 +158,8 @@ export class DashboardAllOrdersComponent implements OnInit {
         return 'ממתין לאישור';
       case 'rejected':
         return 'נדחה';
+      case 'completed':
+        return 'בוצע';
       default:
         return status;
     }
@@ -167,6 +173,8 @@ export class DashboardAllOrdersComponent implements OnInit {
         return 'status-pending';
       case 'rejected':
         return 'status-rejected';
+      case 'completed':
+        return 'status-completed';
       default:
         return '';
     }
