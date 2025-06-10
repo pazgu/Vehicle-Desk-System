@@ -14,6 +14,27 @@
           [(ngModel)]="searchTerm" (input)="filterLogs()" />
       </div>
 
+      <div class="status-indicators">
+        <p style="margin-bottom: 0.75rem; font-weight: 600;">מקרא צבעים</p>
+        <div class="status-box">
+          <div class="status-item">
+            <span class="status-indicator approved"></span> מאושר
+          </div>
+          <div class="status-item">
+            <span class="status-indicator frozen"></span> מוקפא
+          </div>
+          <div class="status-item">
+            <span class="status-indicator pending"></span> בהמתנה
+          </div>
+          <div class="status-item">
+            <span class="status-indicator rejected"></span> נדחה
+          </div>
+          <div class="status-item">
+            <span class="status-indicator emergency"></span> אירוע חירום
+        </div>
+        </div>
+        </div>
+
       <div class="table-container" *ngIf="!selectedLog">
         <table class="audit-table">
           <thead class="audit-thead">

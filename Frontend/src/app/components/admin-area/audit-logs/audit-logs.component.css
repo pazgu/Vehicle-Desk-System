@@ -521,3 +521,63 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.status-indicators {
+  text-align: right;
+  direction: rtl;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 12px 16px;
+  max-width: fit-content;
+  background-color: rgb(249, 245, 245);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.5rem;
+  margin-left: auto; /* Pushes it to the left in RTL layout */
+}
+
+.status-box {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.status-item {
+  background-color: rgb(245, 241, 241);
+  padding: 6px 10px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.status-indicator {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-inline-start: 4px;
+  vertical-align: middle;
+  border-radius: 50%;
+}
+
+.status-indicator.approved {
+  background-color:#dcf1e1;
+  border: #329c4b 1.6px solid; /* Green border */
+}
+.status-indicator.pending {
+  background-color: #f5e2a8; /* Yellow */
+  border: #ab8c31 1.6px solid; /* Yellow border */
+}
+.status-indicator.rejected {
+  background-color: #f1b5b5; /* Red */
+  border: #c16a73 1.6px solid; /* Red border */
+}
+.status-indicator.emergency {
+  background-color: #f9c492; /* Gray */
+  border: #cc813c 1.6px solid; /* Gray border */
+}
+.status-indicator.frozen {
+  background-color: #e2f0f8; /* Blue */
+  border: #2aacc0 1.6px solid; /* Blue border */
+}
