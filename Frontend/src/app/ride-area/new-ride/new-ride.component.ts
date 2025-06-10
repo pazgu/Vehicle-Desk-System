@@ -17,6 +17,15 @@ import { CommonModule } from '@angular/common';
 import { VehicleService } from '../../services/vehicle.service';
 import { SocketService } from '../../services/socket.service';
 
+// Define the interface for pending vehicle
+interface PendingVehicle {
+  vehicle_id: string;
+  date: string;
+  period: string;
+  start_time?: string;
+  end_time?: string;
+}
+
 @Component({
   selector: 'app-new-ride',
   standalone: true,
@@ -51,8 +60,8 @@ export class NewRideComponent implements OnInit {
 
   availableCars: typeof this.allCars = [];
 
-  // Store pending vehicle IDs in a Set for fast lookup
-  pendingVehicleIds = new Set<string>();
+  // Fix: Use proper interface and initialization
+  pendingVehicles: PendingVehicle[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -88,6 +97,24 @@ export class NewRideComponent implements OnInit {
       this.onPeriodChange(value);
     });
 
+    // Add subscription to form changes to trigger re-evaluation of pending vehicles
+    this.rideForm.get('ride_date')?.valueChanges.subscribe(() => {
+      this.updateAvailableCars();
+    });
+
+    this.rideForm.get('ride_period')?.valueChanges.subscribe(() => {
+      this.updateAvailableCars();
+    });
+
+    // Add time change subscriptions for real-time validation
+    this.rideForm.get('start_time')?.valueChanges.subscribe(() => {
+      this.updateAvailableCars();
+    });
+
+    this.rideForm.get('end_time')?.valueChanges.subscribe(() => {
+      this.updateAvailableCars();
+    });
+
     // Load all vehicles and filter for available ones
     this.vehicleService.getAllVehicles().subscribe({
       next: (vehicles) => {
@@ -105,31 +132,65 @@ export class NewRideComponent implements OnInit {
             vehicle_model: v.vehicle_model || 'רכב ללא דגם',
             freeze_reason: v.freeze_reason ?? null
           }));
+        
+        this.updateAvailableCars();
       },
       error: () => {
         this.toastService.show('שגיאה בטעינת רכבים זמינים', 'error');
       }
     });
 
-    // Load pending cars and save their IDs in a Set
-  // Load pending cars and save their IDs in a Set
-this.vehicleService.getPendingCars().subscribe({
-  next: (pendingVehicleIds: string[]) => {
-    console.log('Fetched pending vehicle IDs:', pendingVehicleIds);
-    this.pendingVehicleIds = new Set(pendingVehicleIds.map(id => id.trim())); // trim just in case
-    console.log('Pending vehicle IDs set:', Array.from(this.pendingVehicleIds));
-  },
-  error: () => {
-    this.toastService.show('שגיאה בטעינת רכבים ממתינים', 'error');
+    // Load pending cars with proper error handling and type safety
+    this.loadPendingVehicles();
   }
-});
 
+  private loadPendingVehicles(): void {
+    this.vehicleService.getPendingCars().subscribe({
+      next: (response: any) => {
+        console.log('Raw API response:', response);
+        
+        // Handle different possible response formats
+        let pendingData: any[] = [];
+        
+        if (Array.isArray(response)) {
+          pendingData = response;
+        } else if (response && Array.isArray(response.data)) {
+          pendingData = response.data;
+        } else if (response && Array.isArray(response.pending_vehicles)) {
+          pendingData = response.pending_vehicles;
+        }
 
+        // Map and validate the data
+        this.pendingVehicles = pendingData
+          .filter(item => item && typeof item === 'object')
+          .map(item => ({
+            vehicle_id: String(item.vehicle_id || item.vehicleId || item.car_id || ''),
+            date: String(item.date || item.ride_date || ''),
+            period: String(item.period || item.ride_period || ''),
+            start_time: item.start_time || item.startTime || undefined,
+            end_time: item.end_time || item.endTime || undefined
+          }))
+          .filter(item => item.vehicle_id && item.date && item.period);
+
+        console.log('Processed pending vehicles:', this.pendingVehicles);
+        this.updateAvailableCars();
+      },
+      error: (error) => {
+        console.error('Error loading pending vehicles:', error);
+        this.toastService.show('שגיאה בטעינת רכבים ממתינים', 'error');
+      }
+    });
+  }
+
+  private updateAvailableCars(): void {
+    const selectedType = this.rideForm.get('vehicle_type')?.value;
+    if (selectedType) {
+      this.availableCars = this.allCars.filter(car => car.type === selectedType);
+    }
   }
 
   onRideTypeChange() {
-    const selectedType = this.rideForm.value.vehicle_type;
-    this.availableCars = this.allCars.filter(car => car.type === selectedType);
+    this.updateAvailableCars();
     this.rideForm.get('car')?.setValue('');
 
     if (this.availableCars.length === 0) {
@@ -162,6 +223,115 @@ this.vehicleService.getPendingCars().subscribe({
     this.estimated_distance_with_buffer = +(distance * 1.1).toFixed(2);
   }
 
+  isPendingVehicle(vehicle_id: string): boolean {
+    const rideDate = this.rideForm.get('ride_date')?.value;
+    const ridePeriod = this.rideForm.get('ride_period')?.value;
+    const startTime = this.rideForm.get('start_time')?.value;
+    const endTime = this.rideForm.get('end_time')?.value;
+
+    console.log('Checking pending for:', { vehicle_id, rideDate, ridePeriod, startTime, endTime });
+    console.log('Current pending vehicles:', this.pendingVehicles);
+
+    if (!rideDate || !ridePeriod || !vehicle_id) {
+      return false;
+    }
+
+    // Normalize date format (ensure consistent format)
+    const normalizedRideDate = this.normalizeDateString(rideDate);
+
+    const isPending = this.pendingVehicles.some(pv => {
+      const normalizedPendingDate = this.normalizeDateString(pv.date);
+      
+      // First check if vehicle, date, and period match
+      const basicMatch = pv.vehicle_id === vehicle_id &&
+                        normalizedPendingDate === normalizedRideDate &&
+                        pv.period === ridePeriod;
+      
+      if (!basicMatch) {
+        return false;
+      }
+
+      // If it's a night ride, we don't need time comparison (full night booking)
+      if (ridePeriod === 'night') {
+        console.log('Night ride - blocking vehicle for entire night:', pv);
+        return true;
+      }
+
+      // For morning rides, check time overlap if times are available
+      if (ridePeriod === 'morning' && startTime && endTime && pv.start_time && pv.end_time) {
+        const hasTimeOverlap = this.checkTimeOverlap(
+          startTime, endTime,
+          pv.start_time, pv.end_time
+        );
+        
+        if (hasTimeOverlap) {
+          console.log('Time overlap detected:', {
+            requested: { start: startTime, end: endTime },
+            pending: { start: pv.start_time, end: pv.end_time }
+          });
+        }
+        
+        return hasTimeOverlap;
+      }
+
+      // If we don't have time data for comparison, block the entire day for safety
+      console.log('No time data available - blocking entire day for safety:', pv);
+      return true;
+    });
+
+    console.log('Is pending result:', isPending);
+    return isPending;
+  }
+
+  private checkTimeOverlap(start1: string, end1: string, start2: string, end2: string): boolean {
+    // Convert time strings to minutes for easier comparison
+    const start1Minutes = this.timeToMinutes(start1);
+    const end1Minutes = this.timeToMinutes(end1);
+    const start2Minutes = this.timeToMinutes(start2);
+    const end2Minutes = this.timeToMinutes(end2);
+
+    // Handle cases where end time is next day (crosses midnight)
+    const end1Adjusted = end1Minutes < start1Minutes ? end1Minutes + 1440 : end1Minutes;
+    const end2Adjusted = end2Minutes < start2Minutes ? end2Minutes + 1440 : end2Minutes;
+
+    // Check for overlap: two time ranges overlap if start1 < end2 and start2 < end1
+    const overlap = start1Minutes < end2Adjusted && start2Minutes < end1Adjusted;
+    
+    console.log('Time overlap check:', {
+      range1: { start: start1, end: end1, startMin: start1Minutes, endMin: end1Adjusted },
+      range2: { start: start2, end: end2, startMin: start2Minutes, endMin: end2Adjusted },
+      overlap
+    });
+
+    return overlap;
+  }
+
+  private timeToMinutes(timeStr: string): number {
+    if (!timeStr || typeof timeStr !== 'string') {
+      return 0;
+    }
+    
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    return (hours * 60) + (minutes || 0);
+  }
+
+  private normalizeDateString(dateStr: string): string {
+    if (!dateStr) return '';
+    
+    // Handle different date formats
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) {
+        return dateStr; // Return original if invalid
+      }
+      // Return in YYYY-MM-DD format
+      return date.toISOString().split('T')[0];
+    } catch (error) {
+      console.warn('Date normalization failed for:', dateStr);
+      return dateStr;
+    }
+  }
+
   calculateMinDate(daysAhead: number): string {
     const date = new Date();
     date.setDate(date.getDate() + daysAhead);
@@ -187,17 +357,6 @@ this.vehicleService.getPendingCars().subscribe({
       return selectedYear >= minYear && selectedYear <= maxYear ? null : { invalidYear: true };
     };
   }
-
-  // The function you requested: returns true if the vehicle is pending, else false
- isPendingVehicle(vehicle_id: string): boolean {
-  const isPending = this.pendingVehicleIds.has(vehicle_id);
-  console.log(`Checking if carId ${vehicle_id} is pending: ${isPending}`);
-  return isPending;
-}
-
-
-
-
 
   submit(): void {
     if (this.rideForm.invalid) {

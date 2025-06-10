@@ -39,6 +39,7 @@ from ..utils.email_utils import send_email
 from ..services.auth_service import create_reset_token,verify_reset_token
 from ..schemas.reset_password import ResetPasswordInput,ForgotPasswordRequest
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+from ..models.ride_model import PendingRideSchema
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -313,12 +314,27 @@ def get_archived_orders_route(
 
     return get_archived_rides(user_id, db)
 
-@router.get("/api/orders/pending-cars", response_model=List[str])
+@router.get("/api/orders/pending-cars", response_model=List[PendingRideSchema])
 def get_pending_car_orders(db: Session = Depends(get_db)):
-    # Fetch only vehicle_ids of pending rides
-    vehicle_ids = db.query(Ride.vehicle_id).filter(Ride.status == "pending").distinct().all()
-    return [str(v[0]) for v in vehicle_ids if v[0] is not None]
+    pending_rides = (
+        db.query(Ride)
+        .filter(Ride.status == "pending")
+        .all()
+    )
 
+    result = []
+    for ride in pending_rides:
+        ride_period = "night" if ride.start_datetime.hour >= 18 else "morning"
+        result.append({
+            "vehicle_id": ride.vehicle_id,
+            "ride_period": ride_period,
+            "ride_date": ride.start_datetime.date().isoformat(),
+            "ride_date_night_end": ride.end_datetime.date().isoformat() if ride_period == "night" else None,
+            "start_time": ride.start_datetime.time().strftime("%H:%M"),
+            "end_time": ride.end_datetime.time().strftime("%H:%M"),
+        })
+
+    return result
 
 
 @router.post("/api/forgot-password")

@@ -81,9 +81,11 @@
       <option value="" disabled selected>בחר רכב</option>
       <option *ngFor="let car of availableCars"
         [value]="car.id"
-        [disabled]="isPendingVehicle(car.id)">
+        [disabled]="isPendingVehicle(car.id)"
+        [title]="isPendingVehicle(car.id) ? 'הרכב זה ממתין לעיבוד לתאריך/תקופה שנבחרו' : ''">
   {{ car.vehicle_model }}
 </option>
+
 
     </select>
     <small *ngIf="f.car.touched && f.car.errors?.['required']" class="distance-info">
