@@ -223,65 +223,76 @@ export class NewRideComponent implements OnInit {
     this.estimated_distance_with_buffer = +(distance * 1.1).toFixed(2);
   }
 
-  isPendingVehicle(vehicle_id: string): boolean {
-    const rideDate = this.rideForm.get('ride_date')?.value;
-    const ridePeriod = this.rideForm.get('ride_period')?.value;
-    const startTime = this.rideForm.get('start_time')?.value;
-    const endTime = this.rideForm.get('end_time')?.value;
+isPendingVehicle(vehicle_id: string): boolean {
+  const rideDate = this.rideForm.get('ride_date')?.value;
+  const ridePeriod = this.rideForm.get('ride_period')?.value;
+  const startTime = this.rideForm.get('start_time')?.value;
+  const endTime = this.rideForm.get('end_time')?.value;
 
-    console.log('Checking pending for:', { vehicle_id, rideDate, ridePeriod, startTime, endTime });
-    console.log('Current pending vehicles:', this.pendingVehicles);
+  console.log('Checking pending for:', { vehicle_id, rideDate, ridePeriod, startTime, endTime });
+  console.log('Current pending vehicles:', this.pendingVehicles);
 
-    if (!rideDate || !ridePeriod || !vehicle_id) {
+  if (!rideDate || !ridePeriod || !vehicle_id || !startTime || !endTime) {
+    return false;
+  }
+
+  // Normalize date format (ensure consistent format)
+  const normalizedRideDate = this.normalizeDateString(rideDate);
+
+  const isPending = this.pendingVehicles.some(pv => {
+    const normalizedPendingDate = this.normalizeDateString(pv.date);
+    
+    // First check if vehicle and date match
+    const basicMatch = pv.vehicle_id === vehicle_id && 
+                      normalizedPendingDate === normalizedRideDate;
+    
+    if (!basicMatch) {
       return false;
     }
 
-    // Normalize date format (ensure consistent format)
-    const normalizedRideDate = this.normalizeDateString(rideDate);
-
-    const isPending = this.pendingVehicles.some(pv => {
-      const normalizedPendingDate = this.normalizeDateString(pv.date);
-      
-      // First check if vehicle, date, and period match
-      const basicMatch = pv.vehicle_id === vehicle_id &&
-                        normalizedPendingDate === normalizedRideDate &&
-                        pv.period === ridePeriod;
-      
-      if (!basicMatch) {
-        return false;
-      }
-
-      // If it's a night ride, we don't need time comparison (full night booking)
-      if (ridePeriod === 'night') {
-        console.log('Night ride - blocking vehicle for entire night:', pv);
-        return true;
-      }
-
-      // For morning rides, check time overlap if times are available
-      if (ridePeriod === 'morning' && startTime && endTime && pv.start_time && pv.end_time) {
-        const hasTimeOverlap = this.checkTimeOverlap(
-          startTime, endTime,
-          pv.start_time, pv.end_time
-        );
-        
-        if (hasTimeOverlap) {
-          console.log('Time overlap detected:', {
-            requested: { start: startTime, end: endTime },
-            pending: { start: pv.start_time, end: pv.end_time }
-          });
-        }
-        
-        return hasTimeOverlap;
-      }
-
-      // If we don't have time data for comparison, block the entire day for safety
-      console.log('No time data available - blocking entire day for safety:', pv);
+    // Skip if pending vehicle doesn't have time data
+    if (!pv.start_time || !pv.end_time) {
+      console.log('Pending vehicle missing time data - blocking entire day for safety:', pv);
       return true;
-    });
+    }
 
-    console.log('Is pending result:', isPending);
-    return isPending;
-  }
+    // Add 2-hour buffer to pending vehicle's end time
+    const pendingEndTimeWithBuffer = this.addHoursToTime(pv.end_time, 2);
+    
+    // Check time overlap including the 2-hour buffer
+    const hasTimeOverlap = this.checkTimeOverlap(
+      startTime, endTime,
+      pv.start_time, pendingEndTimeWithBuffer
+    );
+    
+    if (hasTimeOverlap) {
+      console.log('Time overlap detected (including 2-hour buffer):', {
+        requested: { start: startTime, end: endTime },
+        pending: { start: pv.start_time, end: pv.end_time },
+        pendingWithBuffer: { start: pv.start_time, end: pendingEndTimeWithBuffer }
+      });
+    }
+    
+    return hasTimeOverlap;
+  });
+
+  console.log('Is pending result:', isPending);
+  return isPending;
+}
+
+// Helper function to add hours to a time string (HH:MM format)
+private addHoursToTime(timeString: string, hoursToAdd: number): string {
+  const [hours, minutes] = timeString.split(':').map(Number);
+  const date = new Date();
+  date.setHours(hours, minutes, 0, 0);
+  date.setHours(date.getHours() + hoursToAdd);
+  
+  // Handle day overflow (if time goes past 24:00)
+  const newHours = date.getHours();
+  const newMinutes = date.getMinutes();
+  
+  return `${newHours.toString().padStart(2, '0')}:${newMinutes.toString().padStart(2, '0')}`;
+}
 
   private checkTimeOverlap(start1: string, end1: string, start2: string, end2: string): boolean {
     // Convert time strings to minutes for easier comparison
@@ -359,25 +370,93 @@ export class NewRideComponent implements OnInit {
   }
 
   submit(): void {
-    if (this.rideForm.invalid) {
-      this.rideForm.markAllAsTouched();
-      this.toastService.show('יש להשלים את כל שדות הטופס כנדרש', 'error');
-      return;
-    }
-
-    const vehicleId = this.rideForm.get('car')?.value;
-    if (!vehicleId) {
-      this.toastService.show('יש לבחור רכב מהתפריט', 'error');
-      return;
-    }
-
-    if (this.isPendingVehicle(vehicleId)) {
-      this.toastService.show('הרכב שבחרת ממתין לעיבוד ולא זמין כרגע', 'error');
-      return;
-    }
-
-    // ...rest of your submit logic here (omitted for brevity)
+  // Initial form validation
+  if (this.rideForm.invalid) {
+    this.rideForm.markAllAsTouched();
+    this.toastService.show('יש להשלים את כל שדות הטופס כנדרש', 'error');
+    return;
   }
+
+  // Vehicle selection validation
+  const vehicleId = this.rideForm.get('car')?.value;
+  if (!vehicleId) {
+    this.toastService.show('יש לבחור רכב מהתפריט', 'error');
+    return;
+  }
+
+  // Check if vehicle is pending
+  if (this.isPendingVehicle(vehicleId)) {
+    this.toastService.show('הרכב שבחרת ממתין לעיבוד ולא זמין כרגע', 'error');
+    return;
+  }
+
+  // Get form values
+  const ridePeriod = this.rideForm.get('ride_period')?.value as 'morning' | 'night';
+  const rideDate = this.rideForm.get('ride_date')?.value;
+  const nightEndDate = this.rideForm.get('ride_date_night_end')?.value;
+  const startTime = this.rideForm.get('start_time')?.value;
+  const endTime = this.rideForm.get('end_time')?.value;
+  const distance = this.rideForm.get('estimated_distance_km')?.value;
+
+  // Time validation for morning rides
+  if (ridePeriod === 'morning' && startTime && endTime && startTime >= endTime) {
+    this.toastService.show('שעת הסיום חייבת להיות אחרי שעת ההתחלה', 'error');
+    return;
+  }
+
+  // Distance validation
+  if (distance > 1000) {
+    this.toastService.show('מרחק לא הגיוני - נא להזין ערך סביר', 'error');
+    return;
+  }
+
+  // User validation
+  const user_id = localStorage.getItem('employee_id');
+  if (!user_id) {
+    this.toastService.show('שגיאת זיהוי משתמש - התחבר מחדש', 'error');
+    return;
+  }
+
+  // Build datetime strings
+  const start_datetime = `${rideDate}T${startTime}`;
+  const end_datetime = ridePeriod === 'morning'
+    ? `${rideDate}T${endTime}`
+    : `${nightEndDate}T${endTime}`;
+
+  // Prepare form data
+  const formData = {
+    ride_type: this.rideForm.get('ride_type')?.value,
+    start_datetime,
+    vehicle_id: vehicleId,
+    end_datetime,
+    start_location: this.rideForm.get('start_location')?.value,
+    stop: this.rideForm.get('stop')?.value,
+    destination: this.rideForm.get('destination')?.value,
+    estimated_distance_km: distance,
+    actual_distance_km: this.estimated_distance_with_buffer 
+  };
+
+  console.log('Ride data for backend:', formData);
+
+  // Submit ride request
+  this.rideService.createRide(formData, user_id).subscribe({
+    next: (createdRide) => {
+      this.toastService.show('הבקשה נשלחה בהצלחה! ✅', 'success');
+
+      // Emit socket message after successful creation
+      this.socketService.sendMessage('new_ride_request', {
+        ...createdRide,
+        user_id
+      });
+
+      this.router.navigate(['/']);
+    },
+    error: (err) => {
+      this.toastService.show('שגיאה בשליחת הבקשה', 'error');
+      console.error('Submit error:', err);
+    }
+  });
+}
 
   get f() {
     return {
