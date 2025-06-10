@@ -6,7 +6,7 @@ from sqlalchemy import func, cast
 from sqlalchemy import and_ , or_ , select
 from ..models.ride_model import Ride, RideStatus
 from ..models.user_model import User
-from datetime import datetime
+from datetime import datetime, timezone
 from ..schemas.vehicle_schema import VehicleOut, InUseVehicleOut
 from uuid import UUID
 from fastapi import HTTPException
@@ -71,24 +71,45 @@ from ..schemas.user_rides_schema import RideSchema
 #     # הופך את הרשומות לדיקטים
 #     return [dict(r._mapping) for r in result]
 
-def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
+# ----------------------------------------------------------------------
+# def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
     
+#     inspection = VehicleInspection(
+#         vehicle_id=data.vehicle_id,
+#         inspected_by=data.inspected_by,
+#         fuel_level=data.fuel_level,
+#         tires_ok=data.tires_ok,
+#         clean=data.clean,
+#         issues_found=data.issues_found,
+#         inspection_date=datetime.utcnow()
+#     )
+
+#     db.add(inspection)
+
+#     db.commit()
+
+#     return {"message": "Ride completed and vehicle inspection recorded successfully"}
+# ----------------------------------------------------------------------
+
+def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
     inspection = VehicleInspection(
-        vehicle_id=data.vehicle_id,
         inspected_by=data.inspected_by,
-        fuel_level=data.fuel_level,
-        tires_ok=data.tires_ok,
+        inspection_date=datetime.now(timezone.utc),
         clean=data.clean,
+        fuel_checked=data.fuel_checked,
+        no_items_left=data.no_items_left,
+        critical_issue_bool=data.critical_issue_bool,
         issues_found=data.issues_found,
-        inspection_date=datetime.utcnow()
     )
 
     db.add(inspection)
-
     db.commit()
+    db.refresh(inspection)
 
-    return {"message": "Ride completed and vehicle inspection recorded successfully"}
-
+    return {
+        "message": "Vehicle inspection recorded successfully",
+        "inspection_id": str(inspection.id)
+    }
 
 
 def get_vehicles_with_optional_status(

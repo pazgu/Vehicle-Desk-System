@@ -27,25 +27,34 @@ export class VehicleInspectionComponent implements OnInit {
 
 ngOnInit(): void {
   this.inspectionForm = this.fb.group({
-  fuel_level: [false, [Validators.required]],
-  tires_ok: [false],
   clean: [false],
-  critical_issue: [''],
   fuel_checked: [false],
-  no_items_left: [false]
+  no_items_left: [false],
+  critical_issue_bool: [false],
+  critical_issue: ['']
+});
+
+this.inspectionForm.get('critical_issue_bool')?.valueChanges.subscribe(value => {
+  const field = this.inspectionForm.get('critical_issue');
+  if (value === true) {
+    field?.setValidators([Validators.required]);
+  } else {
+    field?.clearValidators();
+    field?.setValue('');
+  }
+  field?.updateValueAndValidity();
 });
 
 
-  this.inspectionForm.get('critical_issue')?.valueChanges.subscribe(value => {
-    const field = this.inspectionForm.get('critical_issue');
-    if (value && value.trim() !== '') {
-      field?.setValidators([Validators.required]);
-    } else {
-      field?.clearValidators();
-    }
-      field?.updateValueAndValidity();
-  });
-
+  // this.inspectionForm.get('critical_issue')?.valueChanges.subscribe(value => {
+  //   const field = this.inspectionForm.get('critical_issue');
+  //   if (value && value.trim() !== '') {
+  //     field?.setValidators([Validators.required]);
+  //   } else {
+  //     field?.clearValidators();
+  //   }
+  //     field?.updateValueAndValidity();
+  // });
 
     this.fetchVehicles();
   }
@@ -70,6 +79,7 @@ fetchVehicles(): void {
 
 submitInspection(): void {
   console.log('🧪 Submit clicked');
+  console.log('Form value before submit:', this.inspectionForm.value);
 
   if (this.inspectionForm.invalid) {
     console.warn('🛑 FORM IS INVALID', this.inspectionForm.value);
@@ -79,16 +89,28 @@ submitInspection(): void {
 
   const form = this.inspectionForm.value;
 
-  const data = {
-    ride_id: crypto.randomUUID(),
-    inspected_by: localStorage.getItem('employee_id'),
-    fuel_level: form.fuel_level,
-    tires_ok: form.tires_ok,
-    clean: form.clean,
-    issues_found: form.critical_issue?.trim()
-      ? { critical_event: form.critical_issue.trim() }
-      : null
-  };
+  // const data = {
+  //   ride_id: crypto.randomUUID(), 
+  //   inspected_by: localStorage.getItem('employee_id'),
+  //   // fuel_level: form.fuel_level,
+  //   // tires_ok: form.tires_ok,
+  //   clean: form.clean,
+  //   issues_found: form.critical_issue?.trim()
+  //     ? { critical_issue: form.critical_issue.trim() }
+  //     : null
+  // };
+
+const data = {
+  inspected_by: localStorage.getItem('employee_id'),
+  clean: form.clean,
+  fuel_checked: form.fuel_checked,
+  no_items_left: form.no_items_left,
+  critical_issue_bool: form.critical_issue_bool,
+  issues_found: form.critical_issue_bool && form.critical_issue?.trim()
+    ? form.critical_issue.trim()
+    : null
+};
+
 
 this.http.post(`${environment.apiUrl}/vehicle-inspections`, data).subscribe({
 next: () => {
