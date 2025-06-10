@@ -28,3 +28,21 @@ class RideCreate(BaseModel):
     estimated_distance_km: float
     actual_distance_km: float
     
+class RideResponse(BaseModel):
+    id: UUID
+    user_id: UUID
+    username:str
+    vehicle_id: UUID
+    ride_type: str
+    start_datetime: datetime
+    end_datetime: datetime
+    start_location: str
+    stop: str
+    destination: str
+    estimated_distance_km: float
+    actual_distance_km: float
+    status: str
+    license_check_passed: bool
+    submitted_at: datetime
+    override_user_id: UUID
+    plate_number: str

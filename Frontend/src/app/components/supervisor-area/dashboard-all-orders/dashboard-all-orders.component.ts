@@ -10,6 +10,7 @@ import { OrderService } from '../../../services/order.service';
 import { RideDashboardItem } from '../../../models/ride-dashboard-item/ride-dashboard-item.module';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { SocketService } from '../../../services/socket.service';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-dashboard-all-orders',
@@ -38,7 +39,7 @@ export class DashboardAllOrdersComponent implements OnInit {
   showOldOrders: boolean = false;
   sortBy: string = 'date_and_time';
 
-  constructor(private router: Router, private orderService: OrderService,  private socketService: SocketService ) {}
+  constructor(private router: Router, private orderService: OrderService,private toastService:ToastService,  private socketService: SocketService ) {}
 
   ngOnInit(): void {
     document.body.style.overflow = 'hidden';
@@ -50,14 +51,12 @@ export class DashboardAllOrdersComponent implements OnInit {
     }
 
     this.socketService.rideRequests$.subscribe((newRide) => {
-  if (newRide) {
+    if (newRide) {
     console.log('🆕 New ride request received on dashboard:', newRide);
-
-    // Optional: Push directly to UI
-    this.orders.unshift(newRide);
-
-    // Optional: toast message (if you use a toast service)
-    alert('💡בקשה חדשה לנסיעה התקבלה!'); // or use your `ToastService` if available
+    if(newRide.department_id==departmentId){
+      this.orders.unshift(newRide);
+    this.toastService.show("התקבלה בקשה חדשה","success");
+    }
   }
 });
 
