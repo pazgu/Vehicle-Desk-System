@@ -26,7 +26,7 @@ from src.models.vehicle_inspection_model import VehicleInspection
 from ..services.monthly_trip_counts import archive_last_month_stats
 
 
-from ..services.monthly_trip_counts import update_monthly_trip_counts
+
 from ..schemas.audit_schema import AuditLogsSchema
 from src.services.audit_service import get_all_audit_logs
 

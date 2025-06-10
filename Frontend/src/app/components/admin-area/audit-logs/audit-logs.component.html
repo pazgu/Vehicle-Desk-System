@@ -25,7 +25,7 @@
             </tr>
           </thead>
           <tbody class="audit-tbody">
-            <tr *ngFor="let log of filteredLogs" class="audit-tr"
+            <tr *ngFor="let log of pagedLogs" class="audit-tr"
               [ngClass]="{
                 'emergency-row': log.action === 'UPDATE' && log.entity_type === 'Ride' && (log.change_data?.new?.emergency_event === true || log.change_data?.new?.emergency_event === 'true'),
                 'frozen-vehicle-row': log.entity_type === 'Vehicle' && log.change_data?.new?.status === 'frozen',
@@ -49,6 +49,13 @@
             </tr>
           </tbody>
         </table>
+        <!-- Pagination Controls -->
+
+     <div class="pagination-controls" dir="rtl" style="text-align: center; margin-top: 1.5rem;">
+  <button (click)="prevPage()" [disabled]="currentPage === 1">▶</button>
+  <span>עמוד {{ currentPage }} מתוך {{ totalPages }}</span>
+  <button (click)="nextPage()" [disabled]="currentPage === totalPages">◀</button>
+</div>
       </div>
 
       <div *ngIf="filteredLogs?.length === 0 && !selectedLog" class="empty-state">

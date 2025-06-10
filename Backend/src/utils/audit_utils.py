@@ -15,6 +15,6 @@ def log_action(db, action, entity_type, entity_id, change_data, changed_by):
             "entity_type": entity_type,
             "entity_id": str(entity_id),
             "change_data": json.dumps(change_data),  # ensure this is a JSON-encoded string
-            "changed_by": changed_by,
+            "changed_by": changed_by
         }
     )

@@ -118,32 +118,32 @@ def edit_order_status(department_id: str, order_id: str, new_status: str, db: Se
     db.commit()
     print(f"\n !!!!!!!!!!!!!!!!!!!!!!!! \n")
 
-    # log_action(
-    #     db=db,
-    #     action="UPDATE",  # Correct action
-    #     entity_type="Ride",
-    #     entity_id=str(order.id),
-    #     change_data={
-    #         "id": str(order.id),
-    #         "stop": order.stop,
-    #         "status": order.status,  # Include the new status
-    #         "user_id": str(order.user_id),
-    #         "isArchive": order.isArchive,
-    #         "ride_type": order.ride_type,
-    #         "vehicle_id": str(order.vehicle_id),
-    #         "destination": order.destination,
-    #         "end_datetime": order.end_datetime.isoformat(),
-    #         "submitted_at": order.submitted_at.isoformat(),
-    #         "start_datetime": order.start_datetime.isoformat(),
-    #         "start_location": order.start_location,
-    #         "emergency_event": order.emergency_event,
-    #         "override_user_id": str(order.override_user_id),
-    #         "actual_distance_km": order.actual_distance_km,
-    #         "license_check_passed": order.license_check_passed,
-    #         "estimated_distance_km": order.estimated_distance_km
-    #     },
-    #     changed_by=order.override_user_id
-    # )
+    log_action(
+        db=db,
+        action="UPDATE",  # Correct action
+        entity_type="Ride",
+        entity_id=str(order.id),
+        change_data={
+            "id": str(order.id),
+            "stop": order.stop,
+            "status": order.status,  # Include the new status
+            "user_id": str(order.user_id),
+            "isArchive": order.isArchive,
+            "ride_type": order.ride_type,
+            "vehicle_id": str(order.vehicle_id),
+            "destination": order.destination,
+            "end_datetime": order.end_datetime.isoformat(),
+            "submitted_at": order.submitted_at.isoformat(),
+            "start_datetime": order.start_datetime.isoformat(),
+            "start_location": order.start_location,
+            "emergency_event": order.emergency_event,
+            "override_user_id": str(order.override_user_id),
+            "actual_distance_km": order.actual_distance_km,
+            "license_check_passed": order.license_check_passed,
+            "estimated_distance_km": order.estimated_distance_km
+        },
+        changed_by=order.override_user_id
+    )
 
 
     hebrew_status_map = {

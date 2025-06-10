@@ -22,6 +22,9 @@ export class AuditLogsComponent implements OnInit {
   filteredLogs: AuditLogs[] = []; // Type this correctly
   selectedLog: AuditLogs | null = null; // Property to hold the selected log for detailed view
 
+  pageSize = 5;
+  currentPage = 1;
+
   ngOnInit() {
     this.loadLogs();
   }
@@ -63,5 +66,38 @@ export class AuditLogsComponent implements OnInit {
   // Method to close the details card
   closeDetails() {
     this.selectedLog = null;
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.filteredLogs.length / this.pageSize) || 1;
+  }
+
+  get pagedLogs() {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredLogs.slice(start, start + this.pageSize);
+  }
+
+  // nextPage() {
+  //   if (this.currentPage < this.totalPages) {
+  //     this.currentPage++;
+  //   }
+  // }
+
+  // prevPage() {
+  //   if (this.currentPage > 1) {
+  //     this.currentPage--;
+  //   }
+  // }
+
+  onPageChange(event: any) {
+    this.currentPage = event.page + 1;
+  }
+
+  nextPage() {
+    if (this.currentPage < this.totalPages) this.currentPage++;
+  }
+
+  prevPage() {
+    if (this.currentPage > 1) this.currentPage--;
   }
 }
