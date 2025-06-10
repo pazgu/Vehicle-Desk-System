@@ -23,9 +23,8 @@ from ..services.vehicle_service import get_vehicles_with_optional_status,update_
 from ..services.user_notification import send_admin_odometer_notification
 from datetime import date, datetime, timedelta
 from src.models.vehicle_inspection_model import VehicleInspection
+from ..services.monthly_trip_counts import archive_last_month_stats
 
-
-from ..services.monthly_trip_counts import update_monthly_trip_counts
 
 router = APIRouter()
 
@@ -194,11 +193,8 @@ def get_today_inspections(db: Session = Depends(get_db)):
 
     return inspections
 
-
-@router.post("/update-monthly-trip-counts")
-def monthly_trip_count_update(db: Session = Depends(get_db)):
-    try:
-        update_monthly_trip_counts(db)
-        return {"message": "Monthly trip counts updated successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+# This function will be called later by another function with a GET route.
+@router.post("/stats/archive-last-month")
+def archive_last_month_endpoint(db: Session = Depends(get_db)):
+    archive_last_month_stats(db)
+    return {"detail": "Archiving completed successfully"}

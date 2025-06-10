@@ -16,11 +16,19 @@ EMAIL_FROM = os.getenv("EMAIL_FROM")
 
 def send_email(subject: str, body: str, recipients: List[str]):
     msg = MIMEMultipart()
-    msg['From'] = EMAIL_FROM
+    msg['From'] = f"Vehicle Desk <{EMAIL_FROM}>"
+    msg['Reply-To'] = EMAIL_FROM
     msg['To'] = ", ".join(recipients)
     msg['Subject'] = subject
+    msg.add_header("X-MJ-TemplateLanguage", "true")
+    msg.add_header("X-MJ-TrackOpen", "1")
+    msg.add_header("X-MJ-TrackClick", "1")
+
+
 
     msg.attach(MIMEText(body, 'plain'))
+
+    print(f"📧 Sending email to {recipients}")
 
     try:
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
