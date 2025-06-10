@@ -38,6 +38,7 @@ from ..utils.socket_utils import convert_decimal
 from ..utils.email_utils import send_email
 from ..services.auth_service import create_reset_token,verify_reset_token
 from ..schemas.reset_password import ResetPasswordInput,ForgotPasswordRequest
+from ..services.user_data import get_user_department
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 # Set up logging
@@ -159,13 +160,21 @@ async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = De
 
     try:
         new_ride = create_ride(db, user_id, ride_request)
-
+        department_id=get_user_department(user_id=user_id,db=db)
         # ✅ Emit real-time event
         await sio.emit("new_ride_request", {
             "ride_id": str(new_ride.id),
             "user_id": str(user_id),
+            "employee_name":new_ride.username,
             "status": new_ride.status,
-            "destination": new_ride.destination
+            "destination": new_ride.destination,
+            "end_datetime": str(new_ride.end_datetime),
+            "date_and_time":str(new_ride.start_datetime),
+            "vehicle_id":str(new_ride.vehicle_id),
+            "requested_vehicle_plate":new_ride.plate_number,
+            "department_id":str(department_id),
+            "distance":new_ride.estimated_distance_km,
+
         })
 
         supervisor_id = get_supervisor_id(user_id, db)
@@ -186,7 +195,8 @@ async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = De
                 "message": supervisor_notification.message,
                 "notification_type": supervisor_notification.notification_type.value,
                 "sent_at": supervisor_notification.sent_at.isoformat(),
-                "order_id": str(supervisor_notification.order_id) if supervisor_notification.order_id else None
+                "order_id": str(supervisor_notification.order_id) if supervisor_notification.order_id else None,
+                "order_status":new_ride.status
             }, room=str(supervisor_notification.user_id))
         else:
             logger.warning("No supervisor found — skipping supervisor notification.")
@@ -207,7 +217,8 @@ async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = De
             "message": confirmation.message,
             "notification_type": confirmation.notification_type.value,
             "sent_at": confirmation.sent_at.isoformat(),
-            "order_id": str(confirmation.order_id) if confirmation.order_id else None
+            "order_id": str(confirmation.order_id) if confirmation.order_id else None,
+            "order_status":new_ride.status
         }, room=str(confirmation.user_id))
 
 

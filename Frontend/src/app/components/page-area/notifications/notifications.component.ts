@@ -103,6 +103,7 @@ export class NotificationsComponent implements OnInit {
     }
     this.socketService.notifications$.subscribe((newNotif) => {
   if (newNotif) {
+    console.log("new notif from socket in component",newNotif)
     const notifWithTimeAgo = {
       ...newNotif,
       timeAgo: formatDistanceToNow(new Date(newNotif.sent_at), {
