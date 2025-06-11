@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './components/page-area/login-area/user-area/login/login.component';
 import { Page404Component } from './components/page-area/page404/page404.component';
-import { HomeComponent } from './components/page-area/home/home.component';
-import { NewRideComponent } from './ride-area/new-ride/new-ride.component';
+import { AllRidesComponent } from './ride-area/all-rides/all-rides.component';
+import { NewRideComponent } from './components/page-area/home/home.component';
 import { RegisterComponent } from './components/page-area/login-area/user-area/register/register.component';
 import { DashboardAllOrdersComponent } from './components/supervisor-area/dashboard-all-orders/dashboard-all-orders.component';
 import { OrderCardComponent } from './components/supervisor-area/order-card/order-card.component';
@@ -25,8 +25,10 @@ import { AdminAnalyticsComponent } from './components/admin-area/admin-analytics
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
-  { path: 'home', component: HomeComponent, canActivate: [ProtectedRouteGuard] },
-  { path: 'new-ride', component: NewRideComponent, canActivate: [ProtectedRouteGuard] },
+  { path: 'home', component: NewRideComponent, canActivate: [ProtectedRouteGuard] },
+  { path: 'new-ride', component: AllRidesComponent, canActivate: [ProtectedRouteGuard] },
+  { path: 'all-rides', component: AllRidesComponent, canActivate: [ProtectedRouteGuard] },
+
   {
   path: 'ride/edit/:id',
   loadComponent: () => import('./ride-area/edit-ride/edit-ride.component').then(m => m.EditRideComponent),

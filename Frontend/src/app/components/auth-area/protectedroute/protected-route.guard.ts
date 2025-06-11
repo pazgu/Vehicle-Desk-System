@@ -41,8 +41,8 @@ canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean 
     return true;
   }
 
-  // ❌ Block supervisors and inspectors from /new-ride
-  if (url.includes('/new-ride')) {
+  // ❌ Block supervisors and inspectors from /all-rides and /home
+  if (url.includes('/all-rides') || url.includes('/home')) {
     if (role === 'supervisor') {
       this.toastService.show('אין לך הרשאה להזמין נסיעה', 'error');
       this.router.navigate(['/supervisor-dashboard']);
@@ -57,7 +57,8 @@ canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean 
   }
 
   // ❌ Block supervisors and inspectors from /home
-  if (url.includes('/home')) {
+  if ((url.includes('/home')) || (url.includes('/all-rides')))
+    {
     if (role === 'supervisor') {
       this.toastService.show('אין לך הזמנות אישיות', 'error');
       this.router.navigate(['/supervisor-dashboard']);

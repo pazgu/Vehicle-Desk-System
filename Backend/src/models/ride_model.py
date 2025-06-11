@@ -53,4 +53,4 @@ class PendingRideSchema(BaseModel):
     end_time: str     # 'HH:mm'
 
     class Config:
-        orm_mode = True
+        from_attributes = True
