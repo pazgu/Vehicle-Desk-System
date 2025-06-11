@@ -19,11 +19,13 @@ def get_department_orders(department_id: str, db: Session) -> List[RideDashboard
     """
     # Query the database for rides where the user's department matches the given department_id
     orders = (
-        db.query(Ride)
+        db.query(Ride, Vehicle.plate_number)
         .join(User, User.employee_id == Ride.user_id)
+        .join(Vehicle, Ride.vehicle_id == Vehicle.id)
         .filter(User.department_id == department_id)
         .all()
     )
+
 
     # Map the database results to the RideDashboardItem schema
     dashboard_items = []
@@ -34,7 +36,7 @@ def get_department_orders(department_id: str, db: Session) -> List[RideDashboard
         employee_name = f"{user.first_name} {user.last_name}" if user else "Unknown"
 
         # Get the vehicle plate (mocked for now)
-        vehicle_plate = f"Plate-{str(order.vehicle_id)[:8]}"  # Replace with actual logic if needed
+        vehicle_plate = order.plate_number # Replace with actual logic if needed
 
         # Create a RideDashboardItem schema for each order
         dashboard_item = RideDashboardItem(

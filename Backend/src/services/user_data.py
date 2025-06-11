@@ -7,3 +7,8 @@ def get_user_by_id(db: Session, user_id: UUID) -> User | None:
 
 def get_all_users(db: Session):
     return db.query(User).all()
+
+
+def get_user_department(user_id: str, db: Session) -> str:
+    user = db.query(User).filter(User.employee_id == user_id).first()
+    return user.department_id if user else None

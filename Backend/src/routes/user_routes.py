@@ -38,7 +38,9 @@ from ..utils.socket_utils import convert_decimal
 from ..utils.email_utils import send_email
 from ..services.auth_service import create_reset_token,verify_reset_token
 from ..schemas.reset_password import ResetPasswordInput,ForgotPasswordRequest
+from ..services.user_data import get_user_department
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+from ..models.ride_model import PendingRideSchema
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -159,13 +161,21 @@ async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = De
 
     try:
         new_ride = create_ride(db, user_id, ride_request)
-
+        department_id=get_user_department(user_id=user_id,db=db)
         # ✅ Emit real-time event
         await sio.emit("new_ride_request", {
             "ride_id": str(new_ride.id),
             "user_id": str(user_id),
+            "employee_name":new_ride.username,
             "status": new_ride.status,
-            "destination": new_ride.destination
+            "destination": new_ride.destination,
+            "end_datetime": str(new_ride.end_datetime),
+            "date_and_time":str(new_ride.start_datetime),
+            "vehicle_id":str(new_ride.vehicle_id),
+            "requested_vehicle_plate":new_ride.plate_number,
+            "department_id":str(department_id),
+            "distance":new_ride.estimated_distance_km,
+
         })
 
         supervisor_id = get_supervisor_id(user_id, db)
@@ -186,7 +196,8 @@ async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = De
                 "message": supervisor_notification.message,
                 "notification_type": supervisor_notification.notification_type.value,
                 "sent_at": supervisor_notification.sent_at.isoformat(),
-                "order_id": str(supervisor_notification.order_id) if supervisor_notification.order_id else None
+                "order_id": str(supervisor_notification.order_id) if supervisor_notification.order_id else None,
+                "order_status":new_ride.status
             }, room=str(supervisor_notification.user_id))
         else:
             logger.warning("No supervisor found — skipping supervisor notification.")
@@ -207,7 +218,8 @@ async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = De
             "message": confirmation.message,
             "notification_type": confirmation.notification_type.value,
             "sent_at": confirmation.sent_at.isoformat(),
-            "order_id": str(confirmation.order_id) if confirmation.order_id else None
+            "order_id": str(confirmation.order_id) if confirmation.order_id else None,
+            "order_status":new_ride.status
         }, room=str(confirmation.user_id))
 
 
@@ -323,12 +335,27 @@ def get_archived_orders_route(
 
     return get_archived_rides(user_id, db)
 
-@router.get("/api/orders/pending-cars", response_model=List[str])
+@router.get("/api/orders/pending-cars", response_model=List[PendingRideSchema])
 def get_pending_car_orders(db: Session = Depends(get_db)):
-    # Fetch only vehicle_ids of pending rides
-    vehicle_ids = db.query(Ride.vehicle_id).filter(Ride.status == "pending").distinct().all()
-    return [str(v[0]) for v in vehicle_ids if v[0] is not None]
+    pending_rides = (
+        db.query(Ride)
+        .filter(Ride.status == "pending")
+        .all()
+    )
 
+    result = []
+    for ride in pending_rides:
+        ride_period = "night" if ride.start_datetime.hour >= 18 else "morning"
+        result.append({
+            "vehicle_id": ride.vehicle_id,
+            "ride_period": ride_period,
+            "ride_date": ride.start_datetime.date().isoformat(),
+            "ride_date_night_end": ride.end_datetime.date().isoformat() if ride_period == "night" else None,
+            "start_time": ride.start_datetime.time().strftime("%H:%M"),
+            "end_time": ride.end_datetime.time().strftime("%H:%M"),
+        })
+
+    return result
 
 
 @router.post("/api/forgot-password")
