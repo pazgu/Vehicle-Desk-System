@@ -1,0 +1,28 @@
+.admin-notifications-container {
+  padding: 2rem;
+  font-family: 'Alef', sans-serif;
+  max-width: 800px;
+  margin: auto;
+  direction: rtl;
+  color: #3b3b3b;
+}
+
+.notification-card {
+  background: #fff8f8;
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.notification-card p {
+  margin: 0.3rem 0;
+}
+
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
