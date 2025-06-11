@@ -19,6 +19,7 @@ import { AuditLogsComponent } from './components/admin-area/audit-logs/audit-log
 import { AvailableAndFrozenCarsComponent } from './inspector-area/available-and-frozen-cars/available-and-frozen-cars.component';
 import { ForgotPasswordComponent } from './components/auth-area/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './components/auth-area/reset-password/reset-password.component';
+import { AdminAnalyticsComponent } from './components/admin-area/admin-analytics/admin-analytics.component';
 
 
 export const routes: Routes = [
@@ -45,6 +46,11 @@ export const routes: Routes = [
   { path: 'audit-logs', component: AuditLogsComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
   { path: 'reset-password/:token', component: ResetPasswordComponent },
+  {
+  path: 'admin/analytics',
+  component: AdminAnalyticsComponent,
+  canActivate: [ProtectedRouteGuard]
+},
 
 {
   path: 'ride/details/:id',
