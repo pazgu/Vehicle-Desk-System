@@ -410,3 +410,4 @@ def reset_password(
 @router.post("/api/orders/{order_id}/cancel")
 def cancel_order(order_id: UUID, db: Session = Depends(get_db)):
     return cancel_order_in_db(order_id, db)
+
