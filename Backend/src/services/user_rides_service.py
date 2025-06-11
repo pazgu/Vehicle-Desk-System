@@ -181,5 +181,18 @@ def get_archived_rides(user_id: UUID, db: Session) -> List[RideSchema]:
 
 
 
+def cancel_order_in_db(order_id: UUID, db: Session):
+    order = db.query(Ride).filter(Ride.id == order_id).first()
+
+    if not order:
+        raise HTTPException(status_code=404, detail="ההזמנה לא נמצאה")
+
+    if order.status == "cancelled":
+        raise HTTPException(status_code=400, detail="ההזמנה כבר בוטלה")
+
+    order.status = "cancelled"
+    db.commit()
+    db.refresh(order)
+    return order
 
 

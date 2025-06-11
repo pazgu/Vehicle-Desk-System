@@ -27,7 +27,7 @@ from src.schemas.ride_status_enum import UpdateRideStatusRequest
 from ..schemas.order_card_item import OrderCardItem
 from ..models.ride_model import Ride
 from ..services.user_edit_ride import patch_order_in_db
-from ..services.user_rides_service import get_ride_by_id , get_archived_rides
+from ..services.user_rides_service import get_ride_by_id , get_archived_rides , cancel_order_in_db
 from ..services.user_notification import create_system_notification,get_supervisor_id,get_user_name
 import traceback
 from ..models.user_model import User
@@ -406,3 +406,8 @@ def reset_password(
     db.commit()
 
     return {"message": "Password reset successfully"}
+
+@router.post("/api/orders/{order_id}/cancel")
+def cancel_order(order_id: UUID, db: Session = Depends(get_db)):
+    return cancel_order_in_db(order_id, db)
+
