@@ -12,6 +12,9 @@ def patch_order_in_db(order_id: UUID, patch_data: OrderCardItem, db: Session):
     if not order:
         raise HTTPException(status_code=404, detail="ההזמנה לא נמצאה")
 
+    if order.status == "APPROVED":
+        raise HTTPException(status_code=400, detail="אי אפשר לערוך הזמנה שאושרה. ניתן רק לבטל ולהזמין חדשה.")
+
     data = patch_data.dict(exclude_unset=True)
 
     for key, value in data.items():
