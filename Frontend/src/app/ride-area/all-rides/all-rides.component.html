@@ -27,8 +27,8 @@
       <img
        src="assets/images/trash_icon.png"
        alt="הזמנות בארכיון"
-       width="26"
-       height="26"
+       width="40"
+       height="40"
        title="הזמנות בארכיון"
        style="cursor: pointer; margin-right: 4px;"
        (click)="goToArchivedOrders()"
@@ -144,12 +144,17 @@
         
         <div class="cell">{{ order.distance }}</div>
 
-        <div class="cell">
-          <button
+        <div class="modify-buttons">
+          <button class="modify"
             *ngIf="canEdit(order)"
             (click)="editOrder(order); $event.stopPropagation()">
-            ערוך ✏️
+             ✏️
           </button>
+          <button class="modify"
+            *ngIf="canDelete(order)"
+            (click)="deleteOrder(order); $event.stopPropagation()">
+ 🗑️</button>
+      
           <button *ngIf="!canEdit(order)" disabled style="opacity: 0.5; cursor: not-allowed;">
             ערוך 🔒
           </button>

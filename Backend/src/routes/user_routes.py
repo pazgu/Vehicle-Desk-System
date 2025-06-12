@@ -312,10 +312,27 @@ def get_notifications_for_user(user_id: UUID, db: Session = Depends(get_db)):
     return get_user_notifications(db, user_id)
 
 
-@router.delete("/api/orders/{user_id}")
-def delete_order():
-    # Implementation pending
-    return {"message": "Not implemented yet"}
+@router.delete("/api/all-orders/{order_id}")
+async def delete_order(order_id: UUID, db: Session = Depends(get_db)):
+    """
+    Delete an order by its ID.
+    """
+    try:
+        ride = db.query(Ride).filter(Ride.id == order_id).first()
+        if not ride:
+            raise HTTPException(status_code=404, detail="Order not found")
+
+        db.delete(ride)
+        db.commit()
+
+        # Emit deletion event
+        await sio.emit("order_deleted", {"order_id": str(order_id)})
+
+        return {"message": "Order deleted successfully"}
+    except Exception as e:
+        logger.error(f"Failed to delete order {order_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to delete order")
+
 
 @router.get("/api/rides/{ride_id}", response_model=RideSchema)
 def read_ride(ride_id: UUID, db: Session = Depends(get_db)):
