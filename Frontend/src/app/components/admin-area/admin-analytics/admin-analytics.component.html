@@ -12,31 +12,44 @@
     </div>
 
     <p-tabView [(activeIndex)]="activeTabIndex" (onChange)="onTabChange($event.index)">
-    
-      <p-tabPanel header="סטטוס רכבים">
-        <div class="chart-wrapper">
-          <h2>סטטוס רכבים</h2>
-          <p-chart 
-            *ngIf="activeTabIndex === 0 && vehicleChartData?.datasets?.length" 
-            type="pie" 
-            [data]="vehicleChartData" 
-            [options]="vehicleChartOptions">
-          </p-chart>
-        </div>
-      </p-tabPanel>
-
-      <p-tabPanel header="סטטוס נסיעות">
-        <div class="chart-wrapper">
-          <h2>סטטוס נסיעות</h2>
-          <p-chart 
-            *ngIf="activeTabIndex === 1 && rideChartData?.datasets?.length" 
-            type="pie" 
-            [data]="rideChartData" 
-            [options]="rideChartOptions">
-          </p-chart>
-        </div>
-      </p-tabPanel>
-
-    </p-tabView>
+  <p-tabPanel class="titles" header="סטטוס רכבים">
+    <div class="chart-container">
+      <p-chart 
+      id="vehicleChart"
+        *ngIf="vehicleChartInitialized && vehicleChartData" 
+        type="pie" 
+        [data]="vehicleChartData" 
+        [options]="vehicleChartOptions"
+        >
+      </p-chart>
+    </div> 
+  </p-tabPanel> 
+  
+  <p-tabPanel header="סטטוס נסיעות">
+    <div class="titles" class="chart-container">
+      <p-chart 
+      id="rideChart"
+        *ngIf="rideChartInitialized && rideChartData" 
+        type="pie" 
+        [data]="rideChartData"  
+        [options]="rideChartOptions">
+      </p-chart>
+      <div *ngIf="!rideChartInitialized">
+        טוען נתונים...
+      </div>
+    </div>
+  </p-tabPanel>
+</p-tabView>
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+
