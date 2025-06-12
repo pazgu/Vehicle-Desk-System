@@ -11,35 +11,39 @@
       </select>
     </div>
 
-    <p-tabView [(activeIndex)]="activeTabIndex" (onChange)="onTabChange($event.index)">
-  <p-tabPanel class="titles" header="סטטוס רכבים">
-    <div class="chart-container">
-      <p-chart 
-      id="vehicleChart"
-        *ngIf="vehicleChartInitialized && vehicleChartData" 
-        type="pie" 
-        [data]="vehicleChartData" 
+    <div class="tab-buttons">
+  <button [class.active]="activeTabIndex === 0" (click)="activeTabIndex = 0">
+    סטטוס רכבים
+  </button>
+  <button [class.active]="activeTabIndex === 1" (click)="activeTabIndex = 1">
+    סטטוס נסיעות
+  </button>
+</div>
+
+<p-tabView [(activeIndex)]="activeTabIndex">
+  <p-tabPanel>
+    <div>
+      <p-chart
+        *ngIf="vehicleChartInitialized && vehicleChartData"
+        type="pie"
+        [data]="vehicleChartData"
         [options]="vehicleChartOptions"
-        >
-      </p-chart>
-    </div> 
-  </p-tabPanel> 
-  
-  <p-tabPanel header="סטטוס נסיעות">
-    <div class="titles" class="chart-container">
-      <p-chart 
-      id="rideChart"
-        *ngIf="rideChartInitialized && rideChartData" 
-        type="pie" 
-        [data]="rideChartData"  
-        [options]="rideChartOptions">
-      </p-chart>
-      <div *ngIf="!rideChartInitialized">
-        טוען נתונים...
-      </div>
+      ></p-chart>
+    </div>
+  </p-tabPanel>
+
+  <p-tabPanel>
+    <div>
+      <p-chart
+        *ngIf="rideChartInitialized && rideChartData"
+        type="pie"
+        [data]="rideChartData"
+        [options]="rideChartOptions"
+      ></p-chart>
     </div>
   </p-tabPanel>
 </p-tabView>
+
   </div>
 </div>
 

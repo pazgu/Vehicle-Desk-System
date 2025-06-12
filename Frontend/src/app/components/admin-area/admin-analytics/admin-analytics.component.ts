@@ -5,7 +5,6 @@ import { CommonModule } from '@angular/common';
 import { environment } from '../../../../environments/environment';
 import { FormsModule } from '@angular/forms';
 import { TabViewModule } from 'primeng/tabview';
-import { ViewChild } from '@angular/core';
 
 
 
