@@ -140,14 +140,10 @@ def edit_order_status(department_id: str, order_id: str, new_status: str, db: Se
 
     db.add(notification)
     db.commit()
+    db.refresh(notification)
 
-    return True
+    return order, notification
 
-from typing import List
-from sqlalchemy.orm import Session
-from uuid import UUID
-from src.models.notification_model import Notification
-from src.models.user_model import User  # assuming you have this model with department info and role
 
 def get_department_notifications(department_id: UUID, db: Session) -> List[Notification]:
     # Find all supervisors in the department
@@ -193,16 +189,31 @@ def start_ride(db: Session, ride_id: UUID):
 
 
 def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
-    
+
     inspection = VehicleInspection(
-        vehicle_id=data.vehicle_id,
-        inspected_by=data.inspected_by,
-        fuel_level=data.fuel_level,
-        tires_ok=data.tires_ok,
-        clean=data.clean,
-        issues_found=data.issues_found,
-        inspection_date=datetime.utcnow()
-    )
+    inspection_id=data.inspection_id,
+    inspected_by=data.inspected_by,
+    inspection_date=datetime.now(timezone.utc),
+    clean=data.clean,
+    fuel_checked=data.fuel_checked,
+    no_items_left=data.no_items_left,
+    critical_issue_bool=data.critical_issue_bool,
+    issues_found=data.issues_found,
+)   
+    # If you want to include vehicle_id, uncomment the following line 
+    # inspection = VehicleInspection(
+    #     vehicle_id=data.vehicle_id,
+    #     inspected_by=data.inspected_by,
+    #     # fuel_level=data.fuel_level,
+    #     # tires_ok=data.tires_ok,
+    #     clean=data.clean,
+    #     fuel_checked=data.fuel_checked,
+    #     no_items_left=data.no_items_left,
+    #     critical_issue_bool=data.critical_issue_bool,
+    #     issues_found=data.issues_found,
+    #     inspection_date=datetime.utcnow()
+    # )
+
 
     db.add(inspection)
 

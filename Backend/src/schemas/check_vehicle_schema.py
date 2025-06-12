@@ -1,14 +1,16 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List, Dict
+from typing import Optional
 from uuid import UUID
-from enum import Enum
 from datetime import datetime
 
+
 class VehicleInspectionSchema(BaseModel):
-    ride_id: Optional[UUID] = None
+    inspection_id: Optional[UUID] = None
     inspection_date: Optional[datetime] = None
-    inspected_by: Optional[UUID] 
-    fuel_level: int = Field(..., ge=0, le=100)
-    tires_ok: bool
+    inspected_by: Optional[UUID] = None
+
     clean: bool
-    issues_found: Optional[Dict[str, str]] = None 
+    fuel_checked: bool
+    no_items_left: bool
+    critical_issue_bool: bool = Field(default=False)
+    issues_found: Optional[str] = None
