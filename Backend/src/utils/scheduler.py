@@ -1,3 +1,4 @@
+import asyncio
 from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime, time, timezone
 from src.utils.database import SessionLocal
@@ -5,13 +6,39 @@ from src.models.user_model import User
 from ..models.ride_model import Ride
 from src.services.user_notification import create_system_notification
 import pytz
-
 from apscheduler.jobstores.base import JobLookupError
 from datetime import datetime, timedelta
 from ..services.form_email import send_ride_completion_email
+from ..services.supervisor_dashboard_service import start_ride 
 
 scheduler = BackgroundScheduler(timezone=pytz.timezone("Asia/Jerusalem"))
 scheduler.start()
+
+
+def schedule_ride_start(ride_id: str, start_datetime: datetime):
+    run_time = start_datetime
+    job_id = f"ride-start-{ride_id}"
+
+    # Avoid duplicates
+    try:
+        scheduler.remove_job(job_id)
+    except JobLookupError:
+        pass
+
+    # Use a sync wrapper to call the async function
+    scheduler.add_job(
+        lambda: asyncio.run(start_ride_with_new_session(ride_id)),
+        'date',
+        run_date=run_time,
+        id=job_id
+    )
+
+async def start_ride_with_new_session(ride_id: str):
+    db = SessionLocal()
+    try:
+        await start_ride(db, ride_id)
+    finally:
+        db.close()
 
 
 
