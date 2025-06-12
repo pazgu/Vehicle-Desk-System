@@ -10,13 +10,8 @@
       </div>
 
       <div *ngIf="showFilters" class="search-container">
-        <input
-          type="text"
-          class="audit-search-input"
-          placeholder="חיפוש לפי סוג ישות, מזהה ישות או מי שינה"
-          [(ngModel)]="searchTerm"
-          (input)="filterLogs()"
-        />
+        <input type="text" class="audit-search-input" placeholder="חיפוש לפי סוג ישות, מזהה ישות או מי שינה"
+          [(ngModel)]="searchTerm" (input)="filterLogs()" />
       </div>
 <div class="export-buttons">
   <h3>דיווחים מהשבוע האחרון-בהתאם לסינון</h3>
@@ -24,25 +19,65 @@
   <button class="export-button" (click)="exportToCSV()">ייצוא CSV</button>
 </div>
 
+      <div class="status-indicators">
+        <p style="margin-bottom: 0.75rem; font-weight: 600;">מקרא צבעים</p>
+        <div class="status-box">
+          <div class="status-item">
+            <span class="status-indicator approved"></span> מאושר
+          </div>
+          <div class="status-item">
+            <span class="status-indicator frozen"></span> מוקפא
+          </div>
+          <div class="status-item">
+            <span class="status-indicator pending"></span> בהמתנה
+          </div>
+          <div class="status-item">
+            <span class="status-indicator rejected"></span> נדחה
+          </div>
+          <div class="status-item">
+            <span class="status-indicator emergency"></span> אירוע חירום
+          </div>
+        </div>
+      </div>
+
       <div class="table-container" *ngIf="!selectedLog">
         <table class="audit-table">
           <thead class="audit-thead">
             <tr>
               <th class="audit-th">סוג פעולה</th>
+              <th class="audit-th">סוג ישות</th>
               <th class="audit-th">שם מלא</th>
-              <th class="audit-th">תיאור</th>
               <th class="audit-th">תאריך יצירה</th>
             </tr>
           </thead>
           <tbody class="audit-tbody">
-            <tr *ngFor="let log of filteredLogs" class="audit-tr" (click)="showDetails(log)">
-              <td class="audit-td">{{ log.actionType }}</td>
-              <td class="audit-td">{{ log.fullName }}</td>
-              <td class="audit-td">{{ log.description.length > 50 ? (log.description | slice:0:50) + '...' : log.description }}</td>
-              <td class="audit-td">{{ log.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+            <tr *ngFor="let log of pagedLogs" class="audit-tr" [ngClass]="{
+                'emergency-row': log.action === 'UPDATE' && log.entity_type === 'Ride' && (log.change_data?.new?.emergency_event === true || log.change_data?.new?.emergency_event === 'true'),
+                'frozen-vehicle-row': log.entity_type === 'Vehicle' && log.change_data?.new?.status === 'frozen',
+                'pending-row': log.entity_type === 'Ride' && (
+                  (log.action === 'UPDATE' && log.change_data?.new?.status === 'pending') ||
+                  (log.action === 'INSERT' && log.change_data?.status === 'pending')
+                ),
+                'approved-row': 
+                  (log.entity_type === 'Ride' && log.change_data?.new?.status === 'approved') ||
+                  (log.entity_type === 'Vehicle' && log.change_data?.new?.status === 'available') ||
+                  (log.entity_type === 'User' && log.action === 'UPDATE' && log.change_data?.old?.role !== 'admin' && log.change_data?.new?.role === 'admin'),
+                'rejected-row': log.entity_type === 'Ride' && log.change_data?.new?.status === 'rejected',
+                'user-insert-row': log.action === 'INSERT' && log.entity_type === 'User'
+              }" (click)="showDetails(log)">
+              <td class="audit-td">{{ log.action }}</td>
+              <td class="audit-td">{{ log.entity_type }}</td>
+              <td class="audit-td">{{ log.full_name }}</td>
+              <td class="audit-td">{{ log.created_at | date:'dd/MM/yyyy HH:mm' }}</td>
             </tr>
           </tbody>
         </table>
+        <!-- Pagination Controls -->
+        <div class="pagination-controls" dir="rtl" style="text-align: center; margin-top: 1.5rem;">
+          <button (click)="prevPage()" [disabled]="currentPage === 1">▶</button>
+          <span>עמוד {{ currentPage }} מתוך {{ totalPages }}</span>
+          <button (click)="nextPage()" [disabled]="currentPage === totalPages">◀</button>
+        </div>
       </div>
 
       <div *ngIf="filteredLogs?.length === 0 && !selectedLog" class="empty-state">
@@ -51,10 +86,286 @@
 
       <div *ngIf="selectedLog" class="log-details-card">
         <h2>פרטי יומן ביקורת</h2>
-        <p><strong>סוג פעולה:</strong> {{ selectedLog.actionType }}</p>
-        <p><strong>שם מלא:</strong> {{ selectedLog.fullName }}</p>
-        <p><strong>תיאור:</strong> {{ selectedLog.description }}</p>
-        <p><strong>תאריך יצירה:</strong> {{ selectedLog.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
+
+        <!-- Main Info Section -->
+        <div class="main-info">
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">מזהה יומן</div>
+              <div class="info-value">{{ selectedLog.id }}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">סוג פעולה</div>
+              <div class="info-value">{{ selectedLog.action }}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">סוג ישות</div>
+              <div class="info-value">{{ selectedLog.entity_type }}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">מזהה ישות</div>
+              <div class="info-value">{{ selectedLog.entity_id }}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">שם מלא</div>
+              <div class="info-value">{{ selectedLog.full_name }}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">תאריך יצירה</div>
+              <div class="info-value">{{ selectedLog.created_at | date:'dd/MM/yyyy HH:mm:ss' }}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">שונה על ידי</div>
+              <div class="info-value">{{ selectedLog.changed_by }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Change Data Section -->
+        <div class="change-section">
+          <h3>נתוני שינוי</h3>
+
+          <!-- INSERT Action -->
+          <div *ngIf="selectedLog.action === 'INSERT'">
+            <div class="data-card insert-data">
+              <h4>נתונים חדשים</h4>
+              <!-- User Entity (hardcoded, as before) -->
+              <div *ngIf="selectedLog.entity_type === 'User'" class="entity-fields">
+                <div class="field-row">
+                  <div class="field-label">תפקיד</div>
+                  <div class="field-value">{{ selectedLog.change_data.role }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">אימייל</div>
+                  <div class="field-value">{{ selectedLog.change_data.email }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">שם משתמש</div>
+                  <div class="field-value">{{ selectedLog.change_data.username }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">שם פרטי</div>
+                  <div class="field-value">{{ selectedLog.change_data.first_name }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">שם משפחה</div>
+                  <div class="field-value">{{ selectedLog.change_data.last_name }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">מזהה עובד</div>
+                  <div class="field-value">{{ selectedLog.change_data.employee_id }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">מזהה מחלקה</div>
+                  <div class="field-value">{{ selectedLog.change_data.department_id }}</div>
+                </div>
+              </div>
+              <!-- Ride Entity (dynamic) -->
+              <div *ngIf="selectedLog.entity_type === 'Ride'" class="entity-fields">
+                <div class="field-row" *ngFor="let key of objectKeys(selectedLog.change_data)">
+                  <div class="field-label">{{ getRideFieldLabel(key) }}</div>
+                  <div class="field-value" [ngClass]="
+                      key === 'license_check_passed' || key === 'isArchive'
+                        ? (selectedLog.change_data[key] ? 'boolean-yes' : 'boolean-no')
+                        : ''
+                    ">
+                    <ng-container [ngSwitch]="true">
+                      <ng-container *ngSwitchCase="selectedLog.change_data[key] === true">כן</ng-container>
+                      <ng-container *ngSwitchCase="selectedLog.change_data[key] === false">לא</ng-container>
+                      <ng-container *ngSwitchCase="selectedLog.change_data[key] === null">ריק</ng-container>
+                      <ng-container *ngSwitchDefault>
+                        <ng-container *ngIf="key.endsWith('datetime') || key.endsWith('at'); else plainValue">
+                          {{ selectedLog.change_data[key] | date:'dd/MM/yyyy HH:mm' }}
+                        </ng-container>
+                        <ng-template #plainValue>{{ selectedLog.change_data[key] }}</ng-template>
+                      </ng-container>
+                    </ng-container>
+                  </div>
+                </div>
+              </div>
+              <!-- Vehicle Entity (dynamic) -->
+              <div *ngIf="selectedLog.entity_type === 'Vehicle'" class="entity-fields">
+                <div *ngIf="selectedLog.change_data?.image_url" class="vehicle-image-row">
+                  <img [src]="selectedLog.change_data.image_url" alt="תמונת רכב" style="max-width: 200px; max-height: 120px; margin-bottom: 1rem;" />
+                </div>
+                <ng-container *ngFor="let key of objectKeys(selectedLog.change_data)">
+                  <div class="field-row" *ngIf="key !== 'image_url'">
+                    <div class="field-label">{{ getVehicleFieldLabel(key) }}</div>
+                    <div class="field-value">
+                      <ng-container *ngIf="key.endsWith('datetime') || key.endsWith('at'); else plainInsertVehicleValue">
+                        {{ selectedLog.change_data[key] | date:'dd/MM/yyyy HH:mm' }}
+                      </ng-container>
+                      <ng-template #plainInsertVehicleValue>{{ selectedLog.change_data[key] }}</ng-template>
+                    </div>
+                  </div>
+                </ng-container>
+              </div>
+            </div>
+          </div>
+
+          <!-- UPDATE Action -->
+          <div *ngIf="selectedLog.action === 'UPDATE'">
+            <!-- Old Data -->
+            <div class="data-card old-data">
+              <h4>נתונים ישנים</h4>
+              <!-- User Entity (hardcoded, as before) -->
+              <div *ngIf="selectedLog.entity_type === 'User'" class="entity-fields">
+                <div class="field-row">
+                  <div class="field-label">תפקיד</div>
+                  <div class="field-value">{{ selectedLog.change_data.old.role }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">אימייל</div>
+                  <div class="field-value">{{ selectedLog.change_data.old.email }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">שם משתמש</div>
+                  <div class="field-value">{{ selectedLog.change_data.old.username }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">שם פרטי</div>
+                  <div class="field-value">{{ selectedLog.change_data.old.first_name }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">שם משפחה</div>
+                  <div class="field-value">{{ selectedLog.change_data.old.last_name }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">מזהה עובד</div>
+                  <div class="field-value">{{ selectedLog.change_data.old.employee_id }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">מזהה מחלקה</div>
+                  <div class="field-value">{{ selectedLog.change_data.old.department_id }}</div>
+                </div>
+              </div>
+              <!-- Ride Entity (dynamic) -->
+              <div *ngIf="selectedLog.entity_type === 'Ride'" class="entity-fields">
+                <div class="field-row" *ngFor="let key of objectKeys(selectedLog.change_data?.old || {})">
+                  <div class="field-label">{{ getRideFieldLabel(key) }}</div>
+                  <div class="field-value" [ngClass]="
+                      key === 'license_check_passed' || key === 'isArchive'
+                        ? (selectedLog.change_data.old[key] ? 'boolean-yes' : 'boolean-no')
+                        : ''
+                    ">
+                    <ng-container [ngSwitch]="true">
+                      <ng-container *ngSwitchCase="selectedLog.change_data.old[key] === true">כן</ng-container>
+                      <ng-container *ngSwitchCase="selectedLog.change_data.old[key] === false">לא</ng-container>
+                      <ng-container *ngSwitchCase="selectedLog.change_data.old[key] === null">ריק</ng-container>
+                      <ng-container *ngSwitchDefault>
+                        <ng-container *ngIf="key.endsWith('datetime') || key.endsWith('at'); else plainOldValue">
+                          {{ selectedLog.change_data.old[key] | date:'dd/MM/yyyy HH:mm' }}
+                        </ng-container>
+                        <ng-template #plainOldValue>{{ selectedLog.change_data.old[key] }}</ng-template>
+                      </ng-container>
+                    </ng-container>
+                  </div>
+                </div>
+              </div>
+              <!-- Vehicle Entity (dynamic) -->
+              <div *ngIf="selectedLog.entity_type === 'Vehicle'" class="entity-fields">
+                <div *ngIf="selectedLog.change_data?.old?.image_url" class="vehicle-image-row">
+                  <img [src]="selectedLog.change_data.old.image_url" alt="תמונת רכב" style="max-width: 200px; max-height: 120px; margin-bottom: 1rem;" />
+                </div>
+                <ng-container *ngFor="let key of objectKeys(selectedLog.change_data?.old || {})">
+                  <div class="field-row" *ngIf="key !== 'image_url'">
+                    <div class="field-label">{{ getVehicleFieldLabel(key) }}</div>
+                    <div class="field-value">
+                      <ng-container *ngIf="key.endsWith('datetime') || key.endsWith('at'); else plainOldVehicleValue">
+                        {{ selectedLog.change_data.old[key] | date:'dd/MM/yyyy HH:mm' }}
+                      </ng-container>
+                      <ng-template #plainOldVehicleValue>{{ selectedLog.change_data.old[key] }}</ng-template>
+                    </div>
+                  </div>
+                </ng-container>
+              </div>
+            </div>
+            <!-- New Data -->
+            <div class="data-card new-data">
+              <h4>נתונים חדשים</h4>
+              <!-- User Entity (hardcoded, as before) -->
+              <div *ngIf="selectedLog.entity_type === 'User'" class="entity-fields">
+                <div class="field-row">
+                  <div class="field-label">תפקיד</div>
+                  <div class="field-value">{{ selectedLog.change_data.new.role }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">אימייל</div>
+                  <div class="field-value">{{ selectedLog.change_data.new.email }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">שם משתמש</div>
+                  <div class="field-value">{{ selectedLog.change_data.new.username }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">שם פרטי</div>
+                  <div class="field-value">{{ selectedLog.change_data.new.first_name }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">שם משפחה</div>
+                  <div class="field-value">{{ selectedLog.change_data.new.last_name }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">מזהה עובד</div>
+                  <div class="field-value">{{ selectedLog.change_data.new.employee_id }}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">מזהה מחלקה</div>
+                  <div class="field-value">{{ selectedLog.change_data.new.department_id }}</div>
+                </div>
+              </div>
+              <!-- Ride Entity (dynamic) -->
+              <div *ngIf="selectedLog.entity_type === 'Ride'" class="entity-fields">
+                <div class="field-row" *ngFor="let key of objectKeys(selectedLog.change_data?.new || {})">
+                  <div class="field-label">{{ getRideFieldLabel(key) }}</div>
+                  <div class="field-value" [ngClass]="
+                      key === 'license_check_passed' || key === 'isArchive'
+                        ? (selectedLog.change_data.new[key] ? 'boolean-yes' : 'boolean-no')
+                        : ''
+                    ">
+                    <ng-container [ngSwitch]="true">
+                      <ng-container *ngSwitchCase="selectedLog.change_data.new[key] === true">כן</ng-container>
+                      <ng-container *ngSwitchCase="selectedLog.change_data.new[key] === false">לא</ng-container>
+                      <ng-container *ngSwitchCase="selectedLog.change_data.new[key] === null">ריק</ng-container>
+                      <ng-container *ngSwitchDefault>
+                        <ng-container *ngIf="key.endsWith('datetime') || key.endsWith('at'); else plainNewValue">
+                          {{ selectedLog.change_data.new[key] | date:'dd/MM/yyyy HH:mm' }}
+                        </ng-container>
+                        <ng-template #plainNewValue>{{ selectedLog.change_data.new[key] }}</ng-template>
+                      </ng-container>
+                    </ng-container>
+                  </div>
+                </div>
+              </div>
+              <!-- Vehicle Entity (dynamic) -->
+              <div *ngIf="selectedLog.entity_type === 'Vehicle'" class="entity-fields">
+                <div *ngIf="selectedLog.change_data?.new?.image_url" class="vehicle-image-row">
+                  <img [src]="selectedLog.change_data.new.image_url" alt="תמונת רכב" style="max-width: 200px; max-height: 120px; margin-bottom: 1rem;" />
+                </div>
+                <ng-container *ngFor="let key of objectKeys(selectedLog.change_data?.new || {})">
+                  <div class="field-row" *ngIf="key !== 'image_url'">
+                    <div class="field-label">{{ getVehicleFieldLabel(key) }}</div>
+                    <div class="field-value">
+                      <ng-container *ngIf="key.endsWith('datetime') || key.endsWith('at'); else plainNewVehicleValue">
+                        {{ selectedLog.change_data.new[key] | date:'dd/MM/yyyy HH:mm' }}
+                      </ng-container>
+                      <ng-template #plainNewVehicleValue>{{ selectedLog.change_data.new[key] }}</ng-template>
+                    </div>
+                  </div>
+                </ng-container>
+              </div>
+            </div>
+          </div>
+
+          <!-- Other Actions (DELETE, etc.) -->
+          <div *ngIf="selectedLog.action !== 'INSERT' && selectedLog.action !== 'UPDATE'" class="data-card">
+            <h4>נתוני שינוי גולמיים</h4>
+            <div class="json-container">
+              <pre>{{ selectedLog.change_data | json }}</pre>
+            </div>
+          </div>
+        </div>
+
         <button class="close-details-button" (click)="closeDetails()">סגור</button>
       </div>
     </div>

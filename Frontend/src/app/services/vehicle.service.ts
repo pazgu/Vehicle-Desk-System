@@ -22,7 +22,7 @@ export class VehicleService {
   getAvailableVehicles(): Observable<VehicleInItem[]>{
     const url = `${this.apiUrl}/all-vehicles/available`;
     return this.http.get<VehicleInItem[]>(url);  
-  }
+  } 
 
   getVehicleById(id: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/vehicle/${id}`);
