@@ -15,6 +15,54 @@ import { AuditLogs } from '../../../models/audit-logs/audit-logs.module'; // Ens
 export class AuditLogsComponent implements OnInit {
   showFilters = false;
   searchTerm = '';
+
+  logs: any[] = [
+    {
+      id: 1,
+      actionType: 'CREATE',
+      fullName: 'Mickey Mouse',
+      description: 'User Mickey Mouse created a new report on financial data. The report includes quarterly earnings and expenditure analysis.',
+      createdAt: new Date('2024-01-15T10:30:00')
+    },
+    {
+      id: 2,
+      actionType: 'UPDATE',
+      fullName: 'Donald Duck',
+      description: 'User Donald Duck updated the inventory count for warehouse A. Stock levels for item #345 and #678 were adjusted.',
+      createdAt: new Date('2024-01-16T14:45:00')
+    },
+    {
+      id: 2,
+      actionType: 'DELETE',
+      fullName: 'Donald Duck',
+      description: 'User Donald Duck updated the inventory count for warehouse A. Stock levels for item #345 and #678 were adjusted.',
+      createdAt: new Date('2025-06-12T14:45:00')
+    },
+    {
+      id: 2,
+      actionType: 'DELETE',
+      fullName: 'Donald Duck',
+      description: 'quack quack quack quack quack quack quack quack quack quack quack quack quack quack quack',
+      createdAt: new Date('2025-06-13T14:45:00')
+    },
+    {
+      id: 2,
+      actionType: 'CREATE',
+      fullName: 'Donald Duck',
+      description: 'BLAHHHHHHBLAHBLAHHHH',
+      createdAt: new Date('2025-06-14T14:45:00')
+    },
+    {
+      id: 3,
+      actionType: 'DELETE',
+      fullName: 'Goofy Goof',
+      description: 'User Goofy Goof deleted an old project file named "Legacy_Project_X.zip" from the archive server.',
+      createdAt: new Date('2024-01-17T09:00:00')
+    }
+  ];
+
+  filteredLogs: any[] = [];
+  selectedLog: any | null = null;
   objectKeys = Object.keys; // Still useful if you need to iterate over object keys dynamically
 
   constructor(private auditLogService: AuditLogsService) { }
@@ -108,6 +156,21 @@ getVehicleFieldLabel(key: string): string {
     this.selectedLog = null;
   }
 
+  private getLogsForThisWeek(): any[] {
+    const now = new Date();
+    const dayOfWeek = (now.getDay() + 6) % 7; // 0 = Monday, 6 = Sunday
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - dayOfWeek);
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    endOfWeek.setHours(23, 59, 59, 999);
+
+    return this.filteredLogs.filter(log => {
+      const created = new Date(log.createdAt);
+      return created >= startOfWeek && created <= endOfWeek;
+    });
   get totalPages(): number {
     return Math.ceil(this.filteredLogs.length / this.pageSize) || 1;
   }

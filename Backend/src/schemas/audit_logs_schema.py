@@ -13,7 +13,7 @@ class AuditLogSchema(BaseModel):
     changed_by: UUID
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class CreateAuditLogSchema(BaseModel):
     action: str

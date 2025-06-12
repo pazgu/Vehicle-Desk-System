@@ -13,6 +13,11 @@
         <input type="text" class="audit-search-input" placeholder="חיפוש לפי סוג ישות, מזהה ישות או מי שינה"
           [(ngModel)]="searchTerm" (input)="filterLogs()" />
       </div>
+<div class="export-buttons">
+  <h3>דיווחים מהשבוע האחרון-בהתאם לסינון</h3>
+  <button class="export-button" (click)="exportToPDF()">ייצוא PDF</button>
+  <button class="export-button" (click)="exportToCSV()">ייצוא CSV</button>
+</div>
 
       <div class="status-indicators">
         <p style="margin-bottom: 0.75rem; font-weight: 600;">מקרא צבעים</p>

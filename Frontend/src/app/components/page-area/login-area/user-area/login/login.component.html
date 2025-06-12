@@ -16,7 +16,10 @@
   שם המשתמש יכול לכול אותיות בלבד (עברית או אנגלית)
 </small>
 
-<label>סיסמה</label>
+<label>סיסמה</label><div><a style="text-align: center; color: gray; text-decoration: underline; cursor: pointer;"
+     routerLink="/forgot-password">
+    שכחת סיסמה?</a>
+</div>
 <div class="password-container">
   <input 
     [type]="showPassword ? 'text' : 'password'" 
@@ -29,12 +32,7 @@
     {{ showPassword ? 'visibility' : 'visibility_off' }}
   </mat-icon>
 </div>
-<div style="display: flex; align-items: center; justify-content: center; margin-top: 1rem;">
-  <a style="text-align: center; color: gray; text-decoration: underline; cursor: pointer;"
-     routerLink="/forgot-password">
-    שכחת סיסמה?
-  </a>
-</div>
+
 
 
 
@@ -43,6 +41,7 @@
   יש להזין סיסמה
 </small>
 <button type="submit">התחבר</button>
+
       <a routerLink="/register" routerLinkActive="active">
         <p class="register-link">אין לי משתמש</p>
       </a>

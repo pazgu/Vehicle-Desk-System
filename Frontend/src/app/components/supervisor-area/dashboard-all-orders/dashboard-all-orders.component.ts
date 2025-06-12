@@ -10,6 +10,7 @@ import { OrderService } from '../../../services/order.service';
 import { RideDashboardItem } from '../../../models/ride-dashboard-item/ride-dashboard-item.module';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { SocketService } from '../../../services/socket.service';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-dashboard-all-orders',
@@ -38,7 +39,7 @@ export class DashboardAllOrdersComponent implements OnInit {
   showOldOrders: boolean = false;
   sortBy: string = 'date_and_time';
 
-  constructor(private router: Router, private orderService: OrderService,  private socketService: SocketService ) {}
+  constructor(private router: Router, private orderService: OrderService,private toastService:ToastService,  private socketService: SocketService ) {}
 
   ngOnInit(): void {
     const departmentId = localStorage.getItem('department_id');
@@ -49,16 +50,44 @@ export class DashboardAllOrdersComponent implements OnInit {
     }
 
     this.socketService.rideRequests$.subscribe((newRide) => {
-  if (newRide) {
+    if (newRide) {
     console.log('🆕 New ride request received on dashboard:', newRide);
-
-    // Optional: Push directly to UI
-    this.orders.unshift(newRide);
-
-    // Optional: toast message (if you use a toast service)
-    alert('💡בקשה חדשה לנסיעה התקבלה!'); // or use your `ToastService` if available
+    if(newRide.department_id==departmentId){
+      this.orders.unshift(newRide);
+    this.toastService.show("התקבלה בקשה חדשה","success");
+    }
   }
 });
+this.socketService.orderUpdated$.subscribe((updatedRide) => {
+    // if (!updatedRide) return; // skip initial null emission
+
+    console.log('Supervisor Dashboard received ride update:', updatedRide);
+  console.log("Checking against supervisor orders:", this.orders.map(o => o.ride_id));
+
+    // Find the order in the supervisor dashboard's local orders array:
+    const index = this.orders.findIndex(o => o.ride_id === updatedRide.id);
+    console.log('index:',index);
+    if (index !== -1) {
+      const updatedOrder: RideDashboardItem = {
+      ride_id: updatedRide.id,
+      employee_name: updatedRide.employee_name, // make sure this is in your updatedRide
+      requested_vehicle_plate: updatedRide.requested_vehicle_plate || '', // or map from vehicle_id if needed
+      date_and_time: updatedRide.start_datetime,
+      distance: updatedRide.estimated_distance_km,
+      status: updatedRide.status.toLowerCase(),
+      destination: updatedRide.destination || '', // adjust based on your data
+      };
+
+      // Replace with a new array to trigger change detection:
+      this.orders = [
+        ...this.orders.slice(0, index),
+        updatedOrder,
+        ...this.orders.slice(index + 1)
+      ];
+
+      console.log(`Supervisor Dashboard updated ride ${updatedRide.id} in local state`);
+    }
+  });
 
   }
 

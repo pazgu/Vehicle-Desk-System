@@ -24,6 +24,10 @@ from ..services.user_notification import send_admin_odometer_notification
 from datetime import date, datetime, timedelta
 from src.models.vehicle_inspection_model import VehicleInspection
 from ..services.monthly_trip_counts import archive_last_month_stats
+from sqlalchemy import func
+from fastapi.responses import JSONResponse
+from src.models.ride_model import Ride
+from sqlalchemy import cast, Date
 
 
 
@@ -199,6 +203,68 @@ def get_today_inspections(db: Session = Depends(get_db)):
     ).all()
 
     return inspections
+
+# This function will be called later by another function with a GET route.
+@router.post("/stats/archive-last-month")
+def archive_last_month_endpoint(db: Session = Depends(get_db)):
+    archive_last_month_stats(db)
+    return {"detail": "Archiving completed successfully"}
+
+
+@router.get("/analytics/vehicle-status-summary")
+def vehicle_status_summary(db: Session = Depends(get_db)):
+    try:
+        result = (
+            db.query(Vehicle.status, func.count(Vehicle.id).label("count"))
+            .group_by(Vehicle.status)
+            .all()
+        )
+        # Format response as a list of dicts
+        summary = [{"status": row.status.value, "count": row.count} for row in result]
+        return JSONResponse(content=summary)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching summary: {str(e)}")
+
+@router.get("/analytics/ride-status-summary")
+def ride_status_summary(db: Session = Depends(get_db)):
+    try:
+        result = (
+            db.query(Ride.status, func.count(Ride.id).label("count"))
+            .group_by(Ride.status)
+            .all()
+        )
+        summary = [{"status": row.status.value, "count": row.count} for row in result]
+        return JSONResponse(content=summary)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching ride summary: {str(e)}")
+
+
+# @router.get("/analytics/weekly-ride-trends")
+# def weekly_ride_trends(db: Session = Depends(get_db)):
+#     try:
+#         today = datetime.utcnow().date()
+#         week_ago = today - timedelta(days=6)  # last 7 days including today
+
+#         # Group by date, count rides
+#         results = (
+#             db.query(
+#                 cast(Ride.start_datetime, Date).label("ride_date"),
+#                 func.count(Ride.id).label("count")
+#             )
+#             .filter(Ride.start_datetime >= week_ago)
+#             .group_by("ride_date")
+#             .order_by("ride_date")
+#             .all()
+#         )
+
+#         # Convert to list of dicts
+#         response = [{"date": str(r.ride_date), "count": r.count} for r in results]
+
+#         return JSONResponse(content=response)
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=f"Failed to fetch weekly ride trends: {str(e)}")
+
+
 
 
 @router.post("/update-monthly-trip-counts")
