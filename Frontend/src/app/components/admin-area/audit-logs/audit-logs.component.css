@@ -581,3 +581,27 @@
   background-color: #e2f0f8; /* Blue */
   border: #2aacc0 1.6px solid; /* Blue border */
 }
+
+.export-button {
+    background-color: #f5f5f5; /* Light background to contrast with text */
+    color: #942222;
+    border: 1px solid #942222;
+    padding: 0.2rem 0.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    margin: 10px;
+}
+
+.export-button:hover {
+    background-color: #942222;
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+.export-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(148, 34, 34, 0.3);
+}
