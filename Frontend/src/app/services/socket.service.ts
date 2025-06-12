@@ -16,6 +16,8 @@ export class SocketService {
   public notifications$ = new BehaviorSubject<any>(null);
   public rideRequests$ = new BehaviorSubject<any>(null);
   public orderUpdated$ = new BehaviorSubject<any>(null); 
+  public vehicleStatusUpdated$ = new BehaviorSubject<any>(null); 
+  public rideStatusUpdated$ = new BehaviorSubject<any>(null); 
 
 
   constructor() {
@@ -64,7 +66,15 @@ export class SocketService {
       this.rideRequests$.next(data);
     });
 
-   
+    this.socket.on('ride_status_updated', (data: any) => {
+      console.log('🚗 ride status updated:', data);
+      this.rideStatusUpdated$.next(data);
+    });
+       this.socket.on('vehicle_status_updated', (data: any) => {
+      console.log('🚗 vehicle status updated:', data);
+      this.vehicleStatusUpdated$.next(data);
+    });
+
 setTimeout(() => {
   this.orderUpdated$.next({ id: 'test-id' });
 }, 3000);
