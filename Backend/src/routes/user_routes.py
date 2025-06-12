@@ -7,6 +7,7 @@ from ..schemas.new_ride_schema import RideCreate
 from ..services import register_service
 from ..services import login_service
 from uuid import UUID
+from sqlalchemy import text
 from ..services.new_ride_service import create_ride 
 from fastapi.responses import JSONResponse
 from typing import List, Optional, Union

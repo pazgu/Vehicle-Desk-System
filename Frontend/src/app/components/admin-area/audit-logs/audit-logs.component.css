@@ -574,8 +574,8 @@
   border: #c16a73 1.6px solid; /* Red border */
 }
 .status-indicator.emergency {
-  background-color: #f9c492; /* Gray */
-  border: #cc813c 1.6px solid; /* Gray border */
+  background-color: #f9c492;
+  border: #cc813c 1.6px solid; 
 }
 .status-indicator.frozen {
   background-color: #e2f0f8; /* Blue */

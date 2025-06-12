@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
 from datetime import datetime
+from sqlalchemy.dialects.postgresql import UUID
 
 class AuditLogSchema(BaseModel):
     id: int

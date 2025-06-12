@@ -25,6 +25,26 @@ export class AuditLogsComponent implements OnInit {
   pageSize = 5;
   currentPage = 1;
 
+  rideFieldLabels: { [key: string]: string } = {
+    id: 'מזהה נסיעה',
+    stop: 'עצירה',
+    status: 'סטטוס',
+    user_id: 'מזהה משתמש',
+    isArchive: 'ארכיון',
+    ride_type: 'סוג נסיעה',
+    vehicle_id: 'מזהה רכב',
+    destination: 'יעד',
+    end_datetime: 'תאריך סיום',
+    submitted_at: 'תאריך שליחה',
+    start_datetime: 'תאריך התחלה',
+    start_location: 'מיקום התחלה',
+    emergency_event: 'אירוע חירום',
+    override_user_id: 'מזהה משתמש עוקף',
+    actual_distance_km: 'מרחק בפועל (ק"מ)',
+    license_check_passed: 'עבר בדיקת רישיון',
+    estimated_distance_km: 'מרחק משוער (ק"מ)'
+  };
+
   ngOnInit() {
     this.loadLogs();
   }
@@ -99,5 +119,9 @@ export class AuditLogsComponent implements OnInit {
 
   prevPage() {
     if (this.currentPage > 1) this.currentPage--;
+  }
+
+  getRideFieldLabel(key: string): string {
+    return this.rideFieldLabels[key] || key;
   }
 }

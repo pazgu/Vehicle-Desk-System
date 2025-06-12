@@ -138,7 +138,10 @@ def patch_vehicle_status(
     db: Session = Depends(get_db),
     payload: dict = Depends(token_check)
 ):
-    return update_vehicle_status(vehicle_id, status_update.new_status, status_update.freeze_reason, db)
+    user_id = payload.get("user_id") or payload.get("sub")
+    if not user_id:
+        return {"error": "User ID not found in token"}, 401
+    return update_vehicle_status(vehicle_id, status_update.new_status, status_update.freeze_reason, db, user_id)
 
 @router.get("/vehicle/{vehicle_id}")
 def get_vehicle_by_id_route(vehicle_id: str, db: Session = Depends(get_db)):
