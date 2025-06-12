@@ -8,6 +8,8 @@ env/
 _pycache_/
 *.pyc
 
+.env
+
 # Ignore system files
 .DS_Store
 
