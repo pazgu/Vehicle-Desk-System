@@ -9,6 +9,7 @@ from fastapi import HTTPException
 
 
 def create_inspection(data: VehicleInspectionSchema, db: Session):
+    print("📥 RAW INPUT RECEIVED:", data.dict())
     try:
         print("🛠️ Creating new inspection with data:", data.dict())
 
@@ -43,7 +44,10 @@ def create_inspection(data: VehicleInspectionSchema, db: Session):
                 )
                 print(f"🔔 Notification sent to admin {admin.username} (ID: {admin.employee_id})")
 
-        return inspection
+        return {
+            "message": "Inspection saved successfully",
+            "inspection_id": str(inspection.inspection_id)
+        }
     
     except Exception as e:
         print("❌ Failed to save inspection:", e)

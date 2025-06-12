@@ -71,10 +71,10 @@
 
     <!-- Show this block ONLY if checkbox is checked -->
     <div *ngIf="inspectionForm.get('critical_issue_bool')?.value">
-      <label for="critical_issue">אירוע חריג (אם קיים):</label>
-      <input id="critical_issue" type="text" formControlName="critical_issue" placeholder="תאר את האירוע החריג" />
+      <label for="issues_found">אירוע חריג (אם קיים):</label>
+      <input id="issues_found" type="text" formControlName="issues_found" placeholder="תאר את האירוע החריג" />
       <div class="error-msg"
-        *ngIf="inspectionForm.get('critical_issue')?.touched && inspectionForm.get('critical_issue')?.invalid">
+        *ngIf="inspectionForm.get('issues_found')?.touched && inspectionForm.get('issues_found')?.invalid">
         יש למלא תיאור של האירוע החריג
       </div>
     </div>

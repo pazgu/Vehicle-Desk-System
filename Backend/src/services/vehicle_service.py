@@ -108,7 +108,7 @@ def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
 
     return {
         "message": "Vehicle inspection recorded successfully",
-        "inspection_id": str(inspection.id)
+        "inspection_id": str(inspection.inspection_id)
     }
 
 

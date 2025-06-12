@@ -31,11 +31,11 @@ ngOnInit(): void {
   fuel_checked: [false],
   no_items_left: [false],
   critical_issue_bool: [false],
-  critical_issue: ['']
+  issues_found: ['']
 });
 
 this.inspectionForm.get('critical_issue_bool')?.valueChanges.subscribe(value => {
-  const field = this.inspectionForm.get('critical_issue');
+  const field = this.inspectionForm.get('issues_found');
   if (value === true) {
     field?.setValidators([Validators.required]);
   } else {
@@ -101,13 +101,14 @@ submitInspection(): void {
   // };
 
 const data = {
+  inspection_date: new Date(), // Add this line
   inspected_by: localStorage.getItem('employee_id'),
   clean: form.clean,
   fuel_checked: form.fuel_checked,
   no_items_left: form.no_items_left,
   critical_issue_bool: form.critical_issue_bool,
-  issues_found: form.critical_issue_bool && form.critical_issue?.trim()
-    ? form.critical_issue.trim()
+  issues_found: form.critical_issue_bool && form.issues_found?.trim()
+    ? form.issues_found.trim()
     : null
 };
 

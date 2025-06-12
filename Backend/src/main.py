@@ -1,4 +1,7 @@
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
+from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
+from fastapi.responses import JSONResponse
 from src.routes.user_routes import router as user_route
 from src.routes.supervisor_routes import router as supervisor_route
 from src.routes.admin_routes import router as admin_route
@@ -13,6 +16,16 @@ from socketio import ASGIApp
 from .utils.socket_manager import sio
 app = FastAPI()
 sio_app = ASGIApp(sio, other_asgi_app=app)
+
+# Dev-only: custom validation error handler for readable 422 logs
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    print("❌ Validation Error on /api/vehicle-inspections:")
+    print(exc.errors())
+    return JSONResponse(
+        status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+        content={"detail": exc.errors()},
+    )
 
 print("🚀 FastAPI app starting with CORS enabled")
 

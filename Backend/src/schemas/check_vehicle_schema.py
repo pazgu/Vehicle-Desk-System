@@ -6,9 +6,8 @@ from datetime import datetime
 
 class VehicleInspectionSchema(BaseModel):   
     inspection_id: Optional[UUID] = None
-    inspection_date: Optional[datetime] = None
-    inspected_by: Optional[UUID] 
-
+    inspection_date: datetime = None
+    inspected_by: UUID = None 
     # fuel_level: bool
     # tires_ok: bool
     clean: bool
