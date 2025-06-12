@@ -15,11 +15,13 @@ import asyncio
 
 def get_user_notifications(db: Session, user_id: UUID):
     results = (
-        db.query(Notification, Ride.status)
-        .outerjoin(Ride, Ride.id == Notification.order_id)
-        .filter(Notification.user_id == user_id)
-        .all()
-    )
+    db.query(Notification, Ride.status)
+    .outerjoin(Ride, Ride.id == Notification.order_id)
+    .filter(Notification.user_id == user_id)
+    .order_by(Notification.sent_at.desc())  # 👈 Sort by sent_at descending
+    .all()
+)
+
 
     # Combine Notification and status into a dict per result
     notifications = []

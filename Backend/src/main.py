@@ -31,12 +31,12 @@ async def log_requests(request: Request, call_next):
     print(f"⬅️ Response: {response.status_code}")
     return response
 
-@sio.on("join")
-async def join_room(sid, data):
-    room = data.get("room")
-    if room:
-        await sio.enter_room(sid, room)
-        print(f"👥 Socket {sid} joined room {room}")
+# @sio.on("join")
+# async def join_room(sid, data):
+#     room = data.get("room")
+#     if room:
+#         await sio.enter_room(sid, room)
+#         print(f"👥 Socket {sid} joined room {room}")
 
 # Step 4: Wrap the FastAPI app with Socket.IO
 socket_app = ASGIApp(sio, other_asgi_app=app)
