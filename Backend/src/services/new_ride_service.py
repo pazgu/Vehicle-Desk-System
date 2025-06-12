@@ -7,7 +7,8 @@ from ..utils.email_utils import send_email
 from datetime import datetime
 from ..utils.audit_utils import log_action
 from ..models.vehicle_model import Vehicle
-def create_ride(db: Session, user_id: UUID, ride: RideCreate):
+from ..utils.socket_manager import sio
+async def create_ride(db: Session, user_id: UUID, ride: RideCreate):
     # Get the user info
    
     # Create the new ride
@@ -35,6 +36,11 @@ def create_ride(db: Session, user_id: UUID, ride: RideCreate):
     db.add(new_ride)
     db.commit()
     db.refresh(new_ride)
+
+    await sio.emit("ride_status_updated", {
+    "ride_id": str(new_ride.id),
+    "new_status": new_ride.status.value
+})
 
     # Fetch the user who submitted the ride
     user = db.query(User).filter(User.employee_id == user_id).first()
