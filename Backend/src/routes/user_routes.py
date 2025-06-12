@@ -1,3 +1,4 @@
+import json
 import traceback
 from fastapi import APIRouter, HTTPException, Depends , Query,Form
 from sqlalchemy.orm import Session
@@ -39,6 +40,7 @@ from ..utils.email_utils import send_email
 from ..services.auth_service import create_reset_token,verify_reset_token
 from ..schemas.reset_password import ResetPasswordInput,ForgotPasswordRequest
 from ..services.user_data import get_user_department
+from ..models.vehicle_model import Vehicle
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 from ..models.ride_model import PendingRideSchema
 
@@ -198,7 +200,7 @@ async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = De
                 "sent_at": supervisor_notification.sent_at.isoformat(),
                 "order_id": str(supervisor_notification.order_id) if supervisor_notification.order_id else None,
                 "order_status":new_ride.status
-            }, room=str(supervisor_notification.user_id))
+            })
         else:
             logger.warning("No supervisor found — skipping supervisor notification.")
 
@@ -220,7 +222,7 @@ async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = De
             "sent_at": confirmation.sent_at.isoformat(),
             "order_id": str(confirmation.order_id) if confirmation.order_id else None,
             "order_status":new_ride.status
-        }, room=str(confirmation.user_id))
+        })
 
 
         return new_ride
@@ -240,15 +242,19 @@ def get_departments_route():
 async def patch_order(order_id: UUID, patch_data: OrderCardItem, db: Session = Depends(get_db)):
     # Update the order
     updated_order = patch_order_in_db(order_id, patch_data, db)
-    
+    user = db.query(User).filter(User.employee_id == updated_order.user_id).first()
+    vehicle = db.query(Vehicle).filter(Vehicle.id == updated_order.vehicle_id).first()
+
     # Emit the updated order to the user's room
     order_data = {
     "id": str(updated_order.id),
     "user_id": str(updated_order.user_id),
+    "employee_name":f"{user.first_name} {user.last_name}",
     "vehicle_id": str(updated_order.vehicle_id) if updated_order.vehicle_id else None,
+    "requested_vehicle_plate":vehicle.plate_number,
     "ride_type": updated_order.ride_type,
-    "start_datetime": updated_order.start_datetime.isoformat(),
-    "end_datetime": updated_order.end_datetime.isoformat(),
+    "start_datetime": updated_order.start_datetime,
+    "end_datetime": updated_order.end_datetime,
     "start_location": updated_order.start_location,
     "stop": updated_order.stop,
     "destination": updated_order.destination,
@@ -256,11 +262,11 @@ async def patch_order(order_id: UUID, patch_data: OrderCardItem, db: Session = D
     "actual_distance_km": updated_order.actual_distance_km,
     "status": updated_order.status.value,
     "license_check_passed": updated_order.license_check_passed,
-    "submitted_at": updated_order.submitted_at.isoformat(),
+    "submitted_at": updated_order.submitted_at,
     "emergency_event": updated_order.emergency_event,
 }
-
-    await sio.emit("order_updated", convert_decimal(order_data), room=str(updated_order.user_id))
+    print("Order data to emit:", json.dumps(convert_decimal(order_data), indent=2))
+    await sio.emit("order_updated", convert_decimal(order_data))
     return {
         "message": "ההזמנה עודכנה בהצלחה",
         "order": updated_order
@@ -286,13 +292,14 @@ async def send_notification_route(
         )
 
         # Emit the notification to the user's Socket.IO room
-        await sio.emit("notification", {
+        await sio.emit("new_notification", {
             "id": str(notification.id),
             "title": notification.title,
+            "user_id":str(notification.user_id),
             "message": notification.message,
             "notification_type": notification.notification_type.value,  # if enum
             "sent_at": notification.sent_at.isoformat()
-        }, room=str(user_id))
+        })
 
         return {"message": "Notification sent successfully", "notification": notification}
 

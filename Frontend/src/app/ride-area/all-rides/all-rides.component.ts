@@ -47,12 +47,10 @@ export class AllRidesComponent implements OnInit {
   highlightedOrderId: string | null = null;
 
 
-  ngOnInit(): void {
+ngOnInit(): void {
     const storedOrders = localStorage.getItem('user_orders');
      const userId = localStorage.getItem('employee_id');
-  if (userId) {
-    this.socketService.joinRoom(userId); // 💥 Join the user's socket room!
-  }
+ 
      this.route.queryParams.subscribe(params => {
       const idToHighlight = params['highlight'] || null;
       if (idToHighlight) {
@@ -76,6 +74,8 @@ export class AllRidesComponent implements OnInit {
 });
 
 this.socketService.orderUpdated$.subscribe((updatedRide) => {
+  console.log('🔔 Subscription triggered with:', updatedRide); // Add this line
+  if (!updatedRide) return; // ignore the initial null emission
   if (updatedRide) {
     console.log('✏️ Ride update received in HomeComponent:', updatedRide);
 
@@ -84,7 +84,7 @@ this.socketService.orderUpdated$.subscribe((updatedRide) => {
       const newDate = formatDate(updatedRide.start_datetime, 'dd.MM.yyyy', 'en-US');
       const newTime = formatDate(updatedRide.start_datetime, 'HH:mm', 'en-US');
 
-      this.orders[index] = {
+      const updatedOrder = {
         ...this.orders[index],
         date: newDate,
         time: newTime,
@@ -94,13 +94,22 @@ this.socketService.orderUpdated$.subscribe((updatedRide) => {
         submitted_at: updatedRide.submitted_at
       };
 
+      // 👈 **replace array with a new one**
+      this.orders = [
+        ...this.orders.slice(0, index),
+        updatedOrder,
+        ...this.orders.slice(index + 1)
+      ];
+
       console.log(`✅ Ride ${updatedRide.id} updated in local state`);
+      this.toastService.show('✅ יש בקשה שעודכנה בהצלחה','success')
     }
   }
 });
 
 
   }
+   
    
   get pagedOrders() {
     const start = (this.currentPage - 1) * this.ordersPerPage;

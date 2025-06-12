@@ -59,6 +59,36 @@ export class DashboardAllOrdersComponent implements OnInit {
     }
   }
 });
+this.socketService.orderUpdated$.subscribe((updatedRide) => {
+    // if (!updatedRide) return; // skip initial null emission
+
+    console.log('Supervisor Dashboard received ride update:', updatedRide);
+  console.log("Checking against supervisor orders:", this.orders.map(o => o.ride_id));
+
+    // Find the order in the supervisor dashboard's local orders array:
+    const index = this.orders.findIndex(o => o.ride_id === updatedRide.id);
+    console.log('index:',index);
+    if (index !== -1) {
+      const updatedOrder: RideDashboardItem = {
+      ride_id: updatedRide.id,
+      employee_name: updatedRide.employee_name, // make sure this is in your updatedRide
+      requested_vehicle_plate: updatedRide.requested_vehicle_plate || '', // or map from vehicle_id if needed
+      date_and_time: updatedRide.start_datetime,
+      distance: updatedRide.estimated_distance_km,
+      status: updatedRide.status.toLowerCase(),
+      destination: updatedRide.destination || '', // adjust based on your data
+      };
+
+      // Replace with a new array to trigger change detection:
+      this.orders = [
+        ...this.orders.slice(0, index),
+        updatedOrder,
+        ...this.orders.slice(index + 1)
+      ];
+
+      console.log(`Supervisor Dashboard updated ride ${updatedRide.id} in local state`);
+    }
+  });
 
   }
 
