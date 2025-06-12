@@ -76,7 +76,7 @@ export const routes: Routes = [
       .then(m => m.AdminInspectionsComponent),
   canActivate: [ProtectedRouteGuard]
 },
-{
+{ 
   path: 'inspector/vehicles',
   component: AvailableAndFrozenCarsComponent
 },

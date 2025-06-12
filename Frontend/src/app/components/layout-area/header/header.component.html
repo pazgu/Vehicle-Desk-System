@@ -46,7 +46,8 @@
     <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/vehicle-dashboard']" class="nav-link" href="#">רכבים | </a>
     <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/audit-logs']" class="nav-link" href="#"> מעקב פעולות | </a>
     <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/user-data']" class="nav-link" href="#"> נתוני עובדים | </a>
-    <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/admin/daily-inspections']" class="nav-link" href="#"> בדיקות של זלמן  </a>
+    <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/admin/daily-inspections']" class="nav-link" href="#"> בדיקות של זלמן | </a>
+    <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/admin/analytics']" class="nav-link" href="#">מידע</a>
 
 
     <a *ngIf="(role$ | async) === 'supervisor'" [routerLink]="['/supervisor-dashboard']" class="nav-link" href="#">הזמנות מחלקה   </a>
