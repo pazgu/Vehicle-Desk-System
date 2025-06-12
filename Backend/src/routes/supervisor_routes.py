@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from uuid import UUID
 from src.services.supervisor_dashboard_service import get_department_orders,get_department_specific_order,edit_order_status
 from sqlalchemy.orm import Session
@@ -11,7 +11,11 @@ from ..schemas.order_card_item import OrderCardItem
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 from ..services.supervisor_dashboard_service import vehicle_inspection_logic , start_ride
 from ..schemas.vehicle_schema import FreezeVehicleRequest
-
+from ..utils.socket_manager import sio 
+from ..utils.socket_utils import convert_decimal
+from ..models.vehicle_model import Vehicle
+from ..models.user_model import User
+import json
 router = APIRouter()
 
 
@@ -28,8 +32,58 @@ def get_department_specific_order_route(department_id: UUID, order_id: UUID, db:
     return order
 
 @router.patch("/orders/{department_id}/{order_id}/update/{status}")
-def edit_order_status_route(department_id: UUID, order_id: UUID, status: str, db: Session = Depends(get_db)):
-    return edit_order_status(department_id, order_id, status, db)
+async def edit_order_status_route(
+    department_id: UUID,
+    order_id: UUID,
+    status: str,
+    db: Session = Depends(get_db)
+):
+    updated_order, notification = edit_order_status(department_id, order_id, status, db)
+
+    if not updated_order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    # Prepare order data for emission
+    user = db.query(User).filter(User.employee_id == updated_order.user_id).first()
+    vehicle = db.query(Vehicle).filter(Vehicle.id == updated_order.vehicle_id).first()
+
+    # Emit the updated order to the user's room
+    order_data = {
+    "id": str(updated_order.id),
+    "user_id": str(updated_order.user_id),
+    "employee_name":f"{user.first_name} {user.last_name}",
+    "vehicle_id": str(updated_order.vehicle_id) if updated_order.vehicle_id else None,
+    "requested_vehicle_plate":vehicle.plate_number,
+    "ride_type": updated_order.ride_type,
+    "start_datetime": updated_order.start_datetime,
+    "end_datetime": updated_order.end_datetime,
+    "start_location": updated_order.start_location,
+    "stop": updated_order.stop,
+    "destination": updated_order.destination,
+    "estimated_distance_km": updated_order.estimated_distance_km,
+    "actual_distance_km": updated_order.actual_distance_km,
+    "status": updated_order.status.value,
+    "license_check_passed": updated_order.license_check_passed,
+    "submitted_at": updated_order.submitted_at,
+    "emergency_event": updated_order.emergency_event,
+}
+    print("Order data to emit:", json.dumps(convert_decimal(order_data), indent=2))
+    await sio.emit("order_updated", convert_decimal(order_data))
+
+    # 🔔 Emit notification to the user (if created)
+    if notification:
+        await sio.emit("new_notification", {
+            "id": str(notification.id),
+            "user_id": str(notification.user_id),
+            "title": notification.title,
+            "message": notification.message,
+            "notification_type": notification.notification_type.value,
+            "sent_at": notification.sent_at.isoformat(),
+            "order_id": str(notification.order_id) if notification.order_id else None,
+            "order_status": updated_order.status
+        })
+
+    return {"message": "הסטטוס עודכן בהצלחה"}
 
 
 # @router.get("/orders/{department_id}/{order_id}/pending")

@@ -140,14 +140,10 @@ def edit_order_status(department_id: str, order_id: str, new_status: str, db: Se
 
     db.add(notification)
     db.commit()
+    db.refresh(notification)
 
-    return True
+    return order, notification
 
-from typing import List
-from sqlalchemy.orm import Session
-from uuid import UUID
-from src.models.notification_model import Notification
-from src.models.user_model import User  # assuming you have this model with department info and role
 
 def get_department_notifications(department_id: UUID, db: Session) -> List[Notification]:
     # Find all supervisors in the department
