@@ -32,7 +32,7 @@ print("🚀 FastAPI app starting with CORS enabled")
 
 
 app.add_middleware(
-    CORSMiddleware,
+    StarletteCORSMiddleware,
     allow_origins=["http://localhost:4200"],  # Allows the frontend from localhost:4200 to make requests
     allow_credentials=True,
     allow_methods=["*"],  # Allows all methods like GET, POST, PUT, DELETE, etc.
