@@ -30,13 +30,13 @@ def get_department_orders(department_id: str, db: Session) -> List[RideDashboard
     # Map the database results to the RideDashboardItem schema
     dashboard_items = []
 
-    for order in orders:
+    for order, plate_number in orders:
         # Query the users table to get the employee name
         user = db.query(User).filter(User.employee_id == order.user_id).first()
         employee_name = f"{user.first_name} {user.last_name}" if user else "Unknown"
 
         # Get the vehicle plate (mocked for now)
-        vehicle_plate = order.plate_number # Replace with actual logic if needed
+        vehicle_plate = plate_number # Replace with actual logic if needed
 
         # Create a RideDashboardItem schema for each order
         dashboard_item = RideDashboardItem(

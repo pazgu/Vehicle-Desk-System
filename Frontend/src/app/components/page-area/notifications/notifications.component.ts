@@ -7,6 +7,7 @@ import { he } from 'date-fns/locale';
 import { Router } from '@angular/router';
 import { SocketService } from '../../../services/socket.service';
 import { ToastService } from '../../../services/toast.service';
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-notifications',
@@ -24,15 +25,14 @@ export class NotificationsComponent implements OnInit {
     private notificationService: NotificationService,
     private socketService: SocketService,
     private toastService: ToastService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
  ngOnInit(): void {
   // ✅ Join user's Socket.IO room for live updates
   const userId = localStorage.getItem('employee_id'); // make sure this key matches your localStorage
-  if (userId) {
-    this.socketService.joinRoom(userId);
-  }
+ 
   console.log('👤 Joining socket room for user:', userId);
 
 
@@ -102,7 +102,7 @@ export class NotificationsComponent implements OnInit {
       });
     }
     this.socketService.notifications$.subscribe((newNotif) => {
-  if (newNotif) {
+  if (newNotif && newNotif.user_id == userId) {
     console.log("new notif from socket in component",newNotif)
     const notifWithTimeAgo = {
       ...newNotif,
@@ -113,7 +113,9 @@ export class NotificationsComponent implements OnInit {
     };
 
     // Add to the top of the list
-    this.notifications.unshift(notifWithTimeAgo);
+    this.notifications = [notifWithTimeAgo, ...this.notifications];
+    this.cdr.detectChanges(); // ← Add this line
+
 
    if (newNotif.message.includes('בעיה חמורה') || newNotif.notification_type === 'critical') {
   const audio = new Audio('assets/sounds/notif.mp3');

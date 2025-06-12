@@ -67,7 +67,7 @@
             </td>
             <td>{{ trip.employee_name }}</td>
             <td>{{ trip.requested_vehicle_plate }}</td>
-            <td>{{ trip.date_and_time | date: 'yyyy-MM-dd HH:mm' }}</td>
+            <td>{{ trip.date_and_time | date:'dd/MM/yyyy HH:mm' }}</td>
             <td>{{ trip.distance }}</td>
             <td [ngClass]="getStatusClass(trip.status)">{{ translateStatus(trip.status) }}</td>
           </tr>
