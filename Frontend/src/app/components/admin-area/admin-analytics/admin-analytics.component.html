@@ -1,0 +1,42 @@
+<div class="analytics-container">
+  <div class="chart-card">
+    <!-- SORT DROPDOWN -->
+    <div class="sort-container inside-card">
+      <label for="sortSelect">מיין לפי:</label>
+      <select id="sortSelect" [(ngModel)]="selectedSortOption" (change)="onSortChange()">
+        <option value="default">ברירת מחדל</option>
+        <option value="countAsc">כמות - עולה</option>
+        <option value="countDesc">כמות - יורד</option>
+        <option value="alphabetical">א-ת</option>
+      </select>
+    </div>
+
+    <p-tabView [(activeIndex)]="activeTabIndex" (onChange)="onTabChange($event.index)">
+    
+      <p-tabPanel header="סטטוס רכבים">
+        <div class="chart-wrapper">
+          <h2>סטטוס רכבים</h2>
+          <p-chart 
+            *ngIf="activeTabIndex === 0 && vehicleChartData?.datasets?.length" 
+            type="pie" 
+            [data]="vehicleChartData" 
+            [options]="vehicleChartOptions">
+          </p-chart>
+        </div>
+      </p-tabPanel>
+
+      <p-tabPanel header="סטטוס נסיעות">
+        <div class="chart-wrapper">
+          <h2>סטטוס נסיעות</h2>
+          <p-chart 
+            *ngIf="activeTabIndex === 1 && rideChartData?.datasets?.length" 
+            type="pie" 
+            [data]="rideChartData" 
+            [options]="rideChartOptions">
+          </p-chart>
+        </div>
+      </p-tabPanel>
+
+    </p-tabView>
+  </div>
+</div>

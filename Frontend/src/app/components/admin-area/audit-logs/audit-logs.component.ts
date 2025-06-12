@@ -50,21 +50,21 @@ export class AuditLogsComponent implements OnInit {
       actionType: 'DELETE',
       fullName: 'Donald Duck',
       description: 'User Donald Duck updated the inventory count for warehouse A. Stock levels for item #345 and #678 were adjusted.',
-      createdAt: new Date('2025-05-26T14:45:00')
+      createdAt: new Date('2025-06-12T14:45:00')
     },
     {
       id: 2,
       actionType: 'DELETE',
       fullName: 'Donald Duck',
       description: 'quack quack quack quack quack quack quack quack quack quack quack quack quack quack quack',
-      createdAt: new Date('2025-05-26T14:45:00')
+      createdAt: new Date('2025-06-13T14:45:00')
     },
     {
       id: 2,
       actionType: 'CREATE',
       fullName: 'Donald Duck',
       description: 'BLAHHHHHHBLAHBLAHHHH',
-      createdAt: new Date('2025-05-26T14:45:00')
+      createdAt: new Date('2025-06-14T14:45:00')
     },
     {
       id: 3,
@@ -116,7 +116,7 @@ export class AuditLogsComponent implements OnInit {
     endOfWeek.setDate(startOfWeek.getDate() + 6);
     endOfWeek.setHours(23, 59, 59, 999);
 
-    return this.logs.filter(log => {
+    return this.filteredLogs.filter(log => {
       const created = new Date(log.createdAt);
       return created >= startOfWeek && created <= endOfWeek;
     });

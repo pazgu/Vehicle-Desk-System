@@ -1,12 +1,12 @@
 from sqlalchemy.orm import Session
 from uuid import uuid4, UUID
-from ..schemas.new_ride_schema import RideCreate
+from ..schemas.new_ride_schema import RideCreate,RideResponse
 from ..models.ride_model import Ride, RideStatus
 from ..models.user_model import User  
 from ..utils.email_utils import send_email  
 from datetime import datetime
 from ..utils.audit_utils import log_action
-
+from ..models.vehicle_model import Vehicle
 def create_ride(db: Session, user_id: UUID, ride: RideCreate):
     # Get the user info
    
@@ -28,6 +28,7 @@ def create_ride(db: Session, user_id: UUID, ride: RideCreate):
         submitted_at=datetime.utcnow(),
         override_user_id=user_id
     )
+    vehicle = db.query(Vehicle).filter(Vehicle.id == ride.vehicle_id).first()
 
     print("🚗 New ride object:", new_ride)
     print(new_ride)
@@ -77,5 +78,12 @@ Ride Management System
     # Send the email to both the user and all admins
     recipients = [user.email] + admin_emails
     send_email(subject, body, recipients)
+    ride_response = RideResponse(
+        **new_ride.__dict__,
+        plate_number=vehicle.plate_number,
+        username=f"{user.first_name} {user.last_name}",
+    )
+    ride_response_dict = ride_response.dict()
+    ride_response_dict.pop('_sa_instance_state', None)
 
-    return new_ride
+    return ride_response
