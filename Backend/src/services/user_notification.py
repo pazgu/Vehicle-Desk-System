@@ -37,7 +37,7 @@ async def send_notification_async(
     message: str,
     notification_type: NotificationType
 ):
-    new_notification = await asyncio.to_thread(send_notification, db, user_id, title, message, notification_type)
+    new_notification = await asyncio.to_thread(send_notification_async, db, user_id, title, message, notification_type)
 
     notif_data = {
         "id": str(new_notification.id),
@@ -72,8 +72,13 @@ def create_system_notification(user_id, title, message, order_id=None):
         db.commit()
         db.refresh(notif)
 
-        # ✅ Emit via Socket.IO to user's room
-        asyncio.create_task(sio.emit("new_notification", {
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
+        loop.run_in_executor(None, lambda: sio.emit("new_notification", {
             "id": str(notif.id),
             "title": notif.title,
             "message": notif.message,
