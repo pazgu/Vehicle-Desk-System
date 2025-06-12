@@ -490,9 +490,3 @@ button[ng-click="showWarning()"]:hover {
   background-color: #ffc7c7;
 }
 
-/* Disabled buttons */
-.modify-buttons button[disabled] {
-  background-color: #ccc;
-  color: #666;
-  border: none;
-}
