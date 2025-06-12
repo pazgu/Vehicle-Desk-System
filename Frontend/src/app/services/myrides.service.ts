@@ -13,7 +13,6 @@ export class MyRidesService {
   private pastOrdersUrl = environment.pastOrdersUrl;
   private futureOrdersUrl = environment.futureOrdersUrl;
 
-
   constructor(private http: HttpClient) {}
 
   getFutureOrders(userId: string, filters?: any): Observable<any> {
@@ -28,6 +27,15 @@ export class MyRidesService {
     console.log(orders)
     return orders
   }
+  deleteOrder(OrderId: string):Observable<any>{
+    const token = localStorage.getItem('access_token');
+    const headerss = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.delete(`${this.allOrdersUrl}/${OrderId}`, { headers: headerss });
+  }
 
   getPastOrders(userId: string, filters?: any): Observable<any> {
     const token = localStorage.getItem('access_token');
@@ -35,7 +43,7 @@ export class MyRidesService {
   .set('Authorization', `Bearer ${token}`)
   .set('Accept', 'application/json');
 
-    const orders=this.http.get(`${this.pastOrdersUrl}/${userId}`, {
+    const orders=this.http.get(`${this.pastOrdersUrl}`, {
       params: this.buildParams(filters),
       headers: headerss
     });

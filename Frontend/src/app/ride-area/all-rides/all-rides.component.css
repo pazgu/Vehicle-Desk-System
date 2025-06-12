@@ -356,12 +356,7 @@ button[ng-click="showWarning()"]:hover {
 
 
 }
-.archive-icon{
-  width: 40px;
-  height:40px;
-  margin-right: 8px;
-  vertical-align: middle;
-}
+
 /* Slide in animation */
 @keyframes slideInFromRight {
   from {
@@ -400,7 +395,7 @@ button[ng-click="showWarning()"]:hover {
   .exceeded-rides-warming p {
     font-size: 12px;
   }
-  
+
   button[ng-click="showWarning()"] {
     top: 15px !important;
     right: 15px !important;
@@ -462,4 +457,42 @@ button[ng-click="showWarning()"]:hover {
   100% {
     background-color: #e6f4ea;
   }
+}
+
+.modify-buttons {
+  display: flex;
+  flex-direction: row; /* Important for RTL layout */
+  gap: 0.1rem;
+  justify-content: flex-start;
+  align-items: center;
+  direction: rtl; /* Ensures RTL button order */
+}
+
+/* General style for all modify buttons */
+.modify-buttons button.modify {
+  padding: 0.1rem 0.1rem;
+  color: rgb(0, 0, 0);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
+}
+
+/* Hover effect */
+.modify-buttons button.modify:hover {
+  background-color: #c8e2ff;
+}
+
+
+
+.modify-buttons button.modify:nth-child(2):hover {
+  background-color: #ffc7c7;
+}
+
+/* Disabled buttons */
+.modify-buttons button[disabled] {
+  background-color: #ccc;
+  color: #666;
+  border: none;
 }
