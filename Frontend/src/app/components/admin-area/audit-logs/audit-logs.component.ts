@@ -25,6 +25,26 @@ export class AuditLogsComponent implements OnInit {
   pageSize = 5;
   currentPage = 1;
 
+  vehicleFieldLabels: { [key: string]: string } = {
+  id: 'מזהה רכב',
+  type: 'סוג רכב',
+  status: 'סטטוס',
+  fuel_type: 'סוג דלק',
+  image_url: 'תמונה',
+  last_used_at: 'שימוש אחרון',
+  plate_number: 'מספר רישוי',
+  freeze_reason: 'סיבת הקפאה',
+  vehicle_model: 'דגם רכב',
+  freeze_details: 'פרטי הקפאה',
+  current_location: 'מיקום נוכחי',
+  odometer_reading: 'מד מרחק',
+  // add more as needed
+};
+
+getVehicleFieldLabel(key: string): string {
+  return this.vehicleFieldLabels[key] || key;
+}
+
   rideFieldLabels: { [key: string]: string } = {
     id: 'מזהה נסיעה',
     stop: 'עצירה',

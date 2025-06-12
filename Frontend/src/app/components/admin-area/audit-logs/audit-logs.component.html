@@ -46,8 +46,7 @@
             </tr>
           </thead>
           <tbody class="audit-tbody">
-            <tr *ngFor="let log of pagedLogs" class="audit-tr"
-              [ngClass]="{
+            <tr *ngFor="let log of pagedLogs" class="audit-tr" [ngClass]="{
                 'emergency-row': log.action === 'UPDATE' && log.entity_type === 'Ride' && (log.change_data?.new?.emergency_event === true || log.change_data?.new?.emergency_event === 'true'),
                 'frozen-vehicle-row': log.entity_type === 'Vehicle' && log.change_data?.new?.status === 'frozen',
                 'pending-row': log.entity_type === 'Ride' && (
@@ -60,9 +59,7 @@
                   (log.entity_type === 'User' && log.action === 'UPDATE' && log.change_data?.old?.role !== 'admin' && log.change_data?.new?.role === 'admin'),
                 'rejected-row': log.entity_type === 'Ride' && log.change_data?.new?.status === 'rejected',
                 'user-insert-row': log.action === 'INSERT' && log.entity_type === 'User'
-              }"
-              (click)="showDetails(log)"
-            >
+              }" (click)="showDetails(log)">
               <td class="audit-td">{{ log.action }}</td>
               <td class="audit-td">{{ log.entity_type }}</td>
               <td class="audit-td">{{ log.full_name }}</td>
@@ -162,8 +159,7 @@
               <div *ngIf="selectedLog.entity_type === 'Ride'" class="entity-fields">
                 <div class="field-row" *ngFor="let key of objectKeys(selectedLog.change_data)">
                   <div class="field-label">{{ getRideFieldLabel(key) }}</div>
-                  <div class="field-value"
-                    [ngClass]="
+                  <div class="field-value" [ngClass]="
                       key === 'license_check_passed' || key === 'isArchive'
                         ? (selectedLog.change_data[key] ? 'boolean-yes' : 'boolean-no')
                         : ''
@@ -181,6 +177,23 @@
                     </ng-container>
                   </div>
                 </div>
+              </div>
+              <!-- Vehicle Entity (dynamic) -->
+              <div *ngIf="selectedLog.entity_type === 'Vehicle'" class="entity-fields">
+                <div *ngIf="selectedLog.change_data?.image_url" class="vehicle-image-row">
+                  <img [src]="selectedLog.change_data.image_url" alt="תמונת רכב" style="max-width: 200px; max-height: 120px; margin-bottom: 1rem;" />
+                </div>
+                <ng-container *ngFor="let key of objectKeys(selectedLog.change_data)">
+                  <div class="field-row" *ngIf="key !== 'image_url'">
+                    <div class="field-label">{{ getVehicleFieldLabel(key) }}</div>
+                    <div class="field-value">
+                      <ng-container *ngIf="key.endsWith('datetime') || key.endsWith('at'); else plainInsertVehicleValue">
+                        {{ selectedLog.change_data[key] | date:'dd/MM/yyyy HH:mm' }}
+                      </ng-container>
+                      <ng-template #plainInsertVehicleValue>{{ selectedLog.change_data[key] }}</ng-template>
+                    </div>
+                  </div>
+                </ng-container>
               </div>
             </div>
           </div>
@@ -223,10 +236,9 @@
               </div>
               <!-- Ride Entity (dynamic) -->
               <div *ngIf="selectedLog.entity_type === 'Ride'" class="entity-fields">
-                <div class="field-row" *ngFor="let key of objectKeys(selectedLog.change_data.old)">
+                <div class="field-row" *ngFor="let key of objectKeys(selectedLog.change_data?.old || {})">
                   <div class="field-label">{{ getRideFieldLabel(key) }}</div>
-                  <div class="field-value"
-                    [ngClass]="
+                  <div class="field-value" [ngClass]="
                       key === 'license_check_passed' || key === 'isArchive'
                         ? (selectedLog.change_data.old[key] ? 'boolean-yes' : 'boolean-no')
                         : ''
@@ -244,6 +256,23 @@
                     </ng-container>
                   </div>
                 </div>
+              </div>
+              <!-- Vehicle Entity (dynamic) -->
+              <div *ngIf="selectedLog.entity_type === 'Vehicle'" class="entity-fields">
+                <div *ngIf="selectedLog.change_data?.old?.image_url" class="vehicle-image-row">
+                  <img [src]="selectedLog.change_data.old.image_url" alt="תמונת רכב" style="max-width: 200px; max-height: 120px; margin-bottom: 1rem;" />
+                </div>
+                <ng-container *ngFor="let key of objectKeys(selectedLog.change_data?.old || {})">
+                  <div class="field-row" *ngIf="key !== 'image_url'">
+                    <div class="field-label">{{ getVehicleFieldLabel(key) }}</div>
+                    <div class="field-value">
+                      <ng-container *ngIf="key.endsWith('datetime') || key.endsWith('at'); else plainOldVehicleValue">
+                        {{ selectedLog.change_data.old[key] | date:'dd/MM/yyyy HH:mm' }}
+                      </ng-container>
+                      <ng-template #plainOldVehicleValue>{{ selectedLog.change_data.old[key] }}</ng-template>
+                    </div>
+                  </div>
+                </ng-container>
               </div>
             </div>
             <!-- New Data -->
@@ -282,10 +311,9 @@
               </div>
               <!-- Ride Entity (dynamic) -->
               <div *ngIf="selectedLog.entity_type === 'Ride'" class="entity-fields">
-                <div class="field-row" *ngFor="let key of objectKeys(selectedLog.change_data.new)">
+                <div class="field-row" *ngFor="let key of objectKeys(selectedLog.change_data?.new || {})">
                   <div class="field-label">{{ getRideFieldLabel(key) }}</div>
-                  <div class="field-value"
-                    [ngClass]="
+                  <div class="field-value" [ngClass]="
                       key === 'license_check_passed' || key === 'isArchive'
                         ? (selectedLog.change_data.new[key] ? 'boolean-yes' : 'boolean-no')
                         : ''
@@ -303,6 +331,23 @@
                     </ng-container>
                   </div>
                 </div>
+              </div>
+              <!-- Vehicle Entity (dynamic) -->
+              <div *ngIf="selectedLog.entity_type === 'Vehicle'" class="entity-fields">
+                <div *ngIf="selectedLog.change_data?.new?.image_url" class="vehicle-image-row">
+                  <img [src]="selectedLog.change_data.new.image_url" alt="תמונת רכב" style="max-width: 200px; max-height: 120px; margin-bottom: 1rem;" />
+                </div>
+                <ng-container *ngFor="let key of objectKeys(selectedLog.change_data?.new || {})">
+                  <div class="field-row" *ngIf="key !== 'image_url'">
+                    <div class="field-label">{{ getVehicleFieldLabel(key) }}</div>
+                    <div class="field-value">
+                      <ng-container *ngIf="key.endsWith('datetime') || key.endsWith('at'); else plainNewVehicleValue">
+                        {{ selectedLog.change_data.new[key] | date:'dd/MM/yyyy HH:mm' }}
+                      </ng-container>
+                      <ng-template #plainNewVehicleValue>{{ selectedLog.change_data.new[key] }}</ng-template>
+                    </div>
+                  </div>
+                </ng-container>
               </div>
             </div>
           </div>
