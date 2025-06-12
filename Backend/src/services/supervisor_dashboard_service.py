@@ -189,16 +189,31 @@ def start_ride(db: Session, ride_id: UUID):
 
 
 def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
-    
+
     inspection = VehicleInspection(
-        vehicle_id=data.vehicle_id,
-        inspected_by=data.inspected_by,
-        fuel_level=data.fuel_level,
-        tires_ok=data.tires_ok,
-        clean=data.clean,
-        issues_found=data.issues_found,
-        inspection_date=datetime.utcnow()
-    )
+    inspection_id=data.inspection_id,
+    inspected_by=data.inspected_by,
+    inspection_date=datetime.now(timezone.utc),
+    clean=data.clean,
+    fuel_checked=data.fuel_checked,
+    no_items_left=data.no_items_left,
+    critical_issue_bool=data.critical_issue_bool,
+    issues_found=data.issues_found,
+)   
+    # If you want to include vehicle_id, uncomment the following line 
+    # inspection = VehicleInspection(
+    #     vehicle_id=data.vehicle_id,
+    #     inspected_by=data.inspected_by,
+    #     # fuel_level=data.fuel_level,
+    #     # tires_ok=data.tires_ok,
+    #     clean=data.clean,
+    #     fuel_checked=data.fuel_checked,
+    #     no_items_left=data.no_items_left,
+    #     critical_issue_bool=data.critical_issue_bool,
+    #     issues_found=data.issues_found,
+    #     inspection_date=datetime.utcnow()
+    # )
+
 
     db.add(inspection)
 
