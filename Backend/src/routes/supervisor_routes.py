@@ -83,7 +83,7 @@ async def edit_order_status_route(
             "order_status": updated_order.status
         })
 
-    return {"message": "הסטטוס עודכן בהצלחה"}
+    return {"message": " הסטטוס עודכן בהצלחה"}
 
 
 # @router.get("/orders/{department_id}/{order_id}/pending")
