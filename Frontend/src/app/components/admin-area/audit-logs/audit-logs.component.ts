@@ -16,50 +16,6 @@ export class AuditLogsComponent implements OnInit {
   showFilters = false;
   searchTerm = '';
 
-  logs: any[] = [
-    {
-      id: 1,
-      actionType: 'CREATE',
-      fullName: 'Mickey Mouse',
-      description: 'User Mickey Mouse created a new report on financial data. The report includes quarterly earnings and expenditure analysis.',
-      createdAt: new Date('2024-01-15T10:30:00')
-    },
-    {
-      id: 2,
-      actionType: 'UPDATE',
-      fullName: 'Donald Duck',
-      description: 'User Donald Duck updated the inventory count for warehouse A. Stock levels for item #345 and #678 were adjusted.',
-      createdAt: new Date('2024-01-16T14:45:00')
-    },
-    {
-      id: 2,
-      actionType: 'DELETE',
-      fullName: 'Donald Duck',
-      description: 'User Donald Duck updated the inventory count for warehouse A. Stock levels for item #345 and #678 were adjusted.',
-      createdAt: new Date('2025-06-12T14:45:00')
-    },
-    {
-      id: 2,
-      actionType: 'DELETE',
-      fullName: 'Donald Duck',
-      description: 'quack quack quack quack quack quack quack quack quack quack quack quack quack quack quack',
-      createdAt: new Date('2025-06-13T14:45:00')
-    },
-    {
-      id: 2,
-      actionType: 'CREATE',
-      fullName: 'Donald Duck',
-      description: 'BLAHHHHHHBLAHBLAHHHH',
-      createdAt: new Date('2025-06-14T14:45:00')
-    },
-    {
-      id: 3,
-      actionType: 'DELETE',
-      fullName: 'Goofy Goof',
-      description: 'User Goofy Goof deleted an old project file named "Legacy_Project_X.zip" from the archive server.',
-      createdAt: new Date('2024-01-17T09:00:00')
-    }
-  ];
 
   filteredLogs: any[] = [];
   selectedLog: any | null = null;
@@ -67,9 +23,7 @@ export class AuditLogsComponent implements OnInit {
 
   constructor(private auditLogService: AuditLogsService) { }
   logs: AuditLogs[] = [];
-  filteredLogs: AuditLogs[] = []; // Type this correctly
-  selectedLog: AuditLogs | null = null; // Property to hold the selected log for detailed view
-
+  
   pageSize = 5;
   currentPage = 1;
 
@@ -171,6 +125,8 @@ getVehicleFieldLabel(key: string): string {
       const created = new Date(log.createdAt);
       return created >= startOfWeek && created <= endOfWeek;
     });
+  }
+   
   get totalPages(): number {
     return Math.ceil(this.filteredLogs.length / this.pageSize) || 1;
   }
