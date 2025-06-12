@@ -1,0 +1,151 @@
+<div class="overlay">
+  <div class="modal">
+    <button class="close-btn" (click)="close()">×</button>
+    <h2>הזמנה חדשה</h2>
+    <hr />
+    <form [formGroup]="rideForm">
+      <div class="form-content">
+        <!-- Ride period selector -->
+       <!-- Ride Period + Date in one row -->
+<!-- Row 1: ride_period + ride_date + ride_type -->
+<div class="row">
+  <div class="input-group">
+    <label>זמן נסיעה (בוקר / לילה)</label>
+    <select formControlName="ride_period">
+      <option value="morning">נסיעת בוקר</option>
+      <option value="night">נסיעת לילה</option>
+    </select>
+  </div>
+
+  <div class="input-group" *ngIf="rideForm.get('ride_period')?.value === 'morning'">
+    <label>תאריך הנסיעה</label>
+    <input type="date" formControlName="ride_date" [min]="minDate" />
+    <small *ngIf="f.ride_date.touched && f.ride_date.errors?.['required']" class="distance-info">חובה למלא את שדה זה</small>
+    <small *ngIf="f.ride_date.errors?.['tooSoon']" class="distance-info">יש להזמין נסיעה לפחות יומיים מראש</small>
+    <small *ngIf="f.ride_date.errors?.['invalidYear']" class="distance-info">השנה צריכה להיות בין 2025 ל-2099</small>
+  </div>
+
+  <div class="input-group">
+    <label>סוג נסיעה</label>
+    <select formControlName="ride_type" class="styled-select">
+      <option value="" disabled>בחר סוג</option>
+      <option value="administrative">מנהלתית</option>
+      <option value="operational">תפעולית</option>
+    </select>
+    <small *ngIf="f.ride_type.touched && f.ride_type.errors?.['required']" class="distance-info">חובה לבחור סוג נסיעה</small>
+  </div>
+</div>
+
+
+<!-- Row 2: סוג רכב + שעת התחלה + שעת סיום -->
+<div class="row">
+  <div class="input-group">
+    <label>סוג רכב</label>
+    <select formControlName="vehicle_type" class="styled-select" (change)="onRideTypeChange()">
+      <option value="" disabled selected>בחר סוג</option>
+      <option value="small">קטן</option>
+      <option value="large">גדול</option>
+      <option value="van">טנדר</option>
+    </select>
+    <small *ngIf="f.vehicle_type.touched && f.vehicle_type.errors?.['required']" class="distance-info">חובה לבחור סוג רכב</small>
+  </div>
+
+  <div class="input-group">
+    <label>שעת התחלה</label>
+    <input type="time" formControlName="start_time" />
+    <small *ngIf="rideForm.get('ride_period')?.value === 'morning' && f.start_time.touched && f.start_time.errors?.['required']" class="distance-info">חובה למלא את שדה זה</small>
+  </div>
+
+  <div class="input-group">
+    <label>שעת סיום</label>
+    <input type="time" formControlName="end_time" />
+    <small *ngIf="rideForm.get('ride_period')?.value === 'morning' && f.end_time.touched && f.end_time.errors?.['required']" class="distance-info">חובה למלא את שדה זה</small>
+  </div>
+</div>
+
+
+    
+
+        <!-- Nighttime Date -->
+        <div *ngIf="rideForm.get('ride_period')?.value === 'night'" class="row">
+          <div class="input-group">
+            <label>תאריך התחלה</label>
+            <input type="date" formControlName="ride_date" [min]="minDate" />
+          </div>
+          <div class="input-group">
+            <label>תאריך סיום</label>
+            <input type="date" formControlName="ride_date_night_end" [min]="minDate" />
+          </div>
+        </div>
+
+
+        
+
+   
+
+       <!-- Available cars -->
+        <div class="row" *ngIf="availableCars.length > 0">
+  <div class="input-group">
+    <label>בחר רכב זמין</label>
+    <select formControlName="car" class="styled-select">
+      <option value="" disabled selected>בחר רכב</option>
+      <option *ngFor="let car of availableCars"
+        [value]="car.id"
+        [disabled]="isPendingVehicle(car.id)"
+        [title]="isPendingVehicle(car.id) ? 'הרכב זה ממתין לעיבוד לתאריך/תקופה שנבחרו' : ''">
+  {{ car.vehicle_model }}
+</option>
+
+
+    </select>
+    <small *ngIf="f.car.touched && f.car.errors?.['required']" class="distance-info">
+      חובה לבחור רכב מהתפריט
+    </small>
+  </div>
+</div>
+
+
+        <!-- Distance and Type -->
+        <div class="row">
+          <div class="input-group">
+            <label>הערכת מרחק (ק"מ)</label>
+            <input type="number" formControlName="estimated_distance_km" />
+            <small *ngIf="f.estimated_distance_km.touched && f.estimated_distance_km.errors?.['required']" class="distance-info">חובה למלא את שדה זה</small>
+            <small *ngIf="f.estimated_distance_km.errors?.['min']" class="distance-info">המרחק חייב להיות לפחות 1 ק״מ</small>
+<small
+  class="distance-info"
+  *ngIf="!f.estimated_distance_km.errors && f.estimated_distance_km.value">
+  המרחק לאחר תוספת סטייה: {{ estimated_distance_with_buffer }} ק"מ
+</small>
+          </div>
+        </div>
+
+        <!-- Location -->
+        <div class="row">
+          <div class="input-group">
+            <label>מיקום התחלה</label>
+            <input type="text" formControlName="start_location" />
+            <small *ngIf="f.start_location.touched && f.start_location.errors?.['required']" class="distance-info">חובה למלא מיקום התחלה</small>
+          </div>
+          <div class="input-group">
+            <label>תחנה</label>
+            <input type="text" formControlName="stop" />
+            <small *ngIf="f.stop.touched && f.stop.errors?.['required']" class="distance-info">חובה למלא תחנה</small>
+          </div>
+          <div class="input-group">
+            <label>יעד</label>
+            <input type="text" formControlName="destination" />
+            <small *ngIf="f.destination.touched && f.destination.errors?.['required']" class="distance-info">חובה למלא יעד</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Button -->
+  <!-- your form fields -->
+    </form>
+      <button type="submit" class="submit-btn" (click)="submit()">שלח</button>
+
+  </div>
+</div>
+
+<router-outlet></router-outlet>

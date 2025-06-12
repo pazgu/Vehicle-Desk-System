@@ -1,0 +1,53 @@
+{
+  "name": "bookit-frontend",
+  "version": "0.0.0",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test"
+  },
+  "private": true,
+  "dependencies": {
+    "@angular/animations": "^19.2.9",
+    "@angular/cdk": "^19.2.14",
+    "@angular/common": "^19.2.0",
+    "@angular/compiler": "^19.2.0",
+    "@angular/core": "^19.2.0",
+    "@angular/forms": "^19.2.0",
+    "@angular/material": "^19.2.16",
+    "@angular/platform-browser": "^19.2.0",
+    "@angular/platform-browser-dynamic": "^19.2.0",
+    "@angular/router": "^19.2.0",
+    "chart": "^0.1.2",
+    "chart.js": "^4.4.9",
+    "date-fns": "^4.1.0",
+    "file-saver": "^2.0.5",
+    "papaparse": "^5.5.3",
+    "pdfmake": "^0.2.20",
+    "primeicons": "^7.0.0",
+    "primeng": "^19.1.2",
+    "rxjs": "~7.8.0",
+    "socket.io-client": "^4.8.1",
+    "tslib": "^2.3.0",
+    "zone.js": "~0.15.0"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "^19.2.10",
+    "@angular/cli": "^19.2.10",
+    "@angular/compiler-cli": "^19.2.0",
+    "@types/chart.js": "^2.9.41",
+    "@types/file-saver": "^2.0.7",
+    "@types/jasmine": "~5.1.0",
+    "@types/papaparse": "^5.3.16",
+    "@types/pdfmake": "^0.2.11",
+    "jasmine-core": "~5.6.0",
+    "karma": "~6.4.0",
+    "karma-chrome-launcher": "~3.2.0",
+    "karma-coverage": "~2.2.0",
+    "karma-jasmine": "~5.1.0",
+    "karma-jasmine-html-reporter": "~2.1.0",
+    "typescript": "~5.7.2"
+  }
+}

@@ -1,0 +1,298 @@
+:host {
+  display: block;
+  background-color: #cccccc;
+  min-height: calc(100vh - 55px);
+  padding: 25px;
+  direction: rtl;
+  font-family: sans-serif;
+}
+
+/* Page Wrapper */
+.page-wrapper {
+  background-color: rgb(245, 241, 241);
+  padding: 10px;
+  border-radius: 12px;
+  max-width: 1050px;
+  margin: 0 auto;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Header */
+h1 {
+  color: #942222;
+}
+
+button {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    margin: 0 1rem;
+    cursor: pointer;
+    color: #811313;
+  }
+/* Table styling */
+:host ::ng-deep .p-datatable {
+  width: 90%;
+  margin: 0 auto;
+  border-radius: 10px;
+  border: 5px solid #942222;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: right;
+  font-size: 14px;
+  direction: rtl;
+}
+
+:host ::ng-deep .p-datatable .p-datatable-thead > tr > th {
+  background-color: #942222;
+  color: white;
+  padding: 10px;
+  font-weight: bold;
+  text-align: right;
+}
+
+:host ::ng-deep .p-datatable .p-datatable-tbody > tr > td {
+  padding: 10px;
+  text-align: right;
+  border-bottom: 1px solid #e9ecef;
+}
+
+:host ::ng-deep .p-datatable .p-datatable-tbody > tr:hover {
+  background-color: #f0f0f0;
+  color: #942222;
+  cursor: pointer;
+}
+
+/* Row color by status */
+:host ::ng-deep tr.row-approved {
+  background-color: #dcf1e1;
+  color: #155724;
+}
+
+:host ::ng-deep .row-pending {
+  background-color: #fbf3da;
+  color: #856404;
+}
+
+:host ::ng-deep .row-rejected {
+  background-color: #f8e2e2;
+  color: #721c24;
+}
+
+:host ::ng-deep .row-cancelled {
+  background-color: #f0f0f0;
+  color: #6c757d;
+}
+
+:host ::ng-deep .row-completed {
+  background-color: #c9e6f9 ;
+  color: #171056;
+}
+
+/* Status chip */
+.status-text {
+  padding: 0.3rem 0.6rem;
+  border-radius: 0.5rem;
+  color: white;
+  font-weight: bold;
+  text-align: center;
+  display: inline-block;
+}
+
+/* Paginator styling */
+:host ::ng-deep .p-paginator {
+  background-color: #f5f5f5;
+  border-radius: 5px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:host ::ng-deep .p-paginator .p-paginator-first,
+:host ::ng-deep .p-paginator .p-paginator-prev,
+:host ::ng-deep .p-paginator .p-paginator-next,
+:host ::ng-deep .p-paginator .p-paginator-last {
+  background-color: #942222;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  margin: 0 3px;
+  min-width: 2.5rem;
+  height: 2.5rem;
+  transform: scaleX(-1); /* RTL flip */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:host ::ng-deep .p-paginator .p-paginator-button {
+  background-color: #942222;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  margin: 0 3px;
+  min-width: 2.5rem;
+  height: 2.5rem;
+}
+
+:host ::ng-deep .p-paginator .p-paginator-page:hover,
+:host ::ng-deep .p-paginator .p-paginator-button:hover {
+  background-color: #7a1c1c;
+}
+
+:host ::ng-deep .p-paginator .p-paginator-page.p-highlight {
+  background-color: transparent !important;
+  color: #942222 !important;
+  font-weight: bold;
+  border-bottom: 3px solid #942222 !important;
+}
+
+:host ::ng-deep .p-paginator .p-dropdown {
+  margin-left: 10px;
+  height: 2.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+}
+
+:host ::ng-deep .p-dropdown-panel .p-dropdown-items {
+  text-align: right;
+}
+
+:host ::ng-deep .p-paginator .p-paginator-current {
+  color: #555555;
+  margin: 0 10px;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 640px) {
+  :host ::ng-deep .p-paginator {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  :host ::ng-deep .p-paginator .p-dropdown {
+    margin-top: 8px;
+  }
+
+  :host ::ng-deep .p-paginator .p-paginator-current {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 8px;
+  }
+}
+.ride-filter-buttons button {
+  font-size: 14px;
+  font-weight: 500;
+  padding: 6px 14px;
+  border: none;
+  background-color: transparent;
+  color: #811313;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.ride-filter-buttons button.active {
+  background-color: #942222;
+  color: white;
+  font-weight: bold;
+}
+:host ::ng-deep .p-paginator .p-paginator-disabled {
+  opacity: 0.5; /* Reduce opacity for inactive arrows */
+  cursor: not-allowed; /* Optional: Make sure inactive arrows can't be clicked */
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.relative-cell {
+  position: relative;
+}
+
+.copy-button {
+  position: relative;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.copy-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.copied-message {
+  position: absolute;
+  top: -1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: black;
+  color: white;
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+
+.status-indicators {
+  text-align: right;
+  direction: rtl;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 12px 16px;
+  max-width: fit-content;
+  background-color: rgb(249, 245, 245);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.5rem;
+  margin-left: auto; /* Pushes it to the left in RTL layout */
+}
+
+.status-box {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.status-item {
+  background-color: rgb(245, 241, 241);
+  padding: 6px 10px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.status-indicator {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-inline-start: 4px;
+  vertical-align: middle;
+  border-radius: 50%;
+}
+
+.status-indicator.approved {
+  background-color:#a4d1ae;
+  border: #329c4b 1.6px solid; /* Green border */
+}
+.status-indicator.pending {
+  background-color: #f5e2a8; /* Yellow */
+  border: #ab8c31 1.6px solid; /* Yellow border */
+}
+.status-indicator.rejected {
+  background-color: #f1b5b5; /* Red */
+  border: #c16a73 1.6px solid; /* Red border */
+}
+.status-indicator.cancelled {
+  background-color: #bfb9b9; /* Gray */
+  border: #6c757d 1.6px solid; /* Gray border */
+}
+.status-indicator.completed {
+  background-color: #b7dbf3; /* Blue */
+  border: #17a2b8 1.6px solid; /* Blue border */
+}

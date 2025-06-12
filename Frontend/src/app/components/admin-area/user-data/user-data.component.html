@@ -1,0 +1,40 @@
+<div class="page-container">
+  <div class="user-data-container">
+    <div class="content">
+      <!-- כפתור סגירה -->
+      <a routerLink="/admin/daily-inspections"><span class="close-button">✕</span></a>
+
+      <!-- כותרת -->
+      <div class="header">
+        <h2 class="header-title">פרטי משתמש</h2>
+      </div>
+
+      <!-- טבלה -->
+      <div class="table-wrapper">
+        <table class="user-table">
+          <thead>
+            <tr>
+              <th class="column-name">שם עובד</th>
+              <th class="column-role">תפקיד</th>
+              <th class="column-department">מחלקה</th>
+              <th class="column-email">כתובת דואר אלקטרוני</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of users.slice().reverse()"  (click)="goToUserCard(user.employee_id)" class="clickable-row">
+              <td class="column-name">{{ user.first_name }} {{ user.last_name }}</td>
+              <td class="column-role">{{ user.role }}</td>
+              <td class="column-department">
+  {{ departmentNames[user.department_id] || user.department_id }}
+</td>
+
+              <td class="column-email">{{ user.email }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<router-outlet></router-outlet>

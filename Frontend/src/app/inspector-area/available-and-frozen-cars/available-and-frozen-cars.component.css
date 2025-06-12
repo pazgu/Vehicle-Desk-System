@@ -1,0 +1,54 @@
+.container {
+  direction: rtl;
+  font-family: 'Alef', 'Noto Serif Hebrew', sans-serif;
+  padding: 2rem;
+  background-color: #f9f9f9;
+  border-radius: 1rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  font-size: 1.5rem;
+  color: #2c3e50;
+  margin-bottom: 1rem;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem 0;
+}
+
+li {
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-right: 5px solid #3498db;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.3s ease;
+}
+
+li:hover {
+  background-color: #eef6fc;
+}
+
+hr {
+  border: none;
+  border-top: 2px solid #ccc;
+  margin: 2rem 0;
+}
+
+/* Frozen vehicle section styles */
+h2:nth-of-type(2) {
+  color: #c0392b;
+}
+
+ul:nth-of-type(2) li {
+  background-color: #fff4f4;
+  border-right-color: #e74c3c;
+}
+
+ul:nth-of-type(2) li:hover {
+  background-color: #ffeaea;
+}

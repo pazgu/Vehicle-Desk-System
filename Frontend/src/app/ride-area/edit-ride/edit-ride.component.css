@@ -1,0 +1,157 @@
+/* General reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  font-family: 'Assistant', sans-serif;
+  background-color: #eae4eb;
+  direction: rtl;
+  height: 100vh;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/* Overlay + Modal */
+.overlay {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #ccc;
+  font-family: 'Alef', sans-serif;
+  direction: rtl;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 10;
+}
+
+.modal {
+  background-color: white;
+  padding: 20px 28px;
+  border-radius: 10px;
+  width: 750px;
+  overflow-y: auto;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin-top: 40px;
+}
+
+/* Close Button */
+.close-btn {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 10;
+}
+
+h2 {
+  color: #942222;
+  text-align: right;
+  margin-bottom: 10px;
+}
+
+hr {
+  border: 1px solid #ccc;
+  margin-bottom: 20px;
+}
+
+/* Form Layout */
+form .row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.input-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.input-group label {
+  margin-bottom: 5px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* Inputs + Selects */
+input, select {
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #d3b1b1;
+  background-color: #e7c1c1;
+  font-family: 'Assistant', sans-serif;
+}
+
+input[type="date"],
+input[type="time"],
+input[type="number"],
+input[type="text"],
+select.styled-select {
+  font-size: 16px;
+}
+
+.input-group select {
+  font-size: 16px;
+}
+
+/* Distance Info */
+.distance-info {
+  min-height: 18px;
+  font-size: 12px;
+  margin-top: 3px;
+  color: #333;
+}
+
+/* Submit Button */
+.submit-btn {
+  background-color: #942222;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  align-self: flex-end;
+  margin-top: 30px;
+}
+
+.submit-btn:hover {
+  background-color: #7a1c1c;
+}
+
+/* Ride Form Container */
+.ride-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow-y: visible;
+  max-height: calc(90vh - 140px);
+  padding-right: 4px;
+}
+
+/* Responsive Fix */
+@media (max-width: 600px) {
+  .modal {
+    margin-top: 60px;
+    width: 90%;
+    padding: 16px;
+  }
+}

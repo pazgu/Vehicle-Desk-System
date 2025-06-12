@@ -1,0 +1,123 @@
+*{
+border:none;
+} 
+
+
+.sort-container {
+  display: flex;
+  align-items: center;
+  margin-right: 0px;
+  justify-content: center;
+  padding: 2rem;
+  gap: 1rem;
+  font-family: 'Alef', sans-serif;
+  font-size: 1rem; /* Bigger text */
+  font-weight: 600;
+  direction: rtl;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.sort-container select {
+  padding: 0.8rem 1.5rem;
+  border-radius: 12px;
+  border: 2px solid #e0e0e0;
+  font-size: 1.2rem;
+  font-family: 'Alef', sans-serif;
+  font-weight: 600;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+  min-width: 180px;
+}
+
+.sort-container select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+
+
+/* Chart Card Styling - Made much bigger */
+.chart-card {
+  max-width: 700px; /* Increased from 600px */
+  margin: 0 auto;
+  padding: 3rem; /* Increased padding */
+  background: linear-gradient(145deg, #ffffff, #f8fafc);
+  border-radius: 20px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  direction: rtl;
+}
+
+
+
+.chart-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 
+    0 35px 60px -12px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+/* Headings - Bigger */
+h2 {
+  margin-bottom: 2rem;
+  font-size: 2.2rem; /* Much bigger */
+  font-weight: 700;
+  font-family: 'Alef', sans-serif;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-align: center;
+  direction: rtl;
+  position: relative;
+}
+
+.p-chart:hover {
+  transform: scale(1.02);
+}
+
+
+.titles{
+  border: none !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .analytics-container {
+    padding: 1rem;
+  }
+  h2 {
+    font-size: 1.8rem;
+  }
+
+}
+
+.tab-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  direction: rtl;
+}
+
+.tab-buttons button {
+  padding: 0.5rem 1.2rem;
+  font-size: 16px;
+  border: none;
+  border-radius: 10px;
+  background-color: #e0e0e0;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.tab-buttons button.active {
+  background-color: #003366;
+  color: white;
+}

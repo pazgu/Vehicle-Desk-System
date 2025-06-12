@@ -1,0 +1,189 @@
+/* General reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+  font-family: 'Assistant', sans-serif;
+  background-color: #eae4eb;
+  direction: rtl;
+  height: 100vh;
+  overflow: hidden;      /* ✅ blocks vertical scroll */
+  overscroll-behavior: none; /* ✅ prevent bounce on mobile */
+}
+
+
+
+/* FORM MODAL */
+.overlay {
+  display: flex;
+  justify-content: center;
+  align-items: center; /* 👈 use center instead of flex-start */
+  min-height: 100vh;
+  background-color: #ccc;
+  font-family: 'Alef', sans-serif;
+  direction: rtl;
+  padding: 0;
+  margin: 0;
+  position: fixed; /* or relative, depending on context */
+  top: 0;
+  left: 0;
+  width: 100vw;
+  min-height: 100vh;
+  z-index: 10;
+}
+
+
+
+.modal {
+    background-color: white;
+    padding: 20px 28px;
+    border-radius: 10px;
+    width: 750px;
+    min-height: 0;
+    max-height: 90vh;         /* Prevents modal from overflowing viewport */
+    overflow-y: auto;         /* Enables scroll inside modal if needed */
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    margin-top: 60px;
+}
+
+
+.close-btn {
+    position: absolute;
+    top: 15px;
+    left: 10px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 10; /* Ensure it's clickable */
+  }
+  
+
+h2 {
+    color: #942222;
+    text-align: right;
+    margin-bottom: 10px;
+}
+
+hr {
+    border: 1px solid #ccc;
+    margin-bottom: 20px;
+}
+
+form .row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+
+}
+
+.input-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.input-group label {
+    margin-bottom: 5px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.input-group input {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #d3b1b1;
+    background-color: #e7c1c1;
+}
+
+.submit-btn {
+  background-color: #942222;
+  color: white;
+  border: none;
+  align-self: flex-end;
+  margin-top: auto;
+
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  align-self: flex-end;
+  margin-bottom: 0;
+}
+
+
+
+.submit-btn:hover {
+    background-color: #7a1c1c;
+}
+
+/* Style select to match inputs */
+.styled-select {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #d3b1b1;
+    background-color: #e7c1c1;
+}
+
+/* Fix the time pickers to look same as inputs */
+input[type="time"], input[type="number"], input[type="text"], select {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #d3b1b1;
+    background-color: #e7c1c1;
+}
+
+.input-group select {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #d3b1b1;
+    background-color: #e7c1c1;
+    font-family: 'Assistant', sans-serif; /* Match the other inputs */
+    font-size: 16px;
+}
+
+.distance-info {
+  min-height: 18px; /* prevents shifting */
+  font-size: 12px;
+  margin-top: 3px;
+  color: #333;
+}
+
+/* Ensure proper spacing between two date inputs in same row */
+.row .input-group {
+    min-width: 0;
+}
+
+.row .input-group input[type="date"] {
+    width: 100%;
+}
+
+.ride-form {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+
+.form-content {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow-y: visible;
+  max-height: none;
+  padding-right: 4px;
+}
+
+
+@media (max-width: 600px) {
+  .modal {
+    margin-top: 60px;
+  }
+}

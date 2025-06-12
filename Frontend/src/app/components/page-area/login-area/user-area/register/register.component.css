@@ -1,0 +1,107 @@
+.page-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* padding: 60px 20px; */
+  direction: rtl;
+  font-family: 'Alef', sans-serif;
+  background-color: #ccc;
+  min-height: calc(100vh - 55px); /* subtract any fixed nav height if needed */
+  margin-top: 0;
+  padding-top: 0px;
+  margin-bottom: 0px;
+  box-sizing: border-box; /* Includes padding in total height */
+}
+
+.login-box {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.15);
+  padding: 25px 30px;
+  max-width: 720px;
+  width: 100%;
+  position: relative;
+  text-align: right;
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.login-box h2 {
+  color: #942222;
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 20px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.form-grid div {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  margin-bottom: 5px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+input,
+select {
+  padding: 10px;
+  border: 1px solid #ccc;
+  background: #e5e5e5;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+button {
+  grid-column: span 3;
+  margin-top: 20px;
+  padding: 12px;
+  background: #942222;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #a23333;
+}
+
+.password-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input {
+  width: 100%;
+  padding: 10px 40px 10px 10px; /* space for the icon on the right */
+  border: 1px solid #ccc;
+  background: #e5e5e5;
+  border-radius: 5px;
+  font-size: 16px;
+  direction: rtl;
+}
+
+.show-password {
+  position: absolute;
+  left: 10px; 
+  top: 20%;
+  cursor: pointer;
+  color: #555;
+}

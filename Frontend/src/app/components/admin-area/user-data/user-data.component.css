@@ -1,0 +1,129 @@
+body {
+  background-color: #b86868; 
+  direction: rtl;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  box-sizing: border-box;
+}
+.page-container {
+  background-color:#cccccc ;
+   
+    min-height: calc(100vh - 55px);
+  padding: 25px;
+  direction: rtl;
+}
+
+/* קונטיינר הראשי (כרטיס) */
+.user-data-container {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  width: 1200px;
+  max-width: 700px;
+  padding: 25px;
+  margin-top: 50px;
+  position: relative;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* כפתור סגירה */
+.close-button {
+position: absolute;
+  top: 15px;
+  left: 10px;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  color: #666;
+  height: 20px;
+}
+.back-button {
+  position: absolute;
+  top: 15px;
+  left: 20px;
+  color: #942222 !important;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.close-button:hover {
+  color: #ff4040;
+}
+
+/* כותרת */
+.header-title {
+  font-size: 24px;
+  color: #800000;
+  text-align: right;
+  margin: 0 0 20px 0;
+  width: 100%;
+  
+}
+
+/* עטיפת הטבלה */
+.table-wrapper {
+  overflow-x: auto;
+  width: 100%;
+}
+
+/* סגנון הטבלה */
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 16px;
+  table-layout: fixed;
+}
+
+/* כותרות ותאים */
+.user-table th,
+.user-table td {
+  padding:8px;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+  word-wrap: break-word;
+}
+
+/* כותרות הטבלה */
+.user-table th {
+  color: rgb(255, 255, 255);
+  background-color: #942222;
+  font-weight: bold;
+}
+
+/* תאי תוכן - ברירת מחדל */
+.user-table td {
+  color: #333;
+}
+
+/* שורות לפי תפקיד */
+.role-supervisor td {
+  background-color: #f8e6e8; /* ורוד בהיר מאוד עבור Supervisor */
+}
+
+.role-employee td {
+  background-color: #ffffff; /* לבן עבור Employee */
+}
+
+/* שורות ריקות */
+.empty-row td {
+  border: none;
+  height: 20px;
+  background-color: #f5e6e8;
+}
+
+/* הוספת אפקט hover לשורות */
+.user-table tbody tr:hover td {
+  background-color: #f0e1e2; /* ורוד מעט כהה יותר בה Hover */
+}
+.clickable-row {
+  cursor: pointer;
+}
