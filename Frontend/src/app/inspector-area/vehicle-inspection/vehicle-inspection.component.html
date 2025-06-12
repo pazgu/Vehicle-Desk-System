@@ -1,80 +1,41 @@
-<!-- <div class="archived-container">
-  <h1>טופס בדיקת רכב</h1>
-
-    <form [formGroup]="inspectionForm" (ngSubmit)="submitInspection()">
-
-
-
-<label>
-  <input type="checkbox" formControlName="clean" />
-  רכבים נקיים
-</label>
-
-<label>
-  <input type="checkbox" formControlName="fuel_checked" />
-   נבדקה רמת דלק בכל הרכבים
-</label>
-
-<label>
-  <input type="checkbox" formControlName="no_items_left" />
-  אין חפצים שנשכחו
-</label>
-
-<label for="critical_issue">אירוע חריג (אם קיים):</label>
-<input id="critical_issue" type="text" formControlName="critical_issue" placeholder="..." />
-<div class="error-msg" *ngIf="inspectionForm.get('critical_issue')?.touched && inspectionForm.get('critical_issue')?.invalid">
-  יש למלא תיאור של האירוע החריג
-</div>
-
-
-
-
-<button type="submit" class="cute-red-button" [disabled]="inspectionForm.invalid">
-  שלח בדיקה
-</button>
-
-
-
-
-
-  </form>
-
-
-</div> -->
-
-
-
 <div class="archived-container">
   <h1>טופס בדיקת רכב</h1>
 
   <form [formGroup]="inspectionForm" (ngSubmit)="submitInspection()">
 
     <label>
-      <input type="checkbox" formControlName="clean" />
+      <input type="checkbox" formControlName="clean" name="clean" />
       רכבים נקיים
     </label>
 
     <label>
-      <input type="checkbox" formControlName="fuel_checked" />
+      <input type="checkbox" formControlName="fuel_checked" name="fuel_checked" />
       נבדקה רמת דלק בכל הרכבים
     </label>
 
     <label>
-      <input type="checkbox" formControlName="no_items_left" />
+      <input type="checkbox" formControlName="no_items_left" name="no_items_left" />
       אין חפצים שנשכחו
     </label>
 
     <label>
-      <input type="checkbox" formControlName="critical_issue_bool" />
+      <input type="checkbox" formControlName="critical_issue_bool" name="critical_issue_bool" />
       האם יש אירוע חריג?
     </label>
 
-    <!-- Show this block ONLY if checkbox is checked -->
     <div *ngIf="inspectionForm.get('critical_issue_bool')?.value">
       <label for="issues_found">אירוע חריג (אם קיים):</label>
-      <input id="issues_found" type="text" formControlName="issues_found" placeholder="תאר את האירוע החריג" />
-      <div class="error-msg"
-        *ngIf="inspectionForm.get('issues_found')?.touched && inspectionForm.get('issues_found')?.invalid">
+      <input
+        id="issues_found"
+        name="issues_found"
+        type="text"
+        formControlName="issues_found"
+        placeholder="תאר את האירוע החריג"
+      />
+      <div
+        class="error-msg"
+        *ngIf="inspectionForm.get('issues_found')?.touched && inspectionForm.get('issues_found')?.invalid"
+      >
         יש למלא תיאור של האירוע החריג
       </div>
     </div>
@@ -82,6 +43,6 @@
     <button type="submit" class="cute-red-button" [disabled]="inspectionForm.invalid">
       שלח בדיקה
     </button>
-
+    
   </form>
 </div>
