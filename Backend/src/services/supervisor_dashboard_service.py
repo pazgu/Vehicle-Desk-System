@@ -13,6 +13,7 @@ from ..models.vehicle_inspection_model import VehicleInspection
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 from sqlalchemy import String , func
 from ..utils.audit_utils import log_action
+from ..utils.socket_manager import sio
 def get_department_orders(department_id: str, db: Session) -> List[RideDashboardItem]:
     """
     Fetch all orders for a specific department by joining the Ride and User tables.
@@ -165,7 +166,7 @@ def get_department_notifications(department_id: UUID, db: Session) -> List[Notif
     return notifications
 
 
-def start_ride(db: Session, ride_id: UUID):
+async def start_ride(db: Session, ride_id: UUID):
     ride = db.query(Ride).filter(Ride.id == ride_id).first()
     if not ride:
         raise HTTPException(status_code=404, detail="Ride not found")
@@ -180,13 +181,34 @@ def start_ride(db: Session, ride_id: UUID):
     if vehicle.status != VehicleStatus.available:
         raise HTTPException(status_code=400, detail="Vehicle is not available")
 
-    # vehicle.status = VehicleStatus.in_use
-
+    # 1️⃣ Update vehicle status
     update_vehicle_status(vehicle.id, VehicleStatus.in_use, freeze_reason=None, db=db)
     vehicle.last_used_at = func.now()
-    
-    db.commit()
 
+    # 2️⃣ Update ride status
+    ride.status = RideStatus.in_progress
+
+    db.commit()
+    db.refresh(ride)
+    db.refresh(vehicle)
+
+    # 3️⃣ Emit ride update
+    await sio.emit("ride_status_updated", {
+        "id": str(ride.id),
+        "status": ride.status.value,
+        "start_datetime": ride.start_datetime.isoformat(),
+        "user_id": str(ride.user_id),
+        "vehicle_id": str(ride.vehicle_id),
+        # Add more ride details if you want
+    })
+
+    # 4️⃣ Emit vehicle update
+    await sio.emit("vehicle_status_updated", {
+        "id": str(vehicle.id),
+        "status": vehicle.status.value,
+        "plate_number": vehicle.plate_number,
+        # Add more vehicle details if you want
+    })
 
 def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
     
