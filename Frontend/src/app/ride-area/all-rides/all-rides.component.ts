@@ -110,6 +110,7 @@ this.socketService.orderUpdated$.subscribe((updatedRide) => {
 
   }
    
+   
   get pagedOrders() {
     const start = (this.currentPage - 1) * this.ordersPerPage;
     return this.filteredOrders.slice(start, start + this.ordersPerPage);

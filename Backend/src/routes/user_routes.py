@@ -28,7 +28,7 @@ from src.schemas.ride_status_enum import UpdateRideStatusRequest
 from ..schemas.order_card_item import OrderCardItem
 from ..models.ride_model import Ride
 from ..services.user_edit_ride import patch_order_in_db
-from ..services.user_rides_service import get_ride_by_id , get_archived_rides
+from ..services.user_rides_service import get_ride_by_id , get_archived_rides , cancel_order_in_db
 from ..services.user_notification import create_system_notification,get_supervisor_id,get_user_name
 import traceback
 from ..models.user_model import User
@@ -42,6 +42,7 @@ from ..schemas.reset_password import ResetPasswordInput,ForgotPasswordRequest
 from ..services.user_data import get_user_department
 from ..models.vehicle_model import Vehicle
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+from ..models.ride_model import PendingRideSchema
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -341,12 +342,27 @@ def get_archived_orders_route(
 
     return get_archived_rides(user_id, db)
 
-@router.get("/api/orders/pending-cars", response_model=List[str])
+@router.get("/api/orders/pending-cars", response_model=List[PendingRideSchema])
 def get_pending_car_orders(db: Session = Depends(get_db)):
-    # Fetch only vehicle_ids of pending rides
-    vehicle_ids = db.query(Ride.vehicle_id).filter(Ride.status == "pending").distinct().all()
-    return [str(v[0]) for v in vehicle_ids if v[0] is not None]
+    pending_rides = (
+        db.query(Ride)
+        .filter(Ride.status == "pending")
+        .all()
+    )
 
+    result = []
+    for ride in pending_rides:
+        ride_period = "night" if ride.start_datetime.hour >= 18 else "morning"
+        result.append({
+            "vehicle_id": ride.vehicle_id,
+            "ride_period": ride_period,
+            "ride_date": ride.start_datetime.date().isoformat(),
+            "ride_date_night_end": ride.end_datetime.date().isoformat() if ride_period == "night" else None,
+            "start_time": ride.start_datetime.time().strftime("%H:%M"),
+            "end_time": ride.end_datetime.time().strftime("%H:%M"),
+        })
+
+    return result
 
 
 @router.post("/api/forgot-password")
@@ -397,3 +413,9 @@ def reset_password(
     db.commit()
 
     return {"message": "Password reset successfully"}
+
+@router.post("/api/orders/{order_id}/cancel")
+def cancel_order(order_id: UUID, db: Session = Depends(get_db)):
+    return cancel_order_in_db(order_id, db)
+
+# aaaaa

@@ -16,7 +16,7 @@ export class RedirectByRoleComponent implements OnInit {
       // No role found in localStorage, redirect to login page
       this.router.navigate(['/login']);
     } else if (role === 'admin') {
-      this.router.navigate(['/admin/daily-inspections']);
+      this.router.navigate(['/admin/analytics']);
     } else if (role === 'supervisor') {
       this.router.navigate(['/supervisor-dashboard']);
     } else if (role === 'inspector') {
