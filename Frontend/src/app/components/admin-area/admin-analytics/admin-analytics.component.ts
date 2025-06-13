@@ -37,6 +37,7 @@ export class AdminAnalyticsComponent implements OnInit {
   ngOnInit() {
     this.loadVehicleChart();
     this.loadRideChart();
+    
   }
 
   private loadVehicleChart() {
