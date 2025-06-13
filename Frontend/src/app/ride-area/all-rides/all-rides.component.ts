@@ -301,6 +301,12 @@ canEdit(order: any): boolean {
   return isPending && isFuture;
 }
 
+canDelete(order: any): boolean {
+  const isPending = order.status.toLowerCase() === 'pending';
+  const isFuture = this.parseDate(order.date) >= new Date();
+
+  return isPending && isFuture;
+}
 
 
 editOrder(order: any): void {
@@ -319,6 +325,38 @@ editOrder(order: any): void {
 
   this.router.navigate(['/ride/edit', order.ride_id]);
 }
+
+
+deleteOrder(order: any): void {
+  const isPending = order.status.toLowerCase() === 'pending';
+  const isFuture = this.parseDate(order.date) >= new Date();
+
+  if (!isPending || !isFuture) {
+    this.toastService.show('אפשר לבטל רק הזמנות עתידיות במצב "ממתין" ❌', 'error');
+    return;
+  }
+
+  if (!order.ride_id) {
+    this.toastService.show('שגיאה בזיהוי ההזמנה', 'error');
+    return;
+  }
+
+  this.rideService.deleteOrder(order.ride_id).subscribe({
+    next: () => {
+      this.toastService.show('ההזמנה בוטלה בהצלחה ✅', 'success');
+      this.socketService.deleteRequests$.subscribe((deletedRide) => {
+  if (deletedRide) {
+    console.log('a ride has been deleted via socket:', deletedRide);
+    this.fetchRides();
+  }}) 
+    },
+    error: () => {
+      this.toastService.show('שגיאה בביטול ההזמנה ❌', 'error');
+    }
+  });
+}
+
+
 
 viewRide(order: any): void {
   if (!order.ride_id) {

@@ -15,6 +15,7 @@ export class SocketService {
 
   public notifications$ = new BehaviorSubject<any>(null);
   public rideRequests$ = new BehaviorSubject<any>(null);
+  public deleteRequests$ = new BehaviorSubject<any>(null);
   public orderUpdated$ = new BehaviorSubject<any>(null); 
   public vehicleStatusUpdated$ = new BehaviorSubject<any>(null); 
   public rideStatusUpdated$ = new BehaviorSubject<any>(null); 
@@ -51,6 +52,12 @@ export class SocketService {
      this.socket.on('order_updated', (data: any) => {
   console.log('✏️ Ride order updated via socket:', data);
   this.orderUpdated$.next(data); // ✅ Pushes to subscribers like HomeComponent
+
+});
+this.socket.on('order_deleted', (data: any) => {
+  console.log('✏️ Ride order deleted via socket:', data);
+  this.deleteRequests$.next(data); // ✅ Pushes to subscribers like HomeComponent
+  
 });
     this.socket.on('new_notification', (data: any) => {
     console.log('📩 Raw socket data received:', data);

@@ -36,9 +36,10 @@ def get_audit_logs(
     from_date: Optional[datetime] = None,
     to_date: Optional[datetime] = None,
     user_id: Optional[str] = None
+    changed_by: Optional[str] = None
 ) -> List[AuditLogSchema]:
     query = db.query(AuditLog)
-    query = filter_audit_logs(query, entity_id, action, from_date, to_date, user_id)
+    query = filter_audit_logs(query, entity_id, action, from_date, to_date, user_id, changed_by)
 
     rows = query.all()
     return [AuditLogSchema.from_orm(row) for row in rows]

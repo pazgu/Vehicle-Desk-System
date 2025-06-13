@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from fastapi import HTTPException
 from src.schemas.ride_status_enum import RideStatusEnum
 from datetime import timedelta
+from ..utils.audit_utils import log_action
 
 def filter_rides(query, status: Optional[RideStatus], from_date, to_date):
     if status:
@@ -108,19 +109,51 @@ def get_all_rides(user_id: UUID, db: Session, status=None, from_date=None, to_da
     return [RideSchema(**dict(row._mapping)) for row in rows]  #convert rows to Pydantic objects
 
     
-def update_ride_status(ride_id: UUID, new_status: RideStatusEnum, db: Session):
+def update_ride_status(db: Session, ride_id: UUID, new_status: str, changed_by: UUID):
+    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id)})
+    # Fetch the ride
     ride = db.query(Ride).filter(Ride.id == ride_id).first()
-
     if not ride:
-        raise HTTPException(status_code=404, detail="Ride not found")
+        raise ValueError("Ride not found")
 
-    if ride.status in [RideStatus.cancelled, RideStatus.completed]:
-        raise HTTPException(status_code=400, detail="Cannot change status of a completed or cancelled ride")
-
-    ride.status = RideStatus(new_status.value)  
+    # Update the ride status
+    ride.status = new_status
     db.commit()
     db.refresh(ride)
-    return {"ride_id": ride.id, "new_status": ride.status}
+
+    print(f"\n !!!!!!!!!!!!!!!!!!!!!!!! changed_by: {changed_by} !!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
+
+    # Log the audit entry with all ride details and the new status
+    log_action(
+        db=db,
+        action="UPDATE",  # Correct action
+        entity_type="Ride",
+        entity_id=str(ride.id),
+        change_data={
+            "id": str(ride.id),
+            "stop": ride.stop,
+            "status": ride.status,  # Include the new status
+            "user_id": str(ride.user_id),
+            "isArchive": ride.isArchive,
+            "ride_type": ride.ride_type,
+            "vehicle_id": str(ride.vehicle_id),
+            "destination": ride.destination,
+            "end_datetime": ride.end_datetime.isoformat(),
+            "submitted_at": ride.submitted_at.isoformat(),
+            "start_datetime": ride.start_datetime.isoformat(),
+            "start_location": ride.start_location,
+            "emergency_event": ride.emergency_event,
+            "override_user_id": str(ride.override_user_id),
+            "actual_distance_km": ride.actual_distance_km,
+            "license_check_passed": ride.license_check_passed,
+            "estimated_distance_km": ride.estimated_distance_km
+        },
+        changed_by=changed_by,
+    )
+    db.execute(text("SET session.audit.user_id = DEFAULT"))
+
+
+    return ride
 
 
 

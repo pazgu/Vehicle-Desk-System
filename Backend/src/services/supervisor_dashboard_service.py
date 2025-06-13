@@ -11,8 +11,15 @@ from fastapi import HTTPException
 from .vehicle_service import update_vehicle_status
 from ..models.vehicle_inspection_model import VehicleInspection 
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
-from sqlalchemy import String , func
+from sqlalchemy import String , func, text
 from ..utils.audit_utils import log_action
+from typing import List
+from sqlalchemy.orm import Session
+from uuid import UUID
+from src.models.notification_model import Notification
+from src.models.user_model import User  # assuming you have this model with department info and role
+
+
 from ..utils.socket_manager import sio
 def get_department_orders(department_id: str, db: Session) -> List[RideDashboardItem]:
     """
@@ -94,10 +101,13 @@ def get_department_specific_order(department_id: str, order_id: str, db: Session
     return order_details
 
 
-def edit_order_status(department_id: str, order_id: str, new_status: str, db: Session) -> bool:
+def edit_order_status(department_id: str, order_id: str, new_status: str, user_id: UUID, db: Session) -> bool:
     """
-    Edit the status of a specific order for a department and sends a notf.
+    Edit the status of a specific order for a department and sends a notification.
     """
+    
+    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id)})
+
     # Query the database for the specific order
     order = (
         db.query(Ride)
@@ -112,15 +122,34 @@ def edit_order_status(department_id: str, order_id: str, new_status: str, db: Se
     # Update the status of the order
     order.status = new_status
     db.commit()
+    print(f"\n !!!!!!!!!!!!!!!!!!!!!!!! \n")
 
-    log_action(
-        db=db,
-        action="update_ride_status",
-        entity_type="Ride",
-        entity_id=str(order.id),
-        change_data={"new_status": new_status},
-        changed_by=order.override_user_id  # or another field if you track who approved
-    )
+    # log_action(
+    #     db=db,
+    #     action="UPDATE",
+    #     entity_type="Ride",
+    #     entity_id=str(order.id),
+    #     change_data={
+    #         "id": str(order.id),
+    #         "stop": order.stop,
+    #         "status": order.status,
+    #         "user_id": str(order.user_id),
+    #         "is_archive": order.is_archive,
+    #         "ride_type": order.ride_type,
+    #         "vehicle_id": str(order.vehicle_id),
+    #         "destination": order.destination,
+    #         "end_datetime": order.end_datetime.isoformat(),
+    #         "submitted_at": order.submitted_at.isoformat(),
+    #         "start_datetime": order.start_datetime.isoformat(),
+    #         "start_location": order.start_location,
+    #         "emergency_event": order.emergency_event,
+    #         "override_user_id": str(order.override_user_id) if order.override_user_id is not None else None,
+    #         "actual_distance_km": float(order.actual_distance_km) if order.actual_distance_km is not None else None,
+    #         "license_check_passed": order.license_check_passed,
+    #         "estimated_distance_km": float(order.estimated_distance_km) if order.estimated_distance_km is not None else None
+    #     },
+    #     changed_by=order.override_user_id if order.override_user_id is not None else user_id
+    # )
 
     hebrew_status_map = {
         "approved": "אושרה",
@@ -135,13 +164,15 @@ def edit_order_status(department_id: str, order_id: str, new_status: str, db: Se
         title="עדכון סטטוס הזמנה",
         message=message_he,
         sent_at=datetime.now(timezone.utc),
-        order_id=order.id  # <-- attach the order id here
-
+        order_id=order.id
     )
 
     db.add(notification)
     db.commit()
     db.refresh(notification)
+
+    db.execute(text("SET session.audit.user_id = DEFAULT"))
+
 
     return order, notification
 
@@ -211,16 +242,31 @@ async def start_ride(db: Session, ride_id: UUID):
     })
 
 def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
-    
+
     inspection = VehicleInspection(
-        vehicle_id=data.vehicle_id,
-        inspected_by=data.inspected_by,
-        fuel_level=data.fuel_level,
-        tires_ok=data.tires_ok,
-        clean=data.clean,
-        issues_found=data.issues_found,
-        inspection_date=datetime.utcnow()
-    )
+    inspection_id=data.inspection_id,
+    inspected_by=data.inspected_by,
+    inspection_date=datetime.now(timezone.utc),
+    clean=data.clean,
+    fuel_checked=data.fuel_checked,
+    no_items_left=data.no_items_left,
+    critical_issue_bool=data.critical_issue_bool,
+    issues_found=data.issues_found,
+)   
+    # If you want to include vehicle_id, uncomment the following line 
+    # inspection = VehicleInspection(
+    #     vehicle_id=data.vehicle_id,
+    #     inspected_by=data.inspected_by,
+    #     # fuel_level=data.fuel_level,
+    #     # tires_ok=data.tires_ok,
+    #     clean=data.clean,
+    #     fuel_checked=data.fuel_checked,
+    #     no_items_left=data.no_items_left,
+    #     critical_issue_bool=data.critical_issue_bool,
+    #     issues_found=data.issues_found,
+    #     inspection_date=datetime.utcnow()
+    # )
+
 
     db.add(inspection)
 
