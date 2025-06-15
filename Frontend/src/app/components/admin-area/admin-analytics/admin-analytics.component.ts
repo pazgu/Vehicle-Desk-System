@@ -170,26 +170,32 @@ export class AdminAnalyticsComponent implements OnInit {
   }
 
   onSortChange() {
-    const sortFunctions = {
-      countAsc: (a: { status: string; count: number }, b: { status: string; count: number }) => a.count - b.count,
-      countDesc: (a: { status: string; count: number }, b: { status: string; count: number }) => b.count - a.count,
-      alphabetical: (a: { status: string; count: number }, b: { status: string; count: number }) => a.status.localeCompare(b.status),
-      default: () => 0
-    };
+  const sortFunctions = {
+    countAsc: (a: { status: string; count: number }, b: { status: string; count: number }) => a.count - b.count,
+    countDesc: (a: { status: string; count: number }, b: { status: string; count: number }) => b.count - a.count,
+    alphabetical: (a: { status: string; count: number }, b: { status: string; count: number }) => a.status.localeCompare(b.status),
+    default: () => 0
+  };
 
+  const sortFn = sortFunctions[this.selectedSortOption as keyof typeof sortFunctions];
+
+  if (this.activeTabIndex === 0) {
+    // Vehicle tab
     this.http.get<{ status: string; count: number }[]>(`${environment.apiUrl}/analytics/vehicle-status-summary`)
       .subscribe(data => {
-        console.log('🔄 Sorting data:', data);
-        
-        const sortedData = this.selectedSortOption === 'default' 
-          ? data 
-          : [...data].sort(sortFunctions[this.selectedSortOption as keyof typeof sortFunctions]);
-        
+        const sortedData = this.selectedSortOption === 'default' ? data : [...data].sort(sortFn);
         this.updateVehicleChart(sortedData);
-        
-      
+      });
+  } else {
+    // Ride tab
+    this.http.get<{ status: string; count: number }[]>(`${environment.apiUrl}/analytics/ride-status-summary`)
+      .subscribe(data => {
+        const sortedData = this.selectedSortOption === 'default' ? data : [...data].sort(sortFn);
+        this.updateRideChart(sortedData);
       });
   }
+}
+
 
   onTabChange(index: number) {
     this.activeTabIndex = index;
