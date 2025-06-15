@@ -8,6 +8,7 @@ import { Router } from '@angular/router';
 import { SocketService } from '../../../services/socket.service';
 import { ToastService } from '../../../services/toast.service';
 import { ChangeDetectorRef } from '@angular/core';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-notifications',
@@ -26,8 +27,12 @@ export class NotificationsComponent implements OnInit {
     private socketService: SocketService,
     private toastService: ToastService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private location: Location
   ) {}
+  goBack(): void {
+  this.location.back();
+}
 
  ngOnInit(): void {
   // ✅ Join user's Socket.IO room for live updates

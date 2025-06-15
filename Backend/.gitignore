@@ -5,8 +5,10 @@ env/
 .venv/
 
 # Ignore Python cache
-__pycache__/
+_pycache_/
 *.pyc
+
+.env
 
 # Ignore system files
 .DS_Store
@@ -14,4 +16,3 @@ __pycache__/
 # Ignore IDE/editor configs
 .vscode/
 .idea/
-

@@ -9,6 +9,7 @@ from ..models.user_model import User
 from datetime import datetime, timezone
 from ..schemas.vehicle_schema import VehicleOut, InUseVehicleOut
 from uuid import UUID
+from sqlalchemy import text
 from fastapi import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 from ..models.vehicle_inspection_model import VehicleInspection 
@@ -162,7 +163,8 @@ def get_vehicles_with_optional_status(
     print("Result:", result)
     return result
 
-def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_reason: str, db: Session, changed_by: Optional[UUID] = None):
+def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_reason: str, db: Session, changed_by: UUID):
+    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(changed_by)})
     vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
     if not vehicle:
         raise HTTPException(status_code=404, detail="Vehicle not found")
@@ -194,6 +196,7 @@ def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_re
         },
         changed_by=changed_by  
     )
+    db.execute(text("SET session.audit.user_id = DEFAULT"))
     return {"vehicle_id": vehicle.id, "new_status": vehicle.status, "freeze_reason": vehicle.freeze_reason}
 
 
