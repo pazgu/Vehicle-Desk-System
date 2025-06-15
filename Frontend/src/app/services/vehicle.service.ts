@@ -22,7 +22,7 @@ export class VehicleService {
   getAvailableVehicles(): Observable<VehicleInItem[]>{
     const url = `${this.apiUrl}/all-vehicles/available`;
     return this.http.get<VehicleInItem[]>(url);  
-  }
+  } 
 
   getVehicleById(id: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/vehicle/${id}`);
@@ -38,8 +38,9 @@ export class VehicleService {
 getTodayInspections(): Observable<any[]> {
   return this.http.get<any[]>(`${environment.apiUrl}/inspections/today`);
 }
- getPendingCars(): Observable<string[]> {
-  return this.http.get<string[]>(`${environment.apiUrl}/orders/pending-cars`);
+ getPendingCars(): Observable<{ vehicle_id: string; date: string; period: string }[]> {
+  return this.http.get<{ vehicle_id: string; date: string; period: string }[]>(`${environment.apiUrl}/orders/pending-cars`);
 }
+
 
 }

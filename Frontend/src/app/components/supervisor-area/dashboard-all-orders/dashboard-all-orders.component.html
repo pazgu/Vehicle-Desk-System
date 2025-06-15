@@ -28,8 +28,9 @@
             <option value="">הצג הכל</option>
             <option value="מאושר">מאושר</option>
             <option value="בהמתנה">בהמתנה</option>
-
             <option value="נדחה">נדחה</option>
+            <option value="בוטל">בוטל</option>
+            <option value="בוצע">בוצע</option>
           </select>
         </div>
 
@@ -44,6 +45,34 @@
           </div>
         </div>
       </div>
+
+
+
+
+      <div class="status-indicators">
+        <p style="margin-bottom: 0.75rem; font-weight: 600;">מקרא צבעים</p>
+        <div class="status-box">
+          <div class="status-item">
+            <span class="status-indicator approved"></span> מאושר
+          </div>
+          <div class="status-item">
+            <span class="status-indicator completed"></span> בוצע
+          </div>
+          <div class="status-item">
+            <span class="status-indicator pending"></span> בהמתנה
+          </div>
+          <div class="status-item">
+            <span class="status-indicator rejected"></span> נדחה
+          </div>
+          <div class="status-item">
+            <span class="status-indicator cancelled"></span> בוטל
+        </div>
+        </div>
+        </div>
+
+
+
+
       <p-table #table [value]="trips" [rows]="rows" [totalRecords]="filteredOrders.length" dir="rtl">
         <ng-template pTemplate="header">
           <tr class="table-header">
@@ -57,17 +86,18 @@
         </ng-template>
         <ng-template pTemplate="body" let-trip>
           <tr [ngClass]="getRowClass(trip.status)" (click)="onRowSelect(trip)">
-            <td [matTooltip]="trip.ride_id"  class="copy-button">
-              <button (click)="copyToClipboard(trip.ride_id);$event.stopPropagation()"><img class="copy-icon" src="/assets/images/copy.png"/>
-               <span *ngIf="copiedRideId === trip.ride_id" class="copied-message">
-                Copied!
-              </span>
+            <td [matTooltip]="trip.ride_id" class="copy-button">
+              <button (click)="copyToClipboard(trip.ride_id);$event.stopPropagation()"><img class="copy-icon"
+                  src="/assets/images/copy.png" />
+                <span *ngIf="copiedRideId === trip.ride_id" class="copied-message">
+                  Copied!
+                </span>
               </button>
               {{ trip.ride_id.slice(0, 4) }}...
             </td>
             <td>{{ trip.employee_name }}</td>
             <td>{{ trip.requested_vehicle_plate }}</td>
-            <td>{{ trip.date_and_time | date: 'yyyy-MM-dd HH:mm' }}</td>
+            <td>{{ trip.date_and_time | date:'dd/MM/yyyy HH:mm' }}</td>
             <td>{{ trip.distance }}</td>
             <td [ngClass]="getStatusClass(trip.status)">{{ translateStatus(trip.status) }}</td>
           </tr>

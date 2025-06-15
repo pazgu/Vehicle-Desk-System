@@ -6,9 +6,10 @@ from sqlalchemy import func, cast
 from sqlalchemy import and_ , or_ , not_ , select
 from ..models.ride_model import Ride, RideStatus
 from ..models.user_model import User
-from datetime import datetime
+from datetime import datetime, timezone
 from ..schemas.vehicle_schema import VehicleOut, InUseVehicleOut
 from uuid import UUID
+from sqlalchemy import text
 from fastapi import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 from ..models.vehicle_inspection_model import VehicleInspection 
@@ -71,24 +72,45 @@ from ..schemas.user_rides_schema import RideSchema
 #     # הופך את הרשומות לדיקטים
 #     return [dict(r._mapping) for r in result]
 
-def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
+# ----------------------------------------------------------------------
+# def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
     
+#     inspection = VehicleInspection(
+#         vehicle_id=data.vehicle_id,
+#         inspected_by=data.inspected_by,
+#         fuel_level=data.fuel_level,
+#         tires_ok=data.tires_ok,
+#         clean=data.clean,
+#         issues_found=data.issues_found,
+#         inspection_date=datetime.utcnow()
+#     )
+
+#     db.add(inspection)
+
+#     db.commit()
+
+#     return {"message": "Ride completed and vehicle inspection recorded successfully"}
+# ----------------------------------------------------------------------
+
+def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
     inspection = VehicleInspection(
-        vehicle_id=data.vehicle_id,
         inspected_by=data.inspected_by,
-        fuel_level=data.fuel_level,
-        tires_ok=data.tires_ok,
+        inspection_date=datetime.now(timezone.utc),
         clean=data.clean,
+        fuel_checked=data.fuel_checked,
+        no_items_left=data.no_items_left,
+        critical_issue_bool=data.critical_issue_bool,
         issues_found=data.issues_found,
-        inspection_date=datetime.utcnow()
     )
 
     db.add(inspection)
-
     db.commit()
+    db.refresh(inspection)
 
-    return {"message": "Ride completed and vehicle inspection recorded successfully"}
-
+    return {
+        "message": "Vehicle inspection recorded successfully",
+        "inspection_id": str(inspection.inspection_id)
+    }
 
 
 def get_vehicles_with_optional_status(
@@ -141,7 +163,8 @@ def get_vehicles_with_optional_status(
     print("Result:", result)
     return result
 
-def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_reason: str, db: Session, changed_by: Optional[UUID] = None):
+def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_reason: str, db: Session, changed_by: UUID):
+    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(changed_by)})
     vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
     if not vehicle:
         raise HTTPException(status_code=404, detail="Vehicle not found")
@@ -173,6 +196,7 @@ def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_re
         },
         changed_by=changed_by  
     )
+    db.execute(text("SET session.audit.user_id = DEFAULT"))
     return {"vehicle_id": vehicle.id, "new_status": vehicle.status, "freeze_reason": vehicle.freeze_reason}
 
 

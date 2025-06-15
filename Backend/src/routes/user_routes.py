@@ -1,3 +1,4 @@
+import json
 import traceback
 from fastapi import APIRouter, HTTPException, Depends , Query,Form
 from sqlalchemy.orm import Session
@@ -7,6 +8,7 @@ from ..schemas.new_ride_schema import RideCreate
 from ..services import register_service
 from ..services import login_service
 from uuid import UUID
+from sqlalchemy import text
 from ..services.new_ride_service import create_ride 
 from fastapi.responses import JSONResponse
 from typing import List, Optional, Union
@@ -27,7 +29,7 @@ from src.schemas.ride_status_enum import UpdateRideStatusRequest
 from ..schemas.order_card_item import OrderCardItem
 from ..models.ride_model import Ride
 from ..services.user_edit_ride import patch_order_in_db
-from ..services.user_rides_service import get_ride_by_id , get_archived_rides
+from ..services.user_rides_service import get_ride_by_id , get_archived_rides , cancel_order_in_db
 from ..services.user_notification import create_system_notification,get_supervisor_id,get_user_name
 import traceback
 from ..models.user_model import User
@@ -38,7 +40,10 @@ from ..utils.socket_utils import convert_decimal
 from ..utils.email_utils import send_email
 from ..services.auth_service import create_reset_token,verify_reset_token
 from ..schemas.reset_password import ResetPasswordInput,ForgotPasswordRequest
+from ..services.user_data import get_user_department
+from ..models.vehicle_model import Vehicle
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+from ..models.ride_model import PendingRideSchema
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -159,13 +164,21 @@ async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = De
 
     try:
         new_ride = create_ride(db, user_id, ride_request)
-
+        department_id=get_user_department(user_id=user_id,db=db)
         # ✅ Emit real-time event
         await sio.emit("new_ride_request", {
             "ride_id": str(new_ride.id),
             "user_id": str(user_id),
+            "employee_name":new_ride.username,
             "status": new_ride.status,
-            "destination": new_ride.destination
+            "destination": new_ride.destination,
+            "end_datetime": str(new_ride.end_datetime),
+            "date_and_time":str(new_ride.start_datetime),
+            "vehicle_id":str(new_ride.vehicle_id),
+            "requested_vehicle_plate":new_ride.plate_number,
+            "department_id":str(department_id),
+            "distance":new_ride.estimated_distance_km,
+
         })
 
         supervisor_id = get_supervisor_id(user_id, db)
@@ -186,8 +199,9 @@ async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = De
                 "message": supervisor_notification.message,
                 "notification_type": supervisor_notification.notification_type.value,
                 "sent_at": supervisor_notification.sent_at.isoformat(),
-                "order_id": str(supervisor_notification.order_id) if supervisor_notification.order_id else None
-            }, room=str(supervisor_notification.user_id))
+                "order_id": str(supervisor_notification.order_id) if supervisor_notification.order_id else None,
+                "order_status":new_ride.status
+            })
         else:
             logger.warning("No supervisor found — skipping supervisor notification.")
 
@@ -207,8 +221,9 @@ async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = De
             "message": confirmation.message,
             "notification_type": confirmation.notification_type.value,
             "sent_at": confirmation.sent_at.isoformat(),
-            "order_id": str(confirmation.order_id) if confirmation.order_id else None
-        }, room=str(confirmation.user_id))
+            "order_id": str(confirmation.order_id) if confirmation.order_id else None,
+            "order_status":new_ride.status
+        })
 
 
         return new_ride
@@ -228,15 +243,19 @@ def get_departments_route():
 async def patch_order(order_id: UUID, patch_data: OrderCardItem, db: Session = Depends(get_db)):
     # Update the order
     updated_order = patch_order_in_db(order_id, patch_data, db)
-    
+    user = db.query(User).filter(User.employee_id == updated_order.user_id).first()
+    vehicle = db.query(Vehicle).filter(Vehicle.id == updated_order.vehicle_id).first()
+
     # Emit the updated order to the user's room
     order_data = {
     "id": str(updated_order.id),
     "user_id": str(updated_order.user_id),
+    "employee_name":f"{user.first_name} {user.last_name}",
     "vehicle_id": str(updated_order.vehicle_id) if updated_order.vehicle_id else None,
+    "requested_vehicle_plate":vehicle.plate_number,
     "ride_type": updated_order.ride_type,
-    "start_datetime": updated_order.start_datetime.isoformat(),
-    "end_datetime": updated_order.end_datetime.isoformat(),
+    "start_datetime": updated_order.start_datetime,
+    "end_datetime": updated_order.end_datetime,
     "start_location": updated_order.start_location,
     "stop": updated_order.stop,
     "destination": updated_order.destination,
@@ -244,11 +263,11 @@ async def patch_order(order_id: UUID, patch_data: OrderCardItem, db: Session = D
     "actual_distance_km": updated_order.actual_distance_km,
     "status": updated_order.status.value,
     "license_check_passed": updated_order.license_check_passed,
-    "submitted_at": updated_order.submitted_at.isoformat(),
+    "submitted_at": updated_order.submitted_at,
     "emergency_event": updated_order.emergency_event,
 }
-
-    await sio.emit("order_updated", convert_decimal(order_data), room=str(updated_order.user_id))
+    print("Order data to emit:", json.dumps(convert_decimal(order_data), indent=2))
+    await sio.emit("order_updated", convert_decimal(order_data))
     return {
         "message": "ההזמנה עודכנה בהצלחה",
         "order": updated_order
@@ -274,13 +293,14 @@ async def send_notification_route(
         )
 
         # Emit the notification to the user's Socket.IO room
-        await sio.emit("notification", {
+        await sio.emit("new_notification", {
             "id": str(notification.id),
             "title": notification.title,
+            "user_id":str(notification.user_id),
             "message": notification.message,
             "notification_type": notification.notification_type.value,  # if enum
             "sent_at": notification.sent_at.isoformat()
-        }, room=str(user_id))
+        })
 
         return {"message": "Notification sent successfully", "notification": notification}
 
@@ -293,10 +313,27 @@ def get_notifications_for_user(user_id: UUID, db: Session = Depends(get_db)):
     return get_user_notifications(db, user_id)
 
 
-@router.delete("/api/orders/{user_id}")
-def delete_order():
-    # Implementation pending
-    return {"message": "Not implemented yet"}
+@router.delete("/api/all-orders/{order_id}")
+async def delete_order(order_id: UUID, db: Session = Depends(get_db)):
+    """
+    Delete an order by its ID.
+    """
+    try:
+        ride = db.query(Ride).filter(Ride.id == order_id).first()
+        if not ride:
+            raise HTTPException(status_code=404, detail="Order not found")
+
+        db.delete(ride)
+        db.commit()
+
+        # Emit deletion event
+        await sio.emit("order_deleted", {"order_id": str(order_id)})
+
+        return {"message": "Order deleted successfully"}
+    except Exception as e:
+        logger.error(f"Failed to delete order {order_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to delete order")
+
 
 @router.get("/api/rides/{ride_id}", response_model=RideSchema)
 def read_ride(ride_id: UUID, db: Session = Depends(get_db)):
@@ -323,12 +360,27 @@ def get_archived_orders_route(
 
     return get_archived_rides(user_id, db)
 
-@router.get("/api/orders/pending-cars", response_model=List[str])
+@router.get("/api/orders/pending-cars", response_model=List[PendingRideSchema])
 def get_pending_car_orders(db: Session = Depends(get_db)):
-    # Fetch only vehicle_ids of pending rides
-    vehicle_ids = db.query(Ride.vehicle_id).filter(Ride.status == "pending").distinct().all()
-    return [str(v[0]) for v in vehicle_ids if v[0] is not None]
+    pending_rides = (
+        db.query(Ride)
+        .filter(Ride.status == "pending")
+        .all()
+    )
 
+    result = []
+    for ride in pending_rides:
+        ride_period = "night" if ride.start_datetime.hour >= 18 else "morning"
+        result.append({
+            "vehicle_id": ride.vehicle_id,
+            "ride_period": ride_period,
+            "ride_date": ride.start_datetime.date().isoformat(),
+            "ride_date_night_end": ride.end_datetime.date().isoformat() if ride_period == "night" else None,
+            "start_time": ride.start_datetime.time().strftime("%H:%M"),
+            "end_time": ride.end_datetime.time().strftime("%H:%M"),
+        })
+
+    return result
 
 
 @router.post("/api/forgot-password")
@@ -379,3 +431,9 @@ def reset_password(
     db.commit()
 
     return {"message": "Password reset successfully"}
+
+@router.post("/api/orders/{order_id}/cancel")
+def cancel_order(order_id: UUID, db: Session = Depends(get_db)):
+    return cancel_order_in_db(order_id, db)
+
+# aaaaa
