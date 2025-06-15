@@ -95,11 +95,8 @@ export class AuditLogsComponent implements OnInit {
       (data) => {
         this.logs = data.map(log => ({
           ...log,
-          // 'createdAt' property was not used in the provided JSON,
-          // sticking to 'created_at' as per your API response for consistency
-          // If you need a Date object, you can add it:
-          // createdAt: new Date(log.created_at)
-        }));
+        }))
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()); // Sort newest first
         this.filteredLogs = [...this.logs]; // Initialize filtered logs
       });
   }
