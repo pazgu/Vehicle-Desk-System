@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { environment } from '../../../../environments/environment';
 import { FormsModule } from '@angular/forms';
 import { TabViewModule } from 'primeng/tabview';
+import { SocketService } from '../../../services/socket.service';
 
 
 
@@ -32,12 +33,26 @@ export class AdminAnalyticsComponent implements OnInit {
   vehicleChartInitialized = false;
   rideChartInitialized = false;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient,private socketService:SocketService) {}
 
   ngOnInit() {
     this.loadVehicleChart();
     this.loadRideChart();
-    
+  this.socketService.rideStatusUpdated$.subscribe(() => {
+      console.log('🔔 rideStatusUpdated$ triggered');
+      this.loadRideChart();
+    });
+
+    this.socketService.vehicleStatusUpdated$.subscribe(() => {
+      console.log('🔔 vehicleStatusUpdated$ triggered');
+      this.loadVehicleChart();
+    });
+
+      this.socketService.deleteRequests$.subscribe(() => {
+      console.log('🔔 deleteRequest$ triggered');
+      this.loadRideChart();
+      this.loadVehicleChart();
+    });
   }
 
   private loadVehicleChart() {
@@ -93,7 +108,7 @@ export class AdminAnalyticsComponent implements OnInit {
     const labels = data.map(d => this.getHebrewLabel(d.status));
     const values = data.map(d => d.count);
     
-    this.vehicleChartData = {
+    const newVehicleChartData = {
       labels: [...labels],
       datasets: [{
         data: [...values],
@@ -101,6 +116,9 @@ export class AdminAnalyticsComponent implements OnInit {
         hoverBackgroundColor: ['#64B5F6', '#81C784', '#FFB74D']
       }]
     };
+      this.vehicleChartData = { ...newVehicleChartData }; // 👈 NEW OBJECT
+
+    
 
     this.vehicleChartOptions = {
       plugins: {
@@ -126,7 +144,7 @@ export class AdminAnalyticsComponent implements OnInit {
     console.log('📊 Chart labels:', labels);
     console.log('📊 Chart values:', values);
 
-    this.rideChartData = {
+    const newrideChartData = {
       labels: [...labels],
       datasets: [{
         data: [...values],
@@ -134,6 +152,8 @@ export class AdminAnalyticsComponent implements OnInit {
         hoverBackgroundColor: ['#FF6384CC', '#36A2EBCC', '#FFCE56CC', '#4BC0C0CC', '#9966FFCC', '#FF9F40CC']
       }]
     };
+    
+  this.rideChartData = { ...newrideChartData };
 
     this.rideChartOptions = {
        plugins: {
