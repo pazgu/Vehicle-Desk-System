@@ -17,11 +17,7 @@
         <td>{{ item.inspection_date | date: 'short' }}</td>
         <td>{{ item.inspected_by }}</td>
         <td>
-          {{
-            item.issues_found?.critical_event ||
-            item.issues_found?.notes ||
-            (item.issues_found?.issues?.length ? item.issues_found.issues.join(', ') : 'אין')
-          }}
+          {{ item.issues_found || 'לא דווחו בעיות' }}
         </td>
       </tr>
     </tbody>
