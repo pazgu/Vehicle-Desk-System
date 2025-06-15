@@ -45,6 +45,8 @@ from ..models.vehicle_model import Vehicle
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 from ..models.ride_model import PendingRideSchema
 from ..utils.scheduler import schedule_ride_start
+from apscheduler.jobstores.base import JobLookupError
+from ..utils.scheduler import scheduler
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -329,6 +331,10 @@ async def delete_order(order_id: UUID, db: Session = Depends(get_db)):
 
         # Emit deletion event
         await sio.emit("order_deleted", {"order_id": str(order_id)})
+        try:
+            scheduler.remove_job(job_id=f"ride-start-{order_id}")
+        except JobLookupError:
+            pass  # If the job doesn't exist, ignore
 
         return {"message": "Order deleted successfully"}
     except Exception as e:

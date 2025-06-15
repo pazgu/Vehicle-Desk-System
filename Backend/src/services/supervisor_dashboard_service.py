@@ -229,18 +229,12 @@ async def start_ride(db: Session, ride_id: UUID):
     # 3️⃣ Emit ride update
     await sio.emit("ride_status_updated", {
         "id": str(ride.id),
-        "status": ride.status.value,
-        "start_datetime": ride.start_datetime.isoformat(),
-        "user_id": str(ride.user_id),
-        "vehicle_id": str(ride.vehicle_id),
-        # Add more ride details if you want
+        "status": ride.status.value
     })
     # 4️⃣ Emit vehicle update
     await sio.emit("vehicle_status_updated", {
         "id": str(vehicle.id),
-        "status": vehicle.status.value,
-        "plate_number": vehicle.plate_number,
-        # Add more vehicle details if you want
+        "status": vehicle.status.value
     })
     print(f'start_ride was called for ride_id:{ride_id}')
 

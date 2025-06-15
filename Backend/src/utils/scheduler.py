@@ -16,6 +16,7 @@ scheduler.start()
 
 
 def schedule_ride_start(ride_id: str, start_datetime: datetime):
+    print('start ride was scheduled')
     run_time = start_datetime
     job_id = f"ride-start-{ride_id}"
 
@@ -33,7 +34,10 @@ def schedule_ride_start(ride_id: str, start_datetime: datetime):
         id=job_id
     )
 
+    
+
 async def start_ride_with_new_session(ride_id: str):
+    print('start ride with new session was called')
     db = SessionLocal()
     try:
         await start_ride(db, ride_id)
