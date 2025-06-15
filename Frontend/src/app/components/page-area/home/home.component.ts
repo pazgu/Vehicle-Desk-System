@@ -45,6 +45,7 @@ export class NewRideComponent implements OnInit {
   rideForm!: FormGroup;
   public estimated_distance_with_buffer: number = 0;
   public minDate: string = '';
+  public fetchedDistance: number | null = null; 
 
   allCars: {
     id: string;
@@ -73,6 +74,23 @@ export class NewRideComponent implements OnInit {
     private vehicleService: VehicleService,
     private socketService: SocketService,
   ) {}
+
+  // ✅ MOCKED FUNCTION: Fetch estimated distance between start and destination cities
+fetchEstimatedDistance(from: string, to: string): void {
+  if (!from || !to) return;
+
+  console.log(`Fetching distance between: ${from} → ${to}`);
+
+  // ⏱ Simulate backend response with a delay
+  setTimeout(() => {
+    const mockDistance = +(Math.random() * 100 + 5).toFixed(1); // 5–105 km
+    this.fetchedDistance = mockDistance;
+
+    // Set the value into the form
+    this.rideForm.get('estimated_distance_km')?.setValue(mockDistance);
+  }, 500);
+}
+
 
   ngOnInit(): void {
     this.minDate = this.calculateMinDate(2);
@@ -116,6 +134,20 @@ export class NewRideComponent implements OnInit {
     this.rideForm.get('end_time')?.valueChanges.subscribe(() => {
       this.updateAvailableCars();
     });
+
+    // ✅ Subscribe to city changes
+this.rideForm.get('start_location')?.valueChanges.subscribe(() => {
+  const from = this.rideForm.get('start_location')?.value;
+  const to = this.rideForm.get('destination')?.value;
+  if (from && to) this.fetchEstimatedDistance(from, to);
+});
+
+this.rideForm.get('destination')?.valueChanges.subscribe(() => {
+  const from = this.rideForm.get('start_location')?.value;
+  const to = this.rideForm.get('destination')?.value;
+  if (from && to) this.fetchEstimatedDistance(from, to);
+});
+
 
     // Load all vehicles and filter for available ones
     this.vehicleService.getAllVehicles().subscribe({
