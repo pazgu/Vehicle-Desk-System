@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from src.utils.auth import token_check
 from fastapi import APIRouter, Depends
 from uuid import UUID
+from sqlalchemy import select
+
 from src.services.supervisor_dashboard_service import (
     get_department_orders,
     get_department_specific_order,
@@ -21,6 +23,7 @@ from ..utils.socket_utils import convert_decimal
 from ..models.vehicle_model import Vehicle
 from ..models.user_model import User
 import json
+from ..models.ride_model import Ride
 
 router = APIRouter()
 
@@ -42,7 +45,10 @@ async def edit_order_status_route(
     status: str,
     db: Session = Depends(get_db)
 ):
-    updated_order, notification = edit_order_status(department_id, order_id, status, db)
+    
+    stmt = select(Ride.user_id).where(Ride.id == order_id)
+    user_id = db.scalar(stmt)
+    updated_order, notification = edit_order_status(department_id, order_id, status,user_id, db)
 
     if not updated_order:
         raise HTTPException(status_code=404, detail="Order not found")

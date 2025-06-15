@@ -44,7 +44,9 @@ from ..services.user_data import get_user_department
 from ..models.vehicle_model import Vehicle
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 from ..models.ride_model import PendingRideSchema
-
+from ..utils.scheduler import schedule_ride_start
+from apscheduler.jobstores.base import JobLookupError
+from ..utils.scheduler import scheduler
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -163,7 +165,8 @@ async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = De
     print("📥 Received RideCreate object:", ride_request.dict())
 
     try:
-        new_ride = create_ride(db, user_id, ride_request)
+        new_ride = await create_ride(db, user_id, ride_request)
+        schedule_ride_start(new_ride.id, new_ride.start_datetime)
         department_id=get_user_department(user_id=user_id,db=db)
         # ✅ Emit real-time event
         await sio.emit("new_ride_request", {
@@ -328,6 +331,10 @@ async def delete_order(order_id: UUID, db: Session = Depends(get_db)):
 
         # Emit deletion event
         await sio.emit("order_deleted", {"order_id": str(order_id)})
+        try:
+            scheduler.remove_job(job_id=f"ride-start-{order_id}")
+        except JobLookupError:
+            pass  # If the job doesn't exist, ignore
 
         return {"message": "Order deleted successfully"}
     except Exception as e:

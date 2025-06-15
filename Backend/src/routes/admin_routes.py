@@ -29,11 +29,9 @@ from fastapi.responses import JSONResponse
 from src.models.ride_model import Ride
 from sqlalchemy import cast, Date
 
-
-
 from ..schemas.audit_schema import AuditLogsSchema
 from src.services.audit_service import get_all_audit_logs
-
+from ..utils.socket_manager import sio
 router = APIRouter()
 
 @router.get("/orders", response_model=list[RideDashboardItem])
@@ -145,7 +143,14 @@ def patch_vehicle_status(
     user_id = payload.get("user_id") or payload.get("sub")
     if not user_id:
         return {"error": "User ID not found in token"}, 401
-    return update_vehicle_status(vehicle_id, status_update.new_status, status_update.freeze_reason, db, user_id)
+     
+    res=update_vehicle_status(vehicle_id, status_update.new_status, status_update.freeze_reason, db, user_id)
+    new_status=res.new_status
+    sio.emit('vehicle_status_updated', {
+            "vehicle_id": str(vehicle_id),
+            "status": new_status,
+    })
+    return res
 
 @router.get("/vehicle/{vehicle_id}")
 def get_vehicle_by_id_route(vehicle_id: str, db: Session = Depends(get_db)):
