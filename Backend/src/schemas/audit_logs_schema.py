@@ -17,7 +17,7 @@ class AuditLogSchema(BaseModel):
     checkbox_values: Optional[Dict[str, Any]]  # Store checkbox info as a JSON/dict
     inspected_at: Optional[datetime]
     inspector_id: Optional[UUID]
-    inspection_notes: Optional[str]
+    notes: Optional[str]
 
     class Config:
         from_attributes = True
@@ -34,4 +34,4 @@ class CreateAuditLogSchema(BaseModel):
     checkbox_values: Optional[Dict[str, Any]]
     inspected_at: Optional[datetime]
     inspector_id: Optional[UUID]
-    inspection_notes: Optional[str]
+    notes: Optional[str]
