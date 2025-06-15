@@ -14,3 +14,5 @@ class AuditLog(Base):
     change_data = Column(JSON, nullable=True)  
     created_at = Column(DateTime, default=datetime.utcnow)
     changed_by = Column(UUID(as_uuid=True), nullable=False) 
+
+    
