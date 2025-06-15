@@ -5,6 +5,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute } from '@angular/router';
 import { ToastService } from '../../../services/toast.service';
 import { RideReportService } from '../../../services/completion-form.service';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-ride-completion-form',
@@ -23,8 +24,12 @@ export class RideCompletionFormComponent implements OnInit {
     private http: HttpClient,
     private toastService: ToastService,
     private route: ActivatedRoute,
-    private rideReportService: RideReportService
+    private rideReportService: RideReportService,
+    private location: Location
   ) {}
+  goBack(): void {
+  this.location.back();
+}
 
   ngOnInit(): void {
     this.rideId = this.route.snapshot.paramMap.get('ride_id')!;

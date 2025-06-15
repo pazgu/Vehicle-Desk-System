@@ -180,3 +180,22 @@ body {
   background-attachment: fixed;
 }
 
+
+.back-btn {
+  background-color: transparent;
+  border: none;
+  color: #7a1c1c;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  align-self: flex-start;
+  direction: rtl;
+}
+.back-btn:hover {
+  text-decoration: underline;
+}
+.back-btn-container {
+  display: flex;
+  justify-content: flex-end; 
+  padding: 1rem;
+}

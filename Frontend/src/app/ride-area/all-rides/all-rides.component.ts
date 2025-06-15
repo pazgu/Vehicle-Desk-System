@@ -6,7 +6,7 @@ import { MyRidesService } from '../../services/myrides.service';
 import { ActivatedRoute, Params } from '@angular/router';
 import { ToastService } from '../../services/toast.service';
 import { SocketService } from '../../services/socket.service';
-
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-home',
@@ -18,9 +18,12 @@ import { SocketService } from '../../services/socket.service';
 export class AllRidesComponent implements OnInit {
   constructor(private router: Router, private rideService: MyRidesService,private route: ActivatedRoute,
    private toastService: ToastService,
-  private socketService: SocketService 
-  
+   private socketService: SocketService,
+   private location: Location
   ) {}
+  goBack(): void {
+  this.location.back();
+} 
 
   currentPage = 1;
   loading: boolean = false;

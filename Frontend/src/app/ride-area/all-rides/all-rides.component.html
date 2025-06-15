@@ -1,6 +1,7 @@
 <div class="page-container">
   <!-- Warning Message -->
   <div class="exceeded-rides-warming" *ngIf="exceededMaxRides() && warningVisible">
+    <button class="back-btn" (click)="goBack()">חזור →</button>
     <h2>⚠️שים לב⚠️</h2>
     <p>
       בחודש האחרון ביצעת מעל 6 הזמנות רכב פרטי. <br>

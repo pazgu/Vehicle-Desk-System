@@ -1,5 +1,6 @@
 <div class="wrapper">
   <div class="notification-page">
+    <button class="back-btn" (click)="goBack()">חזור →</button>
     <h2 class="title">הודעות</h2>
 
     <div *ngIf="pagedNotifications.length === 0" class="no-message">
