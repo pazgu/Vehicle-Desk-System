@@ -101,12 +101,12 @@ def get_department_specific_order(department_id: str, order_id: str, db: Session
     return order_details
 
 
-def edit_order_status(department_id: str, order_id: str, new_status: str, user_id: UUID, db: Session) -> bool:
+def edit_order_status(department_id: str, order_id: str, new_status: str,user_id: UUID, db: Session) -> bool:
     """
     Edit the status of a specific order for a department and sends a notification.
     """
-    
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id)})
+    
 
     # Query the database for the specific order
     order = (
@@ -198,6 +198,7 @@ def get_department_notifications(department_id: UUID, db: Session) -> List[Notif
 
 
 async def start_ride(db: Session, ride_id: UUID):
+    print('start ride was called')
     ride = db.query(Ride).filter(Ride.id == ride_id).first()
     if not ride:
         raise HTTPException(status_code=404, detail="Ride not found")
@@ -213,11 +214,13 @@ async def start_ride(db: Session, ride_id: UUID):
         raise HTTPException(status_code=400, detail="Vehicle is not available")
 
     # 1️⃣ Update vehicle status
-    update_vehicle_status(vehicle.id, VehicleStatus.in_use, freeze_reason=None, db=db)
+    update_vehicle_status(vehicle.id, VehicleStatus.in_use, ride.user_id,freeze_reason=None ,db=db)
     vehicle.last_used_at = func.now()
 
     # 2️⃣ Update ride status
     ride.status = RideStatus.in_progress
+    print('ride status was changed to in_progress')
+    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": f"{ride.user_id}"})
 
     db.commit()
     db.refresh(ride)
@@ -232,7 +235,6 @@ async def start_ride(db: Session, ride_id: UUID):
         "vehicle_id": str(ride.vehicle_id),
         # Add more ride details if you want
     })
-
     # 4️⃣ Emit vehicle update
     await sio.emit("vehicle_status_updated", {
         "id": str(vehicle.id),
@@ -240,6 +242,7 @@ async def start_ride(db: Session, ride_id: UUID):
         "plate_number": vehicle.plate_number,
         # Add more vehicle details if you want
     })
+    print(f'start_ride was called for ride_id:{ride_id}')
 
 def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
 
