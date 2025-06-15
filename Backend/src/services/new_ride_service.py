@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from uuid import uuid4, UUID
 from ..schemas.new_ride_schema import RideCreate,RideResponse
 from ..models.ride_model import Ride, RideStatus
@@ -9,6 +10,8 @@ from ..utils.audit_utils import log_action
 from ..models.vehicle_model import Vehicle
 def create_ride(db: Session, user_id: UUID, ride: RideCreate):
     # Get the user info
+    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id)})
+
    
     # Create the new ride
     new_ride = Ride(
@@ -39,6 +42,8 @@ def create_ride(db: Session, user_id: UUID, ride: RideCreate):
     # Fetch the user who submitted the ride
     user = db.query(User).filter(User.employee_id == user_id).first()
 
+    print("user iddddddddddddddddddddddddddddddddddddd:", user_id)
+
     log_action(
         db=db,
         action="create_ride",
@@ -53,6 +58,7 @@ def create_ride(db: Session, user_id: UUID, ride: RideCreate):
         },
         changed_by=user_id
     )
+
 
     # Fetch all admin users
     admins = db.query(User).filter(User.role == "admin").all()
@@ -78,6 +84,7 @@ Ride Management System
     # Send the email to both the user and all admins
     recipients = [user.email] + admin_emails
     send_email(subject, body, recipients)
+    db.execute(text("SET session.audit.user_id = DEFAULT"))
     ride_response = RideResponse(
         **new_ride.__dict__,
         plate_number=vehicle.plate_number,
