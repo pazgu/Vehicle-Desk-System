@@ -49,11 +49,12 @@ export class SocketService {
   }
 
   private listenToEvents(): void {
-     this.socket.on('order_updated', (data: any) => {
+  this.socket.on('order_updated', (data: any) => {
   console.log('✏️ Ride order updated via socket:', data);
   this.orderUpdated$.next(data); // ✅ Pushes to subscribers like HomeComponent
 
 });
+
 this.socket.on('order_deleted', (data: any) => {
   console.log('✏️ Ride order deleted via socket:', data);
   this.deleteRequests$.next(data); // ✅ Pushes to subscribers like HomeComponent

@@ -102,7 +102,10 @@ this.socketService.orderUpdated$.subscribe((updatedRide) => {
       ];
 
       console.log(`✅ Ride ${updatedRide.id} updated in local state`);
+      const role=localStorage.getItem('role');
+      if(role==='supervisor'){
       this.toastService.show('✅ יש בקשה שעודכנה בהצלחה','success')
+      }
     }
   }
 });
@@ -230,7 +233,7 @@ getStatusTooltip(status: string): string {
   }
 
   goToNewRide(): void {
-    this.router.navigate(['/all-rides']);
+    this.router.navigate(['/home']);
   }
 
   fetchRides() {
