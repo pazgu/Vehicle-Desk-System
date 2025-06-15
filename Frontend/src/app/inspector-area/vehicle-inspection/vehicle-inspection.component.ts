@@ -109,3 +109,4 @@ export class VehicleInspectionComponent implements OnInit {
     alert('🔍 Click detected!');
   }
 }
+//lala
