@@ -67,5 +67,9 @@
 .cute-red-button:active {
   transform: scale(0.97);
 }
-
+.cute-red-button-container {
+  display: flex;
+  justify-content: flex-end; 
+  padding: 1rem;
+}
 
