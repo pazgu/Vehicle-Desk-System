@@ -1,7 +1,6 @@
 <div class="page-container">
   <!-- Warning Message -->
   <div class="exceeded-rides-warming" *ngIf="exceededMaxRides() && warningVisible">
-    <button class="back-btn" (click)="goBack()">חזור →</button>
     <h2>⚠️שים לב⚠️</h2>
     <p>
       בחודש האחרון ביצעת מעל 6 הזמנות רכב פרטי. <br>
@@ -18,7 +17,7 @@
   <div class="orders-wrapper">
     <h1>ההזמנות שלי</h1>
     <br>
-
+    <button class="back-btn" (click)="goBack()">חזור →</button>
     <div class="ride-filter-buttons">
       <button [ngClass]="{ 'active': rideViewMode === 'future' }" (click)="rideViewMode = 'future'; fetchRides()">הצג נסיעות עתידיות</button>
       <button [ngClass]="{ 'active': rideViewMode === 'past' }" (click)="rideViewMode = 'past'; fetchRides()">הצג נסיעות קודמות</button>

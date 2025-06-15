@@ -490,18 +490,24 @@ button[ng-click="showWarning()"]:hover {
   background-color: #ffc7c7;
 }
 
-\.back-btn {
-  background-color: transparent;
+.back-btn {
+    background-color: #942222;
+  color: white;
+  font-family: var(--font-family-alef);
+  font-size: 12px; 
+  font-weight: bold;
+  padding: 6px 12px; 
   border: none;
-  color: #7a1c1c;
-  font-size: 1rem;
+  border-radius: 10px; 
   cursor: pointer;
-  margin-bottom: 1rem;
-  align-self: flex-start;
-  direction: rtl;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+  margin-top: 12px; 
+  display: inline-block;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
 }
 .back-btn:hover {
-  text-decoration: underline;
+  background-color: #7c1b1b;
+  transform: scale(1.03);
 }
 .back-btn-container {
   display: flex;
