@@ -436,4 +436,13 @@ def reset_password(
 def cancel_order(order_id: UUID, db: Session = Depends(get_db)):
     return cancel_order_in_db(order_id, db)
 
-# aaaaa
+
+@router.post("/api/rides/feedback/{ride_id}")
+def need_feedback(ride_id: UUID, db: Session = Depends(get_db)):
+    ride= get_ride_by_id(db, ride_id)
+    if ride.end_datetime > datetime.now():
+        return { "showPage": False, "message": "הנסיעה עדיין לא הסתיימה" }
+    else :
+        return { "showPage": True, "message": "הנסיעה הסתיימה, נא למלא את הטופס" }
+
+
