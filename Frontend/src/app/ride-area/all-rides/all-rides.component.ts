@@ -6,7 +6,7 @@ import { MyRidesService } from '../../services/myrides.service';
 import { ActivatedRoute, Params } from '@angular/router';
 import { ToastService } from '../../services/toast.service';
 import { SocketService } from '../../services/socket.service';
-
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-home',
@@ -18,9 +18,12 @@ import { SocketService } from '../../services/socket.service';
 export class AllRidesComponent implements OnInit {
   constructor(private router: Router, private rideService: MyRidesService,private route: ActivatedRoute,
    private toastService: ToastService,
-  private socketService: SocketService 
-  
+   private socketService: SocketService,
+   private location: Location
   ) {}
+  goBack(): void {
+  this.location.back();
+} 
 
   currentPage = 1;
   loading: boolean = false;
@@ -41,7 +44,7 @@ export class AllRidesComponent implements OnInit {
     .toISOString()
     .split('T')[0];
 
-  sortBy = 'date';
+  sortBy = 'recent';
   orders: any[] = [];
   rideViewMode: 'all' | 'future' | 'past' = 'all';
   highlightedOrderId: string | null = null;
@@ -83,9 +86,13 @@ this.socketService.orderUpdated$.subscribe((updatedRide) => {
     if (index !== -1) {
       const newDate = formatDate(updatedRide.start_datetime, 'dd.MM.yyyy', 'en-US');
       const newTime = formatDate(updatedRide.start_datetime, 'HH:mm', 'en-US');
+      const newRecent = updatedRide.submitted_at
+        ? formatDate(updatedRide.submitted_at, 'dd.MM.yyyy', 'en-US')
+        : newDate;
 
       const updatedOrder = {
         ...this.orders[index],
+        recent: newRecent,
         date: newDate,
         time: newTime,
         status: updatedRide.status.toLowerCase(),
@@ -192,6 +199,12 @@ getStatusTooltip(status: string): string {
         return [...filtered].sort(
           (a, b) => this.parseDate(a.date).getTime() - this.parseDate(b.date).getTime()
         );
+      case 'recent':
+        return [...filtered].sort((a, b) => {
+          const dateA = a.submitted_at ? new Date(a.submitted_at) : this.parseDate(a.date);
+          const dateB = b.submitted_at ? new Date(b.submitted_at) : this.parseDate(b.date);
+          return dateB.getTime() - dateA.getTime();
+        })
     }
   }
 

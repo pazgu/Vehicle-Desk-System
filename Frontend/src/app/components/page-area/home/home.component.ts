@@ -18,6 +18,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { VehicleService } from '../../../services/vehicle.service';
 import { SocketService } from '../../../services/socket.service';
+import { Location } from '@angular/common';
 
 // Define the interface for pending vehicle
 interface PendingVehicle {
@@ -73,6 +74,7 @@ export class NewRideComponent implements OnInit {
     private rideService: RideService,
     private vehicleService: VehicleService,
     private socketService: SocketService,
+    private location: Location
   ) {}
 
   // ✅ MOCKED FUNCTION: Fetch estimated distance between start and destination cities
@@ -91,6 +93,10 @@ fetchEstimatedDistance(from: string, to: string): void {
   }, 500);
 }
 
+
+  goBack(): void {
+  this.location.back();
+}
 
   ngOnInit(): void {
     this.minDate = this.calculateMinDate(2);
