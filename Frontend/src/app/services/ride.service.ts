@@ -7,6 +7,8 @@ import { Observable } from 'rxjs';
 })
 export class RideService {
   private baseUrl = 'http://localhost:8000/api/orders';
+  private distanceUrl = 'http://localhost:8000/api/distance'; // ✅ distance API URL
+
 
   constructor(private http: HttpClient) {}
 
@@ -55,6 +57,23 @@ getArchivedOrders(userId: string): Observable<any[]> {
 
   return this.http.get<any[]>(`http://localhost:8000/api/archived-orders/${userId}`, { headers });
 }
+
+// ✅ NEW: Fetch estimated distance from backend
+getDistance(from: string, to: string): Observable<{ distance_km: number }> {
+  const token = localStorage.getItem('access_token');
+  if (!token) throw new Error('Access token not found in localStorage.');
+  const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+
+  const encodedFrom = encodeURIComponent(from);
+  const encodedTo = encodeURIComponent(to);
+
+  return this.http.get<{ distance_km: number }>(
+  `${this.distanceUrl}?from_city=${encodedFrom}&to_city=${encodedTo}`,
+  { headers }
+);
+
+}
+
 
 
 
