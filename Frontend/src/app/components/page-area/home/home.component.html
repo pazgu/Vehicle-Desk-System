@@ -125,18 +125,27 @@
         <div class="row">
           <div class="input-group">
             <label>מיקום התחלה</label>
-            <input type="text" formControlName="start_location" />
+            <select formControlName="start_location" id="start_location">
+              <option value="">בחר עיר</option>
+              <option *ngFor="let city of cities" [value]="city.id">{{ city.name }}</option>
+            </select>
             <small *ngIf="f.start_location.touched && f.start_location.errors?.['required']" class="distance-info">חובה למלא מיקום התחלה</small>
           </div>
           <div class="input-group">
             <label>תחנה</label>
-            <input type="text" formControlName="stop" />
+            <select formControlName="stop" id="stop">
+              <option value="">בחר עיר</option>
+              <option *ngFor="let city of cities" [value]="city.id">{{ city.name }}</option>
+            </select>
             <small *ngIf="f.stop.touched && f.stop.errors?.['required']" class="distance-info">חובה למלא תחנה</small>
           </div>
           <div class="input-group">
             <label>יעד</label>
-            <input type="text" formControlName="destination" />
-            <small *ngIf="f.destination.touched && f.destination.errors?.['required']" class="distance-info">חובה למלא יעד</small>
+            <select formControlName="destination" id="destination">
+              <option value="">בחר עיר</option>
+              <option *ngFor="let city of cities" [value]="city.id">{{ city.name }}</option>
+            </select>
+          <small *ngIf="f.destination.touched && f.destination.errors?.['required']" class="distance-info">חובה למלא יעד</small>
           </div>
 
           <!-- ✅ Display live estimated distance from city-to-city -->
