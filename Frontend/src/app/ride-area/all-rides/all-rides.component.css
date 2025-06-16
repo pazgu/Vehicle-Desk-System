@@ -452,10 +452,10 @@ button[ng-click="showWarning()"]:hover {
 }
 @keyframes highlightFade {
   0% {
-    background-color: #c37b87;
+    background-color: #cbb7ef;
   }
   100% {
-    background-color: #e6f4ea;
+    background-color: #dbcdf0;
   }
 }
 
