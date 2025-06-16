@@ -6,6 +6,29 @@ import { environment } from '../../../../environments/environment';
 import { FormsModule } from '@angular/forms';
 import { TabViewModule } from 'primeng/tabview';
 import { SocketService } from '../../../services/socket.service';
+import * as Papa from 'papaparse';
+import pdfMake from 'pdfmake/build/pdfmake';
+import { saveAs } from 'file-saver';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
+import openSans from '!!raw-loader!../../../assets/fonts/OpenSans-VariableFont_wdth,wght.ttf';
+import openSansItalic from '!!raw-loader!../../../assets/fonts/OpenSans-Italic-VariableFont_wdth,wght.ttf';
+
+(pdfMake as any).vfs = {
+  'OpenSans.ttf': openSans,
+  'OpenSans-Italic.ttf': openSansItalic
+};
+
+(pdfMake as any).fonts = {
+  OpenSans: {
+    normal: 'OpenSans.ttf',
+    bold: 'OpenSans.ttf',
+    italics: 'OpenSans-Italic.ttf',
+    bolditalics: 'OpenSans-Italic.ttf'
+  }
+};
+
+
+
 
 
 
@@ -32,6 +55,7 @@ export class AdminAnalyticsComponent implements OnInit {
   // Initialization flags
   vehicleChartInitialized = false;
   rideChartInitialized = false;
+
 
   constructor(private http: HttpClient,private socketService:SocketService) {}
 
@@ -223,4 +247,73 @@ export class AdminAnalyticsComponent implements OnInit {
     };
     return statusMap[status] || status;
   }
+
+ public exportPDF(): void {
+  const isVehicleTab = this.activeTabIndex === 0;
+  const chartData = isVehicleTab ? this.vehicleChartData : this.rideChartData;
+  const title = isVehicleTab ? 'Vehicle Status Summary' : 'Ride Status Summary';
+  const timestamp = new Date().toLocaleString();
+
+  const body = chartData.labels.map((label: string, i: number) => [
+    label,
+    chartData.datasets[0].data[i]
+  ]);
+
+  const docDefinition: any = {
+  content: [
+    { text: title, style: 'header' },
+    { text: `נוצר בתאריך: ${timestamp}`, style: 'subheader' },
+    {
+      table: {
+        headerRows: 1,
+        widths: ['*', '*'],
+        body: [
+          [{ text: 'סטטוס', alignment: 'right' }, { text: 'כמות', alignment: 'right' }],
+          ...body.map((row: any[]) =>
+            row.map((cell: any) => ({ text: String(cell), alignment: 'right' }))
+          )
+        ]
+      }
+    }
+  ],
+  styles: {
+    header: {
+      fontSize: 22,
+      bold: true,
+      alignment: 'right',
+      margin: [0, 0, 0, 10]
+    },
+    subheader: {
+      fontSize: 14,
+      alignment: 'right',
+      margin: [0, 0, 0, 10]
+    }
+  },
+  defaultStyle: {
+    font: 'OpenSans', // ✅ Use what's included in vfs_fonts
+    fontSize: 14
+  }
+};
+
+
+  pdfMake.createPdf(docDefinition).download(`${title}-${timestamp}.pdf`);
+}
+
+public exportCSV(): void {
+  const isVehicleTab = this.activeTabIndex === 0;
+  const chartData = isVehicleTab ? this.vehicleChartData : this.rideChartData;
+  const title = isVehicleTab ? 'Vehicle_Status_Summary' : 'Ride_Status_Summary';
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+
+  const data = chartData.labels.map((label: string, i: number) => ({
+    Status: label,
+    Count: chartData.datasets[0].data[i]
+  }));
+
+  const csv = Papa.unparse(data);
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  saveAs(blob, `${title}-${timestamp}.csv`);
+}
+
+
 }
