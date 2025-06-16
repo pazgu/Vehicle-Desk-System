@@ -31,3 +31,7 @@ def calculate_distance(city1: str, city2: str, db: Session) -> float:
     c = 2 * atan2(sqrt(a), sqrt(1 - a))
 
     return round(EARTH_RADIUS_KM * c, 2)
+
+
+def get_cities(db: Session):
+    return db.query(City).all()
