@@ -12,8 +12,8 @@ class AuditLogSchema(BaseModel):
     change_data: Optional[Dict[str, Any]]
     created_at: datetime
     changed_by: UUID
-    checkbox_value: Optional[bool]
-    inspected_at: Optional[datetime]
+    checkbox_value: bool
+    inspected_at: datetime
     # inspector_id: Optional[UUID]
     notes: Optional[str]
 
@@ -27,7 +27,7 @@ class CreateAuditLogSchema(BaseModel):
     entity_id: Optional[str]
     change_data: Optional[Dict[str, Any]]
     changed_by: UUID
-    checkbox_value: Optional[bool]
-    inspected_at: Optional[datetime]
+    checkbox_value: bool
+    inspected_at: datetime
     # inspector_id: Optional[UUID]
     notes: Optional[str]
