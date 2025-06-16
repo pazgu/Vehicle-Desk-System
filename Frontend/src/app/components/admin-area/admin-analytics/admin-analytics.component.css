@@ -131,17 +131,29 @@ h2 {
 }
 
 .export-buttons button {
-  padding: 0.6rem 1.2rem;
-  font-size: 1rem;
-  border: none;
-  border-radius: 12px;
-  background: #4CAF50;
-  color: white;
-  font-family: 'Alef', sans-serif;
+  background-color: #f5f5f5; /* Light background */
+  color: #942222;
+  border: 1px solid #942222;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
   cursor: pointer;
-  transition: 0.3s ease;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: 'Alef', sans-serif;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  margin: 10px;
 }
 
 .export-buttons button:hover {
-  background: #388E3C;
+  background-color: #942222;
+  color: #ffffff;
+  transform: translateY(-2px);
 }
+
+.export-buttons button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(148, 34, 34, 0.3);
+}
+
+
+
