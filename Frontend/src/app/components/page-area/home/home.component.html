@@ -138,6 +138,14 @@
             <input type="text" formControlName="destination" />
             <small *ngIf="f.destination.touched && f.destination.errors?.['required']" class="distance-info">חובה למלא יעד</small>
           </div>
+
+          <!-- ✅ Display live estimated distance from city-to-city -->
+<div class="input-group" *ngIf="fetchedDistance">
+  <small class="distance-info" style="font-weight: 500; color: #333;">
+    מרחק מוערך בין המיקומים: {{ fetchedDistance }} ק"מ
+  </small>
+</div>
+
         </div>
       </div>
 
