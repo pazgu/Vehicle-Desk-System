@@ -21,6 +21,7 @@ export class LayoutComponent implements OnInit,OnDestroy {
 
   ngOnInit(): void {
     this.subscription = this.socketService.notifications$.subscribe((notif) => {
+      if(notif){
       const role=localStorage.getItem("role");
       if(role==='employee'){
  if(notif.message.includes('נדחתה')){
@@ -29,7 +30,7 @@ export class LayoutComponent implements OnInit,OnDestroy {
          this.toastService.show(notif.message,'success');
       }
       }
-     
+    }
     });
   }
 
