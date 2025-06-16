@@ -23,7 +23,6 @@ class VehicleOut(BaseModel):
         use_enum_values = True  # return enums as their values in JSON
         from_attributes = True  
 
-        
 
 
 
