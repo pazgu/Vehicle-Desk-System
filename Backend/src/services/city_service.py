@@ -38,3 +38,6 @@ def calculate_distance(city_name1: str, city_name2: str, db: Session) -> float:
     distance = EARTH_RADIUS_KM * c
     distance_with_buffer = distance * 1.10
     return round(distance_with_buffer, 2)
+
+def get_cities(db: Session):
+    return db.query(City).all()
