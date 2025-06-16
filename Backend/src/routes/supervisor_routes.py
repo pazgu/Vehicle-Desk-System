@@ -39,44 +39,47 @@ def get_department_specific_order_route(department_id: UUID, order_id: UUID, db:
     return order
 
 @router.patch("/orders/{department_id}/{order_id}/update/{status}")
-async def edit_order_status_route(
+async def update_order_status_route( # Renamed for clarity, but you can keep edit_order_status_route if you prefer
     department_id: UUID,
     order_id: UUID,
     status: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    payload: dict = Depends(token_check), # Inject the token payload
 ):
-    
-    stmt = select(Ride.user_id).where(Ride.id == order_id)
-    user_id = db.scalar(stmt)
-    updated_order, notification = edit_order_status(department_id, order_id, status,user_id, db)
+    # Extract supervisor_id from the token payload
+    supervisor_id = payload.get("user_id") or payload.get("sub")
+    if not supervisor_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Supervisor ID not found in token")
+
+    # Pass all required arguments to edit_order_status
+    updated_order, notification = edit_order_status(department_id, order_id, status, supervisor_id, db)
 
     if not updated_order:
-        raise HTTPException(status_code=404, detail="Order not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
 
     # Prepare order data for emission
     user = db.query(User).filter(User.employee_id == updated_order.user_id).first()
     vehicle = db.query(Vehicle).filter(Vehicle.id == updated_order.vehicle_id).first()
 
-    # Emit the updated order to the user's room
     order_data = {
-    "id": str(updated_order.id),
-    "user_id": str(updated_order.user_id),
-    "employee_name":f"{user.first_name} {user.last_name}",
-    "vehicle_id": str(updated_order.vehicle_id) if updated_order.vehicle_id else None,
-    "requested_vehicle_plate":vehicle.plate_number,
-    "ride_type": updated_order.ride_type,
-    "start_datetime": updated_order.start_datetime,
-    "end_datetime": updated_order.end_datetime,
-    "start_location": updated_order.start_location,
-    "stop": updated_order.stop,
-    "destination": updated_order.destination,
-    "estimated_distance_km": updated_order.estimated_distance_km,
-    "actual_distance_km": updated_order.actual_distance_km,
-    "status": updated_order.status.value,
-    "license_check_passed": updated_order.license_check_passed,
-    "submitted_at": updated_order.submitted_at,
-    "emergency_event": updated_order.emergency_event,
-}
+        "id": str(updated_order.id),
+        "user_id": str(updated_order.user_id),
+        "employee_name": f"{user.first_name} {user.last_name}",
+        "vehicle_id": str(updated_order.vehicle_id) if updated_order.vehicle_id else None,
+        "requested_vehicle_plate": vehicle.plate_number,
+        "ride_type": updated_order.ride_type,
+        "start_datetime": updated_order.start_datetime,
+        "end_datetime": updated_order.end_datetime,
+        "start_location": updated_order.start_location,
+        "stop": updated_order.stop,
+        "destination": updated_order.destination,
+        "estimated_distance_km": updated_order.estimated_distance_km,
+        "actual_distance_km": updated_order.actual_distance_km,
+        "status": updated_order.status.value,
+        "license_check_passed": updated_order.license_check_passed,
+        "submitted_at": updated_order.submitted_at,
+        "emergency_event": updated_order.emergency_event,
+    }
     print("Order data to emit:", json.dumps(convert_decimal(order_data), indent=2))
     await sio.emit("order_updated", convert_decimal(order_data))
 
