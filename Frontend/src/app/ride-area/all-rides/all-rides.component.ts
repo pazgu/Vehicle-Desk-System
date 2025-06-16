@@ -117,7 +117,7 @@ this.socketService.orderUpdated$.subscribe((updatedRide) => {
   }
 });
 this.socketService.deleteRequests$.subscribe((deletedRide) => {
-  console.log('❌ deleteRequest$ triggered:', deletedRide);
+  if(deletedRide){ console.log('❌ deleteRequest$ triggered:', deletedRide);
 
   const index = this.orders.findIndex(o => o.ride_id === deletedRide.id);
   if (index !== -1) {
@@ -125,10 +125,8 @@ this.socketService.deleteRequests$.subscribe((deletedRide) => {
       ...this.orders.slice(0, index),
       ...this.orders.slice(index + 1)
     ];
-    console.log(`🗑️ Ride ${deletedRide.id} removed from supervisor dashboard`);
-  } else {
-    console.log(`ℹ️ Ride ${deletedRide.id} not found in current supervisor orders`);
-  }
+  }}
+ 
 });
 
   }
