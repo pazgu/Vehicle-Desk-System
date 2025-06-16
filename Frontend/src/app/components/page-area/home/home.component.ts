@@ -16,6 +16,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { VehicleService } from '../../../services/vehicle.service';
 import { SocketService } from '../../../services/socket.service';
+import { CityService } from '../../../services/city.service';
 import { Location } from '@angular/common';
 
 // Define the interface for pending vehicle
@@ -45,6 +46,8 @@ export class NewRideComponent implements OnInit {
   public estimated_distance_with_buffer: number = 0;
   public minDate: string = '';
   public fetchedDistance: number | null = null; 
+  cities: { id: string; name: string }[] = [];
+
 
   allCars: {
     id: string;
@@ -72,7 +75,8 @@ export class NewRideComponent implements OnInit {
     private rideService: RideService,
     private vehicleService: VehicleService,
     private socketService: SocketService,
-    private location: Location
+    private location: Location,
+    private cityService: CityService
   ) {}
 
   // ✅ MOCKED FUNCTION: Fetch estimated distance between start and destination cities
@@ -152,6 +156,8 @@ this.rideForm.get('destination')?.valueChanges.subscribe(() => {
   if (from && to) this.fetchEstimatedDistance(from, to);
 });
 
+    this.fetchCities();
+    console.log('fetching cities...', this.cities);
 
     // Load all vehicles and filter for available ones
     this.vehicleService.getAllVehicles().subscribe({
@@ -180,6 +186,22 @@ this.rideForm.get('destination')?.valueChanges.subscribe(() => {
 
     // Load pending cars with proper error handling and type safety
     this.loadPendingVehicles();
+  }
+
+  fetchCities(): void{
+    this.cityService.getCities().subscribe({
+      next: (cities) => {
+        this.cities = cities.map(city => ({
+          id: city.id,
+          name: city.name
+        }));
+      },
+      error: (err) => {
+        console.error('Failed to fetch cities', err);
+        this.toastService.show('שגיאה בטעינת ערים', 'error');
+        this.cities = [];
+      }
+    });
   }
 
   private loadPendingVehicles(): void {

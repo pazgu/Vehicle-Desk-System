@@ -456,6 +456,7 @@ def get_distance(from_city: str, to_city: str, db: Session = Depends(get_db)):
 
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/api/cities", response_model=List[City])
+@router.get("/api/cities")
 def get_cities_route(db: Session = Depends(get_db)):
-    return get_cities(db)
+    cities = get_cities(db)
+    return [{"id": str(city.id), "name": city.name} for city in cities]
