@@ -30,4 +30,8 @@ def calculate_distance(city1: str, city2: str, db: Session) -> float:
     a = sin(dlat / 2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2)**2
     c = 2 * atan2(sqrt(a), sqrt(1 - a))
 
-    return round(EARTH_RADIUS_KM * c, 2)
+    distance = EARTH_RADIUS_KM * c
+
+    distance_with_buffer = distance * 1.10
+
+    return round(distance_with_buffer, 2)

@@ -452,5 +452,4 @@ def get_distance(from_city: str, to_city: str, db: Session = Depends(get_db)):
         return {"distance_km": distance_km}
     except Exception as e:
 
-        raise HTTPException(status_code=400, detail=str(e))
-
+        raise HTTPException(status_code=400, detail=str(e))        
