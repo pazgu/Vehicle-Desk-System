@@ -1,5 +1,3 @@
-
-
 import { Component, OnInit } from '@angular/core';
 import {
   FormBuilder,
@@ -18,6 +16,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { VehicleService } from '../../../services/vehicle.service';
 import { SocketService } from '../../../services/socket.service';
+import { CityService } from '../../../services/city.service';
 import { Location } from '@angular/common';
 
 // Define the interface for pending vehicle
@@ -46,6 +45,9 @@ export class NewRideComponent implements OnInit {
   rideForm!: FormGroup;
   public estimated_distance_with_buffer: number = 0;
   public minDate: string = '';
+  public fetchedDistance: number | null = null; 
+  cities: { id: string; name: string }[] = [];
+
 
   allCars: {
     id: string;
@@ -73,18 +75,42 @@ export class NewRideComponent implements OnInit {
     private rideService: RideService,
     private vehicleService: VehicleService,
     private socketService: SocketService,
-    private location: Location
+    private location: Location,
+    private cityService: CityService
   ) {}
+
+ fetchEstimatedDistance(from: string, to: string): void {
+  if (!from || !to) return;
+
+  console.log(`🌍 Requesting real distance: ${from} → ${to}`);
+
+  this.rideService.getDistance(from, to).subscribe({
+    next: (response) => {
+      const realDistance = response.distance_km;
+      console.log(`📏 Distance fetched: ${realDistance} km`);
+
+      this.fetchedDistance = realDistance;
+      this.rideForm.get('estimated_distance_km')?.setValue(realDistance);
+    },
+    error: (err) => {
+      console.error('❌ Failed to fetch distance:', err);
+      this.toastService.show('שגיאה בחישוב מרחק בין הערים', 'error');
+      this.fetchedDistance = null;
+      this.rideForm.get('estimated_distance_km')?.setValue(null);
+    }
+  });
+}
+
 
   goBack(): void {
   this.location.back();
 }
 
   ngOnInit(): void {
-    this.minDate = this.calculateMinDate(2);
+    this.minDate = this.calculateMinDate();
     this.rideForm = this.fb.group({
       ride_period: ['morning'],
-      ride_date: ['', [Validators.required, this.minDateValidator(2), this.validYearRangeValidator(2025, 2099)]],
+      ride_date: ['', [Validators.required, this.validYearRangeValidator(2025, 2099)]],
       ride_date_night_end: [''],
       start_time: [''],
       end_time: [''],
@@ -115,13 +141,30 @@ export class NewRideComponent implements OnInit {
     });
 
     // Add time change subscriptions for real-time validation
-    this.rideForm.get('start_time')?.valueChanges.subscribe(() => {
-      this.updateAvailableCars();
-    });
+   this.rideForm.get('start_location')?.valueChanges.subscribe(() => {
+  this.checkAndFetchDistance();
+});
 
-    this.rideForm.get('end_time')?.valueChanges.subscribe(() => {
-      this.updateAvailableCars();
-    });
+this.rideForm.get('end_location')?.valueChanges.subscribe(() => {
+  this.checkAndFetchDistance();
+});
+
+
+    // ✅ Subscribe to city changes
+this.rideForm.get('start_location')?.valueChanges.subscribe(() => {
+  const from = this.rideForm.get('start_location')?.value;
+  const to = this.rideForm.get('destination')?.value;
+  if (from && to) this.fetchEstimatedDistance(from, to);
+});
+
+this.rideForm.get('destination')?.valueChanges.subscribe(() => {
+  const from = this.rideForm.get('start_location')?.value;
+  const to = this.rideForm.get('destination')?.value;
+  if (from && to) this.fetchEstimatedDistance(from, to);
+});
+
+    this.fetchCities();
+    console.log('fetching cities...', this.cities);
 
     // Load all vehicles and filter for available ones
     this.vehicleService.getAllVehicles().subscribe({
@@ -150,6 +193,22 @@ export class NewRideComponent implements OnInit {
 
     // Load pending cars with proper error handling and type safety
     this.loadPendingVehicles();
+  }
+
+  fetchCities(): void{
+    this.cityService.getCities().subscribe({
+      next: (cities) => {
+        this.cities = cities.map(city => ({
+          id: city.id,
+          name: city.name
+        }));
+      },
+      error: (err) => {
+        console.error('Failed to fetch cities', err);
+        this.toastService.show('שגיאה בטעינת ערים', 'error');
+        this.cities = [];
+      }
+    });
   }
 
   private loadPendingVehicles(): void {
@@ -204,6 +263,8 @@ export class NewRideComponent implements OnInit {
     if (this.availableCars.length === 0) {
       this.toastService.show('אין רכבים זמינים מסוג זה', 'error');
     }
+
+    
   }
 
   onPeriodChange(value: string): void {
@@ -217,7 +278,6 @@ export class NewRideComponent implements OnInit {
       nightEndControl?.clearValidators();
       rideDateControl?.setValidators([
         Validators.required,
-        this.minDateValidator(2),
         this.validYearRangeValidator(2025, 2099)
       ]);
     }
@@ -351,23 +411,23 @@ private addHoursToTime(timeString: string, hoursToAdd: number): string {
     }
   }
 
-  calculateMinDate(daysAhead: number): string {
+  calculateMinDate(): string {
     const date = new Date();
-    date.setDate(date.getDate() + daysAhead);
+    date.setDate(date.getDate());
     return date.toISOString().split('T')[0];
   }
 
-  minDateValidator(minDaysAhead: number): ValidatorFn {
-    return (control: AbstractControl) => {
-      if (!control.value) return null;
-      const selectedDate = new Date(control.value);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const minDate = new Date(today);
-      minDate.setDate(today.getDate() + minDaysAhead);
-      return selectedDate >= minDate ? null : { tooSoon: true };
-    };
-  }
+  // minDateValidator(minDaysAhead: number): ValidatorFn {
+  //   return (control: AbstractControl) => {
+  //     if (!control.value) return null;
+  //     const selectedDate = new Date(control.value);
+  //     const today = new Date();
+  //     today.setHours(0, 0, 0, 0);
+  //     const minDate = new Date(today);
+  //     minDate.setDate(today.getDate() + minDaysAhead);
+  //     return selectedDate >= minDate ? null : { tooSoon: true };
+  //   };
+  // }
 
   validYearRangeValidator(minYear: number, maxYear: number): ValidatorFn {
     return (control: AbstractControl) => {
@@ -376,6 +436,20 @@ private addHoursToTime(timeString: string, hoursToAdd: number): string {
       return selectedYear >= minYear && selectedYear <= maxYear ? null : { invalidYear: true };
     };
   }
+
+ checkAndFetchDistance() {
+  const start = this.rideForm.get('start_location')?.value;
+  const end = this.rideForm.get('end_location')?.value;
+
+  if (start && end && start !== end) {
+    this.fetchEstimatedDistance(start, end);
+  } else {
+    this.fetchedDistance = null;
+    this.rideForm.get('estimated_distance_km')?.setValue(null);
+  }
+}
+
+
 
   submit(): void {
   // Initial form validation
@@ -464,6 +538,8 @@ private addHoursToTime(timeString: string, hoursToAdd: number): string {
       console.error('Submit error:', err);
     }
   });
+
+  
 }
 
   get f() {

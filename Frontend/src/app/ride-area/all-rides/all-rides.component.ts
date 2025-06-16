@@ -109,11 +109,25 @@ this.socketService.orderUpdated$.subscribe((updatedRide) => {
       ];
 
       console.log(`✅ Ride ${updatedRide.id} updated in local state`);
+      const role=localStorage.getItem('role');
+      if(role==='supervisor'){
       this.toastService.show('✅ יש בקשה שעודכנה בהצלחה','success')
+      }
     }
   }
 });
+this.socketService.deleteRequests$.subscribe((deletedRide) => {
+  if(deletedRide){ console.log('❌ deleteRequest$ triggered:', deletedRide);
 
+  const index = this.orders.findIndex(o => o.ride_id === deletedRide.id);
+  if (index !== -1) {
+    this.orders = [
+      ...this.orders.slice(0, index),
+      ...this.orders.slice(index + 1)
+    ];
+  }}
+ 
+});
 
   }
    
@@ -243,7 +257,7 @@ getStatusTooltip(status: string): string {
   }
 
   goToNewRide(): void {
-    this.router.navigate(['/all-rides']);
+    this.router.navigate(['/home']);
   }
 
   fetchRides() {

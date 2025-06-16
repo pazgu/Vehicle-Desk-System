@@ -44,6 +44,12 @@ from ..services.user_data import get_user_department
 from ..models.vehicle_model import Vehicle
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 from ..models.ride_model import PendingRideSchema
+from ..utils.scheduler import schedule_ride_start
+from apscheduler.jobstores.base import JobLookupError
+from ..utils.scheduler import scheduler
+from ..services.city_service import calculate_distance
+from ..services.city_service import get_cities
+from ..schemas.city_schema import City
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -163,7 +169,8 @@ async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = De
     print("📥 Received RideCreate object:", ride_request.dict())
 
     try:
-        new_ride = create_ride(db, user_id, ride_request)
+        new_ride = await create_ride(db, user_id, ride_request)
+        schedule_ride_start(new_ride.id, new_ride.start_datetime)
         department_id=get_user_department(user_id=user_id,db=db)
         # ✅ Emit real-time event
         await sio.emit("new_ride_request", {
@@ -328,6 +335,10 @@ async def delete_order(order_id: UUID, db: Session = Depends(get_db)):
 
         # Emit deletion event
         await sio.emit("order_deleted", {"order_id": str(order_id)})
+        try:
+            scheduler.remove_job(job_id=f"ride-start-{order_id}")
+        except JobLookupError:
+            pass  # If the job doesn't exist, ignore
 
         return {"message": "Order deleted successfully"}
     except Exception as e:
@@ -436,4 +447,16 @@ def reset_password(
 def cancel_order(order_id: UUID, db: Session = Depends(get_db)):
     return cancel_order_in_db(order_id, db)
 
-# aaaaa
+@router.get("/api/distance")
+def get_distance(from_city: str, to_city: str, db: Session = Depends(get_db)):
+    try:
+        distance_km = calculate_distance(from_city, to_city, db)
+        return {"distance_km": distance_km}
+    except Exception as e:
+
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/api/cities")
+def get_cities_route(db: Session = Depends(get_db)):
+    cities = get_cities(db)
+    return [{"id": str(city.id), "name": city.name} for city in cities]

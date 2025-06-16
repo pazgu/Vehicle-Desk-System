@@ -16,6 +16,9 @@ export class SocketService {
   public notifications$ = new BehaviorSubject<any>(null);
   public rideRequests$ = new BehaviorSubject<any>(null);
   public deleteRequests$ = new BehaviorSubject<any>(null);
+  public orderUpdated$ = new BehaviorSubject<any>(null); 
+  public vehicleStatusUpdated$ = new BehaviorSubject<any>(null); 
+  public rideStatusUpdated$ = new BehaviorSubject<any>(null); 
   public orderUpdated$ = new BehaviorSubject<any>(null);
   public auditLogs$ = new BehaviorSubject<any>(null);
 
@@ -48,10 +51,20 @@ export class SocketService {
   }
 
   private listenToEvents(): void {
+  this.socket.on('order_updated', (data: any) => {
+  console.log('✏️ Ride order updated via socket:', data);
+  this.orderUpdated$.next(data); // ✅ Pushes to subscribers like HomeComponent
     this.socket.on('order_updated', (data: any) => {
       console.log('✏️ Ride order updated via socket:', data);
       this.orderUpdated$.next(data); // ✅ Pushes to subscribers like HomeComponent
 
+});
+
+this.socket.on('order_deleted', (data: any) => {
+  console.log('✏️ Ride order deleted via socket:', data);
+  this.deleteRequests$.next(data); // ✅ Pushes to subscribers like HomeComponent
+  
+});
     });
     this.socket.on('order_deleted', (data: any) => {
       console.log('✏️ Ride order deleted via socket:', data);
@@ -72,6 +85,18 @@ export class SocketService {
       this.rideRequests$.next(data);
     });
 
+    this.socket.on('ride_status_updated', (data: any) => {
+      console.log('🚗 ride status updated:', data);
+      this.rideStatusUpdated$.next(data);
+    });
+       this.socket.on('vehicle_status_updated', (data: any) => {
+      console.log('🚗 vehicle status updated:', data);
+      this.vehicleStatusUpdated$.next(data);
+    });
+
+setTimeout(() => {
+  this.orderUpdated$.next({ id: 'test-id' });
+}, 3000);
     this.socket.on('audit_log_updated', (data: any) => {
       console.log('📝 Audit log updated via socket:', data);
       this.auditLogs$.next(data);

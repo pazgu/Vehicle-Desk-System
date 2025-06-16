@@ -61,4 +61,6 @@ async def join_room(sid, data):
         await sio.enter_room(sid, room)
         print(f"👥 Socket {sid} joined room {room}")
 
+# 👇👇 Add this at the very end of main.py
+app = sio_app
 
