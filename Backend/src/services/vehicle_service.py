@@ -185,17 +185,17 @@ def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_re
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
-    log_action(
-        db=db,
-        action="update_vehicle_status",
-        entity_type="Vehicle",
-        entity_id=str(vehicle.id),
-        change_data={
-            "new_status": str(vehicle.status),
-            "freeze_reason": vehicle.freeze_reason
-        },
-        changed_by=changed_by  
-    )
+    # log_action(
+    #     db=db,
+    #     action="update_vehicle_status",
+    #     entity_type="Vehicle",
+    #     entity_id=str(vehicle.id),
+    #     change_data={
+    #         "new_status": str(vehicle.status),
+    #         "freeze_reason": vehicle.freeze_reason
+    #     },
+    #     changed_by=changed_by  
+    # )
     db.execute(text("SET session.audit.user_id = DEFAULT"))
     return {"vehicle_id": vehicle.id, "new_status": vehicle.status, "freeze_reason": vehicle.freeze_reason}
 

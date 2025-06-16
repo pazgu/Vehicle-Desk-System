@@ -11,9 +11,13 @@ from .utils.socket_manager import connect
 import asyncio
 from socketio import ASGIApp
 from .utils.socket_manager import sio
+import threading
+from .utils.audit_log_listener import listen_for_audit_logs
 
 
 app = FastAPI()
+# Start the audit log listener in a background thread
+threading.Thread(target=listen_for_audit_logs, daemon=True).start()
 
 sio_app = ASGIApp(sio, other_asgi_app=app)
 
