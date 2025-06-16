@@ -121,3 +121,39 @@ h2 {
   background-color: #003366;
   color: white;
 }
+
+.export-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  direction: rtl;
+}
+
+.export-buttons button {
+  background-color: #f5f5f5; /* Light background */
+  color: #942222;
+  border: 1px solid #942222;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: 'Alef', sans-serif;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  margin: 10px;
+}
+
+.export-buttons button:hover {
+  background-color: #942222;
+  color: #ffffff;
+  transform: translateY(-2px);
+}
+
+.export-buttons button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(148, 34, 34, 0.3);
+}
+
+
+

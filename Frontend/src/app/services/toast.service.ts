@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
 
+type ToastType = 'success' | 'error'  ;// Add your custom types here
+
 @Injectable({ providedIn: 'root' })
 export class ToastService {
-  show(message: string, type: 'success' | 'error' = 'success') {
+  show(message: string, type: ToastType='success') {
     console.log('Toast shown:', message, type); 
     const toast = document.createElement('div');
     toast.className = `custom-toast ${type}`;

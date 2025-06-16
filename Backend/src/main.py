@@ -152,5 +152,14 @@ async def log_requests(request: Request, call_next):
     print(f"⬅️ Response: {response.status_code}")
     return response
 
-# ✅ Step 6: Wrap with Socket.IO
-sio_app = ASGIApp(sio, other_asgi_app=app)
+
+@sio.on("join")
+async def join_room(sid, data):
+    room = data.get("room")
+    if room:
+        await sio.enter_room(sid, room)
+        print(f"👥 Socket {sid} joined room {room}")
+
+# 👇👇 Add this at the very end of main.py
+app = sio_app
+

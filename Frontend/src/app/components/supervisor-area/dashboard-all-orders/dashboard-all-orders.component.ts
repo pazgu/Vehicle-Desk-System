@@ -88,6 +88,21 @@ this.socketService.orderUpdated$.subscribe((updatedRide) => {
       console.log(`Supervisor Dashboard updated ride ${updatedRide.id} in local state`);
     }
   });
+  this.socketService.deleteRequests$.subscribe((deletedRide) => {
+  console.log('❌ deleteRequest$ triggered:', deletedRide);
+
+  const index = this.orders.findIndex(o => o.ride_id === deletedRide.order_id); // <-- FIXED here
+
+  if (index !== -1) {
+    this.orders = [
+      ...this.orders.slice(0, index),
+      ...this.orders.slice(index + 1)
+    ];
+    console.log(`🗑️ Ride ${deletedRide.order_id} removed from supervisor dashboard`);
+  } else {
+    console.log(`ℹ️ Ride ${deletedRide.order_id} not found in current supervisor orders`);
+  }
+});
 
   }
 

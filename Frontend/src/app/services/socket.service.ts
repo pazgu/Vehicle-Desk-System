@@ -18,6 +18,8 @@ export class SocketService {
   public deleteRequests$ = new BehaviorSubject<any>(null);
   public orderUpdated$ = new BehaviorSubject<any>(null); 
   public newInspection$ = new Subject<any>();
+  public vehicleStatusUpdated$ = new BehaviorSubject<any>(null); 
+  public rideStatusUpdated$ = new BehaviorSubject<any>(null); 
 
 
   constructor() {
@@ -48,11 +50,12 @@ export class SocketService {
   }
 
   private listenToEvents(): void {
-     this.socket.on('order_updated', (data: any) => {
+  this.socket.on('order_updated', (data: any) => {
   console.log('✏️ Ride order updated via socket:', data);
   this.orderUpdated$.next(data); // ✅ Pushes to subscribers like HomeComponent
 
 });
+
 this.socket.on('order_deleted', (data: any) => {
   console.log('✏️ Ride order deleted via socket:', data);
   this.deleteRequests$.next(data); // ✅ Pushes to subscribers like HomeComponent
@@ -78,7 +81,15 @@ this.socket.on('order_deleted', (data: any) => {
     });
 
 
-   
+    this.socket.on('ride_status_updated', (data: any) => {
+      console.log('🚗 ride status updated:', data);
+      this.rideStatusUpdated$.next(data);
+    });
+       this.socket.on('vehicle_status_updated', (data: any) => {
+      console.log('🚗 vehicle status updated:', data);
+      this.vehicleStatusUpdated$.next(data);
+    });
+
 setTimeout(() => {
   this.orderUpdated$.next({ id: 'test-id' });
 }, 3000);
