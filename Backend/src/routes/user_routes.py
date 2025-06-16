@@ -47,6 +47,8 @@ from ..models.ride_model import PendingRideSchema
 from ..utils.scheduler import schedule_ride_start
 from apscheduler.jobstores.base import JobLookupError
 from ..utils.scheduler import scheduler
+from ..services.city_service import calculate_distance
+
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -443,11 +445,12 @@ def reset_password(
 def cancel_order(order_id: UUID, db: Session = Depends(get_db)):
     return cancel_order_in_db(order_id, db)
 
-# aaaaa
 @router.get("/api/distance")
 def get_distance(from_city: str, to_city: str, db: Session = Depends(get_db)):
     try:
         distance_km = calculate_distance(from_city, to_city, db)
         return {"distance_km": distance_km}
     except Exception as e:
+
         raise HTTPException(status_code=400, detail=str(e))
+
