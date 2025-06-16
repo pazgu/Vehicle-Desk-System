@@ -12,11 +12,9 @@ class AuditLogSchema(BaseModel):
     change_data: Optional[Dict[str, Any]]
     created_at: datetime
     changed_by: UUID
-
-    # New fields
-    checkbox_values: Optional[Dict[str, Any]]  # Store checkbox info as a JSON/dict
-    inspected_at: Optional[datetime]
-    inspector_id: Optional[UUID]
+    checkbox_value: bool
+    inspected_at: datetime
+    # inspector_id: Optional[UUID]
     notes: Optional[str]
 
     class Config:
@@ -29,9 +27,7 @@ class CreateAuditLogSchema(BaseModel):
     entity_id: Optional[str]
     change_data: Optional[Dict[str, Any]]
     changed_by: UUID
-
-    # New fields
-    checkbox_values: Optional[Dict[str, Any]]
-    inspected_at: Optional[datetime]
-    inspector_id: Optional[UUID]
+    checkbox_value: bool
+    inspected_at: datetime
+    # inspector_id: Optional[UUID]
     notes: Optional[str]
