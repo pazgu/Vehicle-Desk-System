@@ -1,7 +1,8 @@
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
 from datetime import datetime
-from sqlalchemy.dialects.postgresql import UUID
+from uuid import UUID  # Use Python's standard UUID
+# (you don’t need sqlalchemy.dialects.postgresql.UUID in Pydantic models)
 
 class AuditLogSchema(BaseModel):
     id: int
@@ -11,9 +12,14 @@ class AuditLogSchema(BaseModel):
     change_data: Optional[Dict[str, Any]]
     created_at: datetime
     changed_by: UUID
+    checkbox_value: bool
+    inspected_at: datetime
+    # inspector_id: Optional[UUID]
+    notes: Optional[str]
 
     class Config:
         from_attributes = True
+
 
 class CreateAuditLogSchema(BaseModel):
     action: str
@@ -21,3 +27,7 @@ class CreateAuditLogSchema(BaseModel):
     entity_id: Optional[str]
     change_data: Optional[Dict[str, Any]]
     changed_by: UUID
+    checkbox_value: bool
+    inspected_at: datetime
+    # inspector_id: Optional[UUID]
+    notes: Optional[str]

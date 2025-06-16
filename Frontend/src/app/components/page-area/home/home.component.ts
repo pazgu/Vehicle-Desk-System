@@ -18,6 +18,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { VehicleService } from '../../../services/vehicle.service';
 import { SocketService } from '../../../services/socket.service';
+import { Location } from '@angular/common';
 
 // Define the interface for pending vehicle
 interface PendingVehicle {
@@ -45,6 +46,7 @@ export class NewRideComponent implements OnInit {
   rideForm!: FormGroup;
   public estimated_distance_with_buffer: number = 0;
   public minDate: string = '';
+  public fetchedDistance: number | null = null; 
 
   allCars: {
     id: string;
@@ -72,13 +74,35 @@ export class NewRideComponent implements OnInit {
     private rideService: RideService,
     private vehicleService: VehicleService,
     private socketService: SocketService,
+    private location: Location
   ) {}
 
+  // ✅ MOCKED FUNCTION: Fetch estimated distance between start and destination cities
+fetchEstimatedDistance(from: string, to: string): void {
+  if (!from || !to) return;
+
+  console.log(`Fetching distance between: ${from} → ${to}`);
+
+  // ⏱ Simulate backend response with a delay
+  setTimeout(() => {
+    const mockDistance = +(Math.random() * 100 + 5).toFixed(1); // 5–105 km
+    this.fetchedDistance = mockDistance;
+
+    // Set the value into the form
+    this.rideForm.get('estimated_distance_km')?.setValue(mockDistance);
+  }, 500);
+}
+
+
+  goBack(): void {
+  this.location.back();
+}
+
   ngOnInit(): void {
-    this.minDate = this.calculateMinDate(2);
+    this.minDate = this.calculateMinDate();
     this.rideForm = this.fb.group({
       ride_period: ['morning'],
-      ride_date: ['', [Validators.required, this.minDateValidator(2), this.validYearRangeValidator(2025, 2099)]],
+      ride_date: ['', [Validators.required, this.validYearRangeValidator(2025, 2099)]],
       ride_date_night_end: [''],
       start_time: [''],
       end_time: [''],
@@ -116,6 +140,20 @@ export class NewRideComponent implements OnInit {
     this.rideForm.get('end_time')?.valueChanges.subscribe(() => {
       this.updateAvailableCars();
     });
+
+    // ✅ Subscribe to city changes
+this.rideForm.get('start_location')?.valueChanges.subscribe(() => {
+  const from = this.rideForm.get('start_location')?.value;
+  const to = this.rideForm.get('destination')?.value;
+  if (from && to) this.fetchEstimatedDistance(from, to);
+});
+
+this.rideForm.get('destination')?.valueChanges.subscribe(() => {
+  const from = this.rideForm.get('start_location')?.value;
+  const to = this.rideForm.get('destination')?.value;
+  if (from && to) this.fetchEstimatedDistance(from, to);
+});
+
 
     // Load all vehicles and filter for available ones
     this.vehicleService.getAllVehicles().subscribe({
@@ -211,7 +249,6 @@ export class NewRideComponent implements OnInit {
       nightEndControl?.clearValidators();
       rideDateControl?.setValidators([
         Validators.required,
-        this.minDateValidator(2),
         this.validYearRangeValidator(2025, 2099)
       ]);
     }
@@ -345,23 +382,23 @@ private addHoursToTime(timeString: string, hoursToAdd: number): string {
     }
   }
 
-  calculateMinDate(daysAhead: number): string {
+  calculateMinDate(): string {
     const date = new Date();
-    date.setDate(date.getDate() + daysAhead);
+    date.setDate(date.getDate());
     return date.toISOString().split('T')[0];
   }
 
-  minDateValidator(minDaysAhead: number): ValidatorFn {
-    return (control: AbstractControl) => {
-      if (!control.value) return null;
-      const selectedDate = new Date(control.value);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const minDate = new Date(today);
-      minDate.setDate(today.getDate() + minDaysAhead);
-      return selectedDate >= minDate ? null : { tooSoon: true };
-    };
-  }
+  // minDateValidator(minDaysAhead: number): ValidatorFn {
+  //   return (control: AbstractControl) => {
+  //     if (!control.value) return null;
+  //     const selectedDate = new Date(control.value);
+  //     const today = new Date();
+  //     today.setHours(0, 0, 0, 0);
+  //     const minDate = new Date(today);
+  //     minDate.setDate(today.getDate() + minDaysAhead);
+  //     return selectedDate >= minDate ? null : { tooSoon: true };
+  //   };
+  // }
 
   validYearRangeValidator(minYear: number, maxYear: number): ValidatorFn {
     return (control: AbstractControl) => {

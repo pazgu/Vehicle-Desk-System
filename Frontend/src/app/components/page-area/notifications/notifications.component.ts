@@ -8,6 +8,7 @@ import { Router } from '@angular/router';
 import { SocketService } from '../../../services/socket.service';
 import { ToastService } from '../../../services/toast.service';
 import { ChangeDetectorRef } from '@angular/core';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-notifications',
@@ -26,8 +27,12 @@ export class NotificationsComponent implements OnInit {
     private socketService: SocketService,
     private toastService: ToastService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private location: Location
   ) {}
+  goBack(): void {
+  this.location.back();
+}
 
  ngOnInit(): void {
   // ✅ Join user's Socket.IO room for live updates
@@ -116,6 +121,7 @@ export class NotificationsComponent implements OnInit {
     this.notifications = [notifWithTimeAgo, ...this.notifications];
     this.cdr.detectChanges(); // ← Add this line
 
+  if (this.router.url != '/notifications') {
 
    if (newNotif.message.includes('בעיה חמורה') || newNotif.notification_type === 'critical') {
   const audio = new Audio('assets/sounds/notif.mp3');
@@ -123,12 +129,16 @@ export class NotificationsComponent implements OnInit {
 }
 
 
-
-    this.toastService.show(newNotif.message, 'success');
+    if (newNotif.message.includes('נדחתה')){
+      this.toastService.show(newNotif.message, 'error');
+    }else{
+      this.toastService.show(newNotif.message, 'success');
+    }
+    
 
     // Optional: log or show toast
     console.log('🟢 Live notification added:', notifWithTimeAgo);
-  }
+  }}
 });
 
   }
@@ -138,7 +148,7 @@ export class NotificationsComponent implements OnInit {
     if (role === 'supervisor') {
       this.router.navigate([`/order-card/${orderId}`]);
     } else {
-      this.router.navigate(['/home'], { queryParams: { highlight: orderId } });
+      this.router.navigate(['/all-rides'], { queryParams: { highlight: orderId } });
     }
   }
 
