@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -17,7 +17,7 @@ export class SocketService {
   public rideRequests$ = new BehaviorSubject<any>(null);
   public deleteRequests$ = new BehaviorSubject<any>(null);
   public orderUpdated$ = new BehaviorSubject<any>(null); 
-  public newInspection$ = new BehaviorSubject<any>(null);
+  public newInspection$ = new Subject<any>();
 
 
   constructor() {
