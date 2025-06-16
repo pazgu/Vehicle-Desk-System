@@ -1,5 +1,6 @@
 from math import radians, sin, cos, sqrt, atan2
 from sqlalchemy.orm import Session
+from ..models.city_model import City , CityAlias
 
 EARTH_RADIUS_KM = 6371.0
 
@@ -19,8 +20,8 @@ def get_city_coordinates(city_name: str, db: Session):
 
 
 def calculate_distance(city1: str, city2: str, db: Session) -> float:
-    lat1, lon1 = get_city_coordinates(db, city1)
-    lat2, lon2 = get_city_coordinates(db, city2)
+    lat1, lon1 = get_city_coordinates(city1 , db)
+    lat2, lon2 = get_city_coordinates(city2 , db)
 
     # Haversine formula
     dlat = radians(lat2 - lat1)
