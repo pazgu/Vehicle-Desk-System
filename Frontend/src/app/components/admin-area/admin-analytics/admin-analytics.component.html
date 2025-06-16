@@ -11,6 +11,11 @@
       </select>
     </div>
 
+    <div class="export-buttons">
+      <button (click)="exportCSV()">📁 ייצוא CSV</button>
+      <button (click)="exportPDF()">📄 ייצוא PDF</button>
+    </div>
+
     <div class="tab-buttons">
   <button [class.active]="activeTabIndex === 0" (click)="activeTabIndex = 0">
     סטטוס רכבים
