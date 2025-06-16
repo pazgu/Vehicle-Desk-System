@@ -17,6 +17,7 @@ export class SocketService {
   public rideRequests$ = new BehaviorSubject<any>(null);
   public deleteRequests$ = new BehaviorSubject<any>(null);
   public orderUpdated$ = new BehaviorSubject<any>(null); 
+  public newInspection$ = new BehaviorSubject<any>(null);
 
 
   constructor() {
@@ -70,6 +71,12 @@ this.socket.on('order_deleted', (data: any) => {
       console.log('🚗 New ride request received via socket:', data);
       this.rideRequests$.next(data);
     });
+
+    this.socket.on('new_inspection', (data: any) => {
+      console.log('📦 New inspection received via socket:', data);
+      this.newInspection$.next(data);
+    });
+
 
    
 setTimeout(() => {

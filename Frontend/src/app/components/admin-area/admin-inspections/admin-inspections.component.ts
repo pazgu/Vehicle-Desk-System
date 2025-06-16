@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
@@ -22,7 +22,8 @@ export class AdminInspectionsComponent implements OnInit {
     private http: HttpClient,
     private route: ActivatedRoute,
     private socketService: SocketService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -41,6 +42,17 @@ export class AdminInspectionsComponent implements OnInit {
         new Audio('assets/sounds/notif.mp3').play();
         this.loadInspections(); // Re-fetch
       }
+    });
+
+      // ✅ 🔌 Listen for new inspections (no refresh needed)
+      this.socketService.newInspection$.subscribe((newInspection) => {
+        if (newInspection) {
+          console.log('🆕 Received inspection via socket:', newInspection);
+          this.inspections.unshift(newInspection);
+          this.cdr.detectChanges();
+          this.toastService.show('📢 התקבלה בדיקה חדשה');
+          new Audio('assets/sounds/notif.mp3').play();
+        }
     });
   }
 
