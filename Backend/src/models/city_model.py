@@ -28,3 +28,4 @@ class CityAlias(Base):
         # This ensures (city_id, alias) is unique
         {'sqlite_autoincrement': True},
     )
+

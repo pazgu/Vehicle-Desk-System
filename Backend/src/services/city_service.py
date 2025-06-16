@@ -35,3 +35,7 @@ def calculate_distance(city1: str, city2: str, db: Session) -> float:
     distance_with_buffer = distance * 1.10
 
     return round(distance_with_buffer, 2)
+
+
+def get_cities(db: Session):
+    return db.query(City).all()
