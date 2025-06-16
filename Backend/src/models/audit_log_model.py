@@ -14,3 +14,9 @@ class AuditLog(Base):
     change_data = Column(JSON, nullable=True)  
     created_at = Column(DateTime, default=datetime.utcnow)
     changed_by = Column(UUID(as_uuid=True), nullable=False) 
+
+    # New fields
+    checkbox_values = Column(JSON, nullable=True)  # Store as JSON array or dict
+    inspected_at = Column(DateTime, nullable=True)
+    inspector_id = Column(UUID(as_uuid=True), nullable=True)
+    notes = Column(String, nullable=True)    
