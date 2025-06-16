@@ -99,10 +99,10 @@ fetchEstimatedDistance(from: string, to: string): void {
 }
 
   ngOnInit(): void {
-    this.minDate = this.calculateMinDate(2);
+    this.minDate = this.calculateMinDate();
     this.rideForm = this.fb.group({
       ride_period: ['morning'],
-      ride_date: ['', [Validators.required, this.minDateValidator(2), this.validYearRangeValidator(2025, 2099)]],
+      ride_date: ['', [Validators.required, this.validYearRangeValidator(2025, 2099)]],
       ride_date_night_end: [''],
       start_time: [''],
       end_time: [''],
@@ -249,7 +249,6 @@ this.rideForm.get('destination')?.valueChanges.subscribe(() => {
       nightEndControl?.clearValidators();
       rideDateControl?.setValidators([
         Validators.required,
-        this.minDateValidator(2),
         this.validYearRangeValidator(2025, 2099)
       ]);
     }
@@ -383,23 +382,23 @@ private addHoursToTime(timeString: string, hoursToAdd: number): string {
     }
   }
 
-  calculateMinDate(daysAhead: number): string {
+  calculateMinDate(): string {
     const date = new Date();
-    date.setDate(date.getDate() + daysAhead);
+    date.setDate(date.getDate());
     return date.toISOString().split('T')[0];
   }
 
-  minDateValidator(minDaysAhead: number): ValidatorFn {
-    return (control: AbstractControl) => {
-      if (!control.value) return null;
-      const selectedDate = new Date(control.value);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const minDate = new Date(today);
-      minDate.setDate(today.getDate() + minDaysAhead);
-      return selectedDate >= minDate ? null : { tooSoon: true };
-    };
-  }
+  // minDateValidator(minDaysAhead: number): ValidatorFn {
+  //   return (control: AbstractControl) => {
+  //     if (!control.value) return null;
+  //     const selectedDate = new Date(control.value);
+  //     const today = new Date();
+  //     today.setHours(0, 0, 0, 0);
+  //     const minDate = new Date(today);
+  //     minDate.setDate(today.getDate() + minDaysAhead);
+  //     return selectedDate >= minDate ? null : { tooSoon: true };
+  //   };
+  // }
 
   validYearRangeValidator(minYear: number, maxYear: number): ValidatorFn {
     return (control: AbstractControl) => {
