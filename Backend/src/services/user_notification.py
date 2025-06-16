@@ -10,8 +10,8 @@ from fastapi import HTTPException, status
 from ..models.ride_model import Ride
 from ..utils.socket_manager import sio  # ✅ CORRECT
 import asyncio
-
-
+from ..schemas.notification_schema import NotificationOut
+from ..models.ride_model import RideStatus
 
 def get_user_notifications(db: Session, user_id: UUID):
     results = (
@@ -108,6 +108,7 @@ def create_system_notification_with_db(db: Session, user_id, title, message, ord
     )
     db.add(notif)
     return notif  # don't commit here — let caller handle it
+
 def send_admin_odometer_notification(vehicle_id: UUID, odometer_reading: float):
     db = SessionLocal()
     try:
@@ -163,3 +164,17 @@ def get_user_name(db: Session, user_id: str) -> str:
     if user:
         return user.full_name if hasattr(user, 'full_name') else user.username
     return "Unknown User"
+
+
+
+async def emit_new_notification(notification: NotificationOut, order_status: RideStatus):
+    await sio.emit("new_notification", {
+        "id": str(notification.id),
+        "user_id": str(notification.user_id),
+        "title": notification.title,
+        "message": notification.message,
+        "notification_type": notification.notification_type.value,
+        "sent_at": notification.sent_at.isoformat(),
+        "order_id": str(notification.order_id) if notification.order_id else None,
+        "order_status": order_status
+    })
