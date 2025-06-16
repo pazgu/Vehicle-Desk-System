@@ -163,7 +163,7 @@ def get_vehicles_with_optional_status(
     print("Result:", result)
     return result
 
-def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_reason: str, db: Session, changed_by: UUID):
+def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus,changed_by: UUID, freeze_reason: str, db: Session):
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(changed_by)})
     vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
     if not vehicle:

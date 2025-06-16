@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from src.utils.auth import token_check
 from fastapi import APIRouter, Depends
 from uuid import UUID
+from sqlalchemy import select
+
 from src.services.supervisor_dashboard_service import (
     get_department_orders,
     get_department_specific_order,
@@ -21,6 +23,7 @@ from ..utils.socket_utils import convert_decimal
 from ..models.vehicle_model import Vehicle
 from ..models.user_model import User
 import json
+from ..models.ride_model import Ride
 
 router = APIRouter()
 

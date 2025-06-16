@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { environment } from '../../../../environments/environment';
 import { FormsModule } from '@angular/forms';
 import { TabViewModule } from 'primeng/tabview';
+import { SocketService } from '../../../services/socket.service';
 
 
 
@@ -32,11 +33,26 @@ export class AdminAnalyticsComponent implements OnInit {
   vehicleChartInitialized = false;
   rideChartInitialized = false;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient,private socketService:SocketService) {}
 
   ngOnInit() {
     this.loadVehicleChart();
     this.loadRideChart();
+  this.socketService.rideStatusUpdated$.subscribe(() => {
+      console.log('🔔 rideStatusUpdated$ triggered');
+      this.loadRideChart();
+    });
+
+    this.socketService.vehicleStatusUpdated$.subscribe(() => {
+      console.log('🔔 vehicleStatusUpdated$ triggered');
+      this.loadVehicleChart();
+    });
+
+      this.socketService.deleteRequests$.subscribe(() => {
+      console.log('🔔 deleteRequest$ triggered');
+      this.loadRideChart();
+      this.loadVehicleChart();
+    });
   }
 
   private loadVehicleChart() {
@@ -92,7 +108,7 @@ export class AdminAnalyticsComponent implements OnInit {
     const labels = data.map(d => this.getHebrewLabel(d.status));
     const values = data.map(d => d.count);
     
-    this.vehicleChartData = {
+    const newVehicleChartData = {
       labels: [...labels],
       datasets: [{
         data: [...values],
@@ -100,6 +116,9 @@ export class AdminAnalyticsComponent implements OnInit {
         hoverBackgroundColor: ['#64B5F6', '#81C784', '#FFB74D']
       }]
     };
+      this.vehicleChartData = { ...newVehicleChartData }; // 👈 NEW OBJECT
+
+    
 
     this.vehicleChartOptions = {
       plugins: {
@@ -125,7 +144,7 @@ export class AdminAnalyticsComponent implements OnInit {
     console.log('📊 Chart labels:', labels);
     console.log('📊 Chart values:', values);
 
-    this.rideChartData = {
+    const newrideChartData = {
       labels: [...labels],
       datasets: [{
         data: [...values],
@@ -133,6 +152,8 @@ export class AdminAnalyticsComponent implements OnInit {
         hoverBackgroundColor: ['#FF6384CC', '#36A2EBCC', '#FFCE56CC', '#4BC0C0CC', '#9966FFCC', '#FF9F40CC']
       }]
     };
+    
+  this.rideChartData = { ...newrideChartData };
 
     this.rideChartOptions = {
        plugins: {
@@ -149,26 +170,32 @@ export class AdminAnalyticsComponent implements OnInit {
   }
 
   onSortChange() {
-    const sortFunctions = {
-      countAsc: (a: { status: string; count: number }, b: { status: string; count: number }) => a.count - b.count,
-      countDesc: (a: { status: string; count: number }, b: { status: string; count: number }) => b.count - a.count,
-      alphabetical: (a: { status: string; count: number }, b: { status: string; count: number }) => a.status.localeCompare(b.status),
-      default: () => 0
-    };
+  const sortFunctions = {
+    countAsc: (a: { status: string; count: number }, b: { status: string; count: number }) => a.count - b.count,
+    countDesc: (a: { status: string; count: number }, b: { status: string; count: number }) => b.count - a.count,
+    alphabetical: (a: { status: string; count: number }, b: { status: string; count: number }) => a.status.localeCompare(b.status),
+    default: () => 0
+  };
 
+  const sortFn = sortFunctions[this.selectedSortOption as keyof typeof sortFunctions];
+
+  if (this.activeTabIndex === 0) {
+    // Vehicle tab
     this.http.get<{ status: string; count: number }[]>(`${environment.apiUrl}/analytics/vehicle-status-summary`)
       .subscribe(data => {
-        console.log('🔄 Sorting data:', data);
-        
-        const sortedData = this.selectedSortOption === 'default' 
-          ? data 
-          : [...data].sort(sortFunctions[this.selectedSortOption as keyof typeof sortFunctions]);
-        
+        const sortedData = this.selectedSortOption === 'default' ? data : [...data].sort(sortFn);
         this.updateVehicleChart(sortedData);
-        
-      
+      });
+  } else {
+    // Ride tab
+    this.http.get<{ status: string; count: number }[]>(`${environment.apiUrl}/analytics/ride-status-summary`)
+      .subscribe(data => {
+        const sortedData = this.selectedSortOption === 'default' ? data : [...data].sort(sortFn);
+        this.updateRideChart(sortedData);
       });
   }
+}
+
 
   onTabChange(index: number) {
     this.activeTabIndex = index;
