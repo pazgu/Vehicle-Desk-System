@@ -77,20 +77,26 @@ export class NewRideComponent implements OnInit {
     private location: Location
   ) {}
 
-  // ✅ MOCKED FUNCTION: Fetch estimated distance between start and destination cities
-fetchEstimatedDistance(from: string, to: string): void {
+ fetchEstimatedDistance(from: string, to: string): void {
   if (!from || !to) return;
 
-  console.log(`Fetching distance between: ${from} → ${to}`);
+  console.log(`🌍 Requesting real distance: ${from} → ${to}`);
 
-  // ⏱ Simulate backend response with a delay
-  setTimeout(() => {
-    const mockDistance = +(Math.random() * 100 + 5).toFixed(1); // 5–105 km
-    this.fetchedDistance = mockDistance;
+  this.rideService.getDistance(from, to).subscribe({
+    next: (response) => {
+      const realDistance = response.distance_km;
+      console.log(`📏 Distance fetched: ${realDistance} km`);
 
-    // Set the value into the form
-    this.rideForm.get('estimated_distance_km')?.setValue(mockDistance);
-  }, 500);
+      this.fetchedDistance = realDistance;
+      this.rideForm.get('estimated_distance_km')?.setValue(realDistance);
+    },
+    error: (err) => {
+      console.error('❌ Failed to fetch distance:', err);
+      this.toastService.show('שגיאה בחישוב מרחק בין הערים', 'error');
+      this.fetchedDistance = null;
+      this.rideForm.get('estimated_distance_km')?.setValue(null);
+    }
+  });
 }
 
 
@@ -133,13 +139,14 @@ fetchEstimatedDistance(from: string, to: string): void {
     });
 
     // Add time change subscriptions for real-time validation
-    this.rideForm.get('start_time')?.valueChanges.subscribe(() => {
-      this.updateAvailableCars();
-    });
+   this.rideForm.get('start_location')?.valueChanges.subscribe(() => {
+  this.checkAndFetchDistance();
+});
 
-    this.rideForm.get('end_time')?.valueChanges.subscribe(() => {
-      this.updateAvailableCars();
-    });
+this.rideForm.get('end_location')?.valueChanges.subscribe(() => {
+  this.checkAndFetchDistance();
+});
+
 
     // ✅ Subscribe to city changes
 this.rideForm.get('start_location')?.valueChanges.subscribe(() => {
@@ -236,6 +243,8 @@ this.rideForm.get('destination')?.valueChanges.subscribe(() => {
     if (this.availableCars.length === 0) {
       this.toastService.show('אין רכבים זמינים מסוג זה', 'error');
     }
+
+    
   }
 
   onPeriodChange(value: string): void {
@@ -408,6 +417,20 @@ private addHoursToTime(timeString: string, hoursToAdd: number): string {
     };
   }
 
+ checkAndFetchDistance() {
+  const start = this.rideForm.get('start_location')?.value;
+  const end = this.rideForm.get('end_location')?.value;
+
+  if (start && end && start !== end) {
+    this.fetchEstimatedDistance(start, end);
+  } else {
+    this.fetchedDistance = null;
+    this.rideForm.get('estimated_distance_km')?.setValue(null);
+  }
+}
+
+
+
   submit(): void {
   // Initial form validation
   if (this.rideForm.invalid) {
@@ -495,6 +518,8 @@ private addHoursToTime(timeString: string, hoursToAdd: number): string {
       console.error('Submit error:', err);
     }
   });
+
+  
 }
 
   get f() {
