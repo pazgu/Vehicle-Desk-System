@@ -4,34 +4,37 @@ from ..models.city_model import City , CityAlias
 
 EARTH_RADIUS_KM = 6371.0
 
-
-def get_city_coordinates(city_name: str, db: Session):
+def normalize_city_name_to_id(city_name: str, db: Session) -> str:
     city = db.query(City).filter(City.name == city_name).first()
     if city:
-        return float(city.latitude), float(city.longitude)
+        return city.id
 
     alias = db.query(CityAlias).filter(CityAlias.alias == city_name).first()
     if alias:
-        city = db.query(City).filter(City.id == alias.city_id).first()
-        if city:
-            return float(city.latitude), float(city.longitude)
+        return alias.city_id
 
-    raise ValueError(f"City '{city_name}' not found")
+    raise ValueError(f"Unknown city name: '{city_name}'")
 
+def get_coordinates_by_city_id(city_id: str, db: Session):
+    city = db.query(City).filter(City.id == city_id).first()
+    if not city:
+        raise ValueError(f"City with ID {city_id} not found")
+    return float(city.latitude), float(city.longitude)
 
-def calculate_distance(city1: str, city2: str, db: Session) -> float:
-    lat1, lon1 = get_city_coordinates(city1 , db)
-    lat2, lon2 = get_city_coordinates(city2 , db)
+def calculate_distance(city_name1: str, city_name2: str, db: Session) -> float:
+    city_id1 = normalize_city_name_to_id(city_name1, db)
+    city_id2 = normalize_city_name_to_id(city_name2, db)
+
+    lat1, lon1 = get_coordinates_by_city_id(city_id1, db)
+    lat2, lon2 = get_coordinates_by_city_id(city_id2, db)
 
     # Haversine formula
     dlat = radians(lat2 - lat1)
     dlon = radians(lon2 - lon1)
 
-    a = sin(dlat / 2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2)**2
+    a = sin(dlat / 2)*2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2)*2
     c = 2 * atan2(sqrt(a), sqrt(1 - a))
 
     distance = EARTH_RADIUS_KM * c
-
     distance_with_buffer = distance * 1.10
-
     return round(distance_with_buffer, 2)
