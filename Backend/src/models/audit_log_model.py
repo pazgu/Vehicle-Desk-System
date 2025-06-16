@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, DateTime, Integer, JSON
+from sqlalchemy import Column, String, DateTime, Integer, JSON, Boolean
 from sqlalchemy.dialects.postgresql import UUID 
 from uuid import uuid4
 from datetime import datetime
@@ -14,9 +14,7 @@ class AuditLog(Base):
     change_data = Column(JSON, nullable=True)  
     created_at = Column(DateTime, default=datetime.utcnow)
     changed_by = Column(UUID(as_uuid=True), nullable=False) 
-
-    # New fields
-    checkbox_values = Column(JSON, nullable=True)  # Store as JSON array or dict
-    inspected_at = Column(DateTime, nullable=True)
-    inspector_id = Column(UUID(as_uuid=True), nullable=True)
+    checkbox_value = Column(Boolean, nullable=False)
+    inspected_at = Column(DateTime, nullable=False)
+    # inspector_id = Column(UUID(as_uuid=True), nullable=True)
     notes = Column(String, nullable=True)    
