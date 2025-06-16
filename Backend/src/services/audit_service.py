@@ -59,6 +59,11 @@ def get_all_audit_logs(db: Session, from_date: datetime = None, to_date: datetim
             entity_id=log.entity_id,
             change_data=log.change_data,
             created_at=log.created_at,
-            changed_by=log.changed_by
+            changed_by=log.changed_by,
+            checkbox_values=getattr(log, "checkbox_values", None),
+            inspected_at=getattr(log, "inspected_at", None),
+            inspector_id=getattr(log, "inspector_id", None),
+            notes=getattr(log, "notes", None)
         ))
+        
     return result
