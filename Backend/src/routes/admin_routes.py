@@ -32,6 +32,12 @@ from sqlalchemy import cast, Date
 from ..schemas.audit_schema import AuditLogsSchema
 from src.services.audit_service import get_all_audit_logs
 from ..utils.socket_manager import sio
+from ..services.admin_rides_service import get_vehicle_usage_stats
+from fastapi.security import OAuth2PasswordBearer
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+from ..utils.auth import role_check
+from ..services.admin_rides_service import get_vehicle_usage_stats
+
 router = APIRouter()
 
 @router.get("/orders", response_model=list[RideDashboardItem])
@@ -292,3 +298,19 @@ def get_all_audit_logs_route(
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+
+@router.get("/vehicles/usage-stats")
+def vehicle_usage_stats(
+    range: str = Query("month"),
+    year: int = Query(..., ge=2000, le=2100),
+    month: int = Query(..., ge=1, le=12),
+    db: Session = Depends(get_db),
+    token: str = Depends(oauth2_scheme)
+):
+    role_check(["admin"], token)  # רק מנהלים מורשים
+    stats = get_vehicle_usage_stats(db, year, month)
+    return {
+        "year": year,
+        "month": month,
+        "stats": stats
+    }
