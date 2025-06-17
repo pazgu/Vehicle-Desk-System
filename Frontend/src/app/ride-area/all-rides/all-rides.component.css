@@ -478,7 +478,15 @@ button[ng-click="showWarning()"]:hover {
   font-size: 0.9rem;
   transition: background-color 0.2s ease;
 }
-
+.delete {
+  padding: 0.1rem 0.1rem;
+  color: rgb(0, 0, 0);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
+}
 /* Hover effect */
 .modify-buttons button.modify:hover {
   background-color: #c8e2ff;
@@ -486,10 +494,12 @@ button[ng-click="showWarning()"]:hover {
 
 
 
-.modify-buttons button.modify:nth-child(2):hover {
+.modify-buttons button.modify:nth-child(3):hover {
   background-color: #ffc7c7;
 }
-
+.delete:hover {
+  background-color: #ffc7c7;
+}
 .back-btn {
     background-color: #942222;
   color: white;

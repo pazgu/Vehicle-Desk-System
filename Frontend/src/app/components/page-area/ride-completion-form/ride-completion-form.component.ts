@@ -1,11 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { ToastService } from '../../../services/toast.service';
 import { RideReportService } from '../../../services/completion-form.service';
 import { Location } from '@angular/common';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-ride-completion-form',
@@ -17,7 +18,11 @@ import { Location } from '@angular/common';
 export class RideCompletionFormComponent implements OnInit {
   form!: FormGroup;
   loading = false;
-  rideId!: string;
+  // rideId!: string;
+  showForm = true;
+  @Input() rideId!: string;
+  @Output() formCompleted = new EventEmitter<void>();
+
 
   constructor(
     private fb: FormBuilder,
@@ -27,16 +32,25 @@ export class RideCompletionFormComponent implements OnInit {
     private rideReportService: RideReportService,
     private location: Location
   ) {}
+
   goBack(): void {
-  this.location.back();
-}
+    this.location.back();
+  }
 
   ngOnInit(): void {
-    this.rideId = this.route.snapshot.paramMap.get('ride_id')!;
+    this.rideId = this.rideId || this.route.snapshot.paramMap.get('ride_id')!;
+    const submittedKey = `feedback_submitted_${this.rideId}`;
+
+    if (localStorage.getItem(submittedKey) === 'true') {
+      this.showForm = false;
+      return;
+    }
+  console.log('rideId:', this.rideId);
+
 
     this.form = this.fb.group({
       emergency_event: ['', Validators.required],
-      freeze_details: [''], // conditionally required
+      freeze_details: [''],
       completed: ['', Validators.required],
       fueled: ['', Validators.required],
     });
@@ -52,6 +66,8 @@ export class RideCompletionFormComponent implements OnInit {
       freezeDetails?.updateValueAndValidity();
     });
   }
+
+ 
 
   setEmergencyEvent(value: string): void {
     this.form.get('emergency_event')?.setValue(value);
@@ -69,7 +85,6 @@ export class RideCompletionFormComponent implements OnInit {
     }
 
     const rawForm = this.form.value;
-
     const formData = {
       ride_id: this.rideId,
       emergency_event: rawForm.emergency_event === 'true',
@@ -83,7 +98,10 @@ export class RideCompletionFormComponent implements OnInit {
 
     this.rideReportService.submitCompletionForm(formData, token).subscribe({
       next: () => {
+        const submittedKey = `feedback_submitted_${this.rideId}`;
+        localStorage.setItem(submittedKey, 'true');
         this.toastService.show('הטופס נשלח בהצלחה', 'success');
+        this.showForm = false;
         this.loading = false;
       },
       error: () => {

@@ -8,7 +8,27 @@ from fastapi import HTTPException, status
 from datetime import datetime, timezone
 from .user_notification import create_system_notification_with_db
 from .monthly_trip_counts import increment_completed_trip_stat
+from typing import Optional
 
+def get_ride_needing_feedback(db: Session, user_id: int) -> Optional[Ride]:
+    return db.query(Ride).filter(
+        Ride.user_id == user_id,
+        Ride.end_datetime <= datetime.now(timezone.utc),
+        Ride.status == RideStatus.completed,
+        Ride.feedback_submitted == False  
+    ).order_by(
+        Ride.end_datetime.desc()
+    ).first()
+
+def mark_feedback_submitted(db: Session, ride_id: str):
+    """
+    Mark a ride as having feedback submitted.
+    """
+    ride = db.query(Ride).filter_by(id=ride_id).first()
+    if ride:
+        ride.feedback_submitted = True
+        db.commit()
+    return ride
 def process_completion_form(db: Session, user: User, form_data: CompletionFormData):
     print("this is the current user:",user.username)
     print("dep id:",user.department_id)
