@@ -32,6 +32,7 @@ from ..services.user_edit_ride import patch_order_in_db
 from ..services.user_rides_service import get_ride_by_id , get_archived_rides , cancel_order_in_db
 from ..services.user_notification import create_system_notification,get_supervisor_id,get_user_name
 import traceback
+from ..utils.auth import get_current_user
 from ..models.user_model import User
 from ..services.user_form import process_completion_form
 from ..schemas.form_schema import CompletionFormData
@@ -47,9 +48,9 @@ from ..models.ride_model import PendingRideSchema
 from ..utils.scheduler import schedule_ride_start
 from apscheduler.jobstores.base import JobLookupError
 from ..utils.scheduler import scheduler
-from ..services.city_service import calculate_distance , get_city_coordinates
-
-
+from ..services.city_service import calculate_distance
+from ..services.city_service import get_cities
+from ..schemas.city_schema import City
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -321,11 +322,12 @@ def get_notifications_for_user(user_id: UUID, db: Session = Depends(get_db)):
 
 
 @router.delete("/api/all-orders/{order_id}")
-async def delete_order(order_id: UUID, db: Session = Depends(get_db)):
+async def delete_order(order_id: UUID, db: Session = Depends(get_db),current_user: User = Depends(get_current_user)):
     """
     Delete an order by its ID.
     """
     try:
+        db.execute(text('SET session "session.audit.user_id" = :user_id'), {"user_id": str(current_user.employee_id)})
         ride = db.query(Ride).filter(Ride.id == order_id).first()
         if not ride:
             raise HTTPException(status_code=404, detail="Order not found")
@@ -456,3 +458,7 @@ def get_distance(from_city: str, to_city: str, db: Session = Depends(get_db)):
 
         raise HTTPException(status_code=400, detail=str(e))
 
+@router.get("/api/cities")
+def get_cities_route(db: Session = Depends(get_db)):
+    cities = get_cities(db)
+    return [{"id": str(city.id), "name": city.name} for city in cities]

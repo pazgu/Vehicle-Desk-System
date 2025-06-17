@@ -258,25 +258,34 @@ labels: updatedLabels,
     const hebrewTitle = isVehicleTab ? 'רכבים - סיכום סטטוס' : 'נסיעות - סיכום סטטוס';
     const timestamp = new Date().toLocaleString();
     const safeTimestamp = timestamp.replace(/[/:]/g, '-');
+// Extract clean status keys from chart labels (strip everything after '–')
+const statusKeys = chartData.labels.map((label: string) => {
+  const match = label.split('–')[0].trim();
+  return this.reverseHebrewLabel(match); // get original status key like 'available'
+});
 
-    const body = chartData.labels.map((label: string, i: number) => [
-      label,
-      chartData.datasets[0].data[i].toString()
-    ]);
+// Build English table rows
+const body = statusKeys.map((key: string, i: number) => [
+  this.getEnglishLabel(key),
+  chartData.datasets[0].data[i].toString()
+]);
+
+
 
     const docDefinition: any = {
       content: [
         { text: title, style: 'header' },
-        { text: hebrewTitle, style: 'hebrewHeader' },
+        // { text: hebrewTitle, style: 'hebrewHeader' },
         { text: `Created: ${timestamp}`, style: 'subheader' },
         {
           table: {
             headerRows: 1,
             widths: ['*', '*'],
            body: [
-  [{ text: 'סטטוס מפורמט', style: 'tableHeader' }],
-  ...chartData.labels.map((label: string) => [{ text: label, alignment: 'center' }])
+  [{ text: 'Status', style: 'tableHeader' }, { text: 'Count', style: 'tableHeader' }],
+  ...body
 ]
+
 
           },
           layout: {
@@ -333,4 +342,36 @@ labels: updatedLabels,
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     saveAs(blob, `${title}-${timestamp}.csv`);
   }
+
+  private getEnglishLabel(status: string): string {
+  const statusMap: { [key: string]: string } = {
+    'available': 'Available',
+    'in_use': 'In Use',
+    'frozen': 'Frozen',
+    'pending': 'Pending',
+    'approved': 'Approved',
+    'rejected': 'Rejected',
+    'in_progress': 'In Progress',
+    'completed': 'Completed',
+    'cancelled': 'Cancelled'
+  };
+  return statusMap[status] || status;
+}
+
+private reverseHebrewLabel(hebrewLabel: string): string {
+  const reverseMap: { [key: string]: string } = {
+    'זמין': 'available',
+    'בשימוש': 'in_use',
+    'מוקפא': 'frozen',
+    'ממתין': 'pending',
+    'מאושר': 'approved',
+    'נדחה': 'rejected',
+    'בתהליך': 'in_progress',
+    'הושלם': 'completed',
+    'בוטל': 'cancelled'
+  };
+  return reverseMap[hebrewLabel] || hebrewLabel;
+}
+
+
 }
