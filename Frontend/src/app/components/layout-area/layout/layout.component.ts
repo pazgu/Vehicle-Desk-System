@@ -1,5 +1,4 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
@@ -25,32 +24,6 @@ import { takeUntil } from 'rxjs/operators'; // takeUntil comes from 'rxjs/operat
 })
 export class LayoutComponent implements OnInit,OnDestroy {
   private subscription = new Subscription();
-
-  constructor(
-    private socketService: SocketService,
-    private toastService: ToastService
-  ) {}
-
-  ngOnInit(): void {
-    this.subscription = this.socketService.notifications$.subscribe((notif) => {
-      if(notif){
-      const role=localStorage.getItem("role");
-      if(role==='employee'){
- if(notif.message.includes('נדחתה')){
-         this.toastService.show(notif.message,'error');
-      }else{
-         this.toastService.show(notif.message,'success');
-      }
-      }
-    }
-    });
-  }
-
-  ngOnDestroy(): void {
-    this.subscription.unsubscribe();
-  }
-}
-export class LayoutComponent implements OnInit, OnDestroy {
   pendingRideId: string | null = null;
   feedbackCheckComplete = false;
   loggedIn = false;
@@ -58,10 +31,15 @@ export class LayoutComponent implements OnInit, OnDestroy {
   private unsubscribe$ = new Subject<void>();
 
   constructor(
+    private socketService: SocketService,
+    private toastService: ToastService,
     private http: HttpClient,
     private router: Router,
     private authService: AuthService
   ) {}
+
+
+  
 
   ngOnInit() {
     console.log('[ON INIT] LayoutComponent initialized.');
@@ -79,12 +57,15 @@ export class LayoutComponent implements OnInit, OnDestroy {
       console.log('[ON INIT] Found stored ride ID:', storedRideId);
       this.pendingRideId = storedRideId;
     }
+    
   }
 
   ngOnDestroy(): void {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
     console.log('[ON DESTROY] LayoutComponent destroyed. Subscriptions unsubscribed.');
+    this.subscription.unsubscribe();
+
   }
 
   checkFeedbackNeeded(): void {
