@@ -258,131 +258,178 @@ labels: updatedLabels,
   }
 
   public exportPDF(): void {
-const isVehicleTab = this.activeTabIndex === 0;
-const isRideTab = this.activeTabIndex === 1;
-const isTopUsedTab = this.activeTabIndex === 2;
-    const chartData = isVehicleTab
-  ? this.vehicleChartData
-  : isRideTab
-    ? this.rideChartData
-    : this.topUsedVehiclesData;
+  const isVehicleTab = this.activeTabIndex === 0;
+  const isRideTab = this.activeTabIndex === 1;
+  const isTopUsedTab = this.activeTabIndex === 2;
 
-const title = isVehicleTab
-  ? 'Vehicle Status Summary'
-  : isRideTab
-    ? 'Ride Status Summary'
-    : 'Top Used Vehicles';
+  const chartData = isVehicleTab
+    ? this.vehicleChartData
+    : isRideTab
+      ? this.rideChartData
+      : this.topUsedVehiclesData;
 
-const hebrewTitle = isVehicleTab
-  ? 'רכבים - סיכום סטטוס'
-  : isRideTab
-    ? 'נסיעות - סיכום סטטוס'
-    : 'רכבים בשימוש גבוה';
+  const title = isVehicleTab
+    ? 'Vehicle Status Summary'
+    : isRideTab
+      ? 'Ride Status Summary'
+      : 'Top Used Vehicles';
 
-    const timestamp = new Date().toLocaleString();
-    const safeTimestamp = timestamp.replace(/[/:]/g, '-');
-// Extract clean status keys from chart labels (strip everything after '–')
-const statusKeys = chartData.labels.map((label: string) => {
-  const match = label.split('–')[0].trim();
-  return this.reverseHebrewLabel(match); // get original status key like 'available'
-});
+  const timestamp = new Date().toLocaleString();
+  const safeTimestamp = timestamp.replace(/[/:]/g, '-');
 
-// Build English table rows
-const body = statusKeys.map((key: string, i: number) => [
-  this.getEnglishLabel(key),
-  chartData.datasets[0].data[i].toString()
-]);
+  let body: any[] = [];
 
+  if (isTopUsedTab) {
+    const labels = chartData.labels;
+    const data = chartData.datasets[0].data;
 
+    body.push([
+      { text: 'Vehicle', style: 'tableHeader' },
+      { text: 'Ride Count', style: 'tableHeader' },
+      { text: 'Usage Level', style: 'tableHeader' }
+    ]);
 
-    const docDefinition: any = {
-      content: [
-        { text: title, style: 'header' },
-        // { text: hebrewTitle, style: 'hebrewHeader' },
-        { text: `Created: ${timestamp}`, style: 'subheader' },
-        {
-          table: {
-            headerRows: 1,
-            widths: ['*', '*'],
-           body: [
-  [{ text: 'Status', style: 'tableHeader' }, { text: 'Count', style: 'tableHeader' }],
-  ...body
-]
+    for (let i = 0; i < labels.length; i++) {
+      const count = data[i];
+      let usageLabel = '';
+      let bgColor = '';
 
+      if (count > 10) {
+        usageLabel = 'High Usage';
+        bgColor = '#FFCDD2'; // light red
+      } else if (count >= 5) {
+        usageLabel = 'Medium';
+        bgColor = '#FFF9C4'; // light yellow
+      } else {
+        usageLabel = 'Good';
+        bgColor = '#BBDEFB'; // light blue
+      }
 
-          },
-          layout: {
-            fillColor: function (rowIndex: number) {
-              return (rowIndex === 0) ? '#f2f2f2' : null;
-            }
+      body.push([
+        { text: labels[i], fillColor: '#f9f9f9' },
+        { text: count.toString(), fillColor: '#f9f9f9' },
+        { text: usageLabel, fillColor: bgColor }
+      ]);
+    }
+  } else {
+    const statusKeys = chartData.labels.map((label: string) => {
+      const match = label.split('–')[0].trim();
+      return this.reverseHebrewLabel(match);
+    });
+
+    body.push([
+      { text: 'Status', style: 'tableHeader' },
+      { text: 'Count', style: 'tableHeader' }
+    ]);
+
+    for (let i = 0; i < statusKeys.length; i++) {
+      body.push([
+        this.getEnglishLabel(statusKeys[i]),
+        chartData.datasets[0].data[i].toString()
+      ]);
+    }
+  }
+
+  const docDefinition: any = {
+    content: [
+      { text: title, style: 'header' },
+      { text: `Created: ${timestamp}`, style: 'subheader' },
+      {
+        table: {
+          headerRows: 1,
+          widths: isTopUsedTab ? ['*', '*', '*'] : ['*', '*'],
+          body: body
+        },
+        layout: {
+          fillColor: function (rowIndex: number) {
+            return (rowIndex === 0) ? '#f2f2f2' : null;
           }
         }
-      ],
-      styles: {
-        header: {
-          fontSize: 18,
-          bold: true,
-          margin: [0, 0, 0, 10],
-          alignment: 'center'
-        },
-        hebrewHeader: {
-          fontSize: 14,
-          margin: [0, 0, 0, 15],
-          alignment: 'right'
-        },
-        subheader: {
-          fontSize: 12,
-          margin: [0, 0, 0, 20],
-          alignment: 'center'
-        },
-        tableHeader: {
-          fontSize: 12,
-          bold: true,
-          alignment: 'center'
-        }
-      },
-      defaultStyle: {
-        fontSize: 11
       }
-    };
+    ],
+    styles: {
+      header: {
+        fontSize: 18,
+        bold: true,
+        margin: [0, 0, 0, 10],
+        alignment: 'center'
+      },
+      subheader: {
+        fontSize: 12,
+        margin: [0, 0, 0, 20],
+        alignment: 'center'
+      },
+      tableHeader: {
+        fontSize: 12,
+        bold: true,
+        alignment: 'center'
+      }
+    },
+    defaultStyle: {
+      fontSize: 11
+    }
+  };
 
-    pdfMake.createPdf(docDefinition).download(`${title}-${safeTimestamp}.pdf`);
+  pdfMake.createPdf(docDefinition).download(`${title}-${safeTimestamp}.pdf`);
+}
+
+
+ public exportCSV(): void {
+  const isVehicleTab = this.activeTabIndex === 0;
+  const isRideTab = this.activeTabIndex === 1;
+  const isTopUsedTab = this.activeTabIndex === 2;
+
+  const chartData = isVehicleTab
+    ? this.vehicleChartData
+    : isRideTab
+      ? this.rideChartData
+      : this.topUsedVehiclesData;
+
+  const title = isVehicleTab
+    ? 'Vehicle Status Summary'
+    : isRideTab
+      ? 'Ride Status Summary'
+      : 'Top Used Vehicles';
+
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+
+  let data: any[] = [];
+
+  if (isTopUsedTab) {
+    const labels = chartData.labels;
+    const counts = chartData.datasets[0].data;
+
+    data = labels.map((label: string, i: number) => {
+      const count = counts[i];
+      let usageLevel = '';
+
+      if (count > 10) {
+        usageLevel = 'High Usage';
+      } else if (count >= 5) {
+        usageLevel = 'Medium';
+      } else {
+        usageLevel = 'Good';
+      }
+
+      return {
+        Vehicle: label,
+        'Ride Count': count,
+        'Usage Level': usageLevel
+      };
+    });
+  } else {
+    data = chartData.labels.map((label: string, i: number) => ({
+      'Formatted Status': label,
+      'Count': chartData.datasets[0].data[i]
+    }));
   }
 
-  public exportCSV(): void {
-const isVehicleTab = this.activeTabIndex === 0;
-const isRideTab = this.activeTabIndex === 1;
-const isTopUsedTab = this.activeTabIndex === 2;
-    const chartData = isVehicleTab
-  ? this.vehicleChartData
-  : isRideTab
-    ? this.rideChartData
-    : this.topUsedVehiclesData;
+  // Add BOM for proper UTF-8 encoding in Excel
+  const csv = '\uFEFF' + Papa.unparse(data);
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  saveAs(blob, `${title}-${timestamp}.csv`);
+}
 
-const title = isVehicleTab
-  ? 'Vehicle Status Summary'
-  : isRideTab
-    ? 'Ride Status Summary'
-    : 'Top Used Vehicles';
-
-const hebrewTitle = isVehicleTab
-  ? 'רכבים - סיכום סטטוס'
-  : isRideTab
-    ? 'נסיעות - סיכום סטטוס'
-    : 'רכבים בשימוש גבוה';
-
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-
-   const data = chartData.labels.map((label: string) => ({
-  'סטטוס מפורמט': label
-}));
-
-
-    // Add BOM for proper UTF-8 encoding in Excel
-    const csv = '\uFEFF' + Papa.unparse(data);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    saveAs(blob, `${title}-${timestamp}.csv`);
-  }
 
   private getEnglishLabel(status: string): string {
   const statusMap: { [key: string]: string } = {
