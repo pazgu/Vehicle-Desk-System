@@ -293,6 +293,7 @@ def get_all_audit_logs_route(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
 
+
 @router.get("/analytics/top-used-vehicles")
 def get_top_used_vehicles(db: Session = Depends(get_db)):
     try:
@@ -319,3 +320,4 @@ def get_top_used_vehicles(db: Session = Depends(get_db)):
         ]
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"שגיאה בעת טעינת נסיעות לפי רכב: {str(e)}")
+
