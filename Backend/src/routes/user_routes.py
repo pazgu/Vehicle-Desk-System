@@ -32,6 +32,7 @@ from ..services.user_edit_ride import patch_order_in_db
 from ..services.user_rides_service import get_ride_by_id , get_archived_rides , cancel_order_in_db
 from ..services.user_notification import create_system_notification,get_supervisor_id,get_user_name
 import traceback
+from ..utils.auth import get_current_user
 from ..models.user_model import User
 from ..services.user_form import process_completion_form
 from ..schemas.form_schema import CompletionFormData
@@ -44,6 +45,13 @@ from ..services.user_data import get_user_department
 from ..models.vehicle_model import Vehicle
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 from ..models.ride_model import PendingRideSchema
+from ..utils.scheduler import schedule_ride_start
+from apscheduler.jobstores.base import JobLookupError
+from ..utils.scheduler import scheduler
+from ..services.city_service import calculate_distance
+from ..services.city_service import get_cities
+from ..schemas.city_schema import City
+
 from ..services.user_form import get_ride_needing_feedback
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -163,7 +171,8 @@ async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = De
     print("📥 Received RideCreate object:", ride_request.dict())
 
     try:
-        new_ride = create_ride(db, user_id, ride_request)
+        new_ride = await create_ride(db, user_id, ride_request)
+        schedule_ride_start(new_ride.id, new_ride.start_datetime)
         department_id=get_user_department(user_id=user_id,db=db)
         # ✅ Emit real-time event
         await sio.emit("new_ride_request", {
@@ -314,11 +323,12 @@ def get_notifications_for_user(user_id: UUID, db: Session = Depends(get_db)):
 
 
 @router.delete("/api/all-orders/{order_id}")
-async def delete_order(order_id: UUID, db: Session = Depends(get_db)):
+async def delete_order(order_id: UUID, db: Session = Depends(get_db),current_user: User = Depends(get_current_user)):
     """
     Delete an order by its ID.
     """
     try:
+        db.execute(text('SET session "session.audit.user_id" = :user_id'), {"user_id": str(current_user.employee_id)})
         ride = db.query(Ride).filter(Ride.id == order_id).first()
         if not ride:
             raise HTTPException(status_code=404, detail="Order not found")
@@ -328,6 +338,10 @@ async def delete_order(order_id: UUID, db: Session = Depends(get_db)):
 
         # Emit deletion event
         await sio.emit("order_deleted", {"order_id": str(order_id)})
+        try:
+            scheduler.remove_job(job_id=f"ride-start-{order_id}")
+        except JobLookupError:
+            pass  # If the job doesn't exist, ignore
 
         return {"message": "Order deleted successfully"}
     except Exception as e:
@@ -436,6 +450,19 @@ def reset_password(
 def cancel_order(order_id: UUID, db: Session = Depends(get_db)):
     return cancel_order_in_db(order_id, db)
 
+@router.get("/api/distance")
+def get_distance(from_city: str, to_city: str, db: Session = Depends(get_db)):
+    try:
+        distance_km = calculate_distance(from_city, to_city, db)
+        return {"distance_km": distance_km}
+    except Exception as e:
+
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/api/cities")
+def get_cities_route(db: Session = Depends(get_db)):
+    cities = get_cities(db)
+    return [{"id": str(city.id), "name": city.name} for city in cities]
 @router.get("/api/rides/feedback/check/{user_id}")
 def check_feedback_needed(
     user_id: UUID,  # Add this parameter to capture the path variable

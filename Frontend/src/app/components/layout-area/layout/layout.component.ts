@@ -1,3 +1,4 @@
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -5,6 +6,9 @@ import { CommonModule } from '@angular/common';
 import { environment } from '../../../../environments/environment';
 import { HeaderComponent } from '../header/header.component';
 import { RouterModule } from '@angular/router';
+import { SocketService } from '../../../services/socket.service';
+import { ToastService } from '../../../services/toast.service';
+import { Subscription } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
 
 // --- ADD THESE IMPORTS ---
@@ -19,6 +23,33 @@ import { takeUntil } from 'rxjs/operators'; // takeUntil comes from 'rxjs/operat
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.css',
 })
+export class LayoutComponent implements OnInit,OnDestroy {
+  private subscription = new Subscription();
+
+  constructor(
+    private socketService: SocketService,
+    private toastService: ToastService
+  ) {}
+
+  ngOnInit(): void {
+    this.subscription = this.socketService.notifications$.subscribe((notif) => {
+      if(notif){
+      const role=localStorage.getItem("role");
+      if(role==='employee'){
+ if(notif.message.includes('נדחתה')){
+         this.toastService.show(notif.message,'error');
+      }else{
+         this.toastService.show(notif.message,'success');
+      }
+      }
+    }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
+  }
+}
 export class LayoutComponent implements OnInit, OnDestroy {
   pendingRideId: string | null = null;
   feedbackCheckComplete = false;

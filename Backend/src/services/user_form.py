@@ -1,3 +1,4 @@
+import asyncio
 from sqlalchemy.orm import Session
 from ..models.user_model import User,UserRole
 from ..models.ride_model import Ride,RideStatus
@@ -8,6 +9,8 @@ from fastapi import HTTPException, status
 from datetime import datetime, timezone
 from .user_notification import create_system_notification_with_db
 from .monthly_trip_counts import increment_completed_trip_stat
+from ..services.user_notification import emit_new_notification
+from ..utils.socket_manager import sio
 from typing import Optional
 
 def get_ride_needing_feedback(db: Session, user_id: int) -> Optional[Ride]:
@@ -67,13 +70,15 @@ def process_completion_form(db: Session, user: User, form_data: CompletionFormDa
             ).all()
 
             for supervisor in supervisors:
-                create_system_notification_with_db(
+                notification=create_system_notification_with_db(
                     db=db,
                     user_id=supervisor.employee_id,
                     title="רכב עבר תאונה",
                     message=f"{vehicle.plate_number} עבר תאונה ברכב {user.last_name} {user.first_name} המשתמש ",
                     order_id=ride.id
                 )
+                asyncio.create_task(emit_new_notification(notification, ride.status))
+
         else:
             vehicle.status = VehicleStatus.available  # Set available if no emergency
 
@@ -85,14 +90,26 @@ def process_completion_form(db: Session, user: User, form_data: CompletionFormDa
             ).all()
 
             for supervisor in supervisors:
-                create_system_notification_with_db(
+                notification=create_system_notification_with_db(
                     db=db,
                     user_id=supervisor.employee_id,
                     title="רכב לא תודלק",
                     message=f"בלי תדלוק {vehicle.plate_number} החזיר הרכב {user.last_name} {user.first_name} המשתמש ",
                     order_id=ride.id
                 )
+                asyncio.create_task(emit_new_notification(notification, ride.status))
 
+             # Emit ride status updated event
+        sio.emit('ride_status_updated', {
+            "ride_id": str(ride.id),
+            "status": ride.status,
+        })
+
+        # Emit vehicle status updated event
+        sio.emit('vehicle_status_updated', {
+            "vehicle_id": str(vehicle.id),
+            "status": vehicle.status,
+        })
 
     db.commit()
     return {"message": "Completion form processed successfully."}

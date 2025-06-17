@@ -7,6 +7,8 @@ import { ActivatedRoute, Params } from '@angular/router';
 import { ToastService } from '../../services/toast.service';
 import { SocketService } from '../../services/socket.service';
 import { Location } from '@angular/common';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-home',
@@ -16,10 +18,13 @@ import { Location } from '@angular/common';
   styleUrls: ['./all-rides.component.css']
 })
 export class AllRidesComponent implements OnInit {
-  constructor(private router: Router, private rideService: MyRidesService,private route: ActivatedRoute,
+  constructor(private router: Router,
+   private rideService: MyRidesService,
+   private route: ActivatedRoute,
    private toastService: ToastService,
    private socketService: SocketService,
-   private location: Location
+   private location: Location,
+   private dialog: MatDialog
   ) {}
   goBack(): void {
   this.location.back();
@@ -109,11 +114,25 @@ this.socketService.orderUpdated$.subscribe((updatedRide) => {
       ];
 
       console.log(`✅ Ride ${updatedRide.id} updated in local state`);
+      const role=localStorage.getItem('role');
+      if(role==='supervisor'){
       this.toastService.show('✅ יש בקשה שעודכנה בהצלחה','success')
+      }
     }
   }
 });
+this.socketService.deleteRequests$.subscribe((deletedRide) => {
+  if(deletedRide){ console.log('❌ deleteRequest$ triggered:', deletedRide);
 
+  const index = this.orders.findIndex(o => o.ride_id === deletedRide.id);
+  if (index !== -1) {
+    this.orders = [
+      ...this.orders.slice(0, index),
+      ...this.orders.slice(index + 1)
+    ];
+  }}
+ 
+});
 
   }
    
@@ -243,7 +262,7 @@ getStatusTooltip(status: string): string {
   }
 
   goToNewRide(): void {
-    this.router.navigate(['/all-rides']);
+    this.router.navigate(['/home']);
   }
 
   fetchRides() {
@@ -340,6 +359,41 @@ editOrder(order: any): void {
 }
 
 
+// deleteOrder(order: any): void {
+//   const isPending = order.status.toLowerCase() === 'pending';
+//   const isFuture = this.parseDate(order.date) >= new Date();
+
+//   if (!isPending || !isFuture) {
+//     this.toastService.show('אפשר לבטל רק הזמנות עתידיות במצב "ממתין" ❌', 'error');
+//     return;
+//   }
+
+//   if (!order.ride_id) {
+//     this.toastService.show('שגיאה בזיהוי ההזמנה', 'error');
+//     return;
+//   }
+
+//   // Confirmation popup
+//   const confirmed = window.confirm('האם אתה בטוח שברצונך למחוק הזמנה זו לצמיתות?');
+//   if (!confirmed) return;
+
+//   this.rideService.deleteOrder(order.ride_id).subscribe({
+//     next: () => {
+//       this.toastService.show('ההזמנה בוטלה בהצלחה ✅', 'success');
+//       this.socketService.deleteRequests$.subscribe((deletedRide) => {
+//         if (deletedRide) {
+//           console.log('a ride has been deleted via socket:', deletedRide);
+//           this.fetchRides();
+//         }
+//       });
+//     },
+//     error: () => {
+//       this.toastService.show('שגיאה בביטול ההזמנה ❌', 'error');
+//     }
+//   });
+// }
+
+
 deleteOrder(order: any): void {
   const isPending = order.status.toLowerCase() === 'pending';
   const isFuture = this.parseDate(order.date) >= new Date();
@@ -354,21 +408,27 @@ deleteOrder(order: any): void {
     return;
   }
 
-  this.rideService.deleteOrder(order.ride_id).subscribe({
-    next: () => {
-      this.toastService.show('ההזמנה בוטלה בהצלחה ✅', 'success');
-      this.socketService.deleteRequests$.subscribe((deletedRide) => {
-  if (deletedRide) {
-    console.log('a ride has been deleted via socket:', deletedRide);
-    this.fetchRides();
-  }}) 
-    },
-    error: () => {
-      this.toastService.show('שגיאה בביטול ההזמנה ❌', 'error');
-    }
+  const dialogRef = this.dialog.open(ConfirmDialogComponent);
+
+  dialogRef.afterClosed().subscribe(confirmed => {
+    if (!confirmed) return;
+
+    this.rideService.deleteOrder(order.ride_id).subscribe({
+      next: () => {
+        this.toastService.show('ההזמנה בוטלה בהצלחה ✅', 'success');
+        this.socketService.deleteRequests$.subscribe((deletedRide) => {
+          if (deletedRide) {
+            console.log('a ride has been deleted via socket:', deletedRide);
+            this.fetchRides();
+          }
+        });
+      },
+      error: () => {
+        this.toastService.show('שגיאה בביטול ההזמנה ❌', 'error');
+      }
+    });
   });
 }
-
 
 
 viewRide(order: any): void {
