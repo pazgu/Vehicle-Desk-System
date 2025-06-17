@@ -39,7 +39,7 @@
     display: flex;
     align-items: center;
     gap: 1rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     direction: rtl;
     flex-shrink: 0;
 }
@@ -58,6 +58,7 @@
 .filter-button:hover {
     background: #942222;
     color: white;
+    transform: translateY(-2px);
 }
 
 .search-container {
@@ -604,4 +605,60 @@
 .export-button:focus {
     outline: none;
     box-shadow: 0 0 0 3px rgba(148, 34, 34, 0.3);
+}
+
+.date-range-filter {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.range-select {
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  border: 1px solid #942229;
+  color: #942222;
+  font-size: 1rem;
+  background: none;
+  min-width: 160px;
+}
+
+.custom-range-fields {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 25px;
+}
+
+.date-input {
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  border: #942222 1px solid;
+  font-size: 1rem;
+  background: none;
+}
+
+.filter-apply-btn {
+  padding: 0.35rem 1.2rem;
+  border-radius: 6px;
+  border: 1px solid #942222;
+  background: none;
+  font-size: 1rem;
+  color: #942222;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-right: 0.5rem;
+}
+
+.filter-apply-btn:hover {
+    background: #942222;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.date-note {
+  font-size: 0.95em;
+  color: #888;
 }
