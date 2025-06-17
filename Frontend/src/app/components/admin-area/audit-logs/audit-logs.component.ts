@@ -8,6 +8,7 @@ import pdfFonts from 'pdfmake/build/vfs_fonts';
 import { saveAs } from 'file-saver';
 import Papa from 'papaparse';
 import type { TDocumentDefinitions } from 'pdfmake/interfaces';
+import { SocketService } from '../../../services/socket.service';
 
 (pdfMake as any).vfs = pdfFonts.vfs;
 (pdfMake as any).fonts = {
@@ -32,7 +33,10 @@ export class AuditLogsComponent implements OnInit {
   searchTerm = '';
   filteredLogs: any[] = [];
   selectedLog: any | null = null;
-  objectKeys = Object.keys;
+  
+  objectKeys = Object.keys; // Still useful if you need to iterate over object keys dynamically
+  constructor(private auditLogService: AuditLogsService, private socketService: SocketService) { }
+
   logs: AuditLogs[] = [];
   pageSize = 5;
   currentPage = 1;
@@ -76,7 +80,20 @@ export class AuditLogsComponent implements OnInit {
     estimated_distance_km: 'מרחק משוער (ק"מ)'
   };
 
+  ngOnInit() {
+    this.loadLogs();
+    // Listen for real-time audit log updates
+    this.socketService.auditLogs$.subscribe((newLog) => {
+      if (newLog) {
+        // Optionally, fetch the full logs again or just add the new log to the list
+        this.logs = [newLog, ...this.logs];
+        this.filteredLogs = [...this.logs];
+      }
+    });
+  }
+
   constructor(private auditLogService: AuditLogsService) { }
+
 
   ngOnInit() {
     this.onRangeChange(); // Load logs for the default range
@@ -109,8 +126,11 @@ export class AuditLogsComponent implements OnInit {
   fetchAuditLogs(fromDate?: string, toDate?: string) {
     this.auditLogService.getAuditLogs(fromDate, toDate).subscribe(
       (data) => {
-        this.logs = data.map(log => ({ ...log }));
-        this.filteredLogs = [...this.logs];
+        this.logs = data.map(log => ({
+          ...log,
+        }))
+          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()); // Sort newest first
+        this.filteredLogs = [...this.logs]; // Initialize filtered logs
         this.currentPage = 1;
       });
   }

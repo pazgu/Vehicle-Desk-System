@@ -20,6 +20,7 @@ export class SocketService {
   public newInspection$ = new Subject<any>();
   public vehicleStatusUpdated$ = new BehaviorSubject<any>(null); 
   public rideStatusUpdated$ = new BehaviorSubject<any>(null); 
+  public auditLogs$ = new BehaviorSubject<any>(null);
 
 
   constructor() {
@@ -44,7 +45,7 @@ export class SocketService {
       console.log('❌ Disconnected from Socket.IO backend');
     });
 
-    
+
 
     this.listenToEvents();
   }
@@ -53,6 +54,9 @@ export class SocketService {
   this.socket.on('order_updated', (data: any) => {
   console.log('✏️ Ride order updated via socket:', data);
   this.orderUpdated$.next(data); // ✅ Pushes to subscribers like HomeComponent
+    this.socket.on('order_updated', (data: any) => {
+      console.log('✏️ Ride order updated via socket:', data);
+      this.orderUpdated$.next(data); // ✅ Pushes to subscribers like HomeComponent
 
 });
 
@@ -61,14 +65,20 @@ this.socket.on('order_deleted', (data: any) => {
   this.deleteRequests$.next(data); // ✅ Pushes to subscribers like HomeComponent
   
 });
+    });
+    this.socket.on('order_deleted', (data: any) => {
+      console.log('✏️ Ride order deleted via socket:', data);
+      this.deleteRequests$.next(data); // ✅ Pushes to subscribers like HomeComponent
+
+    });
     this.socket.on('new_notification', (data: any) => {
-    console.log('📩 Raw socket data received:', data);
-    console.log('📩 Data type:', typeof data);
-    console.log('📩 Socket ID:', this.socket.id);
-    
-    this.notifications$.next(data);
-    console.log('📩 Data pushed to BehaviorSubject');
-  });
+      console.log('📩 Raw socket data received:', data);
+      console.log('📩 Data type:', typeof data);
+      console.log('📩 Socket ID:', this.socket.id);
+
+      this.notifications$.next(data);
+      console.log('📩 Data pushed to BehaviorSubject');
+    });
 
     this.socket.on('new_ride_request', (data: any) => {
       console.log('🚗 New ride request received via socket:', data);
@@ -90,9 +100,16 @@ this.socket.on('order_deleted', (data: any) => {
       this.vehicleStatusUpdated$.next(data);
     });
 
-setTimeout(() => {
-  this.orderUpdated$.next({ id: 'test-id' });
-}, 3000);
+
+    this.socket.on('audit_log_updated', (data: any) => {
+      console.log('📝 Audit log updated via socket:', data);
+      this.auditLogs$.next(data);
+    });
+
+
+    setTimeout(() => {
+      this.orderUpdated$.next({ id: 'test-id' });
+    }, 3000);
 
 
   }
@@ -101,11 +118,11 @@ setTimeout(() => {
     this.socket.emit(eventName, data);
   }
 
-//   public joinRoom(userId: string): void {
-//   this.socket.emit('join', { room: userId });
-//   console.log(`📡 Sent join request to room: ${userId}`);
-// }
+  //   public joinRoom(userId: string): void {
+  //   this.socket.emit('join', { room: userId });
+  //   console.log(`📡 Sent join request to room: ${userId}`);
+  // }
 
 
-  
+
 }

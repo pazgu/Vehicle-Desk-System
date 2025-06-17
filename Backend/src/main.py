@@ -6,12 +6,24 @@ from src.routes.user_routes import router as user_route
 from src.routes.supervisor_routes import router as supervisor_route
 from src.routes.admin_routes import router as admin_route
 from src.routes.inspector_routes import router as inspector_route
+from fastapi import Request
+from src.utils.scheduler import start_scheduler
+from fastapi_socketio import SocketManager
+from .utils.socket_manager import connect
+import asyncio
+from socketio import ASGIApp
+from .utils.socket_manager import sio
+import threading
+from .utils.audit_log_listener import listen_for_audit_logs
+
 
 from src.utils.scheduler import start_scheduler
 from src.utils.socket_manager import sio  # your socketio.AsyncServer
 
 # ✅ Step 1–5: Create and configure the FastAPI app
 app = FastAPI()
+# Start the audit log listener in a background thread
+threading.Thread(target=listen_for_audit_logs, daemon=True).start()
 
 app.add_middleware(
     CORSMiddleware,

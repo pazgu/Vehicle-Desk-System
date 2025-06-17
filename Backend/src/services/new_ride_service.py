@@ -50,20 +50,20 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate):
 
     print("user iddddddddddddddddddddddddddddddddddddd:", user_id)
 
-    log_action(
-        db=db,
-        action="create_ride",
-        entity_type="Ride",
-        entity_id=str(new_ride.id),
-        change_data={
-            "start_location": new_ride.start_location,
-            "destination": new_ride.destination,
-            "start_datetime": new_ride.start_datetime.isoformat(),
-            "end_datetime": new_ride.end_datetime.isoformat(),
-            "submitted_by": str(user_id)
-        },
-        changed_by=user_id
-    )
+    # log_action(
+    #     db=db,
+    #     action="create_ride",
+    #     entity_type="Ride",
+    #     entity_id=str(new_ride.id),
+    #     change_data={
+    #         "start_location": new_ride.start_location,
+    #         "destination": new_ride.destination,
+    #         "start_datetime": new_ride.start_datetime.isoformat(),
+    #         "end_datetime": new_ride.end_datetime.isoformat(),
+    #         "submitted_by": str(user_id)
+    #     },
+    #     changed_by=user_id
+    # )
 
 
     # Fetch all admin users
