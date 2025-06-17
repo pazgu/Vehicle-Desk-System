@@ -15,9 +15,11 @@
   </div>
   
   <div class="orders-wrapper">
-    <h1>ההזמנות שלי</h1>
+    <div id="header-wrap">
+    <h1>ההזמנות שלי</h1>    
+    <button class="back-btn" (click)="goBack()">חזור ←</button>
+    </div>
     <br>
-    <button class="back-btn" (click)="goBack()">חזור →</button>
     <div class="ride-filter-buttons">
       <button [ngClass]="{ 'active': rideViewMode === 'future' }" (click)="rideViewMode = 'future'; fetchRides()">הצג נסיעות עתידיות</button>
       <button [ngClass]="{ 'active': rideViewMode === 'past' }" (click)="rideViewMode = 'past'; fetchRides()">הצג נסיעות קודמות</button>
