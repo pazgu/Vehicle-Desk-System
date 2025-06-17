@@ -9,6 +9,13 @@
     z-index: 1000;
   }
 
+.feedback-button-container {
+
+  z-index: 1000;
+  background-color: rgba(0, 0, 0, 0.231);
+}
+
+
 
 .feedback-button {
   background-color: #942222;

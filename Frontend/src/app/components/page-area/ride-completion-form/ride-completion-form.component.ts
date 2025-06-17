@@ -7,7 +7,8 @@ import { ToastService } from '../../../services/toast.service';
 import { RideReportService } from '../../../services/completion-form.service';
 import { Location } from '@angular/common';
 import { environment } from '../../../../environments/environment';
-
+import { RideService } from '../../../services/ride.service';
+import { RideDashboardItem } from '../../../models/ride-dashboard-item/ride-dashboard-item.module';
 @Component({
   selector: 'app-ride-completion-form',
   templateUrl: './ride-completion-form.component.html',
@@ -18,6 +19,7 @@ import { environment } from '../../../../environments/environment';
 export class RideCompletionFormComponent implements OnInit {
   form!: FormGroup;
   loading = false;
+  currentRide! :any;
   // rideId!: string;
   showForm = true;
   @Input() rideId!: string;
@@ -30,7 +32,8 @@ export class RideCompletionFormComponent implements OnInit {
     private toastService: ToastService,
     private route: ActivatedRoute,
     private rideReportService: RideReportService,
-    private location: Location
+    private location: Location,
+    private rideService: RideService 
   ) {}
 
   goBack(): void {
@@ -40,12 +43,16 @@ export class RideCompletionFormComponent implements OnInit {
   ngOnInit(): void {
     this.rideId = this.rideId || this.route.snapshot.paramMap.get('ride_id')!;
     const submittedKey = `feedback_submitted_${this.rideId}`;
-
-    if (localStorage.getItem(submittedKey) === 'true') {
+   
+    this.rideService.getRideById(this.rideId).subscribe(ride => {
+      console.log('Fetched ride:', ride);
+    this.currentRide = ride;
+  });    if (localStorage.getItem(submittedKey) === 'true') {
       this.showForm = false;
       return;
     }
   console.log('rideId:', this.rideId);
+  console.log('currentRide:', this.currentRide);
 
 
     this.form = this.fb.group({
