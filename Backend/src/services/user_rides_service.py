@@ -121,7 +121,7 @@ def update_ride_status(db: Session, ride_id: UUID, new_status: str, changed_by: 
     db.commit()
     db.refresh(ride)
 
-    print(f"\n !!!!!!!!!!!!!!!!!!!!!!!! changed_by: {changed_by} !!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
+    # print(f"\n !!!!!!!!!!!!!!!!!!!!!!!! changed_by: {changed_by} !!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
 
     # Log the audit entry with all ride details and the new status
     # log_action(

@@ -33,14 +33,28 @@ def listen_for_audit_logs():
                 notify = conn.notifies.pop(0)
                 payload = json.loads(notify.payload)
                 user_id = payload.get("user_id") or payload.get("changed_by")
+                db = SessionLocal()
+                user = None
                 if user_id:
-                    db = SessionLocal()
                     user = db.query(User).filter(User.employee_id == user_id).first()
-                    if user:
-                        payload["full_name"] = f"{user.first_name} {user.last_name}"
+                if user:
+                    payload["full_name"] = f"{user.first_name} {user.last_name}"
+                    payload["changed_by"] = str(user.employee_id)
+                else:
+                    # Try to get name from change_data for user INSERTs
+                    change_data = payload.get("change_data", {})
+                    if isinstance(change_data, str):
+                        change_data = json.loads(change_data)
+                    first_name = change_data.get("first_name", "")
+                    last_name = change_data.get("last_name", "")
+                    if first_name or last_name:
+                        payload["full_name"] = f"{first_name} {last_name}".strip()
                     else:
-                        print(f"User not found for user_id: {user_id}")
-                    db.close()
+                        payload["full_name"] = ""
+                    # Set changed_by to entity_id if missing
+                    if not payload.get("changed_by"):
+                        payload["changed_by"] = payload.get("entity_id", "")
+                db.close()
                 asyncio.run_coroutine_threadsafe(sio.emit("audit_log_updated", payload), loop)
             except Exception as e:
                 print("Error emitting audit log:", e)

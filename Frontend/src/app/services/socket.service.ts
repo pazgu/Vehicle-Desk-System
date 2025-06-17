@@ -19,7 +19,6 @@ export class SocketService {
   public orderUpdated$ = new BehaviorSubject<any>(null); 
   public vehicleStatusUpdated$ = new BehaviorSubject<any>(null); 
   public rideStatusUpdated$ = new BehaviorSubject<any>(null); 
-  public orderUpdated$ = new BehaviorSubject<any>(null);
   public auditLogs$ = new BehaviorSubject<any>(null);
 
 
@@ -94,9 +93,7 @@ this.socket.on('order_deleted', (data: any) => {
       this.vehicleStatusUpdated$.next(data);
     });
 
-setTimeout(() => {
-  this.orderUpdated$.next({ id: 'test-id' });
-}, 3000);
+
     this.socket.on('audit_log_updated', (data: any) => {
       console.log('📝 Audit log updated via socket:', data);
       this.auditLogs$.next(data);

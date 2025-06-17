@@ -143,9 +143,9 @@ def patch_vehicle_status(
     user_id = payload.get("user_id") or payload.get("sub")
     if not user_id:
         return {"error": "User ID not found in token"}, 401
-     
+    
     res=update_vehicle_status(vehicle_id, status_update.new_status, status_update.freeze_reason, db, user_id)
-    new_status=res.new_status
+    new_status=res["new_status"]
     sio.emit('vehicle_status_updated', {
             "vehicle_id": str(vehicle_id),
             "status": new_status,
