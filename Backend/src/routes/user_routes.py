@@ -48,6 +48,8 @@ from ..utils.scheduler import schedule_ride_start
 from apscheduler.jobstores.base import JobLookupError
 from ..utils.scheduler import scheduler
 from ..services.city_service import calculate_distance
+from ..services.city_service import get_cities
+from ..schemas.city_schema import City
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -454,3 +456,7 @@ def get_distance(from_city: str, to_city: str, db: Session = Depends(get_db)):
 
         raise HTTPException(status_code=400, detail=str(e))
 
+@router.get("/api/cities")
+def get_cities_route(db: Session = Depends(get_db)):
+    cities = get_cities(db)
+    return [{"id": str(city.id), "name": city.name} for city in cities]
