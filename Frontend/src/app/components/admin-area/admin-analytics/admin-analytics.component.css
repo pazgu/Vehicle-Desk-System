@@ -155,5 +155,41 @@ h2 {
   box-shadow: 0 0 0 3px rgba(148, 34, 34, 0.3);
 }
 
+.usage-legend {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 1.5rem;
+  direction: rtl;
+  font-family: 'Alef', sans-serif;
+  font-size: 1rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.color-box {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.color-box.good {
+  background-color: #42A5F5;
+}
+
+.color-box.medium {
+  background-color: #FFC107;
+}
+
+.color-box.high {
+  background-color: #FF5252;
+}
+
+
 
 
