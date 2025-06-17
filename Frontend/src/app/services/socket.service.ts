@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -17,6 +17,7 @@ export class SocketService {
   public rideRequests$ = new BehaviorSubject<any>(null);
   public deleteRequests$ = new BehaviorSubject<any>(null);
   public orderUpdated$ = new BehaviorSubject<any>(null); 
+  public newInspection$ = new Subject<any>();
   public vehicleStatusUpdated$ = new BehaviorSubject<any>(null); 
   public rideStatusUpdated$ = new BehaviorSubject<any>(null); 
 
@@ -73,6 +74,12 @@ this.socket.on('order_deleted', (data: any) => {
       console.log('🚗 New ride request received via socket:', data);
       this.rideRequests$.next(data);
     });
+
+    this.socket.on('new_inspection', (data: any) => {
+      console.log('📦 New inspection received via socket:', data);
+      this.newInspection$.next(data);
+    });
+
 
     this.socket.on('ride_status_updated', (data: any) => {
       console.log('🚗 ride status updated:', data);

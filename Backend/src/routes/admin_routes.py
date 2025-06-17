@@ -211,7 +211,7 @@ def get_today_inspections(db: Session = Depends(get_db)):
     inspections = db.query(VehicleInspection).filter(
         VehicleInspection.inspection_date >= today_start,
         VehicleInspection.inspection_date < tomorrow_start
-    ).all()
+    ).order_by(VehicleInspection.inspection_date.desc()).all()
 
     return inspections
 
