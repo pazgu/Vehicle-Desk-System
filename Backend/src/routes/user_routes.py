@@ -47,7 +47,9 @@ from ..models.ride_model import PendingRideSchema
 from ..utils.scheduler import schedule_ride_start
 from apscheduler.jobstores.base import JobLookupError
 from ..utils.scheduler import scheduler
-from ..services.city_service import calculate_distance
+from ..services.city_service import calculate_distance , get_city_coordinates
+
+
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
