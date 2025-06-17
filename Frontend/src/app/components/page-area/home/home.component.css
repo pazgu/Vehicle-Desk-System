@@ -188,22 +188,22 @@ input[type="time"], input[type="number"], input[type="text"], select {
   }
 }
 .back-btn {
-  background-color: #942222;
-  color: white;
+  width: 100px;
+  color: #942222;
   font-family: var(--font-family-alef);
   font-size: 16px;
   font-weight: bold;
-  padding: 10px 22px;
+  padding: 1px 2px;
   border: none;
   border-radius: 20px;
   cursor: pointer;
   transition: background-color 0.2s ease, transform 0.15s ease;
   margin-top: 24px;
-  display: inline-block;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+  margin-left:0px;
+  margin-right:600px;
+  background:none;
 }
 .back-btn:hover {
-  background-color: #7c1b1b;
   transform: scale(1.03);
 }
 .back-btn-container {
