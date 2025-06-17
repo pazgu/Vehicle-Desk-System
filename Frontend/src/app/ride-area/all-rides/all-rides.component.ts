@@ -334,7 +334,7 @@ canEdit(order: any): boolean {
 }
 
 canDelete(order: any): boolean {
-  const isPending = order.status.toLowerCase() === 'pending';
+const isPending = ['pending', 'approved'].includes(order.status.toLowerCase());
   const isFuture = this.parseDate(order.date) >= new Date();
 
   return isPending && isFuture;

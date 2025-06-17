@@ -1,6 +1,14 @@
 <div>
 
-        <app-header></app-header>
-    
+<app-header></app-header>
+    <!-- Floating feedback button when form is needed -->
+<div  *ngIf="feedbackCheckComplete && pendingRideId && loggedIn " class="feedback-button-container">
+   <button
+    class="modal-overlay"
+    [routerLink]="['/ride-completion-form', pendingRideId]"
+    (click)="onFeedbackButtonClick()" >
+    נא למלא משוב 
+  </button>
 </div>
+
 <router-outlet></router-outlet>
