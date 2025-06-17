@@ -146,19 +146,27 @@
         <div class="cell">{{ order.distance }}</div>
 
         <div class="modify-buttons">
-          <button class="modify"
-            *ngIf="canEdit(order)"
-            (click)="editOrder(order); $event.stopPropagation()">
-             ✏️
-          </button>
-          <button class="modify"
-            *ngIf="canDelete(order)"
-            (click)="deleteOrder(order); $event.stopPropagation()">
- 🗑️</button>
-      
-          <button *ngIf="!canEdit(order)" disabled style="opacity: 0.5; cursor: not-allowed;">
-            ערוך 🔒
-          </button>
+  <!-- Edit Button -->
+  <button
+    class="modify"
+    (click)="canEdit(order) ? editOrder(order) : null; $event.stopPropagation()"
+    [disabled]="!canEdit(order)"
+    [style.opacity]="canEdit(order) ? '1' : '0.5'"
+    [style.cursor]="canEdit(order) ? 'pointer' : 'not-allowed'">
+    ✏️
+  </button>
+
+  <!-- Delete Button -->
+  <button
+    class="delete"
+    [disabled]="!canDelete(order)"
+    [style.opacity]="canDelete(order) ? '1' : '0.5'"
+    (click)="canDelete(order) ? deleteOrder(order) : null ; $event.stopPropagation()"
+    [style.cursor]="canDelete(order) ? 'pointer' : 'not-allowed'">
+    🗑️
+  </button>
+
+
         </div>
       </div>
     </div>

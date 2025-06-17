@@ -43,6 +43,7 @@ class Ride(Base):
     notifications = relationship("Notification", back_populates="ride", lazy="dynamic")
     is_archive = Column(Boolean, default=False, name="isArchive")
     override_user_id = Column(UUID(as_uuid=True), ForeignKey("users.employee_id"), nullable=True)
+    feedback_submitted: bool = False 
 
 class PendingRideSchema(BaseModel):
     vehicle_id: uuid.UUID  # ✅ Use this, not sqlalchemy.UUID
@@ -51,6 +52,7 @@ class PendingRideSchema(BaseModel):
     ride_date_night_end: str | None
     start_time: str   # 'HH:mm'
     end_time: str     # 'HH:mm'
+    feedback_submitted: bool = False 
 
     class Config:
         from_attributes = True
