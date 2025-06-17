@@ -292,3 +292,30 @@ def get_all_audit_logs_route(
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+
+@router.get("/analytics/top-used-vehicles")
+def get_top_used_vehicles(db: Session = Depends(get_db)):
+    try:
+        results = (
+            db.query(
+                Vehicle.plate_number,
+                Vehicle.vehicle_model,
+                func.count(Ride.id).label("ride_count")
+            )
+            .join(Ride, Ride.vehicle_id == Vehicle.id)
+            .group_by(Vehicle.plate_number, Vehicle.vehicle_model)
+            .order_by(func.count(Ride.id).desc())
+            .limit(10)
+            .all()
+        )
+
+        return [
+            {
+                "plate_number": r.plate_number,
+                "vehicle_model": r.vehicle_model,
+                "ride_count": r.ride_count
+            }
+            for r in results
+        ]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"שגיאה בעת טעינת נסיעות לפי רכב: {str(e)}")
