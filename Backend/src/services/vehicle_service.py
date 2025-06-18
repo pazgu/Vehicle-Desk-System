@@ -114,7 +114,9 @@ def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
 
 
 def get_vehicles_with_optional_status(
-    db: Session, status: Optional[VehicleStatus] = None
+    db: Session,
+    status: Optional[VehicleStatus] = None,
+    vehicle_type: Optional[str] = None  
 ) -> List[Union[VehicleOut, InUseVehicleOut]]:
     query = (
         db.query(
@@ -149,6 +151,11 @@ def get_vehicles_with_optional_status(
 
     if status:
         query = query.filter(Vehicle.status == status)
+
+    
+    if vehicle_type:  # ✅ Add this part to filter by type
+        query = query.filter(func.lower(Vehicle.type) == vehicle_type.lower())
+
 
     vehicles = query.all()
 
