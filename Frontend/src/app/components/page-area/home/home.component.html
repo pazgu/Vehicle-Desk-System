@@ -1,6 +1,6 @@
 <div class="overlay">
   <div class="modal">
-    <button class="back-btn" (click)="goBack()">חזור ←</button>
+    <!-- <button class="back-btn" (click)="goBack()">חזור ←</button> -->
     <h2>הזמנה חדשה</h2>
     <hr />
     <form [formGroup]="rideForm">
@@ -105,21 +105,7 @@
 </div>
 
 
-        <!-- Distance and Type -->
-        <div class="row">
-          <div class="input-group">
-            <label>הערכת מרחק (ק"מ)</label>
-            <input type="number" formControlName="estimated_distance_km" />
-            <small *ngIf="f.estimated_distance_km.touched && f.estimated_distance_km.errors?.['required']" class="distance-info">חובה למלא את שדה זה</small>
-            <small *ngIf="f.estimated_distance_km.errors?.['min']" class="distance-info">המרחק חייב להיות לפחות 1 ק״מ</small>
-<small
-  class="distance-info"
-  *ngIf="!f.estimated_distance_km.errors && f.estimated_distance_km.value">
-  המרחק לאחר תוספת סטייה: {{ estimated_distance_with_buffer }} ק"מ
-</small>
-          </div>
-        </div>
-
+        
         <!-- Location -->
         <div class="row">
           <div class="input-group">
@@ -148,14 +134,27 @@
           </div>
 
           <!-- ✅ Display live estimated distance from city-to-city -->
-<div class="input-group" *ngIf="fetchedDistance">
+<!-- <div class="input-group" *ngIf="fetchedDistance">
   <small class="distance-info" style="font-weight: 500; color: #333;">
     מרחק מוערך בין המיקומים: {{ fetchedDistance }} ק"מ
   </small>
-</div>
+</div> -->
 
         </div>
       </div>
+<div class="row">
+          <div class="input-group" >
+            <label>הערכת מרחק (ק"מ)</label>
+            <input type="number" formControlName="estimated_distance_km" [readonly]="true" class="no-spinner"/>
+            <small *ngIf="f.estimated_distance_km.touched && f.estimated_distance_km.errors?.['required']" class="distance-info">חובה למלא את שדה זה</small>
+            <small *ngIf="f.estimated_distance_km.errors?.['min']" class="distance-info">המרחק חייב להיות לפחות 1 ק״מ</small>
+<small
+  class="distance-info"
+  *ngIf="!f.estimated_distance_km.errors && f.estimated_distance_km.value">
+  המרחק לאחר תוספת סטייה: {{ estimated_distance_with_buffer }} ק"מ
+</small>
+          </div>
+        </div>
 
       <!-- Button -->
   <!-- your form fields -->

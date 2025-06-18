@@ -128,38 +128,39 @@ def get_roles():
     return [role.value for role in UserRole]
 
 
-@router.post("/vehicle-inspection")
-def vehicle_inspection(data: VehicleInspectionSchema, db: Session = Depends(get_db),payload: dict = Depends(token_check)):
-    try:
-        return vehicle_inspection_logic(data, db)
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+# @router.post("/vehicle-inspection")
+# def vehicle_inspection(data: VehicleInspectionSchema, db: Session = Depends(get_db),payload: dict = Depends(token_check)):
+#     try:
+#         return vehicle_inspection_logic(data, db)
+#     except HTTPException as e:
+#         raise e
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
     
 
-@router.patch("/{vehicle_id}/status")
-def patch_vehicle_status(
-    vehicle_id: UUID,
-    status_update: VehicleStatusUpdate,
-    db: Session = Depends(get_db),
-    payload: dict = Depends(token_check)
-):
-    user_id = payload.get("user_id") or payload.get("sub")
-    if not user_id:
-        return {"error": "User ID not found in token"}, 401
+# @router.patch("/{vehicle_id}/status")
+# def patch_vehicle_status(
+#     vehicle_id: UUID,
+#     status_update: VehicleStatusUpdate,
+#     db: Session = Depends(get_db),
+#     payload: dict = Depends(token_check)
+# ):
+#     user_id = payload.get("user_id") or payload.get("sub")
+#     if not user_id:
+#         return {"error": "User ID not found in token"}, 401
     
-    res=update_vehicle_status(vehicle_id, status_update.new_status, status_update.freeze_reason, db, user_id)
-    new_status=res["new_status"]
-    sio.emit('vehicle_status_updated', {
-            "vehicle_id": str(vehicle_id),
-            "status": new_status,
-    })
-    return res
+#     res=update_vehicle_status(vehicle_id, status_update.new_status, status_update.freeze_reason, db, user_id)
+#     new_status=res["new_status"]
+#     sio.emit('vehicle_status_updated', {
+#             "vehicle_id": str(vehicle_id),
+#             "status": new_status,
+#             "freeze_reason": res.get("freeze_reason", "")
+#     })
+#     return res
 
-@router.get("/vehicle/{vehicle_id}")
-def get_vehicle_by_id_route(vehicle_id: str, db: Session = Depends(get_db)):
-    return get_vehicle_by_id(vehicle_id, db)
+# @router.get("/vehicle/{vehicle_id}")
+# def get_vehicle_by_id_route(vehicle_id: str, db: Session = Depends(get_db)):
+#     return get_vehicle_by_id(vehicle_id, db)
 
 @router.get("/{ride_id}/available-vehicles", response_model=List[VehicleOut])
 def available_vehicles_for_ride(
@@ -173,11 +174,13 @@ def available_vehicles_for_ride(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
 
-@router.get("/all-vehicles", response_model=List[VehicleOut])
-def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = Depends(get_db)
-    ,payload: dict = Depends(token_check)):
-    vehicles = get_vehicles_with_optional_status(db, status)
-    return vehicles
+# @router.get("/all-vehicles", response_model=List[VehicleOut])
+# def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = Depends(get_db)
+#     ,payload: dict = Depends(token_check)):
+#     vehicles = get_vehicles_with_optional_status(db, status)
+#     return vehicles
+
+
 
 
 @router.post("/notifications/admin", include_in_schema=True,   dependencies=[] )

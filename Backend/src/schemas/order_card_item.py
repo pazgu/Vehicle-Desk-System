@@ -19,7 +19,7 @@ class OrderCardItem(BaseModel):
     estimated_distance_km: float
     actual_distance_km:  Optional[float] = None
     status: RideStatusEnum
-    license_check_passed: bool
+    license_check_passed: Optional[bool] = None
     submitted_at: datetime
     emergency_event: Optional[str] = None  # Optional field for emergency event
     

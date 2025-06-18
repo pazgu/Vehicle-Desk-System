@@ -12,8 +12,8 @@ import { ProtectedRouteGuard } from './components/auth-area/protectedroute/prote
 import { UserDataComponent } from './components/admin-area/user-data/user-data.component';
 import { UserDataEditComponent } from './components/admin-area/user-data-edit/user-data-edit.component';
 import { UserCardComponent } from './components/admin-area/user-card/user-card.component';
-import { VehicleCardItemComponent } from './components/admin-area/vehicle-card-item/vehicle-card-item.component';
-import { VehicleDashboardComponent } from './components/admin-area/vehicle-dashboard/vehicle-dashboard.component';
+import { VehicleCardItemComponent } from './components/vehicle-area/vehicle-card-item/vehicle-card-item.component';
+import { VehicleDashboardComponent } from './components/vehicle-area/vehicle-dashboard/vehicle-dashboard.component';
 import { RideCompletionFormComponent } from './components/page-area/ride-completion-form/ride-completion-form.component';
 import { AuditLogsComponent } from './components/admin-area/audit-logs/audit-logs.component';
 import { AvailableAndFrozenCarsComponent } from './inspector-area/available-and-frozen-cars/available-and-frozen-cars.component';
