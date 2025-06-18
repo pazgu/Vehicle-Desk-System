@@ -43,18 +43,15 @@ export class AdminAnalyticsComponent implements OnInit {
   topUsedVehiclesData: any;
   topUsedVehiclesOptions: any;
 
- freezeReasonCounts: Record<FreezeReason, number> = {
-  [FreezeReason.accident]: 0,
-  [FreezeReason.maintenance]: 0,
-  [FreezeReason.personal]: 0,
-};
+ 
   constructor(private http: HttpClient, private socketService: SocketService,private vehicleService:VehicleService) {}
 
   ngOnInit() {
     this.loadVehicleChart();
     this.loadRideChart();
     this.loadTopUsedVehiclesChart();
-
+    this.loadFrozenVehicles();
+ 
     
     this.socketService.rideStatusUpdated$.subscribe(() => {
       console.log('🔔 rideStatusUpdated$ triggered');
@@ -64,28 +61,49 @@ export class AdminAnalyticsComponent implements OnInit {
     this.socketService.vehicleStatusUpdated$.subscribe(() => {
       console.log('🔔 vehicleStatusUpdated$ triggered');
       this.loadVehicleChart();
+      this.loadFrozenVehicles();
     });
 
     this.socketService.deleteRequests$.subscribe(() => {
       console.log('🔔 deleteRequest$ triggered');
       this.loadRideChart();
       this.loadVehicleChart();
+     this.loadFrozenVehicles();
+
     });
   }
 
 
  private countFreezeReasons(frozenVehicles: VehicleOutItem[]) {
+  const freezeReasonCounts: Record<FreezeReason, number> = {
+    [FreezeReason.accident]: 0,
+    [FreezeReason.maintenance]: 0,
+    [FreezeReason.personal]: 0,
+  };
+
   frozenVehicles.forEach(vehicle => {
     if (vehicle.freeze_reason) {
       const reason = vehicle.freeze_reason as FreezeReason;
-      if (this.freezeReasonCounts[reason] !== undefined) {
-        this.freezeReasonCounts[reason]++;
-      }
+      freezeReasonCounts[reason]++;
     }
   });
-  
-  return this.freezeReasonCounts;
+
+  return freezeReasonCounts;
 }
+private loadFrozenVehicles():void{
+     this.vehicleService.getAllVehiclesByStatus('frozen').subscribe((vehicles) => {
+  this.frozenVehicles = vehicles;
+});
+}
+getFreezeReasonHebrew(reason: FreezeReason): string {
+  const reasonMap: { [key in FreezeReason]: string } = {
+    accident: 'תאונה',
+    maintenance: 'תחזוקה',
+    personal: 'שימוש אישי'
+  };
+  return reasonMap[reason] || reason;
+}
+
 
   private loadVehicleChart() {
     this.http.get<{ status: string; count: number }[]>(`${environment.apiUrl}/analytics/vehicle-status-summary`)
@@ -95,6 +113,7 @@ export class AdminAnalyticsComponent implements OnInit {
         this.vehicleChartInitialized = true;
       });
   }
+  
 
   private loadRideChart() {
     this.http.get<{ status: string; count: number }[]>(`${environment.apiUrl}/analytics/ride-status-summary`)
@@ -146,7 +165,7 @@ const updatedLabels = labels.map((label, i) => {
 });
 
     
-    const newVehicleChartData = {
+const newVehicleChartData = {
 labels: updatedLabels,
       datasets: [{
         data: [...values],
@@ -157,23 +176,44 @@ labels: updatedLabels,
     
     this.vehicleChartData = { ...newVehicleChartData };
 
-    this.vehicleChartOptions = {
-      plugins: {
-        legend: { 
-          labels: { 
-            color: '#495057',
-            font: {
-              size: 14,
-              family: 'Arial, sans-serif'
-            },
-            usePointStyle: true
+  this.vehicleChartOptions = {
+  plugins: {
+    tooltip: {
+      callbacks: {
+        label: (context: any) => {
+          const label = context.label || '';
+
+          if (label.toLowerCase().includes('מוקפא')) {
+            const freezeReasonCounts = this.countFreezeReasons(this.frozenVehicles);
+
+            const reasonsText = Object.entries(freezeReasonCounts)
+              .filter(([_, count]) => count > 0)
+              .map(([reason, count]) => `${this.getFreezeReasonHebrew(reason as FreezeReason)}: ${count}`)
+              .join(', ');
+
+            return `${label}:\nסיבות הקפאה: ${reasonsText}`;
           }
+
+          return `${label}:`;
         }
-      },
-      responsive: true,
-      maintainAspectRatio: false,
-      locale: 'he-IL' // Hebrew locale
-    };
+      }
+    },
+    legend: {
+      position: 'top',
+      labels: { color: '#495057',
+        font: {
+          size: 14,    
+          family: 'Arial, sans-serif'
+        },
+        usePointStyle: true  
+       }
+    }
+  },
+  responsive: true,
+  maintainAspectRatio: false,
+  locale: 'he-IL'
+};
+
   }
 
   private updateRideChart(data: { status: string; count: number }[]) {

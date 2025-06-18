@@ -81,7 +81,7 @@ export class AuditLogsComponent implements OnInit {
   };
 
   ngOnInit() {
-    this.loadLogs();
+    this.fetchAuditLogs();
     // Listen for real-time audit log updates
     this.socketService.auditLogs$.subscribe((newLog) => {
       if (newLog) {
@@ -90,14 +90,11 @@ export class AuditLogsComponent implements OnInit {
         this.filteredLogs = [...this.logs];
       }
     });
+        this.onRangeChange(); // Load logs for the default range
+
   }
 
-  constructor(private auditLogService: AuditLogsService) { }
 
-
-  ngOnInit() {
-    this.onRangeChange(); // Load logs for the default range
-  }
 
   onRangeChange() {
   let fromDate: string | undefined;
