@@ -13,6 +13,26 @@
         <input type="text" class="audit-search-input" placeholder="חיפוש לפי סוג ישות, מזהה ישות או מי שינה"
           [(ngModel)]="searchTerm" (input)="filterLogs()" />
       </div>
+
+    <div class="date-range-filter">
+  <select class="range-select" [(ngModel)]="selectedRange" (change)="onRangeChange()">
+    <option value="" disabled selected>בחר טווח תאריכים להצגת לוגים</option>
+    <option value="7days">7 ימים אחרונים</option>
+    <option value="thisMonth">החודש</option>
+    <option value="30days">30 ימים אחרונים</option>
+    <option value="custom">טווח מותאם אישית</option>
+  </select>
+</div>
+
+<!-- Move this outside and below the .date-range-filter div -->
+<div *ngIf="selectedRange === 'custom'" class="custom-range-fields">
+  <input type="date" class="date-input" [(ngModel)]="customFromDate" title="תאריך התחלה">
+  <span style="margin: 0 0.5rem;">עד</span>
+  <input type="date" class="date-input" [(ngModel)]="customToDate" title="תאריך סיום">
+  <span class="date-note">(שימ/י לב, התאריך האחרון לא כולל)</span>
+  <button class="filter-apply-btn" (click)="onRangeChange()">סנן</button>
+</div>
+
 <div class="export-buttons">
   <h3>דיווחים מהשבוע האחרון-בהתאם לסינון</h3>
   <button class="export-button" (click)="exportToPDF()">ייצוא PDF</button>
@@ -23,7 +43,7 @@
         <p style="margin-bottom: 0.75rem; font-weight: 600;">מקרא צבעים</p>
         <div class="status-box">
           <div class="status-item">
-            <span class="status-indicator approved"></span> מאושר
+            <span class="status-indicator approved"></span> התבצע בהצלחה/מאושר
           </div>
           <div class="status-item">
             <span class="status-indicator frozen"></span> מוקפא
@@ -84,7 +104,7 @@
         לא נמצאו רשומות ביקורת
       </div>
 
-      <div *ngIf="selectedLog" class="log-details-card">
+      <div *ngIf="selectedLog" class="log-details-card" >
         <h2>פרטי יומן ביקורת</h2>
 
         <!-- Main Info Section -->
