@@ -9,6 +9,7 @@ import { saveAs } from 'file-saver';
 import Papa from 'papaparse';
 import type { TDocumentDefinitions } from 'pdfmake/interfaces';
 import { SocketService } from '../../../services/socket.service';
+import { Router } from '@angular/router';
 
 (pdfMake as any).vfs = pdfFonts.vfs;
 (pdfMake as any).fonts = {
@@ -35,7 +36,7 @@ export class AuditLogsComponent implements OnInit {
   selectedLog: any | null = null;
   
   objectKeys = Object.keys; // Still useful if you need to iterate over object keys dynamically
-  constructor(private auditLogService: AuditLogsService, private socketService: SocketService) { }
+  constructor(private auditLogService: AuditLogsService, private socketService: SocketService, private router: Router) { }
 
   logs: AuditLogs[] = [];
   pageSize = 5;
@@ -81,7 +82,7 @@ export class AuditLogsComponent implements OnInit {
   };
 
   ngOnInit() {
-    this.loadLogs();
+    this.onRangeChange(); // Load logs for the default range
     // Listen for real-time audit log updates
     this.socketService.auditLogs$.subscribe((newLog) => {
       if (newLog) {
@@ -92,12 +93,6 @@ export class AuditLogsComponent implements OnInit {
     });
   }
 
-  constructor(private auditLogService: AuditLogsService) { }
-
-
-  ngOnInit() {
-    this.onRangeChange(); // Load logs for the default range
-  }
 
   onRangeChange() {
   let fromDate: string | undefined;
@@ -250,5 +245,11 @@ export class AuditLogsComponent implements OnInit {
     const csv = Papa.unparse(csvData);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     saveAs(blob, 'audit_logs_weekly.csv');
+  }
+
+  vehicleRedirect(vehicleId: string) {
+  if (vehicleId) {
+    this.router.navigate(['/vehicle-details/', vehicleId]);
+    }
   }
 }
