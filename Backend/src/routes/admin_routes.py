@@ -32,11 +32,10 @@ from sqlalchemy import cast, Date
 from ..schemas.audit_schema import AuditLogsSchema
 from src.services.audit_service import get_all_audit_logs
 from ..utils.socket_manager import sio
-from ..services.admin_rides_service import get_vehicle_usage_stats
+from ..services.admin_rides_service import get_current_month_vehicle_usage
 from fastapi.security import OAuth2PasswordBearer
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 from ..utils.auth import role_check
-from ..services.admin_rides_service import get_vehicle_usage_stats
 
 router = APIRouter()
 
@@ -343,4 +342,12 @@ def get_top_used_vehicles(db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"שגיאה בעת טעינת נסיעות לפי רכב: {str(e)}")
 
+@router.get("/api/vehicle-usage-stats", response_model=List[dict])
+def get_vehicle_usage_current_month(db: Session = Depends(get_db)):
+    stats = get_current_month_vehicle_usage(db)
+
+    if not stats:
+        raise HTTPException(status_code=404, detail="No usage stats found for the current month")
+
+    return stats
 

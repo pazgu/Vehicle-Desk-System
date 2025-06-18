@@ -355,12 +355,12 @@ def read_ride(ride_id: UUID, db: Session = Depends(get_db)):
     return ride
 
 @router.post("/api/complete-ride-form", status_code=fastapi_status.HTTP_200_OK)
-def submit_completion_form(
+async def submit_completion_form(
     form_data: CompletionFormData,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user)
 ):
-    return process_completion_form(db, user, form_data)
+    return await process_completion_form(db, user, form_data)
 
 
 @router.get("/api/archived-orders/{user_id}", response_model=List[RideSchema])
