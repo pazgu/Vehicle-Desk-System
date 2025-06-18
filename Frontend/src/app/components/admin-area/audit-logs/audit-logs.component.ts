@@ -34,7 +34,6 @@ export class AuditLogsComponent implements OnInit {
   filteredLogs: any[] = [];
   selectedLog: any | null = null;
   objectKeys = Object.keys;
-  objectKeys = Object.keys;
 
   logs: AuditLogs[] = [];
   pageSize = 5;
@@ -59,9 +58,6 @@ export class AuditLogsComponent implements OnInit {
     odometer_reading: 'מד מרחק',
   };
 
-  
-
-  
   rideFieldLabels: { [key: string]: string } = {
     id: 'מזהה נסיעה',
     stop: 'עצירה',
@@ -91,8 +87,6 @@ export class AuditLogsComponent implements OnInit {
   ngOnInit() {
     this.onRangeChange();
 
-    this.onRangeChange();
-
     this.socketService.auditLogs$.subscribe((newLog) => {
       if (newLog) {
         this.logs = [newLog, ...this.logs];
@@ -105,9 +99,6 @@ export class AuditLogsComponent implements OnInit {
     let fromDate: string | undefined;
     let toDate: string | undefined;
     const today = new Date();
-    let fromDate: string | undefined;
-    let toDate: string | undefined;
-    const today = new Date();
 
     if (this.selectedRange === '7days') {
       fromDate = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -123,32 +114,11 @@ export class AuditLogsComponent implements OnInit {
       fromDate = this.customFromDate ? new Date(this.customFromDate + 'T00:00:00').toISOString() : undefined;
       toDate = this.customToDate ? new Date(this.customToDate + 'T23:59:59').toISOString() : undefined;
     }
-    if (this.selectedRange === '7days') {
-      fromDate = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
-      toDate = today.toISOString();
-    } else if (this.selectedRange === 'thisMonth') {
-      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-      fromDate = firstDay.toISOString();
-      toDate = today.toISOString();
-    } else if (this.selectedRange === '30days') {
-      fromDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
-      toDate = today.toISOString();
-    } else if (this.selectedRange === 'custom') {
-      fromDate = this.customFromDate ? new Date(this.customFromDate + 'T00:00:00').toISOString() : undefined;
-      toDate = this.customToDate ? new Date(this.customToDate + 'T23:59:59').toISOString() : undefined;
-    }
 
-    this.fetchAuditLogs(fromDate, toDate);
-  }
     this.fetchAuditLogs(fromDate, toDate);
   }
 
   fetchAuditLogs(fromDate?: string, toDate?: string) {
-    this.auditLogService.getAuditLogs(fromDate, toDate).subscribe((data) => {
-      this.logs = data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-      this.filteredLogs = [...this.logs];
-      this.currentPage = 1;
-    });
     this.auditLogService.getAuditLogs(fromDate, toDate).subscribe((data) => {
       this.logs = data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
       this.filteredLogs = [...this.logs];
@@ -162,7 +132,6 @@ export class AuditLogsComponent implements OnInit {
       log.action?.toLowerCase().includes(searchLower) ||
       log.entity_type?.toLowerCase().includes(searchLower) ||
       log.entity_id?.toLowerCase().includes(searchLower) ||
-      log.full_name?.toLowerCase().includes(searchLower)
       log.full_name?.toLowerCase().includes(searchLower)
     );
   }
@@ -203,7 +172,6 @@ export class AuditLogsComponent implements OnInit {
   private getLogsForThisWeek(): any[] {
     const now = new Date();
     const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
     startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
     startOfWeek.setHours(0, 0, 0, 0);
     const endOfWeek = new Date(startOfWeek);
@@ -265,10 +233,10 @@ export class AuditLogsComponent implements OnInit {
     saveAs(blob, 'audit_logs_weekly.csv');
   }
 
-
   vehicleRedirect(vehicleId: string) {
-  if (vehicleId) {
-    this.router.navigate(['/vehicle-details/', vehicleId]);
+    if (vehicleId) {
+      this.router.navigate(['/vehicle-details', vehicleId]);
+      // Or: this.router.navigate(['/vehicles', vehicleId]);
     }
   }
 }
