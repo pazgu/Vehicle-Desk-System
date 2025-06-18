@@ -252,7 +252,7 @@ const payload = {
   stop: this.rideForm.get('stop')?.value,
   destination: this.rideForm.get('destination')?.value,
   status: this.status,
-  license_check_passed: this.licenseCheckPassed,
+  // license_check_passed: this.licenseCheckPassed,
   submitted_at: this.submittedAt
 };
 
