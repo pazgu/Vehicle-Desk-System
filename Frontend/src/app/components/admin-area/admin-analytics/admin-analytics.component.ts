@@ -10,7 +10,7 @@ import * as Papa from 'papaparse';
 import { saveAs } from 'file-saver';
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
-import * as XLSX from 'xlsx';
+import * as XLSX from 'xlsx-js-style';
 
 
 pdfMake.vfs = pdfFonts.vfs;
@@ -259,7 +259,7 @@ labels: updatedLabels,
     return statusMap[status] || status;
   }
 
-  public exportPDF(): void {
+ public exportPDF(): void {
   const isVehicleTab = this.activeTabIndex === 0;
   const isRideTab = this.activeTabIndex === 1;
   const isTopUsedTab = this.activeTabIndex === 2;
@@ -308,15 +308,15 @@ labels: updatedLabels,
       }
 
       body.push([
-        { text: labels[i], fillColor: '#f9f9f9' },
-        { text: count.toString(), fillColor: '#f9f9f9' },
+        { text: labels[i], fillColor: bgColor },
+        { text: count.toString(), fillColor: bgColor },
         { text: usageLabel, fillColor: bgColor }
       ]);
     }
   } else {
     const statusKeys = chartData.labels.map((label: string) => {
       const match = label.split('–')[0].trim();
-      return this.reverseHebrewLabel(match);
+      return match;
     });
 
     body.push([
@@ -325,9 +325,29 @@ labels: updatedLabels,
     ]);
 
     for (let i = 0; i < statusKeys.length; i++) {
+      const hebrew = statusKeys[i];
+      const eng = this.getEnglishLabel(this.reverseHebrewLabel(hebrew));
+      const value = chartData.datasets[0].data[i];
+      let bgColor = '';
+
+      if (isVehicleTab) {
+        if (hebrew.includes('זמין')) bgColor = '#C8E6C9';     // light green
+        else if (hebrew.includes('מוקפא')) bgColor = '#FFCDD2'; // light red
+        else if (hebrew.includes('בשימוש')) bgColor = '#FFE0B2'; // light orange
+      }
+
+      if (isRideTab) {
+        if (hebrew.includes('ממתין')) bgColor = '#FFF9C4';    // yellow
+        else if (hebrew.includes('מאושר')) bgColor = '#C8E6C9';  // green
+        else if (hebrew.includes('הושלם')) bgColor = '#BBDEFB';  // blue
+        else if (hebrew.includes('בוטל')) bgColor = '#F8BBD0';    // pink
+        else if (hebrew.includes('נדחה')) bgColor = '#FFCDD2';    // red
+        else if (hebrew.includes('בתהליך')) bgColor = '#D1C4E9';  // purple
+      }
+
       body.push([
-        this.getEnglishLabel(statusKeys[i]),
-        chartData.datasets[0].data[i].toString()
+        { text: eng, fillColor: bgColor },
+        { text: value.toString(), fillColor: bgColor }
       ]);
     }
   }
@@ -343,9 +363,7 @@ labels: updatedLabels,
           body: body
         },
         layout: {
-          fillColor: function (rowIndex: number) {
-            return (rowIndex === 0) ? '#f2f2f2' : null;
-          }
+          fillColor: (rowIndex: number) => rowIndex === 0 ? '#f2f2f2' : null
         }
       }
     ],
@@ -404,13 +422,9 @@ public exportExcel(): void {
       const count = counts[i];
       let usageLevel = '';
 
-      if (count > 10) {
-        usageLevel = 'High Usage';
-      } else if (count >= 5) {
-        usageLevel = 'Medium';
-      } else {
-        usageLevel = 'Good';
-      }
+      if (count > 10) usageLevel = 'High Usage';
+      else if (count >= 5) usageLevel = 'Medium';
+      else usageLevel = 'Good';
 
       return {
         Vehicle: label,
@@ -426,12 +440,64 @@ public exportExcel(): void {
   }
 
   const worksheet = XLSX.utils.json_to_sheet(data);
+  const range = XLSX.utils.decode_range(worksheet['!ref']!);
+
+  if (isTopUsedTab) {
+    for (let row = 1; row <= range.e.r; row++) {
+      const rideCount = Number(worksheet[`B${row + 1}`]?.v);
+      let fillColor = rideCount > 10 ? 'FFFFCDD2' : rideCount >= 5 ? 'FFFFFFCC' : 'FFBBDEFB';
+
+      ['A', 'B', 'C'].forEach(col => {
+        const cell = worksheet[`${col}${row + 1}`];
+        if (cell) {
+          cell.s = {
+            fill: {
+              patternType: 'solid',
+              fgColor: { rgb: fillColor }
+            }
+          };
+        }
+      });
+    }
+  } else {
+    for (let row = 1; row <= range.e.r; row++) {
+      const label = worksheet[`A${row + 1}`]?.v as string;
+      let fillColor = 'FFFFFFFF';
+
+      // Vehicle Status tab
+      if (label.includes('זמין')) fillColor = 'FFC8E6C9'; // light green
+      else if (label.includes('מוקפא')) fillColor = 'FFFFCDD2'; // light red
+      else if (label.includes('בשימוש')) fillColor = 'FFFFE0B2'; // light orange
+
+      // Ride Status tab
+      if (label.includes('ממתין')) fillColor = 'FFFFF9C4';      // yellow
+      else if (label.includes('מאושר')) fillColor = 'FFC8E6C9';  // green
+      else if (label.includes('הושלם')) fillColor = 'FFBBDEFB';  // blue
+      else if (label.includes('בוטל')) fillColor = 'FFF8BBD0';    // pink
+      else if (label.includes('נדחה')) fillColor = 'FFFFCDD2';    // red
+      else if (label.includes('בתהליך')) fillColor = 'FFD1C4E9';  // purple
+
+      ['A', 'B'].forEach(col => {
+        const cell = worksheet[`${col}${row + 1}`];
+        if (cell) {
+          cell.s = {
+            fill: {
+              patternType: 'solid',
+              fgColor: { rgb: fillColor }
+            }
+          };
+        }
+      });
+    }
+  }
+
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Analytics');
 
   const excelBuffer: any = XLSX.write(workbook, {
     bookType: 'xlsx',
-    type: 'array'
+    type: 'array',
+    cellStyles: true
   });
 
   const blob = new Blob([excelBuffer], {
@@ -440,6 +506,7 @@ public exportExcel(): void {
 
   saveAs(blob, `${title}-${timestamp}.xlsx`);
 }
+
 
 
 
@@ -455,10 +522,10 @@ public exportExcel(): void {
       : this.topUsedVehiclesData;
 
   const title = isVehicleTab
-    ? 'Vehicle Status Summary'
+    ? 'סטטוס רכבים'
     : isRideTab
-      ? 'Ride Status Summary'
-      : 'Top Used Vehicles';
+      ? 'סטטוס נסיעות'
+      : 'רכבים בשימוש גבוה';
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
 
@@ -473,32 +540,31 @@ public exportExcel(): void {
       let usageLevel = '';
 
       if (count > 10) {
-        usageLevel = 'High Usage';
+        usageLevel = 'שימוש גבוה'; // 🔴
       } else if (count >= 5) {
-        usageLevel = 'Medium';
+        usageLevel = 'בינוני'; // 🟡
       } else {
-        usageLevel = 'Good';
+        usageLevel = 'טוב'; // 🔵
       }
 
       return {
-        Vehicle: label,
-        'Ride Count': count,
-        'Usage Level': usageLevel
+        'רכב': label,
+        'כמות נסיעות': count,
+        'רמת שימוש': usageLevel
       };
     });
   } else {
     data = chartData.labels.map((label: string, i: number) => ({
-      'Formatted Status': label,
-      'Count': chartData.datasets[0].data[i]
+      'סטטוס': label,
+      'כמות': chartData.datasets[0].data[i]
     }));
   }
 
-  // Add BOM for proper UTF-8 encoding in Excel
+  // Add BOM for proper UTF-8 encoding (for Hebrew support)
   const csv = '\uFEFF' + Papa.unparse(data);
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   saveAs(blob, `${title}-${timestamp}.csv`);
 }
-
 
   private getEnglishLabel(status: string): string {
   const statusMap: { [key: string]: string } = {
