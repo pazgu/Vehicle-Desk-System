@@ -90,8 +90,6 @@ export class AuditLogsComponent implements OnInit {
   ngOnInit() {
     this.onRangeChange();
 
-    this.onRangeChange();
-
     this.socketService.auditLogs$.subscribe((newLog) => {
       if (newLog) {
         this.logs = [newLog, ...this.logs];
