@@ -34,7 +34,6 @@ export class AuditLogsComponent implements OnInit {
   filteredLogs: any[] = [];
   selectedLog: any | null = null;
   objectKeys = Object.keys;
-  objectKeys = Object.keys;
 
   logs: AuditLogs[] = [];
   pageSize = 5;
