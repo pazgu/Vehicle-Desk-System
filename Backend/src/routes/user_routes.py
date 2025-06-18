@@ -249,9 +249,14 @@ def get_departments_route():
     return get_departments()
 
 @router.patch("/api/orders/{order_id}")
-async def patch_order(order_id: UUID, patch_data: OrderCardItem, db: Session = Depends(get_db)):
+async def patch_order(
+    order_id: UUID,
+    patch_data: OrderCardItem,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     # Update the order
-    updated_order = patch_order_in_db(order_id, patch_data, db)
+    updated_order = patch_order_in_db(order_id, patch_data, db, changed_by=str(current_user.employee_id))
     user = db.query(User).filter(User.employee_id == updated_order.user_id).first()
     vehicle = db.query(Vehicle).filter(Vehicle.id == updated_order.vehicle_id).first()
 
@@ -379,7 +384,7 @@ def get_pending_car_orders(db: Session = Depends(get_db)):
     pending_rides = (
         db.query(Ride)
         .filter(Ride.status == "pending")
-        .all()
+        .all()  
     )
 
     result = []
