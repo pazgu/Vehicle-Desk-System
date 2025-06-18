@@ -10,6 +10,8 @@ import * as Papa from 'papaparse';
 import { saveAs } from 'file-saver';
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
+import { VehicleService } from '../../../services/vehicle.service';
+import { FreezeReason, VehicleOutItem } from '../../../models/vehicle-dashboard-item/vehicle-out-item.module';
 
 pdfMake.vfs = pdfFonts.vfs;
 
@@ -25,6 +27,7 @@ pdfMake.vfs = pdfFonts.vfs;
   templateUrl: './admin-analytics.component.html',
   styleUrls: ['./admin-analytics.component.css'],
 })
+
 export class AdminAnalyticsComponent implements OnInit {
   vehicleChartData: any;
   vehicleChartOptions: any;
@@ -32,12 +35,16 @@ export class AdminAnalyticsComponent implements OnInit {
   rideChartOptions: any; 
   selectedSortOption = 'default';
   activeTabIndex = 0;
- 
+  frozenVehicles=<VehicleOutItem[]>[];
   // Initialization flags
   vehicleChartInitialized = false;
   rideChartInitialized = false;
-
-  constructor(private http: HttpClient, private socketService: SocketService) {}
+ freezeReasonCounts: Record<FreezeReason, number> = {
+  [FreezeReason.accident]: 0,
+  [FreezeReason.maintenance]: 0,
+  [FreezeReason.personal]: 0,
+};
+  constructor(private http: HttpClient, private socketService: SocketService,private vehicleService:VehicleService) {}
 
   ngOnInit() {
     this.loadVehicleChart();
@@ -59,6 +66,20 @@ export class AdminAnalyticsComponent implements OnInit {
       this.loadVehicleChart();
     });
   }
+
+
+ private countFreezeReasons(frozenVehicles: VehicleOutItem[]) {
+  frozenVehicles.forEach(vehicle => {
+    if (vehicle.freeze_reason) {
+      const reason = vehicle.freeze_reason as FreezeReason;
+      if (this.freezeReasonCounts[reason] !== undefined) {
+        this.freezeReasonCounts[reason]++;
+      }
+    }
+  });
+  
+  return this.freezeReasonCounts;
+}
 
   private loadVehicleChart() {
     this.http.get<{ status: string; count: number }[]>(`${environment.apiUrl}/analytics/vehicle-status-summary`)
@@ -106,6 +127,7 @@ export class AdminAnalyticsComponent implements OnInit {
         }
       });
   }
+
 
   private updateVehicleChart(data: { status: string; count: number }[]) {
     const labels = data.map(d => this.getHebrewLabel(d.status));

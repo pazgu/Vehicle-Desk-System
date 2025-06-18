@@ -149,6 +149,7 @@ def patch_vehicle_status(
     sio.emit('vehicle_status_updated', {
             "vehicle_id": str(vehicle_id),
             "status": new_status,
+            "freeze_reason":res.freeze_reason or ''
     })
     return res
 
@@ -173,6 +174,8 @@ def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = De
     ,payload: dict = Depends(token_check)):
     vehicles = get_vehicles_with_optional_status(db, status)
     return vehicles
+
+
 
 
 @router.post("/notifications/admin", include_in_schema=True,   dependencies=[] )
