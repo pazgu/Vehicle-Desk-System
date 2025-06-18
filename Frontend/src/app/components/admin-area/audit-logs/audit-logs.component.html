@@ -14,30 +14,24 @@
           [(ngModel)]="searchTerm" (input)="filterLogs()" />
       </div>
 
-    <div class="date-range-filter">
-  <select class="range-select" [(ngModel)]="selectedRange" (change)="onRangeChange()">
-    <option value="" disabled selected>בחר טווח תאריכים להצגת לוגים</option>
-    <option value="7days">7 ימים אחרונים</option>
-    <option value="thisMonth">החודש</option>
-    <option value="30days">30 ימים אחרונים</option>
-    <option value="custom">טווח מותאם אישית</option>
-  </select>
-</div>
+      <div class="date-range-filter">
+        <select class="range-select" [(ngModel)]="selectedRange" (change)="onRangeChange()">
+          <option value="" disabled selected>בחר טווח תאריכים להצגת לוגים</option>
+          <option value="7days">7 ימים אחרונים</option>
+          <option value="thisMonth">החודש</option>
+          <option value="30days">30 ימים אחרונים</option>
+          <option value="custom">טווח מותאם אישית</option>
+        </select>
+      </div>
 
-<!-- Move this outside and below the .date-range-filter div -->
-<div *ngIf="selectedRange === 'custom'" class="custom-range-fields">
-  <input type="date" class="date-input" [(ngModel)]="customFromDate" title="תאריך התחלה">
-  <span style="margin: 0 0.5rem;">עד</span>
-  <input type="date" class="date-input" [(ngModel)]="customToDate" title="תאריך סיום">
-  <span class="date-note">(שימ/י לב, התאריך האחרון לא כולל)</span>
-  <button class="filter-apply-btn" (click)="onRangeChange()">סנן</button>
-</div>
+      <div *ngIf="selectedRange === 'custom'" class="custom-range-fields">
+        <input type="date" class="date-input" [(ngModel)]="customFromDate" title="תאריך התחלה">
+        <span style="margin: 0 0.5rem;">עד</span>
+        <input type="date" class="date-input" [(ngModel)]="customToDate" title="תאריך סיום">
+        <span class="date-note">(שימ/י לב, התאריך האחרון לא כולל)</span>
+        <button class="filter-apply-btn" (click)="onRangeChange()">סנן</button>
+      </div>
 
-<div class="export-buttons">
-  <h3>דיווחים מהשבוע האחרון-בהתאם לסינון</h3>
-  <button class="export-button" (click)="exportToPDF()">ייצוא PDF</button>
-  <button class="export-button" (click)="exportToCSV()">ייצוא CSV</button>
-</div>
       <div class="export-buttons">
         <h3>דיווחים מהשבוע האחרון-בהתאם לסינון</h3>
         <button class="export-button" (click)="exportToPDF()">ייצוא PDF</button>
@@ -211,7 +205,9 @@
               <!-- Vehicle Entity (dynamic) -->
               <div *ngIf="selectedLog.entity_type === 'Vehicle'" class="entity-fields">
                 <div *ngIf="selectedLog.change_data?.image_url" class="vehicle-image-row">
-                  <img [src]="selectedLog.change_data.image_url" alt="תמונת רכב" style="cursor: pointer; max-height: 120px; margin-bottom: 1rem;" (click)="vehicleRedirect(selectedLog.entity_id)" />
+                  <img [src]="selectedLog.change_data.image_url" alt="תמונת רכב"
+                    style="cursor: pointer; max-height: 120px; margin-bottom: 1rem;"
+                    (click)="vehicleRedirect(selectedLog.entity_id)" />
                   <img [src]="selectedLog.change_data.image_url" alt="תמונת רכב"
                     style="max-width: 200px; max-height: 120px; margin-bottom: 1rem;" />
                 </div>
@@ -230,7 +226,6 @@
               </div>
             </div>
           </div>
-
           <!-- UPDATE Action (Unified Table for All Entities) -->
           <div *ngIf="selectedLog.action === 'UPDATE'" class="entity-fields">
             <table class="audit-ride-table">
@@ -243,28 +238,15 @@
               </thead>
               <tbody>
                 <tr *ngFor="let row of selectedLog.entity_type === 'User' ? getUserAuditRows(selectedLog.change_data.old, selectedLog.change_data.new)
-                  : selectedLog.entity_type === 'Ride' ? getRideAuditRows(selectedLog.change_data.old, selectedLog.change_data.new)
-                  : selectedLog.entity_type === 'Vehicle' ? getVehicleAuditRows(selectedLog.change_data.old, selectedLog.change_data.new)
-                  : []">
+        : selectedLog.entity_type === 'Ride' ? getRideAuditRows(selectedLog.change_data.old, selectedLog.change_data.new)
+        : selectedLog.entity_type === 'Vehicle' ? getVehicleAuditRows(selectedLog.change_data.old, selectedLog.change_data.new)
+        : []">
                   <td>{{ row.label }}</td>
                   <td [ngClass]="{'old-value-cell': row.oldValue !== row.newValue}">
-                    <ng-container *ngIf="row.label === 'בדיקת רישיון עברה' || row.label === 'אירוע חירום'; else oldValue">
+                    <ng-container
+                      *ngIf="row.label === 'בדיקת רישיון עברה' || row.label === 'אירוע חירום'; else oldValue">
                       {{ row.oldValue === true ? 'כן' : row.oldValue === false ? 'לא' : (row.oldValue ?? '-') }}
                     </ng-container>
-                  </div>
-                </div>
-              </div>
-              <!-- Vehicle Entity (dynamic) -->
-              <div *ngIf="selectedLog.entity_type === 'Vehicle'" class="entity-fields">
-                <div *ngIf="selectedLog.change_data?.old?.image_url" class="vehicle-image-row">
-                  <img [src]="selectedLog.change_data.old.image_url" alt="תמונת רכב" style="cursor: pointer; max-height: 120px; margin-bottom: 1rem;" (click)="vehicleRedirect(selectedLog.entity_id)" />
-                </div>
-                <ng-container *ngFor="let key of objectKeys(selectedLog.change_data?.old || {})">
-                  <div class="field-row" *ngIf="key !== 'image_url'">
-                    <div class="field-label">{{ getVehicleFieldLabel(key) }}</div>
-                    <div class="field-value">
-                      <ng-container *ngIf="key.endsWith('datetime') || key.endsWith('at'); else plainOldVehicleValue">
-                        {{ selectedLog.change_data.old[key] | date:'dd/MM/yyyy HH:mm' }}
                     <ng-template #oldValue>
                       <ng-container *ngIf="row.label.includes('זמן') || row.label.includes('תאריך'); else plainOld">
                         {{ row.oldValue ? (row.oldValue | date:'dd/MM/yyyy HH:mm') : '-' }}
@@ -275,28 +257,16 @@
                             style="max-width: 120px; max-height: 80px;" />
                           <span *ngIf="!row.oldValue">-</span>
                         </ng-container>
-                        <ng-template #plainOldValue>{{ row.oldValue !== undefined && row.oldValue !== null && row.oldValue !== '' ? row.oldValue : '-' }}</ng-template>
+                        <ng-template #plainOldValue>{{ row.oldValue !== undefined && row.oldValue !== null &&
+                          row.oldValue !== '' ? row.oldValue : '-' }}</ng-template>
                       </ng-template>
                     </ng-template>
                   </td>
                   <td [ngClass]="{'new-value-cell': row.oldValue !== row.newValue}">
-                    <ng-container *ngIf="row.label === 'בדיקת רישיון עברה' || row.label === 'אירוע חירום'; else newValue">
+                    <ng-container
+                      *ngIf="row.label === 'בדיקת רישיון עברה' || row.label === 'אירוע חירום'; else newValue">
                       {{ row.newValue === true ? 'כן' : row.newValue === false ? 'לא' : (row.newValue ?? '-') }}
                     </ng-container>
-                  </div>
-                </div>
-              </div>
-              <!-- Vehicle Entity (dynamic) -->
-              <div *ngIf="selectedLog.entity_type === 'Vehicle'" class="entity-fields">
-                <div *ngIf="selectedLog.change_data?.new?.image_url" class="vehicle-image-row">
-                  <img [src]="selectedLog.change_data.new.image_url" alt="תמונת רכב" style="cursor: pointer; max-height: 120px; margin-bottom: 1rem;" (click)="vehicleRedirect(selectedLog.entity_id)"/>
-                </div>
-                <ng-container *ngFor="let key of objectKeys(selectedLog.change_data?.new || {})">
-                  <div class="field-row" *ngIf="key !== 'image_url'">
-                    <div class="field-label">{{ getVehicleFieldLabel(key) }}</div>
-                    <div class="field-value">
-                      <ng-container *ngIf="key.endsWith('datetime') || key.endsWith('at'); else plainNewVehicleValue">
-                        {{ selectedLog.change_data.new[key] | date:'dd/MM/yyyy HH:mm' }}
                     <ng-template #newValue>
                       <ng-container *ngIf="row.label.includes('זמן') || row.label.includes('תאריך'); else plainNew">
                         {{ row.newValue ? (row.newValue | date:'dd/MM/yyyy HH:mm') : '-' }}
@@ -307,7 +277,8 @@
                             style="max-width: 120px; max-height: 80px;" />
                           <span *ngIf="!row.newValue">-</span>
                         </ng-container>
-                        <ng-template #plainNewValue>{{ row.newValue !== undefined && row.newValue !== null && row.newValue !== '' ? row.newValue : '-' }}</ng-template>
+                        <ng-template #plainNewValue>{{ row.newValue !== undefined && row.newValue !== null &&
+                          row.newValue !== '' ? row.newValue : '-' }}</ng-template>
                       </ng-template>
                     </ng-template>
                   </td>

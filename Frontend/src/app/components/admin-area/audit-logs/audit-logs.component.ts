@@ -129,9 +129,6 @@ export class AuditLogsComponent implements OnInit {
     let fromDate: string | undefined;
     let toDate: string | undefined;
     const today = new Date();
-    let fromDate: string | undefined;
-    let toDate: string | undefined;
-    const today = new Date();
 
     if (this.selectedRange === '7days') {
       fromDate = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -162,8 +159,6 @@ export class AuditLogsComponent implements OnInit {
       toDate = this.customToDate ? new Date(this.customToDate + 'T23:59:59').toISOString() : undefined;
     }
 
-    this.fetchAuditLogs(fromDate, toDate);
-  }
     this.fetchAuditLogs(fromDate, toDate);
   }
 
@@ -186,7 +181,6 @@ export class AuditLogsComponent implements OnInit {
       log.action?.toLowerCase().includes(searchLower) ||
       log.entity_type?.toLowerCase().includes(searchLower) ||
       log.entity_id?.toLowerCase().includes(searchLower) ||
-      log.full_name?.toLowerCase().includes(searchLower)
       log.full_name?.toLowerCase().includes(searchLower)
     );
   }
@@ -216,9 +210,7 @@ export class AuditLogsComponent implements OnInit {
     if (this.currentPage > 1) this.currentPage--;
   }
 
-  getVehicleFieldLabel(key: string): string {
-    return this.vehicleFieldLabels[key] || key;
-  }
+
 
   getRideFieldLabel(key: string): string {
     return this.rideFieldLabels[key] || key;
