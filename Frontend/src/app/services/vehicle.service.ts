@@ -1,8 +1,9 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { VehicleInItem } from '../models/vehicle-dashboard-item/vehicle-in-use-item.module';
+import { VehicleOutItem } from '../models/vehicle-dashboard-item/vehicle-out-item.module';
 
 @Injectable({
   providedIn: 'root'
@@ -41,6 +42,17 @@ getTodayInspections(): Observable<any[]> {
  getPendingCars(): Observable<{ vehicle_id: string; date: string; period: string }[]> {
   return this.http.get<{ vehicle_id: string; date: string; period: string }[]>(`${environment.apiUrl}/orders/pending-cars`);
 }
+
+getAllVehiclesByStatus(status?: string): Observable<VehicleOutItem[]> {
+  let params = new HttpParams();
+
+  if (status) {
+    params = params.set('status', status);
+  }
+
+  return this.http.get<VehicleOutItem[]>(environment.frozenVehiclesUrl, { params });
+}
+
 
 
 }
