@@ -1,7 +1,7 @@
 from typing import List, Optional
 from datetime import datetime
 from sqlalchemy.orm import Session
-from sqlalchemy import String
+from sqlalchemy import String, extract, func
 from uuid import UUID
 
 from ..models.ride_model import Ride, RideStatus
@@ -118,3 +118,34 @@ def get_order_by_ride_id(db: Session, ride_id: UUID) -> Optional[RideDashboardIt
         estimated_distance_km=r.estimated_distance_km,
         status=r.status
     )
+
+
+def get_vehicle_usage_stats(db, year, month):
+    import calendar
+    total_days = calendar.monthrange(year, month)[1]
+    total_seconds_in_month = total_days * 24 * 3600
+
+    rides_data = (
+        db.query(
+            Ride.vehicle_id,
+            func.count(Ride.id).label("ride_count"),
+            func.sum(Ride.estimated_distance_km).label("total_distance"),
+            func.sum(func.extract('epoch', Ride.end_datetime) - func.extract('epoch', Ride.start_datetime)).label("total_usage_seconds")
+        )
+        .filter(extract('year', Ride.start_datetime) == year)
+        .filter(extract('month', Ride.start_datetime) == month)
+        .group_by(Ride.vehicle_id)
+        .all()
+    )
+
+    stats = []
+    for vehicle_id, ride_count, total_distance, total_usage_seconds in rides_data:
+        usage_seconds = total_usage_seconds or 0
+        percentage_in_use_time = (usage_seconds / total_seconds_in_month) * 100 if total_seconds_in_month > 0 else 0
+        stats.append({
+            "vehicle_id": str(vehicle_id),
+            "total_rides": ride_count,
+            "total_km": total_distance or 0,
+            "percentage_in_use_time": round(percentage_in_use_time, 2)
+        })
+    return stats

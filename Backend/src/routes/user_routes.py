@@ -52,6 +52,7 @@ from ..services.city_service import calculate_distance
 from ..services.city_service import get_cities
 from ..schemas.city_schema import City
 
+from ..services.user_form import get_ride_needing_feedback
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -467,3 +468,25 @@ def get_distance(from_city: str, to_city: str, db: Session = Depends(get_db)):
 def get_cities_route(db: Session = Depends(get_db)):
     cities = get_cities(db)
     return [{"id": str(city.id), "name": city.name} for city in cities]
+@router.get("/api/rides/feedback/check/{user_id}")
+def check_feedback_needed(
+    user_id: UUID,  # Add this parameter to capture the path variable
+    db: Session = Depends(get_db)
+):
+    print(f"Checking feedback for user: {user_id}")
+    
+    # Get the most recent completed ride for this user that needs feedback
+    ride = get_ride_needing_feedback(db, user_id)
+    
+    print(f"Found ride: {ride}")
+    if ride:
+        print(f"Ride ID: {ride.id}, Status: {ride.status}, Feedback submitted: {getattr(ride, 'feedback_submitted', 'FIELD_NOT_EXISTS')}")
+    
+    if not ride:
+        return {"showPage": False, "message": "No rides need feedback"}
+    
+    return {
+        "showPage": True,
+        "ride_id": str(ride.id),
+        "message": "הנסיעה הסתיימה, נא למלא את הטופס"
+    }

@@ -14,6 +14,8 @@
     <div class="export-buttons">
       <button (click)="exportCSV()">📁 ייצוא CSV</button>
       <button (click)="exportPDF()">📄 ייצוא PDF</button>
+      <button (click)="exportExcel()">📊 ייצוא Excel</button>
+
     </div>
 
     <div class="tab-buttons">
@@ -22,6 +24,9 @@
   </button>
   <button [class.active]="activeTabIndex === 1" (click)="activeTabIndex = 1">
     סטטוס נסיעות
+  </button>
+    <button [class.active]="activeTabIndex === 2" (click)="activeTabIndex = 2">
+    רכבים בשימוש גבוה
   </button>
 </div>
 
@@ -47,6 +52,29 @@
       ></p-chart>
     </div>
   </p-tabPanel>
+  <p-tabPanel>
+  <div *ngIf="topUsedVehiclesData">
+    <p-chart
+      type="bar"
+      [data]="topUsedVehiclesData"
+      [options]="topUsedVehiclesOptions"
+    ></p-chart>
+
+    <div class="usage-legend">
+  <div class="legend-item">
+    <span class="color-box good"></span> טוב (0–4 נסיעות)
+  </div>
+  <div class="legend-item">
+    <span class="color-box medium"></span> בינוני (5–10 נסיעות)
+  </div>
+  <div class="legend-item">
+    <span class="color-box high"></span> שימוש גבוה (11+ נסיעות)
+  </div>
+</div>
+
+  </div>
+</p-tabPanel>
+
 </p-tabView>
 
   </div>

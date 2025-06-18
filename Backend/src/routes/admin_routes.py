@@ -32,6 +32,12 @@ from sqlalchemy import cast, Date
 from ..schemas.audit_schema import AuditLogsSchema
 from src.services.audit_service import get_all_audit_logs
 from ..utils.socket_manager import sio
+from ..services.admin_rides_service import get_vehicle_usage_stats
+from fastapi.security import OAuth2PasswordBearer
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+from ..utils.auth import role_check
+from ..services.admin_rides_service import get_vehicle_usage_stats
+
 router = APIRouter()
 
 @router.get("/orders", response_model=list[RideDashboardItem])
@@ -149,6 +155,7 @@ def patch_vehicle_status(
     sio.emit('vehicle_status_updated', {
             "vehicle_id": str(vehicle_id),
             "status": new_status,
+            "freeze_reason":res.freeze_reason or ''
     })
     return res
 
@@ -173,6 +180,8 @@ def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = De
     ,payload: dict = Depends(token_check)):
     vehicles = get_vehicles_with_optional_status(db, status)
     return vehicles
+
+
 
 
 @router.post("/notifications/admin", include_in_schema=True,   dependencies=[] )
@@ -205,7 +214,7 @@ def get_today_inspections(db: Session = Depends(get_db)):
     inspections = db.query(VehicleInspection).filter(
         VehicleInspection.inspection_date >= today_start,
         VehicleInspection.inspection_date < tomorrow_start
-    ).all()
+    ).order_by(VehicleInspection.inspection_date.desc()).all()
 
     return inspections
 
@@ -292,3 +301,49 @@ def get_all_audit_logs_route(
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+
+
+@router.get("/vehicles/usage-stats")
+def vehicle_usage_stats(
+    range: str = Query("month"),
+    year: int = Query(..., ge=2000, le=2100),
+    month: int = Query(..., ge=1, le=12),
+    db: Session = Depends(get_db),
+    token: str = Depends(oauth2_scheme)
+):
+    role_check(["admin"], token)  # רק מנהלים מורשים
+    stats = get_vehicle_usage_stats(db, year, month)
+    return {
+        "year": year,
+        "month": month,
+        "stats": stats
+    }
+
+@router.get("/analytics/top-used-vehicles")
+def get_top_used_vehicles(db: Session = Depends(get_db)):
+    try:
+        results = (
+            db.query(
+                Vehicle.plate_number,
+                Vehicle.vehicle_model,
+                func.count(Ride.id).label("ride_count")
+            )
+            .join(Ride, Ride.vehicle_id == Vehicle.id)
+            .group_by(Vehicle.plate_number, Vehicle.vehicle_model)
+            .order_by(func.count(Ride.id).desc())
+            .limit(10)
+            .all()
+        )
+
+        return [
+            {
+                "plate_number": r.plate_number,
+                "vehicle_model": r.vehicle_model,
+                "ride_count": r.ride_count
+            }
+            for r in results
+        ]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"שגיאה בעת טעינת נסיעות לפי רכב: {str(e)}")
+
+

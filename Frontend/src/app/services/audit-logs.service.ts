@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AuditLogs } from '../models/audit-logs/audit-logs.module';
 
@@ -11,11 +11,16 @@ export class AuditLogsService {
 
   constructor(private http: HttpClient) {}
 
-  getAuditLogs(): Observable<AuditLogs[]> {
+  getAuditLogs(fromDate?: string, toDate?: string): Observable<AuditLogs[]> {
     const token = localStorage.getItem('token');
     const headers = new HttpHeaders({
       Authorization: `Bearer ${token}`
     });
-    return this.http.get<AuditLogs[]>(this.apiUrl, { headers });
+
+    let params = new HttpParams();
+    if (fromDate) params = params.set('from_date', fromDate);
+    if (toDate) params = params.set('to_date', toDate);
+
+    return this.http.get<AuditLogs[]>(this.apiUrl, { headers, params });
   }
 }
