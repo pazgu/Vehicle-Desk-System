@@ -14,11 +14,30 @@ export class VehicleService {
 
   constructor(private http: HttpClient) { }
 
-  getAllVehicles(): Observable<VehicleInItem[]>{
-    const url = `${this.apiUrl}/all-vehicles`;
-    console.log('📡 GET Request to:', url);
-    return this.http.get<VehicleInItem[]>(url);  
+ getAllVehicles(status?: string, type?: string): Observable<VehicleInItem[]> {
+  const url = `${this.apiUrl}/all-vehicles`;
+  let params = new HttpParams();
+
+  if (status) {
+    switch (status) {
+      case 'זמין':
+        params = params.set('status', 'available');
+        break;
+      case 'בשימוש':
+        params = params.set('status', 'in_use');
+        break;
+      case 'מוקפא':
+        params = params.set('status', 'frozen');
+        break;
+    }
   }
+
+  if (type) {
+    params = params.set('type', type);
+  }
+
+  return this.http.get<VehicleInItem[]>(url, { params });
+}
 
   getAvailableVehicles(): Observable<VehicleInItem[]>{
     const url = `${this.apiUrl}/all-vehicles/available`;

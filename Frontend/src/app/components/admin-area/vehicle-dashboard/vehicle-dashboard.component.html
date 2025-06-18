@@ -32,6 +32,7 @@
         style="margin-bottom: 1.5rem; background: #f7f7f7; padding: 1rem; border-radius: 8px; direction: rtl;">
         <div style="margin-bottom: 1rem;">
           <label for="statusFilter">סטטוס:</label>
+            <input type="text" id="typeFilter" [(ngModel)]="typeFilter" (ngModelChange)="loadVehicles()" placeholder="למשל: 4x4" />
           <select id="statusFilter" [(ngModel)]="statusFilter">
             <option value="">הצג הכל</option>
             <option value="זמין">זמין</option>

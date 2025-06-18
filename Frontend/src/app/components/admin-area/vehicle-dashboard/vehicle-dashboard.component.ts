@@ -20,6 +20,8 @@ export class VehicleDashboardComponent {
   statusFilter: string = '';
   showFilters: boolean = false;
   sortBy: string = 'date_and_time';
+  typeFilter: string = ''; // NEW
+
 
   constructor(private vehicleService: VehicleService, private router: Router){}
 
@@ -31,17 +33,17 @@ export class VehicleDashboardComponent {
     this.router.navigate(['/vehicle-details', vehicleId]);
   }
 
-  loadVehicles(): void{
-    this.vehicleService.getAllVehicles().subscribe(
-      (data) => {
-        this.vehicles = Array.isArray(data) ? data : [];
-        console.log('Vehicles loaded:', this.vehicles);
-      },
-      (error) => {
-        console.error('Error loading vehicles:', error);
-      }
-    );
-  }
+  loadVehicles(): void {
+  this.vehicleService.getAllVehicles(this.statusFilter, this.typeFilter).subscribe(
+    (data) => {
+      this.vehicles = Array.isArray(data) ? data : [];
+    },
+    (error) => {
+      console.error('Error loading vehicles:', error);
+    }
+  );
+}
+
 
   getCardClass(status: string | null | undefined): string {
   if (!status) return '';
