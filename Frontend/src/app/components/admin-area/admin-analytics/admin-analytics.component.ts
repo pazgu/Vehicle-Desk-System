@@ -10,6 +10,8 @@ import * as Papa from 'papaparse';
 import { saveAs } from 'file-saver';
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
+import * as XLSX from 'xlsx';
+
 
 pdfMake.vfs = pdfFonts.vfs;
 
@@ -372,6 +374,73 @@ labels: updatedLabels,
 
   pdfMake.createPdf(docDefinition).download(`${title}-${safeTimestamp}.pdf`);
 }
+
+public exportExcel(): void {
+  const isVehicleTab = this.activeTabIndex === 0;
+  const isRideTab = this.activeTabIndex === 1;
+  const isTopUsedTab = this.activeTabIndex === 2;
+
+  const chartData = isVehicleTab
+    ? this.vehicleChartData
+    : isRideTab
+      ? this.rideChartData
+      : this.topUsedVehiclesData;
+
+  const title = isVehicleTab
+    ? 'Vehicle Status Summary'
+    : isRideTab
+      ? 'Ride Status Summary'
+      : 'Top Used Vehicles';
+
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+
+  let data: any[] = [];
+
+  if (isTopUsedTab) {
+    const labels = chartData.labels;
+    const counts = chartData.datasets[0].data;
+
+    data = labels.map((label: string, i: number) => {
+      const count = counts[i];
+      let usageLevel = '';
+
+      if (count > 10) {
+        usageLevel = 'High Usage';
+      } else if (count >= 5) {
+        usageLevel = 'Medium';
+      } else {
+        usageLevel = 'Good';
+      }
+
+      return {
+        Vehicle: label,
+        'Ride Count': count,
+        'Usage Level': usageLevel
+      };
+    });
+  } else {
+    data = chartData.labels.map((label: string, i: number) => ({
+      'Formatted Status': label,
+      'Count': chartData.datasets[0].data[i]
+    }));
+  }
+
+  const worksheet = XLSX.utils.json_to_sheet(data);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Analytics');
+
+  const excelBuffer: any = XLSX.write(workbook, {
+    bookType: 'xlsx',
+    type: 'array'
+  });
+
+  const blob = new Blob([excelBuffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8'
+  });
+
+  saveAs(blob, `${title}-${timestamp}.xlsx`);
+}
+
 
 
  public exportCSV(): void {
