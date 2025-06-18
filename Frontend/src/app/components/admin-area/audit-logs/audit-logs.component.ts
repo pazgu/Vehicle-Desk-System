@@ -29,14 +29,11 @@ import { Router } from '@angular/router';
   styleUrls: ['./audit-logs.component.css']
 })
 export class AuditLogsComponent implements OnInit {
-
   showFilters = false;
   searchTerm = '';
   filteredLogs: any[] = [];
   selectedLog: any | null = null;
-  
-  objectKeys = Object.keys; // Still useful if you need to iterate over object keys dynamically
-  constructor(private auditLogService: AuditLogsService, private socketService: SocketService, private router: Router) { }
+  objectKeys = Object.keys;
 
   logs: AuditLogs[] = [];
   pageSize = 5;
@@ -61,6 +58,7 @@ export class AuditLogsComponent implements OnInit {
     odometer_reading: 'מד מרחק',
   };
 
+  
   rideFieldLabels: { [key: string]: string } = {
     id: 'מזהה נסיעה',
     stop: 'עצירה',
@@ -81,66 +79,61 @@ export class AuditLogsComponent implements OnInit {
     estimated_distance_km: 'מרחק משוער (ק"מ)'
   };
 
+  constructor(
+    private auditLogService: AuditLogsService,
+    private socketService: SocketService,
+    private router: Router
+  ) {}
+
   ngOnInit() {
-    this.onRangeChange(); // Load logs for the default range
-    // Listen for real-time audit log updates
+    this.onRangeChange();
+
     this.socketService.auditLogs$.subscribe((newLog) => {
       if (newLog) {
-        // Optionally, fetch the full logs again or just add the new log to the list
         this.logs = [newLog, ...this.logs];
         this.filteredLogs = [...this.logs];
       }
     });
   }
 
-
   onRangeChange() {
-  let fromDate: string | undefined;
-  let toDate: string | undefined;
-  const today = new Date();
+    let fromDate: string | undefined;
+    let toDate: string | undefined;
+    const today = new Date();
 
-  if (this.selectedRange === '7days') {
-    fromDate = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    toDate = today.toISOString();
-  } else if (this.selectedRange === 'thisMonth') {
-    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-    fromDate = firstDay.toISOString();
-    toDate = today.toISOString();
-  } else if (this.selectedRange === '30days') {
-    fromDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
-    toDate = today.toISOString();
-  } else if (this.selectedRange === 'custom') {
-    // Add time to the date string
-    fromDate = this.customFromDate ? new Date(this.customFromDate + 'T00:00:00').toISOString() : undefined;
-    toDate = this.customToDate ? new Date(this.customToDate + 'T23:59:59').toISOString() : undefined;
+    if (this.selectedRange === '7days') {
+      fromDate = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      toDate = today.toISOString();
+    } else if (this.selectedRange === 'thisMonth') {
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+      fromDate = firstDay.toISOString();
+      toDate = today.toISOString();
+    } else if (this.selectedRange === '30days') {
+      fromDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      toDate = today.toISOString();
+    } else if (this.selectedRange === 'custom') {
+      fromDate = this.customFromDate ? new Date(this.customFromDate + 'T00:00:00').toISOString() : undefined;
+      toDate = this.customToDate ? new Date(this.customToDate + 'T23:59:59').toISOString() : undefined;
+    }
+
+    this.fetchAuditLogs(fromDate, toDate);
   }
 
-  this.fetchAuditLogs(fromDate, toDate);
-}
-
   fetchAuditLogs(fromDate?: string, toDate?: string) {
-    this.auditLogService.getAuditLogs(fromDate, toDate).subscribe(
-      (data) => {
-        this.logs = data.map(log => ({
-          ...log,
-        }))
-          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()); // Sort newest first
-        this.filteredLogs = [...this.logs]; // Initialize filtered logs
-        this.currentPage = 1;
-      });
+    this.auditLogService.getAuditLogs(fromDate, toDate).subscribe((data) => {
+      this.logs = data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      this.filteredLogs = [...this.logs];
+      this.currentPage = 1;
+    });
   }
 
   filterLogs() {
-    if (!this.searchTerm.trim()) {
-      this.filteredLogs = [...this.logs];
-      return;
-    }
     const searchLower = this.searchTerm.toLowerCase();
     this.filteredLogs = this.logs.filter(log =>
       log.action?.toLowerCase().includes(searchLower) ||
       log.entity_type?.toLowerCase().includes(searchLower) ||
       log.entity_id?.toLowerCase().includes(searchLower) ||
-      log.full_name?.toString().toLowerCase().includes(searchLower)
+      log.full_name?.toLowerCase().includes(searchLower)
     );
   }
 
@@ -161,10 +154,6 @@ export class AuditLogsComponent implements OnInit {
     return this.filteredLogs.slice(start, start + this.pageSize);
   }
 
-  onPageChange(event: any) {
-    this.currentPage = event.page + 1;
-  }
-
   nextPage() {
     if (this.currentPage < this.totalPages) this.currentPage++;
   }
@@ -183,11 +172,9 @@ export class AuditLogsComponent implements OnInit {
 
   private getLogsForThisWeek(): any[] {
     const now = new Date();
-    const dayOfWeek = (now.getDay() + 6) % 7;
     const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - dayOfWeek);
+    startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
     startOfWeek.setHours(0, 0, 0, 0);
-
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 6);
     endOfWeek.setHours(23, 59, 59, 999);
@@ -246,6 +233,7 @@ export class AuditLogsComponent implements OnInit {
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     saveAs(blob, 'audit_logs_weekly.csv');
   }
+
 
   vehicleRedirect(vehicleId: string) {
   if (vehicleId) {
