@@ -301,7 +301,8 @@ export class AuditLogsComponent implements OnInit {
 
   vehicleRedirect(vehicleId: string) {
     if (vehicleId) {
-      this.router.navigate(['/vehicle-details/', vehicleId]);
+      this.router.navigate(['/vehicle-details', vehicleId]);
+      // Or: this.router.navigate(['/vehicles', vehicleId]);
     }
   }
 }
