@@ -17,7 +17,9 @@ import { Router } from '@angular/router';
 export class VehicleDashboardComponent {
 
   vehicles: VehicleInItem[] = [];
+  selectedType: string = '';
   statusFilter: string = '';
+  typeFilter: string = '';
   showFilters: boolean = false;
   sortBy: string = 'date_and_time';
 
@@ -30,6 +32,8 @@ export class VehicleDashboardComponent {
   goToVehicleDetails(vehicleId: string): void {
     this.router.navigate(['/vehicle-details', vehicleId]);
   }
+
+  
 
   loadVehicles(): void{
     this.vehicleService.getAllVehicles().subscribe(
@@ -95,6 +99,22 @@ export class VehicleDashboardComponent {
       }
     }
 
+    if (this.typeFilter) {
+      switch (this.typeFilter) {
+        case 'קטן':
+          filtered = filtered.filter(vehicle => vehicle.type === 'small');
+          break;
+        case 'גדול':
+          filtered = filtered.filter(vehicle => vehicle.type === 'large');
+          break;
+        case 'ואן':
+          filtered = filtered.filter(vehicle => vehicle.type === 'van');
+          break;
+        default:
+          break;
+      }
+    }
+
 
     if (this.sortBy){
       return [...filtered].sort((a, b) => a.status.localeCompare(b.status));
@@ -107,3 +127,5 @@ export class VehicleDashboardComponent {
 
 
 }
+
+
