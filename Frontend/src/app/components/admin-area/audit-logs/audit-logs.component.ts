@@ -58,6 +58,34 @@ export class AuditLogsComponent implements OnInit {
     odometer_reading: 'מד מרחק',
   };
 
+  getVehicleFieldLabel(key: string): string {
+    return this.vehicleFieldLabels[key] || key;
+  }
+
+  getRideAuditRows(oldData: any, newData: any): Array<{label: string, oldValue: any, newValue: any}> {
+  return [
+    { label: 'מזהה נסיעה', oldValue: oldData.id, newValue: newData.id },
+    { 
+      label: 'מסלול', 
+      oldValue: `${oldData.start_location || ''} → ${oldData.stop || ''} → ${oldData.destination || ''}`, 
+      newValue: `${newData.start_location || ''} → ${newData.stop || ''} → ${newData.destination || ''}` 
+    },
+    { label: 'סוג נסיעה', oldValue: oldData.ride_type, newValue: newData.ride_type },
+    { label: 'משתמש', oldValue: oldData.user_id, newValue: newData.user_id },
+    { label: 'משתמש עוקף', oldValue: oldData.override_user_id, newValue: newData.override_user_id },
+    { label: 'רכב', oldValue: oldData.vehicle_id, newValue: newData.vehicle_id },
+    { label: 'סטטוס', oldValue: oldData.status, newValue: newData.status },
+    { label: 'ארכיון', oldValue: oldData.isArchive, newValue: newData.isArchive },
+    { label: 'זמן התחלה', oldValue: oldData.start_datetime, newValue: newData.start_datetime },
+    { label: 'זמן סיום', oldValue: oldData.end_datetime, newValue: newData.end_datetime },
+    { label: 'תאריך שליחה', oldValue: oldData.submitted_at, newValue: newData.submitted_at },
+    { label: 'מרחק מוערך (ק"מ)', oldValue: oldData.estimated_distance_km, newValue: newData.estimated_distance_km },
+    { label: 'מרחק בפועל (ק"מ)', oldValue: oldData.actual_distance_km, newValue: newData.actual_distance_km },
+    { label: 'בדיקת רישיון עברה', oldValue: oldData.license_check_passed, newValue: newData.license_check_passed },
+    { label: 'אירוע חירום', oldValue: oldData.emergency_event, newValue: newData.emergency_event }
+  ];
+}
+
   rideFieldLabels: { [key: string]: string } = {
     id: 'מזהה נסיעה',
     stop: 'עצירה',
@@ -102,6 +130,20 @@ export class AuditLogsComponent implements OnInit {
     let toDate: string | undefined;
     const today = new Date();
 
+    if (this.selectedRange === '7days') {
+      fromDate = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      toDate = today.toISOString();
+    } else if (this.selectedRange === 'thisMonth') {
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+      fromDate = firstDay.toISOString();
+      toDate = today.toISOString();
+    } else if (this.selectedRange === '30days') {
+      fromDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      toDate = today.toISOString();
+    } else if (this.selectedRange === 'custom') {
+      fromDate = this.customFromDate ? new Date(this.customFromDate + 'T00:00:00').toISOString() : undefined;
+      toDate = this.customToDate ? new Date(this.customToDate + 'T23:59:59').toISOString() : undefined;
+    }
     if (this.selectedRange === '7days') {
       fromDate = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
       toDate = today.toISOString();
@@ -163,9 +205,7 @@ export class AuditLogsComponent implements OnInit {
     if (this.currentPage > 1) this.currentPage--;
   }
 
-  getVehicleFieldLabel(key: string): string {
-    return this.vehicleFieldLabels[key] || key;
-  }
+
 
   getRideFieldLabel(key: string): string {
     return this.rideFieldLabels[key] || key;
@@ -233,6 +273,32 @@ export class AuditLogsComponent implements OnInit {
     const csv = Papa.unparse(csvData);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     saveAs(blob, 'audit_logs_weekly.csv');
+  }
+
+  getUserAuditRows(oldData: any, newData: any): Array<{label: string, oldValue: any, newValue: any}> {
+    return [
+      { label: 'שם פרטי', oldValue: oldData.first_name, newValue: newData.first_name },
+      { label: 'שם משפחה', oldValue: oldData.last_name, newValue: newData.last_name },
+      { label: 'שם משתמש', oldValue: oldData.username, newValue: newData.username },
+      { label: 'אימייל', oldValue: oldData.email, newValue: newData.email },
+      { label: 'תפקיד', oldValue: oldData.role, newValue: newData.role },
+      { label: 'מזהה עובד', oldValue: oldData.employee_id, newValue: newData.employee_id },
+      { label: 'מזהה מחלקה', oldValue: oldData.department_id, newValue: newData.department_id }
+    ];
+  }
+
+  getVehicleAuditRows(oldData: any, newData: any): Array<{label: string, oldValue: any, newValue: any}> {
+    return [
+      { label: 'מספר רכב', oldValue: oldData.plate_number, newValue: newData.plate_number },
+      { label: 'סוג רכב', oldValue: oldData.type, newValue: newData.type },
+      { label: 'סוג דלק', oldValue: oldData.fuel_type, newValue: newData.fuel_type },
+      { label: 'סטטוס', oldValue: oldData.status, newValue: newData.status },
+      { label: 'סיבת הקפאה', oldValue: oldData.freeze_reason, newValue: newData.freeze_reason },
+      { label: 'מיקום נוכחי', oldValue: oldData.current_location, newValue: newData.current_location },
+      { label: 'קילומטראז\'', oldValue: oldData.odometer_reading, newValue: newData.odometer_reading },
+      { label: 'דגם רכב', oldValue: oldData.vehicle_model, newValue: newData.vehicle_model },
+      { label: 'תמונה', oldValue: oldData.image_url, newValue: newData.image_url }
+    ];
   }
 
   vehicleRedirect(vehicleId: string) {
