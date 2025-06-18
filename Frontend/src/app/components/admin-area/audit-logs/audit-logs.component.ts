@@ -1,4 +1,3 @@
-
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -14,20 +13,20 @@ import { Router } from '@angular/router';
 
 (pdfMake as any).vfs = pdfFonts.vfs;
 (pdfMake as any).fonts = {
-Roboto: {
-normal: 'Roboto-Regular.ttf',
-bold: 'Roboto-Medium.ttf',
-italics: 'Roboto-Italic.ttf',
-bolditalics: 'Roboto-MediumItalic.ttf',
-}
+  Roboto: {
+    normal: 'Roboto-Regular.ttf',
+    bold: 'Roboto-Medium.ttf',
+    italics: 'Roboto-Italic.ttf',
+    bolditalics: 'Roboto-MediumItalic.ttf',
+  }
 };
 
 @Component({
-selector: 'app-audit-logs',
-standalone: true,
-imports: [CommonModule, FormsModule],
-templateUrl: './audit-logs.component.html',
-styleUrls: ['./audit-logs.component.css']
+  selector: 'app-audit-logs',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './audit-logs.component.html',
+  styleUrls: ['./audit-logs.component.css']
 })
 export class AuditLogsComponent implements OnInit {
   showFilters = false;
@@ -36,13 +35,13 @@ export class AuditLogsComponent implements OnInit {
   selectedLog: any | null = null;
   objectKeys = Object.keys;
 
-logs: AuditLogs[] = [];
-pageSize = 5;
-currentPage = 1;
+  logs: AuditLogs[] = [];
+  pageSize = 5;
+  currentPage = 1;
 
-selectedRange = '';
-customFromDate: string = '';
-customToDate: string = '';
+  selectedRange = '';
+  customFromDate: string = '';
+  customToDate: string = '';
 
   vehicleFieldLabels: { [key: string]: string } = {
     id: 'מזהה רכב',
@@ -59,9 +58,6 @@ customToDate: string = '';
     odometer_reading: 'מד מרחק',
   };
 
-  
-
-  
   rideFieldLabels: { [key: string]: string } = {
     id: 'מזהה נסיעה',
     stop: 'עצירה',
@@ -97,17 +93,12 @@ customToDate: string = '';
         this.filteredLogs = [...this.logs];
       }
     });
-        this.onRangeChange(); // Load logs for the default range
-
   }
 
   onRangeChange() {
     let fromDate: string | undefined;
     let toDate: string | undefined;
     const today = new Date();
-    let fromDate: string | undefined;
-    let toDate: string | undefined;
-    const today = new Date();
 
     if (this.selectedRange === '7days') {
       fromDate = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -123,32 +114,11 @@ customToDate: string = '';
       fromDate = this.customFromDate ? new Date(this.customFromDate + 'T00:00:00').toISOString() : undefined;
       toDate = this.customToDate ? new Date(this.customToDate + 'T23:59:59').toISOString() : undefined;
     }
-    if (this.selectedRange === '7days') {
-      fromDate = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
-      toDate = today.toISOString();
-    } else if (this.selectedRange === 'thisMonth') {
-      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-      fromDate = firstDay.toISOString();
-      toDate = today.toISOString();
-    } else if (this.selectedRange === '30days') {
-      fromDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
-      toDate = today.toISOString();
-    } else if (this.selectedRange === 'custom') {
-      fromDate = this.customFromDate ? new Date(this.customFromDate + 'T00:00:00').toISOString() : undefined;
-      toDate = this.customToDate ? new Date(this.customToDate + 'T23:59:59').toISOString() : undefined;
-    }
 
-    this.fetchAuditLogs(fromDate, toDate);
-  }
     this.fetchAuditLogs(fromDate, toDate);
   }
 
   fetchAuditLogs(fromDate?: string, toDate?: string) {
-    this.auditLogService.getAuditLogs(fromDate, toDate).subscribe((data) => {
-      this.logs = data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-      this.filteredLogs = [...this.logs];
-      this.currentPage = 1;
-    });
     this.auditLogService.getAuditLogs(fromDate, toDate).subscribe((data) => {
       this.logs = data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
       this.filteredLogs = [...this.logs];
@@ -163,94 +133,92 @@ customToDate: string = '';
       log.entity_type?.toLowerCase().includes(searchLower) ||
       log.entity_id?.toLowerCase().includes(searchLower) ||
       log.full_name?.toLowerCase().includes(searchLower)
-      log.full_name?.toLowerCase().includes(searchLower)
     );
   }
 
-showDetails(log: AuditLogs) {
-this.selectedLog = log;
-}
+  showDetails(log: AuditLogs) {
+    this.selectedLog = log;
+  }
 
-closeDetails() {
-this.selectedLog = null;
-}
+  closeDetails() {
+    this.selectedLog = null;
+  }
 
-get totalPages(): number {
-return Math.ceil(this.filteredLogs.length / this.pageSize) || 1;
-}
+  get totalPages(): number {
+    return Math.ceil(this.filteredLogs.length / this.pageSize) || 1;
+  }
 
   get pagedLogs() {
     const start = (this.currentPage - 1) * this.pageSize;
     return this.filteredLogs.slice(start, start + this.pageSize);
   }
 
-nextPage() {
-if (this.currentPage < this.totalPages) this.currentPage++;
-}
+  nextPage() {
+    if (this.currentPage < this.totalPages) this.currentPage++;
+  }
 
-prevPage() {
-if (this.currentPage > 1) this.currentPage--;
-}
+  prevPage() {
+    if (this.currentPage > 1) this.currentPage--;
+  }
 
-getVehicleFieldLabel(key: string): string {
-return this.vehicleFieldLabels[key] || key;
-}
+  getVehicleFieldLabel(key: string): string {
+    return this.vehicleFieldLabels[key] || key;
+  }
 
-getRideFieldLabel(key: string): string {
-return this.rideFieldLabels[key] || key;
-}
+  getRideFieldLabel(key: string): string {
+    return this.rideFieldLabels[key] || key;
+  }
 
   private getLogsForThisWeek(): any[] {
     const now = new Date();
     const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
     startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
     startOfWeek.setHours(0, 0, 0, 0);
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 6);
     endOfWeek.setHours(23, 59, 59, 999);
 
-return this.filteredLogs.filter(log => {
-const created = new Date(log.created_at);
-return created >= startOfWeek && created <= endOfWeek;
-});
-}
+    return this.filteredLogs.filter(log => {
+      const created = new Date(log.created_at);
+      return created >= startOfWeek && created <= endOfWeek;
+    });
+  }
 
-exportToPDF() {
-const weeklyLogs = this.getLogsForThisWeek();
-const docDefinition: TDocumentDefinitions = {
-content: [
-{ text: `Weekly report of system logs`, style: 'header', alignment: 'center' },
-{ text: '\n' },
-{
-table: {
-headerRows: 1,
-body: [
-['Action type', 'Full name', 'Entity type', 'Date created'],
-...weeklyLogs.map(log => [
-log.action,
-log.full_name,
-log.entity_type,
-new Date(log.created_at).toLocaleString('he-IL')
-])
-]
-},
-layout: 'lightHorizontalLines'
-}
-],
-defaultStyle: {
-font: 'Roboto',
-alignment: 'right'
-},
-styles: {
-header: {
-fontSize: 18,
-bold: true
-}
-}
-};
-pdfMake.createPdf(docDefinition).download('audit_logs_weekly.pdf');
-}
+  exportToPDF() {
+    const weeklyLogs = this.getLogsForThisWeek();
+    const docDefinition: TDocumentDefinitions = {
+      content: [
+        { text: `Weekly report of system logs`, style: 'header', alignment: 'center' },
+        { text: '\n' },
+        {
+          table: {
+            headerRows: 1,
+            body: [
+              ['Action type', 'Full name', 'Entity type', 'Date created'],
+              ...weeklyLogs.map(log => [
+                log.action,
+                log.full_name,
+                log.entity_type,
+                new Date(log.created_at).toLocaleString('he-IL')
+              ])
+            ]
+          },
+          layout: 'lightHorizontalLines'
+        }
+      ],
+      defaultStyle: {
+        font: 'Roboto',
+        alignment: 'right'
+      },
+      styles: {
+        header: {
+          fontSize: 18,
+          bold: true
+        }
+      }
+    };
+    pdfMake.createPdf(docDefinition).download('audit_logs_weekly.pdf');
+  }
 
   exportToCSV() {
     const weeklyLogs = this.getLogsForThisWeek();
@@ -265,10 +233,9 @@ pdfMake.createPdf(docDefinition).download('audit_logs_weekly.pdf');
     saveAs(blob, 'audit_logs_weekly.csv');
   }
 
-
   vehicleRedirect(vehicleId: string) {
-  if (vehicleId) {
-    this.router.navigate(['/vehicle-details/', vehicleId]);
+    if (vehicleId) {
+      this.router.navigate(['/vehicle-details/', vehicleId]);
     }
   }
 }
