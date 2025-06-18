@@ -121,8 +121,6 @@ export class AuditLogsComponent implements OnInit {
         this.filteredLogs = [...this.logs];
       }
     });
-        this.onRangeChange(); // Load logs for the default range
-
   }
 
   onRangeChange() {

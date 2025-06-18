@@ -137,6 +137,11 @@ select.styled-select {
   flex-direction: column;
   gap: 1rem;
 }
+.headers{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
 
 .form-content {
   display: flex;
@@ -154,4 +159,23 @@ select.styled-select {
     width: 90%;
     padding: 16px;
   }
+}
+
+.back-btn {
+  width: 100px;
+  height: 25px;
+  color: #942222;
+  font-family: var(--font-family-alef);
+  font-size: 16px;
+  font-weight: bold;
+  padding: 1px 2px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+  background: none;
+  margin-right: 40%;
+}
+.back-btn:hover {
+  transform: scale(1.03);
 }

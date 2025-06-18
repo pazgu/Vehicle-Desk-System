@@ -7,7 +7,6 @@
 
 html, body {
   font-family: 'Assistant', sans-serif;
-  background-color: #eae4eb;
   direction: rtl;
   height: 100vh;
   overflow: hidden;      /* ✅ blocks vertical scroll */
@@ -30,7 +29,6 @@ html, body {
   justify-content: center;
   align-items: center; /* 👈 use center instead of flex-start */
   min-height: 100vh;
-  background-color: #ccc;
   font-family: 'Alef', sans-serif;
   direction: rtl;
   padding: 0;
