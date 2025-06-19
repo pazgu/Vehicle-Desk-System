@@ -11,7 +11,7 @@ from fastapi import HTTPException
 from .vehicle_service import update_vehicle_status
 from ..models.vehicle_inspection_model import VehicleInspection 
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
-from sqlalchemy import String , func, text
+from sqlalchemy import String , func, text,desc
 from ..utils.audit_utils import log_action
 from typing import List
 from sqlalchemy.orm import Session
@@ -27,12 +27,13 @@ def get_department_orders(department_id: str, db: Session) -> List[RideDashboard
     """
     # Query the database for rides where the user's department matches the given department_id
     orders = (
-        db.query(Ride, Vehicle.plate_number)
-        .join(User, User.employee_id == Ride.user_id)
-        .join(Vehicle, Ride.vehicle_id == Vehicle.id)
-        .filter(User.department_id == department_id)
-        .all()
-    )
+    db.query(Ride, Vehicle.plate_number)
+    .join(User, User.employee_id == Ride.user_id)
+    .join(Vehicle, Ride.vehicle_id == Vehicle.id)
+    .filter(User.department_id == department_id)
+    .order_by(desc(Ride.submitted_at))  # 👈 Sort by submitted_at DESC
+    .all()
+)
 
 
     # Map the database results to the RideDashboardItem schema
@@ -214,7 +215,13 @@ async def start_ride(db: Session, ride_id: UUID):
         raise HTTPException(status_code=400, detail="Vehicle is not available")
 
     # 1️⃣ Update vehicle status
-    update_vehicle_status(vehicle.id, VehicleStatus.in_use, ride.user_id,freeze_reason=None ,db=db)
+    update_vehicle_status(
+        vehicle_id=vehicle.id,
+        new_status=VehicleStatus.in_use,
+        freeze_reason=None,
+        db=db,
+        changed_by=ride.user_id
+    )
     vehicle.last_used_at = func.now()
 
     # 2️⃣ Update ride status
@@ -226,17 +233,18 @@ async def start_ride(db: Session, ride_id: UUID):
     db.refresh(ride)
     db.refresh(vehicle)
 
-    # 3️⃣ Emit ride update
-    await sio.emit("ride_status_updated", {
-        "id": str(ride.id),
-        "status": ride.status.value
-    })
-    # 4️⃣ Emit vehicle update
-    await sio.emit("vehicle_status_updated", {
-        "id": str(vehicle.id),
-        "status": vehicle.status.value
-    })
+    # # 3️⃣ Emit ride update
+    # await sio.emit("ride_status_updated", {
+    #     "id": str(ride.id),
+    #     "status": ride.status.value
+    # })
+    # # 4️⃣ Emit vehicle update
+    # await sio.emit("vehicle_status_updated", {
+    #     "id": str(vehicle.id),
+    #     "status": vehicle.status.value
+    # })
     print(f'start_ride was called for ride_id:{ride_id}')
+    return ride,vehicle
 
 def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
 

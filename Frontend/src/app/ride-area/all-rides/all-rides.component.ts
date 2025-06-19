@@ -241,6 +241,12 @@ getStatusTooltip(status: string): string {
     const orderDate = this.parseDate(order.date);
     return orderDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
   }
+   isCompletedOrder(order: any): boolean {
+    if(order.status==='completed') {
+      return true
+    }
+    return false
+  }
     
   validateDate(type: 'start' | 'end'): string {
     const value = type === 'start' ? this.startDate : this.endDate;
