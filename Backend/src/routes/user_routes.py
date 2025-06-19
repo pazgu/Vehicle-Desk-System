@@ -1,7 +1,7 @@
 import json
 import traceback
 from fastapi import APIRouter, HTTPException, Depends , Query,Form
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session,aliased
 from ..schemas.register_schema import UserCreate
 from ..schemas.login_schema import UserLogin
 from ..schemas.new_ride_schema import RideCreate
@@ -50,9 +50,11 @@ from apscheduler.jobstores.base import JobLookupError
 from ..utils.scheduler import scheduler
 from ..services.city_service import calculate_distance
 from ..services.city_service import get_cities
-from ..schemas.city_schema import City
-
+from ..models.city_model import City
+from sqlalchemy import cast
 from ..services.user_form import get_ride_needing_feedback
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -354,10 +356,39 @@ async def delete_order(order_id: UUID, db: Session = Depends(get_db),current_use
         raise HTTPException(status_code=500, detail="Failed to delete order")
 
 
+@router.get("/api/rides/with-locations")
+def get_rides_with_locations(db: Session = Depends(get_db)):
+    StartCity = aliased(City)
+    StopCity = aliased(City)
+    DestinationCity = aliased(City)
+
+    rides_with_cities = (
+        db.query(Ride, StartCity, StopCity, DestinationCity)
+        .join(StartCity, cast(Ride.start_location, PG_UUID) == StartCity.id)
+        .join(DestinationCity, cast(Ride.destination, PG_UUID) == DestinationCity.id)
+        .join(StopCity, cast(Ride.stop, PG_UUID) == StopCity.id)
+        .all()
+    )
+
+    rides = [
+        {
+            "id": str(ride.id),
+            "start_location_name": start_city.name,
+            "destination_name": destination_city.name,
+            "stop_name": stop_city.name,
+        }
+        for ride, start_city, stop_city, destination_city in rides_with_cities
+    ]
+    print('rides with loc:',rides)
+    return rides
+
+
+
 @router.get("/api/rides/{ride_id}", response_model=RideSchema)
 def read_ride(ride_id: UUID, db: Session = Depends(get_db)):
     ride = get_ride_by_id(db, ride_id)
     return ride
+
 
 @router.post("/api/complete-ride-form", status_code=fastapi_status.HTTP_200_OK)
 async def submit_completion_form(
