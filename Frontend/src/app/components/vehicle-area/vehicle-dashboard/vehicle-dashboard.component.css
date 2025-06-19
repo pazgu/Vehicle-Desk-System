@@ -1,6 +1,5 @@
 .page-wrapper {
     min-height: 100vh;
-    background: #ded7d7;
     padding: 2rem 0;
 }
 
@@ -179,3 +178,32 @@ button {
     }
 }
 
+
+
+.showFilters {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.statusFilter {
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  border: 1px solid #942229;
+  color: #942222;
+  font-size: 1rem;
+  background: none;
+  min-width: 160px;
+}
+
+.typeFilter {
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  border: 1px solid #942229;
+  color: #942222;
+  font-size: 1rem;
+  background: none;
+  min-width: 160px;
+}

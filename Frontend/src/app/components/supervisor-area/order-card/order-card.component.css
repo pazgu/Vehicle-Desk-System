@@ -1,6 +1,5 @@
 :host {
   display: block;
-  background-color: #e7e5e5  ; /* Light gray background */
   padding: 20px; /* Optional: Add padding around the content */
   min-height: calc(100vh - 55px); /* subtract any fixed nav height if needed */
   margin-top: 0;

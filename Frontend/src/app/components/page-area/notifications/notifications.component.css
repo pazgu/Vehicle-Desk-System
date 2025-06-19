@@ -181,22 +181,6 @@ body {
 }
 
 
-.back-btn {
-  color: #942222;
-  font-family: var(--font-family-alef);
-  font-size: 16px;
-  font-weight: bold;
-  padding: 10px 22px;
-  border: none;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.15s ease;
-  margin-top: 24px;
-  display: inline-block;
-}
-.back-btn:hover {
-  transform: scale(1.03);
-}
 .back-btn-container {
   display: flex;
   justify-content: flex-end; 

@@ -6,8 +6,7 @@
   /* padding: 60px 20px; */
   direction: rtl;
   font-family: 'Alef', sans-serif;
-  background-color: #ccc;
-  background-color: #cccccc;
+
     min-height: calc(100vh - 55px); /* subtract any fixed nav height if needed */
     margin-top: 0;
     padding-top: 10px;
