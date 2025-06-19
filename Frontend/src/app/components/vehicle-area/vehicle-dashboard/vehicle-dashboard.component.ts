@@ -89,17 +89,7 @@ export class VehicleDashboardComponent {
     return 'good';
   }
 
-  // Get usage level in Hebrew
-  getUsageLevelHebrew(plateNumber: string): string {
-    const level = this.getUsageLevel(plateNumber);
-    switch (level) {
-      case 'high': return 'שימוש גבוה';
-      case 'medium': return 'בינוני';
-      case 'good': return 'טוב';
-      default: return 'לא זמין';
-    }
-  }
-
+ 
   // Get usage bar color
   getUsageBarColor(plateNumber: string): string {
     const level = this.getUsageLevel(plateNumber);

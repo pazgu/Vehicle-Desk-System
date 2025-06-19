@@ -8,8 +8,16 @@
     <!-- existing card remains unchanged -->
     <p-card *ngIf="vehicle" class="vehicle-details-card" [ngClass]="getCardClass(vehicle.status)">
       <div class="vehicle-horizontal-content">
+        <div cless="right-side">
+         <div class="usage-line" >
+            <div 
+              class="usage-indicator"
+              [style.background-color]="getUsageBarColor(vehicle.plate_number)"
+            ></div>
+            <span class="usage-number" *ngIf="getVehicleUsageCount(vehicle.plate_number)>0">  {{ getVehicleUsageCount(vehicle.plate_number) }} נסיעות קיימות לרכב בחודש זה</span>
+          </div>
         <img *ngIf="vehicle.image_url" [src]="vehicle.image_url" alt="תמונה של הרכב" class="vehicle-details-img" />
-
+</div>
 
 
         <div class="vehicle-details-info">
