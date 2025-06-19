@@ -22,8 +22,6 @@ export class VehicleDashboardComponent {
   typeFilter: string = '';
   showFilters: boolean = false;
   sortBy: string = 'date_and_time';
-  // typeFilter: string = ''; // NEW
-
 
   constructor(private vehicleService: VehicleService, private router: Router){}
 
@@ -129,5 +127,4 @@ export class VehicleDashboardComponent {
 
 
 }
-
 
