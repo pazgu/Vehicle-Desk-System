@@ -4,6 +4,8 @@ import { VehicleService } from '../../../services/vehicle.service';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-vehicle-card-item',
@@ -42,6 +44,7 @@ export class VehicleCardItemComponent implements OnInit {
   goBack(): void {
     window.history.back();
   }
+
 
   translateStatus(status: string | null | undefined): string {
     if (!status) return '';
