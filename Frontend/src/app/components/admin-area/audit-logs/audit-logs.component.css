@@ -178,22 +178,19 @@
 }
 
 .approved-row {
-  background-color: #dcf1e1 !important;
-  /* light green */
+  background-color: #60cd79 !important;
 }
 
 .delete-row {
   background-color: #f8e2e2 !important;
 }
 
-.user-insert-row {
+.success-row {
   background-color: #dcf1e1 !important;
-  /* light green */
 }
 
 .rejected-row {
-  background: #f43d3d5b !important;
-  /* Light red background */
+  background: #dc5b5b !important;
 }
 
 .empty-state {
@@ -584,8 +581,15 @@
 }
 
 .status-indicator.approved {
-  background-color: #dcf1e1;
+  background-color: #60cd79;
   border: #329c4b 1.6px solid;
+  /* Green border */
+}
+
+.status-indicator.success {
+  background-color: #dcf1e1;
+  /* Light green */
+  border: #27ae60 1.6px solid;
   /* Green border */
 }
 
@@ -616,9 +620,9 @@
 }
 
 .status-indicator.rejected {
-  background: #f43d3d93;
+  background: #dc5b5b;
   /* Same as your .delete-row background */
-  border: 1.5px solid #b04a3f;
+  border: 1.5px solid #903d34;
 }
 
 .export-button {
