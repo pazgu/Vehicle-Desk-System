@@ -42,5 +42,15 @@ getTodayInspections(): Observable<any[]> {
   return this.http.get<{ vehicle_id: string; date: string; period: string }[]>(`${environment.apiUrl}/orders/pending-cars`);
 }
 
+getMostUsedVehiclesThisMonth(year: number, month: number): Observable<{ stats: VehicleInItem[] }> {
+  const url = `${this.apiUrl}/vehicles/usage-stats`;
+  return this.http.get<{ stats: VehicleInItem[] }>(url, {
+    params: {
+      range: 'month',
+      year,
+      month
+    }
+  });
+}
 
 }
