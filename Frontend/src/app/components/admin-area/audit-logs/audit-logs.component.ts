@@ -121,8 +121,6 @@ export class AuditLogsComponent implements OnInit {
         this.filteredLogs = [...this.logs];
       }
     });
-        this.onRangeChange(); // Load logs for the default range
-
   }
 
   onRangeChange() {
@@ -163,11 +161,6 @@ export class AuditLogsComponent implements OnInit {
   }
 
   fetchAuditLogs(fromDate?: string, toDate?: string) {
-    this.auditLogService.getAuditLogs(fromDate, toDate).subscribe((data) => {
-      this.logs = data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-      this.filteredLogs = [...this.logs];
-      this.currentPage = 1;
-    });
     this.auditLogService.getAuditLogs(fromDate, toDate).subscribe((data) => {
       this.logs = data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
       this.filteredLogs = [...this.logs];
@@ -219,7 +212,6 @@ export class AuditLogsComponent implements OnInit {
   private getLogsForThisWeek(): any[] {
     const now = new Date();
     const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
     startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
     startOfWeek.setHours(0, 0, 0, 0);
     const endOfWeek = new Date(startOfWeek);
@@ -308,8 +300,9 @@ export class AuditLogsComponent implements OnInit {
   }
 
   vehicleRedirect(vehicleId: string) {
-  if (vehicleId) {
-    this.router.navigate(['/vehicle-details/', vehicleId]);
+    if (vehicleId) {
+      this.router.navigate(['/vehicle-details', vehicleId]);
+      // Or: this.router.navigate(['/vehicles', vehicleId]);
     }
   }
 }

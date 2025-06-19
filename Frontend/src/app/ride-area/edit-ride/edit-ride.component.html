@@ -1,8 +1,11 @@
 <div class="overlay">
   <div class="modal">
-    <button class="close-btn" (click)="close()">&times;</button>
-    <h2>עריכת נסיעה</h2>
+    <div class="headers">
+          <h2>עריכת נסיעה</h2>
+ <button class="back-btn" (click)="close()">חזור ←</button> 
+ </div>
     <hr />
+    
     <form [formGroup]="rideForm" (ngSubmit)="submit()">
       <div class="form-content">
         <!-- Row 1: סוג נסיעה + תאריך -->
