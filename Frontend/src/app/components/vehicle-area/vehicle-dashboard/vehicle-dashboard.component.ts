@@ -6,7 +6,8 @@ import { CardModule } from 'primeng/card';
 import { VehicleOutItem } from '../../../models/vehicle-dashboard-item/vehicle-out-item.module';
 import { VehicleInItem } from '../../../models/vehicle-dashboard-item/vehicle-in-use-item.module';
 import { Router } from '@angular/router';
-
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-vehicle-dashboard',
@@ -22,18 +23,25 @@ export class VehicleDashboardComponent {
   typeFilter: string = '';
   showFilters: boolean = false;
   sortBy: string = 'date_and_time';
+  
+  // Enhanced usage tracking from analytics component
+  topUsedVehiclesMap: Record<string, number> = {};
+  vehicleUsageData: { plate_number: string; vehicle_model: string; ride_count: number }[] = [];
 
-  constructor(private vehicleService: VehicleService, private router: Router){}
+  constructor(
+    private vehicleService: VehicleService, 
+    private router: Router,
+    private http: HttpClient
+  ){}
 
   ngOnInit(): void {
     this.loadVehicles();
+    this.loadVehicleUsageData();
   }
 
   goToVehicleDetails(vehicleId: string): void {
     this.router.navigate(['/vehicle-details', vehicleId]);
   }
-
-  
 
   loadVehicles(): void{
     this.vehicleService.getAllVehicles().subscribe(
@@ -47,19 +55,73 @@ export class VehicleDashboardComponent {
     );
   }
 
-  getCardClass(status: string | null | undefined): string {
-  if (!status) return '';
-  switch (status) {
-    case 'available':
-      return 'card-available';
-    case 'in_use':
-      return 'card-inuse';
-    case 'frozen':
-      return 'card-frozen';
-    default:
-      return '';
+  // New method to load vehicle usage data from analytics
+  loadVehicleUsageData(): void {
+    this.http.get<{ plate_number: string; vehicle_model: string; ride_count: number }[]>(
+      `${environment.apiUrl}/analytics/top-used-vehicles`
+    ).subscribe({
+      next: data => {
+        this.vehicleUsageData = data;
+        // Create a map for quick lookup
+        this.topUsedVehiclesMap = {};
+        data.forEach(vehicle => {
+          this.topUsedVehiclesMap[vehicle.plate_number] = vehicle.ride_count;
+        });
+        console.log('Vehicle usage data loaded:', this.topUsedVehiclesMap);
+      },
+      error: err => {
+        console.error('❌ Error fetching vehicle usage data:', err);
+      }
+    });
   }
-}
+
+  // Get usage count for a specific vehicle
+  getVehicleUsageCount(plateNumber: string): number {
+    return this.topUsedVehiclesMap[plateNumber] || 0;
+  }
+
+  // Get usage level classification
+  getUsageLevel(plateNumber: string): 'high' | 'medium' | 'good' | 'hide'{
+    const count = this.getVehicleUsageCount(plateNumber);
+    if (count > 10) return 'high';
+    if (count >= 5) return 'medium';
+    if (count == 0 ) return 'hide';
+    return 'good';
+  }
+
+ 
+  // Get usage bar color
+  getUsageBarColor(plateNumber: string): string {
+    const level = this.getUsageLevel(plateNumber);
+    switch (level) {
+      case 'high': return '#FF5252';    // Red
+      case 'medium': return '#FFC107';  // Yellow
+      case 'good': return '#42A5F5';    // Blue
+      case 'hide': return'rgba(255, 255, 255, 0)'// Gray (hidden)
+      default: return '#E0E0E0';        // Gray
+    }
+  }
+  // Get usage bar width percentage (0-100%)
+  getUsageBarWidth(plateNumber: string): number {
+    const count = this.getVehicleUsageCount(plateNumber);
+    // Scale to max 15 rides for 100% width
+    const maxRides = 15;
+    return Math.min((count / maxRides) * 100, 100);
+  }
+
+  getCardClass(status: string | null | undefined): string {
+    if (!status) return '';
+    switch (status) {
+      case 'available':
+        return 'card-available';
+      case 'in_use':
+        return 'card-inuse';
+      case 'frozen':
+        return 'card-frozen';
+      default:
+        return '';
+    }
+  }
 
   translateStatus(status: string | null | undefined): string {
     if (!status) return '';
@@ -74,10 +136,8 @@ export class VehicleDashboardComponent {
         return status;
     }
   }
-
-
+  
   get filteredVehicles() {
-
     if (!this.vehicles) {
         return [];
     }
@@ -115,17 +175,11 @@ export class VehicleDashboardComponent {
       }
     }
 
-
     if (this.sortBy){
       return [...filtered].sort((a, b) => a.status.localeCompare(b.status));
     }
     else{
-      return;
+      return filtered;
     }
-    
   }
-
-
 }
-
-
