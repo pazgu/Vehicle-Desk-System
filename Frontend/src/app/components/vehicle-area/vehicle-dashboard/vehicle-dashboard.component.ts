@@ -3,9 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { VehicleService } from '../../../services/vehicle.service';
 import { CardModule } from 'primeng/card';
+import { VehicleOutItem } from '../../../models/vehicle-dashboard-item/vehicle-out-item.module';
 import { VehicleInItem } from '../../../models/vehicle-dashboard-item/vehicle-in-use-item.module';
 import { Router } from '@angular/router';
-import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-vehicle-dashboard',
@@ -19,6 +19,7 @@ export class VehicleDashboardComponent {
   mostUsedVehicles: VehicleInItem[] = [];
   showingMostUsed: boolean = false;
 
+  selectedType: string = '';
   statusFilter: string = '';
   typeFilter: string = '';
   showFilters: boolean = false;
@@ -119,6 +120,7 @@ export class VehicleDashboardComponent {
 
   get filteredVehicles() {
     const baseList = this.showingMostUsed ? this.mostUsedVehicles : this.vehicles;
+
     if (!baseList) return [];
 
     let filtered = [...baseList];
