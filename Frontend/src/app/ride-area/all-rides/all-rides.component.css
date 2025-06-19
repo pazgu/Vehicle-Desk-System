@@ -16,7 +16,6 @@
 }
   
 .page-container {
-  background-color: #cccccc;
   min-height: calc(100vh - 55px); /* height minus nav bar */
   padding: 20px 0 40px 0; /* add top and bottom padding */
   margin: 0 auto;
@@ -103,6 +102,12 @@
   background-color: #e0e0e0 !important;
   color: #333 !important;
 }
+.completed-order{
+  opacity: 0.6;
+  background-color: #e0e0e0 !important;
+  color: #333 !important;
+}
+
 
 
   

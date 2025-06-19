@@ -8,6 +8,7 @@ class UserRole(str, Enum):
     employee = "employee"
     supervisor = "supervisor"
     admin = "admin"
+    inspector = 'inspector'
 
 class UserCreate(BaseModel):
     first_name: str

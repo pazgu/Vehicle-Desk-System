@@ -5,6 +5,27 @@
 
 }
 
+.back-btn {
+  width: 150px;
+  height: 25px;
+  color: #942222;
+  font-family: var(--font-family-alef);
+  font-size: 16px;
+  font-weight: bold;
+  padding: 1px 2px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+  margin-left:0px;
+  margin-right: 800px;
+  background: none;
+}
+.back-btn:hover {
+  transform: scale(1.03);
+}
+
+
 .page-container {
   max-width: 1100px;
   margin: 0 auto;

@@ -12,8 +12,8 @@ export const environment = {
     socketUrl: 'http://localhost:8000',
     forgotPassUrl:'http://localhost:8000/api/forgot-password',
     resertPassUrl:'http://localhost:8000/api/reset-password',
-    frozenVehiclesUrl:'http://localhost:8000/api/all-vehicles'
-
+    frozenVehiclesUrl:'http://localhost:8000/api/all-vehicles',
+    rideLocationsUrl:'http://localhost:8000/api/rides/with-locations'
 
   };
   

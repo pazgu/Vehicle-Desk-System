@@ -11,6 +11,7 @@ class UserRole(str, Enum):
     employee = "employee"
     supervisor = "supervisor"
     admin = "admin"
+    inspector = 'inspector'
 
 class UserUpdate(BaseModel):
     first_name: Optional[str] = None

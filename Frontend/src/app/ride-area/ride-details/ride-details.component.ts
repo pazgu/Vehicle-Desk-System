@@ -53,6 +53,6 @@ export class RideDetailsComponent implements OnInit {
   }
 
   goBack(): void {
-  this.router.navigate(['/home']);
+  this.router.navigate(['/all-rides']);
 }
 }

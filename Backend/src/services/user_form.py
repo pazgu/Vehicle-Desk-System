@@ -12,16 +12,18 @@ from .monthly_trip_counts import increment_completed_trip_stat
 from ..services.user_notification import emit_new_notification
 from ..utils.socket_manager import sio
 from typing import Optional
+from ..services.admin_rides_service import update_monthly_usage_stats
 
 def get_ride_needing_feedback(db: Session, user_id: int) -> Optional[Ride]:
-    return db.query(Ride).filter(
+    ride= db.query(Ride).filter(
         Ride.user_id == user_id,
         Ride.end_datetime <= datetime.now(timezone.utc),
-        Ride.status == RideStatus.completed,
         Ride.feedback_submitted == False  
     ).order_by(
         Ride.end_datetime.desc()
     ).first()
+  
+    return ride
 
 def mark_feedback_submitted(db: Session, ride_id: str):
     """
@@ -29,10 +31,14 @@ def mark_feedback_submitted(db: Session, ride_id: str):
     """
     ride = db.query(Ride).filter_by(id=ride_id).first()
     if ride:
+        print(f'ride before feedback is true,id:{ride_id},feedback:{ride.feedback_submitted}')
         ride.feedback_submitted = True
+        print(f'ride after feedback is true,id:{ride_id},feedback:{ride.feedback_submitted}')
+
         db.commit()
     return ride
-def process_completion_form(db: Session, user: User, form_data: CompletionFormData):
+
+async def process_completion_form(db: Session, user: User, form_data: CompletionFormData):
     print("this is the current user:",user.username)
     print("dep id:",user.department_id)
     print("user id:",user.employee_id)
@@ -52,6 +58,8 @@ def process_completion_form(db: Session, user: User, form_data: CompletionFormDa
     if form_data.completed:
         ride.status = RideStatus.completed
 
+        # הוספת עדכון סטטיסטיקות שימוש ברכב:
+        update_monthly_usage_stats(db=db, ride=ride)
         # Increment completed trips count for the employee immediately.
         increment_completed_trip_stat(db, ride.user_id, ride.start_datetime)
 
@@ -60,7 +68,7 @@ def process_completion_form(db: Session, user: User, form_data: CompletionFormDa
         if not vehicle:
             raise HTTPException(status_code=404, detail="Vehicle not found")
 
-        if form_data.emergency_event:
+        if (form_data.emergency_event =='true'):
             vehicle.status = VehicleStatus.frozen  # Freeze vehicle due to emergency
             vehicle.freeze_reason = FreezeReason.accident
             vehicle.freeze_details = form_data.freeze_details
@@ -77,7 +85,10 @@ def process_completion_form(db: Session, user: User, form_data: CompletionFormDa
                     message=f"{vehicle.plate_number} עבר תאונה ברכב {user.last_name} {user.first_name} המשתמש ",
                     order_id=ride.id
                 )
-                asyncio.create_task(emit_new_notification(notification, ride.status))
+                 # Schedule the coroutine to run on the main thread's event loop
+                loop = asyncio.get_running_loop()  # ✅ Safe inside async functions
+                loop.call_soon_threadsafe(asyncio.create_task, emit_new_notification(notification, ride.status))
+
 
         else:
             vehicle.status = VehicleStatus.available  # Set available if no emergency
@@ -110,6 +121,7 @@ def process_completion_form(db: Session, user: User, form_data: CompletionFormDa
             "vehicle_id": str(vehicle.id),
             "status": vehicle.status,
         })
-
+    mark_feedback_submitted(db,ride.id)
     db.commit()
+    
     return {"message": "Completion form processed successfully."}
