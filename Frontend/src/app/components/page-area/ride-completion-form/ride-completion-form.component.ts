@@ -9,6 +9,7 @@ import { Location } from '@angular/common';
 import { environment } from '../../../../environments/environment';
 import { RideService } from '../../../services/ride.service';
 import { RideDashboardItem } from '../../../models/ride-dashboard-item/ride-dashboard-item.module';
+import { RideLocationItem } from '../../../models/ride.model';
 @Component({
   selector: 'app-ride-completion-form',
   templateUrl: './ride-completion-form.component.html',
@@ -20,6 +21,11 @@ export class RideCompletionFormComponent implements OnInit {
   form!: FormGroup;
   loading = false;
   currentRide! :any;
+  ridesWithLocations: RideLocationItem[] = [];
+  start_location_name: string = '';
+  stop_name: string = '';
+  destination_name: string = '';
+
   // rideId!: string;
   showForm = true;
   @Input() rideId!: string;
@@ -43,11 +49,28 @@ export class RideCompletionFormComponent implements OnInit {
   ngOnInit(): void {
     this.rideId = this.rideId || this.route.snapshot.paramMap.get('ride_id')!;
     const submittedKey = `feedback_submitted_${this.rideId}`;
+
+ 
    
     this.rideService.getRideById(this.rideId).subscribe(ride => {
       console.log('Fetched ride:', ride);
     this.currentRide = ride;
-  });    if (localStorage.getItem(submittedKey) === 'true') {
+
+       this.rideReportService.getRidesWithLocations().subscribe(ridesWithLocations => {
+        console.log('ride with loc:',ridesWithLocations)
+        const matchingRide = ridesWithLocations.find(r => r.id === this.currentRide?.ride_id);
+
+    console.log('match ride',matchingRide)
+
+    if (matchingRide) {
+      this.start_location_name = matchingRide.start_location_name;
+      this.stop_name = matchingRide.stop_name;
+      this.destination_name = matchingRide.destination_name;
+      console.log(`start:${this.start_location_name},des:${this.destination_name},stop:${this.stop_name}`)
+    }
+  });
+  });    
+  if (localStorage.getItem(submittedKey) === 'true') {
       this.showForm = false;
       return;
     }
@@ -64,6 +87,7 @@ export class RideCompletionFormComponent implements OnInit {
 
     this.form.get('emergency_event')?.valueChanges.subscribe((value) => {
       const freezeDetails = this.form.get('freeze_details');
+      console.log('emergency event?',value)
       if (value === 'true') {
         freezeDetails?.setValidators([Validators.required]);
       } else {
@@ -94,7 +118,7 @@ export class RideCompletionFormComponent implements OnInit {
     const rawForm = this.form.value;
     const formData = {
       ride_id: this.rideId,
-      emergency_event: rawForm.emergency_event === 'true',
+      emergency_event: rawForm.emergency_event === 'true' ? 'true' : 'false',
       freeze_details: rawForm.freeze_details || '',
       completed: rawForm.completed === 'true',
       fueled: rawForm.fueled === 'true',
@@ -110,6 +134,7 @@ export class RideCompletionFormComponent implements OnInit {
         this.toastService.show('הטופס נשלח בהצלחה', 'success');
         this.showForm = false;
         this.loading = false;
+        localStorage.removeItem('pending_feedback_ride');
       },
       error: () => {
         this.toastService.show('אירעה שגיאה בשליחת הטופס', 'error');

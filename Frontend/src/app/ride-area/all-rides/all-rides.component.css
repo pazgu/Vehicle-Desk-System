@@ -103,6 +103,12 @@
   background-color: #e0e0e0 !important;
   color: #333 !important;
 }
+.completed-order{
+  opacity: 0.6;
+  background-color: #e0e0e0 !important;
+  color: #333 !important;
+}
+
 
 
   
