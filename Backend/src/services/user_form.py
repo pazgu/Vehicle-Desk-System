@@ -12,6 +12,7 @@ from .monthly_trip_counts import increment_completed_trip_stat
 from ..services.user_notification import emit_new_notification
 from ..utils.socket_manager import sio
 from typing import Optional
+from ..services.admin_rides_service import update_monthly_usage_stats
 
 def get_ride_needing_feedback(db: Session, user_id: int) -> Optional[Ride]:
     return db.query(Ride).filter(
@@ -32,7 +33,7 @@ def mark_feedback_submitted(db: Session, ride_id: str):
         ride.feedback_submitted = True
         db.commit()
     return ride
-def process_completion_form(db: Session, user: User, form_data: CompletionFormData):
+async def process_completion_form(db: Session, user: User, form_data: CompletionFormData):
     print("this is the current user:",user.username)
     print("dep id:",user.department_id)
     print("user id:",user.employee_id)
@@ -51,6 +52,9 @@ def process_completion_form(db: Session, user: User, form_data: CompletionFormDa
     print("completed?",form_data.completed)
     if form_data.completed:
         ride.status = RideStatus.completed
+
+        # הוספת עדכון סטטיסטיקות שימוש ברכב:
+        update_monthly_usage_stats(db=db, ride=ride)
 
         # Increment completed trips count for the employee immediately.
         increment_completed_trip_stat(db, ride.user_id, ride.start_datetime)

@@ -2,7 +2,6 @@
 /* Base Styles */ 
 
 .page-container {
-  background-color: #cccccc;
   min-height: calc(100vh - 55px);
   padding: 25px;
   direction: rtl;
@@ -20,7 +19,6 @@
   left: 50%;
   transform: translate(-50%, -50%);
   max-width: 800px;
-  background-color: #fff;
   border: 1px solid #e0e0e0;
   margin-top: 250px;
 }  
@@ -40,6 +38,8 @@
 .content {
   padding: 25px 20px;
   position: relative;
+    background-color: #fff;
+
 }  
 
 .header {
