@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional , Dict
 from datetime import datetime
 from sqlalchemy.orm import Session
 from sqlalchemy import String, extract, func
@@ -8,6 +8,8 @@ from ..models.ride_model import Ride, RideStatus
 from ..models.vehicle_model import Vehicle
 from ..models.user_model import User  
 from ..schemas.ride_dashboard_item import RideDashboardItem
+import calendar
+from ..models.monthly_vehicle_usage_model import MonthlyVehicleUsage
 
 def filter_rides(query, status: Optional[RideStatus], from_date, to_date):
     if status:
@@ -120,32 +122,56 @@ def get_order_by_ride_id(db: Session, ride_id: UUID) -> Optional[RideDashboardIt
     )
 
 
-def get_vehicle_usage_stats(db, year, month):
-    import calendar
-    total_days = calendar.monthrange(year, month)[1]
-    total_seconds_in_month = total_days * 24 * 3600
+def update_monthly_usage_stats(db: Session, ride: Ride):
 
-    rides_data = (
-        db.query(
-            Ride.vehicle_id,
-            func.count(Ride.id).label("ride_count"),
-            func.sum(Ride.estimated_distance_km).label("total_distance"),
-            func.sum(func.extract('epoch', Ride.end_datetime) - func.extract('epoch', Ride.start_datetime)).label("total_usage_seconds")
+    if not ride.end_datetime:
+        ride.end_datetime = datetime.utcnow()
+
+    year = ride.start_datetime.year
+    month = ride.start_datetime.month
+    duration_hours = (ride.end_datetime - ride.start_datetime).total_seconds() / 3600.0
+    distance = float(ride.actual_distance_km or 0)
+
+    stats = db.query(MonthlyVehicleUsage).filter_by(
+        vehicle_id=ride.vehicle_id,
+        year=year,
+        month=month
+    ).first()
+
+    if stats:
+        stats.total_rides += 1
+        stats.total_km += distance
+        stats.usage_hours += duration_hours
+    else:
+        stats = MonthlyVehicleUsage(
+            vehicle_id=ride.vehicle_id,
+            year=year,
+            month=month,
+            total_rides=1,
+            total_km=distance,
+            usage_hours=duration_hours
         )
-        .filter(extract('year', Ride.start_datetime) == year)
-        .filter(extract('month', Ride.start_datetime) == month)
-        .group_by(Ride.vehicle_id)
-        .all()
-    )
+        db.add(stats)
 
-    stats = []
-    for vehicle_id, ride_count, total_distance, total_usage_seconds in rides_data:
-        usage_seconds = total_usage_seconds or 0
-        percentage_in_use_time = (usage_seconds / total_seconds_in_month) * 100 if total_seconds_in_month > 0 else 0
-        stats.append({
-            "vehicle_id": str(vehicle_id),
-            "total_rides": ride_count,
-            "total_km": total_distance or 0,
-            "percentage_in_use_time": round(percentage_in_use_time, 2)
-        })
-    return stats
+
+def get_current_month_vehicle_usage(db: Session) -> List[Dict]:
+    now = datetime.utcnow()
+    current_year = now.year
+    current_month = now.month
+
+    usage_entries = db.query(MonthlyVehicleUsage).filter_by(
+        year=current_year,
+        month=current_month
+    ).all()
+
+    return [
+        {
+            "vehicle_id": str(entry.vehicle_id),
+            "year": entry.year,
+            "month": entry.month,
+            "total_rides": entry.total_rides,
+            "total_km": entry.total_km,
+            "usage_hours": entry.usage_hours
+        }
+        for entry in usage_entries
+    ]

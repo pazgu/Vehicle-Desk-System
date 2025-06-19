@@ -249,9 +249,14 @@ def get_departments_route():
     return get_departments()
 
 @router.patch("/api/orders/{order_id}")
-async def patch_order(order_id: UUID, patch_data: OrderCardItem, db: Session = Depends(get_db)):
+async def patch_order(
+    order_id: UUID,
+    patch_data: OrderCardItem,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     # Update the order
-    updated_order = patch_order_in_db(order_id, patch_data, db)
+    updated_order = patch_order_in_db(order_id, patch_data, db, changed_by=str(current_user.employee_id))
     user = db.query(User).filter(User.employee_id == updated_order.user_id).first()
     vehicle = db.query(Vehicle).filter(Vehicle.id == updated_order.vehicle_id).first()
 
@@ -355,12 +360,12 @@ def read_ride(ride_id: UUID, db: Session = Depends(get_db)):
     return ride
 
 @router.post("/api/complete-ride-form", status_code=fastapi_status.HTTP_200_OK)
-def submit_completion_form(
+async def submit_completion_form(
     form_data: CompletionFormData,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user)
 ):
-    return process_completion_form(db, user, form_data)
+    return await process_completion_form(db, user, form_data)
 
 
 @router.get("/api/archived-orders/{user_id}", response_model=List[RideSchema])
@@ -379,7 +384,7 @@ def get_pending_car_orders(db: Session = Depends(get_db)):
     pending_rides = (
         db.query(Ride)
         .filter(Ride.status == "pending")
-        .all()
+        .all()  
     )
 
     result = []

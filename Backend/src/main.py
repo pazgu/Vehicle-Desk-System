@@ -5,6 +5,7 @@ from socketio import ASGIApp
 from src.routes.user_routes import router as user_route
 from src.routes.supervisor_routes import router as supervisor_route
 from src.routes.admin_routes import router as admin_route
+from src.routes.vehicle_routes import router as vehicle_route
 from src.routes.inspector_routes import router as inspector_route
 from fastapi import Request
 from src.utils.scheduler import start_scheduler
@@ -37,6 +38,7 @@ app.include_router(user_route, tags=["Users"])
 app.include_router(supervisor_route, prefix="/api", tags=["Supervisors"])
 app.include_router(admin_route, prefix="/api", tags=["Admin"])
 app.include_router(inspector_route, prefix="/api", tags=["Inspector"])
+app.include_router(vehicle_route, prefix="/api")
 
 start_scheduler()
 

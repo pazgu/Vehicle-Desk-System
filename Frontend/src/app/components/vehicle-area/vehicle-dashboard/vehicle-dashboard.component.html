@@ -36,29 +36,34 @@
       </div>
 
       <!-- Filters Section -->
-      <div
-        *ngIf="showFilters"
-        style="margin-bottom: 1.5rem; background: #f7f7f7; padding: 1rem; border-radius: 8px; direction: rtl;"
-      >
-        <div style="margin-bottom: 1rem;">
-          <label for="statusFilter">סטטוס:</label>
-          <select id="statusFilter" [(ngModel)]="statusFilter">
+      <div *ngIf="showFilters"
+        style="margin-bottom: 1.5rem; background: #f7f7f7; padding: 1rem; border-radius: 8px; direction: rtl;">
+        <div style="margin-bottom: 1rem; gap: 1rem; display: flex;">
+          <label for="statusFilter"> סטטוס:</label>
+          <select  class="statusFilter" id="statusFilter" [(ngModel)]="statusFilter">
             <option value="">הצג הכל</option>
             <option value="זמין">זמין</option>
             <option value="בשימוש">בשימוש</option>
             <option value="מוקפא">מוקפא</option>
           </select>
         </div>
+
+        <div style="margin-bottom: 1rem; gap: 1rem; display: flex;">
+          <label for="typeFilter"> סוג:</label>
+          <select class="typeFilter" [(ngModel)]="typeFilter">
+            <option value="">הצג הכל</option>
+            <option value="קטן">קטן</option>
+            <option value="גדול">גדול</option>
+            <option value="ואן">ואן</option>
+          </select>
+        </div>
       </div>
 
-      <!-- Vehicle Cards -->
-      <div class="vehicles-cards" style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: flex-start;">
-        <p-card
-          *ngFor="let vehicle of filteredVehicles"
-          [styleClass]="'vehicle-card ' + getCardClass(vehicle.status)"
-          (click)="goToVehicleDetails(vehicle.id)"
-          [style]="{ width: '250px', cursor: 'pointer' }">
-        >
+
+      <div class="vehicles-cards">
+        <p-card *ngFor="let vehicle of filteredVehicles"
+                [styleClass]="'vehicle-card ' + getCardClass(vehicle.status)"
+                (click)="goToVehicleDetails(vehicle.id)">
           <ng-template pTemplate="header">
             <img
               *ngIf="vehicle.image_url"
