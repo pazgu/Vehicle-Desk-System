@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime, timezone
 from uuid import UUID
 
@@ -8,9 +9,11 @@ from ..models.user_model import User
 from ..models.vehicle_inspection_model import VehicleInspection
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 from ..services.user_notification import create_system_notification
+from ..utils.socket_manager import sio
 
 
-def create_inspection(data: VehicleInspectionSchema, db: Session):
+
+async def create_inspection(data: VehicleInspectionSchema, db: Session):
     """
     Creates and saves a vehicle inspection record.
     Sends critical issue notifications to all admin users if needed.
@@ -31,21 +34,38 @@ def create_inspection(data: VehicleInspectionSchema, db: Session):
         db.refresh(inspection)
         print(f"✅ Inspection saved: {inspection.inspection_id}")
 
-        # Notify admins if a critical issue was reported
-        if data.critical_issue_bool and data.issues_found and data.issues_found.strip():
-            admin_users = db.query(User).filter(User.role == "admin").all()
-            for admin in admin_users:
-                create_system_notification(
-                    user_id=admin.employee_id,
-                    title="🚨 דיווח חריג בבדיקת רכב",
-                    message=f"זוהתה בעיה חמורה: {data.issues_found}",
-                )
-                print(f"🔔 Notification sent to admin {admin.username} (ID: {admin.employee_id})")
+        try:
+            await sio.emit("new_inspection", {
+                "inspection_id": str(inspection.inspection_id),
+                "inspection_date": inspection.inspection_date.isoformat(),
+                "inspected_by": str(inspection.inspected_by),
+                "clean": inspection.clean,
+                "fuel_checked": inspection.fuel_checked,
+                "no_items_left": inspection.no_items_left,
+                "critical_issue_bool": inspection.critical_issue_bool,
+                "issues_found": inspection.issues_found,
+            })
+            print(f"📢 Emitted new_inspection event for {inspection.inspection_id}")
 
-        return {
-            "message": "Inspection saved successfully",
-            "inspection_id": str(inspection.inspection_id)
-        }
+        except Exception as socket_error:
+            print("❌ Failed to emit new_inspection event:", socket_error)  
+
+
+        # # Notify admins if a critical issue was reported
+        # if data.critical_issue_bool and data.issues_found and data.issues_found.strip():
+        #     admin_users = db.query(User).filter(User.role == "admin").all()
+        #     for admin in admin_users:
+        #         create_system_notification(
+        #             user_id=admin.employee_id,
+        #             title="🚨 דיווח חריג בבדיקת רכב",
+        #             message=f"זוהתה בעיה חמורה: {data.issues_found}",
+        #         )
+        #         print(f"🔔 Notification sent to admin {admin.username} (ID: {admin.employee_id})")
+
+        # return {
+        #     "message": "Inspection saved successfully",
+        #     "inspection_id": str(inspection.inspection_id)
+        # }
 
     except Exception as e:
         print("❌ Failed to save inspection:", e)

@@ -32,6 +32,11 @@ from sqlalchemy import cast, Date
 from ..schemas.audit_schema import AuditLogsSchema
 from src.services.audit_service import get_all_audit_logs
 from ..utils.socket_manager import sio
+from ..services.admin_rides_service import get_current_month_vehicle_usage
+from fastapi.security import OAuth2PasswordBearer
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+from ..utils.auth import role_check
+
 router = APIRouter()
 
 @router.get("/orders", response_model=list[RideDashboardItem])
@@ -123,38 +128,39 @@ def get_roles():
     return [role.value for role in UserRole]
 
 
-@router.post("/vehicle-inspection")
-def vehicle_inspection(data: VehicleInspectionSchema, db: Session = Depends(get_db),payload: dict = Depends(token_check)):
-    try:
-        return vehicle_inspection_logic(data, db)
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+# @router.post("/vehicle-inspection")
+# def vehicle_inspection(data: VehicleInspectionSchema, db: Session = Depends(get_db),payload: dict = Depends(token_check)):
+#     try:
+#         return vehicle_inspection_logic(data, db)
+#     except HTTPException as e:
+#         raise e
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
     
 
-@router.patch("/{vehicle_id}/status")
-def patch_vehicle_status(
-    vehicle_id: UUID,
-    status_update: VehicleStatusUpdate,
-    db: Session = Depends(get_db),
-    payload: dict = Depends(token_check)
-):
-    user_id = payload.get("user_id") or payload.get("sub")
-    if not user_id:
-        return {"error": "User ID not found in token"}, 401
-     
-    res=update_vehicle_status(vehicle_id, status_update.new_status, status_update.freeze_reason, db, user_id)
-    new_status=res.new_status
-    sio.emit('vehicle_status_updated', {
-            "vehicle_id": str(vehicle_id),
-            "status": new_status,
-    })
-    return res
+# @router.patch("/{vehicle_id}/status")
+# def patch_vehicle_status(
+#     vehicle_id: UUID,
+#     status_update: VehicleStatusUpdate,
+#     db: Session = Depends(get_db),
+#     payload: dict = Depends(token_check)
+# ):
+#     user_id = payload.get("user_id") or payload.get("sub")
+#     if not user_id:
+#         return {"error": "User ID not found in token"}, 401
+    
+#     res=update_vehicle_status(vehicle_id, status_update.new_status, status_update.freeze_reason, db, user_id)
+#     new_status=res["new_status"]
+#     sio.emit('vehicle_status_updated', {
+#             "vehicle_id": str(vehicle_id),
+#             "status": new_status,
+#             "freeze_reason": res.get("freeze_reason", "")
+#     })
+#     return res
 
-@router.get("/vehicle/{vehicle_id}")
-def get_vehicle_by_id_route(vehicle_id: str, db: Session = Depends(get_db)):
-    return get_vehicle_by_id(vehicle_id, db)
+# @router.get("/vehicle/{vehicle_id}")
+# def get_vehicle_by_id_route(vehicle_id: str, db: Session = Depends(get_db)):
+#     return get_vehicle_by_id(vehicle_id, db)
 
 @router.get("/{ride_id}/available-vehicles", response_model=List[VehicleOut])
 def available_vehicles_for_ride(
@@ -168,11 +174,13 @@ def available_vehicles_for_ride(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
 
-@router.get("/all-vehicles", response_model=List[VehicleOut])
-def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = Depends(get_db)
-    ,payload: dict = Depends(token_check)):
-    vehicles = get_vehicles_with_optional_status(db, status)
-    return vehicles
+# @router.get("/all-vehicles", response_model=List[VehicleOut])
+# def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = Depends(get_db)
+#     ,payload: dict = Depends(token_check)):
+#     vehicles = get_vehicles_with_optional_status(db, status)
+#     return vehicles
+
+
 
 
 @router.post("/notifications/admin", include_in_schema=True,   dependencies=[] )
@@ -205,7 +213,7 @@ def get_today_inspections(db: Session = Depends(get_db)):
     inspections = db.query(VehicleInspection).filter(
         VehicleInspection.inspection_date >= today_start,
         VehicleInspection.inspection_date < tomorrow_start
-    ).all()
+    ).order_by(VehicleInspection.inspection_date.desc()).all()
 
     return inspections
 
@@ -292,3 +300,57 @@ def get_all_audit_logs_route(
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+
+
+@router.get("/vehicles/usage-stats")
+def vehicle_usage_stats(
+    range: str = Query("month"),
+    year: int = Query(..., ge=2000, le=2100),
+    month: int = Query(..., ge=1, le=12),
+    db: Session = Depends(get_db),
+    token: str = Depends(oauth2_scheme)
+):
+    role_check(["admin"], token)  # רק מנהלים מורשים
+    stats = get_vehicle_usage_stats(db, year, month)
+    return {
+        "year": year,
+        "month": month,
+        "stats": stats
+    }
+
+@router.get("/analytics/top-used-vehicles")
+def get_top_used_vehicles(db: Session = Depends(get_db)):
+    try:
+        results = (
+            db.query(
+                Vehicle.plate_number,
+                Vehicle.vehicle_model,
+                func.count(Ride.id).label("ride_count")
+            )
+            .join(Ride, Ride.vehicle_id == Vehicle.id)
+            .group_by(Vehicle.plate_number, Vehicle.vehicle_model)
+            .order_by(func.count(Ride.id).desc())
+            .limit(10)
+            .all()
+        )
+
+        return [
+            {
+                "plate_number": r.plate_number,
+                "vehicle_model": r.vehicle_model,
+                "ride_count": r.ride_count
+            }
+            for r in results
+        ]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"שגיאה בעת טעינת נסיעות לפי רכב: {str(e)}")
+
+@router.get("/api/vehicle-usage-stats", response_model=List[dict])
+def get_vehicle_usage_current_month(db: Session = Depends(get_db)):
+    stats = get_current_month_vehicle_usage(db)
+
+    if not stats:
+        raise HTTPException(status_code=404, detail="No usage stats found for the current month")
+
+    return stats
+

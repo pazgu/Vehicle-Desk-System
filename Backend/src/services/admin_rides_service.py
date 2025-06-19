@@ -1,13 +1,15 @@
-from typing import List, Optional
+from typing import List, Optional , Dict
 from datetime import datetime
 from sqlalchemy.orm import Session
-from sqlalchemy import String
+from sqlalchemy import String, extract, func
 from uuid import UUID
 
 from ..models.ride_model import Ride, RideStatus
 from ..models.vehicle_model import Vehicle
 from ..models.user_model import User  
 from ..schemas.ride_dashboard_item import RideDashboardItem
+import calendar
+from ..models.monthly_vehicle_usage_model import MonthlyVehicleUsage
 
 def filter_rides(query, status: Optional[RideStatus], from_date, to_date):
     if status:
@@ -118,3 +120,58 @@ def get_order_by_ride_id(db: Session, ride_id: UUID) -> Optional[RideDashboardIt
         estimated_distance_km=r.estimated_distance_km,
         status=r.status
     )
+
+
+def update_monthly_usage_stats(db: Session, ride: Ride):
+
+    if not ride.end_datetime:
+        ride.end_datetime = datetime.utcnow()
+
+    year = ride.start_datetime.year
+    month = ride.start_datetime.month
+    duration_hours = (ride.end_datetime - ride.start_datetime).total_seconds() / 3600.0
+    distance = float(ride.actual_distance_km or 0)
+
+    stats = db.query(MonthlyVehicleUsage).filter_by(
+        vehicle_id=ride.vehicle_id,
+        year=year,
+        month=month
+    ).first()
+
+    if stats:
+        stats.total_rides += 1
+        stats.total_km += distance
+        stats.usage_hours += duration_hours
+    else:
+        stats = MonthlyVehicleUsage(
+            vehicle_id=ride.vehicle_id,
+            year=year,
+            month=month,
+            total_rides=1,
+            total_km=distance,
+            usage_hours=duration_hours
+        )
+        db.add(stats)
+
+
+def get_current_month_vehicle_usage(db: Session) -> List[Dict]:
+    now = datetime.utcnow()
+    current_year = now.year
+    current_month = now.month
+
+    usage_entries = db.query(MonthlyVehicleUsage).filter_by(
+        year=current_year,
+        month=current_month
+    ).all()
+
+    return [
+        {
+            "vehicle_id": str(entry.vehicle_id),
+            "year": entry.year,
+            "month": entry.month,
+            "total_rides": entry.total_rides,
+            "total_km": entry.total_km,
+            "usage_hours": entry.usage_hours
+        }
+        for entry in usage_entries
+    ]

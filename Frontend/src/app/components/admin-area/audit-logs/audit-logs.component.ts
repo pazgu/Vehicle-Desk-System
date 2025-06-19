@@ -1,17 +1,16 @@
-// src/app/audit-logs/audit-logs.component.ts
-// adding a comment to make a push request
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuditLogsService } from '../../../services/audit-logs.service';
-import { AuditLogs } from '../../../models/audit-logs/audit-logs.module'; // Ensure this path is correct
+import { AuditLogs } from '../../../models/audit-logs/audit-logs.module';
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
 import { saveAs } from 'file-saver';
 import Papa from 'papaparse';
 import type { TDocumentDefinitions } from 'pdfmake/interfaces';
+import { SocketService } from '../../../services/socket.service';
+import { Router } from '@angular/router';
 
-// Set pdfMake fonts to use the embedded Roboto font
 (pdfMake as any).vfs = pdfFonts.vfs;
 (pdfMake as any).fonts = {
   Roboto: {
@@ -30,21 +29,19 @@ import type { TDocumentDefinitions } from 'pdfmake/interfaces';
   styleUrls: ['./audit-logs.component.css']
 })
 export class AuditLogsComponent implements OnInit {
-
-
   showFilters = false;
   searchTerm = '';
-
-
   filteredLogs: any[] = [];
   selectedLog: any | null = null;
-  objectKeys = Object.keys; // Still useful if you need to iterate over object keys dynamically
+  objectKeys = Object.keys;
 
-  constructor(private auditLogService: AuditLogsService) { }
   logs: AuditLogs[] = [];
-
   pageSize = 5;
   currentPage = 1;
+
+  selectedRange = '';
+  customFromDate: string = '';
+  customToDate: string = '';
 
   vehicleFieldLabels: { [key: string]: string } = {
     id: 'מזהה רכב',
@@ -59,12 +56,35 @@ export class AuditLogsComponent implements OnInit {
     freeze_details: 'פרטי הקפאה',
     current_location: 'מיקום נוכחי',
     odometer_reading: 'מד מרחק',
-    // add more as needed
   };
 
   getVehicleFieldLabel(key: string): string {
     return this.vehicleFieldLabels[key] || key;
   }
+
+  getRideAuditRows(oldData: any, newData: any): Array<{label: string, oldValue: any, newValue: any}> {
+  return [
+    { label: 'מזהה נסיעה', oldValue: oldData.id, newValue: newData.id },
+    { 
+      label: 'מסלול', 
+      oldValue: `${oldData.start_location || ''} → ${oldData.stop || ''} → ${oldData.destination || ''}`, 
+      newValue: `${newData.start_location || ''} → ${newData.stop || ''} → ${newData.destination || ''}` 
+    },
+    { label: 'סוג נסיעה', oldValue: oldData.ride_type, newValue: newData.ride_type },
+    { label: 'משתמש', oldValue: oldData.user_id, newValue: newData.user_id },
+    { label: 'משתמש עוקף', oldValue: oldData.override_user_id, newValue: newData.override_user_id },
+    { label: 'רכב', oldValue: oldData.vehicle_id, newValue: newData.vehicle_id },
+    { label: 'סטטוס', oldValue: oldData.status, newValue: newData.status },
+    { label: 'ארכיון', oldValue: oldData.isArchive, newValue: newData.isArchive },
+    { label: 'זמן התחלה', oldValue: oldData.start_datetime, newValue: newData.start_datetime },
+    { label: 'זמן סיום', oldValue: oldData.end_datetime, newValue: newData.end_datetime },
+    { label: 'תאריך שליחה', oldValue: oldData.submitted_at, newValue: newData.submitted_at },
+    { label: 'מרחק מוערך (ק"מ)', oldValue: oldData.estimated_distance_km, newValue: newData.estimated_distance_km },
+    { label: 'מרחק בפועל (ק"מ)', oldValue: oldData.actual_distance_km, newValue: newData.actual_distance_km },
+    { label: 'בדיקת רישיון עברה', oldValue: oldData.license_check_passed, newValue: newData.license_check_passed },
+    { label: 'אירוע חירום', oldValue: oldData.emergency_event, newValue: newData.emergency_event }
+  ];
+}
 
   rideFieldLabels: { [key: string]: string } = {
     id: 'מזהה נסיעה',
@@ -86,49 +106,85 @@ export class AuditLogsComponent implements OnInit {
     estimated_distance_km: 'מרחק משוער (ק"מ)'
   };
 
+  constructor(
+    private auditLogService: AuditLogsService,
+    private socketService: SocketService,
+    private router: Router
+  ) {}
+
   ngOnInit() {
-    this.loadLogs();
+    this.onRangeChange();
+
+    this.socketService.auditLogs$.subscribe((newLog) => {
+      if (newLog) {
+        this.logs = [newLog, ...this.logs];
+        this.filteredLogs = [...this.logs];
+      }
+    });
   }
 
-  loadLogs() {
-    this.auditLogService.getAuditLogs().subscribe(
-      (data) => {
-        this.logs = data.map(log => ({
-          ...log,
-          // 'createdAt' property was not used in the provided JSON,
-          // sticking to 'created_at' as per your API response for consistency
-          // If you need a Date object, you can add it:
-          // createdAt: new Date(log.created_at)
-        }));
-        this.filteredLogs = [...this.logs]; // Initialize filtered logs
-      });
+  onRangeChange() {
+    let fromDate: string | undefined;
+    let toDate: string | undefined;
+    const today = new Date();
+
+    if (this.selectedRange === '7days') {
+      fromDate = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      toDate = today.toISOString();
+    } else if (this.selectedRange === 'thisMonth') {
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+      fromDate = firstDay.toISOString();
+      toDate = today.toISOString();
+    } else if (this.selectedRange === '30days') {
+      fromDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      toDate = today.toISOString();
+    } else if (this.selectedRange === 'custom') {
+      fromDate = this.customFromDate ? new Date(this.customFromDate + 'T00:00:00').toISOString() : undefined;
+      toDate = this.customToDate ? new Date(this.customToDate + 'T23:59:59').toISOString() : undefined;
+    }
+    if (this.selectedRange === '7days') {
+      fromDate = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      toDate = today.toISOString();
+    } else if (this.selectedRange === 'thisMonth') {
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+      fromDate = firstDay.toISOString();
+      toDate = today.toISOString();
+    } else if (this.selectedRange === '30days') {
+      fromDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      toDate = today.toISOString();
+    } else if (this.selectedRange === 'custom') {
+      fromDate = this.customFromDate ? new Date(this.customFromDate + 'T00:00:00').toISOString() : undefined;
+      toDate = this.customToDate ? new Date(this.customToDate + 'T23:59:59').toISOString() : undefined;
+    }
+
+    this.fetchAuditLogs(fromDate, toDate);
+  }
+
+  fetchAuditLogs(fromDate?: string, toDate?: string) {
+    this.auditLogService.getAuditLogs(fromDate, toDate).subscribe((data) => {
+      this.logs = data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      this.filteredLogs = [...this.logs];
+      this.currentPage = 1;
+    });
   }
 
   filterLogs() {
-    if (!this.searchTerm.trim()) {
-      this.filteredLogs = [...this.logs];
-      return;
-    }
-
     const searchLower = this.searchTerm.toLowerCase();
     this.filteredLogs = this.logs.filter(log =>
       log.action?.toLowerCase().includes(searchLower) ||
-      log.entity_type?.toLowerCase().includes(searchLower) || // Added entity_type to search
-      log.entity_id?.toLowerCase().includes(searchLower) || // Added entity_id to search
-      log.full_name?.toString().toLowerCase().includes(searchLower)
+      log.entity_type?.toLowerCase().includes(searchLower) ||
+      log.entity_id?.toLowerCase().includes(searchLower) ||
+      log.full_name?.toLowerCase().includes(searchLower)
     );
   }
 
-  // Method to show details of a selected log
-  showDetails(log: AuditLogs) { // Type the 'log' parameter
+  showDetails(log: AuditLogs) {
     this.selectedLog = log;
   }
 
-  // Method to close the details card
   closeDetails() {
     this.selectedLog = null;
   }
-
 
   get totalPages(): number {
     return Math.ceil(this.filteredLogs.length / this.pageSize) || 1;
@@ -139,11 +195,6 @@ export class AuditLogsComponent implements OnInit {
     return this.filteredLogs.slice(start, start + this.pageSize);
   }
 
-
-  onPageChange(event: any) {
-    this.currentPage = event.page + 1;
-  }
-
   nextPage() {
     if (this.currentPage < this.totalPages) this.currentPage++;
   }
@@ -152,17 +203,17 @@ export class AuditLogsComponent implements OnInit {
     if (this.currentPage > 1) this.currentPage--;
   }
 
+
+
   getRideFieldLabel(key: string): string {
     return this.rideFieldLabels[key] || key;
   }
 
   private getLogsForThisWeek(): any[] {
     const now = new Date();
-    const dayOfWeek = (now.getDay() + 6) % 7; // 0 = Monday, 6 = Sunday
     const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - dayOfWeek);
+    startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
     startOfWeek.setHours(0, 0, 0, 0);
-
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 6);
     endOfWeek.setHours(23, 59, 59, 999);
@@ -175,7 +226,6 @@ export class AuditLogsComponent implements OnInit {
 
   exportToPDF() {
     const weeklyLogs = this.getLogsForThisWeek();
-
     const docDefinition: TDocumentDefinitions = {
       content: [
         { text: `Weekly report of system logs`, style: 'header', alignment: 'center' },
@@ -207,24 +257,52 @@ export class AuditLogsComponent implements OnInit {
         }
       }
     };
-
     pdfMake.createPdf(docDefinition).download('audit_logs_weekly.pdf');
   }
 
   exportToCSV() {
     const weeklyLogs = this.getLogsForThisWeek();
-
     const csvData = weeklyLogs.map(log => ({
       actionType: log.action,
       fullName: log.full_name,
       entityType: log.entity_type,
       createdAt: new Date(log.created_at).toLocaleString('he-IL')
     }));
-
     const csv = Papa.unparse(csvData);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     saveAs(blob, 'audit_logs_weekly.csv');
   }
 
+  getUserAuditRows(oldData: any, newData: any): Array<{label: string, oldValue: any, newValue: any}> {
+    return [
+      { label: 'שם פרטי', oldValue: oldData.first_name, newValue: newData.first_name },
+      { label: 'שם משפחה', oldValue: oldData.last_name, newValue: newData.last_name },
+      { label: 'שם משתמש', oldValue: oldData.username, newValue: newData.username },
+      { label: 'אימייל', oldValue: oldData.email, newValue: newData.email },
+      { label: 'תפקיד', oldValue: oldData.role, newValue: newData.role },
+      { label: 'מזהה עובד', oldValue: oldData.employee_id, newValue: newData.employee_id },
+      { label: 'מזהה מחלקה', oldValue: oldData.department_id, newValue: newData.department_id }
+    ];
+  }
 
+  getVehicleAuditRows(oldData: any, newData: any): Array<{label: string, oldValue: any, newValue: any}> {
+    return [
+      { label: 'מספר רכב', oldValue: oldData.plate_number, newValue: newData.plate_number },
+      { label: 'סוג רכב', oldValue: oldData.type, newValue: newData.type },
+      { label: 'סוג דלק', oldValue: oldData.fuel_type, newValue: newData.fuel_type },
+      { label: 'סטטוס', oldValue: oldData.status, newValue: newData.status },
+      { label: 'סיבת הקפאה', oldValue: oldData.freeze_reason, newValue: newData.freeze_reason },
+      { label: 'מיקום נוכחי', oldValue: oldData.current_location, newValue: newData.current_location },
+      { label: 'קילומטראז\'', oldValue: oldData.odometer_reading, newValue: newData.odometer_reading },
+      { label: 'דגם רכב', oldValue: oldData.vehicle_model, newValue: newData.vehicle_model },
+      { label: 'תמונה', oldValue: oldData.image_url, newValue: newData.image_url }
+    ];
+  }
+
+  vehicleRedirect(vehicleId: string) {
+    if (vehicleId) {
+      this.router.navigate(['/vehicle-details', vehicleId]);
+      // Or: this.router.navigate(['/vehicles', vehicleId]);
+    }
+  }
 }

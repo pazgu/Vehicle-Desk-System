@@ -17,81 +17,6 @@ from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 from ..utils.audit_utils import log_action 
 from ..schemas.user_rides_schema import RideSchema 
 
-# def get_available_vehicles(db: Session, type: Optional[VehicleType] = None) -> List[Vehicle]:
-#     query = db.query(Vehicle).filter(Vehicle.status == VehicleStatus.available)
-
-#     if type:
-#         # Convert both the database value and the input to lowercase and trim any spaces
-#         query = query.filter(
-#             func.trim(func.lower(cast(Vehicle.type, String))) == type.lower()
-#         )
-
-#     return query.all()
-
-# # def get_in_use_vehicles(db: Session, type: Optional[VehicleType] = None) -> List[Vehicle]:
-# #     query = db.query(Vehicle).filter(Vehicle.status == VehicleStatus.in_use)
-
-# #     if type:
-# #         query = query.filter(
-# #             func.trim(func.lower(cast(Vehicle.type, String))) == type.lower()
-# #         )
-
-# #     return query.all()
-
-# def get_frozen_vehicles(db: Session, type: Optional[VehicleType] = None) -> List[Vehicle]:
-#     query = db.query(Vehicle).filter(Vehicle.status == VehicleStatus.frozen)
-
-#     if type:
-#         query = query.filter(
-#             func.trim(func.lower(cast(Vehicle.type, String))) == type.lower()
-#         )
-
-#     return query.all()
-
-# def get_in_use_vehicles(db: Session):
-#     result = (
-#         db.query(
-#             Vehicle.id,
-#             Vehicle.plate_number,
-#             Vehicle.type,
-#             Vehicle.fuel_type,
-#             Vehicle.status,
-#             Vehicle.odometer_reading,
-#             User.employee_id.label("user_id"),
-#             User.first_name,
-#             User.last_name,
-#             Ride.start_datetime,
-#             Ride.end_datetime
-#         )
-#         .join(Ride, Vehicle.id == Ride.vehicle_id)
-#         .join(User, Ride.user_id == User.employee_id)
-#         .filter(Vehicle.status == "in_use")
-#         .all()
-#     )
-
-#     # הופך את הרשומות לדיקטים
-#     return [dict(r._mapping) for r in result]
-
-# ----------------------------------------------------------------------
-# def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
-    
-#     inspection = VehicleInspection(
-#         vehicle_id=data.vehicle_id,
-#         inspected_by=data.inspected_by,
-#         fuel_level=data.fuel_level,
-#         tires_ok=data.tires_ok,
-#         clean=data.clean,
-#         issues_found=data.issues_found,
-#         inspection_date=datetime.utcnow()
-#     )
-
-#     db.add(inspection)
-
-#     db.commit()
-
-#     return {"message": "Ride completed and vehicle inspection recorded successfully"}
-# ----------------------------------------------------------------------
-
 def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
     inspection = VehicleInspection(
         inspected_by=data.inspected_by,
@@ -185,21 +110,22 @@ def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_re
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
-    log_action(
-        db=db,
-        action="update_vehicle_status",
-        entity_type="Vehicle",
-        entity_id=str(vehicle.id),
-        change_data={
-            "new_status": str(vehicle.status),
-            "freeze_reason": vehicle.freeze_reason
-        },
-        changed_by=changed_by,
-        checkbox_value=True,  # or the actual value
-        inspected_at=datetime.utcnow(),  # or the actual inspection time
-        inspector_id=changed_by,  # or the actual inspector's ID
-        notes=notes  # can be None
-    )
+    # log_action(
+    #     db=db,
+    #     action="update_vehicle_status",
+    #     entity_type="Vehicle",
+    #     entity_id=str(vehicle.id),
+    #     change_data={
+    #         "new_status": str(vehicle.status),
+    #         "freeze_reason": vehicle.freeze_reason
+    #     },
+    #     changed_by=changed_by,
+    #     checkbox_value=True,  # or the actual value
+    #     inspected_at=datetime.utcnow(),  # or the actual inspection time
+    #     inspector_id=changed_by,  # or the actual inspector's ID
+    #     notes=notes  # can be None
+    # )
+    
     db.execute(text("SET session.audit.user_id = DEFAULT"))
     return {"vehicle_id": vehicle.id, "new_status": vehicle.status, "freeze_reason": vehicle.freeze_reason}
 

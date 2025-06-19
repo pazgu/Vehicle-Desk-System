@@ -4,3 +4,55 @@
     box-sizing: border-box;
   }
 
+  #RideForm{
+    height: 50%;
+    z-index: 1000;
+  }
+
+.feedback-button-container {
+
+  z-index: 1000;
+  background-color: rgba(0, 0, 0, 0.231);
+}
+
+
+
+.feedback-button {
+  background-color: #942222;
+  color: white;
+  font-size: 16px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  text-decoration: none;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: background-color 0.2s;
+}
+
+.feedback-button:hover {
+  background-color: #b93333;
+}
+
+.modal-overlay {
+  position: fixed;
+  bottom: 40%;
+  right: 45%;
+  z-index: 1000;
+
+  background-color: #007bff; /* Bootstrap blue */
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.532);
+  transition: background-color 0.3s ease;
+}
+.modal-overlay:hover {
+  background-color: #b30000; /* Darker blue on hover */
+}
+
+
+

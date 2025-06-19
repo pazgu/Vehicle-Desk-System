@@ -10,7 +10,7 @@ from src.models.user_model import User
 router = APIRouter()
 
 @router.post("/vehicle-inspections")
-def submit_inspection(
+async def submit_inspection(
     request: Request,
     data: VehicleInspectionSchema,
     db: Session = Depends(get_db),
@@ -27,4 +27,4 @@ def submit_inspection(
     token = token.split(" ")[1]
     role_check(["inspector"], token)
 
-    return create_inspection(data, db)
+    return await create_inspection(data, db)

@@ -40,6 +40,19 @@ def create_user(user_data: UserCreate, db: Session):
         db.commit()
         db.refresh(new_user)
 
+        # After user is created, update the last audit log for this user
+        from ..models.audit_log_model import AuditLog  # Adjust import as needed
+
+        last_audit = db.query(AuditLog).filter(
+            AuditLog.entity_type == "User",
+            AuditLog.entity_id == str(new_user.employee_id),
+            AuditLog.action == "INSERT"
+        ).order_by(AuditLog.created_at.desc()).first()
+
+        if last_audit and last_audit.changed_by is None:
+            last_audit.changed_by = new_user.employee_id
+            db.commit()
+
         token_data = create_access_token(
             employee_id=str(new_user.employee_id),
             username=new_user.username,

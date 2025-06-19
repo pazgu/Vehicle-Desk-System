@@ -49,12 +49,15 @@
     <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/admin/daily-inspections']" class="nav-link" href="#"> בדיקות של זלמן | </a>
     <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/admin/analytics']" class="nav-link" href="#">מידע</a>
 
-
+    <a *ngIf="(role$ | async) === 'supervisor'" [routerLink]="['/vehicle-dashboard']" class="nav-link" href="#">רכבים | </a>
     <a *ngIf="(role$ | async) === 'supervisor'" [routerLink]="['/supervisor-dashboard']" class="nav-link" href="#">הזמנות מחלקה   </a>
 
       <a *ngIf="(role$ | async) === 'employee'" [routerLink]="['/all-rides']" class="nav-link" href="#">ההזמנות שלי </a>
+      <a *ngIf="(role$ | async) === 'inspector'" [routerLink]="['/inspector/vehicles']" class="nav-link"> רכבים |</a>
 
-      <a *ngIf="(role$ | async) === 'inspector'" [routerLink]="['/inspector/inspection']" class="nav-link">בדיקת רכבים</a>
+
+      <a *ngIf="(role$ | async) === 'inspector'" [routerLink]="['/inspector/inspection']" class="nav-link"> בדיקת רכבים </a>
+
 
      <a routerLink="/notifications">
   <img src="/assets/images/bell-icon.png" alt="Notifications" />
@@ -65,6 +68,7 @@
   <!-- <img src="/assets/images/street.png" alt="Graphic" class="street-img" /> -->
 </body>
 <div class="navbar-spacer"></div>
+
 
 </html>
 

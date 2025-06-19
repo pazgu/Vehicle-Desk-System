@@ -11,3 +11,8 @@ export interface VehicleOutItem{
   vehicle_model: string;
   image_url: string;
 }
+export enum FreezeReason {
+  accident = 'accident',
+  maintenance = 'maintenance',
+  personal = 'personal',
+}

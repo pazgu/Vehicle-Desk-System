@@ -52,6 +52,7 @@ from ..services.city_service import calculate_distance
 from ..services.city_service import get_cities
 from ..schemas.city_schema import City
 
+from ..services.user_form import get_ride_needing_feedback
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -248,9 +249,14 @@ def get_departments_route():
     return get_departments()
 
 @router.patch("/api/orders/{order_id}")
-async def patch_order(order_id: UUID, patch_data: OrderCardItem, db: Session = Depends(get_db)):
+async def patch_order(
+    order_id: UUID,
+    patch_data: OrderCardItem,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     # Update the order
-    updated_order = patch_order_in_db(order_id, patch_data, db)
+    updated_order = patch_order_in_db(order_id, patch_data, db, changed_by=str(current_user.employee_id))
     user = db.query(User).filter(User.employee_id == updated_order.user_id).first()
     vehicle = db.query(Vehicle).filter(Vehicle.id == updated_order.vehicle_id).first()
 
@@ -354,12 +360,12 @@ def read_ride(ride_id: UUID, db: Session = Depends(get_db)):
     return ride
 
 @router.post("/api/complete-ride-form", status_code=fastapi_status.HTTP_200_OK)
-def submit_completion_form(
+async def submit_completion_form(
     form_data: CompletionFormData,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user)
 ):
-    return process_completion_form(db, user, form_data)
+    return await process_completion_form(db, user, form_data)
 
 
 @router.get("/api/archived-orders/{user_id}", response_model=List[RideSchema])
@@ -378,7 +384,7 @@ def get_pending_car_orders(db: Session = Depends(get_db)):
     pending_rides = (
         db.query(Ride)
         .filter(Ride.status == "pending")
-        .all()
+        .all()  
     )
 
     result = []
@@ -462,3 +468,25 @@ def get_distance(from_city: str, to_city: str, db: Session = Depends(get_db)):
 def get_cities_route(db: Session = Depends(get_db)):
     cities = get_cities(db)
     return [{"id": str(city.id), "name": city.name} for city in cities]
+@router.get("/api/rides/feedback/check/{user_id}")
+def check_feedback_needed(
+    user_id: UUID,  # Add this parameter to capture the path variable
+    db: Session = Depends(get_db)
+):
+    print(f"Checking feedback for user: {user_id}")
+    
+    # Get the most recent completed ride for this user that needs feedback
+    ride = get_ride_needing_feedback(db, user_id)
+    
+    print(f"Found ride: {ride}")
+    if ride:
+        print(f"Ride ID: {ride.id}, Status: {ride.status}, Feedback submitted: {getattr(ride, 'feedback_submitted', 'FIELD_NOT_EXISTS')}")
+    
+    if not ride:
+        return {"showPage": False, "message": "No rides need feedback"}
+    
+    return {
+        "showPage": True,
+        "ride_id": str(ride.id),
+        "message": "הנסיעה הסתיימה, נא למלא את הטופס"
+    }

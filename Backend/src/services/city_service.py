@@ -21,10 +21,9 @@ def get_coordinates_by_city_id(city_id: str, db: Session):
         raise ValueError(f"City with ID {city_id} not found")
     return float(city.latitude), float(city.longitude)
 
-def calculate_distance(city_name1: str, city_name2: str, db: Session) -> float:
-    city_id1 = normalize_city_name_to_id(city_name1, db)
-    city_id2 = normalize_city_name_to_id(city_name2, db)
-
+def calculate_distance(city_id1: str, city_id2: str, db: Session) -> float:
+    # city_id1 = normalize_city_name_to_id(city_name1, db)
+    # city_id2 = normalize_city_name_to_id(city_name2, db)
     lat1, lon1 = get_coordinates_by_city_id(city_id1, db)
     lat2, lon2 = get_coordinates_by_city_id(city_id2, db)
 
@@ -32,7 +31,7 @@ def calculate_distance(city_name1: str, city_name2: str, db: Session) -> float:
     dlat = radians(lat2 - lat1)
     dlon = radians(lon2 - lon1)
 
-    a = sin(dlat / 2)*2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2)*2
+    a = sin(dlat / 2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2)**2
     c = 2 * atan2(sqrt(a), sqrt(1 - a))
 
     distance = EARTH_RADIUS_KM * c
