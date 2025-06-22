@@ -65,20 +65,28 @@
       <option *ngFor="let year of years" [value]="year">{{ year }}</option>
     </select>
 
-    <button (click)="loadTopUsedVehiclesChart()">סנן</button>
+    <button style="border: solid 1px black; border-radius: 4px;" (click)="loadTopUsedVehiclesChart()">סנן</button>
   </div>
 
-  <div *ngIf="topUsedVehiclesData">
+  <div *ngIf="showChart">
     <button (click)="toggleUsageView()" class="toggle-view-button">
-      {{ isMonthlyView ? 'הצג לפי כל הזמנים' : 'הצג לפי חודש' }}
-    </button>
+    {{ isMonthlyView ? 'הצג לפי כל הזמנים' : 'הצג לפי חודש' }}
+  </button>
 
-    <p-chart
-      type="bar"
-      [data]="topUsedVehiclesData"
-      [options]="topUsedVehiclesOptions"
-    ></p-chart>
+  <p-chart
+    *ngIf="isMonthlyView"
+    type="bar"
+    [data]="monthlyStatsChartData"
+    [options]="monthlyStatsChartOptions"
+  ></p-chart>
 
+  <p-chart
+    *ngIf="!isMonthlyView"
+    type="bar"
+    [data]="allTimeStatsChartData"
+    [options]="allTimeStatsChartOptions"
+    
+  ></p-chart>
     <!-- Legend only relevant for Monthly View -->
     <div class="usage-legend" *ngIf="isMonthlyView">
       <div class="legend-item">
