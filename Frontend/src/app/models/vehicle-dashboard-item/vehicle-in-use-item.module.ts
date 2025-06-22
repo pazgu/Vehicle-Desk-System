@@ -15,4 +15,5 @@ export interface VehicleInItem {
   last_name?: string | null;
   start_datetime?: string | null;
   end_datetime?: string | null;
+  ride_count?: number;
 }

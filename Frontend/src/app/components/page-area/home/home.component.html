@@ -160,6 +160,25 @@
       <button type="submit" class="submit-btn" (click)="submit()">שלח</button>
 
   </div>
+
+<div class="inspector-overlay" *ngIf="showInspectorWarningModal">
+  <div class="inspector-modal">
+
+    <span class="close-icon" (click)="showInspectorWarningModal = false">&times;</span>
+    <h2>שים לב</h2>
+    <p style="font-size: 1.1rem;">
+      שולחן הפקח סגור בין השעות <strong>11:15–12:15</strong>.<br />
+      אנא קבע את שעת ההתחלה לפני או אחרי זמן זה.
+    </p>
+    <div class="modal-buttons">
+  <button class="continue-btn" (click)="confirmInspectorWarning()">הבנתי, המשך</button>
+  <button class="cancel-btn" (click)="showInspectorWarningModal = false">בטל</button>
+</div>
+
+  </div>
+</div>
+
+
 </div>
 
 <router-outlet></router-outlet>
