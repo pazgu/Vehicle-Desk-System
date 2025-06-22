@@ -11,7 +11,6 @@ import { VehicleOutItem } from '../models/vehicle-dashboard-item/vehicle-out-ite
 export class VehicleService {
   private apiUrl = environment.apiUrl; 
   
-
   constructor(private http: HttpClient) { }
 
  getAllVehicles(status?: string, type?: string): Observable<VehicleInItem[]> {
@@ -73,5 +72,15 @@ getAllVehiclesByStatus(status?: string): Observable<VehicleOutItem[]> {
 }
 
 
+getMostUsedVehiclesThisMonth(year: number, month: number): Observable<{ stats: VehicleInItem[] }> {
+  const url = `${this.apiUrl}/vehicles/usage-stats`;
+  return this.http.get<{ stats: VehicleInItem[] }>(url, {
+    params: {
+      range: 'month',
+      year,
+      month
+    }
+  });
+}
 
 }

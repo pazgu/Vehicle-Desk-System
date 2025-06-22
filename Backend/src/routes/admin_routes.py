@@ -29,6 +29,7 @@ from sqlalchemy import func
 from fastapi.responses import JSONResponse
 from src.models.ride_model import Ride
 from sqlalchemy import cast, Date
+from src.utils.stats import generate_monthly_vehicle_usage
 
 from ..schemas.audit_schema import AuditLogsSchema
 from src.services.audit_service import get_all_audit_logs
@@ -294,11 +295,12 @@ def monthly_trip_count_update(db: Session = Depends(get_db)):
 def get_all_audit_logs_route(
     from_date: Optional[datetime] = None,
     to_date: Optional[datetime] = None,
+    problematic_only: bool = Query(False),  
     db: Session = Depends(get_db),
     payload: dict = Depends(token_check)
 ):
     try:
-        return get_all_audit_logs(db, from_date=from_date, to_date=to_date)
+        return get_all_audit_logs(db, from_date=from_date, to_date=to_date, problematic_only=problematic_only)
     except HTTPException as e:
         raise e
     except Exception as e:
@@ -326,6 +328,8 @@ def vehicle_usage_stats(
         raise HTTPException(status_code=400, detail="Missing year or month for monthly stats.")
 
     try:
+        generate_monthly_vehicle_usage(db, year, month)  # ✅ This is the only line you need to add
+
         stats = get_vehicle_usage_stats(db, year, month)
         return {
             "year": year,

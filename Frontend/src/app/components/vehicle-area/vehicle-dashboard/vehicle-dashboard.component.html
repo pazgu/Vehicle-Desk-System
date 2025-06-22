@@ -3,36 +3,46 @@
     <div class="vehicles-wrapper">
       <h1 style="text-align: right;">רכבי מחלקה</h1>
       <br>
+
       <!-- Sort + Filter Toggle -->
       <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; direction: rtl;">
-        <!--  -->
         <button class="filter" (click)="showFilters = !showFilters">
           {{ showFilters ? 'הסתר סינון' : 'הצג סינון' }}
         </button>
+
+        <!-- 🚗 Most Used Toggle -->
+        <button class="filter" (click)="toggleVehicleMode()">
+          {{ showingMostUsed ? 'הצג את כל הרכבים' : 'הכי בשימוש החודש' }}
+        </button>
       </div>
 
-   <div class="status-indicators">
-  <p style="margin-bottom: 0.75rem; font-weight: 600;">מקרא צבעים</p>
-  <div class="status-box">
-    <div class="status-item">
-      <span class="status-indicator available"></span> זמין
-    </div>
-    <div class="status-item">
-      <span class="status-indicator in-use"></span> בשימוש
-    </div>
-    <div class="status-item">
-      <span class="status-indicator frozen"></span> מוקפא
-    </div>
-  </div>
-</div>
+      <!-- 🔔 Notice when filtering by most used -->
+      <div *ngIf="showingMostUsed" style="text-align: right; font-weight: bold; color: #922;">
+        מוצגים רכבים לפי כמות שימושים החודש 
+      </div>
 
+      <!-- Status Legend -->
+      <div class="status-indicators">
+        <p style="margin-bottom: 0.75rem; font-weight: 600;">מקרא צבעים</p>
+        <div class="status-box">
+          <div class="status-item">
+            <span class="status-indicator available"></span> זמין
+          </div>
+          <div class="status-item">
+            <span class="status-indicator in-use"></span> בשימוש
+          </div>
+          <div class="status-item">
+            <span class="status-indicator frozen"></span> מוקפא
+          </div>
+        </div>
+      </div>
 
       <!-- Filters Section -->
       <div *ngIf="showFilters"
         style="margin-bottom: 1.5rem; background: #f7f7f7; padding: 1rem; border-radius: 8px; direction: rtl;">
         <div style="margin-bottom: 1rem; gap: 1rem; display: flex;">
           <label for="statusFilter"> סטטוס:</label>
-          <select  class="statusFilter" id="statusFilter" [(ngModel)]="statusFilter">
+          <select class="statusFilter" id="statusFilter" [(ngModel)]="statusFilter">
             <option value="">הצג הכל</option>
             <option value="זמין">זמין</option>
             <option value="בשימוש">בשימוש</option>
@@ -51,7 +61,7 @@
         </div>
       </div>
 
-
+      <!-- 🚘 Vehicle Cards -->
       <div class="vehicles-cards">
         <p-card *ngFor="let vehicle of filteredVehicles"
                 [styleClass]="'vehicle-card ' + getCardClass(vehicle.status)"
@@ -78,10 +88,17 @@
             <h3>רכב: {{ vehicle.plate_number }}</h3>
             <div *ngIf="vehicle.vehicle_model">
               <strong>דגם:</strong> {{ vehicle.vehicle_model }}
+              <div *ngIf="vehicle.ride_count !== undefined">
+              <strong>שימושים החודש:</strong> {{ vehicle.ride_count }}
             </div>
+          </div>
         </p-card>
       </div>
-      <div *ngIf="filteredVehicles?.length === 0" class="empty-state" style="text-align: center; margin-top: 2rem;">
+
+      <!-- Empty state -->
+      <div *ngIf="filteredVehicles?.length === 0"
+           class="empty-state"
+           style="text-align: center; margin-top: 2rem;">
         לא נמצאו רכבים
       </div>
     </div>
