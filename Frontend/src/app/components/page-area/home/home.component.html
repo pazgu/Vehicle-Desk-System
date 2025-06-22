@@ -43,9 +43,7 @@
     <label>סוג רכב</label>
     <select formControlName="vehicle_type" class="styled-select" (change)="onRideTypeChange()">
       <option value="" disabled selected>בחר סוג</option>
-      <option value="small">קטן</option>
-      <option value="large">גדול</option>
-      <option value="van">טנדר</option>
+<option *ngFor="let type of getVehicleTypes()" [value]="type">{{ type }}</option>
     </select>
     <small *ngIf="f.vehicle_type.touched && f.vehicle_type.errors?.['required']" class="distance-info">חובה לבחור סוג רכב</small>
   </div>
