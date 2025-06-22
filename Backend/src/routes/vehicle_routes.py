@@ -11,7 +11,7 @@ from ..utils.database import get_db
 from typing import List, Optional, Union
 from src.models.vehicle_model import Vehicle
 from src.schemas.vehicle_create_schema import VehicleCreate
-
+from src.models.vehicle_model import VehicleStatus
 
 router = APIRouter()
 
@@ -73,6 +73,8 @@ def get_vehicle_by_id_route(vehicle_id: str, db: Session = Depends(get_db)):
     return get_vehicle_by_id(vehicle_id, db)
 
 
+
+
 @router.post("/vehicles", response_model=VehicleOut, status_code=status.HTTP_201_CREATED)
 def create_vehicle(vehicle_data: VehicleCreate, db: Session = Depends(get_db)):
     existing_vehicle = db.query(Vehicle).filter_by(plate_number=vehicle_data.plate_number).first()
@@ -81,6 +83,9 @@ def create_vehicle(vehicle_data: VehicleCreate, db: Session = Depends(get_db)):
 
     data = vehicle_data.dict()
     data['image_url'] = str(data['image_url']) if data.get('image_url') else None
+
+    # ברירת מחדל לסטטוס
+    data.setdefault('status', VehicleStatus.available)
 
     new_vehicle = Vehicle(**data)
     db.add(new_vehicle)
