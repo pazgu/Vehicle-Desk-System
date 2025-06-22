@@ -9,10 +9,26 @@ from datetime import datetime
 from ..utils.audit_utils import log_action
 from ..models.vehicle_model import Vehicle
 from ..utils.socket_manager import sio
+from src.constants import OFFROAD_TYPES 
+from fastapi import HTTPException
+
+# Helper function to check if vehicle type matches any off-road keywords
+def is_offroad_vehicle(vehicle_type: str) -> bool:
+    return any(keyword.lower() in vehicle_type.lower() for keyword in OFFROAD_TYPES)
+
 async def create_ride(db: Session, user_id: UUID, ride: RideCreate):
     # Get the user info
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id)})
 
+    vehicle = db.query(Vehicle).filter(Vehicle.id == ride.vehicle_id).first()
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="Vehicle not found")
+
+    if is_offroad_vehicle(vehicle.type) and not ride.four_by_four_reason:
+        raise HTTPException(
+            status_code=400,
+            detail="A reason must be provided when requesting an off-road vehicle."
+        )
    
     # Create the new ride
     new_ride = Ride(
@@ -27,12 +43,12 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate):
         destination=ride.destination,
         estimated_distance_km=ride.estimated_distance_km,
         actual_distance_km=ride.actual_distance_km,  # ✅ ADD THIS LINE
+        four_by_four_reason=ride.four_by_four_reason,
         status=RideStatus.pending,
         license_check_passed=False,
         submitted_at=datetime.utcnow(),
         override_user_id=user_id
     )
-    vehicle = db.query(Vehicle).filter(Vehicle.id == ride.vehicle_id).first()
 
     print("🚗 New ride object:", new_ride)
     print(new_ride)
