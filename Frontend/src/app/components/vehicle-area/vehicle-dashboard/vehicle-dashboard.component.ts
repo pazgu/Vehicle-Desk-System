@@ -18,6 +18,9 @@ import { environment } from '../../../../environments/environment';
 export class VehicleDashboardComponent {
 
   vehicles: VehicleInItem[] = [];
+  mostUsedVehicles: VehicleInItem[] = [];
+  showingMostUsed: boolean = false;
+
   selectedType: string = '';
   statusFilter: string = '';
   typeFilter: string = '';
@@ -47,6 +50,7 @@ export class VehicleDashboardComponent {
     this.vehicleService.getAllVehicles().subscribe(
       (data) => {
         this.vehicles = Array.isArray(data) ? data : [];
+        this.showingMostUsed = false;
         console.log('Vehicles loaded:', this.vehicles);
       },
       (error) => {
@@ -109,6 +113,48 @@ export class VehicleDashboardComponent {
     return Math.min((count / maxRides) * 100, 100);
   }
 
+  loadMostUsedVehicles(): void {
+    const currentDate = new Date();
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth() + 1;
+
+    this.vehicleService.getAllVehicles().subscribe(
+      (allVehicles) => {
+        this.vehicles = Array.isArray(allVehicles) ? allVehicles : [];
+
+        this.vehicleService.getMostUsedVehiclesThisMonth(year, month).subscribe({
+          next: (response) => {
+            console.log('✅ Most used vehicles:', response);
+
+            const enrichedStats = response.stats
+              .map((stat: any) => {
+                const match = this.vehicles.find(v => v.id === stat.vehicle_id);
+                return match ? { ...match, ride_count: stat.total_rides } : null;
+              })
+              .filter((v) => v !== null) as VehicleInItem[];
+
+            this.mostUsedVehicles = enrichedStats;
+            this.showingMostUsed = true;
+          },
+          error: (err) => {
+            console.error('❌ Error loading most used vehicles:', err);
+          }
+        });
+      },
+      (error) => {
+        console.error('❌ Error loading all vehicles:', error);
+      }
+    );
+  }
+
+  toggleVehicleMode(): void {
+    if (this.showingMostUsed) {
+      this.loadVehicles();
+    } else {
+      this.loadMostUsedVehicles();
+    }
+  }
+
   getCardClass(status: string | null | undefined): string {
     if (!status) return '';
     switch (status) {
@@ -138,10 +184,11 @@ export class VehicleDashboardComponent {
   }
   
   get filteredVehicles() {
-    if (!this.vehicles) {
-        return [];
-    }
-    let filtered = [...this.vehicles];
+    const baseList = this.showingMostUsed ? this.mostUsedVehicles : this.vehicles;
+
+    if (!baseList) return [];
+
+    let filtered = [...baseList];
 
     if (this.statusFilter) {
       switch (this.statusFilter) {
@@ -153,8 +200,6 @@ export class VehicleDashboardComponent {
           break;
         case 'מוקפא':
           filtered = filtered.filter(vehicle => vehicle.status === 'frozen');
-          break;
-        default:
           break;
       }
     }
@@ -170,12 +215,9 @@ export class VehicleDashboardComponent {
         case 'ואן':
           filtered = filtered.filter(vehicle => vehicle.type === 'van');
           break;
-        default:
-          break;
       }
     }
-
-    if (this.sortBy){
+    if (this.sortBy) {
       return [...filtered].sort((a, b) => a.status.localeCompare(b.status));
     }
     else{
@@ -183,3 +225,4 @@ export class VehicleDashboardComponent {
     }
   }
 }
+
