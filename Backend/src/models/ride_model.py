@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from sqlalchemy import Column, String, Integer, Text, Enum, Boolean, Numeric, DateTime, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -38,13 +39,13 @@ class Ride(Base):
     four_by_four_reason = Column(Text, nullable=True)  
     status = Column(Enum(RideStatus), default=RideStatus.pending, nullable=False, index=True)
     license_check_passed = Column(Boolean, default=False)
-    submitted_at = Column(DateTime, nullable=False, server_default=func.now())
+    submitted_at = Column(DateTime(timezone=True), nullable=False, default=datetime.now(timezone.utc))
     emergency_event = Column(Text, nullable=True) 
     
     notifications = relationship("Notification", back_populates="ride", lazy="dynamic")
     is_archive = Column(Boolean, default=False, name="isArchive")
     override_user_id = Column(UUID(as_uuid=True), ForeignKey("users.employee_id"), nullable=True)
-    feedback_submitted: bool = False 
+    feedback_submitted= Column(Boolean, default=False) 
 
 class PendingRideSchema(BaseModel):
     vehicle_id: uuid.UUID  # ✅ Use this, not sqlalchemy.UUID

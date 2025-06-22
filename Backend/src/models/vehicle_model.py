@@ -40,7 +40,7 @@ class Vehicle(Base):
     odometer_reading = Column(Integer, nullable=False, default=0)
     vehicle_model = Column(Text, nullable=False)
     image_url = Column(Text, nullable=False)
-    lease_expiry = Column(DateTime, nullable=True)
+    lease_expiry = Column(DateTime, nullable=True)  
 
 
    

@@ -241,6 +241,12 @@ getStatusTooltip(status: string): string {
     const orderDate = this.parseDate(order.date);
     return orderDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
   }
+   isCompletedOrder(order: any): boolean {
+    if(order.status==='completed') {
+      return true
+    }
+    return false
+  }
     
   validateDate(type: 'start' | 'end'): string {
     const value = type === 'start' ? this.startDate : this.endDate;
@@ -447,18 +453,22 @@ warningVisible = true;  // controls visibility
 exceededMaxRides(): boolean {
   const maxRides = 6;
   const userOrders = JSON.parse(localStorage.getItem('user_orders') || '[]');
-
+  
   const beginningOfMonth = new Date();
   beginningOfMonth.setDate(1);
   beginningOfMonth.setHours(0, 0, 0, 0);
+  
+  const endOfMonth = new Date();
+  endOfMonth.setMonth(endOfMonth.getMonth() + 1);
+  endOfMonth.setDate(0); // Last day of current month
+  endOfMonth.setHours(23, 59, 59, 999);
 
   const recentOrders = userOrders.filter((order: any) => {
     const orderDate = this.parseDate(order.date);
-    return orderDate >= beginningOfMonth;
+    return orderDate >= beginningOfMonth && orderDate <= endOfMonth;
   });
 
   console.log('🗓️ Recent orders in the current month:', recentOrders);
-
   return recentOrders.length >= maxRides;
 }
 
@@ -471,31 +481,64 @@ hideWarning() {
 showWarning() {
   this.warningVisible = true;
 }
-isPaidOrder(order: any): boolean {
-  const maxFreeRides = 6;
+exceededMaxRidesForOrder(currentOrder: any): boolean {
+  const maxRides = 6;
   const userOrders = JSON.parse(localStorage.getItem('user_orders') || '[]');
-
+  
   const beginningOfMonth = new Date();
   beginningOfMonth.setDate(1);
   beginningOfMonth.setHours(0, 0, 0, 0);
+  const beginningOfMonthStr = beginningOfMonth.toLocaleDateString('en-GB').replace(/\//g, '.');
 
-  const recentOrders = userOrders
-    .filter((o: any) => {
-      const orderDate = this.parseDate(o.date);
-      return orderDate >= beginningOfMonth;
-    })
-    .sort((a: any, b: any) => {
-      const dateA = this.parseDate(a.date);
-      const dateB = this.parseDate(b.date);
-      return dateA.getTime() - dateB.getTime();
-    });
+  const priorOrdersThisMonth = userOrders.filter((order: any) => {
+    return order.date >= beginningOfMonthStr && order.date < currentOrder.date;
+  });
 
-  const orderIndex = recentOrders.findIndex((o: any) => 
-    o.ride_id === order.ride_id || 
-    (o.date === order.date && o.time === order.time)
-  );
+  return priorOrdersThisMonth.length >= maxRides;
+}
+exceededMaxRidesForThisOrder(currentOrder: any): boolean {
+  const maxRides = 6;
+  const userOrders = JSON.parse(localStorage.getItem('user_orders') || '[]');
+  
+  const beginningOfMonth = new Date();
+  beginningOfMonth.setDate(1);
+  beginningOfMonth.setHours(0, 0, 0, 0);
+  
+  const currentOrderDate = this.parseDate(currentOrder.date);
+  
+  const priorOrdersThisMonth = userOrders.filter((order: any) => {
+    const orderDate = this.parseDate(order.date);
+    return orderDate >= beginningOfMonth && orderDate < currentOrderDate;
+  });
 
-  return orderIndex >= maxFreeRides;
+  return priorOrdersThisMonth.length >= maxRides;
 }
 
+isPaidOrder(order: any): boolean {
+  const maxFreeRides = 6;
+  const userOrders = JSON.parse(localStorage.getItem('user_orders') || '[]');
+  
+  const beginningOfMonth = new Date();
+  beginningOfMonth.setDate(1);
+  beginningOfMonth.setHours(0, 0, 0, 0);
+  
+  const orderDate = this.parseDate(order.date);
+  
+  // Only apply paid logic to orders in current month
+  if (orderDate.getMonth() === beginningOfMonth.getMonth() && 
+      orderDate.getFullYear() === beginningOfMonth.getFullYear()) {
+    
+    // Count orders in current month that came BEFORE this order
+    const priorOrdersThisMonth = userOrders.filter((o: any) => {
+      const oDate = this.parseDate(o.date);
+      return oDate.getMonth() === beginningOfMonth.getMonth() && 
+             oDate.getFullYear() === beginningOfMonth.getFullYear() &&
+             oDate < orderDate;
+    }).length;
+    
+    return priorOrdersThisMonth >= maxFreeRides;
+  }
+  
+  return false; // Orders in other months are free
+}
 }

@@ -43,6 +43,9 @@ export class AuditLogsComponent implements OnInit {
   customFromDate: string = '';
   customToDate: string = '';
 
+  problematicOnly: boolean = false;
+
+
   vehicleFieldLabels: { [key: string]: string } = {
     id: 'מזהה רכב',
     type: 'סוג רכב',
@@ -161,7 +164,8 @@ export class AuditLogsComponent implements OnInit {
   }
 
   fetchAuditLogs(fromDate?: string, toDate?: string) {
-    this.auditLogService.getAuditLogs(fromDate, toDate).subscribe((data) => {
+    console.log('problematicOnly:', this.problematicOnly, 'fromDate:', fromDate, 'toDate:', toDate);
+    this.auditLogService.getAuditLogs(fromDate, toDate,this.problematicOnly).subscribe((data) => {
       this.logs = data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
       this.filteredLogs = [...this.logs];
       this.currentPage = 1;

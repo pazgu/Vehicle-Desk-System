@@ -49,3 +49,6 @@ class RideResponse(BaseModel):
     submitted_at: datetime
     override_user_id: UUID
     plate_number: str
+
+class RideWithWarningResponse(RideResponse):
+    inspector_warning: bool

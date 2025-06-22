@@ -786,6 +786,15 @@
   background: #fff;
   min-width: 160px;
   transition: border-color 0.2s;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.range-select:hover {
+  background-color: #942222;
+  color: #ffffff;
+  transform: translateY(-2px);
 }
 
 .range-select:focus {
@@ -885,4 +894,28 @@
 .export-button:focus {
   outline: none;
   box-shadow: 0 0 0 3px rgba(148, 34, 34, 0.3);
+}
+
+.problematic-only-filter {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  background: #f8f8f8;
+  border-radius: 8px;
+  padding: 0.7rem 1.2rem;
+  color: #942222;
+  border: 1px solid #e0e0e0;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: background-color 0.2s, color 0.2s, transform 0.1s;
+}
+
+input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: #942222; /* Modern browsers: change checkbox color */
+  cursor: pointer;
+  margin-left: 8px; /* Space between checkbox and label (for RTL, use margin-right) */
+  vertical-align: middle;
 }

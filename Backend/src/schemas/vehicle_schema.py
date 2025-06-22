@@ -18,6 +18,7 @@ class VehicleOut(BaseModel):
     odometer_reading: int
     vehicle_model: Optional[str] = None
     image_url: Optional[str] = None
+    lease_expiry: Optional[datetime] = None  
 
     class Config:
         use_enum_values = True  # return enums as their values in JSON
@@ -43,6 +44,7 @@ class InUseVehicleOut(BaseModel):
     end_datetime: Optional[datetime] = None
 
 
+
 class VehicleStatusUpdate(BaseModel):
     new_status: VehicleStatus
     freeze_reason: Optional[FreezeReason] = None
@@ -53,3 +55,7 @@ class FreezeVehicleRequest(BaseModel):
 
 
 
+class VehicleAvailabilityRequest(BaseModel):
+    vehicle_type: VehicleType
+    start_datetime: datetime
+    end_datetime: datetime
