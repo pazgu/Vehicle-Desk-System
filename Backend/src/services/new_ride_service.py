@@ -5,10 +5,11 @@ from ..schemas.new_ride_schema import RideCreate,RideResponse
 from ..models.ride_model import Ride, RideStatus
 from ..models.user_model import User  
 from ..utils.email_utils import send_email  
-from datetime import datetime
+from datetime import datetime, timezone
 from ..utils.audit_utils import log_action
 from ..models.vehicle_model import Vehicle
 from ..utils.socket_manager import sio
+
 async def create_ride(db: Session, user_id: UUID, ride: RideCreate):
     # Get the user info
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id)})
@@ -29,7 +30,7 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate):
         actual_distance_km=ride.actual_distance_km,  # ✅ ADD THIS LINE
         status=RideStatus.pending,
         license_check_passed=False,
-        submitted_at=datetime.utcnow(),
+        submitted_at=datetime.now(timezone.utc),
         override_user_id=user_id
     )
     vehicle = db.query(Vehicle).filter(Vehicle.id == ride.vehicle_id).first()
