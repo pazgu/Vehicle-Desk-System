@@ -186,9 +186,6 @@
   color: #942222;
 }
 
-.emergency-row {
-  background-color: #feaf66 !important;
-}
 
 .frozen-vehicle-row {
   background-color: #e2f0f8 !important;
@@ -202,12 +199,19 @@
   background-color: #60cd79 !important;
 }
 
+.active-row {
+  background-color: #ffe5b4 !important; /* Example: light blue for active */
+}
+
 .delete-row {
   background-color: #f8e2e2 !important;
 }
 
 .success-row {
   background-color: #dcf1e1 !important;
+}
+.emergency-row {
+  background-color: #feaf66 !important;
 }
 
 .rejected-row {
@@ -615,10 +619,15 @@
 }
 
 .status-indicator.pending {
-  background-color: #f5e2a8;
+  background-color: #fdf0c8;
   /* Yellow */
-  border: #ab8c31 1.6px solid;
+  border: #c1a553 1.6px solid;
   /* Yellow border */
+}
+
+.status-indicator.active {
+  background-color: #fbdda5;
+  border: #b18b46 1.6px solid;
 }
 
 .status-indicator.delete {
@@ -629,7 +638,7 @@
 }
 
 .status-indicator.emergency {
-  background-color: #f9c492;
+  background-color: #fabd84;
   border: #cc813c 1.6px solid;
 }
 
