@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from sqlalchemy import Column, String, Integer, Text, Enum, Boolean, Numeric, DateTime, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -37,7 +38,7 @@ class Ride(Base):
     actual_distance_km = Column(Numeric, nullable=False)
     status = Column(Enum(RideStatus), default=RideStatus.pending, nullable=False, index=True)
     license_check_passed = Column(Boolean, default=False)
-    submitted_at = Column(DateTime, nullable=False, server_default=func.now())
+    submitted_at = Column(DateTime(timezone=True), nullable=False, default=datetime.now(timezone.utc))
     emergency_event = Column(Text, nullable=True) 
     
     notifications = relationship("Notification", back_populates="ride", lazy="dynamic")
