@@ -5,14 +5,24 @@ from datetime import datetime, timedelta
 from ..schemas.audit_schema import AuditLogsSchema
 import json
 
-def get_all_audit_logs(db: Session, from_date: datetime = None, to_date: datetime = None) -> list[AuditLogsSchema]:
+def get_all_audit_logs(
+    db: Session,
+    from_date: datetime = None,
+    to_date: datetime = None,
+    problematic_only: bool = False
+) -> list[AuditLogsSchema]:
     query = db.query(AuditLog)
     if not from_date:
         from_date = datetime.utcnow() - timedelta(days=180)
     query = query.filter(AuditLog.created_at >= from_date)
     if to_date:
         query = query.filter(AuditLog.created_at <= to_date)
+
+    if problematic_only:
+        query = query.filter(AuditLog.checkbox_value == True)  # Only logs with issues
+
     logs = query.all()
+
     result = []
     for log in logs:
         change_data = log.change_data or {}
