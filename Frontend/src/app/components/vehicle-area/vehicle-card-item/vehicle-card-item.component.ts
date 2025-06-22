@@ -4,7 +4,8 @@ import { VehicleService } from '../../../services/vehicle.service';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
 import { FormsModule } from '@angular/forms';
-
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
 @Component({
   selector: 'app-vehicle-card-item',
   templateUrl: './vehicle-card-item.component.html',
@@ -15,19 +16,23 @@ export class VehicleCardItemComponent implements OnInit {
   vehicle: any;
   isFreezeReasonFieldVisible: boolean = false; // Controls visibility of the input field
   freezeReason: string = ''; // Holds the freeze reason entered by the user
+  topUsedVehiclesMap: Record<string, number> = {};
+  vehicleUsageData: { plate_number: string; vehicle_model: string; ride_count: number }[] = [];
 
-  constructor(private navigateRouter: Router, private route: ActivatedRoute, private vehicleService: VehicleService) { }
+  constructor(private navigateRouter: Router, private route: ActivatedRoute, private vehicleService: VehicleService, private http: HttpClient) { }
 
   ngOnInit(): void {
-    window.scrollTo({ top: 0, behavior: 'smooth' }); // Always scroll to top
+     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.vehicleService.getVehicleById(id).subscribe(data => {
-        console.log('Vehicle from API:', data); // See what you actually get
-        this.vehicle = data;
-      });
-    }
+  this.loadVehicleUsageData(); // ✅ Add this line to fetch usage data
+
+  const id = this.route.snapshot.paramMap.get('id');
+  if (id) {
+    this.vehicleService.getVehicleById(id).subscribe(data => {
+      console.log('Vehicle from API:', data);
+      this.vehicle = data;
+    });
+  }
   }
 
   getCardClass(status: string): string {
@@ -43,6 +48,25 @@ export class VehicleCardItemComponent implements OnInit {
     window.history.back();
   }
 
+  // New method to load vehicle usage data from analytics
+  loadVehicleUsageData(): void {
+    this.http.get<{ plate_number: string; vehicle_model: string; ride_count: number }[]>(
+      `${environment.apiUrl}/analytics/top-used-vehicles`
+    ).subscribe({
+      next: data => {
+        this.vehicleUsageData = data;
+        // Create a map for quick lookup
+        this.topUsedVehiclesMap = {};
+        data.forEach(vehicle => {
+          this.topUsedVehiclesMap[vehicle.plate_number] = vehicle.ride_count;
+        });
+        console.log('Vehicle usage data loaded:', this.topUsedVehiclesMap);
+      },
+      error: err => {
+        console.error('❌ Error fetching vehicle usage data:', err);
+      }
+    });
+  }
   translateStatus(status: string | null | undefined): string {
     if (!status) return '';
     switch (status.toLowerCase()) {
@@ -145,5 +169,33 @@ export class VehicleCardItemComponent implements OnInit {
     this.freezeReason = '';
     this.isFreezeReasonFieldVisible = false;
 
+  }
+
+   getUsageBarColor(plateNumber: string): string {
+    const level = this.getUsageLevel(plateNumber);
+    switch (level) {
+      case 'high': return '#FF5252';    // Red
+      case 'medium': return '#FFC107';  // Yellow
+      case 'good': return '#42A5F5';    // Blue
+      case 'hide': return'rgba(255, 255, 255, 0)'// Gray (hidden)
+      default: return '#E0E0E0';        // Gray
+    }
+  }
+   getUsageLevel(plateNumber: string): 'high' | 'medium' | 'good' | 'hide'{
+    const count = this.getVehicleUsageCount(plateNumber);
+    if (count > 10) return 'high';
+    if (count >= 5) return 'medium';
+    if (count == 0 ) return 'hide';
+    return 'good';
+  }
+  // Get usage bar width percentage (0-100%)
+  getUsageBarWidth(plateNumber: string): number {
+    const count = this.getVehicleUsageCount(plateNumber);
+    // Scale to max 15 rides for 100% width
+    const maxRides = 15;
+    return Math.min((count / maxRides) * 100, 100);
+  }
+    getVehicleUsageCount(plateNumber: string): number {
+    return this.topUsedVehiclesMap[plateNumber] || 0;
   }
 }

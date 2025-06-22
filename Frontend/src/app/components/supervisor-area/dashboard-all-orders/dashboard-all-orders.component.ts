@@ -98,10 +98,7 @@ this.socketService.orderUpdated$.subscribe((updatedRide) => {
       ...this.orders.slice(0, index),
       ...this.orders.slice(index + 1)
     ];
-    console.log(`🗑️ Ride ${deletedRide.order_id} removed from supervisor dashboard`);
-  } else {
-    console.log(`ℹ️ Ride ${deletedRide.order_id} not found in current supervisor orders`);
-  }
+  } 
 });
 
   }
