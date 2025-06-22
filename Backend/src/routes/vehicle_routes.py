@@ -1,5 +1,5 @@
 from ..services.vehicle_service import get_vehicles_with_optional_status,update_vehicle_status,get_vehicle_by_id, vehicle_inspection_logic, get_available_vehicles_for_ride_by_id
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, status , Query
 from uuid import UUID
 from ..schemas.vehicle_schema import VehicleStatusUpdate
 from ..utils.socket_manager import sio
@@ -9,6 +9,9 @@ from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 from ..utils.auth import token_check
 from ..utils.database import get_db
 from typing import List, Optional, Union
+
+from src.schemas.vehicle_create_schema import VehicleCreate
+
 
 router = APIRouter()
 
