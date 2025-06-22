@@ -55,6 +55,8 @@ from sqlalchemy import cast
 from ..services.user_form import get_ride_needing_feedback
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
+from ..utils.time_utils import is_time_in_blocked_window
+from ..schemas.new_ride_schema import RideResponse
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -165,7 +167,8 @@ def get_user_2specific_order():
     # Implementation pending
     return {"message": "Not implemented yet"}
 
-@router.post("/api/orders/{user_id}", response_model=RideCreate, status_code=fastapi_status.HTTP_201_CREATED)
+@router.post("/api/orders/{user_id}", status_code=fastapi_status.HTTP_201_CREATED)
+
 async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
     role_check(allowed_roles=["employee", "admin"], token=token)
     identity_check(user_id=str(user_id), token=token)
@@ -175,6 +178,7 @@ async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = De
     try:
         new_ride = await create_ride(db, user_id, ride_request)
         schedule_ride_start(new_ride.id, new_ride.start_datetime)
+        warning_flag = is_time_in_blocked_window(new_ride.start_datetime)
         department_id=get_user_department(user_id=user_id,db=db)
         # ✅ Emit real-time event
         await sio.emit("new_ride_request", {
@@ -237,7 +241,10 @@ async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = De
         })
 
 
-        return new_ride
+        return {
+    **RideResponse.model_validate(new_ride).dict(),
+    "inspector_warning": warning_flag
+}
 
     except Exception as e:
         logger.error(f"Order creation failed: {str(e)}")
