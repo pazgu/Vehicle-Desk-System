@@ -73,5 +73,15 @@ getAllVehiclesByStatus(status?: string): Observable<VehicleOutItem[]> {
 }
 
 
+getMostUsedVehiclesThisMonth(year: number, month: number): Observable<{ stats: VehicleInItem[] }> {
+  const url = `${this.apiUrl}/vehicles/usage-stats`;
+  return this.http.get<{ stats: VehicleInItem[] }>(url, {
+    params: {
+      range: 'month',
+      year,
+      month
+    }
+  });
+}
 
 }
