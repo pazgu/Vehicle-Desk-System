@@ -23,7 +23,6 @@ def increment_completed_trip_stat(db: Session, user_id: int, ride_start_datetime
         stat = MonthlyEmployeeTripStats(
             employee_id=user_id,
             month_year=month_year_date,
-            approved_trip_count=0,
             completed_trip_count=1,
             last_updated=datetime.utcnow()
         )

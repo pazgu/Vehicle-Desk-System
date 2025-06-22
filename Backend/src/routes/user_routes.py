@@ -1,7 +1,7 @@
 import json
 import traceback
 from fastapi import APIRouter, HTTPException, Depends , Query,Form
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session,aliased
 from ..schemas.register_schema import UserCreate
 from ..schemas.login_schema import UserLogin
 from ..schemas.new_ride_schema import RideCreate
@@ -50,9 +50,13 @@ from apscheduler.jobstores.base import JobLookupError
 from ..utils.scheduler import scheduler
 from ..services.city_service import calculate_distance
 from ..services.city_service import get_cities
-from ..schemas.city_schema import City
-
+from ..models.city_model import City
+from sqlalchemy import cast
 from ..services.user_form import get_ride_needing_feedback
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+
+from ..utils.time_utils import is_time_in_blocked_window
+from ..schemas.new_ride_schema import RideResponse
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -163,7 +167,8 @@ def get_user_2specific_order():
     # Implementation pending
     return {"message": "Not implemented yet"}
 
-@router.post("/api/orders/{user_id}", response_model=RideCreate, status_code=fastapi_status.HTTP_201_CREATED)
+@router.post("/api/orders/{user_id}", status_code=fastapi_status.HTTP_201_CREATED)
+
 async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
     role_check(allowed_roles=["employee", "admin"], token=token)
     identity_check(user_id=str(user_id), token=token)
@@ -173,6 +178,7 @@ async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = De
     try:
         new_ride = await create_ride(db, user_id, ride_request)
         schedule_ride_start(new_ride.id, new_ride.start_datetime)
+        warning_flag = is_time_in_blocked_window(new_ride.start_datetime)
         department_id=get_user_department(user_id=user_id,db=db)
         # ✅ Emit real-time event
         await sio.emit("new_ride_request", {
@@ -235,7 +241,10 @@ async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = De
         })
 
 
-        return new_ride
+        return {
+    **RideResponse.model_validate(new_ride).dict(),
+    "inspector_warning": warning_flag
+}
 
     except Exception as e:
         logger.error(f"Order creation failed: {str(e)}")
@@ -354,10 +363,39 @@ async def delete_order(order_id: UUID, db: Session = Depends(get_db),current_use
         raise HTTPException(status_code=500, detail="Failed to delete order")
 
 
+@router.get("/api/rides/with-locations")
+def get_rides_with_locations(db: Session = Depends(get_db)):
+    StartCity = aliased(City)
+    StopCity = aliased(City)
+    DestinationCity = aliased(City)
+
+    rides_with_cities = (
+        db.query(Ride, StartCity, StopCity, DestinationCity)
+        .join(StartCity, cast(Ride.start_location, PG_UUID) == StartCity.id)
+        .join(DestinationCity, cast(Ride.destination, PG_UUID) == DestinationCity.id)
+        .join(StopCity, cast(Ride.stop, PG_UUID) == StopCity.id)
+        .all()
+    )
+
+    rides = [
+        {
+            "id": str(ride.id),
+            "start_location_name": start_city.name,
+            "destination_name": destination_city.name,
+            "stop_name": stop_city.name,
+        }
+        for ride, start_city, stop_city, destination_city in rides_with_cities
+    ]
+    print('rides with loc:',rides)
+    return rides
+
+
+
 @router.get("/api/rides/{ride_id}", response_model=RideSchema)
 def read_ride(ride_id: UUID, db: Session = Depends(get_db)):
     ride = get_ride_by_id(db, ride_id)
     return ride
+
 
 @router.post("/api/complete-ride-form", status_code=fastapi_status.HTTP_200_OK)
 async def submit_completion_form(
