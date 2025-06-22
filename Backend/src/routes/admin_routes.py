@@ -11,7 +11,8 @@ from src.services.admin_rides_service import (
     get_future_orders,
     get_past_orders,
     get_orders_by_user,
-    get_order_by_ride_id
+    get_order_by_ride_id,
+    get_all_time_vehicle_usage_stats 
 )
 from ..utils.database import get_db
 from src.models.user_model import User , UserRole
@@ -32,10 +33,12 @@ from sqlalchemy import cast, Date
 from ..schemas.audit_schema import AuditLogsSchema
 from src.services.audit_service import get_all_audit_logs
 from ..utils.socket_manager import sio
-from ..services.admin_rides_service import get_current_month_vehicle_usage
+from ..services.admin_rides_service import get_current_month_vehicle_usage ,  get_vehicle_usage_stats
 from fastapi.security import OAuth2PasswordBearer
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 from ..utils.auth import role_check
+from fastapi import HTTPException
+
 
 router = APIRouter()
 
@@ -305,18 +308,33 @@ def get_all_audit_logs_route(
 @router.get("/vehicles/usage-stats")
 def vehicle_usage_stats(
     range: str = Query("month"),
-    year: int = Query(..., ge=2000, le=2100),
-    month: int = Query(..., ge=1, le=12),
+    year: Optional[int] = Query(None, ge=2000, le=2100),
+    month: Optional[int] = Query(None, ge=1, le=12),
     db: Session = Depends(get_db),
     token: str = Depends(oauth2_scheme)
 ):
     role_check(["admin"], token)  # רק מנהלים מורשים
-    stats = get_vehicle_usage_stats(db, year, month)
-    return {
-        "year": year,
-        "month": month,
-        "stats": stats
-    }
+
+    if range == "all":
+        try:
+            stats = get_all_time_vehicle_usage_stats(db)
+            return {"range": "all", "stats": stats}
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to fetch all-time usage stats: {str(e)}")
+
+    if not year or not month:
+        raise HTTPException(status_code=400, detail="Missing year or month for monthly stats.")
+
+    try:
+        stats = get_vehicle_usage_stats(db, year, month)
+        return {
+            "year": year,
+            "month": month,
+            "stats": stats
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch monthly stats: {str(e)}")
+
 
 @router.get("/analytics/top-used-vehicles")
 def get_top_used_vehicles(db: Session = Depends(get_db)):
