@@ -1,5 +1,5 @@
 from ..services.vehicle_service import get_vehicles_with_optional_status,update_vehicle_status,get_vehicle_by_id, vehicle_inspection_logic, get_available_vehicles_for_ride_by_id
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, status , Query
 from uuid import UUID
 from ..schemas.vehicle_schema import VehicleStatusUpdate
 from ..utils.socket_manager import sio
@@ -9,6 +9,9 @@ from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 from ..utils.auth import token_check
 from ..utils.database import get_db
 from typing import List, Optional, Union
+from src.models.vehicle_model import Vehicle
+from src.schemas.vehicle_create_schema import VehicleCreate
+from src.models.vehicle_model import VehicleStatus
 
 router = APIRouter()
 
@@ -68,3 +71,25 @@ def available_vehicles_for_ride(
 @router.get("/vehicle/{vehicle_id}")
 def get_vehicle_by_id_route(vehicle_id: str, db: Session = Depends(get_db)):
     return get_vehicle_by_id(vehicle_id, db)
+
+
+
+
+@router.post("/vehicles", response_model=VehicleOut, status_code=status.HTTP_201_CREATED)
+def create_vehicle(vehicle_data: VehicleCreate, db: Session = Depends(get_db)):
+    existing_vehicle = db.query(Vehicle).filter_by(plate_number=vehicle_data.plate_number).first()
+    if existing_vehicle:
+        raise HTTPException(status_code=400, detail="Vehicle with this plate number already exists")
+
+    data = vehicle_data.dict()
+    data['image_url'] = str(data['image_url']) if data.get('image_url') else None
+
+    # ברירת מחדל לסטטוס
+    data.setdefault('status', VehicleStatus.available)
+
+    new_vehicle = Vehicle(**data)
+    db.add(new_vehicle)
+    db.commit()
+    db.refresh(new_vehicle)
+
+    return new_vehicle
