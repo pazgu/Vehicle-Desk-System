@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.types import String  # To cast to string
 from typing import Optional, List , Dict , Union
-from ..models.vehicle_model import Vehicle, VehicleType, VehicleStatus
+from ..models.vehicle_model import Vehicle, VehicleStatus
 from sqlalchemy import func, cast 
 from sqlalchemy import and_ , or_ , select
 from ..models.ride_model import Ride, RideStatus
