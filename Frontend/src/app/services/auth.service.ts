@@ -69,6 +69,8 @@ logout(): void {
   localStorage.removeItem('last_name');
   localStorage.removeItem('employee_id');
   localStorage.removeItem('role');
+  localStorage.removeItem('pending_feedback_ride');
+
 
   // Update BehaviorSubject values
   this.fullNameSubject.next('משתמש');

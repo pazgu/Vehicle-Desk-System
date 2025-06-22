@@ -25,9 +25,9 @@
   <button [class.active]="activeTabIndex === 1" (click)="activeTabIndex = 1">
     סטטוס נסיעות
   </button>
-    <button [class.active]="activeTabIndex === 2" (click)="activeTabIndex = 2">
-    רכבים בשימוש גבוה
-  </button>
+   <button [class.active]="activeTabIndex === 2" (click)="activeTabIndex = 2">
+  שימוש חודשי ברכבים
+</button>
 </div>
 
 <p-tabView [(activeIndex)]="activeTabIndex">
@@ -52,41 +52,44 @@
       ></p-chart>
     </div>
   </p-tabPanel>
-  <p-tabPanel>
+  <!-- Vehicle Usage Chart Tab -->
+<p-tabPanel>
+  <div class="date-filter-container" *ngIf="isMonthlyView">
+    <label for="monthSelect">חודש:</label>
+    <select id="monthSelect" [(ngModel)]="selectedMonth">
+      <option *ngFor="let month of months" [value]="month.value">{{ month.label }}</option>
+    </select>
+
+    <label for="yearSelect">שנה:</label>
+    <select id="yearSelect" [(ngModel)]="selectedYear">
+      <option *ngFor="let year of years" [value]="year">{{ year }}</option>
+    </select>
+
+    <button (click)="loadTopUsedVehiclesChart()">סנן</button>
+  </div>
+
   <div *ngIf="topUsedVehiclesData">
+    <button (click)="toggleUsageView()" class="toggle-view-button">
+      {{ isMonthlyView ? 'הצג לפי כל הזמנים' : 'הצג לפי חודש' }}
+    </button>
+
     <p-chart
       type="bar"
       [data]="topUsedVehiclesData"
       [options]="topUsedVehiclesOptions"
     ></p-chart>
 
-    <div class="usage-legend">
-  <div class="legend-item">
-    <span class="color-box good"></span> טוב (0–4 נסיעות)
-  </div>
-  <div class="legend-item">
-    <span class="color-box medium"></span> בינוני (5–10 נסיעות)
-  </div>
-  <div class="legend-item">
-    <span class="color-box high"></span> שימוש גבוה (11+ נסיעות)
-  </div>
-</div>
-
+    <!-- Legend only relevant for Monthly View -->
+    <div class="usage-legend" *ngIf="isMonthlyView">
+      <div class="legend-item">
+        <span class="color-box good"></span> טוב (0–4 נסיעות)
+      </div>
+      <div class="legend-item">
+        <span class="color-box medium"></span> בינוני (5–10 נסיעות)
+      </div>
+      <div class="legend-item">
+        <span class="color-box high"></span> שימוש גבוה (11+ נסיעות)
+      </div>
+    </div>
   </div>
 </p-tabPanel>
-
-</p-tabView>
-
-  </div>
-</div>
-
-
-
-
-
-
-
-
-
-
-

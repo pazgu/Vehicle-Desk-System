@@ -57,7 +57,10 @@
 
 
       <a *ngIf="(role$ | async) === 'inspector'" [routerLink]="['/inspector/inspection']" class="nav-link"> בדיקת רכבים </a>
+    <a *ngIf="(role$ | async) === 'employee'" [routerLink]="['/all-rides']" class="nav-link" href="#">ההזמנות שלי </a>
 
+    <a *ngIf="(role$ | async) === 'inspector'" [routerLink]="['/vehicle-dashboard']" class="nav-link" href="#">רכבים | </a>
+    <a *ngIf="(role$ | async) === 'inspector'" [routerLink]="['/inspector/inspection']" class="nav-link">בדיקת רכבים</a>
 
      <a routerLink="/notifications">
   <img src="/assets/images/bell-icon.png" alt="Notifications" />
