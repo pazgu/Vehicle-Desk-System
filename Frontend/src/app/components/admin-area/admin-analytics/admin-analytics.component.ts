@@ -883,3 +883,4 @@ private loadAllTimeTopUsedVehiclesChart() {
   }
 
 }
+
