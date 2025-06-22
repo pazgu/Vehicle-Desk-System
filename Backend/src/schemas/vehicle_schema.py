@@ -3,12 +3,12 @@ from typing import Optional
 from uuid import UUID
 from datetime import datetime
 
-from ..models.vehicle_model import VehicleType, FuelType, VehicleStatus, FreezeReason  # adjust import path
+from ..models.vehicle_model import FuelType, VehicleStatus, FreezeReason
 
 class VehicleOut(BaseModel):
     id: UUID
     plate_number: str
-    type: VehicleType
+    type: str
     fuel_type: FuelType
     status: VehicleStatus
     freeze_reason: Optional[FreezeReason] = None
@@ -29,7 +29,7 @@ class VehicleOut(BaseModel):
 class InUseVehicleOut(BaseModel):
     id: UUID
     plate_number: str
-    type: VehicleType
+    type: str
     fuel_type: FuelType
     status: VehicleStatus
     odometer_reading: float
