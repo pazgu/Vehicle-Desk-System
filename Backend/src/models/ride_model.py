@@ -35,6 +35,7 @@ class Ride(Base):
     destination = Column(Text, nullable=False)
     estimated_distance_km = Column(Numeric, nullable=False)
     actual_distance_km = Column(Numeric, nullable=False)
+    four_by_four_reason = Column(Text, nullable=True)  
     status = Column(Enum(RideStatus), default=RideStatus.pending, nullable=False, index=True)
     license_check_passed = Column(Boolean, default=False)
     submitted_at = Column(DateTime, nullable=False, server_default=func.now())
