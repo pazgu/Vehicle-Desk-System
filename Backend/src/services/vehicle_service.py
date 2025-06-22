@@ -193,6 +193,7 @@ def get_vehicle_by_id(vehicle_id: str, db: Session):
         "odometer_reading": vehicle.odometer_reading,
         "vehicle_model": vehicle.vehicle_model,
         "image_url": vehicle.image_url,
+        "lease_expiry": vehicle.lease_expiry
     }
 
 def freeze_vehicle_service(db: Session, vehicle_id: UUID, reason: str):
