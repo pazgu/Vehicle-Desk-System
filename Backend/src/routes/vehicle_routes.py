@@ -68,3 +68,18 @@ def available_vehicles_for_ride(
 @router.get("/vehicle/{vehicle_id}")
 def get_vehicle_by_id_route(vehicle_id: str, db: Session = Depends(get_db)):
     return get_vehicle_by_id(vehicle_id, db)
+
+
+@router.post("/vehicles", response_model=VehicleOut, status_code=status.HTTP_201_CREATED)
+def create_vehicle(vehicle_data: VehicleCreate, db: Session = Depends(get_db)):
+    # בדיקת ייחודיות של לוחית רישוי
+    existing_vehicle = db.query(Vehicle).filter_by(plate_number=vehicle_data.plate_number).first()
+    if existing_vehicle:
+        raise HTTPException(status_code=400, detail="Vehicle with this plate number already exists")
+
+    new_vehicle = Vehicle(**vehicle_data.dict())
+    db.add(new_vehicle)
+    db.commit()
+    db.refresh(new_vehicle)
+
+    return new_vehicle
