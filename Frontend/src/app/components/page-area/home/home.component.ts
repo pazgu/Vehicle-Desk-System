@@ -47,6 +47,8 @@ export class NewRideComponent implements OnInit {
   public minDate: string = '';
   public fetchedDistance: number | null = null; 
   cities: { id: string; name: string }[] = [];
+  showInspectorWarningModal = false;
+
 
 
   allCars: {
@@ -449,15 +451,28 @@ private addHoursToTime(timeString: string, hoursToAdd: number): string {
   }
 }
 
+isDuringInspectorClosure(startTime: string): boolean {
+  const startMinutes = this.timeToMinutes(startTime);
+  const startRange = this.timeToMinutes('11:15');
+  const endRange = this.timeToMinutes('12:15');
+  return startMinutes >= startRange && startMinutes <= endRange;
+}
+
+confirmInspectorWarning(): void {
+  this.showInspectorWarningModal = false;
+  this.submit(true); // Allow it to skip re-check
+}
 
 
-  submit(): void {
+  submit(confirmedWarning = false): void {
   // Initial form validation
   if (this.rideForm.invalid) {
     this.rideForm.markAllAsTouched();
     this.toastService.show('יש להשלים את כל שדות הטופס כנדרש', 'error');
     return;
   }
+
+  
 
   // Vehicle selection validation
   const vehicleId = this.rideForm.get('car')?.value;
@@ -472,6 +487,9 @@ private addHoursToTime(timeString: string, hoursToAdd: number): string {
     return;
   }
 
+
+
+
   // Get form values
   const ridePeriod = this.rideForm.get('ride_period')?.value as 'morning' | 'night';
   const rideDate = this.rideForm.get('ride_date')?.value;
@@ -485,6 +503,16 @@ private addHoursToTime(timeString: string, hoursToAdd: number): string {
     this.toastService.show('שעת הסיום חייבת להיות אחרי שעת ההתחלה', 'error');
     return;
   }
+
+
+  if (
+  !confirmedWarning &&
+  ridePeriod === 'morning' &&
+  this.isDuringInspectorClosure(startTime)
+) {
+  this.showInspectorWarningModal = true;
+  return;
+}
 
   // Distance validation
   if (distance > 1000) {
