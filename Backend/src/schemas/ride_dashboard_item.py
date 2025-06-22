@@ -15,3 +15,5 @@ class RideDashboardItem(BaseModel):
     status: RideStatusEnum
 
     
+
+    

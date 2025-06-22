@@ -10,7 +10,7 @@ from apscheduler.jobstores.base import JobLookupError
 from datetime import datetime, timedelta
 from ..services.form_email import send_ride_completion_email
 from ..services.supervisor_dashboard_service import start_ride 
-
+from ..utils.socket_manager import sio
 scheduler = BackgroundScheduler(timezone=pytz.timezone("Asia/Jerusalem"))
 scheduler.start()
 
@@ -40,7 +40,19 @@ async def start_ride_with_new_session(ride_id: str):
     print('start ride with new session was called')
     db = SessionLocal()
     try:
-        await start_ride(db, ride_id)
+        res=await start_ride(db, ride_id)
+        ride=res[0]
+        vehicle=res[1]
+         # 3️⃣ Emit ride update
+        await sio.emit("ride_status_updated", {
+            "id": str(ride.id),
+            "status": ride.status.value
+        })
+        # 4️⃣ Emit vehicle update
+        await sio.emit("vehicle_status_updated", {
+            "id": str(vehicle.id),
+            "status": vehicle.status.value
+        })
     finally:
         db.close()
 

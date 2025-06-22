@@ -3,7 +3,7 @@ from sqlalchemy.types import String  # To cast to string
 from typing import Optional, List , Dict , Union
 from ..models.vehicle_model import Vehicle, VehicleType, VehicleStatus
 from sqlalchemy import func, cast 
-from sqlalchemy import and_ , or_ , select
+from sqlalchemy import and_ , or_ , not_ , select
 from ..models.ride_model import Ride, RideStatus
 from ..models.user_model import User
 from datetime import datetime, timezone
@@ -39,7 +39,9 @@ def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
 
 
 def get_vehicles_with_optional_status(
-    db: Session, status: Optional[VehicleStatus] = None
+    db: Session,
+    status: Optional[VehicleStatus] = None,
+    vehicle_type: Optional[str] = None  
 ) -> List[Union[VehicleOut, InUseVehicleOut]]:
     query = (
         db.query(
@@ -74,6 +76,11 @@ def get_vehicles_with_optional_status(
 
     if status:
         query = query.filter(Vehicle.status == status)
+
+    
+    if vehicle_type:  # ✅ Add this part to filter by type
+        query = query.filter(func.lower(Vehicle.type) == vehicle_type.lower())
+
 
     vehicles = query.all()
 
@@ -186,6 +193,7 @@ def get_vehicle_by_id(vehicle_id: str, db: Session):
         "odometer_reading": vehicle.odometer_reading,
         "vehicle_model": vehicle.vehicle_model,
         "image_url": vehicle.image_url,
+        "lease_expiry": vehicle.lease_expiry
     }
 
 def freeze_vehicle_service(db: Session, vehicle_id: UUID, reason: str):
@@ -199,3 +207,34 @@ def freeze_vehicle_service(db: Session, vehicle_id: UUID, reason: str):
     db.commit()
     db.refresh(vehicle)
     return {"message": f"Vehicle {vehicle_id} has been frozen successfully."}
+
+    api_router.include_router(vehicle_route, prefix="/vehicles", tags=["Vehicles"])
+
+def get_available_vehicles_by_type_and_time(
+    db: Session,
+    vehicle_type: VehicleType,
+    start_datetime: datetime,
+    end_datetime: datetime,
+) -> List[Vehicle]:
+    # שלב 1 - בחר רכבים לפי סוג וסטטוס זמין
+    query = db.query(Vehicle).filter(
+        Vehicle.type == vehicle_type,
+        Vehicle.status == VehicleStatus.available,
+    )
+    
+    # שלב 2 - שלוף את כל הרכבים שיש להם נסיעה שמתנגשת עם טווח התאריכים המבוקש
+    conflicting_rides_subquery = db.query(Ride.vehicle_id).filter(
+        or_(
+            and_(
+                Ride.start_datetime <= end_datetime,
+                Ride.end_datetime >= start_datetime,
+            )
+        ),
+        Ride.status != "cancelled",  # ניתן להוסיף סינון לביטולים
+    ).subquery()
+    
+    # שלב 3 - סנן את הרכבים עם נסיעות מתנגשות
+    query = query.filter(~Vehicle.id.in_(conflicting_rides_subquery))
+    
+    vehicles = query.all()
+    return vehicles

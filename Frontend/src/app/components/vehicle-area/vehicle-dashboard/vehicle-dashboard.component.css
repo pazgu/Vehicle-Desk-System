@@ -6,10 +6,26 @@
 .page-container {
     max-width: 1100px;
     margin: 0 auto;
-    background-color: rgb(245, 241, 241);
+    background-color: rgba(245, 241, 241, 0.582);
     border-radius: 14px;
     box-shadow: 0 2px 16px rgba(44, 62, 80, 0.07);
     padding: 2rem 2.5rem;
+}
+.usage-header {
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: flex-end;
+  font-size: 14px;
+  font-weight: 500;
+  color: #555;
+  direction: rtl;
+}
+
+.usage-count {
+  color: #811313;
+  font-weight: bold;
 }
 
 .vehicles-wrapper h1 {
@@ -206,4 +222,251 @@ button {
   font-size: 1rem;
   background: none;
   min-width: 160px;
+}
+
+
+
+.vehicle-dashboard-container {
+  padding: 20px;
+  font-family: 'Arial', sans-serif;
+  direction: rtl;
+}
+
+/* Filters Section */
+.filters-section {
+  margin-bottom: 30px;
+}
+
+.toggle-filters-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-bottom: 15px;
+}
+
+.toggle-filters-btn:hover {
+  background-color: #0056b3;
+}
+
+.filters-container {
+  display: none;
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.filters-container.show {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 150px;
+}
+
+.filter-group label {
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #495057;
+}
+
+.filter-select {
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* Vehicle Cards Grid */
+.vehicles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.vehicle-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.vehicle-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+/* Card Status Styling */
+.card-available {
+  border-left: 5px solid #28a745;
+}
+
+.card-inuse {
+  border-left: 5px solid #ffc107;
+}
+
+.card-frozen {
+  border-left: 5px solid #dc3545;
+}
+
+/* Card Header */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.vehicle-title {
+  margin: 0;
+  font-size: 1.4em;
+  font-weight: bold;
+  color: #343a40;
+}
+
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85em;
+  font-weight: bold;
+  text-align: center;
+}
+
+.status-badge.status-available {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-badge.status-in_use {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-badge.status-frozen {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Card Content */
+.card-content {
+  padding: 0;
+}
+
+.vehicle-info {
+  margin-bottom: 20px;
+}
+
+.vehicle-info p {
+  margin: 8px 0;
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.vehicle-info strong {
+  color: #495057;
+}
+
+/* Simple Usage Line */
+.usage-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 15px;
+  padding: 8px 0;
+}
+
+.usage-indicator {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.usage-number {
+  font-size: 14px;
+  font-weight: bold;
+  color: #495057;
+  min-width: 20px;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.empty-state p {
+  font-size: 16px;
+  margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .vehicles-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .filters-container.show {
+    flex-direction: column;
+  }
+  
+  .filter-group {
+    min-width: auto;
+  }
+  
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}
+
+/* PrimeNG Card Override */
+::ng-deep .p-card {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border: 1px solid #e9ecef;
+}
+
+::ng-deep .p-card .p-card-body {
+  padding: 20px;
+}
+
+::ng-deep .p-card .p-card-title {
+  margin-bottom: 15px;
+}
+
+
+
+:host ::ng-deep .p-card.vehicle-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.vehicle-image-wrapper {
+  width: 100%;
+  height: 160px; /* or whatever consistent height works for your layout */
+  overflow: hidden;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.vehicle-image-wrapper img {
+  width: 96%;
+  height: 100%;
+  object-fit: contain;
 }

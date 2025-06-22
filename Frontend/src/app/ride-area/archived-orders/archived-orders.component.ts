@@ -35,8 +35,8 @@ export class ArchivedOrdersComponent implements OnInit {
 
     this.socketService.rideRequests$.subscribe((rideData) => {
       if (rideData) {
-        this.toastService.show('🚗 התקבלה הזמנת נסיעה חדשה', 'success');
-        new Audio('assets/sounds/notif.mp3').play();
+        // this.toastService.show('🚗 התקבלה הזמנת נסיעה חדשה', 'success');
+        // new Audio('assets/sounds/notif.mp3').play();
 
         // Optional: Uncomment if you want archived to refresh on new ride
         // this.fetchArchivedOrders(userId);
