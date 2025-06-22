@@ -32,6 +32,10 @@
             <strong>סיבת הקפאה:</strong> {{ translateFreezeReason(vehicle.freeze_reason) }}
           </p>
           <p><strong>ק״מ:</strong> {{ vehicle.odometer_reading }}</p>
+          <p><strong>תוקף חוזה השכרה:</strong>
+  {{ vehicle.lease_expiry ? (vehicle.lease_expiry | date: 'dd/MM/yyyy') : 'לא סופק' }}
+</p>
+
           <button class="unfreeze-button" (click)="updateVehicleStatus('available')"
             *ngIf="vehicle.status === 'frozen'">
             שחרור מהקפאה
