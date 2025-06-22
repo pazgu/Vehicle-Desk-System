@@ -50,7 +50,7 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate):
     # Fetch the user who submitted the ride
     user = db.query(User).filter(User.employee_id == user_id).first()
 
-    print("user iddddddddddddddddddddddddddddddddddddd:", user_id)
+    print("user id:", user_id)
 
     # log_action(
     #     db=db,
