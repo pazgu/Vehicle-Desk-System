@@ -10,7 +10,7 @@ from fastapi import HTTPException
 from src.schemas.ride_status_enum import RideStatusEnum
 from datetime import timedelta
 from ..utils.audit_utils import log_action
-
+from ..utils.auth import get_current_user
 def filter_rides(query, status: Optional[RideStatus], from_date, to_date):
     if status:
         query = query.filter(Ride.status == status)
@@ -110,7 +110,8 @@ def get_all_rides(user_id: UUID, db: Session, status=None, from_date=None, to_da
 
     
 def update_ride_status(db: Session, ride_id: UUID, new_status: str, changed_by: UUID):
-    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id)})
+    user=get_current_user()
+    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user.user_id)})
     # Fetch the ride
     ride = db.query(Ride).filter(Ride.id == ride_id).first()
     if not ride:
