@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-type ToastType = 'success' | 'error'  ;// Add your custom types here
+type ToastType = 'success' | 'error' | 'neutral' ;// Add your custom types here
 
 @Injectable({ providedIn: 'root' })
 export class ToastService {
@@ -17,6 +17,6 @@ export class ToastService {
 
     setTimeout(() => {
       toast.remove();
-    }, 3000);
+    }, 5000);
   }
 }

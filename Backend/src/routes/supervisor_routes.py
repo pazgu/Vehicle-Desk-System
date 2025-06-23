@@ -37,9 +37,9 @@ def edit_order_status_route(department_id: UUID, order_id: UUID, status: str, db
 
 
 
-@router.post("/{ride_id}/end", response_model=OrderCardItem)
-def end_ride(ride_id: UUID, has_incident: Optional[bool] = False, db: Session = Depends(get_db)):
-    return end_ride_service(db=db, ride_id=ride_id, has_incident=has_incident)
+# @router.post("/{ride_id}/end", response_model=OrderCardItem)
+# def end_ride(ride_id: UUID, has_incident: Optional[bool] = False, db: Session = Depends(get_db)):
+#     return end_ride_service(db=db, ride_id=ride_id, has_incident=has_incident)
 
 
 # @router.get("/orders/{department_id}/{order_id}/pending")
@@ -111,9 +111,9 @@ def end_ride(ride_id: UUID, has_incident: Optional[bool] = False, db: Session = 
 
 
 
-@router.post("/{ride_id}/end", response_model=OrderCardItem)
-def end_ride(ride_id: UUID, has_incident: Optional[bool] = False, db: Session = Depends(get_db),payload: dict = Depends(token_check)):
-    return end_ride_service(db=db, ride_id=ride_id, has_incident=has_incident)
+# @router.post("/{ride_id}/end", response_model=OrderCardItem)
+# def end_ride(ride_id: UUID, has_incident: Optional[bool] = False, db: Session = Depends(get_db),payload: dict = Depends(token_check)):
+#     return end_ride_service(db=db, ride_id=ride_id, has_incident=has_incident)
 
 
 @router.post("/vehicle-inspection")

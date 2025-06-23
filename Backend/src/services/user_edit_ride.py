@@ -33,6 +33,7 @@ def edit_user_by_id(db: Session, user_id: UUID, user_update: UserUpdate):
     
     for field, value in user_update.dict(exclude_unset=True).items():
         setattr(user, field, value)
+    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user.employee_id)})    
     
     db.commit()
     db.refresh(user)

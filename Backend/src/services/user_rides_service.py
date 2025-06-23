@@ -10,7 +10,7 @@ from fastapi import HTTPException
 from src.schemas.ride_status_enum import RideStatusEnum
 from datetime import timedelta
 from ..utils.audit_utils import log_action
-
+from ..utils.auth import get_current_user
 def filter_rides(query, status: Optional[RideStatus], from_date, to_date):
     if status:
         query = query.filter(Ride.status == status)

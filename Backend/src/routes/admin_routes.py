@@ -25,7 +25,7 @@ from ..services.user_notification import send_admin_odometer_notification
 from datetime import date, datetime, timedelta
 from src.models.vehicle_inspection_model import VehicleInspection
 from ..services.monthly_trip_counts import archive_last_month_stats
-from sqlalchemy import func
+from sqlalchemy import func,text
 from fastapi.responses import JSONResponse
 from src.models.ride_model import Ride
 from sqlalchemy import cast, Date
@@ -118,6 +118,7 @@ def edit_user_by_id_route(
             setattr(user, key, value)
 
     try:
+        db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user.employee_id)})
         db.commit()
     except Exception as e:
         db.rollback()
