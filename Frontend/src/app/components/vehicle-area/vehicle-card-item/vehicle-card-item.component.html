@@ -14,7 +14,7 @@
               class="usage-indicator"
               [style.background-color]="getUsageBarColor(vehicle.plate_number)"
             ></div>
-            <span class="usage-number" *ngIf="getVehicleUsageCount(vehicle.plate_number)>0">  {{ getVehicleUsageCount(vehicle.plate_number) }} נסיעות קיימות לרכב בחודש זה</span>
+            <span class="usage-number" *ngIf="getVehicleUsageCount(vehicle.plate_number)>0">  {{ getVehicleUsageCount(vehicle.plate_number) }} נסיעות קיימות לרכב זה </span>
           </div>
         <img *ngIf="vehicle.image_url" [src]="vehicle.image_url" alt="תמונה של הרכב" class="vehicle-details-img" />
 </div>
@@ -32,6 +32,14 @@
             <strong>סיבת הקפאה:</strong> {{ translateFreezeReason(vehicle.freeze_reason) }}
           </p>
           <p><strong>ק״מ:</strong> {{ vehicle.odometer_reading }}</p>
+<p><strong>מספר נסיעות לחודש זה: </strong>{{ currentVehicleRideCount }}</p>
+          <p><strong>אחוז נסיעות לחודש זה:</strong></p>
+          <div class="ride-progress">
+<span>{{ (currentVehicleRideCount / 20) * 100 | number:'1.0-0' }}%</span> <div class="progress-bar">
+   <div class="progress-fill" [style.width.%]="(currentVehicleRideCount / 20) * 100"></div>
+ </div>
+</div>
+
           <p><strong>תוקף חוזה השכרה:</strong>
   {{ vehicle.lease_expiry ? (vehicle.lease_expiry | date: 'dd/MM/yyyy') : 'לא סופק' }}
 </p>
