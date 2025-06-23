@@ -394,11 +394,14 @@ labels: updatedLabels,
       ? this.rideChartData
       : this.topUsedVehiclesData;
 
-  const title = isVehicleTab
-    ? 'Vehicle Status Summary'
-    : isRideTab
-      ? 'Ride Status Summary'
+ const title = isVehicleTab
+  ? 'Vehicle Status Summary'
+  : isRideTab
+    ? 'Ride Status Summary'
+    : this.isMonthlyView
+      ? 'Monthly Vehicle Usage'
       : 'Top Used Vehicles';
+
 
   const timestamp = new Date().toLocaleString();
   const safeTimestamp = timestamp.replace(/[/:]/g, '-');
@@ -639,16 +642,20 @@ public exportExcel(): void {
   const isRideTab = this.activeTabIndex === 1;
   const isTopUsedTab = this.activeTabIndex === 2;
 
+  
+
   const chartData = isVehicleTab
     ? this.vehicleChartData
     : isRideTab
       ? this.rideChartData
       : this.topUsedVehiclesData;
 
-  const title = isVehicleTab
-    ? 'סטטוס רכבים'
-    : isRideTab
-      ? 'סטטוס נסיעות'
+const title = isVehicleTab
+  ? 'סטטוס רכבים'
+  : isRideTab
+    ? 'סטטוס נסיעות'
+    : this.isMonthlyView
+      ? 'שימוש חודשי ברכבים'
       : 'רכבים בשימוש גבוה';
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -740,7 +747,7 @@ public loadTopUsedVehiclesChart() {
   ).subscribe({
     next: data => {
       console.log('data for usage-stat',data)
-      const labels = data.stats.map(v => `רכב ${v.plate_number} – ${v.vehicle_model}`);
+      const labels = data.stats.map(v => ` ${v.plate_number} – ${v.vehicle_model}`);
 const counts = data.stats.map(v => Number.isFinite(v.total_rides) ? v.total_rides : 0);
 
       const backgroundColors = counts.map(count => {
