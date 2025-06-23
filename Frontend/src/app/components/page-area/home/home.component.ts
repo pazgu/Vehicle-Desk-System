@@ -18,6 +18,7 @@ import { VehicleService } from '../../../services/vehicle.service';
 import { SocketService } from '../../../services/socket.service';
 import { CityService } from '../../../services/city.service';
 import { Location } from '@angular/common';
+import { th } from 'date-fns/locale';
 
 // Define the interface for pending vehicle
 interface PendingVehicle {
@@ -47,6 +48,8 @@ export class NewRideComponent implements OnInit {
   public minDate: string = '';
   public fetchedDistance: number | null = null; 
   cities: { id: string; name: string }[] = [];
+  step = 1;
+  departmentEmployees: { id: string; full_name: string }[] = [];
   showInspectorWarningModal = false;
 
 
@@ -111,6 +114,8 @@ export class NewRideComponent implements OnInit {
   ngOnInit(): void {
     this.minDate = this.calculateMinDate();
     this.rideForm = this.fb.group({
+      target_type: ['self', Validators.required],
+      target_employee_id: [null],
       ride_period: ['morning'],
       ride_date: ['', [Validators.required, this.validYearRangeValidator(2025, 2099)]],
       ride_date_night_end: [''],
@@ -124,6 +129,17 @@ export class NewRideComponent implements OnInit {
       stop: ['', Validators.required],
       destination: ['', Validators.required],
     });
+
+    // fetch coworkers in same department if needed
+    this.rideForm.get('target_type')?.valueChanges.subscribe(type => {
+      if (type === 'other') {
+        this.fetchDepartmentEmployees();
+      } else {
+        this.rideForm.get('target_employee_id')?.setValue(null);
+      }
+    });
+
+
     this.getVehicleTypes()
     this.rideForm.get('estimated_distance_km')?.valueChanges.subscribe(() => {
       this.updateDistance();
@@ -212,6 +228,30 @@ this.rideForm.get('destination')?.valueChanges.subscribe(() => {
       }
     });
   }
+
+  fetchDepartmentEmployees(): void {
+    const currentUserId = localStorage.getItem('employee_id');
+    if (!currentUserId) return;
+
+    this.rideService.getDepartmentEmployees(currentUserId).subscribe({
+      next: (employees) => {
+      this.departmentEmployees = employees;
+    },
+    error: (err) => {
+      console.error('Failed to load department employees', err);
+      this.toastService.show('שגיאה בטעינת עובדים מהמחלקה', 'error');
+    }
+  });
+}
+
+canProceedToDetails(): boolean {
+  const type = this.rideForm.get('target_type')?.value;
+  const selectedEmp = this.rideForm.get('target_employee_id')?.value;
+
+  if (type === 'self') return true;
+  if (type === 'other' && selectedEmp) return true;
+  return false;
+}
 
   private loadPendingVehicles(): void {
     this.vehicleService.getPendingCars().subscribe({
