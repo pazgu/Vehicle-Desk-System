@@ -7,4 +7,5 @@ class CompletionFormData(BaseModel):
     fueled: bool
     emergency_event: Optional[str] = None
     freeze_details:Optional[str] = None
+    changed_by: str
     
