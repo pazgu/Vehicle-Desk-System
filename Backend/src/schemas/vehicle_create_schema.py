@@ -4,7 +4,7 @@ from pydantic import BaseModel, HttpUrl
 from typing import Optional
 from datetime import datetime
 from uuid import UUID
-from ..models.vehicle_model import FuelType, VehicleStatus, FreezeReason
+from ..models.vehicle_model import  FuelType, VehicleStatus, FreezeReason
 
 class VehicleCreate(BaseModel):
     plate_number: str

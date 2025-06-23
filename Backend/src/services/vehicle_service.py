@@ -212,7 +212,7 @@ def freeze_vehicle_service(db: Session, vehicle_id: UUID, reason: str):
 
 def get_available_vehicles_by_type_and_time(
     db: Session,
-    vehicle_type: type,
+    vehicle_type: str,
     start_datetime: datetime,
     end_datetime: datetime,
 ) -> List[Vehicle]:
