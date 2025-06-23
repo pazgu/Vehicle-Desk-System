@@ -27,7 +27,7 @@ def build_dashboard_item(
     return RideDashboardItem(
         ride_id=ride_id,
         employee_name=f"{user_first_name} {user_last_name}",
-        requested_vehicle_plate=f"Plate-{vehicle_id[:8]}",
+requested_vehicle_plate = f"Plate-{str(vehicle_id)[:8]}",
         date_and_time=start_datetime,
         distance=str(estimated_distance_km),
         status=status
@@ -159,19 +159,90 @@ def get_current_month_vehicle_usage(db: Session) -> List[Dict]:
     current_year = now.year
     current_month = now.month
 
-    usage_entries = db.query(MonthlyVehicleUsage).filter_by(
-        year=current_year,
-        month=current_month
-    ).all()
+    usage_entries = (
+        db.query(
+            MonthlyVehicleUsage.vehicle_id,
+            MonthlyVehicleUsage.total_rides,
+            MonthlyVehicleUsage.total_km,
+            MonthlyVehicleUsage.usage_hours,
+            Vehicle.plate_number,
+            Vehicle.vehicle_model
+        )
+        .join(Vehicle, Vehicle.id == MonthlyVehicleUsage.vehicle_id)
+        .filter(
+            MonthlyVehicleUsage.year == current_year,
+            MonthlyVehicleUsage.month == current_month
+        )
+        .all()
+    )
 
     return [
         {
             "vehicle_id": str(entry.vehicle_id),
-            "year": entry.year,
-            "month": entry.month,
+            "plate_number": entry.plate_number,
+            "vehicle_model": entry.vehicle_model,
             "total_rides": entry.total_rides,
-            "total_km": entry.total_km,
-            "usage_hours": entry.usage_hours
+            "total_km": float(entry.total_km),
+            "percentage_in_use_time": round((entry.usage_hours / (24 * 30)) * 100, 1)  # ← based on 30-day month
         }
         for entry in usage_entries
     ]
+
+
+def get_vehicle_usage_stats(db: Session, year: int, month: int) -> List[dict]:
+    usage_data = (
+        db.query(
+            MonthlyVehicleUsage.vehicle_id,
+            MonthlyVehicleUsage.total_rides,
+            MonthlyVehicleUsage.total_km,
+            MonthlyVehicleUsage.usage_hours,
+            Vehicle.plate_number,
+            Vehicle.vehicle_model
+        )
+        .join(Vehicle, Vehicle.id == MonthlyVehicleUsage.vehicle_id)
+        .filter(
+            MonthlyVehicleUsage.year == year,
+            MonthlyVehicleUsage.month == month
+        )
+        .all()
+    )
+
+    return [
+        {
+            "vehicle_id": str(row.vehicle_id),
+            "plate_number": row.plate_number,
+            "vehicle_model": row.vehicle_model,
+            "total_rides": row.total_rides,
+            "total_km": float(row.total_km),
+            "percentage_in_use_time": round((row.usage_hours / (24 * 30)) * 100, 1)  # assumes 30 days
+        }
+        for row in usage_data
+    ]
+
+def get_all_time_vehicle_usage_stats(db: Session) -> List[dict]:
+    usage_data = (
+        db.query(
+            MonthlyVehicleUsage.vehicle_id,
+            func.sum(MonthlyVehicleUsage.total_rides).label("total_rides"),
+            func.sum(MonthlyVehicleUsage.total_km).label("total_km"),
+            func.sum(MonthlyVehicleUsage.usage_hours).label("usage_hours"),
+            Vehicle.plate_number,
+            Vehicle.vehicle_model
+        )
+        .join(Vehicle, Vehicle.id == MonthlyVehicleUsage.vehicle_id)
+        .group_by(MonthlyVehicleUsage.vehicle_id, Vehicle.plate_number, Vehicle.vehicle_model)
+        .all()
+    )
+
+    return [
+        {
+            "vehicle_id": str(row.vehicle_id),
+            "plate_number": row.plate_number,
+            "vehicle_model": row.vehicle_model,
+            "total_rides": row.total_rides,
+            "total_km": float(row.total_km),
+            "percentage_in_use_time": round((row.usage_hours / (24 * 30 * 12)) * 100, 1)  # ← simple average
+        }
+        for row in usage_data
+    ]
+

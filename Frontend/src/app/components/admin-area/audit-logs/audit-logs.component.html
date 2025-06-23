@@ -38,6 +38,13 @@
         <button class="export-button" (click)="exportToCSV()">ייצוא CSV</button>
       </div>
 
+      <div class="problematic-only-filter" dir="rtl">
+        <label>
+          <input type="checkbox" [(ngModel)]="problematicOnly" (change)="fetchAuditLogs()" />
+          הצג רק בדיקות עם בעיות
+        </label>
+      </div>
+
       <div class="status-indicators">
         <p style="margin-bottom: 0.75rem; font-weight: 600;">מקרא צבעים</p>
         <div class="status-box">

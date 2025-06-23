@@ -217,3 +217,86 @@ input[type="time"], input[type="number"], input[type="text"], select {
   justify-content: flex-end; /* מזיז לימין */
   padding: 1rem;
 }
+.inspector-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inspector-modal {
+  background: #fff;
+  border-radius: 1rem;
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  font-family: "Alef", sans-serif;
+  position: relative;
+}
+
+.inspector-modal h2 {
+  font-size: 22px;
+  font-weight: bold;
+  color: #942222;
+  margin-bottom: 1rem;
+}
+
+.inspector-modal p {
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 2rem;
+  line-height: 1.5;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.modal-buttons button {
+  padding: 0.7rem 1.5rem;
+  border-radius: 6px;
+  font-size: 15px;
+  font-family: 'Alef', sans-serif;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  transition: transform 0.2s ease;
+}
+
+.modal-buttons .continue-btn {
+  background-color: #942222;
+  color: white;
+}
+
+.modal-buttons .continue-btn:hover {
+  background-color: #7a1c1c;
+  transform: scale(1.05);
+}
+
+.modal-buttons .cancel-btn {
+  background-color: #ccc;
+  color: black;
+}
+
+.modal-buttons .cancel-btn:hover {
+  background-color: #bbb;
+  transform: scale(1.05);
+}
+
+.close-icon {
+  position: absolute;
+  top: 10px;
+  left: 15px;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
