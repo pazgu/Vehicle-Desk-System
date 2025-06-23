@@ -56,6 +56,6 @@ class FreezeVehicleRequest(BaseModel):
 
 
 class VehicleAvailabilityRequest(BaseModel):
-    vehicle_type: VehicleType
+    vehicle_type: type
     start_datetime: datetime
     end_datetime: datetime
