@@ -28,6 +28,7 @@ def build_dashboard_item(
         ride_id=ride_id,
         employee_name=f"{user_first_name} {user_last_name}",
 requested_vehicle_plate = f"Plate-{str(vehicle_id)[:8]}",
+vehicle_id=vehicle_id,
         date_and_time=start_datetime,
         distance=str(estimated_distance_km),
         status=status
@@ -42,6 +43,7 @@ def get_all_orders(db: Session, status=None, from_date=None, to_date=None) -> Li
         Vehicle.id.label("vehicle_id"),
         User.first_name,
         User.last_name
+
     ).join(Vehicle, Ride.vehicle_id == Vehicle.id) \
      .join(User, Ride.user_id == User.employee_id)  
 
