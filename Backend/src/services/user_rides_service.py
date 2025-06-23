@@ -110,7 +110,7 @@ def get_all_rides(user_id: UUID, db: Session, status=None, from_date=None, to_da
 
     
 def update_ride_status(db: Session, ride_id: UUID, new_status: str, changed_by: UUID):
-    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id)})
+    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(changed_by)})
     # Fetch the ride
     ride = db.query(Ride).filter(Ride.id == ride_id).first()
     if not ride:
