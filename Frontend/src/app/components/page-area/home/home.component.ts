@@ -43,6 +43,21 @@ interface PendingVehicle {
   styleUrls: ['./home.component.css']
 })
 export class NewRideComponent implements OnInit {
+
+
+handleStep1Next() {
+  const targetType = this.rideForm.get('target_type')?.value;
+  const targetEmployeeId = this.rideForm.get('target_employee_id')?.value;
+
+  if (!targetType || (targetType === 'other' && !targetEmployeeId)) {
+    this.showStep1Error = true;
+    return;
+  }
+
+  this.showStep1Error = false;
+  this.step = 2;
+}
+
   rideForm!: FormGroup;
   public estimated_distance_with_buffer: number = 0;
   public minDate: string = '';
@@ -72,6 +87,7 @@ export class NewRideComponent implements OnInit {
 
   // Fix: Use proper interface and initialization
   pendingVehicles: PendingVehicle[] = [];
+  showStep1Error= false;
   
   constructor(
     private fb: FormBuilder,
@@ -458,18 +474,6 @@ private addHoursToTime(timeString: string, hoursToAdd: number): string {
     date.setDate(date.getDate());
     return date.toISOString().split('T')[0];
   }
-
-  // minDateValidator(minDaysAhead: number): ValidatorFn {
-  //   return (control: AbstractControl) => {
-  //     if (!control.value) return null;
-  //     const selectedDate = new Date(control.value);
-  //     const today = new Date();
-  //     today.setHours(0, 0, 0, 0);
-  //     const minDate = new Date(today);
-  //     minDate.setDate(today.getDate() + minDaysAhead);
-  //     return selectedDate >= minDate ? null : { tooSoon: true };
-  //   };
-  // }
 
   validYearRangeValidator(minYear: number, maxYear: number): ValidatorFn {
     return (control: AbstractControl) => {

@@ -7,6 +7,7 @@
       
       <!-- Step 1: Choose ride target -->
       <div *ngIf="step === 1">
+        <h3 class="ride-question">האם הנסיעה עבורך או עבור עובד אחר?</h3>
         <div class="input-group">
           <label>
             <input type="radio" formControlName="target_type" value="self" />
@@ -27,8 +28,10 @@
             </option>
           </select>
         </div>
-
-        <button class="submit-btn" [disabled]="!canProceedToDetails()" (click)="step = 2">הבא →</button>
+        <div class="button-container">
+          <button class="submit-btn" (click)="handleStep1Next()">הבא</button>
+          <small *ngIf="showStep1Error" class="error-text">יש לבחור עובד מהמחלקה כדי להמשיך</small>
+        </div>
       </div>
 
       <!-- Step 2: Ride details form -->
@@ -161,10 +164,12 @@
             </div>
           </div>
         </div>
-
+      
         <!-- Submit button -->
-        <button type="submit" class="submit-btn" (click)="submit()">שלח</button>
-      </div>
+        <div class="button-container">
+          <button type="submit" class="submit-btn" (click)="submit()">שלח</button>
+        </div>
+        </div>
     </form>
   </div>
 
