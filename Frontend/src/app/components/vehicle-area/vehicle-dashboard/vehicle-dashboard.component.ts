@@ -8,6 +8,7 @@ import { VehicleInItem } from '../../../models/vehicle-dashboard-item/vehicle-in
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
+import { SocketService } from '../../../services/socket.service';
 
 @Component({
   selector: 'app-vehicle-dashboard',
@@ -34,12 +35,25 @@ export class VehicleDashboardComponent {
   constructor(
     private vehicleService: VehicleService, 
     private router: Router,
-    private http: HttpClient
+    private http: HttpClient,
+    private socketService: SocketService 
   ){}
 
   ngOnInit(): void {
     this.loadVehicles();
     this.loadVehicleUsageData();
+
+    this.socketService.newVehicle$.subscribe((vehicleData) => {
+  if (vehicleData && vehicleData.id) {
+    console.log('🆕 Vehicle received via socket:', vehicleData);
+
+    const alreadyExists = this.vehicles.some(v => v.id === vehicleData.id);
+    if (!alreadyExists) {
+      this.vehicles.unshift(vehicleData); // Add to top of the list
+    }
+  }
+});
+
   }
 
   goToVehicleDetails(vehicleId: string): void {
@@ -224,5 +238,7 @@ export class VehicleDashboardComponent {
       return filtered;
     }
   }
+
+  
 }
 
