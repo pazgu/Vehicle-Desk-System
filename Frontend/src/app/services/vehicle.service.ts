@@ -11,7 +11,6 @@ import { VehicleOutItem } from '../models/vehicle-dashboard-item/vehicle-out-ite
 export class VehicleService {
   private apiUrl = environment.apiUrl; 
   
-
   constructor(private http: HttpClient) { }
 
  getAllVehicles(status?: string, type?: string): Observable<VehicleInItem[]> {

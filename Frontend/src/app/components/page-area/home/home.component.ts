@@ -69,7 +69,7 @@ export class NewRideComponent implements OnInit {
 
   // Fix: Use proper interface and initialization
   pendingVehicles: PendingVehicle[] = [];
-
+  
   constructor(
     private fb: FormBuilder,
     private router: Router,
@@ -124,7 +124,7 @@ export class NewRideComponent implements OnInit {
       stop: ['', Validators.required],
       destination: ['', Validators.required],
     });
-
+    this.getVehicleTypes()
     this.rideForm.get('estimated_distance_km')?.valueChanges.subscribe(() => {
       this.updateDistance();
     });
@@ -586,7 +586,11 @@ confirmInspectorWarning(): void {
       destination: this.rideForm.get('destination') as FormControl
     };
   }
-
+  getVehicleTypes(): any
+  {
+    return [...new Set(this.allCars.map(car => car.type))];
+    console.log('Available vehicle types:', [...new Set(this.allCars.map(car => car.type))]);
+  }
   close(): void {
     this.router.navigate(['/home']);
   }

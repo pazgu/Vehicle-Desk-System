@@ -295,11 +295,12 @@ def monthly_trip_count_update(db: Session = Depends(get_db)):
 def get_all_audit_logs_route(
     from_date: Optional[datetime] = None,
     to_date: Optional[datetime] = None,
+    problematic_only: bool = Query(False),  
     db: Session = Depends(get_db),
     payload: dict = Depends(token_check)
 ):
     try:
-        return get_all_audit_logs(db, from_date=from_date, to_date=to_date)
+        return get_all_audit_logs(db, from_date=from_date, to_date=to_date, problematic_only=problematic_only)
     except HTTPException as e:
         raise e
     except Exception as e:

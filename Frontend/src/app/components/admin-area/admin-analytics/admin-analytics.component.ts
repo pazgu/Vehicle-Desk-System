@@ -11,6 +11,7 @@ import { saveAs } from 'file-saver';
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
 import * as XLSX from 'xlsx-js-style';
+import { cloneDeep } from 'lodash';
 
 import { VehicleService } from '../../../services/vehicle.service';
 import { FreezeReason, VehicleOutItem } from '../../../models/vehicle-dashboard-item/vehicle-out-item.module';
@@ -32,6 +33,7 @@ pdfMake.vfs = pdfFonts.vfs;
 })
 
 export class AdminAnalyticsComponent implements OnInit {
+
   vehicleChartData: any;
   vehicleChartOptions: any;
   rideChartData: any;
@@ -43,6 +45,7 @@ export class AdminAnalyticsComponent implements OnInit {
   vehicleChartInitialized = false;
   rideChartInitialized = false;
   isMonthlyView = true; // monthly = default
+showChart = true;
 
   selectedMonth = (new Date().getMonth() + 1).toString(); // default = current month
 selectedYear = new Date().getFullYear().toString(); // default = current year
@@ -53,7 +56,11 @@ allTimeChartData: any;
 allTimeChartOptions: any;
 topUsedVehiclesData: any;
 topUsedVehiclesOptions: any;
+monthlyStatsChartData: any;
+monthlyStatsChartOptions: any;
 
+allTimeStatsChartData: any;
+allTimeStatsChartOptions: any;
 
 
 
@@ -86,14 +93,14 @@ years = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - i).toStr
   this.loadFrozenVehicles();
 
   // 👇 Only load monthly chart at start (do NOT override with all-time yet)
-  if (this.isMonthlyView) {
-    this.loadTopUsedVehiclesChart();
-  } else {
-    this.loadAllTimeTopUsedVehiclesChart();
-  }
+  // if (this.isMonthlyView) {
+  //   this.loadTopUsedVehiclesChart();
+  // } else {
+  //   this.loadAllTimeTopUsedVehiclesChart();
+  // }
 
- 
-    
+    this.loadTopUsedVehiclesChart();
+    this.loadAllTimeTopUsedVehiclesChart();
     this.socketService.rideStatusUpdated$.subscribe(() => {
       console.log('🔔 rideStatusUpdated$ triggered');
       this.loadRideChart();
@@ -114,12 +121,17 @@ years = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - i).toStr
     });
   }
 
- toggleUsageView() {
+toggleUsageView() {
   this.isMonthlyView = !this.isMonthlyView;
+  console.log('isMonthlyView:', this.isMonthlyView);
   if (this.isMonthlyView) {
+    console.log('Loading monthly chart');
     this.loadTopUsedVehiclesChart();
+    this.reloadChart();
   } else {
+    console.log('Loading all-time chart');
     this.loadAllTimeTopUsedVehiclesChart();
+    this.reloadChart();
   }
 }
 
@@ -693,6 +705,16 @@ public exportExcel(): void {
   return statusMap[status] || status;
 }
 
+
+
+private reloadChart() {
+  this.showChart = false;
+  setTimeout(() => {
+    this.showChart = true;
+  }, 0);
+}
+
+
 private reverseHebrewLabel(hebrewLabel: string): string {
   const reverseMap: { [key: string]: string } = {
     'זמין': 'available',
@@ -709,12 +731,17 @@ private reverseHebrewLabel(hebrewLabel: string): string {
 }
 
 public loadTopUsedVehiclesChart() {
-  this.http.get<{ plate_number: string; vehicle_model: string; ride_count: number }[]>(
-    `${environment.apiUrl}/analytics/top-used-vehicles`
+  this.http.get<{
+  month: number;
+  stats: { plate_number: string; vehicle_model: string; total_rides: number }[];
+  year: number;
+}>(
+    `${environment.apiUrl}/vehicles/usage-stats?range=month&year=${this.selectedYear}&month=${this.selectedMonth}`
   ).subscribe({
     next: data => {
-      const labels = data.map(v => `רכב ${v.plate_number} – ${v.vehicle_model}`);
-      const counts = data.map(v => v.ride_count);
+      console.log('data for usage-stat',data)
+      const labels = data.stats.map(v => `רכב ${v.plate_number} – ${v.vehicle_model}`);
+const counts = data.stats.map(v => Number.isFinite(v.total_rides) ? v.total_rides : 0);
 
       const backgroundColors = counts.map(count => {
         if (count > 10) return '#FF5252';
@@ -782,8 +809,14 @@ public loadTopUsedVehiclesChart() {
       };
 
       // ✅ Assign final chart config
-      this.topUsedVehiclesData = this.monthlyChartData;
-      this.topUsedVehiclesOptions = structuredClone(this.monthlyChartOptions);
+      this.topUsedVehiclesData = { ...cloneDeep(this.monthlyChartData) };
+this.topUsedVehiclesOptions = { ...cloneDeep(this.monthlyChartOptions) };
+this.monthlyStatsChartData= {...this.monthlyChartData};
+this.monthlyStatsChartOptions={ ...this.monthlyChartOptions };
+console.log('monthly stats data:',this.monthlyStatsChartData)
+
+
+
     },
     error: err => {
       console.error('❌ Error fetching top used vehicles:', err);
@@ -795,6 +828,7 @@ public loadTopUsedVehiclesChart() {
 private loadAllTimeTopUsedVehiclesChart() {
  this.http.get(`${environment.apiUrl}/vehicles/usage-stats?range=all`).subscribe({
   next: (res: any) => {
+    console.log('all stats data',res)
     const stats = res?.stats || [];
 
     if (!stats.length) {
@@ -823,8 +857,12 @@ private loadAllTimeTopUsedVehiclesChart() {
         },
         locale: 'he-IL'
       };
-      this.topUsedVehiclesData = structuredClone(this.allTimeChartData);
-      this.topUsedVehiclesOptions = structuredClone(this.allTimeChartOptions);
+     
+      this.topUsedVehiclesData = { ...cloneDeep(this.allTimeChartData) };
+this.topUsedVehiclesOptions = { ...cloneDeep(this.allTimeChartOptions) };
+this.allTimeStatsChartData={ ...cloneDeep(this.allTimeChartData) };
+this.allTimeStatsChartOptions={ ...cloneDeep(this.allTimeChartOptions) };
+
       return;
     }
 
@@ -870,8 +908,10 @@ private loadAllTimeTopUsedVehiclesChart() {
       locale: 'he-IL'
     };
 
-    this.topUsedVehiclesData = structuredClone(this.allTimeChartData);
-    this.topUsedVehiclesOptions = structuredClone(this.allTimeChartOptions);
+      this.topUsedVehiclesData = { ...cloneDeep(this.allTimeChartData) };
+this.topUsedVehiclesOptions = { ...cloneDeep(this.allTimeChartOptions) };
+this.allTimeStatsChartData={ ...cloneDeep(this.allTimeChartData) };
+this.allTimeStatsChartOptions={ ...cloneDeep(this.allTimeChartOptions) };
   },
 
   error: (err: any) => {
