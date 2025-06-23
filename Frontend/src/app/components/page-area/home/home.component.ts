@@ -567,6 +567,17 @@ confirmInspectorWarning(): void {
     return;
   }
 
+      // Determine actual and override user IDs ✅ ADDED
+    const targetType = this.rideForm.get('target_type')?.value;
+    const targetEmployeeId = this.rideForm.get('target_employee_id')?.value;
+    let rider_id = user_id;
+    let requester_id = null;
+
+    if (targetType === 'other' && targetEmployeeId) {
+      rider_id = targetEmployeeId;
+      requester_id = user_id;
+    }
+
   // Build datetime strings
   const start_datetime = `${rideDate}T${startTime}`;
   const end_datetime = ridePeriod === 'morning'
@@ -574,7 +585,14 @@ confirmInspectorWarning(): void {
     : `${nightEndDate}T${endTime}`;
 
   // Prepare form data
+
+  // const targetEmployeeId = this.rideForm.get('target_type')?.value === 'other'
+  // ? this.rideForm.get('target_employee_id')?.value
+  // : null;
+
   const formData = {
+    user_id: rider_id, 
+    override_user_id: requester_id, 
     ride_type: this.rideForm.get('ride_type')?.value,
     start_datetime,
     vehicle_id: vehicleId,
@@ -583,7 +601,7 @@ confirmInspectorWarning(): void {
     stop: this.rideForm.get('stop')?.value,
     destination: this.rideForm.get('destination')?.value,
     estimated_distance_km: distance,
-    actual_distance_km: this.estimated_distance_with_buffer 
+    actual_distance_km: this.estimated_distance_with_buffer,
   };
 
   console.log('Ride data for backend:', formData);
