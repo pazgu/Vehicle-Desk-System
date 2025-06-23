@@ -196,7 +196,9 @@ def get_vehicle_by_id(vehicle_id: str, db: Session):
         "lease_expiry": vehicle.lease_expiry
     }
 
-def freeze_vehicle_service(db: Session, vehicle_id: UUID, reason: str):
+def freeze_vehicle_service(db: Session, vehicle_id: UUID, reason: str, changed_by: UUID):
+    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(changed_by)})
+
     vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
     if not vehicle:
         raise HTTPException(status_code=404, detail="Vehicle not found")
@@ -206,6 +208,8 @@ def freeze_vehicle_service(db: Session, vehicle_id: UUID, reason: str):
 
     db.commit()
     db.refresh(vehicle)
+    db.execute(text("SET session.audit.user_id = DEFAULT"))
+
     return {"message": f"Vehicle {vehicle_id} has been frozen successfully."}
 
     api_router.include_router(vehicle_route, prefix="/vehicles", tags=["Vehicles"])
