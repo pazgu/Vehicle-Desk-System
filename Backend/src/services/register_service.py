@@ -7,6 +7,7 @@ from ..utils.auth import hash_password
 from ..services.auth_service import create_access_token
 from ..utils.database import SessionLocal
 import uuid
+from sqlalchemy import text
 
 
 
@@ -51,6 +52,7 @@ def create_user(user_data: UserCreate, db: Session):
 
         if last_audit and last_audit.changed_by is None:
             last_audit.changed_by = new_user.employee_id
+            db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(new_user.employee_id)})
             db.commit()
 
         token_data = create_access_token(
