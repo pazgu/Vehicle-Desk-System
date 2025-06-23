@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from uuid import UUID
 from src.services.supervisor_dashboard_service import get_department_orders,get_department_specific_order,edit_order_status
 from sqlalchemy.orm import Session
@@ -8,7 +8,7 @@ from ..utils.database import get_db
 from ..services.supervisor_dashboard_service import get_department_orders
 from typing import Optional
 from ..schemas.order_card_item import OrderCardItem
-
+from ..services.vehicle_service import freeze_vehicle_service
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 from ..utils.auth import supervisor_check, token_check
 from ..services.supervisor_dashboard_service import vehicle_inspection_logic , start_ride
@@ -36,9 +36,9 @@ def edit_order_status_route(department_id: UUID, order_id: UUID, status: str, db
 
 
 
-@router.post("/{ride_id}/end", response_model=OrderCardItem)
-def end_ride(ride_id: UUID, has_incident: Optional[bool] = False, db: Session = Depends(get_db)):
-    return end_ride_service(db=db, ride_id=ride_id, has_incident=has_incident)
+# @router.post("/{ride_id}/end", response_model=OrderCardItem)
+# def end_ride(ride_id: UUID, has_incident: Optional[bool] = False, db: Session = Depends(get_db)):
+#     return end_ride_service(db=db, ride_id=ride_id, has_incident=has_incident)
 
 
 # @router.get("/orders/{department_id}/{order_id}/pending")
@@ -110,9 +110,9 @@ def end_ride(ride_id: UUID, has_incident: Optional[bool] = False, db: Session = 
 
 
 
-@router.post("/{ride_id}/end", response_model=OrderCardItem)
-def end_ride(ride_id: UUID, has_incident: Optional[bool] = False, db: Session = Depends(get_db),payload: dict = Depends(token_check)):
-    return end_ride_service(db=db, ride_id=ride_id, has_incident=has_incident)
+# @router.post("/{ride_id}/end", response_model=OrderCardItem)
+# def end_ride(ride_id: UUID, has_incident: Optional[bool] = False, db: Session = Depends(get_db),payload: dict = Depends(token_check)):
+#     return end_ride_service(db=db, ride_id=ride_id, has_incident=has_incident)
 
 
 @router.post("/vehicle-inspection")

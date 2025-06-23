@@ -33,6 +33,9 @@
 .custom-toast.error {
   background-color: #e53e3e;
 }
+.custom-toast.neutral {
+  background-color: #afbff3;
+}
 
 @keyframes slideIn {
   from {
