@@ -18,23 +18,26 @@ export class VehicleCardItemComponent implements OnInit {
   freezeReason: string = ''; // Holds the freeze reason entered by the user
   topUsedVehiclesMap: Record<string, number> = {};
   vehicleUsageData: { plate_number: string; vehicle_model: string; ride_count: number }[] = [];
+  currentVehicleRideCount: number = 0;
 
   constructor(private navigateRouter: Router, private route: ActivatedRoute, private vehicleService: VehicleService, private http: HttpClient) { }
 
   ngOnInit(): void {
-     window.scrollTo({ top: 0, behavior: 'smooth' });
-
-  this.loadVehicleUsageData(); // ✅ Add this line to fetch usage data
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  this.loadVehicleUsageData();
 
   const id = this.route.snapshot.paramMap.get('id');
   if (id) {
     this.vehicleService.getVehicleById(id).subscribe(data => {
       console.log('Vehicle from API:', data);
       this.vehicle = data;
+      
+      // Load ride count after getting vehicle data
+      this.getAllRidesForCurrentVehicle(data.id);
     });
   }
-  }
-
+}
+ 
   getCardClass(status: string): string {
     switch (status) {
       case 'available': return 'card-available';
@@ -198,4 +201,37 @@ export class VehicleCardItemComponent implements OnInit {
     getVehicleUsageCount(plateNumber: string): number {
     return this.topUsedVehiclesMap[plateNumber] || 0;
   }
+
+  getAllRidesForCurrentVehicle(vehicleId: string): void {
+  this.http.get<{ vehicle_id: string, date_and_time: string }[]>(`${environment.apiUrl}/orders`).subscribe({
+    next: (rides) => {
+      
+      const count = rides.filter(ride => {
+ if (ride.vehicle_id !== vehicleId) return false;
+ 
+ // Check if ride has a date field
+ if (!ride.date_and_time) return false;
+ 
+ const rideDate = new Date(ride.date_and_time);
+ const currentDate = new Date();
+ 
+ // Check if ride is from current month and year
+ return rideDate.getMonth() === currentDate.getMonth() && 
+        rideDate.getFullYear() === currentDate.getFullYear();
+}).length;
+
+
+      console.log(`Vehicle ${vehicleId} appears in ${count} rides`);
+      
+      // Store the count in the component property
+      this.currentVehicleRideCount = count;
+    },
+    error: (err) => {
+      console.error('Error fetching rides:', err);
+      this.currentVehicleRideCount = 0;
+    }
+  });
 }
+
+}
+

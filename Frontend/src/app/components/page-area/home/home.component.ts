@@ -18,6 +18,7 @@ import { VehicleService } from '../../../services/vehicle.service';
 import { SocketService } from '../../../services/socket.service';
 import { CityService } from '../../../services/city.service';
 import { Location } from '@angular/common';
+import { FuelType, FuelTypeResponse } from '../../../models/vehicle-dashboard-item/vehicle-out-item.module';
 import { th } from 'date-fns/locale';
 
 // Define the interface for pending vehicle
@@ -66,7 +67,7 @@ handleStep1Next() {
   step = 1;
   departmentEmployees: { id: string; full_name: string }[] = [];
   showInspectorWarningModal = false;
-
+  VehicleFuelType:FuelType=FuelType.Gasoline
 
 
   allCars: {
@@ -268,6 +269,15 @@ canProceedToDetails(): boolean {
   if (type === 'other' && selectedEmp) return true;
   return false;
 }
+  loadFuelType(vehicleId: string) {
+    this.vehicleService.getFuelTypeByVehicleId(vehicleId).subscribe({
+      next: (res: FuelTypeResponse) => {
+        this.VehicleFuelType = res.fuel_type;
+        console.log('Fuel Type:', this.VehicleFuelType);
+      },
+      error: err => console.error('Failed to load fuel type', err)
+    });
+  }
 
   private loadPendingVehicles(): void {
     this.vehicleService.getPendingCars().subscribe({
@@ -614,6 +624,16 @@ confirmInspectorWarning(): void {
   this.rideService.createRide(formData, user_id).subscribe({
     next: (createdRide) => {
       this.toastService.show('הבקשה נשלחה בהצלחה! ✅', 'success');
+      this.loadFuelType(formData.vehicle_id)
+
+         if (this.VehicleFuelType === 'electric') {
+        this.toastService.show('אנא ודא כי הרכב טעון לפני ההחזרה.','neutral');
+      } else if (this.VehicleFuelType === 'hybrid') {
+        this.toastService.show('אנא ודא כי יש מספיק דלק וטעינה לפני ההחזרה.','neutral');
+      } else if (this.VehicleFuelType === 'gasoline') {
+        this.toastService.show('אנא ודא כי מיכל הדלק מלא לפני ההחזרה.','neutral');
+      }
+
 
       // Emit socket message after successful creation
       this.socketService.sendMessage('new_ride_request', {

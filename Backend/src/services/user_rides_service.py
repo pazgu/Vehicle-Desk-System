@@ -10,7 +10,7 @@ from fastapi import HTTPException
 from src.schemas.ride_status_enum import RideStatusEnum
 from datetime import timedelta
 from ..utils.audit_utils import log_action
-
+from ..utils.auth import get_current_user
 def filter_rides(query, status: Optional[RideStatus], from_date, to_date):
     if status:
         query = query.filter(Ride.status == status)
@@ -215,6 +215,7 @@ def get_archived_rides(user_id: UUID, db: Session) -> List[RideSchema]:
 
 
 def cancel_order_in_db(order_id: UUID, db: Session):
+    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(order.user_id)})
     order = db.query(Ride).filter(Ride.id == order_id).first()
 
     if not order:
