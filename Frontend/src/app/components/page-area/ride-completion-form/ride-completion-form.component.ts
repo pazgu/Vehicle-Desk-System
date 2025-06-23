@@ -146,7 +146,10 @@ loadFuelType(vehicleId: string) {
       freeze_details: rawForm.freeze_details || '',
       completed: rawForm.completed === 'true',
       fueled: rawForm.fueled === 'true',
+        changed_by: localStorage.getItem('user_id') || '' // Make sure this is a string!
+
     };
+    console.log('Form Data:', formData);
 
     const token = localStorage.getItem('access_token') || '';
     this.loading = true;

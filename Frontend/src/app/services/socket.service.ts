@@ -21,6 +21,8 @@ export class SocketService {
   public vehicleStatusUpdated$ = new BehaviorSubject<any>(null); 
   public rideStatusUpdated$ = new BehaviorSubject<any>(null); 
   public auditLogs$ = new BehaviorSubject<any>(null);
+  public newVehicle$ = new BehaviorSubject<any>(null);
+
 
 
   constructor() {
@@ -106,6 +108,12 @@ this.socket.on('order_deleted', (data: any) => {
       this.auditLogs$.next(data);
     });
 
+    this.socket.on('new_vehicle_created', (data: any) => {
+      console.log('🚘 New vehicle added via socket:', data);
+      this.newVehicle$.next(data);
+});
+
+
 
     setTimeout(() => {
       this.orderUpdated$.next({ id: 'test-id' });
@@ -122,6 +130,8 @@ this.socket.on('order_deleted', (data: any) => {
   //   this.socket.emit('join', { room: userId });
   //   console.log(`📡 Sent join request to room: ${userId}`);
   // }
+
+  
 
 
 

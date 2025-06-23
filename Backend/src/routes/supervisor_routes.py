@@ -31,8 +31,9 @@ def get_department_specific_order_route(department_id: UUID, order_id: UUID, db:
     return order
 
 @router.patch("/orders/{department_id}/{order_id}/update/{status}")
-def edit_order_status_route(department_id: UUID, order_id: UUID, status: str, db: Session = Depends(get_db)):
-    return edit_order_status(department_id, order_id, status, db)
+def edit_order_status_route(department_id: UUID, order_id: UUID, status: str, db: Session = Depends(get_db),payload: dict = Depends(token_check)):
+    user_id = payload.get("user_id") or payload.get("sub")
+    return edit_order_status(department_id, order_id, status,user_id, db)
 
 
 
@@ -126,8 +127,9 @@ def vehicle_inspection(data: VehicleInspectionSchema, db: Session = Depends(get_
 
 
 @router.post("/vehicles/freeze")
-def freeze_vehicle(request: FreezeVehicleRequest, db: Session = Depends(get_db)):
-    return freeze_vehicle_service(db, request.vehicle_id, request.reason)
+def freeze_vehicle(request: FreezeVehicleRequest, db: Session = Depends(get_db), payload: dict = Depends(token_check)):
+    user_id = payload.get("user_id")
+    return freeze_vehicle_service(db, request.vehicle_id, request.reason, user_id)
 
 @router.post("/rides/{ride_id}/start")
 def start_ride_route(ride_id: UUID, db: Session = Depends(get_db)):

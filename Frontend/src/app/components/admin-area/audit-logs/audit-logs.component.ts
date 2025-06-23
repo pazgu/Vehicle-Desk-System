@@ -291,16 +291,17 @@ export class AuditLogsComponent implements OnInit {
 
   getVehicleAuditRows(oldData: any, newData: any): Array<{label: string, oldValue: any, newValue: any}> {
     return [
-      { label: 'מספר רכב', oldValue: oldData.plate_number, newValue: newData.plate_number },
-      { label: 'סוג רכב', oldValue: oldData.type, newValue: newData.type },
-      { label: 'סוג דלק', oldValue: oldData.fuel_type, newValue: newData.fuel_type },
-      { label: 'סטטוס', oldValue: oldData.status, newValue: newData.status },
-      { label: 'סיבת הקפאה', oldValue: oldData.freeze_reason, newValue: newData.freeze_reason },
-      { label: 'מיקום נוכחי', oldValue: oldData.current_location, newValue: newData.current_location },
-      { label: 'קילומטראז\'', oldValue: oldData.odometer_reading, newValue: newData.odometer_reading },
-      { label: 'דגם רכב', oldValue: oldData.vehicle_model, newValue: newData.vehicle_model },
-      { label: 'תמונה', oldValue: oldData.image_url, newValue: newData.image_url }
-    ];
+    { label: 'מספר רכב', oldValue: oldData.plate_number, newValue: newData.plate_number },
+    { label: 'סוג רכב', oldValue: oldData.type, newValue: newData.type },
+    { label: 'סוג דלק', oldValue: oldData.fuel_type, newValue: newData.fuel_type },
+    { label: 'סטטוס', oldValue: oldData.status, newValue: newData.status },
+    { label: 'שימוש אחרון', oldValue: oldData.last_used_at, newValue: newData.last_used_at }, // <-- Added this line
+    { label: 'סיבת הקפאה', oldValue: oldData.freeze_reason, newValue: newData.freeze_reason },
+    { label: 'מיקום נוכחי', oldValue: oldData.current_location, newValue: newData.current_location },
+    { label: 'קילומטראז\'', oldValue: oldData.odometer_reading, newValue: newData.odometer_reading },
+    { label: 'דגם רכב', oldValue: oldData.vehicle_model, newValue: newData.vehicle_model },
+    { label: 'תמונה', oldValue: oldData.image_url, newValue: newData.image_url }
+  ];
   }
 
   vehicleRedirect(vehicleId: string) {
