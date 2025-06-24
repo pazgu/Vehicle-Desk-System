@@ -68,6 +68,12 @@ handleStep1Next() {
   departmentEmployees: { id: string; full_name: string }[] = [];
   showInspectorWarningModal = false;
   VehicleFuelType:FuelType=FuelType.Gasoline
+  public isLoadingDistance = false;
+
+
+
+
+
 
 
   allCars: {
@@ -104,6 +110,8 @@ handleStep1Next() {
  fetchEstimatedDistance(from: string, to: string): void {
   if (!from || !to) return;
 
+  this.isLoadingDistance = true;
+
   console.log(`🌍 Requesting real distance: ${from} → ${to}`);
 
   this.rideService.getDistance(from, to).subscribe({
@@ -111,14 +119,22 @@ handleStep1Next() {
       const realDistance = response.distance_km;
       console.log(`📏 Distance fetched: ${realDistance} km`);
 
-      this.fetchedDistance = realDistance;
-      this.rideForm.get('estimated_distance_km')?.setValue(realDistance);
+      const roundTripDistance = realDistance * 2; // Calculate round trip
+
+      console.log(`📏 One-way distance: ${realDistance} km, Round-trip: ${roundTripDistance} km`);
+
+      this.fetchedDistance = roundTripDistance; // Store round-trip distance
+
+      this.rideForm.get('estimated_distance_km')?.setValue(roundTripDistance);
+      this.updateDistance(); 
+      this.isLoadingDistance = false;
     },
     error: (err) => {
       console.error('❌ Failed to fetch distance:', err);
       this.toastService.show('שגיאה בחישוב מרחק בין הערים', 'error');
       this.fetchedDistance = null;
       this.rideForm.get('estimated_distance_km')?.setValue(null);
+      this.isLoadingDistance = false;
     }
   });
 }
@@ -189,13 +205,27 @@ this.rideForm.get('end_location')?.valueChanges.subscribe(() => {
 this.rideForm.get('start_location')?.valueChanges.subscribe(() => {
   const from = this.rideForm.get('start_location')?.value;
   const to = this.rideForm.get('destination')?.value;
-  if (from && to) this.fetchEstimatedDistance(from, to);
+  if (from && to && from !== to) {
+    this.fetchEstimatedDistance(from, to);
+  } else {
+    // Clear distance when locations are incomplete
+    this.fetchedDistance = null;
+    this.rideForm.get('estimated_distance_km')?.setValue(null);
+    this.estimated_distance_with_buffer = 0;
+  }
 });
 
 this.rideForm.get('destination')?.valueChanges.subscribe(() => {
   const from = this.rideForm.get('start_location')?.value;
   const to = this.rideForm.get('destination')?.value;
-  if (from && to) this.fetchEstimatedDistance(from, to);
+  if (from && to && from !== to) {
+    this.fetchEstimatedDistance(from, to);
+  } else {
+    // Clear distance when locations are incomplete
+    this.fetchedDistance = null;
+    this.rideForm.get('estimated_distance_km')?.setValue(null);
+    this.estimated_distance_with_buffer = 0;
+  }
 });
 
     this.fetchCities();
