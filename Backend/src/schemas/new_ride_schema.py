@@ -19,6 +19,8 @@ class RideStatus(str, Enum):
 
 
 class RideCreate(BaseModel):
+    user_id: UUID  # ✅ The rider
+    override_user_id: Optional[UUID] = None # The requester
     ride_type: RideType
     start_datetime: datetime
     vehicle_id:UUID
@@ -29,6 +31,7 @@ class RideCreate(BaseModel):
     estimated_distance_km: float
     actual_distance_km: float
     four_by_four_reason: Optional[str] = None 
+    target_type: Optional[str] = "self"  # "Self" or "Other"
     
 class RideResponse(BaseModel):
     id: UUID
