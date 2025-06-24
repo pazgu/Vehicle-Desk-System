@@ -25,7 +25,7 @@ from ..services.user_notification import send_admin_odometer_notification
 from datetime import date, datetime, timedelta
 from src.models.vehicle_inspection_model import VehicleInspection
 from ..services.monthly_trip_counts import archive_last_month_stats
-from sqlalchemy import func
+from sqlalchemy import func, text
 from fastapi.responses import JSONResponse
 from src.models.ride_model import Ride
 from sqlalchemy import cast, Date
@@ -99,15 +99,24 @@ def fetch_user_by_id(user_id: UUID, db: Session = Depends(get_db)):
 def edit_user_by_id_route(
     user_id: UUID,
     user_update: UserUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    payload: dict = Depends(token_check)  # Use payload from token_check
 ):
     user = db.query(User).filter(User.employee_id == user_id).first()
 
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    
+    user_id_from_token = payload.get("user_id") or payload.get("sub")
+    if not user_id_from_token:
+        raise HTTPException(status_code=401, detail="User ID not found in token")
+    
+    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id_from_token)})
+
 
     update_data = user_update.dict(exclude_unset=True)
     print("🟡 Incoming update:", update_data)
+    
 
     # Check attributes before applying them
     for key, value in update_data.items():
@@ -125,6 +134,8 @@ def edit_user_by_id_route(
         raise HTTPException(status_code=500, detail="Failed to update user")
 
     db.refresh(user)
+    db.execute(text("SET session.audit.user_id = DEFAULT"))  # (optional) reset after commit
+
     return user
 
 @router.get("/roles")
