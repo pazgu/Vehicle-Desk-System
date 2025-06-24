@@ -21,6 +21,7 @@ html, body {
 
 .no-spinner {
   -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 /* FORM MODAL */
@@ -299,4 +300,26 @@ input[type="time"], input[type="number"], input[type="text"], select {
   left: 15px;
   font-size: 1.5rem;
   cursor: pointer;
+}
+
+
+.button-container {
+  display: flex;
+  justify-content: flex-end; /* Aligns button to the left */
+  margin-top: 1.5rem;
+}
+
+
+.ride-question {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 16px; /* 👈 add more space below the question */
+}
+
+.error-text {
+  color: red;
+  font-size: 13px;
+  margin-top: 6px;
+  margin-right: 6px;
 }

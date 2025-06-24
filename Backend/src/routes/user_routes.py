@@ -528,3 +528,29 @@ def check_feedback_needed(
         "ride_id": str(ride.id),
         "message": "הנסיעה הסתיימה, נא למלא את הטופס"
     }
+
+
+@router.get("/api/employees/by-department/{user_id}")
+def get_employees_by_department(user_id: UUID, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.employee_id == user_id).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    department_id = user.department_id
+
+    employees = (
+        db.query(User)
+        .filter(User.department_id == department_id, User.employee_id != user_id)
+        .with_entities(User.employee_id, User.first_name, User.last_name)
+        .all()
+    )
+
+    return [
+        {
+            "id": str(emp.employee_id),
+            "full_name": f"{emp.first_name} {emp.last_name}"
+        }
+        for emp in employees
+    ]
+
