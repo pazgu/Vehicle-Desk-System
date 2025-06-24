@@ -66,16 +66,26 @@
             </div>
           </div>
 
-          <!-- Row 2: vehicle type + start time + end time -->
-          <div class="row">
-            <div class="input-group">
-              <label>סוג רכב</label>
-              <select formControlName="vehicle_type" class="styled-select" (change)="onRideTypeChange()">
-                <option value="" disabled selected>בחר סוג</option>
-                <option *ngFor="let type of getVehicleTypes()" [value]="type">{{ type }}</option>
-              </select>
-              <small *ngIf="f.vehicle_type.touched && f.vehicle_type.errors?.['required']" class="distance-info">חובה לבחור סוג רכב</small>
-            </div>
+
+<!-- Row 2: סוג רכב + שעת התחלה + שעת סיום -->
+<div class="row">
+  <div class="input-group">
+    <label>סוג רכב</label>
+    <select formControlName="vehicle_type" class="styled-select" (change)="onRideTypeChange()">
+      <option value="" disabled selected>בחר סוג</option>
+<option *ngFor="let type of getVehicleTypes()" [value]="type">{{ type }}</option>
+    </select>
+  <textarea
+    formControlName="vehicle_type_reason"
+    placeholder="אנא פרט.י מדוע יש צורך בכרב 4X4"
+    class="vehicle-type-info"
+    *ngIf="f.vehicle_type.value?.toLowerCase().includes('jeep') || f.vehicle_type.value?.toLowerCase().includes('van') || f.vehicle_type.value?.toLowerCase().includes('4x4')"
+  ></textarea>
+
+  <small *ngIf="rideForm.get('vehicle_type_reason')?.touched && rideForm.get('vehicle_type_reason')?.errors?.['required']" class="distance-info">
+    חובה לפרט מדוע יש צורך ברכב זה
+  </small>
+  </div>
 
             <div class="input-group">
               <label>שעת התחלה</label>

@@ -145,6 +145,7 @@ handleStep1Next() {
       start_location: ['', Validators.required],
       stop: ['', Validators.required],
       destination: ['', Validators.required],
+      vehicle_type_reason: ['', Validators.required]
     });
 
     // fetch coworkers in same department if needed
@@ -225,6 +226,20 @@ this.rideForm.get('destination')?.valueChanges.subscribe(() => {
         this.toastService.show('שגיאה בטעינת רכבים זמינים', 'error');
       }
     });
+
+    this.rideForm.get('vehicle_type')?.valueChanges.subscribe(value => {
+    const vehicleTypeReason = this.rideForm.get('vehicle_type_reason');
+    
+    if (value?.toLowerCase().includes('jeep') || 
+        value?.toLowerCase().includes('van') || 
+        value?.toLowerCase().includes('4x4')) {
+      vehicleTypeReason?.setValidators([Validators.required]);
+    } else {
+      vehicleTypeReason?.clearValidators();
+    }
+    vehicleTypeReason?.updateValueAndValidity();
+  });
+
 
     // Load pending cars with proper error handling and type safety
     this.loadPendingVehicles();
@@ -524,8 +539,29 @@ confirmInspectorWarning(): void {
     this.rideForm.markAllAsTouched();
     this.toastService.show('יש להשלים את כל שדות הטופס כנדרש', 'error');
     return;
+
+  }
+  this.rideForm.markAllAsTouched(); // This is good, keeps errors visible
+
+  if (this.rideForm.invalid) {
+    this.toastService.show('יש להשלים את כל שדות הטופס כנדרש', 'error');
+
+    // --- PASTE THIS CODE HERE ---
+    console.log('FORM IS INVALID. HERE ARE THE ERRORS:');
+    Object.keys(this.rideForm.controls).forEach(key => {
+      const control = this.rideForm.get(key);
+      if (control && control.invalid) {
+        console.log(`- Control '${key}' is invalid. Errors:`, control.errors);
+      }
+    });
+    // --- END PASTE ---
+
+    return; // Stop submission if form is invalid
   }
 
+  // ... (rest of your submission logic)
+
+  
   
 
   // Vehicle selection validation
