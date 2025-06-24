@@ -44,17 +44,17 @@
 
       <div class="info-row">
         <div class="info-label">נקודת התחלה:</div>
-        <div class="info-value">{{ trip.startLocation }}</div>
+<div class="info-value">{{ getCityName(trip.startLocation) }}</div>
       </div>
 
       <div class="info-row">
         <div class="info-label">תחנת עצירה:</div>
-        <div class="info-value">{{ trip.stop }}</div>
+<div class="info-value">{{ getCityName(trip.stop) }}</div>
       </div>
 
       <div class="info-row">
         <div class="info-label">יעד:</div>
-        <div class="info-value">{{ trip.destination }}</div>
+<div class="info-value">{{ getCityName(trip.destination) }}</div>
       </div>
 
       <div class="info-row">
