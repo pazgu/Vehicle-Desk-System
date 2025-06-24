@@ -44,6 +44,8 @@ export class AuditLogsComponent implements OnInit {
   customToDate: string = '';
 
   problematicOnly: boolean = false;
+  filtersCollapsed = false;
+
 
 
   vehicleFieldLabels: { [key: string]: string } = {

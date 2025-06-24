@@ -14,18 +14,19 @@ from src.services.admin_rides_service import (
     get_order_by_ride_id,
     get_all_time_vehicle_usage_stats 
 )
+from sqlalchemy import and_, or_
 from ..utils.database import get_db
 from src.models.user_model import User , UserRole
 from src.models.vehicle_model import Vehicle
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 from ..schemas.vehicle_schema import VehicleOut , InUseVehicleOut , VehicleStatusUpdate
 from ..utils.auth import token_check
-from ..services.vehicle_service import get_vehicles_with_optional_status,update_vehicle_status,get_vehicle_by_id, vehicle_inspection_logic, get_available_vehicles_for_ride_by_id
+from ..services.vehicle_service import get_vehicles_with_optional_status,update_vehicle_status,get_vehicle_by_id, get_available_vehicles_for_ride_by_id
 from ..services.user_notification import send_admin_odometer_notification
 from datetime import date, datetime, timedelta
 from src.models.vehicle_inspection_model import VehicleInspection
 from ..services.monthly_trip_counts import archive_last_month_stats
-from sqlalchemy import func
+from sqlalchemy import func, text
 from fastapi.responses import JSONResponse
 from src.models.ride_model import Ride
 from sqlalchemy import cast, Date
@@ -99,15 +100,24 @@ def fetch_user_by_id(user_id: UUID, db: Session = Depends(get_db)):
 def edit_user_by_id_route(
     user_id: UUID,
     user_update: UserUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    payload: dict = Depends(token_check)  # Use payload from token_check
 ):
     user = db.query(User).filter(User.employee_id == user_id).first()
 
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    
+    user_id_from_token = payload.get("user_id") or payload.get("sub")
+    if not user_id_from_token:
+        raise HTTPException(status_code=401, detail="User ID not found in token")
+    
+    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id_from_token)})
+
 
     update_data = user_update.dict(exclude_unset=True)
     print("🟡 Incoming update:", update_data)
+    
 
     # Check attributes before applying them
     for key, value in update_data.items():
@@ -118,6 +128,7 @@ def edit_user_by_id_route(
             setattr(user, key, value)
 
     try:
+        db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user.employee_id)})
         db.commit()
     except Exception as e:
         db.rollback()
@@ -125,6 +136,8 @@ def edit_user_by_id_route(
         raise HTTPException(status_code=500, detail="Failed to update user")
 
     db.refresh(user)
+    db.execute(text("SET session.audit.user_id = DEFAULT"))  # (optional) reset after commit
+
     return user
 
 @router.get("/roles")
@@ -208,18 +221,6 @@ def send_admin_notification_simple_route(db: Session = Depends(get_db)):
 
     }
 
-
-@router.get("/inspections/today", response_model=List[VehicleInspectionSchema])
-def get_today_inspections(db: Session = Depends(get_db)):
-    today_start = datetime.combine(date.today(), datetime.min.time())
-    tomorrow_start = today_start + timedelta(days=1)
-
-    inspections = db.query(VehicleInspection).filter(
-        VehicleInspection.inspection_date >= today_start,
-        VehicleInspection.inspection_date < tomorrow_start
-    ).order_by(VehicleInspection.inspection_date.desc()).all()
-
-    return inspections
 
 # This function will be called later by another function with a GET route.
 @router.post("/stats/archive-last-month")
@@ -376,3 +377,64 @@ def get_vehicle_usage_current_month(db: Session = Depends(get_db)):
 
     return stats
 
+
+
+
+
+@router.get("/inspections/today", response_model=List[VehicleInspectionSchema])
+def get_today_inspections(
+    problem_type: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    today_start = datetime.combine(date.today(), datetime.min.time())
+    tomorrow_start = today_start + timedelta(days=1)
+
+    query = db.query(VehicleInspection).filter(
+        VehicleInspection.inspection_date >= today_start,
+        VehicleInspection.inspection_date < tomorrow_start
+    )
+
+    if problem_type == "medium":
+        query = query.filter(
+            and_(
+                or_(
+                    VehicleInspection.clean == False,
+                    VehicleInspection.fuel_checked == False,
+                    VehicleInspection.no_items_left == False
+                ),
+                VehicleInspection.critical_issue_bool == False
+            )
+        )
+    elif problem_type == "critical":
+        query = query.filter(
+            or_(
+                VehicleInspection.critical_issue_bool == True,
+                and_(
+                    VehicleInspection.issues_found != None,
+                    VehicleInspection.issues_found != ""
+                )
+            )
+        )
+    elif problem_type == "medium,critical":
+        query = query.filter(
+            or_(
+                and_(
+                    or_(
+                        VehicleInspection.clean == False,
+                        VehicleInspection.fuel_checked == False,
+                        VehicleInspection.no_items_left == False
+                    ),
+                    VehicleInspection.critical_issue_bool == False
+                ),
+                or_(
+                    VehicleInspection.critical_issue_bool == True,
+                    and_(
+                        VehicleInspection.issues_found != None,
+                        VehicleInspection.issues_found != ""
+                    )
+                )
+            )
+        )
+
+    inspections = query.order_by(VehicleInspection.inspection_date.desc()).all()
+    return inspections

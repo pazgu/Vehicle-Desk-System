@@ -8,7 +8,6 @@ from src.routes.admin_routes import router as admin_route
 from src.schemas.vehicle_create_schema import VehicleCreate
 from src.routes.vehicle_routes import router as vehicle_route
 
-
 from src.routes.inspector_routes import router as inspector_route
 from fastapi import Request
 from src.utils.scheduler import start_scheduler
@@ -19,7 +18,6 @@ from socketio import ASGIApp
 from .utils.socket_manager import sio
 import threading
 from .utils.audit_log_listener import listen_for_audit_logs
-
 
 from src.utils.scheduler import start_scheduler
 from src.utils.socket_manager import sio  # your socketio.AsyncServer

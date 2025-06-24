@@ -1,4 +1,4 @@
-from ..services.vehicle_service import get_vehicles_with_optional_status,update_vehicle_status,get_vehicle_by_id, vehicle_inspection_logic, get_available_vehicles_for_ride_by_id
+from ..services.vehicle_service import get_vehicles_with_optional_status,update_vehicle_status,get_vehicle_by_id, get_available_vehicles_for_ride_by_id
 from fastapi import APIRouter, Depends, HTTPException, status , Query
 from uuid import UUID
 from ..schemas.vehicle_schema import VehicleStatusUpdate
@@ -15,14 +15,14 @@ from src.models.vehicle_model import VehicleStatus
 
 router = APIRouter()
 
-@router.post("/vehicle-inspection")
-def vehicle_inspection(data: VehicleInspectionSchema, db: Session = Depends(get_db),payload: dict = Depends(token_check)):
-    try:
-        return vehicle_inspection_logic(data, db)
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+# @router.post("/vehicle-inspection")
+# def vehicle_inspection(data: VehicleInspectionSchema, db: Session = Depends(get_db),payload: dict = Depends(token_check)):
+#     try:
+#         return vehicle_inspection_logic(data, db)
+#     except HTTPException as e:
+#         raise e
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
     
 
 @router.get("/all-vehicles", response_model=List[VehicleOut])
@@ -31,6 +31,12 @@ def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = De
     vehicles = get_vehicles_with_optional_status(db, status)
     return vehicles
 
+@router.get("/vehicles/{vehicle_id}/fuel-type")
+def get_vehicle_fuel_type(vehicle_id: UUID, db: Session = Depends(get_db)):
+    vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="Vehicle not found")
+    return {"vehicle_id": str(vehicle.id), "fuel_type": vehicle.fuel_type}
 
 
 @router.patch("/{vehicle_id}/status")

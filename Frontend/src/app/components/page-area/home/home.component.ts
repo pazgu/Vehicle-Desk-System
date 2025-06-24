@@ -18,6 +18,8 @@ import { VehicleService } from '../../../services/vehicle.service';
 import { SocketService } from '../../../services/socket.service';
 import { CityService } from '../../../services/city.service';
 import { Location } from '@angular/common';
+import { FuelType, FuelTypeResponse } from '../../../models/vehicle-dashboard-item/vehicle-out-item.module';
+import { th } from 'date-fns/locale';
 
 // Define the interface for pending vehicle
 interface PendingVehicle {
@@ -42,12 +44,35 @@ interface PendingVehicle {
   styleUrls: ['./home.component.css']
 })
 export class NewRideComponent implements OnInit {
+
+
+handleStep1Next() {
+  const targetType = this.rideForm.get('target_type')?.value;
+  const targetEmployeeId = this.rideForm.get('target_employee_id')?.value;
+
+  if (!targetType || (targetType === 'other' && !targetEmployeeId)) {
+    this.showStep1Error = true;
+    return;
+  }
+
+  this.showStep1Error = false;
+  this.step = 2;
+}
+
   rideForm!: FormGroup;
   public estimated_distance_with_buffer: number = 0;
   public minDate: string = '';
   public fetchedDistance: number | null = null; 
   cities: { id: string; name: string }[] = [];
+  step = 1;
+  departmentEmployees: { id: string; full_name: string }[] = [];
   showInspectorWarningModal = false;
+  VehicleFuelType:FuelType=FuelType.Gasoline
+  public isLoadingDistance = false;
+
+
+
+
 
 
 
@@ -69,6 +94,7 @@ export class NewRideComponent implements OnInit {
 
   // Fix: Use proper interface and initialization
   pendingVehicles: PendingVehicle[] = [];
+  showStep1Error= false;
   
   constructor(
     private fb: FormBuilder,
@@ -84,6 +110,8 @@ export class NewRideComponent implements OnInit {
  fetchEstimatedDistance(from: string, to: string): void {
   if (!from || !to) return;
 
+  this.isLoadingDistance = true;
+
   console.log(`🌍 Requesting real distance: ${from} → ${to}`);
 
   this.rideService.getDistance(from, to).subscribe({
@@ -91,14 +119,22 @@ export class NewRideComponent implements OnInit {
       const realDistance = response.distance_km;
       console.log(`📏 Distance fetched: ${realDistance} km`);
 
-      this.fetchedDistance = realDistance;
-      this.rideForm.get('estimated_distance_km')?.setValue(realDistance);
+      const roundTripDistance = realDistance * 2; // Calculate round trip
+
+      console.log(`📏 One-way distance: ${realDistance} km, Round-trip: ${roundTripDistance} km`);
+
+      this.fetchedDistance = roundTripDistance; // Store round-trip distance
+
+      this.rideForm.get('estimated_distance_km')?.setValue(roundTripDistance);
+      this.updateDistance(); 
+      this.isLoadingDistance = false;
     },
     error: (err) => {
       console.error('❌ Failed to fetch distance:', err);
       this.toastService.show('שגיאה בחישוב מרחק בין הערים', 'error');
       this.fetchedDistance = null;
       this.rideForm.get('estimated_distance_km')?.setValue(null);
+      this.isLoadingDistance = false;
     }
   });
 }
@@ -111,6 +147,8 @@ export class NewRideComponent implements OnInit {
   ngOnInit(): void {
     this.minDate = this.calculateMinDate();
     this.rideForm = this.fb.group({
+      target_type: ['self', Validators.required],
+      target_employee_id: [null],
       ride_period: ['morning'],
       ride_date: ['', [Validators.required, this.validYearRangeValidator(2025, 2099)]],
       ride_date_night_end: [''],
@@ -123,7 +161,19 @@ export class NewRideComponent implements OnInit {
       start_location: ['', Validators.required],
       stop: ['', Validators.required],
       destination: ['', Validators.required],
+      vehicle_type_reason: ['', Validators.required]
     });
+
+    // fetch coworkers in same department if needed
+    this.rideForm.get('target_type')?.valueChanges.subscribe(type => {
+      if (type === 'other') {
+        this.fetchDepartmentEmployees();
+      } else {
+        this.rideForm.get('target_employee_id')?.setValue(null);
+      }
+    });
+
+
     this.getVehicleTypes()
     this.rideForm.get('estimated_distance_km')?.valueChanges.subscribe(() => {
       this.updateDistance();
@@ -156,13 +206,27 @@ this.rideForm.get('end_location')?.valueChanges.subscribe(() => {
 this.rideForm.get('start_location')?.valueChanges.subscribe(() => {
   const from = this.rideForm.get('start_location')?.value;
   const to = this.rideForm.get('destination')?.value;
-  if (from && to) this.fetchEstimatedDistance(from, to);
+  if (from && to && from !== to) {
+    this.fetchEstimatedDistance(from, to);
+  } else {
+    // Clear distance when locations are incomplete
+    this.fetchedDistance = null;
+    this.rideForm.get('estimated_distance_km')?.setValue(null);
+    this.estimated_distance_with_buffer = 0;
+  }
 });
 
 this.rideForm.get('destination')?.valueChanges.subscribe(() => {
   const from = this.rideForm.get('start_location')?.value;
   const to = this.rideForm.get('destination')?.value;
-  if (from && to) this.fetchEstimatedDistance(from, to);
+  if (from && to && from !== to) {
+    this.fetchEstimatedDistance(from, to);
+  } else {
+    // Clear distance when locations are incomplete
+    this.fetchedDistance = null;
+    this.rideForm.get('estimated_distance_km')?.setValue(null);
+    this.estimated_distance_with_buffer = 0;
+  }
 });
 
     this.fetchCities();
@@ -193,6 +257,20 @@ this.rideForm.get('destination')?.valueChanges.subscribe(() => {
       }
     });
 
+    this.rideForm.get('vehicle_type')?.valueChanges.subscribe(value => {
+    const vehicleTypeReason = this.rideForm.get('vehicle_type_reason');
+    
+    if (value?.toLowerCase().includes('jeep') || 
+        value?.toLowerCase().includes('van') || 
+        value?.toLowerCase().includes('4x4')) {
+      vehicleTypeReason?.setValidators([Validators.required]);
+    } else {
+      vehicleTypeReason?.clearValidators();
+    }
+    vehicleTypeReason?.updateValueAndValidity();
+  });
+
+
     // Load pending cars with proper error handling and type safety
     this.loadPendingVehicles();
   }
@@ -210,6 +288,39 @@ this.rideForm.get('destination')?.valueChanges.subscribe(() => {
         this.toastService.show('שגיאה בטעינת ערים', 'error');
         this.cities = [];
       }
+    });
+  }
+
+  fetchDepartmentEmployees(): void {
+    const currentUserId = localStorage.getItem('employee_id');
+    if (!currentUserId) return;
+
+    this.rideService.getDepartmentEmployees(currentUserId).subscribe({
+      next: (employees) => {
+      this.departmentEmployees = employees;
+    },
+    error: (err) => {
+      console.error('Failed to load department employees', err);
+      this.toastService.show('שגיאה בטעינת עובדים מהמחלקה', 'error');
+    }
+  });
+}
+
+canProceedToDetails(): boolean {
+  const type = this.rideForm.get('target_type')?.value;
+  const selectedEmp = this.rideForm.get('target_employee_id')?.value;
+
+  if (type === 'self') return true;
+  if (type === 'other' && selectedEmp) return true;
+  return false;
+}
+  loadFuelType(vehicleId: string) {
+    this.vehicleService.getFuelTypeByVehicleId(vehicleId).subscribe({
+      next: (res: FuelTypeResponse) => {
+        this.VehicleFuelType = res.fuel_type;
+        console.log('Fuel Type:', this.VehicleFuelType);
+      },
+      error: err => console.error('Failed to load fuel type', err)
     });
   }
 
@@ -419,18 +530,6 @@ private addHoursToTime(timeString: string, hoursToAdd: number): string {
     return date.toISOString().split('T')[0];
   }
 
-  // minDateValidator(minDaysAhead: number): ValidatorFn {
-  //   return (control: AbstractControl) => {
-  //     if (!control.value) return null;
-  //     const selectedDate = new Date(control.value);
-  //     const today = new Date();
-  //     today.setHours(0, 0, 0, 0);
-  //     const minDate = new Date(today);
-  //     minDate.setDate(today.getDate() + minDaysAhead);
-  //     return selectedDate >= minDate ? null : { tooSoon: true };
-  //   };
-  // }
-
   validYearRangeValidator(minYear: number, maxYear: number): ValidatorFn {
     return (control: AbstractControl) => {
       if (!control.value) return null;
@@ -470,8 +569,29 @@ confirmInspectorWarning(): void {
     this.rideForm.markAllAsTouched();
     this.toastService.show('יש להשלים את כל שדות הטופס כנדרש', 'error');
     return;
+
+  }
+  this.rideForm.markAllAsTouched(); // This is good, keeps errors visible
+
+  if (this.rideForm.invalid) {
+    this.toastService.show('יש להשלים את כל שדות הטופס כנדרש', 'error');
+
+    // --- PASTE THIS CODE HERE ---
+    console.log('FORM IS INVALID. HERE ARE THE ERRORS:');
+    Object.keys(this.rideForm.controls).forEach(key => {
+      const control = this.rideForm.get(key);
+      if (control && control.invalid) {
+        console.log(`- Control '${key}' is invalid. Errors:`, control.errors);
+      }
+    });
+    // --- END PASTE ---
+
+    return; // Stop submission if form is invalid
   }
 
+  // ... (rest of your submission logic)
+
+  
   
 
   // Vehicle selection validation
@@ -527,6 +647,17 @@ confirmInspectorWarning(): void {
     return;
   }
 
+      // Determine actual and override user IDs ✅ ADDED
+    const targetType = this.rideForm.get('target_type')?.value;
+    const targetEmployeeId = this.rideForm.get('target_employee_id')?.value;
+    let rider_id = user_id;
+    let requester_id = null;
+
+    if (targetType === 'other' && targetEmployeeId) {
+      rider_id = targetEmployeeId;
+      requester_id = user_id;
+    }
+
   // Build datetime strings
   const start_datetime = `${rideDate}T${startTime}`;
   const end_datetime = ridePeriod === 'morning'
@@ -534,7 +665,14 @@ confirmInspectorWarning(): void {
     : `${nightEndDate}T${endTime}`;
 
   // Prepare form data
+
+  // const targetEmployeeId = this.rideForm.get('target_type')?.value === 'other'
+  // ? this.rideForm.get('target_employee_id')?.value
+  // : null;
+
   const formData = {
+    user_id: rider_id, 
+    override_user_id: requester_id, 
     ride_type: this.rideForm.get('ride_type')?.value,
     start_datetime,
     vehicle_id: vehicleId,
@@ -543,7 +681,7 @@ confirmInspectorWarning(): void {
     stop: this.rideForm.get('stop')?.value,
     destination: this.rideForm.get('destination')?.value,
     estimated_distance_km: distance,
-    actual_distance_km: this.estimated_distance_with_buffer 
+    actual_distance_km: this.estimated_distance_with_buffer,
   };
 
   console.log('Ride data for backend:', formData);
@@ -552,6 +690,16 @@ confirmInspectorWarning(): void {
   this.rideService.createRide(formData, user_id).subscribe({
     next: (createdRide) => {
       this.toastService.show('הבקשה נשלחה בהצלחה! ✅', 'success');
+      this.loadFuelType(formData.vehicle_id)
+
+         if (this.VehicleFuelType === 'electric') {
+        this.toastService.showPersistent('אנא ודא כי הרכב טעון לפני ההחזרה.','neutral');
+      } else if (this.VehicleFuelType === 'hybrid') {
+        this.toastService.showPersistent('אנא ודא כי יש מספיק דלק וטעינה לפני ההחזרה.','neutral');
+      } else if (this.VehicleFuelType === 'gasoline') {
+        this.toastService.showPersistent('אנא ודא כי מיכל הדלק מלא לפני ההחזרה.','neutral');
+      }
+
 
       // Emit socket message after successful creation
       this.socketService.sendMessage('new_ride_request', {

@@ -67,6 +67,12 @@
         <div class="info-value">{{ trip.actualDistanceKm }} ק"מ</div>
       </div>
 
+      <div class="info-row" *ngIf="trip.fourByFourReason">
+  <div class="info-label">סיבת 4x4:</div>
+  <div class="info-value">{{ trip.fourByFourReason }}</div>
+</div>
+
+
       <div class="info-row">
         <div class="info-label">בדיקת רישיון:</div>
         <div class="info-value">

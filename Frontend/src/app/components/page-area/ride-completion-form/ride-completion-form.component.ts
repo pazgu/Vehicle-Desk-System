@@ -10,6 +10,8 @@ import { environment } from '../../../../environments/environment';
 import { RideService } from '../../../services/ride.service';
 import { RideDashboardItem } from '../../../models/ride-dashboard-item/ride-dashboard-item.module';
 import { RideLocationItem } from '../../../models/ride.model';
+import { FuelType, FuelTypeResponse } from '../../../models/vehicle-dashboard-item/vehicle-out-item.module';
+import { VehicleService } from '../../../services/vehicle.service';
 @Component({
   selector: 'app-ride-completion-form',
   templateUrl: './ride-completion-form.component.html',
@@ -25,6 +27,7 @@ export class RideCompletionFormComponent implements OnInit {
   start_location_name: string = '';
   stop_name: string = '';
   destination_name: string = '';
+  VehicleFuelType:FuelType=FuelType.Gasoline
 
   // rideId!: string;
   showForm = true;
@@ -39,7 +42,8 @@ export class RideCompletionFormComponent implements OnInit {
     private route: ActivatedRoute,
     private rideReportService: RideReportService,
     private location: Location,
-    private rideService: RideService 
+    private rideService: RideService ,
+    private vehicleService:VehicleService
   ) {}
 
   goBack(): void {
@@ -85,6 +89,7 @@ export class RideCompletionFormComponent implements OnInit {
       fueled: ['', Validators.required],
     });
 
+
     this.form.get('emergency_event')?.valueChanges.subscribe((value) => {
       const freezeDetails = this.form.get('freeze_details');
       console.log('emergency event?',value)
@@ -99,6 +104,14 @@ export class RideCompletionFormComponent implements OnInit {
   }
 
  
+loadFuelType(vehicleId: string) {
+    this.vehicleService.getFuelTypeByVehicleId(vehicleId).subscribe({
+      next: (res: FuelTypeResponse) => {
+        this.VehicleFuelType = res.fuel_type;
+        console.log('Fuel Type:', this.VehicleFuelType);
+      },
+      error: err => console.error('Failed to load fuel type', err)
+    });}
 
   setEmergencyEvent(value: string): void {
     this.form.get('emergency_event')?.setValue(value);
@@ -114,6 +127,17 @@ export class RideCompletionFormComponent implements OnInit {
       this.toastService.show('אנא השלם את כל השדות הנדרשים', 'error');
       return;
     }
+      this.loadFuelType(this.currentRide.vehicle_id)
+
+     if (!this.form.value.fueled) {
+    if (this.VehicleFuelType === 'electric') {
+      this.toastService.showPersistent('הרכב טרם נטען. אנא טען לפני ההחזרה.', 'neutral');
+    } else if (this.VehicleFuelType === 'hybrid') {
+      this.toastService.showPersistent('הרכב לא תודלק ולא נטען. יש להשלים לפני ההחזרה.', 'neutral');
+    } else if (this.VehicleFuelType === 'gasoline') {
+      this.toastService.showPersistent('הרכב לא תודלק. יש לתדלק לפני ההחזרה.', 'neutral');
+    }}
+    
 
     const rawForm = this.form.value;
     const formData = {

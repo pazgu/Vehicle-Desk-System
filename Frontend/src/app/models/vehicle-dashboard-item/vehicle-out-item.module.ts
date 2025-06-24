@@ -16,3 +16,13 @@ export enum FreezeReason {
   maintenance = 'maintenance',
   personal = 'personal',
 }
+export enum FuelType {
+  Electric = 'electric',
+  Hybrid = 'hybrid',
+  Gasoline = 'gasoline'
+}
+
+export interface FuelTypeResponse {
+  vehicle_id: string;
+  fuel_type: FuelType;
+}
