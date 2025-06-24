@@ -37,7 +37,6 @@ from src.services.audit_service import get_all_audit_logs
 from ..utils.socket_manager import sio
 from ..services.admin_rides_service import get_current_month_vehicle_usage ,  get_vehicle_usage_stats
 from fastapi.security import OAuth2PasswordBearer
-from src.schemas.vehicle_inspection_schema import VehicleInspectionOut
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 from ..utils.auth import role_check
 from fastapi import HTTPException
