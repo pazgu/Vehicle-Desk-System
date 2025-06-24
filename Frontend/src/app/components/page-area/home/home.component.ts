@@ -69,6 +69,7 @@ handleStep1Next() {
   showInspectorWarningModal = false;
   VehicleFuelType:FuelType=FuelType.Gasoline
   public isLoadingDistance = false;
+  
 
 
 
@@ -161,7 +162,8 @@ handleStep1Next() {
       start_location: ['', Validators.required],
       stop: ['', Validators.required],
       destination: ['', Validators.required],
-      vehicle_type_reason: ['', Validators.required]
+      vehicle_type_reason: ['', Validators.required],
+      four_by_four_reason: ['']
     });
 
     // fetch coworkers in same department if needed
@@ -682,6 +684,8 @@ confirmInspectorWarning(): void {
     destination: this.rideForm.get('destination')?.value,
     estimated_distance_km: distance,
     actual_distance_km: this.estimated_distance_with_buffer,
+    four_by_four_reason: this.rideForm.get('four_by_four_reason')?.value,
+
   };
 
   console.log('Ride data for backend:', formData);
