@@ -7,6 +7,23 @@
   font-family: 'Alef', sans-serif;
 }
 
+
+.custom-toast.persistent {
+  padding-right: 35px; /* Leave space for close button */
+}
+
+.toast-close-btn {
+  position: absolute;
+  right: 8px;
+  top: 4px;
+  background: transparent;
+  color: #fff;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+
 .custom-toast {
   position: fixed;
   top: 80px;
