@@ -326,3 +326,43 @@ input[type="time"], input[type="number"], input[type="text"], select {
   margin-top: 6px;
   margin-right: 6px;
 }
+/* Add these CSS styles to your component's CSS file: */
+
+.estimated-distance-display {
+  margin: 15px 0;
+  padding: 10px;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+}
+
+.distance-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #6c757d;
+  font-size: 14px;
+  margin: 0;
+}
+
+.distance-loading i {
+  color: #007bff;
+}
+
+.distance-result {
+  text-align: center;
+}
+
+.distance-info.success {
+  color: #28a745;
+  font-size: 16px;
+  margin: 0;
+  padding: 8px;
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  border-radius: 4px;
+}
+
+.distance-info.success strong {
+  font-weight: 600;
+}

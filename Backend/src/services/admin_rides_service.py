@@ -1,14 +1,19 @@
 from typing import List, Optional , Dict
-from datetime import datetime
+from datetime import datetime,date
 from sqlalchemy.orm import Session
-from sqlalchemy import String, extract, func
+from sqlalchemy import String, extract, func, and_, or_
 from uuid import UUID
+
+from typing import Optional
+from sqlalchemy.orm import Session
+from datetime import date
 
 from ..models.ride_model import Ride, RideStatus
 from ..models.vehicle_model import Vehicle
 from ..models.user_model import User  
 from ..schemas.ride_dashboard_item import RideDashboardItem
 import calendar
+from ..models.vehicle_inspection_model import VehicleInspection
 from ..models.monthly_vehicle_usage_model import MonthlyVehicleUsage
 
 def filter_rides(query, status: Optional[RideStatus], from_date, to_date):
