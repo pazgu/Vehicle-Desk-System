@@ -1,16 +1,17 @@
 .page-wrapper {
-    min-height: 100vh;
-    padding: 2rem 0;
+  min-height: 100vh;
+  padding: 2rem 0;
 }
 
 .page-container {
-    max-width: 1100px;
-    margin: 0 auto;
-    background-color: rgba(245, 241, 241, 0.582);
-    border-radius: 14px;
-    box-shadow: 0 2px 16px rgba(44, 62, 80, 0.07);
-    padding: 2rem 2.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  background-color: rgba(245, 241, 241, 0.582);
+  border-radius: 14px;
+  box-shadow: 0 2px 16px rgba(44, 62, 80, 0.07);
+  padding: 2rem 2.5rem;
 }
+
 .usage-header {
   margin-top: auto;
   padding-top: 10px;
@@ -29,105 +30,108 @@
 }
 
 .vehicles-wrapper h1 {
-    font-size: 2rem;
-    color: #942222;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
+  font-size: 2rem;
+  color: #942222;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
 }
 
 .vehicles-cards {
-    direction: rtl;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.5rem;
-    justify-content: flex-start;
+  direction: rtl;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: flex-start;
 }
 
 /* Scale the card and slightly lift it on hover */
 :host ::ng-deep .p-card.vehicle-card:hover {
-    box-shadow: 0 12px 32px rgba(198, 40, 40, 0.18);
-    border: 2px solid #c62828;
-    transform: scale(1.03) translateY(-6px);
-    transition: transform 0.2s, box-shadow 0.2s, border 0.2s;
-    z-index: 2;
-    cursor: pointer;
+  box-shadow: 0 12px 32px rgba(198, 40, 40, 0.18);
+  border: 2px solid #c62828;
+  transform: scale(1.03) translateY(-6px);
+  transition: transform 0.2s, box-shadow 0.2s, border 0.2s;
+  z-index: 2;
+  cursor: pointer;
 }
 
 /* Make the image inside the card pop out on hover */
 :host ::ng-deep .p-card.vehicle-card:hover img {
-    filter: brightness(1.1) drop-shadow(0 2px 8px #c62828aa);
-    transform: scale(1.05);
-    transition: filter 0.2s, transform 0.2s;
+  filter: brightness(1.1) drop-shadow(0 2px 8px #c62828aa);
+  transform: scale(1.05);
+  transition: filter 0.2s, transform 0.2s;
 }
 
 :host ::ng-deep .p-card.vehicle-card {
-    border: 1px solid #232222 !important;
-    border-radius: 12px;
-    padding: 1.2rem 1rem;
-    width: 300px;
-    height: 320px;
-    box-shadow: 0 2px 8px rgba(44, 62, 80, 0.06);
-    transition: box-shadow 0.2s, border 0.2s;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+  border: 1px solid #232222 !important;
+  border-radius: 12px;
+  padding: 1.2rem 1rem;
+  width: 300px;
+  height: 320px;
+  box-shadow: 0 2px 8px rgba(44, 62, 80, 0.06);
+  transition: box-shadow 0.2s, border 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 :host ::ng-deep .p-card.vehicle-card.card-available {
-    background: #dcf1e1 !important;
-    border: 1.5px solid #34954b !important;
+  background: #dcf1e1 !important;
+  border: 1.5px solid #34954b !important;
 }
+
 :host ::ng-deep .p-card.vehicle-card.card-inuse {
-    background: #fbf3da !important;
-    border: 1.5px solid #bd9624 !important;
+  background: #fbf3da !important;
+  border: 1.5px solid #bd9624 !important;
 }
+
 :host ::ng-deep .p-card.vehicle-card.card-frozen {
-    background: #e2f0f8 !important;
-    border: 1.5px solid #4656be !important;
+  background: #e2f0f8 !important;
+  border: 1.5px solid #4656be !important;
 }
 
 .vehicles-cards {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.5rem;
-    justify-content: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: flex-start;
 }
 
 
 .vehicle-card:hover {
-    box-shadow: 0 6px 24px rgba(198, 40, 40, 0.13);
-    border: 1px solid #c62828;
+  box-shadow: 0 6px 24px rgba(198, 40, 40, 0.13);
+  border: 1px solid #c62828;
 }
 
 .vehicle-card h3 {
-    margin: 0 0 0.5rem 0;
-    font-size: 1.15rem;
-    color: #942222;
-    font-weight: 500;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.15rem;
+  color: #942222;
+  font-weight: 500;
 }
 
 .vehicle-card p {
-    margin: 0.2rem 0;
-    font-size: 1rem;
-    color: #374151;
+  margin: 0.2rem 0;
+  font-size: 1rem;
+  color: #374151;
 }
 
 .empty-state {
-    color: #90a4ae;
-    font-size: 1.2rem;
-    margin-top: 2rem;
-    text-align: center;
+  color: #90a4ae;
+  font-size: 1.2rem;
+  margin-top: 2rem;
+  text-align: center;
 }
 
 
 button {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    margin: 0 1rem;
-    cursor: pointer;
-    color: #811313;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  margin: 0 1rem;
+  cursor: pointer;
+  color: #811313;
 }
+
 .status-indicators {
   text-align: right;
   direction: rtl;
@@ -138,7 +142,8 @@ button {
   background-color: rgb(249, 245, 245);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   margin-bottom: 1.5rem;
-  margin-left: auto; /* Pushes it to the left in RTL layout */
+  margin-left: auto;
+  /* Pushes it to the left in RTL layout */
 }
 
 .status-box {
@@ -168,30 +173,35 @@ button {
 }
 
 .status-indicator.available {
-  background-color:#a4d1ae;
+  background-color: #a4d1ae;
   border: #329c4b 1.6px solid;
 }
+
 .status-indicator.in-use {
   background-color: #f5e2a8;
   border: #ab8c31 1.6px solid;
 }
+
 .status-indicator.frozen {
-  background-color: #b7dbf3; /* Blue */
+  background-color: #b7dbf3;
+  /* Blue */
   border: #173fb8c5 1.6px solid;
 }
 
 
 @media (max-width: 700px) {
-    .page-container {
-        padding: 1rem 0.5rem;
-    }
-    .vehicles-cards {
-        flex-direction: column;
-        gap: 1rem;
-    }
-    .vehicle-card {
-        width: 100%;
-    }
+  .page-container {
+    padding: 1rem 0.5rem;
+  }
+
+  .vehicles-cards {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .vehicle-card {
+    width: 100%;
+  }
 }
 
 
@@ -258,7 +268,7 @@ button {
   padding: 20px;
   border-radius: 8px;
   border: 1px solid #dee2e6;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .filters-container.show {
@@ -303,7 +313,7 @@ button {
 
 .vehicle-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
 /* Card Status Styling */
@@ -419,15 +429,15 @@ button {
   .vehicles-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .filters-container.show {
     flex-direction: column;
   }
-  
+
   .filter-group {
     min-width: auto;
   }
-  
+
   .card-header {
     flex-direction: column;
     align-items: flex-start;
@@ -437,7 +447,7 @@ button {
 
 /* PrimeNG Card Override */
 ::ng-deep .p-card {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   border: 1px solid #e9ecef;
 }
 
@@ -459,7 +469,8 @@ button {
 
 .vehicle-image-wrapper {
   width: 100%;
-  height: 160px; /* or whatever consistent height works for your layout */
+  height: 160px;
+  /* or whatever consistent height works for your layout */
   overflow: hidden;
   border-radius: 8px;
   margin-bottom: 10px;
@@ -469,4 +480,36 @@ button {
   width: 96%;
   height: 100%;
   object-fit: contain;
+}
+
+.vehicle-buttons-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  direction: ltr;
+  /* ensures left/right behave normally */
+}
+
+.left-buttons,
+.right-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+/* Your red add button styles */
+.add-vehicle-btn {
+  background-color: #b71c1c;
+  color: white;
+  padding: 0.5rem 1.25rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.add-vehicle-btn:hover {
+  background-color: #942229;
 }
