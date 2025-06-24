@@ -3,6 +3,14 @@
 <div *ngIf="loading" class="loading">טוען...</div>
 <div *ngIf="!loading && inspections.length === 0" class="empty">אין בדיקות להצגה</div>
 
+
+<div class="problematic-only-filter" dir="rtl">
+        <label>
+          <input type="checkbox" />
+          הצג רק בדיקות עם בעיות
+        </label>
+</div>
+
 <div class="admin-inspections-container" *ngIf="!loading && inspections.length > 0">
   <table class="inspection-table">
     <thead>

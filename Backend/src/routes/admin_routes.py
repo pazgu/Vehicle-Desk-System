@@ -36,6 +36,8 @@ from src.services.audit_service import get_all_audit_logs
 from ..utils.socket_manager import sio
 from ..services.admin_rides_service import get_current_month_vehicle_usage ,  get_vehicle_usage_stats
 from fastapi.security import OAuth2PasswordBearer
+from src.schemas.vehicle_inspcetion_schema import VehicleInspectionOut
+from src.services.admin_rides_service import get_all_vehicle_inspections
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 from ..utils.auth import role_check
 from fastapi import HTTPException
@@ -376,3 +378,9 @@ def get_vehicle_usage_current_month(db: Session = Depends(get_db)):
 
     return stats
 
+@router.get("/vehicle-inspections", response_model=List[VehicleInspectionOut])
+def get_vehicle_inspections(
+    db: Session = Depends(get_db),
+    payload: dict = Depends(token_check)
+):
+    return get_all_vehicle_inspections(db)

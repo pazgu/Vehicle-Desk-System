@@ -9,6 +9,7 @@ from ..models.vehicle_model import Vehicle
 from ..models.user_model import User  
 from ..schemas.ride_dashboard_item import RideDashboardItem
 import calendar
+from ..models.vehicle_inspection_model import VehicleInspection
 from ..models.monthly_vehicle_usage_model import MonthlyVehicleUsage
 
 def filter_rides(query, status: Optional[RideStatus], from_date, to_date):
@@ -246,3 +247,6 @@ def get_all_time_vehicle_usage_stats(db: Session) -> List[dict]:
         for row in usage_data
     ]
 
+
+def get_all_vehicle_inspections(db):
+    return db.query(VehicleInspection).all()
