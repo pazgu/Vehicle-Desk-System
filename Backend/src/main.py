@@ -23,6 +23,7 @@ from .utils.audit_log_listener import listen_for_audit_logs
 
 from src.utils.scheduler import start_scheduler
 from src.utils.socket_manager import sio  # your socketio.AsyncServer
+from src.services.email_service import send_email
 
 # ✅ Step 1–5: Create and configure the FastAPI app
 app = FastAPI()
@@ -69,3 +70,16 @@ async def join_room(sid, data):
 # Run with: uvicorn src.main:sio_app --reload
 sio_app = ASGIApp(sio, other_asgi_app=app)
 
+
+@app.get("/test-email")
+def test_email():
+    try:
+        send_email(
+            to_email="bookitkrm@gmail.com",  
+            subject="בדיקת מייל מ-FastAPI",
+            html_content="<h2>בדיקה</h2><p>זהו מייל בדיקה</p>",
+            text_content="בדיקה פשוטה"
+        )
+        return {"message": "המייל נשלח בהצלחה"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="שליחת המייל נכשלה")
