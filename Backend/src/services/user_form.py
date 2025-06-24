@@ -1,4 +1,5 @@
 import asyncio
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 from ..models.user_model import User,UserRole
 from ..models.ride_model import Ride,RideStatus
@@ -42,11 +43,15 @@ async def process_completion_form(db: Session, user: User, form_data: Completion
     print("this is the current user:",user.username)
     print("dep id:",user.department_id)
     print("user id:",user.employee_id)
+    print("changed by received:",form_data.changed_by)
  
     # 1. Get the ride for this user
     ride = db.query(Ride).filter_by(id=form_data.ride_id, user_id=user.employee_id).first()
     if not ride:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ride not found")
+    
+    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user.employee_id)})
+
 
     print ("ride id",ride.id)
     # 2. Set emergency event if provided
@@ -122,6 +127,8 @@ async def process_completion_form(db: Session, user: User, form_data: Completion
             "status": vehicle.status,
         })
     mark_feedback_submitted(db,ride.id)
+    # db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(form_data.changed_by)})
+
     db.commit()
     
     return {"message": "Completion form processed successfully."}

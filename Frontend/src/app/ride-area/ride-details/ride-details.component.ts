@@ -21,7 +21,7 @@ export class RideDetailsComponent implements OnInit {
     private rideService: RideService,
     private toastService: ToastService,
     private router: Router,
-    private socketService: SocketService
+    private socketService: SocketService,
   ) {}
 
   ngOnInit(): void {

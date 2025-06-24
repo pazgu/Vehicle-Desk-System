@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.types import String  # To cast to string
 from typing import Optional, List , Dict , Union
-from ..models.vehicle_model import Vehicle, VehicleType, VehicleStatus
+from ..models.vehicle_model import Vehicle, VehicleStatus
 from sqlalchemy import func, cast 
 from sqlalchemy import and_ , or_ , not_ , select
 from ..models.ride_model import Ride, RideStatus
@@ -193,9 +193,12 @@ def get_vehicle_by_id(vehicle_id: str, db: Session):
         "odometer_reading": vehicle.odometer_reading,
         "vehicle_model": vehicle.vehicle_model,
         "image_url": vehicle.image_url,
+        "lease_expiry": vehicle.lease_expiry
     }
 
-def freeze_vehicle_service(db: Session, vehicle_id: UUID, reason: str):
+def freeze_vehicle_service(db: Session, vehicle_id: UUID, reason: str, changed_by: UUID):
+    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(changed_by)})
+
     vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
     if not vehicle:
         raise HTTPException(status_code=404, detail="Vehicle not found")
@@ -205,13 +208,15 @@ def freeze_vehicle_service(db: Session, vehicle_id: UUID, reason: str):
 
     db.commit()
     db.refresh(vehicle)
+    db.execute(text("SET session.audit.user_id = DEFAULT"))
+
     return {"message": f"Vehicle {vehicle_id} has been frozen successfully."}
 
     api_router.include_router(vehicle_route, prefix="/vehicles", tags=["Vehicles"])
 
 def get_available_vehicles_by_type_and_time(
     db: Session,
-    vehicle_type: VehicleType,
+    vehicle_type: str,
     start_datetime: datetime,
     end_datetime: datetime,
 ) -> List[Vehicle]:
