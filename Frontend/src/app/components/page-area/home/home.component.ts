@@ -627,11 +627,11 @@ confirmInspectorWarning(): void {
       this.loadFuelType(formData.vehicle_id)
 
          if (this.VehicleFuelType === 'electric') {
-        this.toastService.show('אנא ודא כי הרכב טעון לפני ההחזרה.','neutral');
+        this.toastService.showPersistent('אנא ודא כי הרכב טעון לפני ההחזרה.','neutral');
       } else if (this.VehicleFuelType === 'hybrid') {
-        this.toastService.show('אנא ודא כי יש מספיק דלק וטעינה לפני ההחזרה.','neutral');
+        this.toastService.showPersistent('אנא ודא כי יש מספיק דלק וטעינה לפני ההחזרה.','neutral');
       } else if (this.VehicleFuelType === 'gasoline') {
-        this.toastService.show('אנא ודא כי מיכל הדלק מלא לפני ההחזרה.','neutral');
+        this.toastService.showPersistent('אנא ודא כי מיכל הדלק מלא לפני ההחזרה.','neutral');
       }
 
 
