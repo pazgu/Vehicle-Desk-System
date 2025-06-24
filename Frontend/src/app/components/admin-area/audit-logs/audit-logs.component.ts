@@ -10,6 +10,7 @@ import Papa from 'papaparse';
 import type { TDocumentDefinitions } from 'pdfmake/interfaces';
 import { SocketService } from '../../../services/socket.service';
 import { Router } from '@angular/router';
+import { CityService } from '../../../services/city.service';
 
 (pdfMake as any).vfs = pdfFonts.vfs;
 (pdfMake as any).fonts = {
@@ -46,6 +47,9 @@ export class AuditLogsComponent implements OnInit {
   problematicOnly: boolean = false;
   filtersCollapsed = false;
 
+  cityMap: { [id: string]: string } = {};
+
+
 
 
   vehicleFieldLabels: { [key: string]: string } = {
@@ -71,11 +75,12 @@ export class AuditLogsComponent implements OnInit {
   return [
     { label: 'מזהה נסיעה', oldValue: oldData.id, newValue: newData.id },
     { 
-      label: 'מסלול', 
-      oldValue: `${oldData.start_location || ''} → ${oldData.stop || ''} → ${oldData.destination || ''}`, 
-      newValue: `${newData.start_location || ''} → ${newData.stop || ''} → ${newData.destination || ''}` 
-    },
+  label: 'מסלול', 
+oldValue: `${this.getCityName(oldData.start_location)} → ${this.getCityName(oldData.stop)} → ${this.getCityName(oldData.destination)}`, 
+      newValue: `${this.getCityName(newData.start_location)} → ${this.getCityName(newData.stop)} → ${this.getCityName(newData.destination)}`  
+},
     { label: 'סוג נסיעה', oldValue: oldData.ride_type, newValue: newData.ride_type },
+    { label: 'סיבת בחירה ברכב 4X4', oldValue: oldData.vehicle_type_reason, newValue: newData.vehicle_type_reason },
     { label: 'משתמש', oldValue: oldData.user_id, newValue: newData.user_id },
     { label: 'משתמש עוקף', oldValue: oldData.override_user_id, newValue: newData.override_user_id },
     { label: 'רכב', oldValue: oldData.vehicle_id, newValue: newData.vehicle_id },
@@ -108,17 +113,42 @@ export class AuditLogsComponent implements OnInit {
     override_user_id: 'מזהה משתמש עוקף',
     actual_distance_km: 'מרחק בפועל (ק"מ)',
     license_check_passed: 'עבר בדיקת רישיון',
-    estimated_distance_km: 'מרחק משוער (ק"מ)'
+    estimated_distance_km: 'מרחק משוער (ק"מ)',
+    vehicle_type_reason: 'סיבת בחירה ברכב מסוג 4X4',
+
   };
 
   constructor(
     private auditLogService: AuditLogsService,
     private socketService: SocketService,
-    private router: Router
+    private router: Router,
+    private cityService: CityService
+
   ) {}
 
+  getCityName(id: string): string {
+  return this.cityMap[id] || id;
+}
+
+
   ngOnInit() {
+
+    this.cityService.getCities().subscribe({
+  next: (cities) => {
+   this.cityMap = cities.reduce((map: { [key: string]: string }, city) => {
+  map[city.id] = city.name;
+  return map;
+}, {});
+
     this.onRangeChange();
+
+
+  },
+  error: () => {
+    console.error('שגיאה בטעינת רשימת ערים');
+  }
+});
+
 
     this.socketService.auditLogs$.subscribe((newLog) => {
       if (newLog) {
