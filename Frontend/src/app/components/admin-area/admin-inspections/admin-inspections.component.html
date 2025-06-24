@@ -4,14 +4,24 @@
 <div *ngIf="!loading && inspections.length === 0" class="empty">אין בדיקות להצגה</div>
 
 
-<div class="problematic-only-filter" dir="rtl">
-        <label>
-          <input type="checkbox" />
-          הצג רק בדיקות עם בעיות
-        </label>
+<div class="admin-inspections-container" *ngIf="!loading && inspections.length > 0">
+  <div class="problematic-only-filter" dir="rtl">
+  <button (click)="showProblematicFilters = !showProblematicFilters">
+{{ showProblematicFilters ? 'הסתר אפשרויות סינון' : 'הצג בדיקות עם בעיות' }}
+  </button>
+
+  <div *ngIf="showProblematicFilters">
+    <label style="display: block; margin-bottom: 0.5em;">
+      <input type="checkbox" [(ngModel)]="showMediumIssues" (change)="loadInspections()" />
+      הצג בעיות - דרגה בינונית
+    </label>
+    <label style="display: block;">
+      <input type="checkbox" [(ngModel)]="showCriticalIssues" (change)="loadInspections()" />
+      הצג בעיות - דרגה חריגה
+    </label>
+  </div>
 </div>
 
-<div class="admin-inspections-container" *ngIf="!loading && inspections.length > 0">
   <table class="inspection-table">
     <thead>
       <tr>
