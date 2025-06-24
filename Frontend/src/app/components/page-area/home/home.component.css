@@ -23,7 +23,10 @@ html, body {
   -moz-appearance: textfield;
   appearance: textfield;
 }
-
+.way{
+  display:flex;
+  flex-direction: column;
+}
 /* FORM MODAL */
 .overlay {
   display: flex;

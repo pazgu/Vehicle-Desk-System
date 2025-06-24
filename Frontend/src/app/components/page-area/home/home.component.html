@@ -134,9 +134,10 @@
           <!-- Locations -->
           <div class="row">
             <div class="input-group">
-              <label>מיקום התחלה</label>
+              <label>מיקום התחלה</label> 
               <select formControlName="start_location">
-                <option value="">בחר עיר</option>
+                
+                <option class="way" value="">בחר עיר </option> 
                 <option *ngFor="let city of cities" [value]="city.id">{{ city.name }}</option>
               </select>
               <small *ngIf="f.start_location.touched && f.start_location.errors?.['required']" class="distance-info">חובה למלא מיקום התחלה</small>
@@ -145,7 +146,7 @@
             <div class="input-group">
               <label>תחנה</label>
               <select formControlName="stop">
-                <option value="">בחר עיר</option>
+                <option value="">בחר עיר (לדוג': ראשון לציון)</option>
                 <option *ngFor="let city of cities" [value]="city.id">{{ city.name }}</option>
               </select>
               <small *ngIf="f.stop.touched && f.stop.errors?.['required']" class="distance-info">חובה למלא תחנה</small>
@@ -158,11 +159,17 @@
                 <option *ngFor="let city of cities" [value]="city.id">{{ city.name }}</option>
               </select>
               <small *ngIf="f.destination.touched && f.destination.errors?.['required']" class="distance-info">חובה למלא יעד</small>
-            </div>
-          </div>
 
+            </div>
+                        
+          </div>
+<div class="row ">
+                              <small>נסיעתך תתחיל ותסתיים בבסיס הארגון: תל אביב</small>
+
+</div>
           <!-- Distance estimate -->
           <div class="row">
+
             <div class="input-group">
               <label>הערכת מרחק (ק"מ)</label>
               <input type="number" formControlName="estimated_distance_km" [readonly]="true" class="no-spinner"/>
