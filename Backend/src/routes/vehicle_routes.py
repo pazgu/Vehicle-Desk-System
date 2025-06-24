@@ -31,6 +31,12 @@ def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = De
     vehicles = get_vehicles_with_optional_status(db, status)
     return vehicles
 
+@router.get("/vehicles/{vehicle_id}/fuel-type")
+def get_vehicle_fuel_type(vehicle_id: UUID, db: Session = Depends(get_db)):
+    vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="Vehicle not found")
+    return {"vehicle_id": str(vehicle.id), "fuel_type": vehicle.fuel_type}
 
 
 @router.patch("/{vehicle_id}/status")

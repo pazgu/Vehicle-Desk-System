@@ -3,10 +3,21 @@
     <div class="audit-wrapper">
       <h1>צפייה ביומני ביקורת</h1>
 
-      <div class="filter-section">
-        <button class="filter-button" (click)="showFilters = !showFilters">
-          {{ showFilters ? 'הסתר חיפוש' : 'הצג חיפוש' }}
-        </button>
+      <div class="filters-row">
+        <div class="filter-section">
+          <button class="filter-button" (click)="showFilters = !showFilters">
+            {{ showFilters ? 'הסתר חיפוש' : 'הצג חיפוש' }}
+          </button>
+        </div>
+        <div class="filter-actions-row">
+          <button class="collapse-btn" (click)="filtersCollapsed = !filtersCollapsed">
+            {{ filtersCollapsed ? 'הצג אפשרויות סינון וייצוא' : 'הסתר אפשרויות סינון וייצוא' }}
+          </button>
+          <label class="problematic-only-label">
+            <input type="checkbox" [(ngModel)]="problematicOnly" (change)="fetchAuditLogs()" />
+            הצג רק בדיקות עם בעיות
+          </label>
+        </div>
       </div>
 
       <div *ngIf="showFilters" class="search-container">
@@ -14,35 +25,31 @@
           [(ngModel)]="searchTerm" (input)="filterLogs()" />
       </div>
 
-      <div class="date-range-filter">
-        <select class="range-select" [(ngModel)]="selectedRange" (change)="onRangeChange()">
-          <option value="" disabled selected>בחר טווח תאריכים להצגת לוגים</option>
-          <option value="7days">7 ימים אחרונים</option>
-          <option value="thisMonth">החודש</option>
-          <option value="30days">30 ימים אחרונים</option>
-          <option value="custom">טווח מותאם אישית</option>
-        </select>
-      </div>
+      <!-- Collapsible section for date range and export buttons -->
+      <div *ngIf="!filtersCollapsed">
+        <div class="date-range-filter">
+          <select class="range-select" [(ngModel)]="selectedRange" (change)="onRangeChange()">
+            <option value="" disabled selected>בחר טווח תאריכים להצגת לוגים</option>
+            <option value="7days">7 ימים אחרונים</option>
+            <option value="thisMonth">החודש</option>
+            <option value="30days">30 ימים אחרונים</option>
+            <option value="custom">טווח מותאם אישית</option>
+          </select>
+        </div>
 
-      <div *ngIf="selectedRange === 'custom'" class="custom-range-fields">
-        <input type="date" class="date-input" [(ngModel)]="customFromDate" title="תאריך התחלה">
-        <span style="margin: 0 0.5rem;">עד</span>
-        <input type="date" class="date-input" [(ngModel)]="customToDate" title="תאריך סיום">
-        <span class="date-note">(שימ/י לב, התאריך האחרון לא כולל)</span>
-        <button class="filter-apply-btn" (click)="onRangeChange()">סנן</button>
-      </div>
+        <div *ngIf="selectedRange === 'custom'" class="custom-range-fields">
+          <input type="date" class="date-input" [(ngModel)]="customFromDate" title="תאריך התחלה">
+          <span style="margin: 0 0.5rem;">עד</span>
+          <input type="date" class="date-input" [(ngModel)]="customToDate" title="תאריך סיום">
+          <span class="date-note">(שימ/י לב, התאריך האחרון לא כולל)</span>
+          <button class="filter-apply-btn" (click)="onRangeChange()">סנן</button>
+        </div>
 
-      <div class="export-buttons">
-        <h3>דיווחים מהשבוע האחרון-בהתאם לסינון</h3>
-        <button class="export-button" (click)="exportToPDF()">ייצוא PDF</button>
-        <button class="export-button" (click)="exportToCSV()">ייצוא CSV</button>
-      </div>
-
-      <div class="problematic-only-filter" dir="rtl">
-        <label>
-          <input type="checkbox" [(ngModel)]="problematicOnly" (change)="fetchAuditLogs()" />
-          הצג רק בדיקות עם בעיות
-        </label>
+        <div class="export-buttons">
+          <h3>דיווחים מהשבוע האחרון-בהתאם לסינון</h3>
+          <button class="export-button" (click)="exportToPDF()">ייצוא PDF</button>
+          <button class="export-button" (click)="exportToCSV()">ייצוא CSV</button>
+        </div>
       </div>
 
       <div class="status-indicators">
@@ -58,8 +65,8 @@
             <span class="status-indicator frozen"></span> מוקפא
           </div>
           <div class="status-item">
-  <span class="status-indicator active"></span> פעיל (בתהליך/בשימוש)
-</div>
+            <span class="status-indicator active"></span> פעיל (בתהליך/בשימוש)
+          </div>
           <div class="status-item">
             <span class="status-indicator pending"></span> בהמתנה
           </div>

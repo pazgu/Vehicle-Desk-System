@@ -50,6 +50,7 @@ def get_department_orders(department_id: str, db: Session) -> List[RideDashboard
         # Create a RideDashboardItem schema for each order
         dashboard_item = RideDashboardItem(
             ride_id=order.id,
+            vehicle_id=order.vehicle_id,
             employee_name=employee_name,
             requested_vehicle_plate=vehicle_plate,
             date_and_time=order.start_datetime,

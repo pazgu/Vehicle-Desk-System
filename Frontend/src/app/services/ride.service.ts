@@ -71,9 +71,23 @@ getDistance(from: string, to: string): Observable<{ distance_km: number }> {
   `${this.distanceUrl}?from_city=${encodedFrom}&to_city=${encodedTo}`,
   { headers }
 );
-
 }
 
+getDepartmentEmployees(user_id: string): Observable<{ id: string; full_name: string }[]> {
+  const token = localStorage.getItem('access_token');
+  if (!token) {
+    throw new Error('Access token not found in localStorage.');
+  }
+
+  const headers = new HttpHeaders({
+    Authorization: `Bearer ${token}`
+  });
+
+  return this.http.get<{ id: string; full_name: string }[]>(
+    `http://localhost:8000/api/employees/by-department/${user_id}`,
+    { headers }
+  );
+}
 
 
 

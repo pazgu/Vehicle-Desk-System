@@ -1017,3 +1017,51 @@ input[type="checkbox"] {
     font-size: 0.95rem;
   }
 }
+
+.collapse-btn,
+.problematic-only-label {
+  background: none;
+  border: 1px solid #942222;
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  color: #942222;
+  border-radius: 8px;
+  transition: all 0.2s;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  height: 40px;
+}
+
+.collapse-btn:hover,
+.problematic-only-label:hover {
+  background: #942222;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.problematic-only-label input[type="checkbox"] {
+  accent-color: #942222;
+  margin-left: 8px;
+  margin-right: 0;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.filter-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.filters-row {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  direction: rtl;
+}
