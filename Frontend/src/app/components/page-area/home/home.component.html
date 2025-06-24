@@ -157,6 +157,22 @@
                 <option value="">בחר עיר</option>
                 <option *ngFor="let city of cities" [value]="city.id">{{ city.name }}</option>
               </select>
+<div *ngIf="f.start_location.value && f.destination.value" class="estimated-distance-display">
+  <ng-container *ngIf="isLoadingDistance; else distanceReady">
+    <p class="distance-loading">
+      <i class="pi pi-spin pi-spinner"></i>
+      מחשב מרחק הלוך ושוב...
+    </p>
+  </ng-container>
+
+<ng-template #distanceReady>
+  <p class="distance-info">
+    מרחק משוער הלוך ושוב: {{ fetchedDistance | number:'1.0-0' }} ק"מ
+  </p>
+</ng-template>
+
+</div>
+
               <small *ngIf="f.destination.touched && f.destination.errors?.['required']" class="distance-info">חובה למלא יעד</small>
             </div>
           </div>
@@ -169,7 +185,7 @@
               <small *ngIf="f.estimated_distance_km.touched && f.estimated_distance_km.errors?.['required']" class="distance-info">חובה למלא את שדה זה</small>
               <small *ngIf="f.estimated_distance_km.errors?.['min']" class="distance-info">המרחק חייב להיות לפחות 1 ק״מ</small>
               <small class="distance-info" *ngIf="!f.estimated_distance_km.errors && f.estimated_distance_km.value">
-                המרחק לאחר תוספת סטייה: {{ estimated_distance_with_buffer }} ק"מ
+    המרחק לאחר תוספת סטייה (10%): {{ estimated_distance_with_buffer }} ק"מ
               </small>
             </div>
           </div>
