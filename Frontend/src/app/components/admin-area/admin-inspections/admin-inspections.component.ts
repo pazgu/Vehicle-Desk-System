@@ -6,6 +6,7 @@ import { ActivatedRoute } from '@angular/router';
 import { SocketService } from '../../../services/socket.service';
 import { ToastService } from '../../../services/toast.service';
 import { FormsModule } from '@angular/forms';
+import { HttpParams } from '@angular/common/http';
 
 @Component({
   selector: 'app-admin-inspections',
@@ -69,19 +70,34 @@ export class AdminInspectionsComponent implements OnInit {
     });
   }
 
+  
+
   loadInspections(): void {
-    this.loading = true;
-    this.http.get<any[]>(`${environment.apiUrl}/inspections/today`).subscribe({
-      next: (data) => {
-        this.inspections = data;
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-        this.toastService.show('❌ שגיאה בטעינת בדיקות רכבים להיום', 'error');
-      }
-    });
+  this.loading = true;
+
+  let params = new HttpParams();
+  if (this.showMediumIssues && !this.showCriticalIssues) {
+    params = params.set('problem_type', 'medium');
+  } else if (!this.showMediumIssues && this.showCriticalIssues) {
+    params = params.set('problem_type', 'critical');
   }
+  else if (this.showMediumIssues && this.showCriticalIssues) {
+    params = params.set('problem_type', 'medium,critical');
+  }
+  this.http.get<any[]>(`${environment.apiUrl}/inspections/today`, { params }).subscribe({
+    next: (data) => {
+      this.inspections = data;
+      this.loading = false;
+    },
+    error: () => {
+      this.loading = false;
+      this.toastService.show('❌ שגיאה בטעינת בדיקות רכבים להיום', 'error');
+    }
+  });
+}
+
+
+
 
   // ✅ Notification sound for new inspections
   private playAlertSound(): void {

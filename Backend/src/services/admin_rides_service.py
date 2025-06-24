@@ -1,8 +1,12 @@
 from typing import List, Optional , Dict
-from datetime import datetime
+from datetime import datetime,date
 from sqlalchemy.orm import Session
-from sqlalchemy import String, extract, func
+from sqlalchemy import String, extract, func, and_, or_
 from uuid import UUID
+
+from typing import Optional
+from sqlalchemy.orm import Session
+from datetime import date
 
 from ..models.ride_model import Ride, RideStatus
 from ..models.vehicle_model import Vehicle
@@ -247,6 +251,3 @@ def get_all_time_vehicle_usage_stats(db: Session) -> List[dict]:
         for row in usage_data
     ]
 
-
-def get_all_vehicle_inspections(db):
-    return db.query(VehicleInspection).all()
