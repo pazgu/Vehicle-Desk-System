@@ -127,6 +127,7 @@ def edit_user_by_id_route(
             setattr(user, key, value)
 
     try:
+        db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user.employee_id)})
         db.commit()
     except Exception as e:
         db.rollback()
