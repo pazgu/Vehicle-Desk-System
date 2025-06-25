@@ -1,1 +1,44 @@
-<p>add-vehicle works!</p>
+<div class="vehicle-form-container">
+    <h2>הוסף רכב חדש</h2>
+
+    <form (ngSubmit)="submitForm()" [formGroup]="vehicleForm">
+
+        <!-- Type -->
+        <label>סוג רכב (קטן, גדול...)</label>
+        <input formControlName="type" type="text" required />
+
+
+        <!-- Vehicle model -->
+        <label>דגם רכב</label>
+        <input formControlName="vehicle_model" type="text" />
+
+        <!-- Plate Number -->
+        <label>מספר רישוי</label>
+        <input formControlName="plate_number" type="text" required />
+
+        <label for="fuel_type">סוג דלק:</label>
+        <select formControlName="fuel_type" id="fuel_type">
+            <option *ngFor="let fuel of fuelTypes" [value]="fuel.value">{{ fuel.label }}</option>
+        </select>
+
+        <!-- Lease expiry -->
+        <label>תאריך סיום ליסינג</label>
+        <input formControlName="lease_expiry" type="date" />
+
+        <!-- Odometer -->
+        <label>כמה הרכב עבר ב-ק"מ</label>
+        <input formControlName="odometer_reading" type="number" required />
+
+        <!-- Current location -->
+        <label>מיקום נוכחי</label>
+        <input formControlName="current_location" type="text" required />
+
+        <!-- Image URL -->
+        <label>תמונה (URL)</label>
+        <input formControlName="image_url" type="text" />
+
+
+
+        <button type="submit" [disabled]="vehicleForm.invalid">שלח</button>
+    </form>
+</div>
