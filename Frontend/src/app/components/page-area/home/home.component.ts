@@ -7,7 +7,8 @@ import {
   ValidatorFn,
   FormControl,
   ReactiveFormsModule,
-  FormsModule
+  FormsModule,
+  FormArray
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ToastService } from '../../../services/toast.service';
@@ -92,7 +93,7 @@ handleStep1Next() {
   }[] = [];
 
   availableCars: typeof this.allCars = [];
-
+vehicleTypes: string[] = [];
   // Fix: Use proper interface and initialization
   pendingVehicles: PendingVehicle[] = [];
   showStep1Error= false;
@@ -108,44 +109,36 @@ handleStep1Next() {
     private cityService: CityService
   ) {}
 
- fetchEstimatedDistance(from: string, to: string): void {
-  if (!from || !to) return;
+//  fetchEstimatedDistance(from: string, to: string): void {
+//   if (!from || !to) return;
 
-  this.isLoadingDistance = true;
+//   console.log(`🌍 Requesting real distance: ${from} → ${to}`);
 
-  console.log(`🌍 Requesting real distance: ${from} → ${to}`);
+//   this.rideService.getDistance(from, to).subscribe({
+//     next: (response) => {
+//       const realDistance = response.distance_km;
+//       console.log(`📏 Distance fetched: ${realDistance} km`);
 
-  this.rideService.getDistance(from, to).subscribe({
-    next: (response) => {
-      const realDistance = response.distance_km;
-      console.log(`📏 Distance fetched: ${realDistance} km`);
-
-      const roundTripDistance = realDistance * 2; // Calculate round trip
-
-      console.log(`📏 One-way distance: ${realDistance} km, Round-trip: ${roundTripDistance} km`);
-
-      this.fetchedDistance = roundTripDistance; // Store round-trip distance
-
-      this.rideForm.get('estimated_distance_km')?.setValue(roundTripDistance);
-      this.updateDistance(); 
-      this.isLoadingDistance = false;
-    },
-    error: (err) => {
-      console.error('❌ Failed to fetch distance:', err);
-      this.toastService.show('שגיאה בחישוב מרחק בין הערים', 'error');
-      this.fetchedDistance = null;
-      this.rideForm.get('estimated_distance_km')?.setValue(null);
-      this.isLoadingDistance = false;
-    }
-  });
-}
+//       this.fetchedDistance = realDistance;
+//       this.rideForm.get('estimated_distance_km')?.setValue(realDistance);
+//     },
+//     error: (err) => {
+//       console.error('❌ Failed to fetch distance:', err);
+//       this.toastService.show('שגיאה בחישוב מרחק בין הערים', 'error');
+//       this.fetchedDistance = null;
+//       this.rideForm.get('estimated_distance_km')?.setValue(null);
+//     }
+//   });
+// }
 
 
   goBack(): void {
   this.location.back();
 }
 
+
   ngOnInit(): void {
+    this.fetchVehicleTypes();
     this.minDate = this.calculateMinDate();
     this.rideForm = this.fb.group({
       target_type: ['self', Validators.required],
@@ -155,17 +148,26 @@ handleStep1Next() {
       ride_date_night_end: [''],
       start_time: [''],
       end_time: [''],
-      estimated_distance_km: [null, [Validators.required, Validators.min(1)]],
+      estimated_distance_km: 10,
       ride_type: ['', Validators.required],
       vehicle_type: ['', Validators.required],
       car: ['', Validators.required],
-      start_location: ['', Validators.required],
+      start_location: null,
       stop: ['', Validators.required],
-      destination: ['', Validators.required],
+      extraStops: this.fb.array([]),
+      destination: null,
       vehicle_type_reason: ['', Validators.required],
       four_by_four_reason: ['']
     });
-
+    this.cityService.getCity('תל אביב').subscribe((city) => {
+  this.rideForm.patchValue({
+    start_location: city,
+    destination: city,
+  });
+});
+    
+    
+   
     // fetch coworkers in same department if needed
     this.rideForm.get('target_type')?.valueChanges.subscribe(type => {
       if (type === 'other') {
@@ -195,41 +197,23 @@ handleStep1Next() {
     });
 
     // Add time change subscriptions for real-time validation
-   this.rideForm.get('start_location')?.valueChanges.subscribe(() => {
-  this.checkAndFetchDistance();
-});
 
-this.rideForm.get('end_location')?.valueChanges.subscribe(() => {
-  this.checkAndFetchDistance();
-});
+  
 
 
-    // ✅ Subscribe to city changes
-this.rideForm.get('start_location')?.valueChanges.subscribe(() => {
+this.rideForm.get('stop')?.valueChanges.subscribe(() => {
   const from = this.rideForm.get('start_location')?.value;
-  const to = this.rideForm.get('destination')?.value;
+  const to = this.rideForm.get('stop')?.value;
+
   if (from && to && from !== to) {
-    this.fetchEstimatedDistance(from, to);
+    // this.calculateRideDistance();
   } else {
-    // Clear distance when locations are incomplete
     this.fetchedDistance = null;
-    this.rideForm.get('estimated_distance_km')?.setValue(null);
     this.estimated_distance_with_buffer = 0;
+    this.rideForm.get('estimated_distance_km')?.setValue(0);
   }
 });
 
-this.rideForm.get('destination')?.valueChanges.subscribe(() => {
-  const from = this.rideForm.get('start_location')?.value;
-  const to = this.rideForm.get('destination')?.value;
-  if (from && to && from !== to) {
-    this.fetchEstimatedDistance(from, to);
-  } else {
-    // Clear distance when locations are incomplete
-    this.fetchedDistance = null;
-    this.rideForm.get('estimated_distance_km')?.setValue(null);
-    this.estimated_distance_with_buffer = 0;
-  }
-});
 
     this.fetchCities();
     console.log('fetching cities...', this.cities);
@@ -276,6 +260,13 @@ this.rideForm.get('destination')?.valueChanges.subscribe(() => {
     // Load pending cars with proper error handling and type safety
     this.loadPendingVehicles();
   }
+fetchVehicleTypes() {
+  this.vehicleService.getVehicleTypes().subscribe(types => {
+    this.vehicleTypes = types;
+  });
+}
+
+
 
   fetchCities(): void{
     this.cityService.getCities().subscribe({
@@ -324,6 +315,20 @@ canProceedToDetails(): boolean {
       },
       error: err => console.error('Failed to load fuel type', err)
     });
+  }
+
+    get extraStops(): FormArray {
+    return this.rideForm.get('extraStops') as FormArray;
+  }
+
+   addExtraStop() {
+    if (this.extraStops.length < 2) {
+      this.extraStops.push(this.fb.control('', Validators.required));
+    }
+  }
+
+  removeExtraStop(index: number) {
+    this.extraStops.removeAt(index);
   }
 
   private loadPendingVehicles(): void {
@@ -540,17 +545,19 @@ private addHoursToTime(timeString: string, hoursToAdd: number): string {
     };
   }
 
- checkAndFetchDistance() {
+checkAndFetchDistance() {
   const start = this.rideForm.get('start_location')?.value;
-  const end = this.rideForm.get('end_location')?.value;
+  const end = this.rideForm.get('stop')?.value;
 
   if (start && end && start !== end) {
-    this.fetchEstimatedDistance(start, end);
+    // this.calculateRideDistance(); // ✅ call the new method
   } else {
     this.fetchedDistance = null;
-    this.rideForm.get('estimated_distance_km')?.setValue(null);
+    this.estimated_distance_with_buffer = 0; // Clear the new variable too, if you're using it
+    this.rideForm.get('estimated_distance_km')?.setValue(0);
   }
 }
+
 
 isDuringInspectorClosure(startTime: string): boolean {
   const startMinutes = this.timeToMinutes(startTime);
@@ -636,11 +643,7 @@ confirmInspectorWarning(): void {
   return;
 }
 
-  // Distance validation
-  if (distance > 1000) {
-    this.toastService.show('מרחק לא הגיוני - נא להזין ערך סביר', 'error');
-    return;
-  }
+ 
 
   // User validation
   const user_id = localStorage.getItem('employee_id');
@@ -679,9 +682,10 @@ confirmInspectorWarning(): void {
     start_datetime,
     vehicle_id: vehicleId,
     end_datetime,
-    start_location: this.rideForm.get('start_location')?.value,
+    start_location: this.rideForm.get('start_location')?.value.name,
     stop: this.rideForm.get('stop')?.value,
-    destination: this.rideForm.get('destination')?.value,
+    extraStops : this.extraStops.value,
+    destination: this.rideForm.get('destination')?.value.name,
     estimated_distance_km: distance,
     actual_distance_km: this.estimated_distance_with_buffer,
     four_by_four_reason: this.rideForm.get('four_by_four_reason')?.value,
@@ -741,7 +745,6 @@ confirmInspectorWarning(): void {
   getVehicleTypes(): any
   {
     return [...new Set(this.allCars.map(car => car.type))];
-    console.log('Available vehicle types:', [...new Set(this.allCars.map(car => car.type))]);
   }
   close(): void {
     this.router.navigate(['/home']);
