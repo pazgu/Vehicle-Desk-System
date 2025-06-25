@@ -505,12 +505,12 @@ def cancel_order(order_id: UUID, db: Session = Depends(get_db)):
 
 @router.get("/api/distance")
 def get_distance(
-    from_city: str,
     to_city: str,
     extra_stops: list[str] = Query(default=[]),
     db: Session = Depends(get_db),
 ):
     try:
+        from_city = "24e88ed1-0bfe-43b5-8a3f-a442805b07f6"
         route = [from_city] + extra_stops + [to_city]
         total_distance = 0
         for i in range(len(route) - 1):
