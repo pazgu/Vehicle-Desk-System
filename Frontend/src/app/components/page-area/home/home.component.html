@@ -73,7 +73,7 @@
     <label>סוג רכב</label>
     <select formControlName="vehicle_type" class="styled-select" (change)="onRideTypeChange()">
       <option value="" disabled selected>בחר סוג</option>
-<option *ngFor="let type of getVehicleTypes()" [value]="type">{{ type }}</option>
+      <option *ngFor="let type of vehicleTypes" [value]="type">{{ type }}</option>
     </select>
   <textarea
     formControlName="vehicle_type_reason"
@@ -132,35 +132,53 @@
           </div>
 
           <!-- Locations -->
-          <div class="row">
-            <div class="input-group">
-              <label>מיקום התחלה</label> 
+          <div class="column">
+            <!-- <div class="input-group">
+              <label>מיקום התחלה</label>
               <select formControlName="start_location">
                 
                 <option class="way" value="">בחר עיר </option> 
                 <option *ngFor="let city of cities" [value]="city.id">{{ city.name }}</option>
               </select>
               <small *ngIf="f.start_location.touched && f.start_location.errors?.['required']" class="distance-info">חובה למלא מיקום התחלה</small>
-            </div>
+            </div> -->
 
-            <div class="input-group">
-              <label>תחנה</label>
-              <select formControlName="stop">
-                <option value="">בחר עיר</option>
-                <option *ngFor="let city of cities" [value]="city.id">{{ city.name }}</option>
-              </select>
-            </div>
+        <div class="input-group">
+  <label>תחנה</label>
+  <select formControlName="stop">
+    <option value="">בחר עיר</option>
+    <option *ngFor="let city of cities" [value]="city.id">{{ city.name }}</option>
+  </select>
+</div>
 
-            <div class="input-group">
+<!-- ✅ Dynamic extra stops -->
+<div formArrayName="extraStops">
+  <div *ngFor="let control of extraStops?.controls; let i = index" class="input-group">
+    <label>תחנה נוספת {{ i + 1 }}</label>
+    <select [formControlName]="i">
+      <option value="">בחר עיר</option>
+      <option *ngFor="let city of cities" [value]="city.id">{{ city.name }}</option>
+    </select>
+    <button type="button" (click)="removeExtraStop(i)" class="removeBtn">❌</button>
+  </div>
+</div>
+
+
+<!-- Add Button -->
+ <div *ngIf="extraStops">
+<button type="button" (click)="addExtraStop()" [disabled]="extraStops.length >= 2" class="addBtn">
+  ➕ הוסף תחנה נוספת
+</button>
+</div>
+
+            <!-- <div class="input-group">
               <label>יעד</label>
               <select formControlName="destination">
                 <option value="">בחר עיר</option>
                 <option *ngFor="let city of cities" [value]="city.id">{{ city.name }}</option>
               </select>
               <small *ngIf="f.destination.touched && f.destination.errors?.['required']" class="distance-info">חובה למלא יעד</small>
-
-            </div>
-                        
+            </div> -->
           </div>
 <div class="row ">
                           

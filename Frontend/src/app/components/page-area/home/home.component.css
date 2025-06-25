@@ -23,10 +23,20 @@ html, body {
   -moz-appearance: textfield;
   appearance: textfield;
 }
-.way{
-  display:flex;
+.add-stop-btn, .delete-stop-btn {
+  margin-top: 5px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: #007bff;
+}
+.extra-stop {
+  display: flex;
+  gap: 3px;
+  flex: 1;
   flex-direction: column;
 }
+
 /* FORM MODAL */
 .overlay {
   display: flex;
@@ -93,6 +103,47 @@ form .row {
     margin-bottom: 8px;
 
 }
+form .column {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 2px;
+    flex-direction: column;
+}
+form .addBtn, 
+form .removeBtn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 2px 4px;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #007bff; /* Default active color */
+}
+
+form .addBtn:disabled {
+    color: #6c757d; /* Disabled color (gray) */
+    cursor: not-allowed;
+    text-decoration: none;
+}
+
+form .addBtn:hover:not(:disabled) {
+    text-decoration: underline;
+}
+
+form .removeBtn {
+    color: #dc3545; /* red for remove */
+    font-size: 0.75rem;
+}
+
+form .removeBtn:hover {
+    text-decoration: underline;
+}
+
+
+
+
 
 .input-group {
     flex: 1;
@@ -105,6 +156,7 @@ form .row {
     font-size: 14px;
     font-weight: bold;
 }
+
 
 .input-group input {
     padding: 10px;

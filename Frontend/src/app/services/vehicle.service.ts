@@ -43,6 +43,11 @@ export class VehicleService {
     return this.http.get<VehicleInItem[]>(url);  
   } 
 
+  getVehicleTypes(): Observable<string[]> {
+  const url = environment.vehiclesTypes;
+  return this.http.get<string[]>(url);
+}
+
   getVehicleById(id: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/vehicle/${id}`);
   }
