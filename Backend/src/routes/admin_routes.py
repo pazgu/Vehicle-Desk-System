@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query,Header, status
+from fastapi import APIRouter, Depends, HTTPException, Query,Header, Request, status
 from uuid import UUID
 from typing import Optional , List
 from datetime import datetime
@@ -20,7 +20,7 @@ from src.models.user_model import User , UserRole
 from src.models.vehicle_model import Vehicle
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 from ..schemas.vehicle_schema import VehicleOut , InUseVehicleOut , VehicleStatusUpdate
-from ..utils.auth import token_check
+from ..utils.auth import get_current_user, token_check
 from ..services.vehicle_service import get_vehicles_with_optional_status,update_vehicle_status,get_vehicle_by_id, get_available_vehicles_for_ride_by_id
 from ..services.user_notification import send_admin_odometer_notification
 from datetime import date, datetime, timedelta
@@ -31,7 +31,7 @@ from fastapi.responses import JSONResponse
 from src.models.ride_model import Ride
 from sqlalchemy import cast, Date
 from src.utils.stats import generate_monthly_vehicle_usage
-
+from ..schemas.register_schema import UserCreate
 from ..schemas.audit_schema import AuditLogsSchema
 from src.services.audit_service import get_all_audit_logs
 from ..utils.socket_manager import sio
@@ -40,7 +40,7 @@ from fastapi.security import OAuth2PasswordBearer
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 from ..utils.auth import role_check
 from fastapi import HTTPException
-
+from ..services.admin_user_service import create_user_by_admin
 
 router = APIRouter()
 
@@ -145,6 +145,21 @@ def get_roles():
     return [role.value for role in UserRole]
 
 
+@router.post("/add-user", status_code=status.HTTP_201_CREATED)
+def add_user_as_admin(
+    request: Request,
+    user_data: UserCreate,
+    db: Session = Depends(get_db),
+):
+    current_user = get_current_user(request)
+    
+    if current_user.role != UserRole.admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required."
+        )
+    
+    return create_user_by_admin(user_data, db)
 # @router.post("/vehicle-inspection")
 # def vehicle_inspection(data: VehicleInspectionSchema, db: Session = Depends(get_db),payload: dict = Depends(token_check)):
 #     try:
