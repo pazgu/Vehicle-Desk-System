@@ -18,7 +18,10 @@ html, body {
   -webkit-appearance: none;
   margin: 0;
 }
-
+.extra-stop{
+  display:flex;
+  flex-direction: row;
+}
 .no-spinner {
   -moz-appearance: textfield;
   appearance: textfield;
@@ -30,11 +33,22 @@ html, body {
   border: none;
   color: #007bff;
 }
-.extra-stop {
+
+#extra-stop {
   display: flex;
   gap: 3px;
-  flex: 1;
+  flex-direction: row;
+}
+#extrastops{
+  display: flex;
   flex-direction: column;
+  gap: 15px;
+  margin-top: 10px;
+}
+#first-stop-box{
+  display:flex;
+  flex-direction: column;
+  margin-left: 30px;
 }
 
 /* FORM MODAL */
@@ -141,9 +155,30 @@ form .removeBtn:hover {
     text-decoration: underline;
 }
 
+.full-trip-display {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* For RTL, use flex-end if needed */
+  direction: rtl;
+  margin-top: 60px;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-left: 930px;
+  background-color: #9422221f;
+  width:300px
+}
+
+.full-trip-display a,
+.full-trip-display p {
+  margin: 0.25rem 0;
+  font-size: 1.1rem;
+}
 
 
-
+#distance-title{
+  padding-top: 20px;
+}
 
 .input-group {
     flex: 1;
@@ -171,11 +206,10 @@ form .removeBtn:hover {
   border: none;
   align-self: flex-end;
   margin-top: auto;
-
   padding: 12px 24px;
   border-radius: 6px;
   cursor: pointer;
-  align-self: flex-end;
+  align-self: flex-start;
   margin-bottom: 0;
 }
 

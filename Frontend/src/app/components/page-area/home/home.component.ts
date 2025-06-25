@@ -410,6 +410,24 @@ canProceedToDetails(): boolean {
     const distance = this.rideForm.get('estimated_distance_km')?.value || 0;
     this.estimated_distance_with_buffer = +(distance * 1.1).toFixed(2);
   }
+getSelectedStopName(): string {
+  const stopId = this.rideForm.get('stop')?.value;
+  const city = this.cities.find(c => c.id === stopId);
+  return city ? city.name : 'לא נבחרה תחנה';
+}
+getExtraStopNames(): string[] {
+  const stopsArray = this.rideForm?.get('extraStops');
+  if (!stopsArray || !Array.isArray(stopsArray.value)) return [];
+
+  const stopIds = stopsArray.value;
+  return stopIds
+    .map((id: string) => {
+      const city = this.cities.find(c => c.id === id);
+      return city?.name || null;
+    })
+    .filter((name): name is string => !!name); // Filter out nulls
+}
+
 
 isPendingVehicle(vehicle_id: string): boolean {
   const rideDate = this.rideForm.get('ride_date')?.value;
