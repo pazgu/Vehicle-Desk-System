@@ -40,3 +40,6 @@ def calculate_distance(city_id1: str, city_id2: str, db: Session) -> float:
 
 def get_cities(db: Session):
     return db.query(City).all()
+
+def get_city(name: str, db: Session):
+    return db.query(City).filter(City.name == name).first()

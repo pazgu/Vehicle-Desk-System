@@ -16,6 +16,6 @@ export const environment = {
     frozenVehiclesUrl:'http://localhost:8000/api/all-vehicles',
     vehicleUsageStatsUrl: 'http://localhost:8000/vehicles/usage-stats',
     vehicleStatsUrl: 'http://localhost:8000/api/vehicles/usage-stats',
-
+    vehiclesTypes:'http://localhost:8000/api/vehicle-types'
   };
   

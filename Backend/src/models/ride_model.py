@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from sqlalchemy import Column, String, Integer, Text, Enum, Boolean, Numeric, DateTime, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID,ARRAY
 from sqlalchemy.orm import relationship
 from src.models.base import Base
 import enum
@@ -8,7 +8,6 @@ import uuid
 from sqlalchemy.sql import func
 from pydantic import BaseModel
 import uuid
-
 
 class RideType(str, enum.Enum):
     administrative = "administrative"
@@ -33,6 +32,7 @@ class Ride(Base):
     end_datetime = Column(DateTime, nullable=False, index=True)
     start_location = Column(Text, nullable=False)
     stop = Column(Text, nullable=False)
+    extra_stops = Column(ARRAY(UUID), nullable=True)
     destination = Column(Text, nullable=False)
     estimated_distance_km = Column(Numeric, nullable=False)
     actual_distance_km = Column(Numeric, nullable=False)
