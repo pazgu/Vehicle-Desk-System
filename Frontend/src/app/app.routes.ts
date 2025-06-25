@@ -20,6 +20,7 @@ import { AvailableAndFrozenCarsComponent } from './inspector-area/available-and-
 import { ForgotPasswordComponent } from './components/auth-area/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './components/auth-area/reset-password/reset-password.component';
 import { AdminAnalyticsComponent } from './components/admin-area/admin-analytics/admin-analytics.component';
+import { AddNewUserComponent } from './components/admin-area/add-new-user/add-new-user.component';
 
 
 export const routes: Routes = [
@@ -81,6 +82,14 @@ export const routes: Routes = [
   component: AvailableAndFrozenCarsComponent
 },
 
+{
+  path: 'admin/add-new-user',
+  loadComponent: () =>
+    import('./components/admin-area/add-new-user/add-new-user.component').then(
+      m => m.AddNewUserComponent
+    ),
+  canActivate: [ProtectedRouteGuard], // assuming this is your existing guard
+},
 
   { path: '**', component: Page404Component }
 ];

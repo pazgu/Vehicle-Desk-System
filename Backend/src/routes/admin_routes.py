@@ -152,14 +152,14 @@ def add_user_as_admin(
     db: Session = Depends(get_db),
 ):
     current_user = get_current_user(request)
-    
+    changed_by=current_user.employee_id  
     if current_user.role != UserRole.admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin access required."
         )
     
-    return create_user_by_admin(user_data, db)
+    return create_user_by_admin(user_data,changed_by ,db)
 # @router.post("/vehicle-inspection")
 # def vehicle_inspection(data: VehicleInspectionSchema, db: Session = Depends(get_db),payload: dict = Depends(token_check)):
 #     try:
