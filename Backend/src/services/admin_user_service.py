@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session
 from uuid import uuid4
 from ..utils.auth import hash_password
 from sqlalchemy.orm import Session
-
-def create_user_by_admin(user_data: UserCreate, db: Session):
+from sqlalchemy import text
+def create_user_by_admin(user_data: UserCreate,changed_by ,db: Session):
     existing_user = db.query(User).filter(
         (User.email == user_data.email) | (User.username == user_data.username)
     ).first()
@@ -34,8 +34,8 @@ def create_user_by_admin(user_data: UserCreate, db: Session):
     "department_id": new_user.department_id,
 }
 
-
     db.add(new_user)
+    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(changed_by)})
     db.commit()
     db.refresh(new_user)
 
