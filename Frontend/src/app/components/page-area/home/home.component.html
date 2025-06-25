@@ -216,14 +216,28 @@
   </ng-container>
   <p>↓</p>
   <a>תל אביב</a>
-  <div class="input-group">
-              <label id="distance-title" >הערכת מרחק (ק"מ)</label>
-              <small *ngIf="f.estimated_distance_km.touched && f.estimated_distance_km.errors?.['required']" class="distance-info">חובה למלא את שדה זה</small>
-              <small *ngIf="f.estimated_distance_km.errors?.['min']" class="distance-info">המרחק חייב להיות לפחות 1 ק״מ</small>
-              <small class="distance-info" *ngIf="!f.estimated_distance_km.errors && f.estimated_distance_km.value">
-                המרחק לאחר תוספת סטייה: {{ estimated_distance_with_buffer }} ק"מ
-              </small>
-            </div>
+  
+<div class="input-group">
+  <label id="distance-title">הערכת מרחק (ק"מ)</label>
+
+  <small *ngIf="f.estimated_distance_km.touched && f.estimated_distance_km.errors?.['required']"
+         class="distance-info">
+    חובה למלא את שדה זה
+  </small>
+
+  <small *ngIf="f.estimated_distance_km.errors?.['min']"
+         class="distance-info">
+    המרחק חייב להיות לפחות 1 ק״מ
+  </small>
+
+  <small class="distance-info" *ngIf="estimated_distance_with_buffer">
+  המרחק לאחר תוספת סטייה: {{ estimated_distance_with_buffer }} ק"מ
+</small>
+
+</div>
+
+
+
 </div>
 
 <router-outlet></router-outlet>

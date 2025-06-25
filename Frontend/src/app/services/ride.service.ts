@@ -73,20 +73,18 @@ getArchivedOrders(userId: string): Observable<any[]> {
 // );
 // }
 
-getRouteDistance(from: string, to: string, extraStops: string[] = []): Observable<{ distance_km: number }> {
+getRouteDistance(to: string, extraStops: string[] = []): Observable<{ distance_km: number }> {
   const token = localStorage.getItem('access_token');
   if (!token) throw new Error('Access token not found in localStorage.');
   const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
 
-  const encodedFrom = encodeURIComponent(from);
   const encodedTo = encodeURIComponent(to);
   const stopsQuery = extraStops.map(stop => `extra_stops=${encodeURIComponent(stop)}`).join('&');
 
-  const url = `${this.distanceUrl}?from_city=${encodedFrom}&to_city=${encodedTo}${stopsQuery ? '&' + stopsQuery : ''}`;
+  const url = `${this.distanceUrl}?to_city=${encodedTo}${stopsQuery ? '&' + stopsQuery : ''}`;
 
   return this.http.get<{ distance_km: number }>(url, { headers });
 }
-
 
 
 
