@@ -69,6 +69,13 @@ handleStep1Next() {
   departmentEmployees: { id: string; full_name: string }[] = [];
   showInspectorWarningModal = false;
   VehicleFuelType:FuelType=FuelType.Gasoline
+  public isLoadingDistance = false;
+  
+
+
+
+
+
 
 
   allCars: {
@@ -149,6 +156,8 @@ vehicleTypes: string[] = [];
       stop: ['', Validators.required],
       extraStops: this.fb.array([]),
       destination: null,
+      vehicle_type_reason: ['', Validators.required],
+      four_by_four_reason: ['']
     });
     this.cityService.getCity('תל אביב').subscribe((city) => {
   this.rideForm.patchValue({
@@ -233,6 +242,20 @@ this.rideForm.get('stop')?.valueChanges.subscribe(() => {
         this.toastService.show('שגיאה בטעינת רכבים זמינים', 'error');
       }
     });
+
+    this.rideForm.get('vehicle_type')?.valueChanges.subscribe(value => {
+    const vehicleTypeReason = this.rideForm.get('vehicle_type_reason');
+    
+    if (value?.toLowerCase().includes('jeep') || 
+        value?.toLowerCase().includes('van') || 
+        value?.toLowerCase().includes('4x4')) {
+      vehicleTypeReason?.setValidators([Validators.required]);
+    } else {
+      vehicleTypeReason?.clearValidators();
+    }
+    vehicleTypeReason?.updateValueAndValidity();
+  });
+
 
     // Load pending cars with proper error handling and type safety
     this.loadPendingVehicles();
@@ -555,8 +578,29 @@ confirmInspectorWarning(): void {
     this.rideForm.markAllAsTouched();
     this.toastService.show('יש להשלים את כל שדות הטופס כנדרש', 'error');
     return;
+
+  }
+  this.rideForm.markAllAsTouched(); // This is good, keeps errors visible
+
+  if (this.rideForm.invalid) {
+    this.toastService.show('יש להשלים את כל שדות הטופס כנדרש', 'error');
+
+    // --- PASTE THIS CODE HERE ---
+    console.log('FORM IS INVALID. HERE ARE THE ERRORS:');
+    Object.keys(this.rideForm.controls).forEach(key => {
+      const control = this.rideForm.get(key);
+      if (control && control.invalid) {
+        console.log(`- Control '${key}' is invalid. Errors:`, control.errors);
+      }
+    });
+    // --- END PASTE ---
+
+    return; // Stop submission if form is invalid
   }
 
+  // ... (rest of your submission logic)
+
+  
   
 
   // Vehicle selection validation
@@ -644,6 +688,8 @@ confirmInspectorWarning(): void {
     destination: this.rideForm.get('destination')?.value.name,
     estimated_distance_km: distance,
     actual_distance_km: this.estimated_distance_with_buffer,
+    four_by_four_reason: this.rideForm.get('four_by_four_reason')?.value,
+
   };
 
   console.log('Ride data for backend:', formData);

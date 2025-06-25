@@ -17,25 +17,25 @@ from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 from ..utils.audit_utils import log_action 
 from ..schemas.user_rides_schema import RideSchema 
 
-def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
-    inspection = VehicleInspection(
-        inspected_by=data.inspected_by,
-        inspection_date=datetime.now(timezone.utc),
-        clean=data.clean,
-        fuel_checked=data.fuel_checked,
-        no_items_left=data.no_items_left,
-        critical_issue_bool=data.critical_issue_bool,
-        issues_found=data.issues_found,
-    )
+# def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
+#     inspection = VehicleInspection(
+#         inspected_by=data.inspected_by,
+#         inspection_date=datetime.now(timezone.utc),
+#         clean=data.clean,
+#         fuel_checked=data.fuel_checked,
+#         no_items_left=data.no_items_left,
+#         critical_issue_bool=data.critical_issue_bool,
+#         issues_found=data.issues_found,
+#     )
 
-    db.add(inspection)
-    db.commit()
-    db.refresh(inspection)
+#     db.add(inspection)
+#     db.commit()
+#     db.refresh(inspection)
 
-    return {
-        "message": "Vehicle inspection recorded successfully",
-        "inspection_id": str(inspection.inspection_id)
-    }
+#     return {
+#         "message": "Vehicle inspection recorded successfully",
+#         "inspection_id": str(inspection.inspection_id)
+#     }
 
 
 def get_vehicles_with_optional_status(

@@ -29,17 +29,17 @@
 
  <div class="detail-row">
   <span class="detail-label">מיקום התחלה:</span>
-  <span class="detail-value">{{ ride?.start_location || 'מיקום לא זמין' }}</span>
+  <span class="detail-value">{{ getCityName(ride?.start_location) }}</span>
 </div>
 
 <div class="detail-row">
   <span class="detail-label">תחנה:</span>
-  <span class="detail-value">{{ ride?.stop || 'תחנה לא זמינה' }}</span>
+  <span class="detail-value">{{ getCityName(ride?.stop) }}</span>
 </div>
 
 <div class="detail-row">
   <span class="detail-label">יעד:</span>
-  <span class="detail-value">{{ ride?.destination || 'יעד לא זמין' }}</span>
+  <span class="detail-value">{{ getCityName(ride?.destination) }}</span>
 </div>
 
 

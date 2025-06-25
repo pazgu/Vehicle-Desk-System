@@ -217,20 +217,33 @@
                         ? (selectedLog.change_data[key] ? 'boolean-yes' : 'boolean-no')
                         : ''
                     ">
-                    <ng-container [ngSwitch]="true">
-                      <ng-container *ngSwitchCase="selectedLog.change_data[key] === true">כן</ng-container>
-                      <ng-container *ngSwitchCase="selectedLog.change_data[key] === false">לא</ng-container>
-                      <ng-container *ngSwitchCase="selectedLog.change_data[key] === null">ריק</ng-container>
-                      <ng-container *ngSwitchDefault>
-                        <ng-container *ngIf="key.endsWith('datetime') || key.endsWith('at'); else plainValue">
-                          {{ selectedLog.change_data[key] | date:'dd/MM/yyyy HH:mm' }}
-                        </ng-container>
-                        <ng-template #plainValue>{{ selectedLog.change_data[key] }}</ng-template>
-                      </ng-container>
-                    </ng-container>
-                  </div>
-                </div>
-              </div>
+<div class="field-value">
+  <ng-container [ngSwitch]="key">
+    <ng-container *ngSwitchCase="'start_location'">
+      {{ getCityName(selectedLog.change_data[key]) }}
+    </ng-container>
+    <ng-container *ngSwitchCase="'destination'">
+      {{ getCityName(selectedLog.change_data[key]) }}
+    </ng-container>
+    <ng-container *ngSwitchCase="'stop'">
+      {{ getCityName(selectedLog.change_data[key]) }}
+    </ng-container>
+    <ng-container *ngSwitchDefault>
+      <ng-container [ngSwitch]="true">
+        <ng-container *ngSwitchCase="selectedLog.change_data[key] === true">כן</ng-container>
+        <ng-container *ngSwitchCase="selectedLog.change_data[key] === false">לא</ng-container>
+        <ng-container *ngSwitchCase="selectedLog.change_data[key] === null">ריק</ng-container>
+        <ng-container *ngSwitchDefault>
+          <ng-container *ngIf="key.endsWith('datetime') || key.endsWith('at'); else plainValue">
+            {{ selectedLog.change_data[key] | date:'dd/MM/yyyy HH:mm' }}
+          </ng-container>
+          <ng-template #plainValue>{{ selectedLog.change_data[key] }}</ng-template>
+        </ng-container>
+      </ng-container>
+    </ng-container>
+  </ng-container>
+</div>
+
               <!-- Vehicle Entity (dynamic) -->
               <div *ngIf="selectedLog.entity_type === 'Vehicle'" class="entity-fields">
                 <div *ngIf="selectedLog.change_data?.image_url" class="vehicle-image-row">
@@ -332,15 +345,15 @@
               </div>
               <div class="field-row">
                 <div class="field-label">מיקום התחלה</div>
-                <div class="field-value">{{ selectedLog.change_data.start_location }}</div>
+  <div class="field-value">{{ getCityName(selectedLog.change_data.start_location) }}</div>
               </div>
               <div class="field-row">
                 <div class="field-label">יעד</div>
-                <div class="field-value">{{ selectedLog.change_data.destination }}</div>
+  <div class="field-value">{{ getCityName(selectedLog.change_data.destination) }}</div>
               </div>
               <div class="field-row">
                 <div class="field-label">תחנה</div>
-                <div class="field-value">{{ selectedLog.change_data.stop }}</div>
+  <div class="field-value">{{ getCityName(selectedLog.change_data.stop) }}</div>
               </div>
               <div class="field-row">
                 <div class="field-label">תאריך התחלה</div>
