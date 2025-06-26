@@ -40,7 +40,8 @@ from fastapi.security import OAuth2PasswordBearer
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 from ..utils.auth import role_check
 from fastapi import HTTPException
-from ..services.admin_user_service import create_user_by_admin
+from ..services.admin_user_service import create_user_by_admin , get_users_service
+from ..schemas.user_response_schema import PaginatedUserResponse
 
 router = APIRouter()
 
@@ -453,3 +454,14 @@ def get_today_inspections(
 
     inspections = query.order_by(VehicleInspection.inspection_date.desc()).all()
     return inspections
+
+
+@router.get("/users", response_model=PaginatedUserResponse)
+def get_all_users_route(
+    db: Session = Depends(get_db),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    role: Optional[UserRole] = None,
+    search: Optional[str] = None
+):
+    return get_users_service(db=db, page=page, page_size=page_size, role=role, search=search)
