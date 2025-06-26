@@ -690,13 +690,15 @@ export class NewRideComponent implements OnInit {
   }
 
   private showFuelTypeMessage(): void {
-    if (this.vehicleFuelType === 'electric') {
+    if(localStorage.getItem('role')=='employee')
+      {   if (this.vehicleFuelType === 'electric') {
       this.toastService.showPersistent('אנא ודא כי הרכב טעון לפני ההחזרה.', 'neutral');
     } else if (this.vehicleFuelType === 'hybrid') {
       this.toastService.showPersistent('אנא ודא כי יש מספיק דלק וטעינה לפני ההחזרה.', 'neutral');
     } else if (this.vehicleFuelType === 'gasoline') {
       this.toastService.showPersistent('אנא ודא כי מיכל הדלק מלא לפני ההחזרה.', 'neutral');
-    }
+    }}
+ 
   }
 
   // Form getters
