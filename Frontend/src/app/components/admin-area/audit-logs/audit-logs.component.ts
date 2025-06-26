@@ -45,10 +45,9 @@ export class AuditLogsComponent implements OnInit {
   customToDate: string = '';
 
   problematicOnly: boolean = false;
-  filtersCollapsed = false;
+  filtersCollapsed = true;
 
   cityMap: { [id: string]: string } = {};
-
 
 
 
