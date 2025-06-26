@@ -139,6 +139,9 @@ this.socketService.orderUpdated$.subscribe((updatedRide) => {
         case 'בוצע':
           filtered = filtered.filter(order => order.status === 'completed');
           break;
+        case 'בתהליך':
+          filtered = filtered.filter(order => order.status === 'in_progress');
+          break;
         default:
           break;
       }
@@ -179,6 +182,8 @@ this.socketService.orderUpdated$.subscribe((updatedRide) => {
         return 'row-rejected';
       case 'completed':
         return 'row-completed';
+      case 'in_progress':
+        return 'row-in-progress';
       default:
         return '';
     }
@@ -201,6 +206,8 @@ this.socketService.orderUpdated$.subscribe((updatedRide) => {
         return 'נדחה';
       case 'completed':
         return 'בוצע';
+      case 'in_progress':
+        return 'בתהליך';
       default:
         return status;
     }
@@ -216,6 +223,8 @@ this.socketService.orderUpdated$.subscribe((updatedRide) => {
         return 'status-rejected';
       case 'completed':
         return 'status-completed';
+      case 'in_progress':
+        return 'status-in-progress';
       default:
         return '';
     }

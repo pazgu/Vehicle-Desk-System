@@ -128,7 +128,9 @@
             [ngClass]="{
              'pi-verified': order.status.toLowerCase() === 'approved',
              'pi-clock': order.status.toLowerCase() === 'pending',
-             'pi-times': order.status.toLowerCase() === 'rejected'
+             'pi-times-circle': order.status.toLowerCase() === 'rejected',
+             'pi-list-check': order.status.toLowerCase() === 'completed',
+             'pi-forward': order.status.toLowerCase() === 'in_progress'
             }"
             [title]="getStatusTooltip(order.status)"
             style="font-size: 1.3rem;">
