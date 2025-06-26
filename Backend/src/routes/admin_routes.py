@@ -206,6 +206,25 @@ def available_vehicles_for_ride(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
 
+@router.get("/vehicles", response_model=List[VehicleOut])
+def get_filtered_vehicles(
+    status: Optional[str] = Query(None),
+    vehicle_type: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+    token: str = Depends(oauth2_scheme)
+):
+    role_check(["admin"], token)  # Only admins can access this
+
+    query = db.query(Vehicle)
+
+    if status:
+        query = query.filter(Vehicle.status == status)
+
+    if vehicle_type:
+        query = query.filter(Vehicle.type.ilike(vehicle_type))  # Case-insensitive match
+
+    return query.all()
+
 # @router.get("/all-vehicles", response_model=List[VehicleOut])
 # def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = Depends(get_db)
 #     ,payload: dict = Depends(token_check)):
