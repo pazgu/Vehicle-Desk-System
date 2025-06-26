@@ -7,6 +7,8 @@ from ..utils.auth import hash_password
 from sqlalchemy.orm import Session
 from ..models.department_model import Department
 from sqlalchemy import text
+from typing import Optional
+from ..schemas.user_response_schema import PaginatedUserResponse
 
 def create_user_by_admin(user_data: UserCreate,changed_by ,db: Session):
     existing_user = db.query(User).filter(
@@ -50,3 +52,40 @@ def create_user_by_admin(user_data: UserCreate,changed_by ,db: Session):
         db.commit()
 
     return created_user
+
+
+def get_users_service(
+    db: Session,
+    page: int = 1,
+    page_size: int = 20,
+    role: Optional[UserRole] = None,
+    search: Optional[str] = None
+) -> PaginatedUserResponse:
+    query = db.query(User)
+
+    if role:
+        query = query.filter(User.role == role)
+
+    if search:
+        search = search.lower() 
+        pattern = f"%{search}%"
+        query = query.filter(
+            (User.first_name.ilike(pattern)) |
+            (User.last_name.ilike(pattern)) |
+            (User.email.ilike(pattern))
+        )
+
+    total = query.count()
+
+    users = (
+        query
+        .order_by(User.first_name.asc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+        .all()
+    )
+
+    return PaginatedUserResponse(
+        total=total,
+        users=users
+    )

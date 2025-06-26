@@ -84,17 +84,15 @@ export class VehicleCardItemComponent implements OnInit {
     }
   }
 
-  translateType(type: string | null | undefined): string {
-    if (!type) return '';
-    switch (type.toLowerCase()) {
-      case 'small':
-        return 'קטן';
-      case 'large':
-        return 'גדול';
-      case 'van':
-        return 'מסחרי';
-      default:
-        return type;
+  translateType(type: string | undefined): string {
+    switch (type) {
+      case 'small': return 'קטן';
+      case 'large': return 'גדול';
+      case 'van': return 'ואן';
+      case '4x4': return '4x4';
+      case 'Jeep': return "ג'יפ";
+      case 'Pickup Truck': return 'טנדר';
+      default: return type || '';
     }
   }
 

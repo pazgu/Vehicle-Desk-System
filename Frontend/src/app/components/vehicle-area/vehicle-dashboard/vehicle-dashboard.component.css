@@ -470,3 +470,34 @@ button {
   height: 100%;
   object-fit: contain;
 }
+
+.vehicle-buttons-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  direction: ltr; /* ensures left/right behave normally */
+}
+
+.left-buttons,
+.right-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+/* Your red add button styles */
+.add-vehicle-btn {
+  background-color: #b71c1c;
+  color: white;
+  padding: 0.5rem 1.25rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.add-vehicle-btn:hover {
+  background-color: #942229;
+}
