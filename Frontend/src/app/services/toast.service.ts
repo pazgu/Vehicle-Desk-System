@@ -37,4 +37,9 @@ export class ToastService {
     const sound = new Audio('assets/sounds/info.mp3');
     sound.play().catch(e => console.warn('Sound play failed:', e));
   }
+  clearAll() {
+  const toasts = document.querySelectorAll('.custom-toast');
+  toasts.forEach(t => t.remove());
+}
+
 }

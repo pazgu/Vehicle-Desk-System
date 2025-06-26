@@ -130,13 +130,15 @@ loadFuelType(vehicleId: string) {
       this.loadFuelType(this.currentRide.vehicle_id)
 
      if (!this.form.value.fueled) {
-    if (this.VehicleFuelType === 'electric') {
+       if(localStorage.getItem('role')=='employee')
+        { if (this.VehicleFuelType === 'electric') {
       this.toastService.showPersistent('הרכב טרם נטען. אנא טען לפני ההחזרה.', 'neutral');
     } else if (this.VehicleFuelType === 'hybrid') {
       this.toastService.showPersistent('הרכב לא תודלק ולא נטען. יש להשלים לפני ההחזרה.', 'neutral');
     } else if (this.VehicleFuelType === 'gasoline') {
       this.toastService.showPersistent('הרכב לא תודלק. יש לתדלק לפני ההחזרה.', 'neutral');
     }}
+   }
     
 
     const rawForm = this.form.value;
