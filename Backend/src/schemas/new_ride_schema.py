@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from uuid import UUID
 from datetime import datetime
 from enum import Enum
-from typing import Optional
+from typing import Optional,List
 
 # ENUMS
 class RideType(str, Enum):
@@ -32,6 +32,7 @@ class RideCreate(BaseModel):
     actual_distance_km: float
     four_by_four_reason: Optional[str] = None 
     target_type: Optional[str] = "self"  # "Self" or "Other"
+    extra_stops: Optional[List[UUID]] = None 
     
 class RideResponse(BaseModel):
     id: UUID
@@ -52,6 +53,7 @@ class RideResponse(BaseModel):
     submitted_at: datetime
     override_user_id: UUID
     plate_number: str
+    extra_stops: Optional[List[UUID]] = None 
 
 class RideWithWarningResponse(RideResponse):
     inspector_warning: bool

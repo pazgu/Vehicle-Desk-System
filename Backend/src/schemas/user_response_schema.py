@@ -3,7 +3,7 @@ from uuid import UUID
 from enum import Enum
 # app/schemas.py
 from pydantic import BaseModel, EmailStr
-from typing import Optional
+from typing import Optional , List
 from uuid import UUID
 
 
@@ -32,3 +32,8 @@ class UserResponse(BaseModel):
     
     class Config:
         from_attributes = True
+        
+
+class PaginatedUserResponse(BaseModel):
+    total: int
+    users: List[UserResponse]
