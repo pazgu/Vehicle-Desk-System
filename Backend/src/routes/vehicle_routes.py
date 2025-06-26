@@ -61,6 +61,7 @@ def patch_vehicle_status(
 
 
 
+
 @router.get("/{ride_id}/available-vehicles", response_model=List[VehicleOut])
 def available_vehicles_for_ride(
     ride_id: UUID,
