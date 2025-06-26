@@ -1,3 +1,6 @@
+from datetime import datetime
+
+from sqlalchemy import text
 from ..services.vehicle_service import get_vehicles_with_optional_status,update_vehicle_status,get_vehicle_by_id, get_available_vehicles_for_ride_by_id
 from fastapi import APIRouter, Depends, HTTPException, status , Query
 from uuid import UUID
@@ -83,20 +86,24 @@ def get_vehicle_by_id_route(vehicle_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/vehicles", response_model=VehicleOut, status_code=status.HTTP_201_CREATED)
-def create_vehicle(vehicle_data: VehicleCreate, db: Session = Depends(get_db)):
+def create_vehicle(
+    vehicle_data: VehicleCreate,
+    db: Session = Depends(get_db),
+    payload: dict = Depends(token_check)  # <-- get user info from token
+):
+    user_id = payload.get("user_id") or payload.get("sub") or "system"
+    db.execute(text("SET LOCAL session.audit.user_id = :user_id"), {"user_id": user_id})
+    
     existing_vehicle = db.query(Vehicle).filter_by(plate_number=vehicle_data.plate_number).first()
     if existing_vehicle:
         raise HTTPException(status_code=400, detail="Vehicle with this plate number already exists")
 
     data = vehicle_data.dict()
     data['image_url'] = str(data['image_url']) if data.get('image_url') else None
-
-    # ברירת מחדל לסטטוס
     data.setdefault('status', VehicleStatus.available)
 
     new_vehicle = Vehicle(**data)
     db.add(new_vehicle)
     db.commit()
     db.refresh(new_vehicle)
-
     return new_vehicle
