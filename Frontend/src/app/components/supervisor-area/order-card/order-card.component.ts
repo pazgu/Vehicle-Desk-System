@@ -166,6 +166,8 @@ getCityName(id: string): string {
         return 'card-pending';
       case 'rejected':
         return 'card-rejected';
+      case 'in_progress':
+        return 'card-in-progress';
       default:
         return '';
     }
@@ -181,6 +183,8 @@ getCityName(id: string): string {
         return 'ממתין לאישור';
       case 'rejected':
         return 'נדחה';
+      case 'in_progress':
+        return 'בתהליך';
       default:
         return status;
     }

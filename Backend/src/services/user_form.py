@@ -62,6 +62,7 @@ async def process_completion_form(db: Session, user: User, form_data: Completion
     print("completed?",form_data.completed)
     if form_data.completed:
         ride.status = RideStatus.completed
+        print("ride status set to completed")
 
         # הוספת עדכון סטטיסטיקות שימוש ברכב:
         update_monthly_usage_stats(db=db, ride=ride)

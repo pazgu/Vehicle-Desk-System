@@ -50,6 +50,7 @@ export class HeaderComponent implements OnInit {
     this.authService.logout();
     this.toastService.show('התנתקת בהצלחה', 'success');
     this.router.navigate(['/login']);
+    this.toastService.clearAll()
   }
 
   getUserId(): string | null {
