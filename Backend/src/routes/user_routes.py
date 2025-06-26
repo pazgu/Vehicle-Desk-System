@@ -62,6 +62,11 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
+from dotenv import load_dotenv
+import os
+
+load_dotenv()  # Load environment variables from .env
+FROM_CITY = os.getenv("FROM_CITY")
 
 @router.post("/api/register")
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
@@ -510,8 +515,9 @@ def get_distance(
     db: Session = Depends(get_db),
 ):
     try:
-        from_city = "24e88ed1-0bfe-43b5-8a3f-a442805b07f6"
-        route = [from_city] + extra_stops + [to_city]
+        from_city = FROM_CITY
+        from_city_id = get_city(from_city,db)
+        route = [from_city_id.id] + extra_stops + [to_city]
         total_distance = 0
         for i in range(len(route) - 1):
             total_distance += calculate_distance(route[i], route[i + 1], db)
