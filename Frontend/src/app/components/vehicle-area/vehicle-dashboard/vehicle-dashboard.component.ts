@@ -219,18 +219,9 @@ export class VehicleDashboardComponent {
     }
 
     if (this.typeFilter) {
-      switch (this.typeFilter) {
-        case 'קטן':
-          filtered = filtered.filter(vehicle => vehicle.type === 'small');
-          break;
-        case 'גדול':
-          filtered = filtered.filter(vehicle => vehicle.type === 'large');
-          break;
-        case 'ואן':
-          filtered = filtered.filter(vehicle => vehicle.type === 'van');
-          break;
-      }
+      filtered = filtered.filter(vehicle => vehicle.type === this.typeFilter);
     }
+
     if (this.sortBy) {
       return [...filtered].sort((a, b) => a.status.localeCompare(b.status));
     }
