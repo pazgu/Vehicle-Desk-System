@@ -49,7 +49,7 @@ from ..utils.scheduler import schedule_ride_start
 from apscheduler.jobstores.base import JobLookupError
 from ..utils.scheduler import scheduler
 from ..services.city_service import calculate_distance
-from ..services.city_service import get_cities
+from ..services.city_service import get_cities,get_city
 from ..models.city_model import City
 from sqlalchemy import cast
 from ..services.user_form import get_ride_needing_feedback
@@ -62,6 +62,11 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
+from dotenv import load_dotenv
+import os
+
+load_dotenv()  # Load environment variables from .env
+FROM_CITY = os.getenv("FROM_CITY")
 
 @router.post("/api/register")
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
@@ -186,7 +191,7 @@ async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = De
             "user_id": str(user_id),
             "employee_name":new_ride.username,
             "status": new_ride.status,
-            "destination": new_ride.destination,
+            "destination": new_ride.stop,
             "end_datetime": str(new_ride.end_datetime),
             "date_and_time":str(new_ride.start_datetime),
             "vehicle_id":str(new_ride.vehicle_id),
@@ -289,6 +294,9 @@ async def patch_order(
     "submitted_at": updated_order.submitted_at,
     "emergency_event": updated_order.emergency_event,
 }
+    if updated_order.extra_stops:
+        order_data["extra_stops"] = [str(stop) for stop in updated_order.extra_stops]
+
     print("Order data to emit:", json.dumps(convert_decimal(order_data), indent=2))
     await sio.emit("order_updated", convert_decimal(order_data))
     return {
@@ -439,6 +447,13 @@ def get_pending_car_orders(db: Session = Depends(get_db)):
 
     return result
 
+@router.get("/api/vehicle-types")
+def get_vehicle_types(db: Session = Depends(get_db)):
+    types = db.query(Vehicle.type).distinct().all()
+    return [t[0] for t in types]
+
+
+
 
 @router.post("/api/forgot-password")
 def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
@@ -494,18 +509,33 @@ def cancel_order(order_id: UUID, db: Session = Depends(get_db)):
     return cancel_order_in_db(order_id, db)
 
 @router.get("/api/distance")
-def get_distance(from_city: str, to_city: str, db: Session = Depends(get_db)):
+def get_distance(
+    to_city: str,
+    extra_stops: list[str] = Query(default=[]),
+    db: Session = Depends(get_db),
+):
     try:
-        distance_km = calculate_distance(from_city, to_city, db)
-        return {"distance_km": distance_km}
+        from_city = FROM_CITY
+        from_city_id = get_city(from_city,db)
+        route = [from_city_id.id] + extra_stops + [to_city]
+        total_distance = 0
+        for i in range(len(route) - 1):
+            total_distance += calculate_distance(route[i], route[i + 1], db)
+        return {"distance_km": total_distance}
     except Exception as e:
-
         raise HTTPException(status_code=400, detail=str(e))
+
 
 @router.get("/api/cities")
 def get_cities_route(db: Session = Depends(get_db)):
     cities = get_cities(db)
     return [{"id": str(city.id), "name": city.name} for city in cities]
+
+@router.get("/api/city")
+def get_city_route(name:str,db: Session = Depends(get_db)):
+    city = get_city(name,db)
+    return {"id": str(city.id), "name": city.name} 
+
 @router.get("/api/rides/feedback/check/{user_id}")
 def check_feedback_needed(
     user_id: UUID,  # Add this parameter to capture the path variable

@@ -218,6 +218,13 @@
   background: #dc5b5b !important;
 }
 
+.in-progress-row{
+  background: linear-gradient(45deg, #27ae60 25%, #2ecc71 25%, #2ecc71 50%, #27ae60 50%, #27ae60 75%, #2ecc71 75%);
+  background-size: 20px 20px;
+  animation: moveStripes 1s linear infinite;
+}
+
+
 .empty-state {
   color: #90a4ae;
   font-size: 1.2rem;

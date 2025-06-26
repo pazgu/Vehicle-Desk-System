@@ -49,6 +49,8 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate):
         status=RideStatus.pending,
         license_check_passed=False,
         submitted_at=datetime.now(timezone.utc),
+        extra_stops = ride.extra_stops or None
+
     )
 
     db.add(new_ride)

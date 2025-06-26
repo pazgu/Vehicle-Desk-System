@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { VehicleInItem } from '../models/vehicle-dashboard-item/vehicle-in-use-item.module';
 import { FuelTypeResponse, VehicleOutItem } from '../models/vehicle-dashboard-item/vehicle-out-item.module';
+import { Vehicle } from '../models/vehicle.model';
 
 @Injectable({
   providedIn: 'root'
@@ -42,6 +43,11 @@ export class VehicleService {
     const url = `${this.apiUrl}/all-vehicles/available`;
     return this.http.get<VehicleInItem[]>(url);  
   } 
+
+  getVehicleTypes(): Observable<string[]> {
+  const url = environment.vehiclesTypes;
+  return this.http.get<string[]>(url);
+}
 
   getVehicleById(id: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/vehicle/${id}`);
@@ -86,4 +92,7 @@ getMostUsedVehiclesThisMonth(year: number, month: number): Observable<{ stats: V
     return this.http.get<FuelTypeResponse>(`${this.apiUrl}/vehicles/${vehicleId}/fuel-type`);
   }
 
+  getVehicles(params: any): Observable<Vehicle[]> {
+    return this.http.get<Vehicle[]>(`${this.apiUrl}/vehicles`, { params });
+  }
 }

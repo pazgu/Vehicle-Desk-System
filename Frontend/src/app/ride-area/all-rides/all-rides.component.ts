@@ -160,6 +160,8 @@ getStatusTooltip(status: string): string {
     case 'approved': return 'אושר';
     case 'pending': return 'בהמתנה';
     case 'rejected': return 'נדחה';
+    case 'completed': return 'הושלם';
+    case 'in_progress': return 'בתהליך';
     default: return 'סטטוס לא ידוע';
   }
 }
@@ -170,6 +172,7 @@ getStatusTooltip(status: string): string {
     case 'approved': return 'status-green';
     case 'pending': return 'status-yellow';
     case 'rejected': return 'status-red';
+    case 'in_progress': return 'status_in_progress';
     default: return '';
   }
 }
@@ -340,7 +343,7 @@ canEdit(order: any): boolean {
 }
 
 canDelete(order: any): boolean {
-const isPending = ['pending', 'approved'].includes(order.status.toLowerCase());
+const isPending = ['pending'].includes(order.status.toLowerCase());
   const isFuture = this.parseDate(order.date) >= new Date();
 
   return isPending && isFuture;

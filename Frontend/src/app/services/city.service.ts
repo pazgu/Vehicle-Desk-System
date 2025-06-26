@@ -17,4 +17,9 @@ export class CityService {
     return this.http.get<CityDropdown[]>(url);
 
   }
+ getCity(name: string) {
+  const url = `${this.apiUrl}/city`;
+  return this.http.get<CityDropdown>(url, { params: { name } });
+}
+
 }

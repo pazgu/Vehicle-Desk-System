@@ -18,3 +18,4 @@ class VehicleCreate(BaseModel):
     odometer_reading: int
     vehicle_model: str
     image_url: HttpUrl
+    lease_expiry: datetime
