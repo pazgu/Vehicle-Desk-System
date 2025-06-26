@@ -346,7 +346,7 @@ export class NewRideComponent implements OnInit {
 
     console.log(`🌍 Requesting route distance: ${from} → ${toArray.join(' → ')}`);
     this.isLoadingDistance = true;
-if(toArray) toArray = toArray.filter(to => to && typeof to === 'string' && to.trim() !== '');
+  if(toArray) toArray = toArray.filter(to => to && typeof to === 'string' && to.trim() !== '');
     this.rideService.getRouteDistance(from, toArray).subscribe({
       next: (response) => {
         const realDistance = response.distance_km;
