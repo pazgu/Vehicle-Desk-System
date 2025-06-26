@@ -31,7 +31,7 @@ from fastapi.responses import JSONResponse
 from src.models.ride_model import Ride
 from sqlalchemy import cast, Date
 from src.utils.stats import generate_monthly_vehicle_usage
-
+from src.services import admin_service
 from ..schemas.audit_schema import AuditLogsSchema
 from src.services.audit_service import get_all_audit_logs
 from ..utils.socket_manager import sio
@@ -40,6 +40,8 @@ from fastapi.security import OAuth2PasswordBearer
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 from ..utils.auth import role_check
 from fastapi import HTTPException
+from src.utils.auth import get_current_user
+
 
 
 router = APIRouter()
@@ -438,3 +440,18 @@ def get_today_inspections(
 
     inspections = query.order_by(VehicleInspection.inspection_date.desc()).all()
     return inspections
+
+
+@router.delete("/user-data/{user_id}")
+def delete_user(
+    user_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    try:
+        return admin_service.delete_user_by_id(user_id, current_user, db)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
