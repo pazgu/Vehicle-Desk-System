@@ -52,6 +52,16 @@
 
   <div class="detail-row">
     <span class="detail-label">סטטוס:</span>
-    <span class="detail-value">{{ ride?.status === 'pending' ? 'ממתין' : ride?.status === 'approved' ? 'מאושר' : 'נדחה' }}</span>
-  </div>
+<span 
+  class="detail-value"
+  [ngClass]="{
+    'rejected-row': ride?.status === 'rejected',
+    'in-progress-row': ride?.status === 'in_progress'
+  }">
+  {{ ride?.status === 'pending' ? 'ממתין' : 
+     ride?.status === 'approved' ? 'מאושר': 
+     ride?.status === 'completed' ? 'הושלם' : 
+     ride?.status === 'in_progress' ? 'בתהליך' :
+     ride?.status === 'rejected' ? 'נדחה' : '' }}
+</span>  </div>
 </div>
