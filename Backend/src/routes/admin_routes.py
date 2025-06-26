@@ -40,7 +40,8 @@ from fastapi.security import OAuth2PasswordBearer
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 from ..utils.auth import role_check
 from fastapi import HTTPException
-from ..services.admin_user_service import create_user_by_admin
+from ..services.admin_user_service import create_user_by_admin , get_users_service
+from ..schemas.user_response_schema import PaginatedUserResponse
 
 router = APIRouter()
 
@@ -205,6 +206,25 @@ def available_vehicles_for_ride(
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+
+@router.get("/vehicles", response_model=List[VehicleOut])
+def get_filtered_vehicles(
+    status: Optional[str] = Query(None),
+    vehicle_type: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+    token: str = Depends(oauth2_scheme)
+):
+    role_check(["admin"], token)  # Only admins can access this
+
+    query = db.query(Vehicle)
+
+    if status:
+        query = query.filter(Vehicle.status == status)
+
+    if vehicle_type:
+        query = query.filter(Vehicle.type.ilike(vehicle_type))  # Case-insensitive match
+
+    return query.all()
 
 # @router.get("/all-vehicles", response_model=List[VehicleOut])
 # def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = Depends(get_db)
@@ -453,3 +473,14 @@ def get_today_inspections(
 
     inspections = query.order_by(VehicleInspection.inspection_date.desc()).all()
     return inspections
+
+
+@router.get("/users", response_model=PaginatedUserResponse)
+def get_all_users_route(
+    db: Session = Depends(get_db),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    role: Optional[UserRole] = None,
+    search: Optional[str] = None
+):
+    return get_users_service(db=db, page=page, page_size=page_size, role=role, search=search)
