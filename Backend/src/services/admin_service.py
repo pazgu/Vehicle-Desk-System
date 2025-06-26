@@ -64,10 +64,7 @@ def delete_user_by_id(user_id: UUID, current_user: User, db: Session):
             # row: (schema, table_name, column_name, foreign_table_name, foreign_column_name)
             table_columns[row.table_name].append(row.column_name)
 
-        # טיפול בטבלאות עם FK: עדכון או מחיקה
-        # נניח שבטבלאות שבהן העמודה יכולה להיות NULL נעשה UPDATE ל-NULL
-        # בטבלאות אחרות נעשה DELETE
-        # נוכל לבדוק אם העמודה מאפשרת NULL ב-information_schema.columns
+       
         for table_name, columns in table_columns.items():
             # בדיקה אילו עמודות מאפשרות NULL
             nullable_query = text("""
@@ -86,11 +83,10 @@ def delete_user_by_id(user_id: UUID, current_user: User, db: Session):
                     update_sql = f"UPDATE {table_name} SET {col} = NULL WHERE {col} = :user_id"
                     db.execute(text(update_sql), {"user_id": str(user_id)})
                 else:
-                    # לא מאפשר NULL — מחיקה
                     delete_sql = f"DELETE FROM {table_name} WHERE {col} = :user_id"
                     db.execute(text(delete_sql), {"user_id": str(user_id)})
 
-        # לאחר שחרור כל ההקשרים - מחיקת המשתמש עצמו
+       
         db.delete(user_to_delete)
         db.commit()
 
