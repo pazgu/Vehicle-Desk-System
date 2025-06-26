@@ -1,0 +1,89 @@
+.page-wrapper {
+    min-height: 100vh;
+    padding: 2rem 0;
+}
+
+.vehicle-form-container {
+  max-width: 750px;
+  margin: 0 auto;
+  background-color: rgba(245, 241, 241, 0.582);
+  border-radius: 14px;
+  box-shadow: 0 2px 16px rgba(19, 31, 44, 0.07);
+  padding: 2rem 2.5rem;
+}
+
+.error {
+  color: #d32f2f;
+  font-size: 0.875rem;
+  margin-top: 4px;
+  margin-bottom: 12px;
+}
+
+
+form{
+    direction:rtl;
+}
+
+h2{
+    text-align: center;
+    color: #942222;
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+label {
+  display: block;
+  margin-top: 1rem;
+  font-weight: bold;
+}
+
+input, select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 4px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+button[type="submit"] {
+  margin-top: 1.5rem;
+  background-color: #b71c1c;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button[type="submit"]:hover {
+  background-color: #942222;
+}
+
+.back-btn {
+  width: 130px;
+  height: 40px;
+  color: #942222;
+  font-family: var(--font-family-alef);
+  font-size: 20px;
+  font-weight: bold;
+  padding: 1px 2px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+  background: none;
+}
+.back-btn:hover {
+  transform: scale(1.03);
+}
+
+.vehicle-wrapper-header {
+  display: flex;
+  align-items: left;
+  width: 100%;
+  max-width: 900px;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #cfcece;
+}

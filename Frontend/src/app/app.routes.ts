@@ -21,6 +21,7 @@ import { ForgotPasswordComponent } from './components/auth-area/forgot-password/
 import { ResetPasswordComponent } from './components/auth-area/reset-password/reset-password.component';
 import { AdminAnalyticsComponent } from './components/admin-area/admin-analytics/admin-analytics.component';
 import { AddNewUserComponent } from './components/admin-area/add-new-user/add-new-user.component';
+import { AddVehicleComponent } from './components/vehicle-area/add-vehicle/add-vehicle.component';
 
 
 export const routes: Routes = [
@@ -45,6 +46,7 @@ export const routes: Routes = [
   { path: 'user-data', component: UserDataComponent,canActivate: [ProtectedRouteGuard] }, 
   { path: 'vehicle-details/:id', component: VehicleCardItemComponent },
   { path: 'vehicle-dashboard', component: VehicleDashboardComponent },
+  { path: 'vehicle-dashboard/new-vehicle', component: AddVehicleComponent },
   { path: 'ride-completion-form/:ride_id', component: RideCompletionFormComponent },
   { path: 'audit-logs', component: AuditLogsComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
