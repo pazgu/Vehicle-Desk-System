@@ -1,44 +1,74 @@
-<div class="vehicle-form-container">
+<div class="page-wrapper">
+  <div class="vehicle-form-container">
     <h2>הוסף רכב חדש</h2>
 
-    <form (ngSubmit)="submitForm()" [formGroup]="vehicleForm">
+    <div class="vehicle-wrapper-header">
+      <button class="back-btn" (click)="goBack()">← חזור</button>
+    </div>
+    <br />
 
-        <!-- Type -->
-        <label>סוג רכב (קטן, גדול...)</label>
-        <input formControlName="type" type="text" required />
+    <form (ngSubmit)="submitForm()" [formGroup]="vehicleForm" novalidate>
 
+      <!-- Type -->
+      <label>סוג רכב (קטן, גדול...)</label>
+      <input formControlName="type" type="text" />
+      <div class="error" *ngIf="vehicleForm.get('type')?.touched && vehicleForm.get('type')?.invalid">
+        סוג רכב נדרש
+      </div>
 
-        <!-- Vehicle model -->
-        <label>דגם רכב</label>
-        <input formControlName="vehicle_model" type="text" />
+      <!-- Vehicle model -->
+      <label>דגם רכב</label>
+      <input formControlName="vehicle_model" type="text" />
+      <div class="error" *ngIf="vehicleForm.get('vehicle_model')?.touched && vehicleForm.get('vehicle_model')?.invalid">
+        דגם נדרש
+      </div>
 
-        <!-- Plate Number -->
-        <label>מספר רישוי</label>
-        <input formControlName="plate_number" type="text" required />
+      <!-- Plate Number -->
+      <label>מספר רישוי</label>
+      <input formControlName="plate_number" type="text" />
+      <div class="error" *ngIf="vehicleForm.get('plate_number')?.touched && vehicleForm.get('plate_number')?.invalid">
+        מספר רישוי נדרש
+      </div>
 
-        <label for="fuel_type">סוג דלק:</label>
-        <select formControlName="fuel_type" id="fuel_type">
-            <option *ngFor="let fuel of fuelTypes" [value]="fuel.value">{{ fuel.label }}</option>
-        </select>
+      <!-- Fuel Type -->
+      <label for="fuel_type">סוג דלק:</label>
+      <select formControlName="fuel_type" id="fuel_type">
+        <option value="" disabled selected>בחר סוג דלק</option>
+        <option *ngFor="let fuel of fuelTypes" [value]="fuel.value">{{ fuel.label }}</option>
+      </select>
+      <div class="error" *ngIf="vehicleForm.get('fuel_type')?.touched && vehicleForm.get('fuel_type')?.invalid">
+        סוג דלק נדרש
+      </div>
 
-        <!-- Lease expiry -->
-        <label>תאריך סיום ליסינג</label>
-        <input formControlName="lease_expiry" type="date" />
+      <!-- Lease expiry -->
+      <label>תוקף חוזה השכרה</label>
+      <input formControlName="lease_expiry" type="date" />
+      <div class="error" *ngIf="vehicleForm.get('lease_expiry')?.touched && vehicleForm.get('lease_expiry')?.invalid">
+        תאריך נדרש
+      </div>
 
-        <!-- Odometer -->
-        <label>כמה הרכב עבר ב-ק"מ</label>
-        <input formControlName="odometer_reading" type="number" required />
+      <!-- Odometer -->
+      <label>כמה הרכב עבר ב-ק"מ</label>
+      <input formControlName="odometer_reading" type="number" />
+      <div class="error" *ngIf="vehicleForm.get('odometer_reading')?.touched && vehicleForm.get('odometer_reading')?.invalid">
+        חובה להזין מספר ק"מ חוקי
+      </div>
 
-        <!-- Current location -->
-        <label>מיקום נוכחי</label>
-        <input formControlName="current_location" type="text" required />
+      <!-- Current location -->
+      <label>מיקום נוכחי</label>
+      <input formControlName="current_location" type="text" />
+      <div class="error" *ngIf="vehicleForm.get('current_location')?.touched && vehicleForm.get('current_location')?.invalid">
+        מיקום נדרש
+      </div>
 
-        <!-- Image URL -->
-        <label>תמונה (URL)</label>
-        <input formControlName="image_url" type="text" />
+      <!-- Image URL -->
+      <label>תמונה (URL)</label>
+      <input formControlName="image_url" type="text" />
+      <div class="error" *ngIf="vehicleForm.get('image_url')?.touched && vehicleForm.get('image_url')?.invalid">
+        כתובת תמונה נדרשת
+      </div>
 
-
-
-        <button type="submit" [disabled]="vehicleForm.invalid">שלח</button>
+      <button type="submit" (click)="submitForm()">שלח</button>
     </form>
+  </div>
 </div>

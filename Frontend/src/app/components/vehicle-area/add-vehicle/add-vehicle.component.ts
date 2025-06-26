@@ -53,10 +53,19 @@ export class AddVehicleComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error adding vehicle:', error);
+          this.toastService.show('שגיאה בהוספת רכב ❌', 'error');
           // Optionally: show an error message to user
         }
       });
     }
+    else {
+      this.toastService.show('נא למלא את כל השדות הנדרשים ❗', 'error');
+      console.log('Form is invalid', this.vehicleForm.errors);
+    }
+  }
+
+  goBack() {
+    this.router.navigate(['/vehicle-dashboard']);
   }
 
 
