@@ -508,6 +508,7 @@ def reset_password(
 def cancel_order(order_id: UUID, db: Session = Depends(get_db)):
     return cancel_order_in_db(order_id, db)
 
+
 @router.get("/api/distance")
 def get_distance(
     to_city: str,
@@ -522,8 +523,15 @@ def get_distance(
         for i in range(len(route) - 1):
             total_distance += calculate_distance(route[i], route[i + 1], db)
         return {"distance_km": total_distance}
+
+    except ValueError as ve:
+        # מחזיר שגיאת 400 אם עיר לא נמצאה או כינוי לא מוכר
+        raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        # שגיאות אחרות שמחזירות 500
+        logger.error(f"Unexpected error in get_distance: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 
 
 @router.get("/api/cities")
@@ -532,9 +540,12 @@ def get_cities_route(db: Session = Depends(get_db)):
     return [{"id": str(city.id), "name": city.name} for city in cities]
 
 @router.get("/api/city")
-def get_city_route(name:str,db: Session = Depends(get_db)):
-    city = get_city(name,db)
-    return {"id": str(city.id), "name": city.name} 
+def get_city_route(name: str, db: Session = Depends(get_db)):
+    try:
+        city = get_city(name, db)
+        return {"id": str(city.id), "name": city.name}
+    except ValueError as ve:  
+        raise HTTPException(status_code=404, detail=str(ve)) 
 
 @router.get("/api/rides/feedback/check/{user_id}")
 def check_feedback_needed(
