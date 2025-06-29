@@ -49,14 +49,14 @@
   {{ vehicle.lease_expiry ? (vehicle.lease_expiry | date: 'dd/MM/yyyy') : 'לא סופק' }}
 </p>
 
-          <button class="unfreeze-button" (click)="updateVehicleStatus('available')"
+          <button class="unfreeze-button button-spacing" (click)="updateVehicleStatus('available')"
             *ngIf="vehicle.status === 'frozen'">
             שחרור מהקפאה
           </button>
 
           <!-- Freeze button -->
           <div *ngIf="vehicle.status === 'in-use' || vehicle.status === 'available'">
-            <button class="freeze-button" (click)="showFreezeReasonField()">
+            <button class="freeze-button button-spacing" (click)="showFreezeReasonField()">
               הקפא רכב
             </button>
 
@@ -68,11 +68,15 @@
                 <option value="accident">תאונה</option>
                 <option value="personal">אישי</option>
               </select>
-              <button class="confirm-freeze-button" (click)="freezeStatus()">
+              <button class="confirm-freeze-button button-spacing" (click)="freezeStatus()">
                 אישור הקפאה
               </button>
             </div>
           </div>
+
+          <button class="timeline-button-inline button-spacing" (click)="goToTimeline()">
+            צפה בלוח הזמנים
+          </button>
         </div>
 
       </div>
