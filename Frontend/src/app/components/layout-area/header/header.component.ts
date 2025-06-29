@@ -7,6 +7,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { RideCompletionFormComponent } from '../../page-area/ride-completion-form/ride-completion-form.component';
 import { environment } from '../../../../environments/environment';
+import { SocketService } from '../../../services/socket.service';
 @Component({
   selector: 'app-header',
   standalone: true,
@@ -26,7 +27,8 @@ export class HeaderComponent implements OnInit {
     private authService: AuthService,
     private router: Router,
     private toastService: ToastService,
-    private http: HttpClient
+    private http: HttpClient,
+    private socketService:SocketService
   ) {}
 
   ngOnInit(): void {
@@ -44,6 +46,18 @@ export class HeaderComponent implements OnInit {
     } else {
       this.checkFeedbackNeeded();
     }
+  this.socketService.feedbackNeeded$.subscribe((data) => {
+  console.log('ride that needs feedback from header component:', data);
+  if (data) {
+    this.checkFeedbackNeeded();
+  } else {
+    console.warn('Received null or empty feedback data');
+  }
+  const role=localStorage.getItem('role');
+  if(role==='employee'){this.toastService.show('יש למלא טופס חווית נסיעה','neutral')}
+  
+});
+
   }
 
   onLogout(): void {

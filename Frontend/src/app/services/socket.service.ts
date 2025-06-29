@@ -23,6 +23,7 @@ export class SocketService {
   public rideStatusUpdated$ = new BehaviorSubject<any>(null); 
   public auditLogs$ = new BehaviorSubject<any>(null);
   public newVehicle$ = new BehaviorSubject<any>(null);
+  public feedbackNeeded$ = new BehaviorSubject<any>(null);
 
 
 
@@ -67,6 +68,11 @@ this.socket.on('user_deleted', (data: any) => {
   console.log('🗑️ User deleted via socket:', data);
   this.deleteUserRequests$.next(data);
 });
+this.socket.on('ride_feedback_needed', (data: any) => {
+  console.log('rides that need feedback were recieved:', data);
+  this.feedbackNeeded$.next(data);
+});
+
 
 
 this.socket.on('order_deleted', (data: any) => {
