@@ -5,6 +5,10 @@ import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { ConfirmDialogComponent } from '../../../ride-area/confirm-dialog/confirm-dialog.component';
+import { ToastService } from '../../../services/toast.service';
+import { SocketService } from '../../../services/socket.service';
+import { MatDialog } from '@angular/material/dialog';
 @Component({
   selector: 'app-user-data',
   templateUrl: './user-data.component.html',
@@ -22,7 +26,11 @@ export class UserDataComponent implements OnInit {
   selectedRole: string = '';
 availableRoles: string[] = [];
 
-  constructor(private userService: UserService, private router: Router) {}
+  constructor(private userService: UserService, 
+    private router: Router,
+  private toastservice: ToastService,
+private socketservice: SocketService,
+private dialog: MatDialog) {}
 
   ngOnInit(): void {
     this.userService.getAllUsers().subscribe({
@@ -31,6 +39,23 @@ availableRoles: string[] = [];
         this.filteredLogs = [...users]; // Set initial filtered list
         this.users = users;
 this.filteredLogs = [...users];
+
+  this.userService.getAllUsers().subscribe({
+    next: (users) => {
+      this.users = users;
+      this.filteredLogs = [...users];
+      this.availableRoles = Array.from(new Set(users.map(u => u.role))).filter(Boolean);
+    },
+    error: (err) => console.error('Failed to fetch users', err),
+  });
+
+  this.socketservice.deleteUserRequests$.subscribe((deletedUser) => {
+    if (deletedUser) {
+      this.users = this.users.filter(u => u.employee_id !== deletedUser.id);
+      this.filterLogs();
+    }
+  });
+
 
 // Extract available roles
 this.availableRoles = Array.from(new Set(users.map(u => u.role))).filter(Boolean);
@@ -78,5 +103,31 @@ this.availableRoles = Array.from(new Set(users.map(u => u.role))).filter(Boolean
   );
   this.currentPage = 1;
 }
+
+
+deleteUser(userId: string): void {
+  const dialogRef = this.dialog.open(ConfirmDialogComponent);
+
+  dialogRef.afterClosed().subscribe(confirmed => {
+    if (!confirmed) return;
+
+    this.userService.deleteUser(userId).subscribe({
+      next: () => {
+        this.toastservice.show('המשתמש נמחק בהצלחה ✅', 'success');
+
+        // Remove user locally from list
+        this.users = this.users.filter(u => u.employee_id !== userId);
+        this.filterLogs(); // Refresh filtered list
+
+        // Optionally emit or listen to a socket event if needed
+        this.socketservice.deleteUserRequests$.next(userId); // emit socket event
+      },
+      error: () => {
+        this.toastservice.show('שגיאה במחיקת המשתמש ❌', 'error');
+      }
+    });
+  });
+}
+
 
 }

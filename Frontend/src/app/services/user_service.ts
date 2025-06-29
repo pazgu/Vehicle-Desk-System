@@ -49,7 +49,14 @@ addNewUser(userData: NewUserPayload) {
   return this.http.post(`${this.apiUrl}/add-user`, userData, { headers });
 }
 
+deleteUser(userId: string){
+  const token = localStorage.getItem('token'); // assuming you save it on login
 
+  const headers = {
+    Authorization: `Bearer ${token}`,
+  }
+  return this.http.delete(`${this.apiUrl}/user-data/${userId}`, { headers });
+}
 getDepartments() {
   return this.http.get<{ id: string, name: string }[]>(`${this.apiUrl}/departments`);
 }

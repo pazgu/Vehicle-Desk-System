@@ -73,17 +73,19 @@
               <td class="column-actions">
                  <!-- Edit Button -->
                   <div class="modify-buttons">
-  <button (click)="goToUserCard(user.employee_id)"
+                    <a class="edit-button" routerLink="/user-data-edit/{{user?.employee_id}}">
+
+  <button
     class="modify">
     ✏️
   </button>
-  
+                    </a>
   <!-- Delete Button -->
-   <a>
-  <button
+  
+  <button onclick="event.stopPropagation()"  (click)="deleteUser(user.employee_id)"
     class="delete">
     🗑️
-  </button></a>
+  </button>
   </div>
               </td>
             </tr>
