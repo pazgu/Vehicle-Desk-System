@@ -318,13 +318,13 @@ def ride_status_summary(db: Session = Depends(get_db)):
 #         raise HTTPException(status_code=500, detail=f"Failed to fetch weekly ride trends: {str(e)}")
 
 
-@router.post("/update-monthly-trip-counts")
-def monthly_trip_count_update(db: Session = Depends(get_db)):
-    try:
-        update_monthly_trip_counts(db)
-        return {"message": "Monthly trip counts updated successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+# @router.post("/update-monthly-trip-counts")
+# def monthly_trip_count_update(db: Session = Depends(get_db)):
+#     try:
+#         update_monthly_trip_counts(db)
+#         return {"message": "Monthly trip counts updated successfully"}
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/all-audit-logs", response_model=List[AuditLogsSchema])
