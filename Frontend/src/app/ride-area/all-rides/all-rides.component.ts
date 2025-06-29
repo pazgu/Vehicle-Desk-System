@@ -155,6 +155,8 @@ this.socketService.deleteRequests$.subscribe((deletedRide) => {
   const index = this.orders.findIndex(o => o.ride_id === deletedRide.id);
   if (index !== -1) {
     this.orders = [
+
+      
       ...this.orders.slice(0, index),
       ...this.orders.slice(index + 1)
     ];
