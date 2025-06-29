@@ -33,37 +33,25 @@ private socketservice: SocketService,
 private dialog: MatDialog) {}
 
   ngOnInit(): void {
-    this.userService.getAllUsers().subscribe({
-      next: (users) => {
-        this.users = users;
-        this.filteredLogs = [...users]; // Set initial filtered list
-        this.users = users;
-this.filteredLogs = [...users];
-
   this.userService.getAllUsers().subscribe({
     next: (users) => {
       this.users = users;
       this.filteredLogs = [...users];
+
       this.availableRoles = Array.from(new Set(users.map(u => u.role))).filter(Boolean);
+
+      this.socketservice.deleteUserRequests$.subscribe((deletedUser) => {
+        if (deletedUser) {
+          this.users = this.users.filter(u => u.employee_id !== deletedUser.id);
+          this.filterLogs(); // ✅ fix: changed from `this.filteredLogs()` to `this.filterLogs()`
+        }
+      });
     },
     error: (err) => console.error('Failed to fetch users', err),
   });
-
-  this.socketservice.deleteUserRequests$.subscribe((deletedUser) => {
-    if (deletedUser) {
-      this.users = this.users.filter(u => u.employee_id !== deletedUser.id);
-      this.filterLogs();
-    }
-  });
+}
 
 
-// Extract available roles
-this.availableRoles = Array.from(new Set(users.map(u => u.role))).filter(Boolean);
-
-      },
-      error: (err) => console.error('Failed to fetch users', err),
-    });
-  }
 
   departmentNames: { [key: string]: string } = {
     '21fed496-72a3-4551-92d6-7d6b8d979dd6': 'Security',

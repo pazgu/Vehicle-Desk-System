@@ -58,13 +58,13 @@
       </div>
 
       <div class="info-row">
-        <div class="info-label">מרחק מוערך:</div>
-        <div class="info-value">{{ trip.estimatedDistanceKm }} ק"מ</div>
+        <div class="info-label" >מרחק מוערך:</div>
+        <div class="info-value">{{ trip.estimatedDistanceKm | number:'1.0-3' }} ק"מ</div>
       </div>
 
       <div class="info-row">
         <div class="info-label">מרחק בפועל:</div>
-        <div class="info-value">{{ trip.actualDistanceKm }} ק"מ</div>
+        <div class="info-value">{{ trip.actualDistanceKm | number:'1.0-3' }} ק"מ</div>
       </div>
 
       <div class="info-row" *ngIf="trip.fourByFourReason">
