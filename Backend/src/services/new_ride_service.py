@@ -50,12 +50,13 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate):
         license_check_passed=False,
         submitted_at=datetime.now(timezone.utc),
         extra_stops = ride.extra_stops or None
-
     )
+
 
     db.add(new_ride)
     db.commit()
     db.refresh(new_ride)
+    print('extra stops in back:',new_ride.extra_stops)
 
     await sio.emit("ride_status_updated", {
         "ride_id": str(new_ride.id),
