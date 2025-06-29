@@ -88,8 +88,8 @@
 
     <ng-template pTemplate="footer">
       <div class="card-actions">
-        <p-button class="approve" label=" אישור נסיעה " styleClass="p-button-success" (click)="updateStatus('approved')"></p-button>
-        <p-button class="reject" label="דחיית נסיעה" styleClass="p-button-danger" (click)="updateStatus('rejected')"></p-button>
+        <p-button [disabled]="hasTripPassed()" class="approve" label=" אישור נסיעה " styleClass="p-button-success" (click)="updateStatus('approved')"></p-button>
+        <p-button [disabled]="hasTripPassed()" class="reject" label="דחיית נסיעה" styleClass="p-button-danger" (click)="updateStatus('rejected')"></p-button>
         <p-button class="return" label="חזרה לרשימה" styleClass="p-button-secondary" (click)="goBack()"></p-button>
       </div>
     </ng-template>
