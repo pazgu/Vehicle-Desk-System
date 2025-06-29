@@ -103,7 +103,7 @@ def get_department_specific_order(department_id: str, order_id: str, db: Session
     return order_details
 
 
-def edit_order_status(department_id: str, order_id: str, new_status: str,user_id: UUID, db: Session) -> bool:
+async def edit_order_status(department_id: str, order_id: str, new_status: str,user_id: UUID, db: Session) -> bool:
     """
     Edit the status of a specific order for a department and sends a notification.
     """
@@ -174,7 +174,27 @@ def edit_order_status(department_id: str, order_id: str, new_status: str,user_id
     db.refresh(notification)
 
     db.execute(text("SET session.audit.user_id = DEFAULT"))
+  
+    await sio.emit(
+        "ride_status_updated",
+        {
+            "ride_id": str(order.id),
+            "new_status": order.status
+        })
 
+   
+    await sio.emit("new_notification",
+        {
+            "id": str(notification.id),
+            "user_id": str(notification.user_id),
+            "title": notification.title,
+            "message": notification.message,
+            "notification_type": notification.notification_type.value,
+            "sent_at": notification.sent_at.isoformat(),
+            "order_id": str(notification.order_id) if notification.order_id else None,
+            "order_status": order.status
+        }
+    )
 
     return order, notification
 
@@ -234,16 +254,16 @@ async def start_ride(db: Session, ride_id: UUID):
     db.refresh(ride)
     db.refresh(vehicle)
 
-    # # 3️⃣ Emit ride update
-    # await sio.emit("ride_status_updated", {
-    #     "id": str(ride.id),
-    #     "status": ride.status.value
-    # })
-    # # 4️⃣ Emit vehicle update
-    # await sio.emit("vehicle_status_updated", {
-    #     "id": str(vehicle.id),
-    #     "status": vehicle.status.value
-    # })
+    # 3️⃣ Emit ride update
+    await sio.emit("ride_status_updated", {
+        "ride_id": str(ride.id),
+        "new_status": ride.status.value
+    })
+    # 4️⃣ Emit vehicle update
+    await sio.emit("vehicle_status_updated", {
+        "ride_id": str(vehicle.id),
+        "new_status": vehicle.status.value
+    })
     print(f'start_ride was called for ride_id:{ride_id}')
     return ride,vehicle
 
