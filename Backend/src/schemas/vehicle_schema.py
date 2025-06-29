@@ -44,6 +44,19 @@ class InUseVehicleOut(BaseModel):
     end_datetime: Optional[datetime] = None
 
 
+class RideTimelineSchema(BaseModel):
+    vehicle_id: UUID
+    start_datetime: datetime
+    end_datetime: datetime
+    status: str
+    user_id: UUID
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+
+    class Config:
+        orm_mode = True
+
+
 
 class VehicleStatusUpdate(BaseModel):
     new_status: VehicleStatus
