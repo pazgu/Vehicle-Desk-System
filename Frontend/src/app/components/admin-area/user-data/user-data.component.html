@@ -8,7 +8,43 @@
       <div class="header">
         <h2 class="header-title">פרטי משתמשים</h2>
       </div>
+ <div class="filters-row">
+        <div class="filter-section">
+          <button class="filter-button" (click)="showFilters = !showFilters">
+            {{ showFilters ? 'הסתר חיפוש' : 'הצג חיפוש' }}
+          </button>
+        </div>
+        <div class="filter-actions-row">
+          
+          
+        </div>
+      </div>
 
+      <div *ngIf="showFilters" class="search-container">
+<div class="search-container">
+  <input
+    type="text"
+    class="audit-search-input"
+    placeholder="חיפוש לפי שם או מייל  "
+    [(ngModel)]="searchTerm"
+    (input)="filterLogs()"
+  />
+  
+  <select
+    class="role-filter-dropdown"
+    [(ngModel)]="selectedRole"
+    (change)="filterLogs()"
+  >
+    <option value="">סנן לפי תפקיד</option>
+    <option *ngFor="let role of availableRoles" [value]="role">
+      {{ role }}
+    </option>
+  </select>
+</div>
+
+
+      </div>
+    
       <!-- טבלה -->
       <div class="table-wrapper">
         <table class="user-table">
@@ -18,10 +54,15 @@
               <th class="column-role">תפקיד</th>
               <th class="column-department">מחלקה</th>
               <th class="column-email">כתובת דואר אלקטרוני</th>
+              <th class="column-actions">פעולות</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let user of users.slice().reverse()"  (click)="goToUserCard(user.employee_id)" class="clickable-row">
+            <tr *ngIf="pagedUsers.length === 0">
+  <td colspan="5" class="no-results">לא נמצאו משתמשים תואמים</td>
+</tr>
+
+<tr *ngFor="let user of pagedUsers" (click)="goToUserCard(user.employee_id)" class="clickable-row">
               <td class="column-name">{{ user.first_name }} {{ user.last_name }}</td>
               <td class="column-role">{{ user.role }}</td>
               <td class="column-department">
@@ -29,12 +70,38 @@
 </td>
 
               <td class="column-email">{{ user.email }}</td>
+              <td class="column-actions">
+                 <!-- Edit Button -->
+                  <div class="modify-buttons">
+  <button (click)="goToUserCard(user.employee_id)"
+    class="modify">
+    ✏️
+  </button>
+  
+  <!-- Delete Button -->
+   <a>
+  <button
+    class="delete">
+    🗑️
+  </button></a>
+  </div>
+              </td>
             </tr>
+
           </tbody>
         </table>
+
+  <div class="pagination-controls" dir="rtl" style="text-align: center; margin-top: 1.5rem;">
+          <button (click)="prevPage()" [disabled]="currentPage === 1">▶</button>
+          <span>עמוד {{ currentPage }} מתוך {{ totalPages }}</span>
+          <button (click)="nextPage()" [disabled]="currentPage === totalPages">◀</button>
+        </div>
+      </div>
+
+
       </div>
     </div>
   </div>
-</div>
+
 
 <router-outlet></router-outlet>
