@@ -16,10 +16,11 @@ from typing import Optional
 from ..services.admin_rides_service import update_monthly_usage_stats
 
 def get_ride_needing_feedback(db: Session, user_id: int) -> Optional[Ride]:
-    ride= db.query(Ride).filter(
+    ride = db.query(Ride).filter(
         Ride.user_id == user_id,
         Ride.end_datetime <= datetime.now(timezone.utc),
-        Ride.feedback_submitted == False  
+        Ride.feedback_submitted == False,
+        Ride.status == RideStatus.in_progress 
     ).order_by(
         Ride.end_datetime.desc()
     ).first()
@@ -119,7 +120,7 @@ async def process_completion_form(db: Session, user: User, form_data: Completion
              # Emit ride status updated event
         sio.emit('ride_status_updated', {
             "ride_id": str(ride.id),
-            "status": ride.status,
+            "new_status": ride.status,
         })
 
         # Emit vehicle status updated event

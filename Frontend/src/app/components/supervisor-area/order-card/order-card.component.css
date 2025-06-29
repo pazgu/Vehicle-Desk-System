@@ -12,6 +12,17 @@
   margin: 1rem auto; /* Center the card with smaller margins */
   margin-top: 0;
   padding: 0.5rem; /* Reduce padding */
+  background-color: #f8f9fa;
+}
+:host ::ng-deep .p-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
+:host ::ng-deep button.p-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 :host ::ng-deep .trip-card {

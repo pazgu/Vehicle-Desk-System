@@ -67,6 +67,7 @@ import os
 
 load_dotenv()  # Load environment variables from .env
 FROM_CITY = os.getenv("FROM_CITY")
+FROM_CITY_NAME = os.getenv("FROM_CITY", "Unknown City")
 
 @router.post("/api/register")
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
@@ -373,13 +374,11 @@ async def delete_order(order_id: UUID, db: Session = Depends(get_db),current_use
 
 @router.get("/api/rides/with-locations")
 def get_rides_with_locations(db: Session = Depends(get_db)):
-    StartCity = aliased(City)
     StopCity = aliased(City)
     DestinationCity = aliased(City)
 
     rides_with_cities = (
-        db.query(Ride, StartCity, StopCity, DestinationCity)
-        .join(StartCity, cast(Ride.start_location, PG_UUID) == StartCity.id)
+        db.query(Ride, StopCity, DestinationCity)
         .join(DestinationCity, cast(Ride.destination, PG_UUID) == DestinationCity.id)
         .join(StopCity, cast(Ride.stop, PG_UUID) == StopCity.id)
         .all()
@@ -388,15 +387,15 @@ def get_rides_with_locations(db: Session = Depends(get_db)):
     rides = [
         {
             "id": str(ride.id),
-            "start_location_name": start_city.name,
-            "destination_name": destination_city.name,
-            "stop_name": stop_city.name,
+            "start_location_name": FROM_CITY_NAME,
+            "destination_name": destination_city.name if destination_city else None,
+            "stop_name": stop_city.name if stop_city else None,
         }
-        for ride, start_city, stop_city, destination_city in rides_with_cities
+        for ride, stop_city, destination_city in rides_with_cities
     ]
-    print('rides with loc:',rides)
-    return rides
 
+    print("rides with loc:", rides)
+    return rides
 
 
 @router.get("/api/rides/{ride_id}", response_model=RideSchema)
