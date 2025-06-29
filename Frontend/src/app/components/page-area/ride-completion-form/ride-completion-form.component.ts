@@ -12,6 +12,9 @@ import { RideDashboardItem } from '../../../models/ride-dashboard-item/ride-dash
 import { RideLocationItem } from '../../../models/ride.model';
 import { FuelType, FuelTypeResponse } from '../../../models/vehicle-dashboard-item/vehicle-out-item.module';
 import { VehicleService } from '../../../services/vehicle.service';
+import { Router } from '@angular/router';
+
+
 @Component({
   selector: 'app-ride-completion-form',
   templateUrl: './ride-completion-form.component.html',
@@ -43,7 +46,8 @@ export class RideCompletionFormComponent implements OnInit {
     private rideReportService: RideReportService,
     private location: Location,
     private rideService: RideService ,
-    private vehicleService:VehicleService
+    private vehicleService:VehicleService,
+    private router: Router
   ) {}
 
   goBack(): void {
@@ -170,5 +174,7 @@ loadFuelType(vehicleId: string) {
         this.loading = false;
       },
     });
+
+    this.router.navigate(['/home'])
   }
 }
