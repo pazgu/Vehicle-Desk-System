@@ -32,6 +32,7 @@ from src.models.ride_model import Ride
 from sqlalchemy import cast, Date
 from src.utils.stats import generate_monthly_vehicle_usage
 from ..schemas.register_schema import UserCreate
+from src.services import admin_service
 from ..schemas.audit_schema import AuditLogsSchema
 from src.services.audit_service import get_all_audit_logs
 from ..utils.socket_manager import sio
@@ -42,6 +43,9 @@ from ..utils.auth import role_check
 from fastapi import HTTPException
 from ..services.admin_user_service import create_user_by_admin , get_users_service
 from ..schemas.user_response_schema import PaginatedUserResponse
+from src.utils.auth import get_current_user
+
+
 
 router = APIRouter()
 
@@ -484,3 +488,18 @@ def get_all_users_route(
     search: Optional[str] = None
 ):
     return get_users_service(db=db, page=page, page_size=page_size, role=role, search=search)
+
+
+@router.delete("/user-data/{user_id}")
+def delete_user(
+    user_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    try:
+        return admin_service.delete_user_by_id(user_id, current_user, db)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")

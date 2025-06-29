@@ -6,7 +6,7 @@ from src.models.ride_model import Ride
 from src.utils.database import get_db
 from ..utils.database import get_db
 from ..services.supervisor_dashboard_service import get_department_orders
-from typing import Optional
+from typing import Optional,List
 from ..schemas.order_card_item import OrderCardItem
 from ..services.vehicle_service import freeze_vehicle_service
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
