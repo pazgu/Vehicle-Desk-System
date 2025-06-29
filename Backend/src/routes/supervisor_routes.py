@@ -31,9 +31,9 @@ def get_department_specific_order_route(department_id: UUID, order_id: UUID, db:
     return order
 
 @router.patch("/orders/{department_id}/{order_id}/update/{status}")
-def edit_order_status_route(department_id: UUID, order_id: UUID, status: str, db: Session = Depends(get_db),payload: dict = Depends(token_check)):
+async def edit_order_status_route(department_id: UUID, order_id: UUID, status: str, db: Session = Depends(get_db),payload: dict = Depends(token_check)):
     user_id = payload.get("user_id") or payload.get("sub")
-    return edit_order_status(department_id, order_id, status,user_id, db)
+    return await edit_order_status(department_id, order_id, status,user_id, db)
 
 
 

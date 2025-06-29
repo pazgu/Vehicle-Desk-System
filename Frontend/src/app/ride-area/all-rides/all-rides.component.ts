@@ -78,6 +78,7 @@ ngOnInit(): void {
     console.log('🔁 New ride event received - refreshing rides...');
     this.fetchRides();
   }
+
   
 });
 
@@ -121,12 +122,41 @@ this.socketService.orderUpdated$.subscribe((updatedRide) => {
     }
   }
 });
+this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
+  console.log('🔔 Subscription triggered with:', updatedStatus); // Add this line
+  if (!updatedStatus) return; // ignore the initial null emission
+  if (updatedStatus) {
+    console.log('✏️ Ride  status update received in HomeComponent:', updatedStatus);
+
+    const index = this.orders.findIndex(o => o.ride_id === updatedStatus.ride_id);
+    if (index !== -1) {
+      const newStatus=updatedStatus.new_status
+
+         const updatedOrders = [...this.orders];
+    updatedOrders[index] = {
+      ...updatedOrders[index],
+      status: newStatus  
+    };
+
+    // ✅ Replace the array
+    this.orders = updatedOrders;
+    this.orders = [...this.orders]
+      
+      const role=localStorage.getItem('role');
+      if(role==='supervisor' || role ==='employee'){
+      this.toastService.show(' יש בקשה שעברה סטטוס','success')
+      }
+    }
+  }
+});
 this.socketService.deleteRequests$.subscribe((deletedRide) => {
   if(deletedRide){ console.log('❌ deleteRequest$ triggered:', deletedRide);
 
   const index = this.orders.findIndex(o => o.ride_id === deletedRide.id);
   if (index !== -1) {
     this.orders = [
+
+      
       ...this.orders.slice(0, index),
       ...this.orders.slice(index + 1)
     ];

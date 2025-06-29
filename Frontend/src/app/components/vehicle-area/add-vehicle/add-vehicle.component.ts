@@ -35,7 +35,7 @@ export class AddVehicleComponent implements OnInit {
       current_location: ['', Validators.required],
       odometer_reading: [0, [Validators.required, Validators.min(0)]],
       vehicle_model: ['', Validators.required],
-      image_url: ['', Validators.required],
+      image_url: ['', [Validators.required, Validators.maxLength(2048)]],
       lease_expiry: ['', Validators.required]
     });
   }
@@ -43,8 +43,9 @@ export class AddVehicleComponent implements OnInit {
   submitForm() {
     if (this.vehicleForm.valid) {
       const vehicleData = this.vehicleForm.value;
+      console.log('Payload to send:', vehicleData);
 
-      this.http.post('http://localhost:8000/api/vehicles', vehicleData).subscribe({
+      this.http.post('http://localhost:8000/api/add-vehicle', vehicleData).subscribe({
         next: (response) => {
           console.log('Vehicle added successfully!', response);
           this.toastService.show('הרכב נוסף בהצלחה ✅', 'success');

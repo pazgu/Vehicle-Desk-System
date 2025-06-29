@@ -45,8 +45,8 @@ async def start_ride_with_new_session(ride_id: str):
         vehicle=res[1]
          # 3️⃣ Emit ride update
         await sio.emit("ride_status_updated", {
-            "id": str(ride.id),
-            "status": ride.status.value
+            "ride_id": str(ride.id),
+            "new_status": ride.status.value
         })
         # 4️⃣ Emit vehicle update
         await sio.emit("vehicle_status_updated", {
