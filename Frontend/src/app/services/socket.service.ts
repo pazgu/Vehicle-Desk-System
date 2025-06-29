@@ -16,6 +16,7 @@ export class SocketService {
   public notifications$ = new BehaviorSubject<any>(null);
   public rideRequests$ = new BehaviorSubject<any>(null);
   public deleteRequests$ = new BehaviorSubject<any>(null);
+  public deleteUserRequests$ = new BehaviorSubject<any>(null);
   public orderUpdated$ = new BehaviorSubject<any>(null); 
   public newInspection$ = new Subject<any>();
   public vehicleStatusUpdated$ = new BehaviorSubject<any>(null); 
@@ -61,6 +62,12 @@ export class SocketService {
       this.orderUpdated$.next(data); // ✅ Pushes to subscribers like HomeComponent
 
 });
+
+this.socket.on('user_deleted', (data: any) => {
+  console.log('🗑️ User deleted via socket:', data);
+  this.deleteUserRequests$.next(data);
+});
+
 
 this.socket.on('order_deleted', (data: any) => {
   console.log('✏️ Ride order deleted via socket:', data);
@@ -132,7 +139,6 @@ this.socket.on('order_deleted', (data: any) => {
   // }
 
   
-
 
 
 }

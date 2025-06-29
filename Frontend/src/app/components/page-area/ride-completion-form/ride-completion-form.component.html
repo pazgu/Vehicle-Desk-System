@@ -13,12 +13,16 @@
 
     <div class="container" *ngIf="showForm">
         <div class="form-card">
-            <div class="header">
-                <h1 class="form-title">טופס חווית נסיעה</h1>
-                <p>עבור נסיעה  מ: {{start_location_name}} </p>
-                <p>ל: {{destination_name}}</p>
-                <p class="form-subtitle">אנא מלא את הפרטים הבאים</p>
-            </div>
+           <div class="header">
+  <h1 class="form-title">טופס חווית נסיעה</h1>
+  <p>עבור נסיעה מ: {{ start_location_name }}</p>
+  <p>ל: {{ stop_name }}</p>
+  <p *ngIf="extra_stops_names && extra_stops_names.length > 0">
+    דרך: {{ extra_stops_names.join(', ') }}
+  </p>
+  <p class="form-subtitle">אנא מלא את הפרטים הבאים</p>
+</div>
+
 
             <div class="form-content" [formGroup]="form">
                 <div class="question">

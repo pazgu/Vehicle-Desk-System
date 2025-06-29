@@ -190,6 +190,14 @@ getCityName(id: string): string {
     }
   }
 
+hasTripPassed(): boolean{
+  if (!this.trip || !this.trip.startDateTime) return false;
 
+  const tripStart = new Date(this.trip.startDateTime);
+  const now = new Date();
+
+  // Check if the trip start time is in the past
+  return tripStart < now;
+}
 
 }
