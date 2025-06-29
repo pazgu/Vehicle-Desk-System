@@ -231,9 +231,9 @@ export class VehicleCardItemComponent implements OnInit {
   });
 }
 
-goToTimeline(): void {
+navigateToTimeline(): void {
   if (this.vehicle?.id) {
-    this.navigateRouter.navigate(['/vehicle-timeline', this.vehicle.id]);
+    this.navigateRouter.navigate([`/vehicle-details/${this.vehicle.id}/timeline`]);
   }
 }
 

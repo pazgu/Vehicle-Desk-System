@@ -1,0 +1,11 @@
+<h2>לו"ז נסיעות לרכב</h2>
+
+<div *ngIf="vehicleTimelineData.length === 0">
+  לא נמצאו נסיעות בטווח הזמן
+</div>
+
+<ul *ngIf="vehicleTimelineData.length > 0">
+  <li *ngFor="let ride of vehicleTimelineData">
+    {{ ride.start_datetime }} → {{ ride.end_datetime }} | סטטוס: {{ ride.status }}
+  </li>
+</ul>
