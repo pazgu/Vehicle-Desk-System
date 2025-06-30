@@ -58,16 +58,12 @@
 
         <div style="margin-bottom: 1rem; gap: 1rem; display: flex;">
           <label for="typeFilter"> סוג:</label>
-          <select class="typeFilter" [(ngModel)]="typeFilter">
+          <select class="typeFilter" id="typeFilter" [(ngModel)]="typeFilter">
             <option value="">הצג הכל</option>
-            <option value="small">קטן</option>
-            <option value="large">גדול</option>
-            <option value="van">ואן</option>
-            <option value="4x4">4x4</option>
-            <option value="Jeep">ג'יפ</option>
-            <option value="Pickup Truck">טנדר</option>
+            <option *ngFor="let type of vehicleTypes" [value]="type">{{ type }}</option>
           </select>
         </div>
+
       </div>
 
       <!-- 🚘 Vehicle Cards -->
