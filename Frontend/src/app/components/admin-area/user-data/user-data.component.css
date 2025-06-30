@@ -17,6 +17,36 @@ body {
   direction: rtl;
 }
 
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 0.2rem;
+  /* Optional: adds space between buttons and text */
+}
+
+.pagination-controls button {
+  background-color: transparent;
+  color: #942222;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 12px;
+  min-width: 2.5rem;
+  height: 2.5rem;
+  cursor: pointer;
+  font-size: 1.6rem;
+}
+
+.pagination-controls span {
+  margin-top: 10px;
+}
+
+
+.pagination-controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 /* קונטיינר הראשי (כרטיס) */
 .user-data-container {
   background: #fff;
@@ -125,4 +155,126 @@ position: absolute;
 }
 .clickable-row {
   cursor: pointer;
+}
+
+.modify-buttons {
+  display: flex;
+  flex-direction: row; /* Important for RTL layout */
+  gap: 0.7rem;
+  justify-content: flex-start;
+  align-items: center;
+  direction: rtl; /* Ensures RTL button order */
+  margin-right: 25px;
+}
+
+/* General style for all modify buttons */
+.modify-buttons button.modify {
+  padding: 0.1rem 0.1rem;
+  color: rgb(0, 0, 0);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: background-color 0.2s ease;
+  background: none;
+}
+.delete {
+  padding: 0.1rem 0.1rem;
+  color: rgb(0, 0, 0);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: background-color 0.2s ease;
+    background: none;
+
+}
+/* Hover effect */
+.modify-buttons button.modify:hover {
+  background-color: #c8e2ff;
+}
+.modify-buttons button.delete:hover {
+  background-color: #ffc8c8;
+}
+
+/* 🔍 Search + Filter container */
+.search-container {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  direction: ltr;
+  
+}
+
+/* ✏️ Text input */
+.audit-search-input {
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 1.5px solid #ccc;
+  border-radius: 6px;
+  width: 220px;
+  direction: rtl;
+  background-color: #fff;
+}
+
+/* ⬇️ Role dropdown */
+.role-filter-dropdown {
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 1.5px solid #ccc;
+  border-radius: 6px;
+  background-color: #fff;
+  direction: rtl;
+  min-width: 160px;
+}
+
+
+/* 🧾 Header Title */
+.header {
+  text-align: right;
+  margin-bottom: 1.5rem;
+}
+
+.header-title {
+  font-size: 1.8rem;
+  color: #942222;
+  margin: 0;
+  font-weight: bold;
+}
+
+/* 🔄 Filter Row Layout */
+.filters-row {
+  
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+}
+
+/* 🔘 Filter Toggle Button */
+.filter-button {
+  
+  font-size: 1rem;
+  padding: 8px 18px;
+  color: #942222;
+  background-color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.filter-button:hover {
+  background-color: #f0e1e2; /* Light pink on hover */
+}
+
+.filter-actions-row {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
 }
