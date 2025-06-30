@@ -1,11 +1,96 @@
-<h2>לו"ז נסיעות לרכב</h2>
-
-<div *ngIf="vehicleTimelineData.length === 0">
-  לא נמצאו נסיעות בטווח הזמן
+<!-- <div class="timeline-container" *ngIf="vehicleTimelineData.length > 0">
+    <div class="week-controls">
+  <button (click)="navigateWeek(-1)">← שבוע קודם</button>
+    <span class="week-label">
+    {{ currentWeekStart | date: 'dd MMMM yyyy' : 'he' }} - 
+    {{ weekEnd | date: 'dd MMMM yyyy' : 'he' }}
+    </span>
+  <button (click)="navigateWeek(1)">שבוע הבא →</button>
 </div>
 
-<ul *ngIf="vehicleTimelineData.length > 0">
-  <li *ngFor="let ride of vehicleTimelineData">
-    {{ ride.start_datetime }} → {{ ride.end_datetime }} | סטטוס: {{ ride.status }}
-  </li>
-</ul>
+  <div class="timeline-header">
+    <h2>לו״ז רכב</h2>
+    <p>רכב מספר: {{ vehicleId }}</p>
+  </div>
+
+  <div class="timeline-days">
+    <div class="timeline-day" *ngFor="let day of getDaysRange()">
+        <div class="day-label">{{ day | date: 'EEEE, d MMM' : 'he' }}</div>
+      <div class="timeline-hours">
+        <div class="hour-slot" *ngFor="let hour of getHoursRange()">
+          <div class="hour-label">{{ hour }}:00</div>
+
+          <div
+            *ngFor="let ride of getRidesForHour(day, hour)"
+            class="ride-block"
+            [ngStyle]="{ 'background-color': getColorByStatus(ride.status) }"
+            [title]="ride.first_name + ' ' + ride.last_name + ': ' + (ride.status || '')"
+          >
+            נסיעה
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="vehicleTimelineData.length === 0">
+  <p>לא נמצאו נסיעות בלו״ז.</p>
+</div> -->
+
+<div class="timeline-page-wrapper">
+  <div class="timeline-page-container">
+    <div class="timeline-container">
+      <div class="timeline-header">
+        <div class="header-main">
+          <h2>לו״ז רכב</h2>
+          <p>רכב מספר: {{ vehicleId }}</p>
+        </div>
+        <div class="week-controls">
+          <button (click)="navigateWeek(-1)">← שבוע קודם</button>
+          <span class="week-label">
+            {{ currentWeekStart | date: 'd MMMM' : 'he' }} - {{ weekEnd | date: 'd MMMM y' : 'he' }}
+          </span>
+          <button (click)="navigateWeek(1)">שבוע הבא →</button>
+        </div>
+      </div>
+
+      <div class="timeline-body">
+        <div class="timeline-hours-labels">
+            <div class="hour-label-header"></div>
+            <div *ngFor="let hour of getHoursRange()" class="hour-label-slot">
+                <span class="hour-text">{{ hour }}:00</span>
+            </div>
+        </div>
+
+        <div class="timeline-days">
+          <div class="timeline-day" *ngFor="let day of getDaysRange()">
+            <div class="day-label">{{ day | date: 'EEEE, d MMM' : 'he' }}</div>
+            
+            <div class="timeline-hours">
+              
+              <div class="hour-slot" *ngFor="let hour of getHoursRange()"></div>
+              
+              <div
+                *ngFor="let ride of processedRides.get(getDateKey(day))"
+                class="ride-block"
+                [ngStyle]="{
+                  'top.px': ride.top,
+                  'height.px': ride.height,
+                  'background-color': getColorByStatus(ride.status)
+                }"
+                [title]="'נהג: ' + ride.first_name + ' ' + ride.last_name + '\nמזהה משתמש: ' + ride.user_id + '\nסטטוס: ' + ride.status"
+              >
+                <div class="ride-info">
+                    <span class="ride-driver">{{ride.first_name}} {{ride.last_name}}</span>
+                    <span class="ride-status">{{ride.status}}</span>
+                    <span class="ride-purpose">{{ride.purpose}}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

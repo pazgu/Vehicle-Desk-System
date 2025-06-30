@@ -1,0 +1,314 @@
+/* .timeline-container {
+  padding: 1rem;
+  direction: rtl;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.week-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+
+.week-controls button {
+  background-color: #e0e0e0;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.week-label {
+  text-align: center;
+  flex-grow: 1;
+  font-size: 1rem;
+}
+
+.timeline-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.timeline-day {
+  border: 1px solid #ccc;
+  background: #f9f9f9;
+  border-radius: 8px;
+  padding: 0.5rem;
+  min-width: 0; 
+}
+
+.day-label {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.timeline-hours {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  max-height: 650px;
+  overflow-y: auto;
+}
+
+.hour-slot {
+  position: relative;
+  height: 30px;
+  border-top: 1px dashed #ddd;
+}
+
+.hour-label {
+  position: absolute;
+  right: 5px;
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.ride-block {
+  position: absolute;
+  left: 50px;
+  right: 5px;
+  height: 100%;
+  border-radius: 5px;
+  text-align: center;
+  font-size: 0.7rem;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+} */
+
+
+/* ... (keep all previous CSS from :host to .day-label) ... */
+:host {
+  display: block;
+  padding: 1.5rem; /* Maintain padding from the host component edge */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  direction: rtl; /* Ensure RTL direction is applied at the root */
+}
+
+/* ✅ NEW: Wrapper for the background effect */
+.timeline-page-wrapper {
+  background-color: rgb(245, 241, 241); /* Light grey background */
+  padding: 15px; /* Padding inside the wrapper */
+  border-radius: 12px;
+  max-width: 1200px; /* Adjust max-width as needed for your layout */
+  margin: 0 auto; /* Center the wrapper on the page */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+/* ✅ NEW: Inner container to give structure within the wrapper */
+.timeline-page-container {
+    padding: 10px; /* Padding inside the inner container */
+}
+
+
+.timeline-container {
+  /* No longer need direction: rtl here, it's on :host now */
+  width: 100%;
+}
+
+/* Header & Navigation */
+.timeline-header {
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 1rem;
+  background-color: white; /* Give header a white background */
+  border-top-left-radius: 8px; /* Match inner body border radius */
+  border-top-right-radius: 8px;
+  padding-top: 1rem; /* Add some top padding */
+}
+
+.header-main {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    padding-inline: 1rem; /* Add horizontal padding */
+}
+
+.header-main h2 {
+    margin: 0;
+    font-size: 1.75rem;
+    color: #942222; /* Inspired by the example's h1 color */
+}
+
+.header-main p {
+    margin: 0;
+    font-size: 1rem;
+    color: #555;
+}
+
+.week-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  padding-inline: 1rem; /* Add horizontal padding */
+}
+
+.week-controls button {
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.week-controls button:hover {
+    background-color: #e0e0e0;
+}
+
+.week-label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Timeline Body Layout */
+.timeline-body {
+    display: flex;
+    /* border-bottom: 1px solid #e0e0e0; Removed as the wrapper provides context */
+    background-color: white; /* ✅ White background for the main grid area */
+    border-bottom-left-radius: 8px; /* Rounded corners for the bottom */
+    border-bottom-right-radius: 8px;
+    overflow: hidden; /* Ensures rounded corners are visible */
+}
+
+/* Hour Labels Column (Right Side) */
+.timeline-hours-labels {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.hour-label-header {
+    height: 40px; 
+    border-left: 1px solid #e0e0e0;
+    background-color: rgb(249, 249, 249); /* Slightly different background for header */
+}
+
+.hour-label-slot {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 1rem;
+    border-top: 1px solid #e0e0e0;
+    border-left: 1px solid #e0e0e0;
+    background-color: rgb(253, 253, 253); /* Very light background for slots */
+}
+
+.hour-text {
+    font-size: 0.8rem;
+    color: #333;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Days Grid */
+.timeline-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  flex-grow: 1;
+}
+
+.timeline-day {
+  border-left: 1px solid #e0e0e0;
+  min-width: 120px;
+}
+
+.timeline-day:last-child {
+    border-left: none;
+}
+
+.day-label {
+  font-weight: 600;
+  text-align: center;
+  padding: 0.5rem;
+  height: 40px;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #ccc;
+  background-color: rgb(249, 249, 249); /* Consistent with hour label header */
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+/* REVISED: This container is now the positioning context */
+.timeline-hours {
+  position: relative;
+  height: calc(24 * 40px); /* 24 hours * 40px per hour */
+}
+
+/* UPDATED: The slots are now just visual guides */
+.hour-slot {
+  height: 40px;
+  border-top: 1px dashed #ddd;
+  box-sizing: border-box;
+}
+
+/* Ride block styling (from last iteration, maintaining compactness and invisible borders) */
+.ride-block {
+  position: absolute;
+  right: 8px;
+  left: 8px;
+  border-radius: 4px;
+  color: #333; /* Changed text color for better contrast with new block colors */
+  z-index: 10;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding: 0px 6px;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.ride-block:hover {
+    transform: scale(1.02);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    z-index: 11;
+}
+
+.ride-info {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.ride-driver {
+    font-weight: 600;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    line-height: 1.2;
+}
+
+.ride-status {
+    font-size: 0.65rem;
+    opacity: 0.9;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    margin-top: 2px;
+    line-height: 1.2;
+}
+
+.ride-purpose {
+    font-size: 0.7rem;
+    opacity: 0.9;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    line-height: 1.2;
+}
