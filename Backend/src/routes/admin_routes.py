@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query,Header, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query,Header, Request, status, UploadFile, File
 from uuid import UUID
 from typing import Optional , List
 from datetime import datetime
@@ -44,7 +44,7 @@ from fastapi import HTTPException
 from ..services.admin_user_service import create_user_by_admin , get_users_service
 from ..schemas.user_response_schema import PaginatedUserResponse
 from src.utils.auth import get_current_user
-
+from ..services.license_service import upload_license_file_service 
 
 
 router = APIRouter()
@@ -503,3 +503,12 @@ def delete_user(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+
+
+@router.post("/api/users/{user_id}/license")
+def upload_user_license_route(
+    user_id: UUID,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    return upload_license_file_service(db=db, user_id=user_id, file=file)
