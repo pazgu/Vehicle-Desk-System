@@ -375,29 +375,43 @@ async def delete_order(order_id: UUID, db: Session = Depends(get_db),current_use
 @router.get("/api/rides/with-locations")
 def get_rides_with_locations(db: Session = Depends(get_db)):
     StopCity = aliased(City)
-    DestinationCity = aliased(City)
 
-    rides_with_cities = (
-        db.query(Ride, StopCity, DestinationCity)
-        .join(DestinationCity, cast(Ride.destination, PG_UUID) == DestinationCity.id)
+    # Query rides with joined stop city
+    rides_with_stop_cities = (
+        db.query(Ride, StopCity)
         .join(StopCity, cast(Ride.stop, PG_UUID) == StopCity.id)
         .all()
     )
 
-    rides = [
-        {
+    # Collect all extra_stop UUIDs from all rides
+    all_extra_stop_ids = []
+    for ride, _ in rides_with_stop_cities:
+        if ride.extra_stops:
+            all_extra_stop_ids.extend(ride.extra_stops)
+    # Remove duplicates
+    all_extra_stop_ids = list(set(all_extra_stop_ids))
+
+    # Query all extra stop cities once
+    extra_stop_cities = {}
+    if all_extra_stop_ids:
+        cities = db.query(City).filter(City.id.in_(all_extra_stop_ids)).all()
+        extra_stop_cities = {city.id: city.name for city in cities}
+
+    rides = []
+    for ride, stop_city in rides_with_stop_cities:
+        extra_stop_names = []
+        if ride.extra_stops:
+            extra_stop_names = [extra_stop_cities.get(uuid) for uuid in ride.extra_stops if uuid in extra_stop_cities]
+
+        rides.append({
             "id": str(ride.id),
-            "start_location_name": FROM_CITY_NAME,
-            "destination_name": destination_city.name if destination_city else None,
+            "start_location_name": FROM_CITY_NAME,  # hardcoded
+            "destination_name": FROM_CITY_NAME,     # hardcoded
             "stop_name": stop_city.name if stop_city else None,
-        }
-        for ride, stop_city, destination_city in rides_with_cities
-    ]
+            "extra_stops_names": extra_stop_names,
+        })
 
-    print("rides with loc:", rides)
     return rides
-
-
 @router.get("/api/rides/{ride_id}", response_model=RideSchema)
 def read_ride(ride_id: UUID, db: Session = Depends(get_db)):
     ride = get_ride_by_id(db, ride_id)

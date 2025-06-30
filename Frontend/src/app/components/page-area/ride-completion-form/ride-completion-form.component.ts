@@ -31,6 +31,7 @@ export class RideCompletionFormComponent implements OnInit {
   stop_name: string = '';
   destination_name: string = '';
   VehicleFuelType:FuelType=FuelType.Gasoline
+  extra_stops_names: string[] = [];
 
   // rideId!: string;
   showForm = true;
@@ -74,7 +75,11 @@ export class RideCompletionFormComponent implements OnInit {
       this.start_location_name = matchingRide.start_location_name;
       this.stop_name = matchingRide.stop_name;
       this.destination_name = matchingRide.destination_name;
-      console.log(`start:${this.start_location_name},des:${this.destination_name},stop:${this.stop_name}`)
+      this.extra_stops_names = matchingRide.extra_stops_names || []; // <-- assign extra stops here
+      console.log(
+    `start: ${this.start_location_name}, des: ${this.destination_name}, stop: ${this.stop_name}, extra stops: ${this.extra_stops_names?.join(', ') || 'none'}`
+  );
+
     }
   });
   });    
