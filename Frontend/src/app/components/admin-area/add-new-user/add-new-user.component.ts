@@ -6,6 +6,7 @@ import { ToastService } from '../../../services/toast.service';
 import { NewUserPayload, UserService } from '../../../services/user_service';
 import { MatIconModule } from '@angular/material/icon';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 
 @Component({
@@ -34,7 +35,8 @@ roles = [
     private fb: FormBuilder,
     private userService: UserService,
     private toast: ToastService,
-    private http: HttpClient 
+    private http: HttpClient,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -79,6 +81,8 @@ submit(): void {
     next: () => {
       this.toast.show('המשתמש נוסף בהצלחה!', 'success');
       this.addUserForm.reset();
+
+      this.router.navigate(['/admin/analytics']);
     },
     error: (err) => {
       console.error(err);

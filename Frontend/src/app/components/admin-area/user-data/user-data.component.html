@@ -55,6 +55,8 @@
               <th class="column-department">מחלקה</th>
               <th class="column-email">כתובת דואר אלקטרוני</th>
               <th class="column-actions">פעולות</th>
+              <th class="column-license">סטטוס רישיון</th>
+
             </tr>
           </thead>
           <tbody>
@@ -88,6 +90,18 @@
   </button>
   </div>
               </td>
+
+              <td class="column-license">
+  <span 
+    [ngClass]="{
+      'badge-valid': user.license_check_passed === true,
+      'badge-invalid': user.license_check_passed === false
+    }">
+    {{ user.license_check_passed ? 'בתוקף' : 'לא בתוקף' }}
+  </span>
+</td>
+
+              
             </tr>
 
           </tbody>
