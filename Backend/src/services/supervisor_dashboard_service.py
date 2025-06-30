@@ -56,7 +56,8 @@ def get_department_orders(department_id: str, db: Session) -> List[RideDashboard
             date_and_time=order.start_datetime,
             destination=order.destination,
             distance=order.estimated_distance_km,
-            status=order.status.value  # Access the string value of the enum
+            status=order.status.value,  # Access the string value of the enum
+            submitted_at=order.submitted_at 
         )
 
         dashboard_items.append(dashboard_item)

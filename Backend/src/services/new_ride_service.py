@@ -23,6 +23,16 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate):
     if not vehicle:
         raise HTTPException(status_code=404, detail="Vehicle not found")
 
+    user = db.query(User).filter(User.employee_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if user.role == "employee" and not user.has_government_license:
+        raise HTTPException(
+            status_code=403,
+            detail="You must have a government license to request a ride."
+        )
+
     if is_offroad_vehicle(vehicle.type) and not ride.four_by_four_reason:
         raise HTTPException(
             status_code=400,
@@ -50,12 +60,13 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate):
         license_check_passed=False,
         submitted_at=datetime.now(timezone.utc),
         extra_stops = ride.extra_stops or None
-
     )
+
 
     db.add(new_ride)
     db.commit()
     db.refresh(new_ride)
+    print('extra stops in back:',new_ride.extra_stops)
 
     await sio.emit("ride_status_updated", {
         "ride_id": str(new_ride.id),
@@ -81,7 +92,6 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate):
             "order_status": new_ride.status
         })
 
-    user = db.query(User).filter(User.employee_id == user_id).first()
     admins = db.query(User).filter(User.role == "admin").all()
     admin_emails = [admin.email for admin in admins]
 

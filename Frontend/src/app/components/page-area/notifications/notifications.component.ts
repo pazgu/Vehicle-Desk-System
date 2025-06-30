@@ -37,7 +37,8 @@ export class NotificationsComponent implements OnInit {
  ngOnInit(): void {
   // ✅ Join user's Socket.IO room for live updates
   const userId = localStorage.getItem('employee_id'); // make sure this key matches your localStorage
- 
+   this.notificationService.unreadCount$.next(0);   // 👈 clears badge
+
   console.log('👤 Joining socket room for user:', userId);
 
 
