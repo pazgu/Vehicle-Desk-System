@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient,HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
 import { MyNotification } from '../models/notification';
 
 export interface AdminNotificationResponse {
@@ -19,7 +19,8 @@ export class NotificationService {
   
   constructor(private http: HttpClient) {}
 
-  
+  public unreadCount$ = new BehaviorSubject<number>(0); // ✅ shared unread counter
+
 
   getNotifications(): Observable<MyNotification[]> {
     const user_id = localStorage.getItem('employee_id') || ''; // Ensure user_id is defined
