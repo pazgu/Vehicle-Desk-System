@@ -6,4 +6,6 @@ export interface RideDashboardItem {
   distance: number;
   status: string;
   destination: string; 
+  submitted_at: string; 
+
 }
