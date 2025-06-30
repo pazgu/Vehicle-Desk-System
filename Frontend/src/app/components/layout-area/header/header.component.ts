@@ -50,12 +50,11 @@ export class HeaderComponent implements OnInit {
   console.log('ride that needs feedback from header component:', data);
   if (data) {
     this.checkFeedbackNeeded();
+    
   } else {
     console.warn('Received null or empty feedback data');
   }
-  const role=localStorage.getItem('role');
-  if(role==='employee'){this.toastService.show('יש למלא טופס חווית נסיעה','neutral')}
-  
+ 
 });
 
   }
@@ -90,6 +89,9 @@ checkFeedbackNeeded(): void {
         localStorage.setItem('pending_feedback_ride', res.ride_id);
         this.rideIdToComplete = res.ride_id;
         this.showFeedbackModal = true;
+         const role=localStorage.getItem('role');
+  if(role==='employee'){this.toastService.show('יש למלא טופס חווית נסיעה','neutral')}
+  
       }
     },
     (error) => {

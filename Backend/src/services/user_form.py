@@ -16,6 +16,7 @@ from typing import Optional
 from ..services.admin_rides_service import update_monthly_usage_stats
 
 def get_ride_needing_feedback(db: Session, user_id: int) -> Optional[Ride]:
+
     ride = db.query(Ride).filter(
         Ride.user_id == user_id,
         Ride.end_datetime <= datetime.now(timezone.utc),
@@ -24,7 +25,8 @@ def get_ride_needing_feedback(db: Session, user_id: int) -> Optional[Ride]:
     ).order_by(
         Ride.end_datetime.desc()
     ).first()
-  
+    if(ride):
+        print('ride needs feedback found:',ride.id)
     return ride
 
 def mark_feedback_submitted(db: Session, ride_id: str):

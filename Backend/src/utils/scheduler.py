@@ -60,20 +60,27 @@ async def start_ride_with_new_session(ride_id: str):
 
 
 
-async def notify_ride_needs_feedback_with_session(user_id: int, ride_id: str):
-    print(f'Notifying feedback needed for ride {ride_id}')
+async def notify_ride_needs_feedback_with_session(user_id: int):
+    print(f'Notifying feedback needed for user {user_id}')
     db = SessionLocal()
     try:
-        # Query ride needing feedback (you may re-use your function)
         ride = get_ride_needing_feedback(db, user_id)
-        if ride and str(ride.id) == ride_id:
-            # Emit socket event to the user (you might want to emit to a room/user)
-            await sio.emit("ride_feedback_needed", {
-                "ride_id": str(ride.id),
-                "user_id": user_id,
-            })
+        if ride is None:
+            print("No ride needs feedback")
+            return {"needs_feedback": False}
+
+        # Emit socket event to the user
+        print(f"About to emit ride_feedback_needed for ride {ride.id}")
+        await sio.emit("ride_feedback_needed", {
+            "ride_id": str(ride.id),
+            "user_id": str(user_id),
+        })
+        print(f"Emit done for ride {ride.id}")
+        print("Connected SIDs:", sio.manager.rooms)
+
     finally:
         db.close()
+
 
 
 
@@ -130,24 +137,26 @@ def schedule_ride_completion_email(ride_id: str, end_datetime: datetime):
         id=job_id
     )
 
+main_loop = asyncio.get_event_loop()
+
 def schedule_ride_feedback(ride_id: str, user_id: int, end_datetime: datetime):
     print(f'Scheduling feedback notification for ride {ride_id}')
     job_id = f"ride-feedback-{ride_id}"
 
-    # Remove existing job if any
     try:
         scheduler.remove_job(job_id)
     except JobLookupError:
         pass
 
-    # Schedule the async notification wrapped in asyncio.run
     scheduler.add_job(
-        lambda: asyncio.run(notify_ride_needs_feedback_with_session(user_id, ride_id)),
+        lambda: asyncio.run_coroutine_threadsafe(
+            notify_ride_needs_feedback_with_session(user_id),
+            main_loop
+        ),
         'date',
         run_date=end_datetime,
         id=job_id
     )
-
 
 
 def start_scheduler():
