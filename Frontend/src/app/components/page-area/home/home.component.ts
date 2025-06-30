@@ -648,7 +648,7 @@ export class NewRideComponent implements OnInit {
       end_datetime,
       start_location: this.rideForm.get('start_location')?.value.name,
       stop: this.rideForm.get('stop')?.value,
-      extraStops: this.extraStops.value,
+      extra_stops: this.extraStops.value,
       destination: this.rideForm.get('destination')?.value.name,
       estimated_distance_km: distance,
       actual_distance_km: this.estimated_distance_with_buffer,

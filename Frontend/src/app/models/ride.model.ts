@@ -3,4 +3,5 @@ export interface RideLocationItem {
   start_location_name: string;
   stop_name: string;
   destination_name: string;
+  extra_stops_names?: string[];
 }

@@ -214,6 +214,8 @@ oldValue: `${this.getCityName(oldData.start_location)} → ${this.getCityName(ol
   }
 
   showDetails(log: AuditLogs) {
+    console.log('Selected log:', log);
+
     this.selectedLog = log;
   }
 

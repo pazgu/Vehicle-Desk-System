@@ -86,7 +86,7 @@ def get_vehicle_by_id_route(vehicle_id: str, db: Session = Depends(get_db)):
 
 
 
-@router.post("/vehicles", response_model=VehicleOut, status_code=status.HTTP_201_CREATED)
+@router.post("/add-vehicle", response_model=VehicleOut, status_code=status.HTTP_201_CREATED)
 def create_vehicle(
     vehicle_data: VehicleCreate,
     db: Session = Depends(get_db),
