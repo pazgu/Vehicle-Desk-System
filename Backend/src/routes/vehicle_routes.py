@@ -109,6 +109,17 @@ def create_vehicle(
     db.refresh(new_vehicle)
     return new_vehicle
 
+
+@router.get("/vehicles/types")
+def get_vehicle_types(
+    db: Session = Depends(get_db),
+    payload: dict = Depends(token_check)
+):
+    try:
+        vehicle_types = db.query(Vehicle.type).distinct().all()
+        return {"vehicle_types": [vt[0] for vt in vehicle_types]}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
 @router.get("/vehicles/{vehicle_id}/timeline", response_model=List[RideTimelineSchema])
 def get_vehicle_timeline(
     vehicle_id: UUID,

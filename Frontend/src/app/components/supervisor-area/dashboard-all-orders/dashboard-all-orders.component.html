@@ -9,9 +9,11 @@
         <div>
           <label for="sort">מיין לפי: </label>
           <select id="sort" [(ngModel)]="sortBy">
-            <option value="dateTime">תאריך</option>
-            <option value="status">סטטוס</option>
-          </select>
+  <option value="submitted_at">נסיעות נוספו לאחרונה</option>
+  <option value="date_and_time">תאריך תחילת נסיעה</option>
+  <option value="status">סטטוס</option>
+</select>
+
         </div>
 
         <button class="filter" (click)="showFilters = !showFilters">

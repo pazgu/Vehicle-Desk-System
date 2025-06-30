@@ -27,4 +27,9 @@ export interface User {
   employee_id: string;     // UUID string
   role: string;            // Could be 'Employee', 'Supervisor', etc.
   department_id: string;   // UUID string
+  has_government_license: boolean;  
+  license_check_passed: boolean;
+  license_file_url?: string | null;
+
+
 }

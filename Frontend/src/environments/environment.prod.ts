@@ -14,7 +14,7 @@ export const environment = {
     resertPassUrl:'http://localhost:8000/api/reset-password',
     vehicleUsageStatsUrl: 'http://localhost:8000/vehicles/usage-stats',
     vehicleStatsUrl: 'http://localhost:8000/api/vehicles/usage-stats',
-    vehiclesTypes:'http://localhost:8000/api/vehicle-types'
+    vehiclesTypes:'http://localhost:8000/api/vehicles/types'
 
 
 

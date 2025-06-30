@@ -1,0 +1,9 @@
+*{
+    font-family: 'alef'
+}
+
+.smalltxt{
+    direction: rtl;
+    padding-left: 105px;
+    color: rgb(94, 0, 0);
+}
