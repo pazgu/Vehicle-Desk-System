@@ -15,10 +15,11 @@ import { ToastService } from '../../../services/toast.service';
 })
 export class AddVehicleComponent implements OnInit {
   vehicleForm!: FormGroup;
+  departments: any[] = [];
 
   constructor(private fb: FormBuilder,
     private http: HttpClient,
-    private router: Router, 
+    private router: Router,
     private toastService: ToastService) { }
 
   fuelTypes = [
@@ -35,8 +36,25 @@ export class AddVehicleComponent implements OnInit {
       current_location: ['', Validators.required],
       odometer_reading: [0, [Validators.required, Validators.min(0)]],
       vehicle_model: ['', Validators.required],
+      department_id: ['', Validators.required],
       image_url: ['', [Validators.required, Validators.maxLength(2048)]],
       lease_expiry: ['', Validators.required]
+    });
+    this.fetchDepartments();
+
+  }
+
+  fetchDepartments(): void {
+    this.http.get<any[]>('http://localhost:8000/api/departments').subscribe({
+      next: (data) => {
+        this.departments = data;
+      },
+      error: (err) => {
+        console.error('Failed to fetch departments', err);
+        this.toastService.show('שגיאה בטעינת מחלקות', 'error');
+        this.departments = [];
+
+      }
     });
   }
 
