@@ -19,3 +19,4 @@ class VehicleCreate(BaseModel):
     vehicle_model: str
     image_url: Optional[str] = None
     lease_expiry: datetime
+    department_id: Optional[UUID] = None

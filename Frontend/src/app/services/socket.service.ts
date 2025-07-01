@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject, ReplaySubject, Subject } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { NotificationService } from './notification';
 @Injectable({
@@ -23,6 +23,7 @@ export class SocketService {
   public rideStatusUpdated$ = new BehaviorSubject<any>(null); 
   public auditLogs$ = new BehaviorSubject<any>(null);
   public newVehicle$ = new BehaviorSubject<any>(null);
+public  feedbackNeeded$ = new ReplaySubject<any>(1);
 
 
 
@@ -31,6 +32,8 @@ export class SocketService {
   }
 
   private connectToSocket(): void {
+    console.log('🔌 Attempting to connect to socket at', this.SOCKET_URL);
+
     const token = localStorage.getItem('access_token'); // ✅ Fixed this line!
 
     this.socket = io(this.SOCKET_URL, {
@@ -42,7 +45,16 @@ export class SocketService {
 
     this.socket.on('connect', () => {
       console.log('✅ Connected to Socket.IO backend');
-    });
+
+ const userId = localStorage.getItem('user_id');
+if (userId) {
+  this.socket.emit('join', { user_id: userId });
+  console.log(`📡 Sent join request to room: ${userId}`);
+} else {
+  console.warn('⚠️ No user_id found in localStorage. Room join skipped.');
+}
+
+  });
 
     this.socket.on('disconnect', () => {
       console.log('❌ Disconnected from Socket.IO backend');
@@ -57,9 +69,6 @@ export class SocketService {
   this.socket.on('order_updated', (data: any) => {
   console.log('✏️ Ride order updated via socket:', data);
   this.orderUpdated$.next(data); // ✅ Pushes to subscribers like HomeComponent
-    this.socket.on('order_updated', (data: any) => {
-      console.log('✏️ Ride order updated via socket:', data);
-      this.orderUpdated$.next(data); // ✅ Pushes to subscribers like HomeComponent
 
 });
 
@@ -68,20 +77,16 @@ this.socket.on('user_deleted', (data: any) => {
   this.deleteUserRequests$.next(data);
 });
 
-
-
+this.socket.on('feedback_needed', (data) => {
+  console.log('SOCKET EVENT RAW:', data);
+  this.feedbackNeeded$.next(data);
+});
 
 this.socket.on('order_deleted', (data: any) => {
   console.log('✏️ Ride order deleted via socket:', data);
   this.deleteRequests$.next(data); // ✅ Pushes to subscribers like HomeComponent
   
 });
-    });
-    this.socket.on('order_deleted', (data: any) => {
-      console.log('✏️ Ride order deleted via socket:', data);
-      this.deleteRequests$.next(data); // ✅ Pushes to subscribers like HomeComponent
-
-    });
     this.socket.on('new_notification', (data: any) => {
       console.log('📩 Raw socket data received:', data);
       console.log('📩 Data type:', typeof data);
@@ -123,11 +128,6 @@ this.socket.on('order_deleted', (data: any) => {
       this.newVehicle$.next(data);
 });
 
-
-
-    setTimeout(() => {
-      this.orderUpdated$.next({ id: 'test-id' });
-    }, 3000);
 
 
   }

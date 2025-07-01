@@ -10,11 +10,18 @@ export interface NewUserPayload {
   last_name: string;
   username: string;
   email: string;
+  phone?: string;
   employee_id?: string;
   role: 'admin' | 'employee' | 'supervisor' | 'inspector';
   department_id: string;
   password: string;
+  has_government_license: boolean;
+  license_file_url?: string; 
+  license_expiry_date?: Date;
+  
 }
+
+
 
 @Injectable({
   providedIn: 'root',
@@ -39,15 +46,19 @@ getRoles() {
     return this.http.patch(`${this.apiUrl}/user-data-edit/${userId}`, updateData);
   }
 
-addNewUser(userData: NewUserPayload) {
-  const token = localStorage.getItem('token'); // assuming you save it on login
+addNewUser(userData: FormData) {
+  const token = localStorage.getItem('token');
 
   const headers = {
     Authorization: `Bearer ${token}`,
   };
-
+  console.log('User data sent from frontend:');
+  for (const [key, value] of userData.entries()) {
+    console.log(`${key}:`, value);
+  }
   return this.http.post(`${this.apiUrl}/add-user`, userData, { headers });
 }
+
 
 deleteUser(userId: string){
   const token = localStorage.getItem('token'); // assuming you save it on login
@@ -60,6 +71,4 @@ deleteUser(userId: string){
 getDepartments() {
   return this.http.get<{ id: string, name: string }[]>(`${this.apiUrl}/departments`);
 }
-
-
 }

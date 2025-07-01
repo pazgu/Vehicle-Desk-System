@@ -3,9 +3,10 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { VehicleInItem } from '../models/vehicle-dashboard-item/vehicle-in-use-item.module';
-import { FuelTypeResponse, VehicleOutItem } from '../models/vehicle-dashboard-item/vehicle-out-item.module';
+import { FuelType, FuelTypeResponse, VehicleOutItem } from '../models/vehicle-dashboard-item/vehicle-out-item.module';
 import { Vehicle } from '../models/vehicle.model';
 import { map } from 'rxjs/operators';
+ import { of } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -75,19 +76,24 @@ export class VehicleService {
   }
 
 
-  getMostUsedVehiclesThisMonth(year: number, month: number): Observable<{ stats: VehicleInItem[] }> {
-    const url = `${this.apiUrl}/vehicles/usage-stats`;
-    return this.http.get<{ stats: VehicleInItem[] }>(url, {
-      params: {
-        range: 'month',
-        year,
-        month
-      }
-    });
-  }
-  getFuelTypeByVehicleId(vehicleId: string): Observable<FuelTypeResponse> {
+getMostUsedVehiclesThisMonth(year: number, month: number): Observable<{ stats: VehicleInItem[] }> {
+  const url = `${this.apiUrl}/vehicles/usage-stats`;
+  return this.http.get<{ stats: VehicleInItem[] }>(url, {
+    params: {
+      range: 'month',
+      year,
+      month
+    }
+  });
+}
+
+getFuelTypeByVehicleId(vehicleId: string): Observable<FuelTypeResponse> {
+  if (vehicleId) {
     return this.http.get<FuelTypeResponse>(`${this.apiUrl}/vehicles/${vehicleId}/fuel-type`);
   }
+  const res: FuelTypeResponse = { vehicle_id: vehicleId, fuel_type: 'hybrid' as FuelType };
+  return of(res);
+}
 
   getVehicles(params: any): Observable<Vehicle[]> {
     return this.http.get<Vehicle[]>(`${this.apiUrl}/vehicles`, { params });

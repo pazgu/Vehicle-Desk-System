@@ -57,6 +57,14 @@ export class LayoutComponent implements OnInit,OnDestroy {
       console.log('[ON INIT] Found stored ride ID:', storedRideId);
       this.pendingRideId = storedRideId;
     }
+      this.socketService.feedbackNeeded$.subscribe((data) => {
+  console.log('ride that needs feedback from header component:', data);
+  if (data) {
+    this.checkFeedbackNeeded();
+    
+  } else {
+    console.warn('Received null or empty feedback data');
+  }})
     
   }
 

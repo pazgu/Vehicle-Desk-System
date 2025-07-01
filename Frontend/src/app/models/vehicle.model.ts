@@ -12,4 +12,6 @@ export interface Vehicle {
   vehicle_model: string;
   image_url: string;
   lease_expiry?: string;
+  department_id?: string;
+
 }

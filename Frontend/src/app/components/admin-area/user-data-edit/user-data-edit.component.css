@@ -5,6 +5,7 @@
   min-height: calc(100vh - 55px);
   padding: 25px;
   direction: rtl;
+  padding-top: 200px;
 }
 .user-data-container {
   direction: rtl;
