@@ -18,8 +18,10 @@ class UserCreate(BaseModel):
     email: EmailStr
     employee_id: Optional[UUID] = None 
     role: UserRole
+    phone: Optional[str] = None
     department_id: UUID
     password: str  # important: this is usually hashed before storing
-    has_government_license: bool = False
+    has_government_license: bool 
     license_file_url: Optional[str] = None
     license_expiry_date: Optional[date] = None
+

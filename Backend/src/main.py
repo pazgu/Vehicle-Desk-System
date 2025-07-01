@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from socketio import ASGIApp
 import socketio
+from fastapi.staticfiles import StaticFiles
 
 from src.routes.user_routes import router as user_route
 from src.routes.supervisor_routes import router as supervisor_route
@@ -74,6 +75,7 @@ async def handle_join(sid, data):
 # sio_app = ASGIApp(sio, other_asgi_app=app)
 sio_app = socketio.ASGIApp(sio, other_asgi_app=app)
 
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 @app.get("/test-email")
 def test_email():
