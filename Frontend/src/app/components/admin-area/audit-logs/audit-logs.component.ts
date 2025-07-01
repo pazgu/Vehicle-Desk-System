@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit,ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuditLogsService } from '../../../services/audit-logs.service';
@@ -9,7 +9,10 @@ import { saveAs } from 'file-saver';
 import Papa from 'papaparse';
 import type { TDocumentDefinitions } from 'pdfmake/interfaces';
 import { SocketService } from '../../../services/socket.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
+import { ToastService } from '../../../services/toast.service';
 
 (pdfMake as any).vfs = pdfFonts.vfs;
 (pdfMake as any).fonts = {
@@ -43,7 +46,15 @@ export class AuditLogsComponent implements OnInit {
   customFromDate: string = '';
   customToDate: string = '';
 
-  problematicOnly: boolean = false;
+  showProblematicFilters = false;
+  showMediumIssues = false;
+  showCriticalIssues = false;
+
+  inspections: any[] = [];
+  loading = true;
+  highlighted = false;
+  private lastInspectionId: string | null = null;
+
 
 
   vehicleFieldLabels: { [key: string]: string } = {
@@ -63,6 +74,14 @@ export class AuditLogsComponent implements OnInit {
 
   getVehicleFieldLabel(key: string): string {
     return this.vehicleFieldLabels[key] || key;
+  }
+
+  private playAlertSound(): void {
+    const audio = new Audio('assets/sounds/notif.mp3');
+    audio.play().catch(err => {
+      // Chrome may block this if user hasn't interacted yet (expected behavior)
+      console.warn('🔇 Audio failed to play (autoplay policy):', err);
+    });
   }
 
   getRideAuditRows(oldData: any, newData: any): Array<{label: string, oldValue: any, newValue: any}> {
@@ -110,21 +129,62 @@ export class AuditLogsComponent implements OnInit {
   };
 
   constructor(
-    private auditLogService: AuditLogsService,
+    private http: HttpClient,
+    private route: ActivatedRoute,
     private socketService: SocketService,
+    private toastService: ToastService,
+    private cdr: ChangeDetectorRef,
     private router: Router
   ) {}
+  
+  // ngOnInit() {
+  //   this.onRangeChange();
 
-  ngOnInit() {
-    this.onRangeChange();
+  //   this.socketService.auditLogs$.subscribe((newLog) => {
+  //     if (newLog) {
+  //       this.logs = [newLog, ...this.logs];
+  //       this.filteredLogs = [...this.logs];
+  //     }
+  //   });
+  // }
+ngOnInit(): void {
+    // ✅ Highlight row if query param exists
+    this.route.queryParams.subscribe(params => {
+      this.highlighted = params['highlight'] === '1';
+    });
 
-    this.socketService.auditLogs$.subscribe((newLog) => {
-      if (newLog) {
-        this.logs = [newLog, ...this.logs];
-        this.filteredLogs = [...this.logs];
+    // ✅ Load inspections on mount
+    this.loadInspections();
+
+    // 🔔 Listen for critical inspection notifications
+    this.socketService.notifications$.subscribe((notif) => {
+      if (notif?.message?.includes('בעיה חמורה')) {
+        this.toastService.show('📢 בדיקה חדשה עם בעיה חמורה התקבלה', 'error');
+        this.playAlertSound();
+        this.loadInspections(); // Refresh data
+      }
+    });
+
+    // 🔄 Listen for new inspection events (no refresh)
+    this.socketService.newInspection$.subscribe((newInspection) => {
+      if (
+        newInspection &&
+        newInspection.inspection_id !== this.lastInspectionId
+      ) {
+        console.log('🆕 Received inspection via socket:', newInspection);
+
+        this.lastInspectionId = newInspection.inspection_id;
+        this.inspections.unshift(newInspection);
+        this.cdr.detectChanges();
+
+        this.toastService.show('📢 התקבלה בדיקה חדשה');
+        this.playAlertSound();
       }
     });
   }
+
+
+
 
   onRangeChange() {
     let fromDate: string | undefined;
@@ -160,17 +220,17 @@ export class AuditLogsComponent implements OnInit {
       toDate = this.customToDate ? new Date(this.customToDate + 'T23:59:59').toISOString() : undefined;
     }
 
-    this.fetchAuditLogs(fromDate, toDate);
+    // this.fetchAuditLogs(fromDate, toDate);
   }
 
-  fetchAuditLogs(fromDate?: string, toDate?: string) {
-    console.log('problematicOnly:', this.problematicOnly, 'fromDate:', fromDate, 'toDate:', toDate);
-    this.auditLogService.getAuditLogs(fromDate, toDate,this.problematicOnly).subscribe((data) => {
-      this.logs = data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-      this.filteredLogs = [...this.logs];
-      this.currentPage = 1;
-    });
-  }
+  // fetchAuditLogs(fromDate?: string, toDate?: string) {
+  //   console.log('problematicOnly:', this.problematicOnly, 'fromDate:', fromDate, 'toDate:', toDate);
+  //   this.auditLogService.getAuditLogs(fromDate, toDate,this.problematicOnly).subscribe((data) => {
+  //     this.logs = data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  //     this.filteredLogs = [...this.logs];
+  //     this.currentPage = 1;
+  //   });
+  // }
 
   filterLogs() {
     const searchLower = this.searchTerm.toLowerCase();
@@ -263,6 +323,30 @@ export class AuditLogsComponent implements OnInit {
     };
     pdfMake.createPdf(docDefinition).download('audit_logs_weekly.pdf');
   }
+
+  loadInspections(): void {
+    this.loading = true;
+
+  let params = new HttpParams();
+  if (this.showMediumIssues && !this.showCriticalIssues) {
+    params = params.set('problem_type', 'medium');
+  } else if (!this.showMediumIssues && this.showCriticalIssues) {
+    params = params.set('problem_type', 'critical');
+  }
+  else if (this.showMediumIssues && this.showCriticalIssues) {
+    params = params.set('problem_type', 'medium,critical');
+  }
+  this.http.get<any[]>(`${environment.apiUrl}/all-audit-logs`, { params }).subscribe({
+    next: (data) => {
+      this.inspections = data;
+      this.loading = false;
+    },
+    error: () => {
+      this.loading = false;
+      this.toastService.show('❌ שגיאה בטעינת בדיקות רכבים להיום', 'error');
+    }
+  });
+}
 
   exportToCSV() {
     const weeklyLogs = this.getLogsForThisWeek();

@@ -14,6 +14,7 @@ from src.services.admin_rides_service import (
     get_order_by_ride_id,
     get_all_time_vehicle_usage_stats 
 )
+from sqlalchemy import and_, or_
 from ..utils.database import get_db
 from src.models.user_model import User , UserRole
 from src.models.vehicle_model import Vehicle
@@ -209,16 +210,73 @@ def send_admin_notification_simple_route(db: Session = Depends(get_db)):
     }
 
 
+# @router.get("/inspections/today", response_model=List[VehicleInspectionSchema])
+# def get_today_inspections(db: Session = Depends(get_db)):
+#     today_start = datetime.combine(date.today(), datetime.min.time())
+#     tomorrow_start = today_start + timedelta(days=1)
+
+#     inspections = db.query(VehicleInspection).filter(
+#         VehicleInspection.inspection_date >= today_start,
+#         VehicleInspection.inspection_date < tomorrow_start
+#     ).order_by(VehicleInspection.inspection_date.desc()).all()
+
+#     return inspections
 @router.get("/inspections/today", response_model=List[VehicleInspectionSchema])
-def get_today_inspections(db: Session = Depends(get_db)):
+def get_today_inspections(
+    problem_type: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
     today_start = datetime.combine(date.today(), datetime.min.time())
     tomorrow_start = today_start + timedelta(days=1)
 
-    inspections = db.query(VehicleInspection).filter(
+    query = db.query(VehicleInspection).filter(
         VehicleInspection.inspection_date >= today_start,
         VehicleInspection.inspection_date < tomorrow_start
-    ).order_by(VehicleInspection.inspection_date.desc()).all()
+    )
 
+    if problem_type == "medium":
+        query = query.filter(
+            and_(
+                or_(
+                    VehicleInspection.clean == False,
+                    VehicleInspection.fuel_checked == False,
+                    VehicleInspection.no_items_left == False
+                ),
+                VehicleInspection.critical_issue_bool == False
+            )
+        )
+    elif problem_type == "critical":
+        query = query.filter(
+            or_(
+                VehicleInspection.critical_issue_bool == True,
+                and_(
+                    VehicleInspection.issues_found != None,
+                    VehicleInspection.issues_found != ""
+                )
+            )
+        )
+    elif problem_type == "medium,critical":
+        query = query.filter(
+            or_(
+                and_(
+                    or_(
+                        VehicleInspection.clean == False,
+                        VehicleInspection.fuel_checked == False,
+                        VehicleInspection.no_items_left == False
+                    ),
+                    VehicleInspection.critical_issue_bool == False
+                ),
+                or_(
+                    VehicleInspection.critical_issue_bool == True,
+                    and_(
+                        VehicleInspection.issues_found != None,
+                        VehicleInspection.issues_found != ""
+                    )
+                )
+            )
+        )
+
+    inspections = query.order_by(VehicleInspection.inspection_date.desc()).all()
     return inspections
 
 # This function will be called later by another function with a GET route.

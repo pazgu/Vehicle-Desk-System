@@ -29,15 +29,8 @@ def filter_audit_logs(
 
 from src.schemas.audit_log_schema import AuditLogSchema
 
-def get_audit_logs(
-    db: Session,
-    entity_id: Optional[str] = None,
-    action: Optional[str] = None,
-    from_date: Optional[datetime] = None,
-    to_date: Optional[datetime] = None,
-    user_id: Optional[str] = None
-    changed_by: Optional[str] = None
-) -> List[AuditLogSchema]:
+def get_audit_logs(db: Session,entity_id: Optional[str] = None,action: Optional[str] = None,from_date: Optional[datetime] = None,to_date: Optional[datetime] = None,user_id: Optional[str] = None
+    changed_by: Optional[str] = None) -> List[AuditLogSchema]:
     query = db.query(AuditLog)
     query = filter_audit_logs(query, entity_id, action, from_date, to_date, user_id, changed_by)
 

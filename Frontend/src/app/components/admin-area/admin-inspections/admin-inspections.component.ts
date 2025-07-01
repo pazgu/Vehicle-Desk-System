@@ -1,91 +1,18 @@
-// import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-// import { CommonModule } from '@angular/common';
-// import { HttpClient } from '@angular/common/http';
-// import { environment } from '../../../../environments/environment';
-// import { ActivatedRoute } from '@angular/router';
-// import { SocketService } from '../../../services/socket.service';
-// import { ToastService } from '../../../services/toast.service';
-
-// @Component({
-//   selector: 'app-admin-inspections',
-//   standalone: true,
-//   imports: [CommonModule],
-//   templateUrl: './admin-inspections.component.html',
-//   styleUrls: ['./admin-inspections.component.css']
-// })
-// export class AdminInspectionsComponent implements OnInit {
-//   inspections: any[] = [];
-//   loading = true;
-//   highlighted = false;
-
-//   constructor(
-//     private http: HttpClient,
-//     private route: ActivatedRoute,
-//     private socketService: SocketService,
-//     private toastService: ToastService,
-//     private cdr: ChangeDetectorRef
-//   ) {}
-
-//   ngOnInit(): void {
-
-    
-//     // Highlight row if query param exists
-//     this.route.queryParams.subscribe(params => {
-//       this.highlighted = params['highlight'] === '1';
-//     });
-
-//     // 🔁 Load inspections on component mount
-//     this.loadInspections();
-
-//     // 🔔 Listen for critical notifications via socket
-//     this.socketService.notifications$.subscribe((notif) => {
-//       if (notif?.message?.includes('בעיה חמורה')) {
-//         this.toastService.show('📢 בדיקה חדשה עם בעיה חמורה התקבלה', 'error');
-//         new Audio('assets/sounds/notif.mp3').play();
-//         this.loadInspections(); // Re-fetch
-//       }
-//     });
-
-//       // ✅ 🔌 Listen for new inspections (no refresh needed)
-//       this.socketService.newInspection$.subscribe((newInspection) => {
-//         if (newInspection) {
-//           console.log('🆕 Received inspection via socket:', newInspection);
-//           this.inspections.unshift(newInspection);
-//           this.cdr.detectChanges();
-//           this.toastService.show('📢 התקבלה בדיקה חדשה');
-//           new Audio('assets/sounds/notif.mp3').play();
-//         }
-//     });
-//   }
-
-//   private loadInspections(): void {
-//     this.loading = true;
-//     this.http.get<any[]>(`${environment.apiUrl}/inspections/today`).subscribe({
-//       next: (data) => {
-//         this.inspections = data;
-//         this.loading = false;
-//       },
-//       error: () => {
-//         this.loading = false;
-//         this.toastService.show('❌ שגיאה בטעינת בדיקות רכבים להיום', 'error');
-//       }
-//     });
-//   }
-// }
-
+// src/app/admin/components/admin-inspections/admin-inspections.component.ts
 
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { ActivatedRoute } from '@angular/router';
 import { SocketService } from '../../../services/socket.service';
 import { ToastService } from '../../../services/toast.service';
+import { FormsModule } from '@angular/forms'; // Ensure FormsModule is imported for ngModel
 
 @Component({
   selector: 'app-admin-inspections',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule], // Ensure FormsModule is here
   templateUrl: './admin-inspections.component.html',
   styleUrls: ['./admin-inspections.component.css']
 })
@@ -93,6 +20,9 @@ export class AdminInspectionsComponent implements OnInit {
   inspections: any[] = [];
   loading = true;
   highlighted = false;
+  showProblematicFilters = false;
+  showMediumIssues = false;
+  showCriticalIssues = false;
 
   private lastInspectionId: string | null = null;
 
@@ -131,8 +61,13 @@ export class AdminInspectionsComponent implements OnInit {
         console.log('🆕 Received inspection via socket:', newInspection);
 
         this.lastInspectionId = newInspection.inspection_id;
+        // Important: If a new inspection arrives, it should respect current filters
+        // If filters are active, you might need to re-evaluate if newInspection matches
+        // For simplicity, just adding it to the list for now, but a full re-load
+        // `this.loadInspections();` might be safer if filtering logic is complex
+        // and needs to be strictly applied on new data.
         this.inspections.unshift(newInspection);
-        this.cdr.detectChanges();
+        this.cdr.detectChanges(); // Manually trigger change detection for unshift
 
         this.toastService.show('📢 התקבלה בדיקה חדשה');
         this.playAlertSound();
@@ -140,9 +75,25 @@ export class AdminInspectionsComponent implements OnInit {
     });
   }
 
-  private loadInspections(): void {
+  loadInspections(): void {
     this.loading = true;
-    this.http.get<any[]>(`${environment.apiUrl}/inspections/today`).subscribe({
+
+    let params = new HttpParams();
+    // Only add problem_type param if the problematic filters are visible AND
+    // at least one of the specific issue types is selected.
+    if (this.showProblematicFilters && (this.showMediumIssues || this.showCriticalIssues)) {
+      if (this.showMediumIssues && !this.showCriticalIssues) {
+        params = params.set('problem_type', 'medium');
+      } else if (!this.showMediumIssues && this.showCriticalIssues) {
+        params = params.set('problem_type', 'critical');
+      } else if (this.showMediumIssues && this.showCriticalIssues) {
+        params = params.set('problem_type', 'medium,critical');
+      }
+    }
+    // If showProblematicFilters is false, or if it's true but no sub-checkboxes are selected,
+    // then 'params' will remain empty, and the backend will return all inspections.
+
+    this.http.get<any[]>(`${environment.apiUrl}/inspections/today`, { params }).subscribe({
       next: (data) => {
         this.inspections = data;
         this.loading = false;
@@ -152,6 +103,12 @@ export class AdminInspectionsComponent implements OnInit {
         this.toastService.show('❌ שגיאה בטעינת בדיקות רכבים להיום', 'error');
       }
     });
+  }
+
+  // New helper method: checks if any problematic issue filter checkboxes are actually selected
+  // This is different from `showProblematicFilters` which only toggles the visibility of the checkboxes.
+  anyFiltersSelected(): boolean {
+    return this.showProblematicFilters && (this.showMediumIssues || this.showCriticalIssues);
   }
 
   // ✅ Notification sound for new inspections
