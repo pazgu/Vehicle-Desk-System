@@ -89,6 +89,7 @@ localStorage.setItem('access_token', token);
 const tokenParts = token.split('.');
 if (tokenParts.length === 3) {
   const payload = JSON.parse(atob(tokenParts[1]));
+  localStorage.setItem('user_id', payload.user_id); //JOIN ROOM 
   localStorage.setItem('employee_id', payload.sub);
   localStorage.setItem('username', payload.username);
   localStorage.setItem('first_name', payload.first_name);

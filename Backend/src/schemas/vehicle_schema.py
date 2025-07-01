@@ -19,7 +19,7 @@ class VehicleOut(BaseModel):
     vehicle_model: Optional[str] = None
     image_url: Optional[str] = None
     lease_expiry: Optional[datetime] = None  
-    department_name: Optional[str] = None
+    department_id: Optional[UUID] = None
 
     class Config:
         use_enum_values = True  # return enums as their values in JSON
