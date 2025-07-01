@@ -2,7 +2,7 @@
 :host {
   display: block;
   padding: 1.5rem;
-  font-family: "Alef", sans-serif;  direction: rtl;
+  font-family: var(--font-family-alef);
 }
 
 /* ✅ NEW: Wrapper for the background effect */
@@ -28,13 +28,16 @@
 
 /* Header & Navigation */
 .timeline-header {
+  text-align: center;
   margin-bottom: 1.5rem;
-  border-bottom: 1px solid #e0e0e0;
+  /* border-bottom: 1px solid #e0e0e0; */
   padding-bottom: 1rem;
   background-color: white; /* Give header a white background */
   border-top-left-radius: 8px; /* Match inner body border radius */
   border-top-right-radius: 8px;
   padding-top: 1rem; /* Add some top padding */
+  position: relative;
+  z-index: 3;
 }
 
 .header-main {
@@ -44,11 +47,18 @@
     padding-inline: 1rem; /* Add horizontal padding */
 }
 
-.header-main h2 {
+.timeline-title {
+  font-size: 1.75rem;
+  color: #942222;
+  margin: 0;
+  font-family: 'Alef', sans-serif;
+}
+
+/* .header-main h2 {
     margin: 0;
     font-size: 1.75rem;
     color: #942222; /* Inspired by the example's h1 color */
-}
+
 
 .header-main p {
     margin: 0;
@@ -89,8 +99,7 @@
     display: flex;
     /* border-bottom: 1px solid #e0e0e0; Removed as the wrapper provides context */
     background-color: white; /* ✅ White background for the main grid area */
-    border-bottom-left-radius: 8px; /* Rounded corners for the bottom */
-    border-bottom-right-radius: 8px;
+    border-radius: 8px;
     overflow: hidden; /* Ensures rounded corners are visible */
 }
 
@@ -129,11 +138,15 @@
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   flex-grow: 1;
+  position: relative;
+  z-index: 2;
 }
 
 .timeline-day {
   border-left: 1px solid #e0e0e0;
   min-width: 120px;
+    border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
 }
 
 .timeline-day:last-child {
@@ -148,9 +161,9 @@
   font-size: 0.9rem;
   border-bottom: 1px solid #ccc;
   background-color: rgb(249, 249, 249); /* Consistent with hour label header */
-  position: sticky;
+  position: relative;
   top: 0;
-  z-index: 20;
+  z-index: 2   ;
 }
 
 /* REVISED: This container is now the positioning context */
@@ -173,32 +186,34 @@
   left: 8px;
   border-radius: 4px;
   color: #333; /* Changed text color for better contrast with new block colors */
-  z-index: 10;
+  z-index: 1;
   overflow: hidden;
   box-sizing: border-box;
   padding: 0px 6px;
   border: none;
   box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-  transition: all 0.2s ease-in-out;
+  /* transition: z-index 0s linear 0.3s; */
   cursor: pointer;
   font-size: 0.8rem;
+  padding-top: 8px;
 }
 
 .ride-block:hover {
     transform: scale(1.02);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-    z-index: 11;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    z-index: 10;
 }
 
 .ride-info {
     display: flex;
     flex-direction: column;
     height: 100%;
+    
 }
 
 .ride-driver {
     font-weight: 600;
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -222,4 +237,9 @@
     text-overflow: ellipsis;
     overflow: hidden;
     line-height: 1.2;
+}
+
+.ride-block.is-midnight-block:hover {
+    z-index: 10;
+    /* transition: z-index 0s linear, transform 0.3s ease, box-shadow 0.3s ease; */
 }

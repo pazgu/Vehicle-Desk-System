@@ -84,6 +84,7 @@ html, body {
 
 
 body {
+  direction: rtl;
   background-image: url('/assets/images/notifications-bg.png');
   background-size: cover;
   background-repeat: repeat;

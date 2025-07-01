@@ -1,19 +1,22 @@
 <div class="timeline-page-wrapper">
   <div class="timeline-page-container">
     <div class="timeline-container">
-      <div class="timeline-header">
-        <div class="header-main">
-          <h2>לו״ז רכב</h2>
-          <p>רכב מספר: {{ vehicleId }}</p>
-        </div>
-        <div class="week-controls">
-          <button (click)="navigateWeek(-1)">→ שבוע קודם</button>
-          <span class="week-label">
-            {{ currentWeekStart | date: 'd MMMM' : 'he' }} - {{ weekEnd | date: 'd MMMM y' : 'he' }}
-          </span>
-          <button (click)="navigateWeek(1)">שבוע הבא ← </button>
-        </div>
-      </div>
+   <div class="timeline-header">
+  <h2 class="timeline-title">לו״ז רכב</h2>
+
+  <div class="header-sub">
+    <p>מזהה רכב: {{ vehicleId }}</p>
+
+    <div class="week-controls">
+      <button (click)="navigateWeek(-1)">→ שבוע קודם</button>
+      <span class="week-label">
+        {{ currentWeekStart | date: 'd MMMM' : 'he' }} - {{ weekEnd | date: 'd MMMM y' : 'he' }}
+      </span>
+      <button (click)="navigateWeek(1)">שבוע הבא ←</button>
+    </div>
+  </div>
+</div>
+
 
       <div class="timeline-body">
         <div class="timeline-hours-labels">
@@ -34,7 +37,7 @@
               <div
                 *ngFor="let ride of processedRides.get(getDateKey(day))"
                 class="ride-block"
-                [ngStyle]="{
+                [class.is-midnight-block]="ride.top === 0"  [ngStyle]="{
                   'top.px': ride.top,
                   'height.px': ride.height,
                   'background-color': getColorByStatus(ride.status)
