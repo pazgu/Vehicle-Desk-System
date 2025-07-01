@@ -106,7 +106,7 @@ def create_vehicle(
     db.add(new_vehicle)
     db.commit()
     db.refresh(new_vehicle)
-    return new_vehicle
+    return new_vehicle 
 
 
 @router.get("/vehicles/types")

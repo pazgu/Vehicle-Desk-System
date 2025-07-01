@@ -10,20 +10,25 @@ import uuid
 #     large = "large"
 #     van = "van"
 
+
+
 class FuelType(str, enum.Enum):
     electric = "electric"
     hybrid = "hybrid"
     gasoline = "gasoline"
+
 
 class VehicleStatus(str, enum.Enum):
     available = "available"
     in_use = "in_use"
     frozen = "frozen"
 
+
 class FreezeReason(str, enum.Enum):
     accident = "accident"
     maintenance = "maintenance"
     personal = "personal"
+
 
 class Vehicle(Base):
     __tablename__ = "vehicles"
@@ -34,13 +39,12 @@ class Vehicle(Base):
     fuel_type = Column(Enum(FuelType), nullable=False)
     status = Column(Enum(VehicleStatus), nullable=False, default=VehicleStatus.available, index=True)
     freeze_reason = Column(Enum(FreezeReason), nullable=True)
-    freeze_details = Column(Text, nullable=True) 
+    freeze_details = Column(Text, nullable=True)
     last_used_at = Column(DateTime, nullable=True)
     current_location = Column(Text, nullable=False)
     odometer_reading = Column(Integer, nullable=False, default=0)
     vehicle_model = Column(Text, nullable=False)
     image_url = Column(Text, nullable=False)
-    lease_expiry = Column(DateTime, nullable=True)  
+    lease_expiry = Column(DateTime, nullable=True)
 
-
-   
+    
