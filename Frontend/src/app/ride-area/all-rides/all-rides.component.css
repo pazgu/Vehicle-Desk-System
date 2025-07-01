@@ -81,7 +81,6 @@
   .orders-data-row {
     display: flex;
     align-items: center;
-    background-color: #ede9e9;
     border-bottom: 1px solid #ddd;
     padding: 0.75rem;
     transition: border 0.5s ease-in-out;
@@ -104,7 +103,6 @@
 }
 .completed-order{
   opacity: 0.6;
-  background-color: #e0e0e0 !important;
   color: #333 !important;
 }
 
@@ -157,18 +155,49 @@
   }
   
   .status-green {
-    background-color: #9fc7ab; /* soft green */
+    background-color: #9fc7ab7c; /* soft green */
   }
   
   .status-yellow {
-    background-color: #fff8e1; /* soft yellow */
+    background-color: #fff8e174; /* soft yellow */
   }
   
   .status-red {
-    background-color: #fcebea; /* soft red */
+    background-color: #ffe1e184; /* soft red */
   }
-  
- 
+  .status_in_progress {
+  background: linear-gradient(
+    -45deg,
+    rgba(74, 144, 226, 0.15) 25%,
+    rgba(107, 163, 240, 0.15) 25%,
+    rgba(107, 163, 240, 0.15) 50%,
+    rgba(74, 144, 226, 0.15) 50%,
+    rgba(74, 144, 226, 0.15) 75%,
+    rgba(107, 163, 240, 0.15) 75%,
+    rgba(107, 163, 240, 0.15)
+  );
+  background-size: 20px 20px;
+  animation: moveStripes 1s linear infinite;
+}
+
+@keyframes moveStripes {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 20px 0;
+  }
+}
+
+@keyframes moveStripes {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 20px 0;
+  }
+}
+
   h1{
     color: #811313;
   }

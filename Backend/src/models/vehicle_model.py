@@ -5,10 +5,10 @@ from src.models.base import Base
 import enum
 import uuid
 
-class VehicleType(str, enum.Enum):
-    small = "small"
-    large = "large"
-    van = "van"
+# class VehicleType(str, enum.Enum):
+#     small = "small"
+#     large = "large"
+#     van = "van"
 
 class FuelType(str, enum.Enum):
     electric = "electric"
@@ -30,7 +30,7 @@ class Vehicle(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     plate_number = Column(Text, nullable=False, unique=True)
-    type = Column(Enum(VehicleType), nullable=False, index=True)
+    type = Column(Text, nullable=False, index=True)
     fuel_type = Column(Enum(FuelType), nullable=False)
     status = Column(Enum(VehicleStatus), nullable=False, default=VehicleStatus.available, index=True)
     freeze_reason = Column(Enum(FreezeReason), nullable=True)
@@ -40,6 +40,8 @@ class Vehicle(Base):
     odometer_reading = Column(Integer, nullable=False, default=0)
     vehicle_model = Column(Text, nullable=False)
     image_url = Column(Text, nullable=False)
+    lease_expiry = Column(DateTime, nullable=True)
+    department_name = Column(Text, nullable=True, index=True)
 
 
    

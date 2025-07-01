@@ -7,6 +7,25 @@
   font-family: 'Alef', sans-serif;
 }
 
+
+.custom-toast.persistent {
+  padding-right: 35px; /* Leave space for close button */
+  z-index: 1290;
+}
+
+.toast-close-btn {
+  position: absolute;
+  right: 8px;
+  top: 4px;
+  background: transparent;
+  color: #fff;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  z-index: 1300;
+}
+
+
 .custom-toast {
   position: fixed;
   top: 80px;
@@ -21,7 +40,6 @@
   animation: slideIn 0.3s ease, fadeOut 0.5s ease 2.5s;
   max-width: 300px;
   opacity: 1;
-  pointer-events: none;
   direction: rtl;
   text-align: right;
 }
@@ -32,6 +50,9 @@
 
 .custom-toast.error {
   background-color: #e53e3e;
+}
+.custom-toast.neutral {
+  background-color: #afbff3;
 }
 
 @keyframes slideIn {

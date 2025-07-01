@@ -1,14 +1,19 @@
 from typing import List, Optional , Dict
-from datetime import datetime
+from datetime import datetime,date
 from sqlalchemy.orm import Session
-from sqlalchemy import String, extract, func
+from sqlalchemy import String, extract, func, and_, or_
 from uuid import UUID
+
+from typing import Optional
+from sqlalchemy.orm import Session
+from datetime import date
 
 from ..models.ride_model import Ride, RideStatus
 from ..models.vehicle_model import Vehicle
 from ..models.user_model import User  
 from ..schemas.ride_dashboard_item import RideDashboardItem
 import calendar
+from ..models.vehicle_inspection_model import VehicleInspection
 from ..models.monthly_vehicle_usage_model import MonthlyVehicleUsage
 
 def filter_rides(query, status: Optional[RideStatus], from_date, to_date):
@@ -28,9 +33,11 @@ def build_dashboard_item(
         ride_id=ride_id,
         employee_name=f"{user_first_name} {user_last_name}",
 requested_vehicle_plate = f"Plate-{str(vehicle_id)[:8]}",
+vehicle_id=vehicle_id,
         date_and_time=start_datetime,
         distance=str(estimated_distance_km),
-        status=status
+        status=status,
+        submitted_at=submitted_at
     )
 
 def get_all_orders(db: Session, status=None, from_date=None, to_date=None) -> List[RideDashboardItem]:
@@ -39,9 +46,11 @@ def get_all_orders(db: Session, status=None, from_date=None, to_date=None) -> Li
         Ride.start_datetime,
         Ride.estimated_distance_km,
         Ride.status,
+        Ride.submitted_at,
         Vehicle.id.label("vehicle_id"),
         User.first_name,
         User.last_name
+
     ).join(Vehicle, Ride.vehicle_id == Vehicle.id) \
      .join(User, Ride.user_id == User.employee_id)  
 
@@ -55,7 +64,8 @@ def get_all_orders(db: Session, status=None, from_date=None, to_date=None) -> Li
             vehicle_id=r.vehicle_id,
             start_datetime=r.start_datetime,
             estimated_distance_km=r.estimated_distance_km,
-            status=r.status
+            status=r.status,
+            submitted_at=r.submitted_at 
         )
         for r in query.all()
     ]

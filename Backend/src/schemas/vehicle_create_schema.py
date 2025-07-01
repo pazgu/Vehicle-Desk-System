@@ -4,11 +4,11 @@ from pydantic import BaseModel, HttpUrl
 from typing import Optional
 from datetime import datetime
 from uuid import UUID
-from ..models.vehicle_model import VehicleType, FuelType, VehicleStatus, FreezeReason
+from ..models.vehicle_model import  FuelType, VehicleStatus, FreezeReason
 
 class VehicleCreate(BaseModel):
     plate_number: str
-    type: VehicleType
+    type: str
     fuel_type: FuelType
     status: Optional[VehicleStatus] = VehicleStatus.available
     freeze_reason: Optional[FreezeReason] = None
@@ -17,4 +17,6 @@ class VehicleCreate(BaseModel):
     current_location: str
     odometer_reading: int
     vehicle_model: str
-    image_url: HttpUrl
+    image_url: Optional[str] = None
+    lease_expiry: datetime
+    department_name: Optional[str] = None

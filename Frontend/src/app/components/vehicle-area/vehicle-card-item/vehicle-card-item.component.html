@@ -14,7 +14,7 @@
               class="usage-indicator"
               [style.background-color]="getUsageBarColor(vehicle.plate_number)"
             ></div>
-            <span class="usage-number" *ngIf="getVehicleUsageCount(vehicle.plate_number)>0">  {{ getVehicleUsageCount(vehicle.plate_number) }} נסיעות קיימות לרכב בחודש זה</span>
+            <span class="usage-number" *ngIf="getVehicleUsageCount(vehicle.plate_number)>0">  {{ getVehicleUsageCount(vehicle.plate_number) }} נסיעות קיימות לרכב זה </span>
           </div>
         <img *ngIf="vehicle.image_url" [src]="vehicle.image_url" alt="תמונה של הרכב" class="vehicle-details-img" />
 </div>
@@ -28,10 +28,30 @@
           <p><strong>סוג דלק:</strong> {{ translateFuelType(vehicle.fuel_type) }}</p>
           <p><strong>פעם אחרונה בשימוש:</strong> {{ vehicle.last_used_at | date: 'yyyy-MM-dd HH:mm' }}</p>
           <p><strong>מיקום נוכחי:</strong> {{ vehicle.current_location }}</p>
+
+          <p><strong>מחלקה:</strong> {{ vehicle.department_name || 'אין מחלקה' }}</p>
+
+
+          <p *ngIf="vehicle.reason_for_4x4">
+  <strong>סיבת 4x4:</strong> {{ vehicle.reason_for_4x4 }}
+</p>
+
           <p *ngIf="vehicle.status === 'frozen' && vehicle.freeze_reason">
             <strong>סיבת הקפאה:</strong> {{ translateFreezeReason(vehicle.freeze_reason) }}
           </p>
           <p><strong>ק״מ:</strong> {{ vehicle.odometer_reading }}</p>
+<p><strong>מספר נסיעות לחודש זה: </strong>{{ currentVehicleRideCount }}</p>
+          <p><strong>אחוז נסיעות לחודש זה:</strong></p>
+          <div class="ride-progress">
+<span>{{ (currentVehicleRideCount / 20) * 100 | number:'1.0-0' }}%</span> <div class="progress-bar">
+   <div class="progress-fill" [style.width.%]="(currentVehicleRideCount / 20) * 100"></div>
+ </div>
+</div>
+
+          <p><strong>תוקף חוזה השכרה:</strong>
+  {{ vehicle.lease_expiry ? (vehicle.lease_expiry | date: 'dd/MM/yyyy') : 'לא סופק' }}
+</p>
+
           <button class="unfreeze-button" (click)="updateVehicleStatus('available')"
             *ngIf="vehicle.status === 'frozen'">
             שחרור מהקפאה

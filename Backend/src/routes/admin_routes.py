@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query,Header, status
+from fastapi import APIRouter, Depends, HTTPException, Query,Header, Request, status, UploadFile, File
 from uuid import UUID
 from typing import Optional , List
 from datetime import datetime
@@ -15,23 +15,25 @@ from src.services.admin_rides_service import (
     get_all_time_vehicle_usage_stats 
 )
 from sqlalchemy import and_, or_
+from sqlalchemy import and_, or_
 from ..utils.database import get_db
 from src.models.user_model import User , UserRole
 from src.models.vehicle_model import Vehicle
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 from ..schemas.vehicle_schema import VehicleOut , InUseVehicleOut , VehicleStatusUpdate
-from ..utils.auth import token_check
-from ..services.vehicle_service import get_vehicles_with_optional_status,update_vehicle_status,get_vehicle_by_id, vehicle_inspection_logic, get_available_vehicles_for_ride_by_id
+from ..utils.auth import get_current_user, token_check
+from ..services.vehicle_service import get_vehicles_with_optional_status,update_vehicle_status,get_vehicle_by_id, get_available_vehicles_for_ride_by_id
 from ..services.user_notification import send_admin_odometer_notification
 from datetime import date, datetime, timedelta
 from src.models.vehicle_inspection_model import VehicleInspection
 from ..services.monthly_trip_counts import archive_last_month_stats
-from sqlalchemy import func
+from sqlalchemy import func, text
 from fastapi.responses import JSONResponse
 from src.models.ride_model import Ride
 from sqlalchemy import cast, Date
 from src.utils.stats import generate_monthly_vehicle_usage
-
+from ..schemas.register_schema import UserCreate
+from src.services import admin_service
 from ..schemas.audit_schema import AuditLogsSchema
 from src.services.audit_service import get_all_audit_logs
 from ..utils.socket_manager import sio
@@ -40,6 +42,10 @@ from fastapi.security import OAuth2PasswordBearer
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 from ..utils.auth import role_check
 from fastapi import HTTPException
+from ..services.admin_user_service import create_user_by_admin , get_users_service
+from ..schemas.user_response_schema import PaginatedUserResponse
+from src.utils.auth import get_current_user
+from ..services.license_service import upload_license_file_service 
 
 
 router = APIRouter()
@@ -100,15 +106,24 @@ def fetch_user_by_id(user_id: UUID, db: Session = Depends(get_db)):
 def edit_user_by_id_route(
     user_id: UUID,
     user_update: UserUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    payload: dict = Depends(token_check)  # Use payload from token_check
 ):
     user = db.query(User).filter(User.employee_id == user_id).first()
 
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    
+    user_id_from_token = payload.get("user_id") or payload.get("sub")
+    if not user_id_from_token:
+        raise HTTPException(status_code=401, detail="User ID not found in token")
+    
+    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id_from_token)})
+
 
     update_data = user_update.dict(exclude_unset=True)
     print("🟡 Incoming update:", update_data)
+    
 
     # Check attributes before applying them
     for key, value in update_data.items():
@@ -119,6 +134,7 @@ def edit_user_by_id_route(
             setattr(user, key, value)
 
     try:
+        db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user.employee_id)})
         db.commit()
     except Exception as e:
         db.rollback()
@@ -126,6 +142,8 @@ def edit_user_by_id_route(
         raise HTTPException(status_code=500, detail="Failed to update user")
 
     db.refresh(user)
+    db.execute(text("SET session.audit.user_id = DEFAULT"))  # (optional) reset after commit
+
     return user
 
 @router.get("/roles")
@@ -133,6 +151,21 @@ def get_roles():
     return [role.value for role in UserRole]
 
 
+@router.post("/add-user", status_code=status.HTTP_201_CREATED)
+def add_user_as_admin(
+    request: Request,
+    user_data: UserCreate,
+    db: Session = Depends(get_db),
+):
+    current_user = get_current_user(request)
+    changed_by=current_user.employee_id  
+    if current_user.role != UserRole.admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required."
+        )
+    
+    return create_user_by_admin(user_data,changed_by ,db)
 # @router.post("/vehicle-inspection")
 # def vehicle_inspection(data: VehicleInspectionSchema, db: Session = Depends(get_db),payload: dict = Depends(token_check)):
 #     try:
@@ -178,6 +211,25 @@ def available_vehicles_for_ride(
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+
+@router.get("/vehicles", response_model=List[VehicleOut])
+def get_filtered_vehicles(
+    status: Optional[str] = Query(None),
+    vehicle_type: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+    token: str = Depends(oauth2_scheme)
+):
+    role_check(["admin"], token)  # Only admins can access this
+
+    query = db.query(Vehicle)
+
+    if status:
+        query = query.filter(Vehicle.status == status)
+
+    if vehicle_type:
+        query = query.filter(Vehicle.type.ilike(vehicle_type))  # Case-insensitive match
+
+    return query.all()
 
 # @router.get("/all-vehicles", response_model=List[VehicleOut])
 # def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = Depends(get_db)
@@ -340,13 +392,13 @@ def ride_status_summary(db: Session = Depends(get_db)):
 #         raise HTTPException(status_code=500, detail=f"Failed to fetch weekly ride trends: {str(e)}")
 
 
-@router.post("/update-monthly-trip-counts")
-def monthly_trip_count_update(db: Session = Depends(get_db)):
-    try:
-        update_monthly_trip_counts(db)
-        return {"message": "Monthly trip counts updated successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+# @router.post("/update-monthly-trip-counts")
+# def monthly_trip_count_update(db: Session = Depends(get_db)):
+#     try:
+#         update_monthly_trip_counts(db)
+#         return {"message": "Monthly trip counts updated successfully"}
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/all-audit-logs", response_model=List[AuditLogsSchema])
@@ -434,3 +486,99 @@ def get_vehicle_usage_current_month(db: Session = Depends(get_db)):
 
     return stats
 
+
+
+
+
+@router.get("/inspections/today", response_model=List[VehicleInspectionSchema])
+def get_today_inspections(
+    problem_type: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    today_start = datetime.combine(date.today(), datetime.min.time())
+    tomorrow_start = today_start + timedelta(days=1)
+
+    query = db.query(VehicleInspection).filter(
+        VehicleInspection.inspection_date >= today_start,
+        VehicleInspection.inspection_date < tomorrow_start
+    )
+
+    if problem_type == "medium":
+        query = query.filter(
+            and_(
+                or_(
+                    VehicleInspection.clean == False,
+                    VehicleInspection.fuel_checked == False,
+                    VehicleInspection.no_items_left == False
+                ),
+                VehicleInspection.critical_issue_bool == False
+            )
+        )
+    elif problem_type == "critical":
+        query = query.filter(
+            or_(
+                VehicleInspection.critical_issue_bool == True,
+                and_(
+                    VehicleInspection.issues_found != None,
+                    VehicleInspection.issues_found != ""
+                )
+            )
+        )
+    elif problem_type == "medium,critical":
+        query = query.filter(
+            or_(
+                and_(
+                    or_(
+                        VehicleInspection.clean == False,
+                        VehicleInspection.fuel_checked == False,
+                        VehicleInspection.no_items_left == False
+                    ),
+                    VehicleInspection.critical_issue_bool == False
+                ),
+                or_(
+                    VehicleInspection.critical_issue_bool == True,
+                    and_(
+                        VehicleInspection.issues_found != None,
+                        VehicleInspection.issues_found != ""
+                    )
+                )
+            )
+        )
+
+    inspections = query.order_by(VehicleInspection.inspection_date.desc()).all()
+    return inspections
+
+
+@router.get("/users", response_model=PaginatedUserResponse)
+def get_all_users_route(
+    db: Session = Depends(get_db),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    role: Optional[UserRole] = None,
+    search: Optional[str] = None
+):
+    return get_users_service(db=db, page=page, page_size=page_size, role=role, search=search)
+
+
+@router.delete("/user-data/{user_id}")
+def delete_user(
+    user_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    try:
+        return admin_service.delete_user_by_id(user_id, current_user, db)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+
+
+@router.post("/api/users/{user_id}/license")
+def upload_user_license_route(
+    user_id: UUID,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    return upload_license_file_service(db=db, user_id=user_id, file=file)

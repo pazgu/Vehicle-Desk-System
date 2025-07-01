@@ -7,6 +7,8 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { RideCompletionFormComponent } from '../../page-area/ride-completion-form/ride-completion-form.component';
 import { environment } from '../../../../environments/environment';
+import { NotificationService } from '../../../services/notification';
+import { SocketService } from '../../../services/socket.service';
 @Component({
   selector: 'app-header',
   standalone: true,
@@ -17,6 +19,7 @@ import { environment } from '../../../../environments/environment';
 export class HeaderComponent implements OnInit {
   fullName$: Observable<string> = of('');
   role$: Observable<string> = of('');
+  unreadCount$!: Observable<number>; 
   isLoggedIn = false;
 
   showFeedbackModal = false;
@@ -26,12 +29,15 @@ export class HeaderComponent implements OnInit {
     private authService: AuthService,
     private router: Router,
     private toastService: ToastService,
-    private http: HttpClient
+    private http: HttpClient,
+    private notificationService: NotificationService,
+    private socketService:SocketService
   ) {}
 
   ngOnInit(): void {
     this.fullName$ = this.authService.fullName$;
     this.role$ = this.authService.role$;
+    this.unreadCount$ = this.notificationService.unreadCount$;
 
     this.authService.isLoggedIn$.subscribe(value => {
       this.isLoggedIn = value;
@@ -44,12 +50,36 @@ export class HeaderComponent implements OnInit {
     } else {
       this.checkFeedbackNeeded();
     }
+ 
+
+  this.socketService.feedbackNeeded$.subscribe((data) => {
+  console.log('ride that needs feedback from header component:', data);
+  if (data) {
+    this.checkFeedbackNeeded();
+    
+  } else {
+    console.warn('Received null or empty feedback data');
+  }
+ 
+ 
+});
+  // this.socketService.rideStatusUpdated$.subscribe((data) => {
+  // console.log('ride that needs feedback from header component:', data);
+  // if (data) {
+  //   this.checkFeedbackNeeded();
+    
+  // } else {
+  //   console.warn('Received null or empty feedback data');
+  // }});
+ 
+
   }
 
   onLogout(): void {
     this.authService.logout();
     this.toastService.show('התנתקת בהצלחה', 'success');
     this.router.navigate(['/login']);
+    this.toastService.clearAll()
   }
 
   getUserId(): string | null {
@@ -75,6 +105,9 @@ checkFeedbackNeeded(): void {
         localStorage.setItem('pending_feedback_ride', res.ride_id);
         this.rideIdToComplete = res.ride_id;
         this.showFeedbackModal = true;
+         const role=localStorage.getItem('role');
+  if(role==='employee'){this.toastService.show('יש למלא טופס חווית נסיעה','neutral')}
+  
       }
     },
     (error) => {

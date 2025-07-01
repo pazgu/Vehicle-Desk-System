@@ -9,6 +9,8 @@ import { saveAs } from 'file-saver';
 import Papa from 'papaparse';
 import type { TDocumentDefinitions } from 'pdfmake/interfaces';
 import { SocketService } from '../../../services/socket.service';
+import { Router } from '@angular/router';
+import { CityService } from '../../../services/city.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
@@ -45,6 +47,11 @@ export class AuditLogsComponent implements OnInit {
   selectedRange = '';
   customFromDate: string = '';
   customToDate: string = '';
+
+  problematicOnly: boolean = false;
+  filtersCollapsed = true;
+
+  cityMap: { [id: string]: string } = {};
 
   showProblematicFilters = false;
   showMediumIssues = false;
@@ -88,11 +95,12 @@ export class AuditLogsComponent implements OnInit {
   return [
     { label: 'מזהה נסיעה', oldValue: oldData.id, newValue: newData.id },
     { 
-      label: 'מסלול', 
-      oldValue: `${oldData.start_location || ''} → ${oldData.stop || ''} → ${oldData.destination || ''}`, 
-      newValue: `${newData.start_location || ''} → ${newData.stop || ''} → ${newData.destination || ''}` 
-    },
+  label: 'מסלול', 
+oldValue: `${this.getCityName(oldData.start_location)} → ${this.getCityName(oldData.stop)} → ${this.getCityName(oldData.destination)}`, 
+      newValue: `${this.getCityName(newData.start_location)} → ${this.getCityName(newData.stop)} → ${this.getCityName(newData.destination)}`  
+},
     { label: 'סוג נסיעה', oldValue: oldData.ride_type, newValue: newData.ride_type },
+    { label: 'סיבת בחירה ברכב 4X4', oldValue: oldData.vehicle_type_reason, newValue: newData.vehicle_type_reason },
     { label: 'משתמש', oldValue: oldData.user_id, newValue: newData.user_id },
     { label: 'משתמש עוקף', oldValue: oldData.override_user_id, newValue: newData.override_user_id },
     { label: 'רכב', oldValue: oldData.vehicle_id, newValue: newData.vehicle_id },
@@ -125,17 +133,46 @@ export class AuditLogsComponent implements OnInit {
     override_user_id: 'מזהה משתמש עוקף',
     actual_distance_km: 'מרחק בפועל (ק"מ)',
     license_check_passed: 'עבר בדיקת רישיון',
-    estimated_distance_km: 'מרחק משוער (ק"מ)'
+    estimated_distance_km: 'מרחק משוער (ק"מ)',
+    vehicle_type_reason: 'סיבת בחירה ברכב מסוג 4X4',
+
   };
 
   constructor(
     private http: HttpClient,
     private route: ActivatedRoute,
     private socketService: SocketService,
+    private router: Router,
+    private cityService: CityService
+
     private toastService: ToastService,
     private cdr: ChangeDetectorRef,
     private router: Router
   ) {}
+
+  getCityName(id: string): string {
+  return this.cityMap[id] || id;
+}
+
+
+  ngOnInit() {
+
+    this.cityService.getCities().subscribe({
+  next: (cities) => {
+   this.cityMap = cities.reduce((map: { [key: string]: string }, city) => {
+  map[city.id] = city.name;
+  return map;
+}, {});
+
+    this.onRangeChange();
+
+
+  },
+  error: () => {
+    console.error('שגיאה בטעינת רשימת ערים');
+  }
+});
+
   
   // ngOnInit() {
   //   this.onRangeChange();
@@ -243,6 +280,8 @@ ngOnInit(): void {
   }
 
   showDetails(log: AuditLogs) {
+    console.log('Selected log:', log);
+
     this.selectedLog = log;
   }
 
@@ -375,16 +414,17 @@ ngOnInit(): void {
 
   getVehicleAuditRows(oldData: any, newData: any): Array<{label: string, oldValue: any, newValue: any}> {
     return [
-      { label: 'מספר רכב', oldValue: oldData.plate_number, newValue: newData.plate_number },
-      { label: 'סוג רכב', oldValue: oldData.type, newValue: newData.type },
-      { label: 'סוג דלק', oldValue: oldData.fuel_type, newValue: newData.fuel_type },
-      { label: 'סטטוס', oldValue: oldData.status, newValue: newData.status },
-      { label: 'סיבת הקפאה', oldValue: oldData.freeze_reason, newValue: newData.freeze_reason },
-      { label: 'מיקום נוכחי', oldValue: oldData.current_location, newValue: newData.current_location },
-      { label: 'קילומטראז\'', oldValue: oldData.odometer_reading, newValue: newData.odometer_reading },
-      { label: 'דגם רכב', oldValue: oldData.vehicle_model, newValue: newData.vehicle_model },
-      { label: 'תמונה', oldValue: oldData.image_url, newValue: newData.image_url }
-    ];
+    { label: 'מספר רכב', oldValue: oldData.plate_number, newValue: newData.plate_number },
+    { label: 'סוג רכב', oldValue: oldData.type, newValue: newData.type },
+    { label: 'סוג דלק', oldValue: oldData.fuel_type, newValue: newData.fuel_type },
+    { label: 'סטטוס', oldValue: oldData.status, newValue: newData.status },
+    { label: 'שימוש אחרון', oldValue: oldData.last_used_at, newValue: newData.last_used_at }, // <-- Added this line
+    { label: 'סיבת הקפאה', oldValue: oldData.freeze_reason, newValue: newData.freeze_reason },
+    { label: 'מיקום נוכחי', oldValue: oldData.current_location, newValue: newData.current_location },
+    { label: 'קילומטראז\'', oldValue: oldData.odometer_reading, newValue: newData.odometer_reading },
+    { label: 'דגם רכב', oldValue: oldData.vehicle_model, newValue: newData.vehicle_model },
+    { label: 'תמונה', oldValue: oldData.image_url, newValue: newData.image_url }
+  ];
   }
 
   vehicleRedirect(vehicleId: string) {

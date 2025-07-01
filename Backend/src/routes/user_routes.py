@@ -49,7 +49,7 @@ from ..utils.scheduler import schedule_ride_start
 from apscheduler.jobstores.base import JobLookupError
 from ..utils.scheduler import scheduler
 from ..services.city_service import calculate_distance
-from ..services.city_service import get_cities
+from ..services.city_service import get_cities,get_city
 from ..models.city_model import City
 from sqlalchemy import cast
 from ..services.user_form import get_ride_needing_feedback
@@ -62,6 +62,12 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
+from dotenv import load_dotenv
+import os
+
+load_dotenv()  # Load environment variables from .env
+FROM_CITY = os.getenv("FROM_CITY")
+FROM_CITY_NAME = os.getenv("FROM_CITY", "Unknown City")
 
 @router.post("/api/register")
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
@@ -186,7 +192,7 @@ async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = De
             "user_id": str(user_id),
             "employee_name":new_ride.username,
             "status": new_ride.status,
-            "destination": new_ride.destination,
+            "destination": new_ride.stop,
             "end_datetime": str(new_ride.end_datetime),
             "date_and_time":str(new_ride.start_datetime),
             "vehicle_id":str(new_ride.vehicle_id),
@@ -289,6 +295,9 @@ async def patch_order(
     "submitted_at": updated_order.submitted_at,
     "emergency_event": updated_order.emergency_event,
 }
+    if updated_order.extra_stops:
+        order_data["extra_stops"] = [str(stop) for stop in updated_order.extra_stops]
+
     print("Order data to emit:", json.dumps(convert_decimal(order_data), indent=2))
     await sio.emit("order_updated", convert_decimal(order_data))
     return {
@@ -365,32 +374,44 @@ async def delete_order(order_id: UUID, db: Session = Depends(get_db),current_use
 
 @router.get("/api/rides/with-locations")
 def get_rides_with_locations(db: Session = Depends(get_db)):
-    StartCity = aliased(City)
     StopCity = aliased(City)
-    DestinationCity = aliased(City)
 
-    rides_with_cities = (
-        db.query(Ride, StartCity, StopCity, DestinationCity)
-        .join(StartCity, cast(Ride.start_location, PG_UUID) == StartCity.id)
-        .join(DestinationCity, cast(Ride.destination, PG_UUID) == DestinationCity.id)
+    # Query rides with joined stop city
+    rides_with_stop_cities = (
+        db.query(Ride, StopCity)
         .join(StopCity, cast(Ride.stop, PG_UUID) == StopCity.id)
         .all()
     )
 
-    rides = [
-        {
+    # Collect all extra_stop UUIDs from all rides
+    all_extra_stop_ids = []
+    for ride, _ in rides_with_stop_cities:
+        if ride.extra_stops:
+            all_extra_stop_ids.extend(ride.extra_stops)
+    # Remove duplicates
+    all_extra_stop_ids = list(set(all_extra_stop_ids))
+
+    # Query all extra stop cities once
+    extra_stop_cities = {}
+    if all_extra_stop_ids:
+        cities = db.query(City).filter(City.id.in_(all_extra_stop_ids)).all()
+        extra_stop_cities = {city.id: city.name for city in cities}
+
+    rides = []
+    for ride, stop_city in rides_with_stop_cities:
+        extra_stop_names = []
+        if ride.extra_stops:
+            extra_stop_names = [extra_stop_cities.get(uuid) for uuid in ride.extra_stops if uuid in extra_stop_cities]
+
+        rides.append({
             "id": str(ride.id),
-            "start_location_name": start_city.name,
-            "destination_name": destination_city.name,
-            "stop_name": stop_city.name,
-        }
-        for ride, start_city, stop_city, destination_city in rides_with_cities
-    ]
-    print('rides with loc:',rides)
+            "start_location_name": FROM_CITY_NAME,  # hardcoded
+            "destination_name": FROM_CITY_NAME,     # hardcoded
+            "stop_name": stop_city.name if stop_city else None,
+            "extra_stops_names": extra_stop_names,
+        })
+
     return rides
-
-
-
 @router.get("/api/rides/{ride_id}", response_model=RideSchema)
 def read_ride(ride_id: UUID, db: Session = Depends(get_db)):
     ride = get_ride_by_id(db, ride_id)
@@ -438,6 +459,13 @@ def get_pending_car_orders(db: Session = Depends(get_db)):
         })
 
     return result
+
+@router.get("/api/vehicle-types")
+def get_vehicle_types(db: Session = Depends(get_db)):
+    types = db.query(Vehicle.type).distinct().all()
+    return [t[0] for t in types]
+
+
 
 
 @router.post("/api/forgot-password")
@@ -494,18 +522,33 @@ def cancel_order(order_id: UUID, db: Session = Depends(get_db)):
     return cancel_order_in_db(order_id, db)
 
 @router.get("/api/distance")
-def get_distance(from_city: str, to_city: str, db: Session = Depends(get_db)):
+def get_distance(
+    to_city: str,
+    extra_stops: list[str] = Query(default=[]),
+    db: Session = Depends(get_db),
+):
     try:
-        distance_km = calculate_distance(from_city, to_city, db)
-        return {"distance_km": distance_km}
+        from_city = FROM_CITY
+        from_city_id = get_city(from_city,db)
+        route = [from_city_id.id] + extra_stops + [to_city]
+        total_distance = 0
+        for i in range(len(route) - 1):
+            total_distance += calculate_distance(route[i], route[i + 1], db)
+        return {"distance_km": total_distance}
     except Exception as e:
-
         raise HTTPException(status_code=400, detail=str(e))
+
 
 @router.get("/api/cities")
 def get_cities_route(db: Session = Depends(get_db)):
     cities = get_cities(db)
     return [{"id": str(city.id), "name": city.name} for city in cities]
+
+@router.get("/api/city")
+def get_city_route(name:str,db: Session = Depends(get_db)):
+    city = get_city(name,db)
+    return {"id": str(city.id), "name": city.name} 
+
 @router.get("/api/rides/feedback/check/{user_id}")
 def check_feedback_needed(
     user_id: UUID,  # Add this parameter to capture the path variable
@@ -528,3 +571,29 @@ def check_feedback_needed(
         "ride_id": str(ride.id),
         "message": "הנסיעה הסתיימה, נא למלא את הטופס"
     }
+
+
+@router.get("/api/employees/by-department/{user_id}")
+def get_employees_by_department(user_id: UUID, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.employee_id == user_id).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    department_id = user.department_id
+
+    employees = (
+        db.query(User)
+        .filter(User.department_id == department_id, User.employee_id != user_id)
+        .with_entities(User.employee_id, User.first_name, User.last_name)
+        .all()
+    )
+
+    return [
+        {
+            "id": str(emp.employee_id),
+            "full_name": f"{emp.first_name} {emp.last_name}"
+        }
+        for emp in employees
+    ]
+

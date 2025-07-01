@@ -18,9 +18,37 @@ html, body {
   -webkit-appearance: none;
   margin: 0;
 }
-
+.extra-stop{
+  display:flex;
+  flex-direction: row;
+}
 .no-spinner {
   -moz-appearance: textfield;
+  appearance: textfield;
+}
+.add-stop-btn, .delete-stop-btn {
+  margin-top: 5px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: #007bff;
+}
+
+#extra-stop {
+  display: flex;
+  gap: 3px;
+  flex-direction: row;
+}
+#extrastops{
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 10px;
+}
+#first-stop-box{
+  display:flex;
+  flex-direction: column;
+  margin-left: 30px;
 }
 
 /* FORM MODAL */
@@ -89,6 +117,68 @@ form .row {
     margin-bottom: 8px;
 
 }
+form .column {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 2px;
+    flex-direction: column;
+}
+form .addBtn, 
+form .removeBtn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 2px 4px;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #007bff; /* Default active color */
+}
+
+form .addBtn:disabled {
+    color: #6c757d; /* Disabled color (gray) */
+    cursor: not-allowed;
+    text-decoration: none;
+}
+
+form .addBtn:hover:not(:disabled) {
+    text-decoration: underline;
+}
+
+form .removeBtn {
+    color: #dc3545; /* red for remove */
+    font-size: 0.75rem;
+}
+
+form .removeBtn:hover {
+    text-decoration: underline;
+}
+
+.full-trip-display {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* For RTL, use flex-end if needed */
+  direction: rtl;
+  margin-top: 60px;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-left: 930px;
+  background-color: #9422221f;
+  width:300px
+}
+
+.full-trip-display a,
+.full-trip-display p {
+  margin: 0.25rem 0;
+  font-size: 1.1rem;
+}
+
+
+#distance-title{
+  padding-top: 20px;
+}
 
 .input-group {
     flex: 1;
@@ -101,6 +191,7 @@ form .row {
     font-size: 14px;
     font-weight: bold;
 }
+
 
 .input-group input {
     padding: 10px;
@@ -115,11 +206,10 @@ form .row {
   border: none;
   align-self: flex-end;
   margin-top: auto;
-
   padding: 12px 24px;
   border-radius: 6px;
   cursor: pointer;
-  align-self: flex-end;
+  align-self: flex-start;
   margin-bottom: 0;
 }
 
@@ -299,4 +389,66 @@ input[type="time"], input[type="number"], input[type="text"], select {
   left: 15px;
   font-size: 1.5rem;
   cursor: pointer;
+}
+
+
+.button-container {
+  display: flex;
+  justify-content: flex-end; /* Aligns button to the left */
+  margin-top: 1.5rem;
+}
+
+
+.ride-question {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 16px; /* 👈 add more space below the question */
+}
+
+.error-text {
+  color: red;
+  font-size: 13px;
+  margin-top: 6px;
+  margin-right: 6px;
+}
+/* Add these CSS styles to your component's CSS file: */
+
+.estimated-distance-display {
+  margin: 15px 0;
+  padding: 10px;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+}
+
+.distance-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #6c757d;
+  font-size: 14px;
+  margin: 0;
+}
+
+.distance-loading i {
+  color: #007bff;
+}
+
+.distance-result {
+  text-align: center;
+}
+
+.distance-info.success {
+  color: #28a745;
+  font-size: 16px;
+  margin: 0;
+  padding: 8px;
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  border-radius: 4px;
+}
+
+.distance-info.success strong {
+  font-weight: 600;
 }

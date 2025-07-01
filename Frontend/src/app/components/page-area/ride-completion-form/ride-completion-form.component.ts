@@ -10,6 +10,11 @@ import { environment } from '../../../../environments/environment';
 import { RideService } from '../../../services/ride.service';
 import { RideDashboardItem } from '../../../models/ride-dashboard-item/ride-dashboard-item.module';
 import { RideLocationItem } from '../../../models/ride.model';
+import { FuelType, FuelTypeResponse } from '../../../models/vehicle-dashboard-item/vehicle-out-item.module';
+import { VehicleService } from '../../../services/vehicle.service';
+import { Router } from '@angular/router';
+
+
 @Component({
   selector: 'app-ride-completion-form',
   templateUrl: './ride-completion-form.component.html',
@@ -25,6 +30,8 @@ export class RideCompletionFormComponent implements OnInit {
   start_location_name: string = '';
   stop_name: string = '';
   destination_name: string = '';
+  VehicleFuelType:FuelType=FuelType.Gasoline
+  extra_stops_names: string[] = [];
 
   // rideId!: string;
   showForm = true;
@@ -39,7 +46,9 @@ export class RideCompletionFormComponent implements OnInit {
     private route: ActivatedRoute,
     private rideReportService: RideReportService,
     private location: Location,
-    private rideService: RideService 
+    private rideService: RideService ,
+    private vehicleService:VehicleService,
+    private router: Router
   ) {}
 
   goBack(): void {
@@ -66,7 +75,11 @@ export class RideCompletionFormComponent implements OnInit {
       this.start_location_name = matchingRide.start_location_name;
       this.stop_name = matchingRide.stop_name;
       this.destination_name = matchingRide.destination_name;
-      console.log(`start:${this.start_location_name},des:${this.destination_name},stop:${this.stop_name}`)
+      this.extra_stops_names = matchingRide.extra_stops_names || []; // <-- assign extra stops here
+      console.log(
+    `start: ${this.start_location_name}, des: ${this.destination_name}, stop: ${this.stop_name}, extra stops: ${this.extra_stops_names?.join(', ') || 'none'}`
+  );
+
     }
   });
   });    
@@ -85,6 +98,7 @@ export class RideCompletionFormComponent implements OnInit {
       fueled: ['', Validators.required],
     });
 
+
     this.form.get('emergency_event')?.valueChanges.subscribe((value) => {
       const freezeDetails = this.form.get('freeze_details');
       console.log('emergency event?',value)
@@ -99,6 +113,14 @@ export class RideCompletionFormComponent implements OnInit {
   }
 
  
+loadFuelType(vehicleId: string) {
+    this.vehicleService.getFuelTypeByVehicleId(vehicleId).subscribe({
+      next: (res: FuelTypeResponse) => {
+        this.VehicleFuelType = res.fuel_type;
+        console.log('Fuel Type:', this.VehicleFuelType);
+      },
+      error: err => console.error('Failed to load fuel type', err)
+    });}
 
   setEmergencyEvent(value: string): void {
     this.form.get('emergency_event')?.setValue(value);
@@ -114,6 +136,19 @@ export class RideCompletionFormComponent implements OnInit {
       this.toastService.show('אנא השלם את כל השדות הנדרשים', 'error');
       return;
     }
+      this.loadFuelType(this.currentRide.vehicle_id)
+
+     if (!this.form.value.fueled) {
+       if(localStorage.getItem('role')=='employee')
+        { if (this.VehicleFuelType === 'electric') {
+      this.toastService.showPersistent('הרכב טרם נטען. אנא טען לפני ההחזרה.', 'neutral');
+    } else if (this.VehicleFuelType === 'hybrid') {
+      this.toastService.showPersistent('הרכב לא תודלק ולא נטען. יש להשלים לפני ההחזרה.', 'neutral');
+    } else if (this.VehicleFuelType === 'gasoline') {
+      this.toastService.showPersistent('הרכב לא תודלק. יש לתדלק לפני ההחזרה.', 'neutral');
+    }}
+   }
+    
 
     const rawForm = this.form.value;
     const formData = {
@@ -122,7 +157,10 @@ export class RideCompletionFormComponent implements OnInit {
       freeze_details: rawForm.freeze_details || '',
       completed: rawForm.completed === 'true',
       fueled: rawForm.fueled === 'true',
+        changed_by: localStorage.getItem('user_id') || '' // Make sure this is a string!
+
     };
+    console.log('Form Data:', formData);
 
     const token = localStorage.getItem('access_token') || '';
     this.loading = true;
@@ -141,5 +179,7 @@ export class RideCompletionFormComponent implements OnInit {
         this.loading = false;
       },
     });
+
+    this.router.navigate(['/home'])
   }
 }

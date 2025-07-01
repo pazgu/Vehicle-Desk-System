@@ -59,21 +59,50 @@ getArchivedOrders(userId: string): Observable<any[]> {
 }
 
 // ✅ NEW: Fetch estimated distance from backend
-getDistance(from: string, to: string): Observable<{ distance_km: number }> {
+// getDistance(from: string, to: string): Observable<{ distance_km: number }> {
+//   const token = localStorage.getItem('access_token');
+//   if (!token) throw new Error('Access token not found in localStorage.');
+//   const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+
+//   const encodedFrom = encodeURIComponent(from);
+//   const encodedTo = encodeURIComponent(to);
+
+//   return this.http.get<{ distance_km: number }>(
+//   `${this.distanceUrl}?from_city=${encodedFrom}&to_city=${encodedTo}`,
+//   { headers }
+// );
+// }
+
+getRouteDistance(to: string, extraStops: string[] = []): Observable<{ distance_km: number }> {
   const token = localStorage.getItem('access_token');
   if (!token) throw new Error('Access token not found in localStorage.');
   const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
 
-  const encodedFrom = encodeURIComponent(from);
   const encodedTo = encodeURIComponent(to);
+  const stopsQuery = extraStops.map(stop => `extra_stops=${encodeURIComponent(stop)}`).join('&');
 
-  return this.http.get<{ distance_km: number }>(
-  `${this.distanceUrl}?from_city=${encodedFrom}&to_city=${encodedTo}`,
-  { headers }
-);
+  const url = `${this.distanceUrl}?to_city=${encodedTo}${stopsQuery ? '&' + stopsQuery : ''}`;
 
+  return this.http.get<{ distance_km: number }>(url, { headers });
 }
 
+
+
+getDepartmentEmployees(user_id: string): Observable<{ id: string; full_name: string }[]> {
+  const token = localStorage.getItem('access_token');
+  if (!token) {
+    throw new Error('Access token not found in localStorage.');
+  }
+
+  const headers = new HttpHeaders({
+    Authorization: `Bearer ${token}`
+  });
+
+  return this.http.get<{ id: string; full_name: string }[]>(
+    `http://localhost:8000/api/employees/by-department/${user_id}`,
+    { headers }
+  );
+}
 
 
 

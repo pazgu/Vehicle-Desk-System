@@ -1,4 +1,5 @@
 import asyncio
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 from ..models.user_model import User,UserRole
 from ..models.ride_model import Ride,RideStatus
@@ -15,14 +16,17 @@ from typing import Optional
 from ..services.admin_rides_service import update_monthly_usage_stats
 
 def get_ride_needing_feedback(db: Session, user_id: int) -> Optional[Ride]:
-    ride= db.query(Ride).filter(
+
+    ride = db.query(Ride).filter(
         Ride.user_id == user_id,
         Ride.end_datetime <= datetime.now(timezone.utc),
-        Ride.feedback_submitted == False  
+        Ride.feedback_submitted == False,
+        Ride.status == RideStatus.in_progress 
     ).order_by(
         Ride.end_datetime.desc()
     ).first()
-  
+    if(ride):
+        print('ride needs feedback found:',ride.id)
     return ride
 
 def mark_feedback_submitted(db: Session, ride_id: str):
@@ -42,11 +46,15 @@ async def process_completion_form(db: Session, user: User, form_data: Completion
     print("this is the current user:",user.username)
     print("dep id:",user.department_id)
     print("user id:",user.employee_id)
+    print("changed by received:",form_data.changed_by)
  
     # 1. Get the ride for this user
     ride = db.query(Ride).filter_by(id=form_data.ride_id, user_id=user.employee_id).first()
     if not ride:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ride not found")
+    
+    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user.employee_id)})
+
 
     print ("ride id",ride.id)
     # 2. Set emergency event if provided
@@ -57,6 +65,7 @@ async def process_completion_form(db: Session, user: User, form_data: Completion
     print("completed?",form_data.completed)
     if form_data.completed:
         ride.status = RideStatus.completed
+        print("ride status set to completed")
 
         # הוספת עדכון סטטיסטיקות שימוש ברכב:
         update_monthly_usage_stats(db=db, ride=ride)
@@ -113,7 +122,7 @@ async def process_completion_form(db: Session, user: User, form_data: Completion
              # Emit ride status updated event
         sio.emit('ride_status_updated', {
             "ride_id": str(ride.id),
-            "status": ride.status,
+            "new_status": ride.status,
         })
 
         # Emit vehicle status updated event
@@ -122,6 +131,8 @@ async def process_completion_form(db: Session, user: User, form_data: Completion
             "status": vehicle.status,
         })
     mark_feedback_submitted(db,ride.id)
+    # db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(form_data.changed_by)})
+
     db.commit()
     
     return {"message": "Completion form processed successfully."}

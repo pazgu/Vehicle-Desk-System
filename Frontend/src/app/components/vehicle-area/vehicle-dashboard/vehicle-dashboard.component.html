@@ -4,21 +4,27 @@
       <h1 style="text-align: right;">רכבי מחלקה</h1>
       <br>
 
-      <!-- Sort + Filter Toggle -->
-      <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; direction: rtl;">
-        <button class="filter" (click)="showFilters = !showFilters">
-          {{ showFilters ? 'הסתר סינון' : 'הצג סינון' }}
-        </button>
+      <div class="vehicle-buttons-bar">
+        <div class="left-buttons">
+          <button class="add-vehicle-btn" (click)="navigateToNewVehicle()">
+            הוסף רכב חדש +
+          </button>
+        </div>
 
-        <!-- 🚗 Most Used Toggle -->
-        <button class="filter" (click)="toggleVehicleMode()">
-          {{ showingMostUsed ? 'הצג את כל הרכבים' : 'הכי בשימוש החודש' }}
-        </button>
+        <div class="right-buttons">
+          <button class="filter" (click)="showFilters = !showFilters">
+            {{ showFilters ? 'הסתר סינון' : 'הצג סינון' }}
+          </button>
+
+          <button class="filter" (click)="toggleVehicleMode()">
+            {{ showingMostUsed ? 'הצג את כל הרכבים' : 'הכי בשימוש החודש' }}
+          </button>
+        </div>
       </div>
 
       <!-- 🔔 Notice when filtering by most used -->
       <div *ngIf="showingMostUsed" style="text-align: right; font-weight: bold; color: #922;">
-        מוצגים רכבים לפי כמות שימושים החודש 
+        מוצגים רכבים לפי כמות שימושים החודש
       </div>
 
       <!-- Status Legend -->
@@ -52,43 +58,37 @@
 
         <div style="margin-bottom: 1rem; gap: 1rem; display: flex;">
           <label for="typeFilter"> סוג:</label>
-          <select class="typeFilter" [(ngModel)]="typeFilter">
+          <select class="typeFilter" id="typeFilter" [(ngModel)]="typeFilter">
             <option value="">הצג הכל</option>
-            <option value="קטן">קטן</option>
-            <option value="גדול">גדול</option>
-            <option value="ואן">ואן</option>
+            <option *ngFor="let type of vehicleTypes" [value]="type">{{ type }}</option>
           </select>
         </div>
+
       </div>
 
       <!-- 🚘 Vehicle Cards -->
       <div class="vehicles-cards">
-        <p-card *ngFor="let vehicle of filteredVehicles"
-                [styleClass]="'vehicle-card ' + getCardClass(vehicle.status)"
-                (click)="goToVehicleDetails(vehicle.id)">
+        <p-card *ngFor="let vehicle of filteredVehicles" [styleClass]="'vehicle-card ' + getCardClass(vehicle.status)"
+          (click)="goToVehicleDetails(vehicle.id)">
 
           <ng-template pTemplate="header">
-          <div class="usage-section">
-      <div class="usage-line" >
-            <div 
-              class="usage-indicator"
-              [style.background-color]="getUsageBarColor(vehicle.plate_number)"
-            ></div>
-            <span class="usage-number" *ngIf="getVehicleUsageCount(vehicle.plate_number)>0">  {{ getVehicleUsageCount(vehicle.plate_number) }} נסיעות</span>
-          </div>
-        </div>            
-            <img *ngIf="vehicle.image_url"
-                 [src]="vehicle.image_url"
-                 alt="תמונה של הרכב"
-                 style="width: 100%; max-width: 250px; margin-top: 10px;" />
-                
+            <div class="usage-section">
+              <div class="usage-line">
+                <div class="usage-indicator" [style.background-color]="getUsageBarColor(vehicle.plate_number)"></div>
+                <span class="usage-number" *ngIf="getVehicleUsageCount(vehicle.plate_number)>0"> {{
+                  getVehicleUsageCount(vehicle.plate_number) }} נסיעות</span>
+              </div>
+            </div>
+            <img *ngIf="vehicle.image_url" [src]="vehicle.image_url" alt="תמונה של הרכב"
+              style="width: 100%; max-width: 250px; margin-top: 10px;" />
+
           </ng-template>
-         
-            
-            <h3>רכב: {{ vehicle.plate_number }}</h3>
-            <div *ngIf="vehicle.vehicle_model">
-              <strong>דגם:</strong> {{ vehicle.vehicle_model }}
-              <div *ngIf="vehicle.ride_count !== undefined">
+
+
+          <h3>רכב: {{ vehicle.plate_number }}</h3>
+          <div *ngIf="vehicle.vehicle_model">
+            <strong>דגם:</strong> {{ vehicle.vehicle_model }}
+            <div *ngIf="vehicle.ride_count !== undefined">
               <strong>שימושים החודש:</strong> {{ vehicle.ride_count }}
             </div>
           </div>
@@ -96,9 +96,7 @@
       </div>
 
       <!-- Empty state -->
-      <div *ngIf="filteredVehicles?.length === 0"
-           class="empty-state"
-           style="text-align: center; margin-top: 2rem;">
+      <div *ngIf="filteredVehicles?.length === 0" class="empty-state" style="text-align: center; margin-top: 2rem;">
         לא נמצאו רכבים
       </div>
     </div>

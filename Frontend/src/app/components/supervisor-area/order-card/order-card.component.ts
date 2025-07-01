@@ -9,6 +9,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { OrderService } from '../../../services/order.service';
 import { OrderCardItem } from '../../../models/order-card-item/order-card-item.module';
 import { finalize } from 'rxjs/operators';
+import { CityService } from '../../../services/city.service';
 
 @Component({
   selector: 'app-order-card',
@@ -30,12 +31,15 @@ export class OrderCardComponent implements OnInit {
   departmentId: string | null = null; // Retrieve from localStorage
   loading = false;
   rideId!: string;
+  cityMap: { [id: string]: string } = {};
+
 
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private orderService: OrderService
+    private orderService: OrderService,
+    private cityService: CityService
   ) {}
 
   ngOnInit(): void {
@@ -60,11 +64,29 @@ export class OrderCardComponent implements OnInit {
         console.error('Missing orderId');
       }
     });
+this.cityService.getCities().subscribe({
+  next: (cities) => {
+    this.cityMap = cities.reduce((map: { [id: string]: string }, city) => {
+      map[city.id] = city.name;
+      return map;
+    }, {});
+  },
+  error: () => {
+    console.error('שגיאה בטעינת ערים');
+  }
+});
   }
 
   ngOnDestroy(): void {
     document.body.style.overflow = '';
   }
+
+  
+getCityName(id: string): string {
+  return this.cityMap[id] || 'לא ידוע';
+}
+
+  
 
   loadOrder(departmentId: string, orderId: string): void {
     this.loading = true;
@@ -144,6 +166,8 @@ export class OrderCardComponent implements OnInit {
         return 'card-pending';
       case 'rejected':
         return 'card-rejected';
+      case 'in_progress':
+        return 'card-in-progress';
       default:
         return '';
     }
@@ -159,8 +183,21 @@ export class OrderCardComponent implements OnInit {
         return 'ממתין לאישור';
       case 'rejected':
         return 'נדחה';
+      case 'in_progress':
+        return 'בתהליך';
       default:
         return status;
     }
   }
+
+hasTripPassed(): boolean{
+  if (!this.trip || !this.trip.startDateTime) return false;
+
+  const tripStart = new Date(this.trip.startDateTime);
+  const now = new Date();
+
+  // Check if the trip start time is in the past
+  return tripStart < now;
+}
+
 }

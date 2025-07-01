@@ -8,7 +8,8 @@ import { VehicleInItem } from '../../../models/vehicle-dashboard-item/vehicle-in
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
-
+import { SocketService } from '../../../services/socket.service';
+import { ToastService } from '../../../services/toast.service';
 @Component({
   selector: 'app-vehicle-dashboard',
   imports: [CommonModule, FormsModule, CardModule],
@@ -26,27 +27,47 @@ export class VehicleDashboardComponent {
   typeFilter: string = '';
   showFilters: boolean = false;
   sortBy: string = 'date_and_time';
-  
+  vehicleTypes: string[] = []; // List of vehicle types fetched from backend
+
   // Enhanced usage tracking from analytics component
   topUsedVehiclesMap: Record<string, number> = {};
   vehicleUsageData: { plate_number: string; vehicle_model: string; ride_count: number }[] = [];
 
   constructor(
-    private vehicleService: VehicleService, 
+    private vehicleService: VehicleService,
     private router: Router,
-    private http: HttpClient
-  ){}
+    private http: HttpClient,
+    private socketService: SocketService,
+    private toastService: ToastService
+  ) { }
 
   ngOnInit(): void {
     this.loadVehicles();
+    this.fetchVehicleTypes();
     this.loadVehicleUsageData();
+
+    this.socketService.newVehicle$.subscribe((vehicleData) => {
+      if (vehicleData && vehicleData.id) {
+        console.log('🆕 Vehicle received via socket:', vehicleData);
+
+        const alreadyExists = this.vehicles.some(v => v.id === vehicleData.id);
+        if (!alreadyExists) {
+          this.vehicles.unshift(vehicleData); // Add to top of the list
+        }
+      }
+    });
+
+  }
+
+  navigateToNewVehicle() {
+    this.router.navigate(['vehicle-dashboard/new-vehicle']);
   }
 
   goToVehicleDetails(vehicleId: string): void {
     this.router.navigate(['/vehicle-details', vehicleId]);
   }
 
-  loadVehicles(): void{
+  loadVehicles(): void {
     this.vehicleService.getAllVehicles().subscribe(
       (data) => {
         this.vehicles = Array.isArray(data) ? data : [];
@@ -79,21 +100,35 @@ export class VehicleDashboardComponent {
     });
   }
 
+  fetchVehicleTypes() {
+    console.log('fetchVehicleTypes called');
+    this.vehicleService.getVehicleTypes().subscribe({
+    next: (types) => {
+      console.log('Fetched vehicle types:', types);
+      this.vehicleTypes = types || [];
+    },
+    error: (err) => {
+      console.error('Error fetching vehicle types:', err);
+      this.vehicleTypes = [];
+    }
+  });
+  }
+
   // Get usage count for a specific vehicle
   getVehicleUsageCount(plateNumber: string): number {
     return this.topUsedVehiclesMap[plateNumber] || 0;
   }
 
   // Get usage level classification
-  getUsageLevel(plateNumber: string): 'high' | 'medium' | 'good' | 'hide'{
+  getUsageLevel(plateNumber: string): 'high' | 'medium' | 'good' | 'hide' {
     const count = this.getVehicleUsageCount(plateNumber);
     if (count > 10) return 'high';
     if (count >= 5) return 'medium';
-    if (count == 0 ) return 'hide';
+    if (count == 0) return 'hide';
     return 'good';
   }
 
- 
+
   // Get usage bar color
   getUsageBarColor(plateNumber: string): string {
     const level = this.getUsageLevel(plateNumber);
@@ -101,7 +136,7 @@ export class VehicleDashboardComponent {
       case 'high': return '#FF5252';    // Red
       case 'medium': return '#FFC107';  // Yellow
       case 'good': return '#42A5F5';    // Blue
-      case 'hide': return'rgba(255, 255, 255, 0)'// Gray (hidden)
+      case 'hide': return 'rgba(255, 255, 255, 0)'// Gray (hidden)
       default: return '#E0E0E0';        // Gray
     }
   }
@@ -182,7 +217,7 @@ export class VehicleDashboardComponent {
         return status;
     }
   }
-  
+
   get filteredVehicles() {
     const baseList = this.showingMostUsed ? this.mostUsedVehicles : this.vehicles;
 
@@ -205,24 +240,19 @@ export class VehicleDashboardComponent {
     }
 
     if (this.typeFilter) {
-      switch (this.typeFilter) {
-        case 'קטן':
-          filtered = filtered.filter(vehicle => vehicle.type === 'small');
-          break;
-        case 'גדול':
-          filtered = filtered.filter(vehicle => vehicle.type === 'large');
-          break;
-        case 'ואן':
-          filtered = filtered.filter(vehicle => vehicle.type === 'van');
-          break;
-      }
+      filtered = filtered.filter(vehicle => vehicle.type === this.typeFilter);
     }
+
     if (this.sortBy) {
       return [...filtered].sort((a, b) => a.status.localeCompare(b.status));
     }
-    else{
+    else {
       return filtered;
     }
   }
+
+  
+
+
 }
 

@@ -33,6 +33,8 @@
 <p-tabView [(activeIndex)]="activeTabIndex">
   <p-tabPanel>
     <div>
+          <h3 class="section-heading">פילוח סטטוס רכבים</h3>
+
       <p-chart
         *ngIf="vehicleChartInitialized && vehicleChartData"
         type="pie"
@@ -44,6 +46,8 @@
 
   <p-tabPanel>
     <div>
+          <h3 class="section-heading">פילוח סטטוס נסיעות</h3>
+
       <p-chart
         *ngIf="rideChartInitialized && rideChartData"
         type="pie"
@@ -65,22 +69,35 @@
       <option *ngFor="let year of years" [value]="year">{{ year }}</option>
     </select>
 
-    <button (click)="loadTopUsedVehiclesChart()">סנן</button>
+<button class="filter-button" (click)="loadTopUsedVehiclesChart()">סנן</button>
   </div>
 
-  <div *ngIf="topUsedVehiclesData">
+  <div *ngIf="showChart">
+
+<h3 class="section-heading">
+  {{ isMonthlyView ? 'שימוש חודשי ברכבים' : 'שימוש כללי ברכבים' }}
+</h3>
+
     <button (click)="toggleUsageView()" class="toggle-view-button">
-      {{ isMonthlyView ? 'הצג לפי כל הזמנים' : 'הצג לפי חודש' }}
-    </button>
+    {{ isMonthlyView ? 'הצג לפי כל הזמנים' : 'הצג לפי חודש' }}
+  </button>
 
-    <p-chart
-      type="bar"
-      [data]="topUsedVehiclesData"
-      [options]="topUsedVehiclesOptions"
-    ></p-chart>
+  <p-chart
+    *ngIf="isMonthlyView"
+    type="bar"
+    [data]="monthlyStatsChartData"
+    [options]="monthlyStatsChartOptions"
+  ></p-chart>
 
+  <p-chart
+    *ngIf="!isMonthlyView"
+    type="bar"
+    [data]="allTimeStatsChartData"
+    [options]="allTimeStatsChartOptions"
+    
+  ></p-chart>
     <!-- Legend only relevant for Monthly View -->
-    <div class="usage-legend" *ngIf="isMonthlyView">
+    <div class="usage-legend" *ngIf="showChart">
       <div class="legend-item">
         <span class="color-box good"></span> טוב (0–4 נסיעות)
       </div>

@@ -3,8 +3,9 @@ from uuid import UUID
 from enum import Enum
 # app/schemas.py
 from pydantic import BaseModel, EmailStr
-from typing import Optional
+from typing import Optional , List
 from uuid import UUID
+from datetime import date
 
 
 class UserRole(str, Enum):
@@ -20,6 +21,9 @@ class UserUpdate(BaseModel):
     role: Optional[UserRole] = None   # <-- Use the Enum here
     department_id: Optional[UUID] = None
     password: Optional[str] = None
+    has_government_license: bool = False
+    license_file_url: Optional[str] = None
+    license_expiry_date: Optional[date] = None
 
 class UserResponse(BaseModel):
     first_name: str
@@ -29,6 +33,14 @@ class UserResponse(BaseModel):
     employee_id: UUID
     role: UserRole
     department_id: UUID
+    has_government_license: bool = False
+    license_file_url: Optional[str] = None
+    license_expiry_date: Optional[date] = None
     
     class Config:
         from_attributes = True
+        
+
+class PaginatedUserResponse(BaseModel):
+    total: int
+    users: List[UserResponse]
