@@ -56,7 +56,7 @@ def get_vehicles_with_optional_status(
             Vehicle.odometer_reading,
             Vehicle.vehicle_model,
             Vehicle.image_url,
-            Vehicle.department_name,
+            Vehicle.department_id, 
             User.employee_id.label("user_id"),
             User.first_name,
             User.last_name,
@@ -195,7 +195,7 @@ def get_vehicle_by_id(vehicle_id: str, db: Session):
         "vehicle_model": vehicle.vehicle_model,
         "image_url": vehicle.image_url,
         "lease_expiry": vehicle.lease_expiry,
-        "department_name": vehicle.department_name 
+        "department_id": vehicle.department_id 
     }
 
 def freeze_vehicle_service(db: Session, vehicle_id: UUID, reason: str, changed_by: UUID):

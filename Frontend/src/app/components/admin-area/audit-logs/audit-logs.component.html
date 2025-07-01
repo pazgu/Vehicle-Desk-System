@@ -9,15 +9,6 @@
             {{ showFilters ? 'הסתר חיפוש' : 'הצג חיפוש' }}
           </button>
         </div>
-        <div class="filter-actions-row">
-          <button class="collapse-btn" (click)="filtersCollapsed = !filtersCollapsed">
-            {{ filtersCollapsed ? 'הצג אפשרויות סינון וייצוא' : 'הסתר אפשרויות סינון וייצוא' }}
-          </button>
-          <label class="problematic-only-label">
-            <input type="checkbox" [(ngModel)]="problematicOnly" (change)="fetchAuditLogs()" />
-            הצג רק בדיקות עם בעיות
-          </label>
-        </div>
       </div>
 
       <div *ngIf="showFilters" class="search-container">
@@ -50,6 +41,23 @@
           <button class="export-button" (click)="exportToCSV()">ייצוא CSV</button>
         </div>
       </div>
+      <div class="export-buttons">
+        <h3>דיווחים מהשבוע האחרון-בהתאם לסינון</h3>
+        <button class="export-button" (click)="exportToPDF()">ייצוא PDF</button>
+        <button class="export-button" (click)="exportToCSV()">ייצוא CSV</button>
+      </div>
+
+       <div class="problematic-only-filter" dir="rtl" *ngIf="!loading">
+        <label>
+          <input type="checkbox" [(ngModel)]="problematicOnly" (change)="onRangeChange()" />
+          הצג בדיקות עם בעיות
+        </label>
+      </div>
+
+      <div class="admin-inspections-container" *ngIf="!loading && filteredLogs.length > 0">
+        </div>
+
+
 
       <div class="status-indicators">
         <p style="margin-bottom: 0.75rem; font-weight: 600;">מקרא צבעים</p>
@@ -320,10 +328,13 @@
                       </ng-container>
                       <ng-template #oldValueContent>
                         <ng-container *ngIf="row.label.includes('זמן') || row.label.includes('תאריך'); else plainOld">
+                        <ng-container *ngIf="row.label.includes('זמן') || row.label.includes('תאריך'); else plainOld">
                           {{ row.oldValue ? (row.oldValue | date:'dd/MM/yyyy HH:mm') : '-' }}
                         </ng-container>
                         <ng-template #plainOld>
                           <ng-container *ngIf="row.label === 'תמונה'; else plainOldValue">
+                            <img *ngIf="row.oldValue && row.oldValue.length > 0" [src]="row.oldValue" alt="תמונה ישנה"
+                              style="max-width: 120px; max-height: 80px;" />
                             <img *ngIf="row.oldValue && row.oldValue.length > 0" [src]="row.oldValue" alt="תמונה ישנה"
                               style="max-width: 120px; max-height: 80px;" />
                             <span *ngIf="!row.oldValue || row.oldValue.length === 0">-</span>
@@ -340,10 +351,13 @@
                       </ng-container>
                       <ng-template #newValueContent>
                         <ng-container *ngIf="row.label.includes('זמן') || row.label.includes('תאריך'); else plainNew">
+                        <ng-container *ngIf="row.label.includes('זמן') || row.label.includes('תאריך'); else plainNew">
                           {{ row.newValue ? (row.newValue | date:'dd/MM/yyyy HH:mm') : '-' }}
                         </ng-container>
                         <ng-template #plainNew>
                           <ng-container *ngIf="row.label === 'תמונה'; else plainNewValue">
+                            <img *ngIf="row.newValue && row.newValue.length > 0" [src]="row.newValue" alt="תמונה חדשה"
+                              style="max-width: 120px; max-height: 80px;" />
                             <img *ngIf="row.newValue && row.newValue.length > 0" [src]="row.newValue" alt="תמונה חדשה"
                               style="max-width: 120px; max-height: 80px;" />
                             <span *ngIf="!row.newValue || row.newValue.length === 0">-</span>
