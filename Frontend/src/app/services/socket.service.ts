@@ -69,16 +69,10 @@ this.socket.on('user_deleted', (data: any) => {
   this.deleteUserRequests$.next(data);
 });
 
-this.socket.on('ride_feedback_needed', (data) => {
+this.socket.on('feedback_needed', (data) => {
   console.log('SOCKET EVENT RAW:', data);
   this.feedbackNeeded$.next(data);
 });
-
-this.socket.onAny((event, ...args) => {
-  console.log('Received event:', event, args);
-});
-
-
 
 
 this.socket.on('order_deleted', (data: any) => {

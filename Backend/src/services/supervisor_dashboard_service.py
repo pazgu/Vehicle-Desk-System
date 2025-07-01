@@ -264,6 +264,7 @@ async def start_ride(db: Session, ride_id: UUID):
         "ride_id": str(vehicle.id),
         "new_status": vehicle.status.value
     })
+
     print(f'start_ride was called for ride_id:{ride_id}')
     return ride,vehicle
 

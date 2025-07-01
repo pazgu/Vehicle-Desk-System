@@ -4,7 +4,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime, time, timezone
 from src.utils.database import SessionLocal
 from src.models.user_model import User
-from ..models.ride_model import Ride
+from ..models.ride_model import Ride, RideStatus
 from src.services.user_notification import create_system_notification
 import pytz
 from apscheduler.jobstores.base import JobLookupError
@@ -14,8 +14,9 @@ from ..services.supervisor_dashboard_service import start_ride
 
 from ..utils.socket_manager import sio
 scheduler = BackgroundScheduler(timezone=pytz.timezone("Asia/Jerusalem"))
-scheduler.start()
 
+
+main_loop = asyncio.get_event_loop()
 
 def schedule_ride_start(ride_id: str, start_datetime: datetime):
     print('start ride was scheduled')
@@ -59,8 +60,7 @@ async def start_ride_with_new_session(ride_id: str):
         db.close()
 
 
-
-async def notify_ride_needs_feedback_with_session(user_id: int):
+async def notify_ride_needs_feedback(user_id: int):
     print(f'Notifying feedback needed for user {user_id}')
     db = SessionLocal()
     try:
@@ -69,19 +69,35 @@ async def notify_ride_needs_feedback_with_session(user_id: int):
             print("No ride needs feedback")
             return {"needs_feedback": False}
 
-        # Emit socket event to the user
         print(f"About to emit ride_feedback_needed for ride {ride.id}")
-        await sio.emit("ride_feedback_needed", {
+
+        await sio.emit("feedback_needed", {
+            "showPage": True,
             "ride_id": str(ride.id),
-            "user_id": str(user_id),
+            "message": "הנסיעה הסתיימה, נא למלא את הטופס"
         })
+
         print(f"Emit done for ride {ride.id}")
-        print("Connected SIDs:", sio.manager.rooms)
 
     finally:
         db.close()
 
-
+def periodic_check():
+    db = SessionLocal()
+    try:
+        user_ids = [user.id for user in db.query(User).all()]
+    finally:
+        db.close()
+    for user_id in user_ids:  # Example user IDs
+        future = asyncio.run_coroutine_threadsafe(
+            notify_ride_needs_feedback(user_id),
+            main_loop
+        )
+        try:
+            result = future.result(timeout=5)
+            print('Coroutine result:', result)
+        except Exception as e:
+            print('Coroutine error:', e)
 
 
 def check_and_schedule_ride_emails():
@@ -137,28 +153,31 @@ def schedule_ride_completion_email(ride_id: str, end_datetime: datetime):
         id=job_id
     )
 
-main_loop = asyncio.get_event_loop()
 
-def schedule_ride_feedback(ride_id: str, user_id: int, end_datetime: datetime):
-    print(f'Scheduling feedback notification for ride {ride_id}')
-    job_id = f"ride-feedback-{ride_id}"
-
+@scheduler.scheduled_job('interval', minutes=1)  # every 1 minute
+def periodic_check():
+    print("Periodic feedback check running...")
+    db = SessionLocal()
     try:
-        scheduler.remove_job(job_id)
-    except JobLookupError:
-        pass
+        # Query all users who might need feedback
+        user_ids = db.query(Ride.user_id).filter(
+            Ride.end_datetime <= datetime.now(timezone.utc),
+            Ride.feedback_submitted == False,
+            Ride.status == RideStatus.in_progress
+        ).distinct().all()
+        
+        for (user_id,) in user_ids:
+            asyncio.run_coroutine_threadsafe(
+                notify_ride_needs_feedback(user_id),
+                main_loop
+            )
+    finally:
+        db.close()
 
-    scheduler.add_job(
-        lambda: asyncio.run_coroutine_threadsafe(
-            notify_ride_needs_feedback_with_session(user_id),
-            main_loop
-        ),
-        'date',
-        run_date=end_datetime,
-        id=job_id
-    )
+scheduler.add_job(periodic_check, 'interval', seconds=60)
 
-
+scheduler.start()
+        
 def start_scheduler():
     scheduler = BackgroundScheduler(timezone=pytz.timezone("Asia/Jerusalem"))
     scheduler.add_job(notify_admins_daily, 'cron', hour=6, minute=0)

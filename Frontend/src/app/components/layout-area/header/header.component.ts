@@ -46,6 +46,8 @@ export class HeaderComponent implements OnInit {
     } else {
       this.checkFeedbackNeeded();
     }
+ 
+
   this.socketService.feedbackNeeded$.subscribe((data) => {
   console.log('ride that needs feedback from header component:', data);
   if (data) {
@@ -55,7 +57,17 @@ export class HeaderComponent implements OnInit {
     console.warn('Received null or empty feedback data');
   }
  
+ 
 });
+  // this.socketService.rideStatusUpdated$.subscribe((data) => {
+  // console.log('ride that needs feedback from header component:', data);
+  // if (data) {
+  //   this.checkFeedbackNeeded();
+    
+  // } else {
+  //   console.warn('Received null or empty feedback data');
+  // }});
+ 
 
   }
 

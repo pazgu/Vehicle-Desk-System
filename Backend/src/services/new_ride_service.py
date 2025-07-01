@@ -2,7 +2,6 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from uuid import uuid4, UUID
 
-from ..utils.scheduler import schedule_ride_feedback
 from ..schemas.new_ride_schema import RideCreate, RideResponse
 from ..models.ride_model import Ride, RideStatus
 from ..models.user_model import User
@@ -59,12 +58,6 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate):
     db.commit()
     db.refresh(new_ride)
     print('extra stops in back:',new_ride.extra_stops)
-    if new_ride.end_datetime and new_ride.user_id:
-        schedule_ride_feedback(
-            ride_id=str(new_ride.id),
-            user_id=new_ride.user_id,
-            end_datetime=new_ride.end_datetime
-        )
     await sio.emit("ride_status_updated", {
         "ride_id": str(new_ride.id),
         "new_status": new_ride.status.value
