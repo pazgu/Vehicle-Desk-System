@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject, ReplaySubject, Subject } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { NotificationService } from './notification';
 @Injectable({
@@ -23,6 +23,7 @@ export class SocketService {
   public rideStatusUpdated$ = new BehaviorSubject<any>(null); 
   public auditLogs$ = new BehaviorSubject<any>(null);
   public newVehicle$ = new BehaviorSubject<any>(null);
+public  feedbackNeeded$ = new ReplaySubject<any>(1);
 
 
 
@@ -66,6 +67,11 @@ export class SocketService {
 this.socket.on('user_deleted', (data: any) => {
   console.log('🗑️ User deleted via socket:', data);
   this.deleteUserRequests$.next(data);
+});
+
+this.socket.on('feedback_needed', (data) => {
+  console.log('SOCKET EVENT RAW:', data);
+  this.feedbackNeeded$.next(data);
 });
 
 
@@ -123,11 +129,6 @@ this.socket.on('order_deleted', (data: any) => {
       this.newVehicle$.next(data);
 });
 
-
-
-    setTimeout(() => {
-      this.orderUpdated$.next({ id: 'test-id' });
-    }, 3000);
 
 
   }

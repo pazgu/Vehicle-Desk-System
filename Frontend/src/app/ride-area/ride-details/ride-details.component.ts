@@ -59,14 +59,7 @@ export class RideDetailsComponent implements OnInit {
     }
   });
      // ✅ Socket: react to new ride request while on this page
-    this.socketService.rideRequests$.subscribe((rideData) => {
-      if (rideData) {
-        this.toastService.show('🚗 התקבלה הזמנת נסיעה חדשה', 'success');
-
-        const audio = new Audio('assets/sounds/notif.mp3');
-        audio.play();
-      }
-    });
+   
   
   }
 
