@@ -405,7 +405,7 @@ def ride_status_summary(db: Session = Depends(get_db)):
 def get_all_audit_logs_route(
     from_date: Optional[datetime] = None,
     to_date: Optional[datetime] = None,
-    problematic_only: bool = Query(False),  
+    problematic_only: bool = Query(False, alias="problematicOnly"),  # <-- add alias
     db: Session = Depends(get_db),
     payload: dict = Depends(token_check)
 ):
@@ -415,7 +415,6 @@ def get_all_audit_logs_route(
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
-
 
 @router.get("/vehicles/usage-stats")
 def vehicle_usage_stats(

@@ -829,7 +829,7 @@
   padding: 0.7rem 1.2rem;
   color: #942222;
   border: 1px solid #e0e0e0;
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 600;
   transition: background-color 0.2s, color 0.2s, transform 0.1s;
 }
@@ -843,14 +843,3 @@ input[type="checkbox"] {
   vertical-align: middle;
 }
 
-
-.problematic-only-filter button{
-  background: none;
-    border: 1px solid #942222;
-    font-size: 0.9rem;
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-    color: #942222;
-    border-radius: 8px;
-    transition: all 0.2s;
-}
