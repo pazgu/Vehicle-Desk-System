@@ -7,6 +7,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { RideCompletionFormComponent } from '../../page-area/ride-completion-form/ride-completion-form.component';
 import { environment } from '../../../../environments/environment';
+import { NotificationService } from '../../../services/notification';
 import { SocketService } from '../../../services/socket.service';
 @Component({
   selector: 'app-header',
@@ -18,6 +19,7 @@ import { SocketService } from '../../../services/socket.service';
 export class HeaderComponent implements OnInit {
   fullName$: Observable<string> = of('');
   role$: Observable<string> = of('');
+  unreadCount$!: Observable<number>; 
   isLoggedIn = false;
 
   showFeedbackModal = false;
@@ -28,12 +30,14 @@ export class HeaderComponent implements OnInit {
     private router: Router,
     private toastService: ToastService,
     private http: HttpClient,
+    private notificationService: NotificationService,
     private socketService:SocketService
   ) {}
 
   ngOnInit(): void {
     this.fullName$ = this.authService.fullName$;
     this.role$ = this.authService.role$;
+    this.unreadCount$ = this.notificationService.unreadCount$;
 
     this.authService.isLoggedIn$.subscribe(value => {
       this.isLoggedIn = value;

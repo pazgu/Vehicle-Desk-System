@@ -9,7 +9,7 @@ import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { SocketService } from '../../../services/socket.service';
-
+import { ToastService } from '../../../services/toast.service';
 @Component({
   selector: 'app-vehicle-dashboard',
   imports: [CommonModule, FormsModule, CardModule],
@@ -27,6 +27,7 @@ export class VehicleDashboardComponent {
   typeFilter: string = '';
   showFilters: boolean = false;
   sortBy: string = 'date_and_time';
+  vehicleTypes: string[] = []; // List of vehicle types fetched from backend
 
   // Enhanced usage tracking from analytics component
   topUsedVehiclesMap: Record<string, number> = {};
@@ -36,11 +37,13 @@ export class VehicleDashboardComponent {
     private vehicleService: VehicleService,
     private router: Router,
     private http: HttpClient,
-    private socketService: SocketService
+    private socketService: SocketService,
+    private toastService: ToastService
   ) { }
 
   ngOnInit(): void {
     this.loadVehicles();
+    this.fetchVehicleTypes();
     this.loadVehicleUsageData();
 
     this.socketService.newVehicle$.subscribe((vehicleData) => {
@@ -95,6 +98,20 @@ export class VehicleDashboardComponent {
         console.error('❌ Error fetching vehicle usage data:', err);
       }
     });
+  }
+
+  fetchVehicleTypes() {
+    console.log('fetchVehicleTypes called');
+    this.vehicleService.getVehicleTypes().subscribe({
+    next: (types) => {
+      console.log('Fetched vehicle types:', types);
+      this.vehicleTypes = types || [];
+    },
+    error: (err) => {
+      console.error('Error fetching vehicle types:', err);
+      this.vehicleTypes = [];
+    }
+  });
   }
 
   // Get usage count for a specific vehicle
@@ -233,6 +250,8 @@ export class VehicleDashboardComponent {
       return filtered;
     }
   }
+
+  
 
 
 }

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
 import { BehaviorSubject, ReplaySubject, Subject } from 'rxjs';
 import { environment } from '../../environments/environment';
-
+import { NotificationService } from './notification';
 @Injectable({
   providedIn: 'root',
 })
@@ -27,7 +27,7 @@ public  feedbackNeeded$ = new ReplaySubject<any>(1);
 
 
 
-  constructor() {
+  constructor(private notificationService: NotificationService) {
     this.connectToSocket(); // ✅ now always tries to connect (later you can add env check)
   }
 
@@ -75,6 +75,8 @@ this.socket.on('feedback_needed', (data) => {
 });
 
 
+
+
 this.socket.on('order_deleted', (data: any) => {
   console.log('✏️ Ride order deleted via socket:', data);
   this.deleteRequests$.next(data); // ✅ Pushes to subscribers like HomeComponent
@@ -92,7 +94,8 @@ this.socket.on('order_deleted', (data: any) => {
       console.log('📩 Socket ID:', this.socket.id);
 
       this.notifications$.next(data);
-      console.log('📩 Data pushed to BehaviorSubject');
+      const current = this.notificationService.unreadCount$.getValue();
+  this.notificationService.unreadCount$.next(current + 1);
     });
 
     this.socket.on('new_ride_request', (data: any) => {
