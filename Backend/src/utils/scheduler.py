@@ -79,6 +79,7 @@ def check_and_complete_rides():
         print(f"❌ Error while updating completed rides: {e}")
     finally:
         db.close()
+
 async def notify_ride_needs_feedback(user_id: int):
     print(f'Notifying feedback needed for user {user_id}')
     db = SessionLocal()
