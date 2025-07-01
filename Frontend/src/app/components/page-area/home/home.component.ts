@@ -118,7 +118,7 @@ export class NewRideComponent implements OnInit {
       ride_date_night_end: [''],
       start_time: [''],
       end_time: [''],
-      estimated_distance_km: [''],
+      estimated_distance_km: [null, Validators.required],
       ride_type: ['', Validators.required],
       vehicle_type: ['', Validators.required],
       car: ['', Validators.required],
@@ -188,18 +188,31 @@ export class NewRideComponent implements OnInit {
     });
   }
 
-  private calculateRouteDistance(): void {
-    const start = this.rideForm.get('start_location')?.value;
-    const stop = this.rideForm.get('stop')?.value;
-    const extraStops = this.extraStops.value || [];
+ private calculateRouteDistance(): void {
+  const startRaw = this.rideForm.get('start_location')?.value;
+  const stopRaw = this.rideForm.get('stop')?.value;
+  const extraStops = this.extraStops.value || [];
 
-    if (start && stop && start !== stop) {
-      const routeStops = [...extraStops, stop];
-      this.fetchEstimatedDistance(start.id || start, routeStops);
-    } else {
-      this.resetDistanceValues();
-    }
+  if (!startRaw || !stopRaw) {
+    this.resetDistanceValues();
+    return;
   }
+
+  const start = typeof startRaw === 'string' ? startRaw : startRaw.id;
+  const stop = typeof stopRaw === 'string' ? stopRaw : stopRaw.id;
+
+  if (!start || !stop || start === stop) {
+    this.resetDistanceValues();
+    return;
+  }
+
+const routeStops = [...extraStops.filter((id: string) => !!id), stop];
+console.log('📦 Raw stop:', stopRaw, '| extraStops:', extraStops);
+
+
+  this.fetchEstimatedDistance(start, routeStops);
+}
+
 
   private resetDistanceValues(): void {
     this.fetchedDistance = null;
@@ -342,6 +355,8 @@ export class NewRideComponent implements OnInit {
 
   // Distance calculation methods
   private fetchEstimatedDistance(from: string, toArray: string[]): void {
+    console.log('📍 Distance Params:', { from, toArray });
+
     if (!from || !toArray || toArray.length === 0) return;
 
     console.log(`🌍 Requesting route distance: ${from} → ${toArray.join(' → ')}`);
@@ -650,8 +665,8 @@ export class NewRideComponent implements OnInit {
       stop: this.rideForm.get('stop')?.value,
       extra_stops: this.extraStops.value,
       destination: this.rideForm.get('destination')?.value.name,
-      estimated_distance_km: distance,
-      actual_distance_km: this.estimated_distance_with_buffer,
+      estimated_distance_km: Number(distance),
+      actual_distance_km: Number(this.estimated_distance_with_buffer),
       four_by_four_reason: this.rideForm.get('four_by_four_reason')?.value,
     };
 

@@ -56,7 +56,8 @@ def get_department_orders(department_id: str, db: Session) -> List[RideDashboard
             date_and_time=order.start_datetime,
             destination=order.destination,
             distance=order.estimated_distance_km,
-            status=order.status.value  # Access the string value of the enum
+            status=order.status.value,  # Access the string value of the enum
+            submitted_at=order.submitted_at 
         )
 
         dashboard_items.append(dashboard_item)
@@ -264,6 +265,7 @@ async def start_ride(db: Session, ride_id: UUID):
         "ride_id": str(vehicle.id),
         "new_status": vehicle.status.value
     })
+
     print(f'start_ride was called for ride_id:{ride_id}')
     return ride,vehicle
 

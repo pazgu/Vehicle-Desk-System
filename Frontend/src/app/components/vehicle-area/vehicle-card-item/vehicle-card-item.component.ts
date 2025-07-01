@@ -19,6 +19,8 @@ export class VehicleCardItemComponent implements OnInit {
   topUsedVehiclesMap: Record<string, number> = {};
   vehicleUsageData: { plate_number: string; vehicle_model: string; ride_count: number }[] = [];
   currentVehicleRideCount: number = 0;
+  departmentName: string = '';
+
 
   constructor(private navigateRouter: Router, private route: ActivatedRoute, private vehicleService: VehicleService, private http: HttpClient) { }
 
@@ -28,15 +30,31 @@ export class VehicleCardItemComponent implements OnInit {
 
   const id = this.route.snapshot.paramMap.get('id');
   if (id) {
-    this.vehicleService.getVehicleById(id).subscribe(data => {
-      console.log('Vehicle from API:', data);
-      this.vehicle = data;
-      
-      // Load ride count after getting vehicle data
-      this.getAllRidesForCurrentVehicle(data.id);
+    this.vehicleService.getVehicleById(id).subscribe(vehicleData => {
+      console.log('Vehicle from API:', vehicleData);
+      this.vehicle = vehicleData;
+
+      // ✅ FIX HERE: move department logic INSIDE the subscribe block
+      if (vehicleData.department_id) {
+        this.http.get<any>(`${environment.apiUrl}/departments/${vehicleData.department_id}`).subscribe({
+          next: (dept) => {
+            this.departmentName = dept.name;
+          },
+          error: (err) => {
+            console.error('Failed to fetch department name:', err);
+            this.departmentName = 'לא ידוע';
+          }
+        });
+      } else {
+        this.departmentName = 'אין מחלקה';
+      }
+
+      this.getAllRidesForCurrentVehicle(vehicleData.id);
     });
   }
 }
+
+
  
   getCardClass(status: string): string {
     switch (status) {

@@ -39,6 +39,8 @@ export class DashboardAllOrdersComponent implements OnInit {
   showOldOrders: boolean = false;
   sortBy: string = 'date_and_time';
 
+
+
   constructor(private router: Router, private orderService: OrderService,private toastService:ToastService,  private socketService: SocketService ) {}
 
   ngOnInit(): void {
@@ -65,7 +67,10 @@ this.socketService.orderUpdated$.subscribe((updatedRide) => {
 
     console.log('Supervisor Dashboard received ride update:', updatedRide);
   console.log("Checking against supervisor orders:", this.orders.map(o => o.ride_id));
-
+    this.orders.forEach(o => {
+    console.log(`Comparing: order ride_id=${o.ride_id} | updatedRide.id=${updatedRide.id}`);
+    console.log('Equal?', o.ride_id === updatedRide.id);
+  });
     // Find the order in the supervisor dashboard's local orders array:
     const index = this.orders.findIndex(o => o.ride_id === updatedRide.id);
     console.log('index:',index);
@@ -78,6 +83,8 @@ this.socketService.orderUpdated$.subscribe((updatedRide) => {
       distance: updatedRide.estimated_distance_km,
       status: updatedRide.status.toLowerCase(),
       destination: updatedRide.destination || '', // adjust based on your data
+      submitted_at: updatedRide.submitted_at || new Date().toISOString() // use actual value here!
+
       };
 
       // Replace with a new array to trigger change detection:
@@ -101,6 +108,33 @@ this.socketService.orderUpdated$.subscribe((updatedRide) => {
       ...this.orders.slice(index + 1)
     ];
   } 
+});
+this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
+  console.log('🔔 Subscription triggered with:', updatedStatus); // Add this line
+  if (!updatedStatus) return; // ignore the initial null emission
+  if (updatedStatus) {
+    console.log('✏️ Ride  status update received in HomeComponent:', updatedStatus);
+
+    const index = this.orders.findIndex(o => o.ride_id === updatedStatus.ride_id);
+    if (index !== -1) {
+      const newStatus=updatedStatus.new_status
+
+         const updatedOrders = [...this.orders];
+    updatedOrders[index] = {
+      ...updatedOrders[index],
+      status: newStatus  
+    };
+
+    // ✅ Replace the array
+    this.orders = updatedOrders;
+    this.orders = [...this.orders]
+      
+      const role=localStorage.getItem('role');
+      if(role==='supervisor' || role ==='employee'){
+      this.toastService.show(' יש בקשה שעברה סטטוס','success')
+      }
+    }
+  }
 });
 
   }
@@ -164,8 +198,12 @@ this.socketService.orderUpdated$.subscribe((updatedRide) => {
       case 'status':
         return [...filtered].sort((a, b) => a.status.localeCompare(b.status));
       case 'date_and_time':
-      default:
         return [...filtered].sort((a, b) => new Date(a.date_and_time).getTime() - new Date(b.date_and_time).getTime());
+       case 'submitted_at':
+        return [...filtered].sort((a, b) => new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime());
+      default:
+            return filtered;
+
     }
   }
 
