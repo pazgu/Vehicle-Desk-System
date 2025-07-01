@@ -36,7 +36,8 @@ requested_vehicle_plate = f"Plate-{str(vehicle_id)[:8]}",
 vehicle_id=vehicle_id,
         date_and_time=start_datetime,
         distance=str(estimated_distance_km),
-        status=status
+        status=status,
+        submitted_at=submitted_at
     )
 
 def get_all_orders(db: Session, status=None, from_date=None, to_date=None) -> List[RideDashboardItem]:
@@ -45,6 +46,7 @@ def get_all_orders(db: Session, status=None, from_date=None, to_date=None) -> Li
         Ride.start_datetime,
         Ride.estimated_distance_km,
         Ride.status,
+        Ride.submitted_at,
         Vehicle.id.label("vehicle_id"),
         User.first_name,
         User.last_name
@@ -62,7 +64,8 @@ def get_all_orders(db: Session, status=None, from_date=None, to_date=None) -> Li
             vehicle_id=r.vehicle_id,
             start_datetime=r.start_datetime,
             estimated_distance_km=r.estimated_distance_km,
-            status=r.status
+            status=r.status,
+            submitted_at=r.submitted_at 
         )
         for r in query.all()
     ]

@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from socketio import ASGIApp
+import socketio
 
 from src.routes.user_routes import router as user_route
 from src.routes.supervisor_routes import router as supervisor_route
@@ -22,6 +23,7 @@ from .utils.audit_log_listener import listen_for_audit_logs
 from src.utils.scheduler import start_scheduler
 from src.utils.socket_manager import sio  # your socketio.AsyncServer
 from src.services.email_service import send_email
+
 
 # ✅ Step 1–5: Create and configure the FastAPI app
 app = FastAPI()
@@ -55,18 +57,22 @@ async def log_requests(request: Request, call_next):
     print(f"⬅️ Response: {response.status_code}")
     return response
 
-
 @sio.on("join")
-async def join_room(sid, data):
-    room = data.get("room")
-    if room:
-        await sio.enter_room(sid, room)
-        print(f"👥 Socket {sid} joined room {room}")
+async def handle_join(sid, data):
+    user_id = data.get("user_id")
+    if user_id:
+        await sio.enter_room(sid, user_id)
+        print(f"✅ User {user_id} joined room (SID: {sid})")
+    else:
+        print("⚠️ No user_id provided in join event.")
+
 
 # app = FastAPI() is the base app used for routers and middleware
 # sio_app wraps app with Socket.IO support — use this in uvicorn if you want sockets
 # Run with: uvicorn src.main:sio_app --reload
-sio_app = ASGIApp(sio, other_asgi_app=app)
+
+# sio_app = ASGIApp(sio, other_asgi_app=app)
+sio_app = socketio.ASGIApp(sio, other_asgi_app=app)
 
 
 @app.get("/test-email")

@@ -516,12 +516,30 @@ def get_distance(
     db: Session = Depends(get_db),
 ):
     try:
-        from_city = FROM_CITY
-        from_city_id = get_city(from_city,db)
-        route = [from_city_id.id] + extra_stops + [to_city]
+        from_city_obj = get_city(FROM_CITY, db)
+        if not from_city_obj:
+            raise HTTPException(status_code=404, detail="From city not found")
+
+        # Resolve extra stops
+        stop_objs = []
+        for stop_id in extra_stops:
+            stop = db.query(City).filter(City.id == stop_id).first()
+            if not stop:
+                raise HTTPException(status_code=404, detail=f"Extra stop not found: {stop_id}")
+            stop_objs.append(stop)
+
+        # Resolve destination city
+        to_city_obj = db.query(City).filter(City.id == to_city).first()
+        if not to_city_obj:
+            raise HTTPException(status_code=404, detail="Destination city not found")
+
+        # Build full route with city objects
+        route = [from_city_obj] + stop_objs + [to_city_obj]
+
         total_distance = 0
         for i in range(len(route) - 1):
-            total_distance += calculate_distance(route[i], route[i + 1], db)
+            total_distance += calculate_distance(route[i].id, route[i + 1].id, db)
+
         return {"distance_km": total_distance}
 
     except ValueError as ve:
@@ -531,7 +549,6 @@ def get_distance(
         # שגיאות אחרות שמחזירות 500
         logger.error(f"Unexpected error in get_distance: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
-
 
 
 @router.get("/api/cities")

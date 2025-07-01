@@ -9,7 +9,7 @@ import { AuditLogs } from '../models/audit-logs/audit-logs.module';
 export class AuditLogsService {
   private apiUrl = 'http://localhost:8000/api/all-audit-logs';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getAuditLogs(fromDate?: string, toDate?: string, problematicOnly: boolean = false): Observable<AuditLogs[]> {
     const token = localStorage.getItem('token');
@@ -20,8 +20,8 @@ export class AuditLogsService {
     let params = new HttpParams();
     if (fromDate) params = params.set('from_date', fromDate);
     if (toDate) params = params.set('to_date', toDate);
-    if (problematicOnly) params = params.set('problematic_only', 'true');
 
+    params = params.set('problematicOnly', problematicOnly.toString());
     return this.http.get<AuditLogs[]>(this.apiUrl, { headers, params });
   }
 }
