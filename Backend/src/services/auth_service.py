@@ -18,11 +18,12 @@ ALGORITHM = environ.get("ALGORITHM", "HS256")
 
 
 
-def create_access_token(employee_id: UUID, username: str,first_name:str,last_name:str, role: str,department_id: Optional[UUID] = None, expires_delta: timedelta = None):
+def create_access_token(user_id: UUID,employee_id: UUID, username: str,first_name:str,last_name:str, role: str,department_id: Optional[UUID] = None, expires_delta: timedelta = None):
     expire = datetime.utcnow() + (expires_delta or timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES)))
 
     payload = {
         "sub": str(employee_id),
+        "user_id": str(user_id),  
         "username": username,
         "first_name":first_name,
         "last_name":last_name,

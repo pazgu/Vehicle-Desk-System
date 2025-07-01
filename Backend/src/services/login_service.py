@@ -21,6 +21,7 @@ def login_user(username: str, password: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Incorrect username or password.")
     
     token = create_access_token(
+        user_id=str(user.id),
         employee_id=str(user.employee_id),  # UUID as string
         username=user.username,
         first_name=user.first_name,
