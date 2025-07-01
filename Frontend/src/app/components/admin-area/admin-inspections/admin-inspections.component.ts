@@ -1,17 +1,18 @@
+// src/app/admin/components/admin-inspections/admin-inspections.component.ts
+
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { ActivatedRoute } from '@angular/router';
 import { SocketService } from '../../../services/socket.service';
 import { ToastService } from '../../../services/toast.service';
-import { FormsModule } from '@angular/forms';
-import { HttpParams } from '@angular/common/http';
+import { FormsModule } from '@angular/forms'; // Ensure FormsModule is imported for ngModel
 
 @Component({
   selector: 'app-admin-inspections',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule], // Ensure FormsModule is here
   templateUrl: './admin-inspections.component.html',
   styleUrls: ['./admin-inspections.component.css']
 })
@@ -22,7 +23,6 @@ export class AdminInspectionsComponent implements OnInit {
   showProblematicFilters = false;
   showMediumIssues = false;
   showCriticalIssues = false;
-
 
   private lastInspectionId: string | null = null;
 
@@ -61,8 +61,13 @@ export class AdminInspectionsComponent implements OnInit {
         console.log('🆕 Received inspection via socket:', newInspection);
 
         this.lastInspectionId = newInspection.inspection_id;
+        // Important: If a new inspection arrives, it should respect current filters
+        // If filters are active, you might need to re-evaluate if newInspection matches
+        // For simplicity, just adding it to the list for now, but a full re-load
+        // `this.loadInspections();` might be safer if filtering logic is complex
+        // and needs to be strictly applied on new data.
         this.inspections.unshift(newInspection);
-        this.cdr.detectChanges();
+        this.cdr.detectChanges(); // Manually trigger change detection for unshift
 
         this.toastService.show('📢 התקבלה בדיקה חדשה');
         this.playAlertSound();
@@ -70,34 +75,41 @@ export class AdminInspectionsComponent implements OnInit {
     });
   }
 
-  
-
   loadInspections(): void {
-  this.loading = true;
+    this.loading = true;
 
-  let params = new HttpParams();
-  if (this.showMediumIssues && !this.showCriticalIssues) {
-    params = params.set('problem_type', 'medium');
-  } else if (!this.showMediumIssues && this.showCriticalIssues) {
-    params = params.set('problem_type', 'critical');
-  }
-  else if (this.showMediumIssues && this.showCriticalIssues) {
-    params = params.set('problem_type', 'medium,critical');
-  }
-  this.http.get<any[]>(`${environment.apiUrl}/inspections/today`, { params }).subscribe({
-    next: (data) => {
-      this.inspections = data;
-      this.loading = false;
-    },
-    error: () => {
-      this.loading = false;
-      this.toastService.show('❌ שגיאה בטעינת בדיקות רכבים להיום', 'error');
+    let params = new HttpParams();
+    // Only add problem_type param if the problematic filters are visible AND
+    // at least one of the specific issue types is selected.
+    if (this.showProblematicFilters && (this.showMediumIssues || this.showCriticalIssues)) {
+      if (this.showMediumIssues && !this.showCriticalIssues) {
+        params = params.set('problem_type', 'medium');
+      } else if (!this.showMediumIssues && this.showCriticalIssues) {
+        params = params.set('problem_type', 'critical');
+      } else if (this.showMediumIssues && this.showCriticalIssues) {
+        params = params.set('problem_type', 'medium,critical');
+      }
     }
-  });
-}
+    // If showProblematicFilters is false, or if it's true but no sub-checkboxes are selected,
+    // then 'params' will remain empty, and the backend will return all inspections.
 
+    this.http.get<any[]>(`${environment.apiUrl}/inspections/today`, { params }).subscribe({
+      next: (data) => {
+        this.inspections = data;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+        this.toastService.show('❌ שגיאה בטעינת בדיקות רכבים להיום', 'error');
+      }
+    });
+  }
 
-
+  // New helper method: checks if any problematic issue filter checkboxes are actually selected
+  // This is different from `showProblematicFilters` which only toggles the visibility of the checkboxes.
+  anyFiltersSelected(): boolean {
+    return this.showProblematicFilters && (this.showMediumIssues || this.showCriticalIssues);
+  }
 
   // ✅ Notification sound for new inspections
   private playAlertSound(): void {

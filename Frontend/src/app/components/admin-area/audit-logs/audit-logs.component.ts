@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuditLogsService } from '../../../services/audit-logs.service';
@@ -9,8 +9,11 @@ import { saveAs } from 'file-saver';
 import Papa from 'papaparse';
 import type { TDocumentDefinitions } from 'pdfmake/interfaces';
 import { SocketService } from '../../../services/socket.service';
-import { Router } from '@angular/router';
 import { CityService } from '../../../services/city.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
+import { ToastService } from '../../../services/toast.service';
 
 (pdfMake as any).vfs = pdfFonts.vfs;
 (pdfMake as any).fonts = {
@@ -50,6 +53,11 @@ export class AuditLogsComponent implements OnInit {
   cityMap: { [id: string]: string } = {};
 
 
+  loading = true;
+  highlighted = false;
+  private lastInspectionId: string | null = null;
+
+
 
   vehicleFieldLabels: { [key: string]: string } = {
     id: 'מזהה רכב',
@@ -70,30 +78,38 @@ export class AuditLogsComponent implements OnInit {
     return this.vehicleFieldLabels[key] || key;
   }
 
-  getRideAuditRows(oldData: any, newData: any): Array<{label: string, oldValue: any, newValue: any}> {
-  return [
-    { label: 'מזהה נסיעה', oldValue: oldData.id, newValue: newData.id },
-    { 
-  label: 'מסלול', 
-oldValue: `${this.getCityName(oldData.start_location)} → ${this.getCityName(oldData.stop)} → ${this.getCityName(oldData.destination)}`, 
-      newValue: `${this.getCityName(newData.start_location)} → ${this.getCityName(newData.stop)} → ${this.getCityName(newData.destination)}`  
-},
-    { label: 'סוג נסיעה', oldValue: oldData.ride_type, newValue: newData.ride_type },
-    { label: 'סיבת בחירה ברכב 4X4', oldValue: oldData.vehicle_type_reason, newValue: newData.vehicle_type_reason },
-    { label: 'משתמש', oldValue: oldData.user_id, newValue: newData.user_id },
-    { label: 'משתמש עוקף', oldValue: oldData.override_user_id, newValue: newData.override_user_id },
-    { label: 'רכב', oldValue: oldData.vehicle_id, newValue: newData.vehicle_id },
-    { label: 'סטטוס', oldValue: oldData.status, newValue: newData.status },
-    { label: 'ארכיון', oldValue: oldData.isArchive, newValue: newData.isArchive },
-    { label: 'זמן התחלה', oldValue: oldData.start_datetime, newValue: newData.start_datetime },
-    { label: 'זמן סיום', oldValue: oldData.end_datetime, newValue: newData.end_datetime },
-    { label: 'תאריך שליחה', oldValue: oldData.submitted_at, newValue: newData.submitted_at },
-    { label: 'מרחק מוערך (ק"מ)', oldValue: oldData.estimated_distance_km, newValue: newData.estimated_distance_km },
-    { label: 'מרחק בפועל (ק"מ)', oldValue: oldData.actual_distance_km, newValue: newData.actual_distance_km },
-    { label: 'בדיקת רישיון עברה', oldValue: oldData.license_check_passed, newValue: newData.license_check_passed },
-    { label: 'אירוע חירום', oldValue: oldData.emergency_event, newValue: newData.emergency_event }
-  ];
-}
+  private playAlertSound(): void {
+    const audio = new Audio('assets/sounds/notif.mp3');
+    audio.play().catch(err => {
+      // Chrome may block this if user hasn't interacted yet (expected behavior)
+      console.warn('🔇 Audio failed to play (autoplay policy):', err);
+    });
+  }
+
+  getRideAuditRows(oldData: any, newData: any): Array<{ label: string, oldValue: any, newValue: any }> {
+    return [
+      { label: 'מזהה נסיעה', oldValue: oldData.id, newValue: newData.id },
+      {
+        label: 'מסלול',
+        oldValue: `${this.getCityName(oldData.start_location)} → ${this.getCityName(oldData.stop)} → ${this.getCityName(oldData.destination)}`,
+        newValue: `${this.getCityName(newData.start_location)} → ${this.getCityName(newData.stop)} → ${this.getCityName(newData.destination)}`
+      },
+      { label: 'סוג נסיעה', oldValue: oldData.ride_type, newValue: newData.ride_type },
+      { label: 'סיבת בחירה ברכב 4X4', oldValue: oldData.vehicle_type_reason, newValue: newData.vehicle_type_reason },
+      { label: 'משתמש', oldValue: oldData.user_id, newValue: newData.user_id },
+      { label: 'משתמש עוקף', oldValue: oldData.override_user_id, newValue: newData.override_user_id },
+      { label: 'רכב', oldValue: oldData.vehicle_id, newValue: newData.vehicle_id },
+      { label: 'סטטוס', oldValue: oldData.status, newValue: newData.status },
+      { label: 'ארכיון', oldValue: oldData.isArchive, newValue: newData.isArchive },
+      { label: 'זמן התחלה', oldValue: oldData.start_datetime, newValue: newData.start_datetime },
+      { label: 'זמן סיום', oldValue: oldData.end_datetime, newValue: newData.end_datetime },
+      { label: 'תאריך שליחה', oldValue: oldData.submitted_at, newValue: newData.submitted_at },
+      { label: 'מרחק מוערך (ק"מ)', oldValue: oldData.estimated_distance_km, newValue: newData.estimated_distance_km },
+      { label: 'מרחק בפועל (ק"מ)', oldValue: oldData.actual_distance_km, newValue: newData.actual_distance_km },
+      { label: 'בדיקת רישיון עברה', oldValue: oldData.license_check_passed, newValue: newData.license_check_passed },
+      { label: 'אירוע חירום', oldValue: oldData.emergency_event, newValue: newData.emergency_event }
+    ];
+  }
 
   rideFieldLabels: { [key: string]: string } = {
     id: 'מזהה נסיעה',
@@ -118,44 +134,88 @@ oldValue: `${this.getCityName(oldData.start_location)} → ${this.getCityName(ol
   };
 
   constructor(
-    private auditLogService: AuditLogsService,
+    private http: HttpClient,
+    private route: ActivatedRoute,
     private socketService: SocketService,
+    private cityService: CityService,
+    private toastService: ToastService,
+    private cdr: ChangeDetectorRef,
     private router: Router,
-    private cityService: CityService
-
-  ) {}
+    private auditLogService: AuditLogsService
+  ) { }
 
   getCityName(id: string): string {
-  return this.cityMap[id] || id;
+    return this.cityMap[id] || id;
+  }
+
+// In AuditLogsComponent, inside fetchAuditLogs method
+fetchAuditLogs(fromDate?: string, toDate?: string) {
+  this.loading = true;
+  this.auditLogService.getAuditLogs(fromDate, toDate, this.problematicOnly).subscribe({
+    next: (data) => {
+      // Ensure data is an array before sorting/spreading
+      this.logs = Array.isArray(data) ? data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()) : [];
+      this.filteredLogs = [...this.logs];
+      this.currentPage = 1;
+      this.loading = false;
+      
+      console.log('Checkbox problematicOnly state:', this.problematicOnly);
+      console.log('API Response Data Received:', data); // IMPORTANT: Check this output
+      console.log('Number of logs displayed:', this.filteredLogs.length);
+    },
+    error: (err) => {
+      console.error('Error fetching audit logs:', err);
+      this.logs = [];
+      this.filteredLogs = [];
+      this.loading = false;
+    }
+  });
 }
 
-
-  ngOnInit() {
-
+  ngOnInit(): void {
+    // Merge both blocks here!
     this.cityService.getCities().subscribe({
-  next: (cities) => {
-   this.cityMap = cities.reduce((map: { [key: string]: string }, city) => {
-  map[city.id] = city.name;
-  return map;
-}, {});
+      next: (cities) => {
+        this.cityMap = cities.reduce((map: { [key: string]: string }, city) => {
+          map[city.id] = city.name;
+          return map;
+        }, {});
+        this.onRangeChange();
+      },
+      error: () => {
+        console.error('שגיאה בטעינת רשימת ערים');
+      }
+    });
 
-    this.onRangeChange();
+    this.route.queryParams.subscribe(params => {
+      this.highlighted = params['highlight'] === '1';
+    });
 
 
-  },
-  error: () => {
-    console.error('שגיאה בטעינת רשימת ערים');
-  }
-});
+    this.socketService.notifications$.subscribe((notif) => {
+      if (notif?.message?.includes('בעיה חמורה')) {
+        this.toastService.show('📢 בדיקה חדשה עם בעיה חמורה התקבלה', 'error');
+        this.playAlertSound();
+      }
+    });
 
+    this.socketService.newInspection$.subscribe((newInspection) => {
+      if (
+        newInspection &&
+        newInspection.inspection_id !== this.lastInspectionId
+      ) {
+        console.log('🆕 Received inspection via socket:', newInspection);
 
-    this.socketService.auditLogs$.subscribe((newLog) => {
-      if (newLog) {
-        this.logs = [newLog, ...this.logs];
-        this.filteredLogs = [...this.logs];
+        this.lastInspectionId = newInspection.inspection_id;
+        this.cdr.detectChanges();
+
+        this.toastService.show('📢 התקבלה בדיקה חדשה');
+        this.playAlertSound();
       }
     });
   }
+
+
 
   onRangeChange() {
     let fromDate: string | undefined;
@@ -194,14 +254,6 @@ oldValue: `${this.getCityName(oldData.start_location)} → ${this.getCityName(ol
     this.fetchAuditLogs(fromDate, toDate);
   }
 
-  fetchAuditLogs(fromDate?: string, toDate?: string) {
-    console.log('problematicOnly:', this.problematicOnly, 'fromDate:', fromDate, 'toDate:', toDate);
-    this.auditLogService.getAuditLogs(fromDate, toDate,this.problematicOnly).subscribe((data) => {
-      this.logs = data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-      this.filteredLogs = [...this.logs];
-      this.currentPage = 1;
-    });
-  }
 
   filterLogs() {
     const searchLower = this.searchTerm.toLowerCase();
@@ -297,6 +349,9 @@ oldValue: `${this.getCityName(oldData.start_location)} → ${this.getCityName(ol
     pdfMake.createPdf(docDefinition).download('audit_logs_weekly.pdf');
   }
 
+
+
+
   exportToCSV() {
     const weeklyLogs = this.getLogsForThisWeek();
     const csvData = weeklyLogs.map(log => ({
@@ -310,7 +365,7 @@ oldValue: `${this.getCityName(oldData.start_location)} → ${this.getCityName(ol
     saveAs(blob, 'audit_logs_weekly.csv');
   }
 
-  getUserAuditRows(oldData: any, newData: any): Array<{label: string, oldValue: any, newValue: any}> {
+  getUserAuditRows(oldData: any, newData: any): Array<{ label: string, oldValue: any, newValue: any }> {
     return [
       { label: 'שם פרטי', oldValue: oldData.first_name, newValue: newData.first_name },
       { label: 'שם משפחה', oldValue: oldData.last_name, newValue: newData.last_name },
@@ -322,19 +377,19 @@ oldValue: `${this.getCityName(oldData.start_location)} → ${this.getCityName(ol
     ];
   }
 
-  getVehicleAuditRows(oldData: any, newData: any): Array<{label: string, oldValue: any, newValue: any}> {
+  getVehicleAuditRows(oldData: any, newData: any): Array<{ label: string, oldValue: any, newValue: any }> {
     return [
-    { label: 'מספר רכב', oldValue: oldData.plate_number, newValue: newData.plate_number },
-    { label: 'סוג רכב', oldValue: oldData.type, newValue: newData.type },
-    { label: 'סוג דלק', oldValue: oldData.fuel_type, newValue: newData.fuel_type },
-    { label: 'סטטוס', oldValue: oldData.status, newValue: newData.status },
-    { label: 'שימוש אחרון', oldValue: oldData.last_used_at, newValue: newData.last_used_at }, // <-- Added this line
-    { label: 'סיבת הקפאה', oldValue: oldData.freeze_reason, newValue: newData.freeze_reason },
-    { label: 'מיקום נוכחי', oldValue: oldData.current_location, newValue: newData.current_location },
-    { label: 'קילומטראז\'', oldValue: oldData.odometer_reading, newValue: newData.odometer_reading },
-    { label: 'דגם רכב', oldValue: oldData.vehicle_model, newValue: newData.vehicle_model },
-    { label: 'תמונה', oldValue: oldData.image_url, newValue: newData.image_url }
-  ];
+      { label: 'מספר רכב', oldValue: oldData.plate_number, newValue: newData.plate_number },
+      { label: 'סוג רכב', oldValue: oldData.type, newValue: newData.type },
+      { label: 'סוג דלק', oldValue: oldData.fuel_type, newValue: newData.fuel_type },
+      { label: 'סטטוס', oldValue: oldData.status, newValue: newData.status },
+      { label: 'שימוש אחרון', oldValue: oldData.last_used_at, newValue: newData.last_used_at }, // <-- Added this line
+      { label: 'סיבת הקפאה', oldValue: oldData.freeze_reason, newValue: newData.freeze_reason },
+      { label: 'מיקום נוכחי', oldValue: oldData.current_location, newValue: newData.current_location },
+      { label: 'קילומטראז\'', oldValue: oldData.odometer_reading, newValue: newData.odometer_reading },
+      { label: 'דגם רכב', oldValue: oldData.vehicle_model, newValue: newData.vehicle_model },
+      { label: 'תמונה', oldValue: oldData.image_url, newValue: newData.image_url }
+    ];
   }
 
   vehicleRedirect(vehicleId: string) {
