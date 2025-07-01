@@ -319,14 +319,13 @@
                         {{ row.oldValue === true ? 'כן' : row.oldValue === false ? 'לא' : (row.oldValue ?? '-') }}
                       </ng-container>
                       <ng-template #oldValueContent>
-                        <ng-container
-                          *ngIf="row.label.includes('זמן') || row.label.includes('תאריך'); else plainOld">
+                        <ng-container *ngIf="row.label.includes('זמן') || row.label.includes('תאריך'); else plainOld">
                           {{ row.oldValue ? (row.oldValue | date:'dd/MM/yyyy HH:mm') : '-' }}
                         </ng-container>
                         <ng-template #plainOld>
                           <ng-container *ngIf="row.label === 'תמונה'; else plainOldValue">
-                            <img *ngIf="row.oldValue && row.oldValue.length > 0" [src]="row.oldValue"
-                              alt="תמונה ישנה" style="max-width: 120px; max-height: 80px;" />
+                            <img *ngIf="row.oldValue && row.oldValue.length > 0" [src]="row.oldValue" alt="תמונה ישנה"
+                              style="max-width: 120px; max-height: 80px;" />
                             <span *ngIf="!row.oldValue || row.oldValue.length === 0">-</span>
                           </ng-container>
                           <ng-template #plainOldValue>{{ row.oldValue !== undefined && row.oldValue !== null &&
@@ -340,14 +339,13 @@
                         {{ row.newValue === true ? 'כן' : row.newValue === false ? 'לא' : (row.newValue ?? '-') }}
                       </ng-container>
                       <ng-template #newValueContent>
-                        <ng-container
-                          *ngIf="row.label.includes('זמן') || row.label.includes('תאריך'); else plainNew">
+                        <ng-container *ngIf="row.label.includes('זמן') || row.label.includes('תאריך'); else plainNew">
                           {{ row.newValue ? (row.newValue | date:'dd/MM/yyyy HH:mm') : '-' }}
                         </ng-container>
                         <ng-template #plainNew>
                           <ng-container *ngIf="row.label === 'תמונה'; else plainNewValue">
-                            <img *ngIf="row.newValue && row.newValue.length > 0" [src]="row.newValue"
-                              alt="תמונה חדשה" style="max-width: 120px; max-height: 80px;" />
+                            <img *ngIf="row.newValue && row.newValue.length > 0" [src]="row.newValue" alt="תמונה חדשה"
+                              style="max-width: 120px; max-height: 80px;" />
                             <span *ngIf="!row.newValue || row.newValue.length === 0">-</span>
                           </ng-container>
                           <ng-template #plainNewValue>{{ row.newValue !== undefined && row.newValue !== null &&
@@ -443,8 +441,78 @@
               </div>
             </div>
           </div>
+          <div *ngIf="selectedLog.action === 'DELETE' && selectedLog.entity_type === 'User'">
+            <div class="data-card">
+              <h4>פרטי משתמש שנמחק</h4>
+              <div class="entity-fields">
 
-          <div *ngIf="selectedLog.action !== 'INSERT' && selectedLog.action !== 'UPDATE' && selectedLog.action !== 'DELETE'">
+                <div class="field-row">
+                  <div class="field-label">תפקיד</div>
+                  <div class="field-value">{{ selectedLog.change_data.role }}</div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">אימייל</div>
+                  <div class="field-value">{{ selectedLog.change_data.email }}</div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">שם משתמש</div>
+                  <div class="field-value">{{ selectedLog.change_data.username }}</div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">שם פרטי</div>
+                  <div class="field-value">{{ selectedLog.change_data.first_name }}</div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">שם משפחה</div>
+                  <div class="field-value">{{ selectedLog.change_data.last_name }}</div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">מספר עובד</div>
+                  <div class="field-value">{{ selectedLog.change_data.employee_id }}</div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">מספר מחלקה</div>
+                  <div class="field-value">{{ selectedLog.change_data.department_id }}</div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">קובץ רישיון</div>
+                  <div class="field-value">
+                    <ng-container *ngIf="selectedLog.change_data.license_file_url; else noLicenseFile">
+                      <a [href]="selectedLog.change_data.license_file_url" target="_blank">קובץ רישיון</a>
+                    </ng-container>
+                    <ng-template #noLicenseFile>לא קיים</ng-template>
+                  </div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">תוקף רישיון</div>
+                  <div class="field-value">
+                    <ng-container *ngIf="selectedLog.change_data.license_expiry_date; else noExpiryDate">
+                      {{ selectedLog.change_data.license_expiry_date | date:'dd/MM/yyyy' }}
+                    </ng-container>
+                    <ng-template #noExpiryDate>לא קיים</ng-template>
+                  </div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">רישיון ממשלתי</div>
+                  <div class="field-value">{{ selectedLog.change_data.has_government_license ? 'כן' : 'לא' }}</div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+
+          <div
+            *ngIf="selectedLog.action !== 'INSERT' && selectedLog.action !== 'UPDATE' && selectedLog.action !== 'DELETE'">
             <div class="data-card">
               <h4>נתוני שינוי גולמיים</h4>
               <div class="json-container">
