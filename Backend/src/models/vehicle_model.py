@@ -46,5 +46,7 @@ class Vehicle(Base):
     vehicle_model = Column(Text, nullable=False)
     image_url = Column(Text, nullable=False)
     lease_expiry = Column(DateTime, nullable=True)
+    department_name = Column(Text, nullable=True, index=True)
+    lease_expiry = Column(DateTime, nullable=True)
 
     
