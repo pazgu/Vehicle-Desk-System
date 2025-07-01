@@ -18,6 +18,7 @@ class User(Base):
     first_name = Column(String, nullable=False)
     last_name = Column(String, nullable=False)
     username = Column(String, nullable=False, unique=True)
+    phone = Column(String(20), nullable=True)
     email = Column(String, nullable=False, unique=True)
     employee_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     password = Column(String, nullable=False)  # hashing afterwards
@@ -26,3 +27,4 @@ class User(Base):
     has_government_license = Column(Boolean, default=False)
     license_file_url = Column(String, nullable=True)
     license_expiry_date = Column(Date, nullable=True)
+    

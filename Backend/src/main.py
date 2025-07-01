@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from socketio import ASGIApp
+from fastapi.staticfiles import StaticFiles
 
 from src.routes.user_routes import router as user_route
 from src.routes.supervisor_routes import router as supervisor_route
@@ -68,6 +69,7 @@ async def join_room(sid, data):
 # Run with: uvicorn src.main:sio_app --reload
 sio_app = ASGIApp(sio, other_asgi_app=app)
 
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 @app.get("/test-email")
 def test_email():

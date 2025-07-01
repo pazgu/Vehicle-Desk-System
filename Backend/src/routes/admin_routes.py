@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, Query,Header, Request, status, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Query,Header, Request, status, UploadFile, File, Form
 from uuid import UUID
+from fastapi.staticfiles import StaticFiles
 from typing import Optional , List
 from datetime import datetime
 from sqlalchemy.orm import Session
@@ -102,38 +103,63 @@ def fetch_user_by_id(user_id: UUID, db: Session = Depends(get_db)):
     return result
 
 @router.patch("/user-data-edit/{user_id}", response_model=UserResponse)
-def edit_user_by_id_route(
+async def edit_user_by_id_route(
     user_id: UUID,
-    user_update: UserUpdate,
+    first_name: str = Form(...),
+    last_name: str = Form(...),
+    username: str = Form(...),
+    email: str = Form(...),
+    phone: str = Form(...),
+    role: str = Form(...),
+    department_id: str = Form(...),
+    has_government_license: str = Form(...),
+    license_file: UploadFile = File(None),
     db: Session = Depends(get_db),
-    payload: dict = Depends(token_check)  # Use payload from token_check
+    payload: dict = Depends(token_check),
+    license_expiry_date: Optional[str] = Form(None)
 ):
     user = db.query(User).filter(User.employee_id == user_id).first()
-
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     user_id_from_token = payload.get("user_id") or payload.get("sub")
     if not user_id_from_token:
         raise HTTPException(status_code=401, detail="User ID not found in token")
-    
+
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id_from_token)})
 
+    # Convert "true"/"false" string to actual boolean
+    has_gov_license = has_government_license.lower() == "true"
 
-    update_data = user_update.dict(exclude_unset=True)
-    print("🟡 Incoming update:", update_data)
-    
+    # Handle license expiry date
+    if license_expiry_date:
+        try:
+            from datetime import datetime
+            user.license_expiry_date = datetime.strptime(license_expiry_date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid date format for license_expiry_date")
 
-    # Check attributes before applying them
-    for key, value in update_data.items():
-        if not hasattr(user, key):
-            print(f"⚠️ WARNING: User has no attribute '{key}' — skipping.")
-        else:
-            print(f"✅ Updating '{key}' to '{value}'")
-            setattr(user, key, value)
+    # Handle license file if provided
+    license_file_url = user.license_file_url
+    if license_file:
+        contents = await license_file.read()
+        filename = f"uploads/{license_file.filename}"
+        with open(filename, "wb") as f:
+            f.write(contents)
+        license_file_url = f"/{filename}"
+
+    # Apply updates
+    user.first_name = first_name
+    user.last_name = last_name
+    user.username = username
+    user.email = email
+    user.phone = phone
+    user.role = role
+    user.department_id = department_id
+    user.has_government_license = has_gov_license
+    user.license_file_url = license_file_url
 
     try:
-        db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user.employee_id)})
         db.commit()
     except Exception as e:
         db.rollback()
@@ -141,30 +167,74 @@ def edit_user_by_id_route(
         raise HTTPException(status_code=500, detail="Failed to update user")
 
     db.refresh(user)
-    db.execute(text("SET session.audit.user_id = DEFAULT"))  # (optional) reset after commit
-
+    db.execute(text("SET session.audit.user_id = DEFAULT"))
     return user
-
 @router.get("/roles")
 def get_roles():
     return [role.value for role in UserRole]
 
 
 @router.post("/add-user", status_code=status.HTTP_201_CREATED)
-def add_user_as_admin(
+async def add_user_as_admin(
+
     request: Request,
-    user_data: UserCreate,
+    first_name: str = Form(...),
+    last_name: str = Form(...),
+    username: str = Form(...),
+    email: str = Form(...),
+    phone: str = Form(None),
+    role: str = Form(...),
+    department_id: str = Form(...),
+    password: str = Form(...),
+    has_government_license: bool = Form(...),
+    license_file: UploadFile = File(None),
     db: Session = Depends(get_db),
+    license_expiry_date: Optional[str] = Form(None)
+
+
 ):
     current_user = get_current_user(request)
-    changed_by=current_user.employee_id  
+    changed_by = current_user.employee_id
+
     if current_user.role != UserRole.admin:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admin access required."
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required.")
+
+    # 🔍 DEBUG: Log the received value and its type
+    print(f"🔍 DEBUG: has_government_license = {has_government_license}")
+    print(f"🔍 DEBUG: has_government_license type = {type(has_government_license)}")
+    print(f"🔍 DEBUG: has_government_license repr = {repr(has_government_license)}")
+
+    license_file_url = None
+    if has_government_license and license_file:
+        contents = await license_file.read()
+        with open(f"uploads/{license_file.filename}", "wb") as f:
+            f.write(contents)
+        license_file_url = f"/uploads/{license_file.filename}"
+
+    user_data = UserCreate(
+        first_name=first_name,
+        last_name=last_name,
+        username=username,
+        email=email,
+        phone=phone,
+        role=role,
+        department_id=department_id,
+        password=password,
+        has_government_license=has_government_license,
+        license_file_url=license_file_url,
+        license_expiry_date= license_expiry_date
+    )
+
+    # 🔍 DEBUG: Log the UserCreate object
+    print(f"🔍 DEBUG: user_data.has_government_license = {user_data.has_government_license}")
+    print(f"🔍 DEBUG: user_data.has_government_license type = {type(user_data.has_government_license)}")
+
+    result = create_user_by_admin(user_data, changed_by, db)
     
-    return create_user_by_admin(user_data,changed_by ,db)
+    # 🔍 DEBUG: Log the result if possible
+    print(f"🔍 DEBUG: Created user result: {result}")
+    
+    return result
 # @router.post("/vehicle-inspection")
 # def vehicle_inspection(data: VehicleInspectionSchema, db: Session = Depends(get_db),payload: dict = Depends(token_check)):
 #     try:
