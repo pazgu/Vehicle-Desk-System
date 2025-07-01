@@ -12,6 +12,9 @@ import { RideDashboardItem } from '../../../models/ride-dashboard-item/ride-dash
 import { RideLocationItem } from '../../../models/ride.model';
 import { FuelType, FuelTypeResponse } from '../../../models/vehicle-dashboard-item/vehicle-out-item.module';
 import { VehicleService } from '../../../services/vehicle.service';
+import { Router } from '@angular/router';
+
+
 @Component({
   selector: 'app-ride-completion-form',
   templateUrl: './ride-completion-form.component.html',
@@ -28,6 +31,7 @@ export class RideCompletionFormComponent implements OnInit {
   stop_name: string = '';
   destination_name: string = '';
   VehicleFuelType:FuelType=FuelType.Gasoline
+  extra_stops_names: string[] = [];
 
   // rideId!: string;
   showForm = true;
@@ -43,7 +47,8 @@ export class RideCompletionFormComponent implements OnInit {
     private rideReportService: RideReportService,
     private location: Location,
     private rideService: RideService ,
-    private vehicleService:VehicleService
+    private vehicleService:VehicleService,
+    private router: Router
   ) {}
 
   goBack(): void {
@@ -70,7 +75,11 @@ export class RideCompletionFormComponent implements OnInit {
       this.start_location_name = matchingRide.start_location_name;
       this.stop_name = matchingRide.stop_name;
       this.destination_name = matchingRide.destination_name;
-      console.log(`start:${this.start_location_name},des:${this.destination_name},stop:${this.stop_name}`)
+      this.extra_stops_names = matchingRide.extra_stops_names || []; // <-- assign extra stops here
+      console.log(
+    `start: ${this.start_location_name}, des: ${this.destination_name}, stop: ${this.stop_name}, extra stops: ${this.extra_stops_names?.join(', ') || 'none'}`
+  );
+
     }
   });
   });    
@@ -170,5 +179,7 @@ loadFuelType(vehicleId: string) {
         this.loading = false;
       },
     });
+
+    this.router.navigate(['/home'])
   }
 }

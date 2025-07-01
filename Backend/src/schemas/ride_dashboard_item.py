@@ -14,6 +14,8 @@ class RideDashboardItem(BaseModel):
     date_and_time: datetime
     distance: float
     status: RideStatusEnum
+    submitted_at: datetime 
+
 
     
 

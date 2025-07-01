@@ -85,7 +85,7 @@ def get_vehicle_by_id_route(vehicle_id: str, db: Session = Depends(get_db)):
 
 
 
-@router.post("/vehicles", response_model=VehicleOut, status_code=status.HTTP_201_CREATED)
+@router.post("/add-vehicle", response_model=VehicleOut, status_code=status.HTTP_201_CREATED)
 def create_vehicle(
     vehicle_data: VehicleCreate,
     db: Session = Depends(get_db),
@@ -107,3 +107,15 @@ def create_vehicle(
     db.commit()
     db.refresh(new_vehicle)
     return new_vehicle
+
+
+@router.get("/vehicles/types")
+def get_vehicle_types(
+    db: Session = Depends(get_db),
+    payload: dict = Depends(token_check)
+):
+    try:
+        vehicle_types = db.query(Vehicle.type).distinct().all()
+        return {"vehicle_types": [vt[0] for vt in vehicle_types]}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")

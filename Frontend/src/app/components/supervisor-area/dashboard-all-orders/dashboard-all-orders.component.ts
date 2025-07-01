@@ -39,6 +39,8 @@ export class DashboardAllOrdersComponent implements OnInit {
   showOldOrders: boolean = false;
   sortBy: string = 'date_and_time';
 
+
+
   constructor(private router: Router, private orderService: OrderService,private toastService:ToastService,  private socketService: SocketService ) {}
 
   ngOnInit(): void {
@@ -50,11 +52,13 @@ export class DashboardAllOrdersComponent implements OnInit {
     }
 
     this.socketService.rideRequests$.subscribe((newRide) => {
+      const role=localStorage.getItem('role')
     if (newRide) {
     console.log('🆕 New ride request received on dashboard:', newRide);
-    if(newRide.department_id==departmentId){
-      this.orders.unshift(newRide);
-    this.toastService.show("התקבלה בקשה חדשה","success");
+    if(newRide.department_id==departmentId && role !='admin'){
+      this.orders = [newRide, ...this.orders];
+      if(role === 'supervisor'){this.toastService.show("התקבלה בקשה חדשה","success");}
+    
     }
   }
 });
@@ -76,6 +80,8 @@ this.socketService.orderUpdated$.subscribe((updatedRide) => {
       distance: updatedRide.estimated_distance_km,
       status: updatedRide.status.toLowerCase(),
       destination: updatedRide.destination || '', // adjust based on your data
+      submitted_at: updatedRide.submitted_at || new Date().toISOString() // use actual value here!
+
       };
 
       // Replace with a new array to trigger change detection:
@@ -162,8 +168,12 @@ this.socketService.orderUpdated$.subscribe((updatedRide) => {
       case 'status':
         return [...filtered].sort((a, b) => a.status.localeCompare(b.status));
       case 'date_and_time':
-      default:
         return [...filtered].sort((a, b) => new Date(a.date_and_time).getTime() - new Date(b.date_and_time).getTime());
+       case 'submitted_at':
+        return [...filtered].sort((a, b) => new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime());
+      default:
+            return filtered;
+
     }
   }
 

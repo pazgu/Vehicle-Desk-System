@@ -45,8 +45,8 @@ async def start_ride_with_new_session(ride_id: str):
         vehicle=res[1]
          # 3️⃣ Emit ride update
         await sio.emit("ride_status_updated", {
-            "id": str(ride.id),
-            "status": ride.status.value
+            "ride_id": str(ride.id),
+            "new_status": ride.status.value
         })
         # 4️⃣ Emit vehicle update
         await sio.emit("vehicle_status_updated", {
@@ -57,6 +57,25 @@ async def start_ride_with_new_session(ride_id: str):
         db.close()
 
 
+def check_and_complete_rides():
+    db = SessionLocal()
+    try:
+        now = datetime.now(timezone.utc)
+        rides_to_complete = db.query(Ride).filter(
+            Ride.status == "approved",
+            Ride.end_datetime <= now
+        ).all()
+
+        for ride in rides_to_complete:
+            ride.status = "completed"
+            print(f"✅ Ride {ride.id} marked as completed")
+
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        print(f"❌ Error while updating completed rides: {e}")
+    finally:
+        db.close()
 
 
 def check_and_schedule_ride_emails():
@@ -75,7 +94,7 @@ def check_and_schedule_ride_emails():
         db.close()
 
 scheduler.add_job(check_and_schedule_ride_emails, 'interval', minutes=5)
-
+scheduler.add_job(check_and_complete_rides, 'interval', minutes=5)
 
 def notify_admins_daily():
     print("⏰ Scheduler is triggering notification function.")
