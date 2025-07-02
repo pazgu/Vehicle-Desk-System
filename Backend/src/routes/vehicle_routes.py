@@ -1,3 +1,4 @@
+from src.models.department_model import Department
 from datetime import datetime, date, time
 
 from sqlalchemy import text
@@ -98,6 +99,12 @@ def create_vehicle(
     existing_vehicle = db.query(Vehicle).filter_by(plate_number=vehicle_data.plate_number).first()
     if existing_vehicle:
         raise HTTPException(status_code=400, detail="Vehicle with this plate number already exists")
+    
+    # Validate department if provided
+    if vehicle_data.department_id:
+        department = db.query(Department).filter_by(id=vehicle_data.department_id).first()
+        if not department:
+            raise HTTPException(status_code=404, detail="Department not found")
 
     data = vehicle_data.dict()
     data['image_url'] = str(data['image_url']) if data.get('image_url') else None
