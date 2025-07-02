@@ -4,12 +4,21 @@
       <h1>צפייה ביומני ביקורת</h1>
 
       <div class="filters-row">
-        <div class="filter-section">
-          <button class="filter-button" (click)="showFilters = !showFilters">
-            {{ showFilters ? 'הסתר חיפוש' : 'הצג חיפוש' }}
-          </button>
-        </div>
-      </div>
+  <div class="filter-section">
+    <button class="filter-button" (click)="showFilters = !showFilters">
+      {{ showFilters ? 'הסתר חיפוש' : 'הצג חיפוש' }}
+    </button>
+  </div>
+  <div class="filter-actions-row">
+    <button class="collapse-btn" (click)="filtersCollapsed = !filtersCollapsed">
+      {{ filtersCollapsed ? 'הצג אפשרויות סינון וייצוא' : 'הסתר אפשרויות סינון וייצוא' }}
+    </button>
+    <label class="problematic-only-label">
+      <input type="checkbox" [(ngModel)]="problematicOnly" (change)="fetchAuditLogs()" />
+      הצג רק בדיקות עם בעיות
+    </label>
+  </div>
+</div>
 
       <div *ngIf="showFilters" class="search-container">
         <input type="text" class="audit-search-input" placeholder="חיפוש לפי סוג ישות, מזהה ישות או מי שינה"
@@ -26,7 +35,6 @@
             <option value="custom">טווח מותאם אישית</option>
           </select>
         </div>
-
         <div *ngIf="selectedRange === 'custom'" class="custom-range-fields">
           <input type="date" class="date-input" [(ngModel)]="customFromDate" title="תאריך התחלה">
           <span style="margin: 0 0.5rem;">עד</span>
@@ -34,28 +42,22 @@
           <span class="date-note">(שימ/י לב, התאריך האחרון לא כולל)</span>
           <button class="filter-apply-btn" (click)="onRangeChange()">סנן</button>
         </div>
-
         <div class="export-buttons">
           <h3>דיווחים מהשבוע האחרון-בהתאם לסינון</h3>
           <button class="export-button" (click)="exportToPDF()">ייצוא PDF</button>
           <button class="export-button" (click)="exportToCSV()">ייצוא CSV</button>
         </div>
       </div>
-      <div class="export-buttons">
-        <h3>דיווחים מהשבוע האחרון-בהתאם לסינון</h3>
-        <button class="export-button" (click)="exportToPDF()">ייצוא PDF</button>
-        <button class="export-button" (click)="exportToCSV()">ייצוא CSV</button>
-      </div>
 
-       <div class="problematic-only-filter" dir="rtl" *ngIf="!loading">
+      <!-- <div class="problematic-only-filter" dir="rtl" *ngIf="!loading">
         <label>
           <input type="checkbox" [(ngModel)]="problematicOnly" (change)="onRangeChange()" />
           הצג בדיקות עם בעיות
         </label>
-      </div>
+      </div> -->
 
       <div class="admin-inspections-container" *ngIf="!loading && filteredLogs.length > 0">
-        </div>
+      </div>
 
 
 
@@ -129,6 +131,9 @@
               <td class="audit-td">{{ log.created_at | date:'dd/MM/yyyy HH:mm' }}</td>
             </tr>
           </tbody>
+           <div *ngIf="filteredLogs?.length === 0 && !selectedLog" class="empty-state">
+        לא נמצאו רשומות ביקורת
+      </div>
         </table>
         <div class="pagination-controls" dir="rtl" style="text-align: center; margin-top: 1.5rem;">
           <button (click)="prevPage()" [disabled]="currentPage === 1">▶</button>
@@ -137,9 +142,6 @@
         </div>
       </div>
 
-      <div *ngIf="filteredLogs?.length === 0 && !selectedLog" class="empty-state">
-        לא נמצאו רשומות ביקורת
-      </div>
 
       <div *ngIf="selectedLog" class="log-details-card">
         <h2>פרטי יומן ביקורת</h2>
@@ -368,7 +370,7 @@
           </div>
 
           <div *ngIf="selectedLog.action === 'DELETE' && selectedLog.entity_type === 'Ride'">
-            <div class="data-card">
+            <div class="data-card delete-data">
               <h4>פרטי נסיעה שנמחקה</h4>
               <div class="entity-fields">
                 <div class="field-row">
@@ -449,6 +451,75 @@
               </div>
             </div>
           </div>
+          <div *ngIf="selectedLog.action === 'DELETE' && selectedLog.entity_type === 'User'">
+            <div class="data-card delete-data">
+              <h4>פרטי משתמש שנמחק</h4>
+              <div class="entity-fields">
+
+                <div class="field-row">
+                  <div class="field-label">תפקיד</div>
+                  <div class="field-value">{{ selectedLog.change_data.role }}</div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">אימייל</div>
+                  <div class="field-value">{{ selectedLog.change_data.email }}</div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">שם משתמש</div>
+                  <div class="field-value">{{ selectedLog.change_data.username }}</div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">שם פרטי</div>
+                  <div class="field-value">{{ selectedLog.change_data.first_name }}</div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">שם משפחה</div>
+                  <div class="field-value">{{ selectedLog.change_data.last_name }}</div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">מספר עובד</div>
+                  <div class="field-value">{{ selectedLog.change_data.employee_id }}</div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">מספר מחלקה</div>
+                  <div class="field-value">{{ selectedLog.change_data.department_id }}</div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">קובץ רישיון</div>
+                  <div class="field-value">
+                    <ng-container *ngIf="selectedLog.change_data.license_file_url; else noLicenseFile">
+                      <a [href]="selectedLog.change_data.license_file_url" target="_blank">קובץ רישיון</a>
+                    </ng-container>
+                    <ng-template #noLicenseFile>לא קיים</ng-template>
+                  </div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">תוקף רישיון</div>
+                  <div class="field-value">
+                    <ng-container *ngIf="selectedLog.change_data.license_expiry_date; else noExpiryDate">
+                      {{ selectedLog.change_data.license_expiry_date | date:'dd/MM/yyyy' }}
+                    </ng-container>
+                    <ng-template #noExpiryDate>לא קיים</ng-template>
+                  </div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">רישיון ממשלתי</div>
+                  <div class="field-value">{{ selectedLog.change_data.has_government_license ? 'כן' : 'לא' }}</div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
 
           <div
             *ngIf="selectedLog.action !== 'INSERT' && selectedLog.action !== 'UPDATE' && selectedLog.action !== 'DELETE'">
