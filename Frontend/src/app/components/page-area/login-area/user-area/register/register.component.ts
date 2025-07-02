@@ -12,7 +12,7 @@ import { MatIconModule } from '@angular/material/icon';
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [RouterModule, ReactiveFormsModule, CommonModule,MatButtonModule,
+  imports: [RouterModule, ReactiveFormsModule, CommonModule, MatButtonModule,
     MatIconModule,],
   templateUrl: './register.component.html',
   styleUrl: './register.component.css'
@@ -28,10 +28,10 @@ export class RegisterComponent implements OnInit {
     private authService: AuthService,
     private toastService: ToastService,
     private router: Router
-  ) {}
+  ) { }
   showPassword = false;
 
-  
+
   ngOnInit(): void {
     this.registerForm = this.fb.group({
       first_name: ['', [Validators.required, Validators.minLength(3), Validators.pattern(/^[A-Za-zא-ת]+$/)]],
@@ -44,7 +44,7 @@ export class RegisterComponent implements OnInit {
 
     this.fetchDepartments();
   }
-  
+
   togglePassword() {
     this.showPassword = !this.showPassword;
   }
@@ -68,71 +68,71 @@ export class RegisterComponent implements OnInit {
   }
 
   register(): void {
-  this.errorMessage = null;
+    this.errorMessage = null;
 
-  if (this.registerForm.invalid) {
-    this.registerForm.markAllAsTouched();
-    this.toastService.show('יש למלא את כל השדות כנדרש ולוודא תקינות', 'error');
-    return;
-  }
-
-  const registerData = {
-    ...this.registerForm.value,
-    role: 'employee'
-  };
-
-  this.authService.register(registerData).subscribe({
-    next: (response) => {
-      if (!response || !response.access_token) {
-        this.toastService.show('שגיאה בלתי צפויה - נסה שוב מאוחר יותר', 'error');
-        return;
-      }
-      localStorage.clear();
-      // Save user info
-      localStorage.setItem('access_token', response.access_token);
-      localStorage.setItem('username', response.username);
-      localStorage.setItem('first_name', response.first_name);
-      localStorage.setItem('last_name', response.last_name);
-      localStorage.setItem('employee_id', response.employee_id);
-      localStorage.setItem('role', response.role);
-      localStorage.setItem('department_id', response.department_id);
-
-      this.authService.setFullName(response.first_name, response.last_name);
-      this.authService.setLoginState(true);
-      this.authService.setRole(response.role);
-      this.toastService.show('ההרשמה בוצעה בהצלחה 🎉', 'success');
-
-      // ✅ Redirect based on role
-      const role = response.role;
-      if (role === 'admin') {
-        this.router.navigate(['/audit-logs']);
-      } else if (role === 'supervisor') {
-        this.router.navigate(['/supervisor-dashboard']);
-      }else if (role === 'inspector') {
-  this.router.navigate(['/inspector/vehicles']); // correct redirect for inspector
-} else {
-        this.router.navigate(['/home']);
-      }
-    },
-    error: (err) => {
-      console.error('Registration failed:', err);
-
-      if (err.status === 0) {
-        this.toastService.show('השרת אינו זמין כרגע. נסה שוב מאוחר יותר', 'error');
-      } else if (err.status === 400) {
-        if (err.error?.detail?.includes('already exists')) {
-          this.toastService.show('שם המשתמש או האימייל כבר קיימים במערכת', 'error');
-        } else if (err.error?.detail?.includes('Invalid email')) {
-          this.toastService.show('אימייל לא תקין', 'error');
-        } else {
-          this.toastService.show('שגיאה בפרטי ההרשמה - בדוק שוב את הקלט', 'error');
-        }
-      } else {
-        const errorText = err.error?.detail || 'שגיאה כללית בהרשמה';
-        this.toastService.show(errorText, 'error');
-      }
+    if (this.registerForm.invalid) {
+      this.registerForm.markAllAsTouched();
+      this.toastService.show('יש למלא את כל השדות כנדרש ולוודא תקינות', 'error');
+      return;
     }
-  });
-}
+
+    const registerData = {
+      ...this.registerForm.value,
+      role: 'employee'
+    };
+
+    this.authService.register(registerData).subscribe({
+      next: (response) => {
+        if (!response || !response.access_token) {
+          this.toastService.show('שגיאה בלתי צפויה - נסה שוב מאוחר יותר', 'error');
+          return;
+        }
+        localStorage.clear();
+        // Save user info
+        localStorage.setItem('access_token', response.access_token);
+        localStorage.setItem('username', response.username);
+        localStorage.setItem('first_name', response.first_name);
+        localStorage.setItem('last_name', response.last_name);
+        localStorage.setItem('employee_id', response.employee_id);
+        localStorage.setItem('role', response.role);
+        localStorage.setItem('department_id', response.department_id);
+
+        this.authService.setFullName(response.first_name, response.last_name);
+        this.authService.setLoginState(true);
+        this.authService.setRole(response.role);
+        this.toastService.show('ההרשמה בוצעה בהצלחה 🎉', 'success');
+
+        // ✅ Redirect based on role
+        const role = response.role;
+        if (role === 'admin') {
+          this.router.navigate(['/audit-logs']);
+        } else if (role === 'supervisor') {
+          this.router.navigate(['/supervisor-dashboard']);
+        } else if (role === 'inspector') {
+          this.router.navigate(['/inspector/vehicles']); // correct redirect for inspector
+        } else {
+          this.router.navigate(['/home']);
+        }
+      },
+      error: (err) => {
+        console.error('Registration failed:', err);
+
+        if (err.status === 0) {
+          this.toastService.show('השרת אינו זמין כרגע. נסה שוב מאוחר יותר', 'error');
+        } else if (err.status === 400) {
+          if (err.error?.detail?.includes('already exists')) {
+            this.toastService.show('שם המשתמש או האימייל כבר קיימים במערכת', 'error');
+          } else if (err.error?.detail?.includes('Invalid email')) {
+            this.toastService.show('אימייל לא תקין', 'error');
+          } else {
+            this.toastService.show('שגיאה בפרטי ההרשמה - בדוק שוב את הקלט', 'error');
+          }
+        } else {
+          const errorText = err.error?.detail || 'שגיאה כללית בהרשמה';
+          this.toastService.show(errorText, 'error');
+        }
+      }
+    });
+  }
 
 }

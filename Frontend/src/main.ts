@@ -3,6 +3,12 @@ import { appConfig } from './app/app.config';
 import { AppComponent } from './app/app.component';
 import { LayoutComponent } from './app/components/layout-area/layout/layout.component';
 
+
+// ✅ Register Hebrew locale
+import { registerLocaleData } from '@angular/common';
+import localeHe from '@angular/common/locales/he';
+registerLocaleData(localeHe);
+
 import {
   Chart as ChartJS,
   ArcElement,

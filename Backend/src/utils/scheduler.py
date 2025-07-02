@@ -1,4 +1,8 @@
 import asyncio
+from ..models.notification_model import Notification
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from ..models.department_model import Department
+from ..models.vehicle_model import Vehicle
 from ..services.user_form import get_ride_needing_feedback
 from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime, time, timezone
@@ -11,7 +15,7 @@ from apscheduler.jobstores.base import JobLookupError
 from datetime import datetime, timedelta
 from ..services.form_email import send_ride_completion_email
 from ..services.supervisor_dashboard_service import start_ride 
-
+from sqlalchemy.orm import Session
 from ..utils.socket_manager import sio
 scheduler = BackgroundScheduler(timezone=pytz.timezone("Asia/Jerusalem"))
 
@@ -77,6 +81,87 @@ def check_and_complete_rides():
     except Exception as e:
         db.rollback()
         print(f"❌ Error while updating completed rides: {e}")
+    finally:
+        db.close()
+
+async def check_vehicle_lease_expiry():
+    db: Session = SessionLocal()
+    try:
+        now = datetime.now(timezone.utc)
+        three_months_later = now + timedelta(days=90)
+
+        # Join Vehicle -> Department
+        vehicles_expiring = db.query(Vehicle).join(
+            Department, Vehicle.department_id == Department.id
+        ).filter(
+            Vehicle.lease_expiry <= three_months_later,
+            Vehicle.lease_expiry >= now
+        ).with_entities(Vehicle, Department).all()
+        print('before if')
+
+        if not vehicles_expiring:
+            return
+        
+        print('expiring vehicles were found',vehicles_expiring)
+
+        # Get all admins once
+        admins = db.query(User).filter(User.role == "admin").all()
+
+        for vehicle, department in vehicles_expiring:
+            supervisor_id = department.supervisor_id
+
+            if supervisor_id:
+                exists = db.query(Notification).filter(
+                    Notification.user_id == supervisor_id,
+                    Notification.vehicle_id == vehicle.id,
+                    Notification.title == "Vehicle Lease Expiry"
+                ).first()
+                if not exists:
+                    notif = create_system_notification(
+                        user_id=supervisor_id,
+                        title="Vehicle Lease Expiry",
+                        message = f"{vehicle.plate_number} תוקף השימוש ברכב עם מספר רישוי "+f"{vehicle.lease_expiry.date()} יפוג בתאריך ",
+                        vehicle_id=vehicle.id
+                    )
+
+                    await sio.emit("vehicle_expiry_notification", {
+                        "id": str(notif.id),
+                        "user_id": str(notif.user_id),
+                        "title": notif.title,
+                        "message": notif.message,
+                        "notification_type": notif.notification_type.value,
+                        "sent_at": notif.sent_at.isoformat(),
+                        "vehicle_id": str(vehicle.id),
+                        "plate_number": vehicle.plate_number
+                    }, room=str(supervisor_id))
+
+            # Notify all admins too
+            for admin in admins:
+                exists_admin = db.query(Notification).filter(
+                    Notification.user_id == admin.employee_id,
+                    Notification.vehicle_id == vehicle.id,
+                    Notification.title == "Vehicle Lease Expiry"
+                ).first()
+                if not exists_admin:
+                    admin_notif = create_system_notification(
+                        user_id=admin.employee_id,
+                        title="Vehicle Lease Expiry",
+                        message = f"{vehicle.plate_number} תוקף השימוש ברכב עם מספר רישוי "+f"{vehicle.lease_expiry.date()} יפוג בתאריך ",
+                        vehicle_id=vehicle.id
+
+                        )
+
+                    await sio.emit("vehicle_expiry_notification", {
+                        "id": str(admin_notif.id),
+                        "user_id": str(admin_notif.user_id),
+                        "title": admin_notif.title,
+                        "message": admin_notif.message,
+                        "notification_type": admin_notif.notification_type.value,
+                        "sent_at": admin_notif.sent_at.isoformat(),
+                        "vehicle_id": str(vehicle.id),
+                        "plate_number": vehicle.plate_number
+                    }, room=str(admin.employee_id))
+
     finally:
         db.close()
 
@@ -194,7 +279,16 @@ def periodic_check():
     finally:
         db.close()
 
+
+def periodic_check_vehicle():
+    print('periodic_check_vehicle was called')
+    future = asyncio.run_coroutine_threadsafe(check_vehicle_lease_expiry(), main_loop)
+    future.result(timeout=5)
+
+
 scheduler.add_job(periodic_check, 'interval', seconds=60)
+scheduler.add_job(periodic_check_vehicle, 'interval', seconds=60)
+
 
 scheduler.start()
         
