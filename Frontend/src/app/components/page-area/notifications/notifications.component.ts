@@ -218,7 +218,7 @@ getStatusIcon(status?: string): string {
   
   // If this is a critical vehicle inspection message and the user is admin:
   if (role === 'admin' && notif.message.includes('בעיה חמורה')) {
-    this.router.navigate(['/admin/daily-inspections'], {
+    this.router.navigate(['/admin/critical-issues'], {
       queryParams: { highlight: '1' }
     });
   } else if (notif.order_id) {
