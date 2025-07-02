@@ -6,7 +6,7 @@
 
       <div class="vehicle-buttons-bar">
         <div class="left-buttons">
-          <button class="add-vehicle-btn" (click)="navigateToNewVehicle()">
+          <button class="add-vehicle-btn" (click)="navigateToNewVehicle()" *ngIf="userRole !== 'supervisor'">
             הוסף רכב חדש +
           </button>
         </div>
@@ -84,13 +84,20 @@
 
           </ng-template>
 
-
           <h3>רכב: {{ vehicle.plate_number }}</h3>
           <div *ngIf="vehicle.vehicle_model">
             <strong>דגם:</strong> {{ vehicle.vehicle_model }}
-            <div *ngIf="vehicle.ride_count !== undefined">
-              <strong>שימושים החודש:</strong> {{ vehicle.ride_count }}
+          </div>
+
+          <div class="department-container">
+            <div *ngIf="vehicle.department" class="department-tag"
+              [ngClass]="{'no-department-tag': vehicle.department === 'ללא מחלקה'}">
+              {{ vehicle.department }}
             </div>
+          </div>
+
+          <div *ngIf="vehicle.ride_count !== undefined">
+            <strong>שימושים החודש:</strong> {{ vehicle.ride_count }}
           </div>
         </p-card>
       </div>
