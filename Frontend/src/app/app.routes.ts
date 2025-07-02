@@ -21,6 +21,7 @@ import { ForgotPasswordComponent } from './components/auth-area/forgot-password/
 import { ResetPasswordComponent } from './components/auth-area/reset-password/reset-password.component';
 import { AdminAnalyticsComponent } from './components/admin-area/admin-analytics/admin-analytics.component';
 import { AddNewUserComponent } from './components/admin-area/add-new-user/add-new-user.component';
+import { AddVehicleComponent } from './components/vehicle-area/add-vehicle/add-vehicle.component';
 
 
 export const routes: Routes = [
