@@ -1,15 +1,72 @@
 .page-wrapper {
     min-height: 100vh;
     padding: 2rem 0;
+    position: relative;
+    z-index: 10;
 }
 
 .vehicle-form-container {
   max-width: 750px;
   margin: 0 auto;
-  background-color: rgba(245, 241, 241, 0.582);
-  border-radius: 14px;
-  box-shadow: 0 2px 16px rgba(19, 31, 44, 0.07);
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.15),
+    0 4px 16px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
   padding: 2rem 2.5rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  position: relative;
+  z-index: 5;
+  animation: floatyCard 5s ease-in-out infinite;
+  overflow: hidden;
+}
+
+/* Add subtle gradient overlay to card */
+.vehicle-form-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+  z-index: -1;
+}
+
+/* Add subtle glow effect */
+.vehicle-form-container::after {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(135deg, rgba(148, 34, 34, 0.1), rgba(183, 28, 28, 0.1));
+  border-radius: 22px;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.vehicle-form-container:hover::after {
+  opacity: 1;
+}
+
+@keyframes floatyCard {
+  0%, 100% {
+    transform: translateY(0);
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.15),
+      0 4px 16px rgba(0, 0, 0, 0.1);
+  }
+  50% {
+    transform: translateY(-6px);
+    box-shadow: 
+      0 12px 40px rgba(0, 0, 0, 0.2),
+      0 6px 20px rgba(0, 0, 0, 0.15);
+  }
 }
 
 .error {
@@ -18,7 +75,6 @@
   margin-top: 4px;
   margin-bottom: 12px;
 }
-
 
 form{
     direction:rtl;
@@ -29,36 +85,72 @@ h2{
     color: #942222;
     font-size: 2rem;
     margin-bottom: 1.5rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 label {
   display: block;
   margin-top: 1rem;
   font-weight: bold;
+  color: #333;
 }
 
 input, select {
   width: 100%;
-  padding: 8px;
+  padding: 12px;
   margin-top: 4px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
+  border-radius: 8px;
+  border: 2px solid #e0e0e0;
   font-size: 1rem;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: #942222;
+  box-shadow: 0 0 0 3px rgba(148, 34, 34, 0.1);
+  transform: translateY(-1px);
+}
+
+input:hover, select:hover {
+  border-color: #b71c1c;
 }
 
 button[type="submit"] {
   margin-top: 1.5rem;
-  background-color: #b71c1c;
+  background: linear-gradient(135deg, #b71c1c, #942222);
   color: white;
-  padding: 10px 20px;
+  padding: 12px 24px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-weight: bold;
   cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+button[type="submit"]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s ease;
 }
 
 button[type="submit"]:hover {
-  background-color: #942222;
+  background: linear-gradient(135deg, #942222, #d32f2f);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(148, 34, 34, 0.3);
+}
+
+button[type="submit"]:hover::before {
+  left: 100%;
 }
 
 .back-btn {
@@ -69,14 +161,18 @@ button[type="submit"]:hover {
   font-size: 20px;
   font-weight: bold;
   padding: 1px 2px;
-  border: none;
+  border: 2px solid #942222;
   border-radius: 20px;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.15s ease;
-  background: none;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.9);
 }
+
 .back-btn:hover {
   transform: scale(1.03);
+  background: #942222;
+  color: white;
+  box-shadow: 0 4px 12px rgba(148, 34, 34, 0.3);
 }
 
 .vehicle-wrapper-header {
@@ -86,4 +182,81 @@ button[type="submit"]:hover {
   max-width: 900px;
   padding-bottom: 1rem;
   border-bottom: 2px solid #cfcece;
+  margin-bottom: 1rem;
+}
+
+/* 🌥️ Realistic soft air vibe */
+.animated-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, #fff, #f7f7f7);
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.car-row {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-around;
+  position: absolute;
+  width: 100%;
+  opacity: 0.25;
+  z-index: 1;
+}
+
+.row-1 { top: 15%; animation: drive-left 12s linear infinite; }
+.row-2 { top: 35%; animation: drive-left 14s linear infinite; }
+.row-3 { top: 55%; animation: drive-left 13s linear infinite; }
+.row-4 { top: 75%; animation: drive-left 15s linear infinite; }
+
+/* 🚘 Bigger car emojis */
+.car {
+  font-size: 3.3rem; 
+  position: relative;
+  animation: bobCar 2.5s ease-in-out infinite;
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.3));
+  z-index: 2;
+}
+
+@keyframes drive-left {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+@keyframes bobCar {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes smoke-puff {
+  0%   { transform: translateX(0) scale(1); opacity: 0.7; }
+  50%  { transform: translateX(-15px) scale(1.2); opacity: 0.4; }
+  100% { transform: translateX(-30px) scale(1.4); opacity: 0; }
+}
+
+.car-wrapper {
+  position: relative;
+  display: inline-block;
+  z-index: 2; /* ensure it's its own stacking context */
+
+}
+
+/* Bigger smoke closer to cars */
+.car-smoke {
+  content: "";
+  position: absolute;
+  left: -0.8rem; /* adjust closer to the emoji tail */
+  top: 0.7rem;   /* adjust vertically if needed */
+  width: 1.2rem;
+  height: 1.2rem;
+  background: radial-gradient(circle, rgba(120,120,120,0.8) 20%, rgba(180,180,180,0.4) 50%, rgba(255,255,255,0) 70%);
+  border-radius: 50%;
+  opacity: 0.7;
+  animation: smoke-puff 1.5s ease-in-out infinite;
+  z-index: 1;
+  pointer-events: none;
 }
