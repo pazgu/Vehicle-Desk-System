@@ -1,22 +1,23 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { VehicleService } from '../../../services/vehicle.service';
 import { CardModule } from 'primeng/card';
-import { VehicleOutItem } from '../../../models/vehicle-dashboard-item/vehicle-out-item.module';
 import { VehicleInItem } from '../../../models/vehicle-dashboard-item/vehicle-in-use-item.module';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { SocketService } from '../../../services/socket.service';
 import { ToastService } from '../../../services/toast.service';
+
 @Component({
   selector: 'app-vehicle-dashboard',
+  standalone: true,
   imports: [CommonModule, FormsModule, CardModule],
   templateUrl: './vehicle-dashboard.component.html',
   styleUrl: './vehicle-dashboard.component.css'
 })
-export class VehicleDashboardComponent {
+export class VehicleDashboardComponent implements OnInit {
 
   vehicles: VehicleInItem[] = [];
   mostUsedVehicles: VehicleInItem[] = [];
@@ -27,11 +28,15 @@ export class VehicleDashboardComponent {
   typeFilter: string = '';
   showFilters: boolean = false;
   sortBy: string = 'date_and_time';
-  vehicleTypes: string[] = []; // List of vehicle types fetched from backend
+  vehicleTypes: string[] = [];
 
-  // Enhanced usage tracking from analytics component
   topUsedVehiclesMap: Record<string, number> = {};
   vehicleUsageData: { plate_number: string; vehicle_model: string; ride_count: number }[] = [];
+
+  userRole: string | null = null;
+
+  // New property to store department ID to Name mapping
+  departmentMap: Map<string, string> = new Map();
 
   constructor(
     private vehicleService: VehicleService,
@@ -42,21 +47,51 @@ export class VehicleDashboardComponent {
   ) { }
 
   ngOnInit(): void {
-    this.loadVehicles();
-    this.fetchVehicleTypes();
-    this.loadVehicleUsageData();
+    this.getUserRole();
+    this.fetchAndMapDepartments().then(() => { // Ensure departments are loaded before vehicles
+      this.loadVehicles();
+      this.fetchVehicleTypes();
+      this.loadVehicleUsageData();
+    });
 
     this.socketService.newVehicle$.subscribe((vehicleData) => {
       if (vehicleData && vehicleData.id) {
         console.log('🆕 Vehicle received via socket:', vehicleData);
-
         const alreadyExists = this.vehicles.some(v => v.id === vehicleData.id);
         if (!alreadyExists) {
-          this.vehicles.unshift(vehicleData); // Add to top of the list
+          // If a new vehicle comes via socket, ensure its department name is resolved
+          const departmentName = this.departmentMap.get(vehicleData.department_id || '');
+          const vehicleWithDepartmentName: VehicleInItem = {
+            ...vehicleData,
+            department: departmentName || (vehicleData.department_id ? 'מחלקה לא ידועה' : null) // Default if ID exists but name not found
+          };
+          this.vehicles.unshift(vehicleWithDepartmentName);
         }
       }
     });
+  }
 
+  // New method to fetch departments and populate the map
+  async fetchAndMapDepartments(): Promise<void> {
+    try {
+      const departments = await this.http.get<{ id: string, name: string }[]>(`${environment.apiUrl}/departments`).toPromise();
+      if (departments) {
+        departments.forEach(dept => {
+          this.departmentMap.set(dept.id, dept.name);
+        });
+        console.log('Departments mapped:', this.departmentMap);
+      }
+    } catch (err) {
+      console.error('Failed to fetch departments for mapping', err);
+      this.toastService.show('שגיאה בטעינת נתוני מחלקות', 'error');
+    }
+  }
+
+  getUserRole(): void {
+    if (typeof localStorage !== 'undefined') {
+      this.userRole = localStorage.getItem('role');
+      console.log('User role from local storage:', this.userRole);
+    }
   }
 
   navigateToNewVehicle() {
@@ -70,9 +105,13 @@ export class VehicleDashboardComponent {
   loadVehicles(): void {
     this.vehicleService.getAllVehicles().subscribe(
       (data) => {
-        this.vehicles = Array.isArray(data) ? data : [];
+        // Here's the key part: map department_id to department name
+        this.vehicles = Array.isArray(data) ? data.map(vehicle => ({
+          ...vehicle,
+          department: this.departmentMap.get(vehicle.department_id || '') || (vehicle.department_id ? 'מחלקה לא ידועה' : 'ללא מחלקה')
+        })) : [];
         this.showingMostUsed = false;
-        console.log('Vehicles loaded:', this.vehicles);
+        console.log('Vehicles loaded with department names:', this.vehicles);
       },
       (error) => {
         console.error('Error loading vehicles:', error);
@@ -80,14 +119,14 @@ export class VehicleDashboardComponent {
     );
   }
 
-  // New method to load vehicle usage data from analytics
+  // Rest of your methods remain mostly the same...
+
   loadVehicleUsageData(): void {
     this.http.get<{ plate_number: string; vehicle_model: string; ride_count: number }[]>(
       `${environment.apiUrl}/analytics/top-used-vehicles`
     ).subscribe({
       next: data => {
         this.vehicleUsageData = data;
-        // Create a map for quick lookup
         this.topUsedVehiclesMap = {};
         data.forEach(vehicle => {
           this.topUsedVehiclesMap[vehicle.plate_number] = vehicle.ride_count;
@@ -103,23 +142,21 @@ export class VehicleDashboardComponent {
   fetchVehicleTypes() {
     console.log('fetchVehicleTypes called');
     this.vehicleService.getVehicleTypes().subscribe({
-    next: (types) => {
-      console.log('Fetched vehicle types:', types);
-      this.vehicleTypes = types || [];
-    },
-    error: (err) => {
-      console.error('Error fetching vehicle types:', err);
-      this.vehicleTypes = [];
-    }
-  });
+      next: (types) => {
+        console.log('Fetched vehicle types:', types);
+        this.vehicleTypes = types || [];
+      },
+      error: (err) => {
+        console.error('Error fetching vehicle types:', err);
+        this.vehicleTypes = [];
+      }
+    });
   }
 
-  // Get usage count for a specific vehicle
   getVehicleUsageCount(plateNumber: string): number {
     return this.topUsedVehiclesMap[plateNumber] || 0;
   }
 
-  // Get usage level classification
   getUsageLevel(plateNumber: string): 'high' | 'medium' | 'good' | 'hide' {
     const count = this.getVehicleUsageCount(plateNumber);
     if (count > 10) return 'high';
@@ -128,22 +165,19 @@ export class VehicleDashboardComponent {
     return 'good';
   }
 
-
-  // Get usage bar color
   getUsageBarColor(plateNumber: string): string {
     const level = this.getUsageLevel(plateNumber);
     switch (level) {
-      case 'high': return '#FF5252';    // Red
-      case 'medium': return '#FFC107';  // Yellow
-      case 'good': return '#42A5F5';    // Blue
-      case 'hide': return 'rgba(255, 255, 255, 0)'// Gray (hidden)
-      default: return '#E0E0E0';        // Gray
+      case 'high': return '#FF5252';
+      case 'medium': return '#FFC107';
+      case 'good': return '#42A5F5';
+      case 'hide': return 'rgba(255, 255, 255, 0)';
+      default: return '#E0E0E0';
     }
   }
-  // Get usage bar width percentage (0-100%)
+
   getUsageBarWidth(plateNumber: string): number {
     const count = this.getVehicleUsageCount(plateNumber);
-    // Scale to max 15 rides for 100% width
     const maxRides = 15;
     return Math.min((count / maxRides) * 100, 100);
   }
@@ -155,7 +189,12 @@ export class VehicleDashboardComponent {
 
     this.vehicleService.getAllVehicles().subscribe(
       (allVehicles) => {
-        this.vehicles = Array.isArray(allVehicles) ? allVehicles : [];
+        // Apply department name mapping to allVehicles before filtering
+        const vehiclesWithNames = Array.isArray(allVehicles) ? allVehicles.map(vehicle => ({
+          ...vehicle,
+          department: this.departmentMap.get(vehicle.department_id || '') || (vehicle.department_id ? 'מחלקה לא ידועה' : 'ללא מחלקה')
+        })) : [];
+        this.vehicles = vehiclesWithNames; // Update this.vehicles with mapped names
 
         this.vehicleService.getMostUsedVehiclesThisMonth(year, month).subscribe({
           next: (response) => {
@@ -163,8 +202,14 @@ export class VehicleDashboardComponent {
 
             const enrichedStats = response.stats
               .map((stat: any) => {
-                const match = this.vehicles.find(v => v.id === stat.vehicle_id);
-                return match ? { ...match, ride_count: stat.total_rides } : null;
+                const match = vehiclesWithNames.find(v => v.id === stat.vehicle_id); // Use vehiclesWithNames here
+                if (match) {
+                  return {
+                    ...match,
+                    ride_count: stat.total_rides
+                  };
+                }
+                return null;
               })
               .filter((v) => v !== null) as VehicleInItem[];
 
@@ -245,14 +290,8 @@ export class VehicleDashboardComponent {
 
     if (this.sortBy) {
       return [...filtered].sort((a, b) => a.status.localeCompare(b.status));
-    }
-    else {
+    } else {
       return filtered;
     }
   }
-
-  
-
-
 }
-
