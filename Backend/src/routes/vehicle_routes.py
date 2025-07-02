@@ -126,3 +126,5 @@ def get_vehicle_types(
         return {"vehicle_types": [vt[0] for vt in vehicle_types]}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+
+//
