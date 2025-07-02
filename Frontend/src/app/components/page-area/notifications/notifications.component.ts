@@ -109,6 +109,48 @@ export class NotificationsComponent implements OnInit {
     console.log('🟢 Live notification added:', notifWithTimeAgo);
   }}
 });
+this.socketService.odometerNotif$.subscribe(
+  (payload: { updated_notifications: MyNotification[] } | null) => {
+    
+      if (!payload || !payload.updated_notifications) {
+      console.warn("Got null or bad odometer notification payload:", payload);
+      return; // Don't crash!
+    }
+
+    const notifs = payload.updated_notifications;
+
+    notifs.forEach((newNotif) => {
+      const notifWithTimeAgo = {
+        ...newNotif,
+        timeAgo: formatDistanceToNow(new Date(newNotif.sent_at), {
+          addSuffix: true,
+          locale: he,
+        }),
+      };
+
+      this.notifications = [notifWithTimeAgo, ...this.notifications];
+      this.cdr.detectChanges();
+
+      if (this.router.url !== '/notifications') {
+        if (newNotif.message.includes('בעיה חמורה') || newNotif.notification_type === 'critical') {
+          const audio = new Audio('assets/sounds/notif.mp3');
+          audio.play();
+        }
+
+        if (newNotif.message.includes('נדחתה')) {
+          this.toastService.show(newNotif.message, 'error');
+        } else {
+          this.toastService.show(newNotif.message, 'success');
+        }
+
+        console.log('🟢 Live notification added:', notifWithTimeAgo);
+      }
+    });
+
+  }
+);
+
+
     } else {
       this.notificationService.getNotifications().subscribe({
         next: (data) => {

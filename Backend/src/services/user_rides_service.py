@@ -183,7 +183,6 @@ def get_ride_by_id(db: Session, ride_id: UUID) -> RideSchema:
 
     if not ride:
         raise HTTPException(status_code=404, detail="Ride not found")
-
     return RideSchema(**dict(ride._mapping))
 
 def get_archived_rides(user_id: UUID, db: Session) -> List[RideSchema]:
