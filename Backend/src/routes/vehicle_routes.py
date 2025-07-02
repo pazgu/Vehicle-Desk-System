@@ -1,11 +1,11 @@
-from datetime import datetime
 from src.models.department_model import Department
+from datetime import datetime, date, time
 
 from sqlalchemy import text
 from ..services.vehicle_service import get_vehicles_with_optional_status,update_vehicle_status,get_vehicle_by_id, get_available_vehicles_for_ride_by_id
 from fastapi import APIRouter, Depends, HTTPException, status , Query
 from uuid import UUID
-from ..schemas.vehicle_schema import VehicleStatusUpdate
+from ..schemas.vehicle_schema import VehicleStatusUpdate, RideTimelineSchema
 from ..utils.socket_manager import sio
 from sqlalchemy.orm import Session
 from ..schemas.vehicle_schema import VehicleOut
@@ -13,9 +13,10 @@ from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 from ..utils.auth import token_check
 from ..utils.database import get_db
 from typing import List, Optional, Union
-from src.models.vehicle_model import Vehicle
 from src.schemas.vehicle_create_schema import VehicleCreate
-from src.models.vehicle_model import VehicleStatus
+from src.models.vehicle_model import VehicleStatus, Vehicle
+from src.models.ride_model import Ride
+from src.models.user_model import User
 
 router = APIRouter()
 
@@ -126,3 +127,29 @@ def get_vehicle_types(
         return {"vehicle_types": [vt[0] for vt in vehicle_types]}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+@router.get("/vehicles/{vehicle_id}/timeline", response_model=List[RideTimelineSchema])
+def get_vehicle_timeline(
+    vehicle_id: UUID,
+    from_date: date = Query(..., alias="from"),
+    to_date: date = Query(..., alias="to"),
+    db: Session = Depends(get_db),
+):
+    
+    start_dt = datetime.combine(from_date, time.min)  # 00:00:00 on from_date
+    end_dt = datetime.combine(to_date, time.max)      # 23:59:59.999999 on to_date
+
+    rides = db.query(
+        Ride.vehicle_id,
+        Ride.start_datetime,
+        Ride.end_datetime,
+        Ride.status,
+        Ride.user_id,
+        User.first_name,
+        User.last_name,
+    ).join(User, Ride.user_id == User.employee_id).filter(
+        Ride.vehicle_id == vehicle_id,
+        Ride.start_datetime >= start_dt,
+        Ride.end_datetime <= end_dt
+    ).all()
+
+    return [RideTimelineSchema(**dict(row._mapping)) for row in rides]
