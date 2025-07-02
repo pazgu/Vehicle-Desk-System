@@ -73,7 +73,7 @@ export const routes: Routes = [
 },
 
 {
-  path: 'admin/daily-inspections',
+  path: 'admin/critical-issues',
   loadComponent: () =>
     import('./components/admin-area/admin-inspections/admin-inspections.component')
       .then(m => m.AdminInspectionsComponent),

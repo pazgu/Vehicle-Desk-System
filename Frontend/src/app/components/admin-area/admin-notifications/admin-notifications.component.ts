@@ -59,12 +59,12 @@ export class AdminNotificationsComponent implements OnInit {
   }
 
   onViewDailyInspections(): void {
-  this.router.navigate(['/admin/daily-inspections']);
+  this.router.navigate(['/admin/critical-issues']);
 }
 
 handleNotificationClick(notif: MyNotification): void {
   if (notif.message.includes('בעיה חמורה')) {
-    this.router.navigate(['/admin/daily-inspections'], {
+    this.router.navigate(['/admin/critical-issues'], {
       queryParams: { highlight: '1' }
     });
   }
