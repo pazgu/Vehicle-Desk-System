@@ -394,7 +394,6 @@ def get_rides_with_locations(db: Session = Depends(get_db)):
         }
         for ride, start_city, stop_city, destination_city in rides_with_cities
     ]
-    print('rides with loc:',rides)
     return rides
 
 
