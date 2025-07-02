@@ -24,7 +24,7 @@ export class SocketService {
   public auditLogs$ = new BehaviorSubject<any>(null);
   public newVehicle$ = new BehaviorSubject<any>(null);
 public  feedbackNeeded$ = new ReplaySubject<any>(1);
-
+public vehicleExpiry$=new BehaviorSubject<any>(null);
 
 
   constructor(private notificationService: NotificationService) {
@@ -94,6 +94,17 @@ this.socket.on('order_deleted', (data: any) => {
       console.log('📩 Socket ID:', this.socket.id);
 
       this.notifications$.next(data);
+      const current = this.notificationService.unreadCount$.getValue();
+  this.notificationService.unreadCount$.next(current + 1);
+    });
+
+
+     this.socket.on('vehicle_expiry_notification', (data: any) => {
+      console.log('📩 Raw socket data received:', data);
+      console.log('📩 Data type:', typeof data);
+      console.log('📩 Socket ID:', this.socket.id);
+
+      this.vehicleExpiry$.next(data);
       const current = this.notificationService.unreadCount$.getValue();
   this.notificationService.unreadCount$.next(current + 1);
     });

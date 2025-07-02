@@ -49,47 +49,50 @@ export class NotificationsComponent implements OnInit {
       next: (data) => {
         console.log('🛠 Admin notification raw data:', data);
 
-     // Step 1: Declare and assign mock if needed
-    let safeData: AdminNotificationResponse;
-
- if (!data) {
-      safeData = {
-        plate_number: '123-456-78',
-        detail: 'fallback',
-        count: 0,
-        vehicle_id: 'mock-id',
-        odometer_reading: 10001
-      };
-    } else {
-      safeData = data;
-    }
-
-
-
-// Step 2: Use it as normal
-    const message = safeData.plate_number
-      ? `עבר יותר מ-10000 קילומטר - לוחית: ${safeData.plate_number}`
-      : 'התראה מנהלתית - פרטי הרכב אינם זמינים כרגע';
-
-   this.notifications = [{
-      id: 'admin-generated',
-      user_id: '',
-      notification_type: 'admin',
-      title: 'התראה מנהלתית',
-      message,
-      sent_at: new Date().toISOString(),
-      order_id: '',
-      order_status: '',
-      vehicle_id: '',
-      timeAgo: formatDistanceToNow(new Date(), {
-        addSuffix: true,
-        locale: he,
-      }),
-    }];
+     
+   
+   
   },
   error: (err) => {
     console.error('Failed to fetch admin notifications:', err);
   }
+});
+
+   this.socketService.vehicleExpiry$.subscribe((newNotif) => {
+
+  if (newNotif) {
+    console.log("new notif for admin from socket in component",newNotif)
+    const notifWithTimeAgo = {
+      ...newNotif,
+      timeAgo: formatDistanceToNow(new Date(newNotif.sent_at), {
+        addSuffix: true,
+        locale: he,
+      }),
+    };
+    
+
+    // Add to the top of the list
+    this.notifications = [notifWithTimeAgo, ...this.notifications];
+    this.cdr.detectChanges(); // ← Add this line
+
+  if (this.router.url != '/notifications') {
+
+   if (newNotif.message.includes('בעיה חמורה') || newNotif.notification_type === 'critical') {
+  const audio = new Audio('assets/sounds/notif.mp3');
+  audio.play();
+}
+
+
+    if (newNotif.message.includes('נדחתה')){
+      this.toastService.show(newNotif.message, 'error');
+    }else{
+      this.toastService.show(newNotif.message, 'success');
+    }
+    
+
+    // Optional: log or show toast
+    console.log('🟢 Live notification added:', notifWithTimeAgo);
+  }}
 });
     } else {
       this.notificationService.getNotifications().subscribe({
@@ -117,6 +120,7 @@ export class NotificationsComponent implements OnInit {
         locale: he,
       }),
     };
+    
 
     // Add to the top of the list
     this.notifications = [notifWithTimeAgo, ...this.notifications];
@@ -141,6 +145,8 @@ export class NotificationsComponent implements OnInit {
     console.log('🟢 Live notification added:', notifWithTimeAgo);
   }}
 });
+
+
 
   }
 
