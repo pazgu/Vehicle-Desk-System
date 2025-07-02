@@ -1,12 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { User } from '../../../models/user.model';
 import { UserService } from '../../../services/user_service';
+import { environment } from '../../../../environments/environment';
+
 @Component({
   selector: 'app-user-card',
   templateUrl: './user-card.component.html',
   styleUrls: ['./user-card.component.css'],
-  imports: [RouterModule],
+  imports: [RouterModule, CommonModule],
 })
 export class UserCardComponent implements OnInit {
   user: User | null = null;
@@ -17,7 +20,6 @@ export class UserCardComponent implements OnInit {
     '3f67f7d5-d1a4-45c2-9ae4-8b7a3c50d3fa': 'Engineering',
     '912a25b9-08e7-4461-b1a3-80e66e79d29e': 'HR',
     'b3a91e1e-2f42-4e3e-bf74-49b7c8aaf1c7': 'Finance'
-    // Add more if needed
   };
 
   constructor(
@@ -27,11 +29,9 @@ export class UserCardComponent implements OnInit {
 
   ngOnInit(): void {
     this.userId = this.route.snapshot.paramMap.get('user_id');
-    console.log('Extracted user_id:', this.userId);
     if (this.userId) {
       this.userService.getUserById(this.userId).subscribe({
         next: (user) => {
-          console.log('User data:', user);
           this.user = user;
         },
         error: (err) => {
@@ -39,5 +39,11 @@ export class UserCardComponent implements OnInit {
         }
       });
     }
+  }
+
+  openLicenseInNewTab(): void {
+    if (!this.user?.license_file_url) return;
+    const fullUrl = environment.socketUrl + this.user.license_file_url;
+    window.open(fullUrl, '_blank');
   }
 }

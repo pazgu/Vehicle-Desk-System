@@ -42,6 +42,15 @@
           <span class="label">דוא"ל:</span>
           <span class="value">{{ user?.email }}</span>
         </div>
+
+        <!-- כפתור להצגת קובץ רישיון -->
+        <div class="detail-row" *ngIf="user?.license_file_url">
+          <span class="label">קובץ רישיון:</span>
+          <span class="value">
+            <button (click)="openLicenseInNewTab()">הצג קובץ/תמונה</button>
+          </span>
+        </div>
+
       </div>
     </div>
   </div>
