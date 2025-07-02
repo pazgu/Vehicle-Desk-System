@@ -42,6 +42,27 @@
           <span class="label">דוא"ל:</span>
           <span class="value">{{ user?.email }}</span>
         </div>
+
+        <!-- הצגת קובץ רישיון -->
+        <div class="detail-row" *ngIf="user?.license_file_url">
+          <span class="label">קובץ רישיון:</span>
+          <span class="value">
+            <ng-container *ngIf="isImage(getFullLicenseUrl()); else pdfBlock">
+              <button (click)="openFullImage()" class="view-button">הצג תמונה</button>
+            </ng-container>
+            <ng-template #pdfBlock>
+              <a [href]="getFullLicenseUrl()" target="_blank" rel="noopener">📄 צפייה בקובץ PDF</a>
+            </ng-template>
+          </span>
+        </div>
+
+        <!-- ✅ Modal של תמונה -->
+        <div *ngIf="showFullImage" class="image-modal" (click)="closeFullImage()">
+          <img [src]="getFullLicenseUrl()" class="full-image" alt="License Image" />
+          <span class="close-modal">✖</span>
+        </div>
+
+
       </div>
     </div>
   </div>
