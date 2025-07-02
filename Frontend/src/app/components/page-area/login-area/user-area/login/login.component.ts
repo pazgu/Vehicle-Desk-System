@@ -105,7 +105,7 @@ if (tokenParts.length === 3) {
   const role = payload.role;
 
   if (role === 'admin') {
-    this.router.navigate(['/admin/daily-inspections']);
+    this.router.navigate(['/admin/critical-issues']);
   } else if (role === 'supervisor') {
     this.router.navigate(['/supervisor-dashboard']);
  } else if (role === 'inspector') {
