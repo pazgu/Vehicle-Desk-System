@@ -46,7 +46,7 @@ export const routes: Routes = [
   { path: 'user-data', component: UserDataComponent,canActivate: [ProtectedRouteGuard] }, 
   { path: 'vehicle-details/:id', component: VehicleCardItemComponent },
   { path: 'vehicle-dashboard', component: VehicleDashboardComponent },
-  { path: 'vehicle-dashboard/new-vehicle', component: AddVehicleComponent },
+  { path: 'vehicle-dashboard/new-vehicle', component: AddVehicleComponent},
   { path: 'ride-completion-form/:ride_id', component: RideCompletionFormComponent },
   { path: 'audit-logs', component: AuditLogsComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
@@ -82,6 +82,13 @@ export const routes: Routes = [
 { 
   path: 'inspector/vehicles',
   component: AvailableAndFrozenCarsComponent
+},
+
+{
+  path: 'vehicle-details/:id/timeline',
+  loadComponent: () => import('./components/vehicle-area/vehicle-timeline/vehicle-timeline.component')
+    .then(m => m.VehicleTimelineComponent),
+  canActivate: [ProtectedRouteGuard]
 },
 
 {
