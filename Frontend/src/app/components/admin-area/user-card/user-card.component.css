@@ -9,9 +9,8 @@
   width: 70%;
   margin: 0 auto;
   position: absolute;
-  top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -55%);
   max-width: 600px;
   background-color: #fff;
   border-radius: 12px;
@@ -23,6 +22,7 @@
 .content {
   padding: 25px 20px;
   position: relative;
+  margin-top: 500px;
 }
 
 .edit-button {

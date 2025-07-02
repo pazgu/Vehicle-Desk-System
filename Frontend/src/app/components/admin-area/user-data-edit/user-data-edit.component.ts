@@ -8,6 +8,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { RedirectByRoleComponent } from '../../../services/redirect-by-role';
 import { Router } from '@angular/router';
+import { validateVerticalPosition } from '@angular/cdk/overlay';
 @Component({
   selector: 'app-user-data',
   templateUrl: './user-data-edit.component.html',
@@ -18,9 +19,10 @@ import { Router } from '@angular/router';
   userForm!: FormGroup;
   userId: string | null = null;
   user: any = null;
-
   departments: Array<{ id: string; name: string }> = [];
   roles: string[] = [];
+  selectedFile: File | null = null;
+selectedFileName = '';
 
   constructor(
     private fb: FormBuilder,
@@ -46,6 +48,11 @@ import { Router } from '@angular/router';
       email: ['', [Validators.required, Validators.email]],
       role: ['', Validators.required],
       department_id: ['', Validators.required],
+      has_government_license: [false],
+      license_file_url: [''],
+      license_expiry_date: [''],
+      phone: ['', Validators.required]
+
     });
   }
 
@@ -95,7 +102,13 @@ import { Router } from '@angular/router';
             username: user.username,
             email: user.email,
             role: user.role,
-            department_id: user.department_id
+            department_id: user.department_id,
+            has_government_license: user.has_government_license,
+            license_file_url: user.license_file_url,
+            phone: user.phone,
+            license_expiry_date: user.license_expiry_date
+  ? new Date(user.license_expiry_date).toISOString().substring(0, 10)
+  : ''
           });
         },
         error: (err) => {
@@ -108,22 +121,42 @@ import { Router } from '@angular/router';
     return this.http.patch(`http://localhost:8000/api/user-data-edit/${userId}`, updateData);
   }
 
-  
+  onFileSelected(event: Event): void {
+  const input = event.target as HTMLInputElement;
+  if (input && input.files && input.files.length > 0) {
+    this.selectedFile = input.files[0];
+    this.selectedFileName = this.selectedFile.name;
+  }
+}
+
   onSubmit(): void {
   if (this.userForm.valid && this.userId) {
-    // Exclude password if empty or handle appropriately
-    const updatePayload = { ...this.userForm.value };
-    if (!updatePayload.password) {
-      delete updatePayload.password;
+    const formValues = this.userForm.value;
+    const formData = new FormData();
+      console.log('Form values before processing:', formValues);
+    console.log('License expiry date from form:', formValues.license_expiry_date);
+    console.log('Type of license_expiry_date:', typeof formValues.license_expiry_date);
+    
+    for (const key in formValues) {
+      const value = formValues[key];
+      if (typeof value === 'boolean') {
+        formData.append(key, value ? 'true' : 'false');
+      } else if (value !== null && value !== undefined) {
+        formData.append(key, value.toString());
+      }
     }
 
-    this.userService.updateUser(this.userId, updatePayload).subscribe({
+    if (this.selectedFile) {
+      formData.append('license_file', this.selectedFile);
+    }
+
+    this.userService.updateUser(this.userId, formData).subscribe({
       next: (updatedUser) => {
         console.log('User updated:', updatedUser);
         this.toastService.show('המשתמש עודכן בהצלחה', 'success');
-         setTimeout(() => {
-    this.router.navigate(['/user-data']);
-  }, 500);
+        setTimeout(() => {
+          this.router.navigate(['/user-data']);
+        }, 500);
       },
       error: (err) => {
         console.error('Failed to update user:', err);
@@ -135,8 +168,6 @@ import { Router } from '@angular/router';
       this.userForm.get(key)?.markAsTouched();
     });
   }
- 
 }
-
 
 }
