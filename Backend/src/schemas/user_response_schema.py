@@ -21,7 +21,7 @@ class UserUpdate(BaseModel):
     role: Optional[UserRole] = None   # <-- Use the Enum here
     department_id: Optional[UUID] = None
     password: Optional[str] = None
-    has_government_license: bool = False
+    has_government_license: bool 
     license_file_url: Optional[str] = None
     license_expiry_date: Optional[date] = None
 
@@ -33,10 +33,10 @@ class UserResponse(BaseModel):
     employee_id: UUID
     role: UserRole
     department_id: UUID
-    has_government_license: bool = False
+    has_government_license: bool
     license_file_url: Optional[str] = None
     license_expiry_date: Optional[date] = None
-    
+    phone: Optional[str] = None 
     class Config:
         from_attributes = True
         

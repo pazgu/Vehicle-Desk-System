@@ -2,7 +2,7 @@
   <div class="user-data-container">
     <div class="content">
       <!-- Close button -->
-      <!-- <a routerLink="//admin/daily-inspections"><span class="close-button">✕</span></a> -->
+      <!-- <a routerLink="//admin/critical-issues"><span class="close-button">✕</span></a> -->
       <a routerLink="/user-data" class="back-button"> חזרה לרשימה ← </a>
 
       <div class="header">
@@ -52,15 +52,56 @@
 </div>
 
           </div>
-       
+       <!-- Row 3 -->
+<div class="form-row">
+  <div class="form-group">
+    <label for="phone">מספר טלפון</label>
+    <input type="tel" id="phone" formControlName="phone" class="form-control" />
+    <small *ngIf="f['phone'].touched && f['phone'].invalid" style="color:red;">
+      יש להזין מספר טלפון תקין
+    </small>
+  </div>
+</div>
+
+
 
         <!-- Row 3 -->
-        <div class="form-row">
+       <div class="form-row">
+  <div class="form-group">
+    <label for="license_expiry_date">תוקף רישיון</label>
+    <input type="date" id="license_expiry_date" formControlName="license_expiry_date" class="form-control" />
+  </div>
+</div>
+
+  <div class="form-row">
           <div class="form-group">
-            <label for="email">דואר אלקטרוני</label>
+            <label for="email">כתובת דואר אלקטרוני</label>
             <input type="email" id="email" formControlName="email" class="form-control" />
           </div>
         </div>
+
+        <!-- Row 4: Government License -->
+<div class="form-row">
+  <div class="form-group">
+    <label>האם למשתמש יש רישיון ממשלתי?</label>
+    <label class="switch">
+      <input
+        type="checkbox"
+        formControlName="has_government_license"
+      />
+      <span class="slider round"></span>
+    </label>
+  </div>
+</div>
+
+<!-- Row 5: License File Upload (only if checkbox is checked) -->
+<div class="form-row" *ngIf="userForm.get('has_government_license')?.value">
+  <div class="form-group">
+    <label>העלה קובץ רישיון</label>
+    <input type="file" (change)="onFileSelected($event)" />
+    <div *ngIf="selectedFileName">{{ selectedFileName }}</div>
+  </div>
+</div>
 
         <!-- Submit -->
         <div class="form-actions">
