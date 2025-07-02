@@ -29,7 +29,7 @@
           <p><strong>פעם אחרונה בשימוש:</strong> {{ vehicle.last_used_at | date: 'yyyy-MM-dd HH:mm' }}</p>
           <p><strong>מיקום נוכחי:</strong> {{ vehicle.current_location }}</p>
 
-          <p><strong>מחלקה:</strong> {{ vehicle.department_name || 'אין מחלקה' }}</p>
+<p><strong>מחלקה:</strong> {{ departmentName || 'אין מחלקה' }}</p>
 
 
           <p *ngIf="vehicle.reason_for_4x4">

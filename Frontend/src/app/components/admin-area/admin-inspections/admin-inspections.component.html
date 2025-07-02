@@ -1,28 +1,35 @@
 <h2 class="section-title">בדיקות רכבים שבוצעו היום</h2>
 
 <div *ngIf="loading" class="loading">טוען...</div>
-<div *ngIf="!loading && inspections.length === 0" class="empty">אין בדיקות להצגה</div>
 
+<div class="admin-inspections-container" *ngIf="!loading">
 
-<div class="admin-inspections-container" *ngIf="!loading && inspections.length > 0">
   <div class="problematic-only-filter" dir="rtl">
-  <button (click)="showProblematicFilters = !showProblematicFilters">
-{{ showProblematicFilters ? 'הסתר אפשרויות סינון' : 'הצג בדיקות עם בעיות' }}
-  </button>
+    <button (click)="showProblematicFilters = !showProblematicFilters">
+      {{ showProblematicFilters ? 'הסתר אפשרויות סינון' : 'הצג בדיקות עם בעיות' }}
+    </button>
 
-  <div *ngIf="showProblematicFilters">
-    <label style="display: block; margin-bottom: 0.5em;">
-      <input type="checkbox" [(ngModel)]="showMediumIssues" (change)="loadInspections()" />
-      הצג בעיות - דרגה בינונית
-    </label>
-    <label style="display: block;">
-      <input type="checkbox" [(ngModel)]="showCriticalIssues" (change)="loadInspections()" />
-      הצג בעיות - דרגה חריגה
-    </label>
+    <div *ngIf="showProblematicFilters">
+      <label style="display: block; margin-bottom: 0.5em;">
+        <input type="checkbox" [(ngModel)]="showMediumIssues" (change)="loadInspections()" />
+        הצג בעיות - דרגה בינונית
+      </label>
+      <label style="display: block;">
+        <input type="checkbox" [(ngModel)]="showCriticalIssues" (change)="loadInspections()" />
+        הצג בעיות - דרגה חריגה
+      </label>
+    </div>
   </div>
-</div>
 
-  <table class="inspection-table">
+  <div *ngIf="inspections.length === 0 && !anyFiltersSelected()" class="empty">
+    אין בדיקות להצגה
+  </div>
+
+  <div *ngIf="inspections.length === 0 && anyFiltersSelected()" class="empty-filtered-results">
+    אין בדיקות תואמות לתנאי הסינון שנבחרו.
+  </div>
+
+  <table class="inspection-table" *ngIf="inspections.length > 0">
     <thead>
       <tr>
         <th>📅 תאריך</th>
@@ -40,4 +47,5 @@
       </tr>
     </tbody>
   </table>
+
 </div>

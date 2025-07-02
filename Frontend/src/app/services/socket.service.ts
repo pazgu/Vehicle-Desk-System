@@ -32,6 +32,8 @@ public vehicleExpiry$=new BehaviorSubject<any>(null);
   }
 
   private connectToSocket(): void {
+    console.log('🔌 Attempting to connect to socket at', this.SOCKET_URL);
+
     const token = localStorage.getItem('access_token'); // ✅ Fixed this line!
 
     this.socket = io(this.SOCKET_URL, {
@@ -43,7 +45,16 @@ public vehicleExpiry$=new BehaviorSubject<any>(null);
 
     this.socket.on('connect', () => {
       console.log('✅ Connected to Socket.IO backend');
-    });
+
+ const userId = localStorage.getItem('user_id');
+if (userId) {
+  this.socket.emit('join', { user_id: userId });
+  console.log(`📡 Sent join request to room: ${userId}`);
+} else {
+  console.warn('⚠️ No user_id found in localStorage. Room join skipped.');
+}
+
+  });
 
     this.socket.on('disconnect', () => {
       console.log('❌ Disconnected from Socket.IO backend');
@@ -58,9 +69,6 @@ public vehicleExpiry$=new BehaviorSubject<any>(null);
   this.socket.on('order_updated', (data: any) => {
   console.log('✏️ Ride order updated via socket:', data);
   this.orderUpdated$.next(data); // ✅ Pushes to subscribers like HomeComponent
-    this.socket.on('order_updated', (data: any) => {
-      console.log('✏️ Ride order updated via socket:', data);
-      this.orderUpdated$.next(data); // ✅ Pushes to subscribers like HomeComponent
 
 });
 
@@ -74,20 +82,11 @@ this.socket.on('feedback_needed', (data) => {
   this.feedbackNeeded$.next(data);
 });
 
-
-
-
 this.socket.on('order_deleted', (data: any) => {
   console.log('✏️ Ride order deleted via socket:', data);
   this.deleteRequests$.next(data); // ✅ Pushes to subscribers like HomeComponent
   
 });
-    });
-    this.socket.on('order_deleted', (data: any) => {
-      console.log('✏️ Ride order deleted via socket:', data);
-      this.deleteRequests$.next(data); // ✅ Pushes to subscribers like HomeComponent
-
-    });
     this.socket.on('new_notification', (data: any) => {
       console.log('📩 Raw socket data received:', data);
       console.log('📩 Data type:', typeof data);
