@@ -71,6 +71,7 @@ export class AuditLogsComponent implements OnInit {
     vehicle_model: 'דגם רכב',
     freeze_details: 'פרטי הקפאה',
     current_location: 'מיקום נוכחי',
+    department_id: 'מזהה מחלקה',
     odometer_reading: 'מד מרחק',
   };
 
@@ -385,7 +386,9 @@ fetchAuditLogs(fromDate?: string, toDate?: string) {
       { label: 'סטטוס', oldValue: oldData.status, newValue: newData.status },
       { label: 'שימוש אחרון', oldValue: oldData.last_used_at, newValue: newData.last_used_at }, // <-- Added this line
       { label: 'סיבת הקפאה', oldValue: oldData.freeze_reason, newValue: newData.freeze_reason },
+      { label: 'פרטי הקפאה', oldValue: oldData.freeze_details, newValue: newData.freeze_details },
       { label: 'מיקום נוכחי', oldValue: oldData.current_location, newValue: newData.current_location },
+      { label: 'מזהה מחלקה', oldValue: oldData.department_id, newValue: newData.department_id },
       { label: 'קילומטראז\'', oldValue: oldData.odometer_reading, newValue: newData.odometer_reading },
       { label: 'דגם רכב', oldValue: oldData.vehicle_model, newValue: newData.vehicle_model },
       { label: 'תמונה', oldValue: oldData.image_url, newValue: newData.image_url }

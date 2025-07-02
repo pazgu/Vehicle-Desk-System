@@ -246,6 +246,10 @@
                   <div class="field-value">{{ selectedLog.change_data.current_location }}</div>
                 </div>
                 <div class="field-row">
+                  <div class="field-label">מזהה מחלקה</div>
+                  <div class="field-value">{{ selectedLog.change_data.department_id || 'לא משוייך למחלקה'}}</div>
+                </div>
+                <div class="field-row">
                   <div class="field-label">ק"מ נוכחי</div>
                   <div class="field-value">{{ selectedLog.change_data.odometer_reading }}</div>
                 </div>
