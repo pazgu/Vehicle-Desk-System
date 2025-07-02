@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 
 interface RenderableRide {
   top: number;
@@ -39,7 +39,8 @@ export class VehicleTimelineComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private http: HttpClient
+    private http: HttpClient,
+    private location: Location
   ) {
     // Initialize with dummy values, will be overwritten in ngOnInit
     this.currentWeekStart = new Date();
@@ -71,6 +72,7 @@ export class VehicleTimelineComponent implements OnInit {
         // Sunday (0) to Friday (5) - use today's date to find its Sunday
         initialDesiredDate = new Date(today);
         console.log('Detected Sunday-Friday, setting initial desired date to today:', this.formatDateToYYYYMMDD(initialDesiredDate));
+        window.scrollTo({ top: 0});
       }
     }
 
@@ -104,6 +106,11 @@ export class VehicleTimelineComponent implements OnInit {
     const d = new Date(dateString + 'T00:00:00'); // Use 'T00:00:00' to force local day start
     return !isNaN(d.getTime()) && this.formatDateToYYYYMMDD(d) === dateString;
   }
+
+navigateBack(): void {
+  const vehicleId = this.route.snapshot.paramMap.get('id');
+  this.router.navigate(['/vehicle-details', vehicleId]);
+}
 
   // --- Core Scheduler Logic (unchanged from last correct version) ---
 

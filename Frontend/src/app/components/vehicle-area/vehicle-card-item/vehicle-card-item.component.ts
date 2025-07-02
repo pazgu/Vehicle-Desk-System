@@ -66,7 +66,7 @@ export class VehicleCardItemComponent implements OnInit {
   }
 
   goBack(): void {
-    window.history.back();
+    this.navigateRouter.navigate(['/vehicle-dashboard']);
   }
 
   // New method to load vehicle usage data from analytics

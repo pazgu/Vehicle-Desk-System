@@ -2,6 +2,8 @@
   <div class="timeline-page-container">
     <div class="timeline-container">
    <div class="timeline-header">
+    <button class="back-btn" (click)="navigateBack()">חזור ←</button>
+
   <h2 class="timeline-title">לו״ז רכב</h2>
 
   <div class="header-sub">
@@ -42,7 +44,7 @@
                   'height.px': ride.height,
                   'background-color': getColorByStatus(ride.status)
                 }"
-                [title]="'נהג: ' + ride.first_name + ' ' + ride.last_name + '\nמזהה משתמש: ' + ride.user_id + '\nסטטוס: ' + ride.status"
+                [title]="'נהג: ' + ride.first_name + ' ' + ride.last_name + '\nמזהה משתמש: ' + ride.user_id + '\nסטטוס: ' + ride.status + '\nזמן התחלה: ' + (ride.start_datetime | date: 'dd/MM/yyyy HH:mm') + '\nזמן סיום: ' + (ride.end_datetime | date: 'dd/MM/yyyy HH:mm')"
               >
                 <div class="ride-info">
                     <span class="ride-driver">{{ride.first_name}} {{ride.last_name}}</span>
