@@ -843,3 +843,162 @@ input[type="checkbox"] {
   vertical-align: middle;
 }
 
+/* --- Updated Audit Ride Table Design --- */
+
+/* Table styling */
+.audit-ride-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  border-radius: 12px;
+  overflow: hidden;
+  direction: rtl;
+}
+
+.audit-ride-table th,
+.audit-ride-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #aeaeae;
+  text-align: right;
+  font-size: 1rem;
+}
+
+.audit-ride-table th {
+  background: #942222;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.audit-ride-table tr:last-child td {
+  border-bottom: none;
+}
+
+.audit-ride-table td {
+  background: #fafbfc;
+  transition: background 0.2s;
+  vertical-align: middle;
+}
+
+/* Boolean coloring */
+.boolean-yes {
+  color: #388e3c;
+  font-weight: bold;
+}
+
+.boolean-no {
+  color: #d32f2f;
+  font-weight: bold;
+}
+
+/* Responsive for small screens */
+@media (max-width: 600px) {
+  .audit-ride-table th,
+  .audit-ride-table td {
+    padding: 0.5rem;
+    font-size: 0.95rem;
+  }
+}
+
+/* Only color changed old/new cells */
+.old-value-cell {
+  background: #ffeaea !important; 
+  color: #b71c1c;
+  font-weight: bold;
+}
+
+.new-value-cell {
+  background: #eaffea !important; 
+  color: #1b5e20;
+  font-weight: bold;
+}
+
+/* Deleted Data Styles */
+
+.delete-data {
+  border-right: 4px solid #b33c2f; 
+}
+
+.delete-data h4 {
+  color: #b33c2f; 
+}
+
+  .filters-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+.filter-section {
+  display: flex;
+  align-items: center;
+}
+
+.problematic-only-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.custom-range-fields {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  flex-wrap: wrap;
+}
+
+.export-buttons {
+  margin: 1rem 0;
+}
+
+.export-buttons h3 {
+  margin-bottom: 0.5rem;
+}
+
+.export-button {
+  margin-left: 0.5rem;
+}
+
+.filter-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.collapse-btn,
+.problematic-only-label {
+  background: none;
+  border: 1px solid #942222;
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  color: #942222;
+  border-radius: 8px;
+  transition: all 0.2s;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  height: 40px;
+}
+
+.collapse-btn:hover,
+.problematic-only-label:hover {
+  background: #942222;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.problematic-only-label input[type="checkbox"] {
+  accent-color: #942222;
+  margin-left: 8px;
+  margin-right: 0;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
