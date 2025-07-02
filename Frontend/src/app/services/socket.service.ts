@@ -46,7 +46,7 @@ public vehicleExpiry$=new BehaviorSubject<any>(null);
     this.socket.on('connect', () => {
       console.log('✅ Connected to Socket.IO backend');
 
- const userId = localStorage.getItem('user_id');
+ const userId = localStorage.getItem('employee_id');
 if (userId) {
   this.socket.emit('join', { user_id: userId });
   console.log(`📡 Sent join request to room: ${userId}`);

@@ -57,6 +57,21 @@ export class NotificationsComponent implements OnInit {
     console.error('Failed to fetch admin notifications:', err);
   }
 });
+ this.notificationService.getNotifications().subscribe({
+        next: (data) => {
+        
+          this.notifications = data.map(note => ({
+            ...note,
+            timeAgo: formatDistanceToNow(new Date(note.sent_at), {
+              addSuffix: true,
+              locale: he,
+            }),
+          }));
+        },
+        error: (err) => {
+          console.error('Failed to fetch notifications:', err);
+        }
+      });
 
    this.socketService.vehicleExpiry$.subscribe((newNotif) => {
 
@@ -97,6 +112,7 @@ export class NotificationsComponent implements OnInit {
     } else {
       this.notificationService.getNotifications().subscribe({
         next: (data) => {
+        
           this.notifications = data.map(note => ({
             ...note,
             timeAgo: formatDistanceToNow(new Date(note.sent_at), {
