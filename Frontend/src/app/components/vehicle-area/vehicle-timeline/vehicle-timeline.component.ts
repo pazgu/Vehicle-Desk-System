@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { CommonModule } from '@angular/common';
@@ -14,11 +14,12 @@ interface RenderableRide {
   start_datetime: string;
   end_datetime: string;
   user_id: string;
-  [key: string]: any; 
+  [key: string]: any;
 }
 
 @Component({
   selector: 'app-vehicle-timeline',
+  standalone: true,
   imports: [CommonModule],
   templateUrl: './vehicle-timeline.component.html',
   styleUrl: './vehicle-timeline.component.css'
@@ -26,43 +27,105 @@ interface RenderableRide {
 export class VehicleTimelineComponent implements OnInit {
   vehicleId: string | null = null;
   vehicleTimelineData: any[] = [];
-  
+
   processedRides = new Map<string, RenderableRide[]>();
 
-  currentWeekStart: Date = this.getStartOfWeek(new Date());
-  weekEnd: Date = this.getWeekEnd(this.currentWeekStart);
-  
-  private HOUR_SLOT_HEIGHT = 40;
-  private VERTICAL_GAP_PX = 4; // Keep this for the vertical invisible borders
+  currentWeekStart: Date; // Initialized in ngOnInit
+  weekEnd: Date; // Initialized in ngOnInit
 
-  constructor(private route: ActivatedRoute, private http: HttpClient) {}
+  private HOUR_SLOT_HEIGHT = 40;
+  private VERTICAL_GAP_PX = 4;
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private http: HttpClient
+  ) {
+    // Initialize with dummy values, will be overwritten in ngOnInit
+    this.currentWeekStart = new Date();
+    this.weekEnd = new Date();
+  }
 
   ngOnInit(): void {
     this.vehicleId = this.route.snapshot.paramMap.get('id');
+
+    const fromParam = this.route.snapshot.queryParamMap.get('from');
+
+    let initialDesiredDate: Date;
+
+    if (fromParam && this.isValidDateString(fromParam)) {
+      // If 'from' param exists and is valid, use it as the starting point
+      initialDesiredDate = new Date(fromParam + 'T00:00:00'); // Parse as start of that day in local time
+      console.log('✅ Initializing based on URL query param "from":', fromParam);
+    } else {
+      // If no valid 'from' param, default to current logic for today's view
+      // This is the core logic that determines *which* week's Sunday you want to show
+      const today = new Date();
+      // If today is Saturday (getDay() returns 6), we want the NEXT Sunday.
+      // Otherwise (Sunday-Friday), we want *this* Sunday.
+      if (today.getDay() === 6) { // Saturday
+        initialDesiredDate = new Date(today);
+        initialDesiredDate.setDate(today.getDate() + 1); // Advance to Sunday
+        console.log('Detected Saturday, setting initial desired date to next Sunday:', this.formatDateToYYYYMMDD(initialDesiredDate));
+      } else {
+        // Sunday (0) to Friday (5) - use today's date to find its Sunday
+        initialDesiredDate = new Date(today);
+        console.log('Detected Sunday-Friday, setting initial desired date to today:', this.formatDateToYYYYMMDD(initialDesiredDate));
+      }
+    }
+
+    // Now, derive currentWeekStart (Sunday) from the initialDesiredDate
+    this.currentWeekStart = this.getStartOfWeek(initialDesiredDate);
+    // And calculate the corresponding weekEnd (Saturday)
+    this.weekEnd = this.getWeekEnd(this.currentWeekStart);
+
+    // Always ensure the URL reflects the currently determined week.
+    this.updateUrlQueryParams();
+
     if (this.vehicleId) {
       this.loadVehicleTimeline(this.currentWeekStart);
     }
   }
 
+  // --- Utility Functions for Date Handling ---
+
+  // Converts a Date object to YYYY-MM-DD format (local time)
+  private formatDateToYYYYMMDD(date: Date): string {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  // Checks if a string is a valid YYYY-MM-DD date string
+  private isValidDateString(dateString: string): boolean {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateString)) return false;
+    // Attempt to parse and check if it's a valid date
+    const d = new Date(dateString + 'T00:00:00'); // Use 'T00:00:00' to force local day start
+    return !isNaN(d.getTime()) && this.formatDateToYYYYMMDD(d) === dateString;
+  }
+
+  // --- Core Scheduler Logic (unchanged from last correct version) ---
+
   loadVehicleTimeline(weekStart: Date): void {
     if (!this.vehicleId) return;
 
-    const from = new Date(weekStart);
-    from.setHours(0, 0, 0, 0);
-
-    const to = new Date(from);
-    to.setDate(from.getDate() + 6);
-    to.setHours(23, 59, 59, 999);
+    // Use component's properties, which are already correct Sunday-Saturday range
+    const from = this.formatDateToYYYYMMDD(this.currentWeekStart);
+    const to = this.formatDateToYYYYMMDD(this.weekEnd);
 
     const params = new HttpParams()
-      .set('from', from.toISOString().split('T')[0])
-      .set('to', to.toISOString().split('T')[0]);
+      .set('from', from)
+      .set('to', to);
+
+    console.log('🚀 Requesting timeline with API params (from, to):', from, to);
+    console.log('📡 Full URL for API call:', `${environment.apiUrl}/vehicles/${this.vehicleId}/timeline?${params}`);
 
     this.http.get<any[]>(`${environment.apiUrl}/vehicles/${this.vehicleId}/timeline`, { params })
       .subscribe({
         next: data => {
           this.vehicleTimelineData = data;
-          this.processRidesForDisplay(); 
+          this.processRidesForDisplay();
         },
         error: err => {
           console.error('❌ Error loading vehicle timeline:', err);
@@ -71,74 +134,75 @@ export class VehicleTimelineComponent implements OnInit {
         }
       });
   }
-  
+
   processRidesForDisplay(): void {
     this.processedRides.clear();
     const daysInView = this.getDaysRange();
-    
+
     daysInView.forEach(day => {
-        this.processedRides.set(this.getDateKey(day), []);
+      this.processedRides.set(this.getDateKey(day), []);
     });
 
     for (const ride of this.vehicleTimelineData) {
-        const rideStart = new Date(ride.start_datetime);
-        const rideEnd = new Date(ride.end_datetime);
+      const rideStart = new Date(ride.start_datetime);
+      const rideEnd = new Date(ride.end_datetime);
 
-        let loopDay = new Date(rideStart);
-        loopDay.setHours(0,0,0,0);
+      let loopDay = new Date(rideStart);
+      loopDay.setHours(0, 0, 0, 0);
 
-        while (loopDay <= rideEnd) {
-            const dayKey = this.getDateKey(loopDay);
-            
-            if (this.processedRides.has(dayKey)) {
-                const blockStart = (rideStart > loopDay) ? rideStart : loopDay;
-                const endOfDay = new Date(loopDay);
-                endOfDay.setHours(23, 59, 59, 999);
-                const blockEnd = (rideEnd < endOfDay) ? rideEnd : endOfDay;
-                
-                const startMinutes = blockStart.getHours() * 60 + blockStart.getMinutes();
-                const endMinutes = blockEnd.getHours() * 60 + blockEnd.getMinutes();
-                let durationMinutes = Math.max(1, endMinutes - startMinutes);
+      while (loopDay <= rideEnd) {
+        const dayKey = this.getDateKey(loopDay);
 
-                let baseTop = (startMinutes / 60) * this.HOUR_SLOT_HEIGHT;
-                let baseHeight = (durationMinutes / 60) * this.HOUR_SLOT_HEIGHT;
+        if (this.processedRides.has(dayKey)) {
+          const blockStart = (rideStart > loopDay) ? rideStart : loopDay;
+          const endOfDay = new Date(loopDay);
+          endOfDay.setHours(23, 59, 59, 999);
+          const blockEnd = (rideEnd < endOfDay) ? rideEnd : endOfDay;
 
-                const top = baseTop + this.VERTICAL_GAP_PX;
-                const height = Math.max(1, baseHeight - (2 * this.VERTICAL_GAP_PX));
+          const startMinutes = blockStart.getHours() * 60 + blockStart.getMinutes();
+          const endMinutes = blockEnd.getHours() * 60 + blockEnd.getMinutes();
+          let durationMinutes = Math.max(1, endMinutes - startMinutes);
 
-                const dayRides = this.processedRides.get(dayKey)!;
-                dayRides.push({
-                    ...ride,
-                    top: top,
-                    height: height,
-                    status: ride.status,
-                    first_name: ride.first_name,
-                    last_name: ride.last_name,
-                    purpose: ride.purpose,
-                    user_id: ride.user_id
-                });
-            }
-            loopDay.setDate(loopDay.getDate() + 1);
+          let baseTop = (startMinutes / 60) * this.HOUR_SLOT_HEIGHT;
+          let baseHeight = (durationMinutes / 60) * this.HOUR_SLOT_HEIGHT;
+
+          const top = baseTop + this.VERTICAL_GAP_PX;
+          const height = Math.max(1, baseHeight - (2 * this.VERTICAL_GAP_PX));
+
+          const dayRides = this.processedRides.get(dayKey)!;
+          dayRides.push({
+            ...ride,
+            top: top,
+            height: height,
+            status: ride.status,
+            first_name: ride.first_name,
+            last_name: ride.last_name,
+            purpose: ride.purpose,
+            user_id: ride.user_id
+          });
         }
+        loopDay.setDate(loopDay.getDate() + 1);
+      }
     }
   }
 
-  // ✅ UPDATED: Color palette inspired by the example table
   getColorByStatus(status: string): string {
     switch (status?.toLowerCase()) {
-      case 'approved': return '#a4d1ae'; // Light Green
-      case 'pending': return '#f5e2a8'; // Light Amber
-      case 'rejected': return '#f1b5b5'; // Light Red
-      case 'completed': return '#b7dbf3'; // Light Blue
-      case 'cancelled': return '#bfb9b9'; // Light Grey (assuming 'cancelled' is a possible status)
-      default: return '#90a4ae'; // Original Grey for unhandled statuses
+      case 'approved': return '#a4d1ae';
+      case 'pending': return '#f5e2a8';
+      case 'in_progress': return '#6aa5d6';
+      case 'rejected': return '#f1b5b5';
+      case 'completed': return '#b7dbf3';
+      case 'cancelled': return '#bfb9b9';
+      default: return '#90a4ae';
     }
   }
-  
+
   getDateKey(date: Date): string {
-    return date.toISOString().split('T')[0];
+    // Uses the new utility function
+    return this.formatDateToYYYYMMDD(date);
   }
-  
+
   getDaysRange(): Date[] {
     const days: Date[] = [];
     for (let i = 0; i < 7; i++) {
@@ -154,227 +218,52 @@ export class VehicleTimelineComponent implements OnInit {
   }
 
   getStartOfWeek(date: Date): Date {
+    // Ensure we start from a clean date at 00:00:00 to avoid timezone shifts
     const d = new Date(date);
-    d.setDate(d.getDate() - d.getDay());
-    d.setHours(0, 0, 0, 0);
+    d.setHours(0, 0, 0, 0); // Set to start of the day in local time
+
+    const day = d.getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
+    d.setDate(d.getDate() - day); // Backtrack to Sunday of the week
+
+    console.log('🧮 Calculated week start (Sunday):', this.formatDateToYYYYMMDD(d));
     return d;
   }
 
   getWeekEnd(startOfWeek: Date): Date {
     const end = new Date(startOfWeek);
-    end.setDate(end.getDate() + 6);
+    end.setDate(end.getDate() + 6); // Advance 6 days from Sunday to Saturday
+    end.setHours(23, 59, 59, 999); // Set to very end of Saturday
+    console.log('🧮 Calculated week end (Saturday):', this.formatDateToYYYYMMDD(end));
     return end;
   }
 
   navigateWeek(offset: number): void {
-    const newStartDate = new Date(this.currentWeekStart);
-    newStartDate.setDate(newStartDate.getDate() + offset * 7);
-    this.currentWeekStart = newStartDate;
+    const newDate = new Date(this.currentWeekStart);
+    newDate.setDate(newDate.getDate() + offset * 7); // Advance/rewind by full weeks
+
+    // Re-calculate the start and end of the new week
+    this.currentWeekStart = this.getStartOfWeek(newDate);
     this.weekEnd = this.getWeekEnd(this.currentWeekStart);
+
+    console.log('🧭 Navigating to new week start:', this.formatDateToYYYYMMDD(this.currentWeekStart));
+    console.log('📅 Navigating to new week end:', this.formatDateToYYYYMMDD(this.weekEnd));
+
     this.loadVehicleTimeline(this.currentWeekStart);
+    this.updateUrlQueryParams();
+  }
+
+  private updateUrlQueryParams(): void {
+    const fromDateString = this.formatDateToYYYYMMDD(this.currentWeekStart);
+    const toDateString = this.formatDateToYYYYMMDD(this.weekEnd);
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        from: fromDateString,
+        to: toDateString,
+      },
+      queryParamsHandling: 'merge',
+    });
+    console.log('🔗 URL query params updated to:', fromDateString, 'to', toDateString);
   }
 }
-
-// import { Component, OnInit, OnDestroy } from '@angular/core';
-// import { ActivatedRoute } from '@angular/router';
-// import { HttpClient, HttpParams } from '@angular/common/http';
-// import { environment } from '../../../../environments/environment';
-// import { CommonModule } from '@angular/common';
-
-// interface RenderableRide {
-//   top: number;
-//   height: number;
-//   left?: number;
-//   width?: number;
-//   id: string; 
-//   [key: string]: any; 
-// }
-
-// @Component({
-//   selector: 'app-vehicle-timeline',
-//   imports: [CommonModule],
-//   templateUrl: './vehicle-timeline.component.html',
-//   styleUrl: './vehicle-timeline.component.css'
-// })
-// export class VehicleTimelineComponent implements OnInit, OnDestroy {
-//   vehicleId: string | null = null;
-//   vehicleTimelineData: any[] = [];
-//   processedRides = new Map<string, RenderableRide[]>();
-
-//   currentWeekStart: Date = this.getStartOfWeek(new Date());
-//   weekEnd: Date = this.getWeekEnd(this.currentWeekStart);
-  
-//   private HOUR_SLOT_HEIGHT = 40;
-
-//   hoveredRideId: string | null = null;
-//   currentTimeTop: number = 0;
-//   todayKey: string = this.getDateKey(new Date());
-//   private timeIndicatorInterval: any;
-
-//   constructor(private route: ActivatedRoute, private http: HttpClient) {}
-
-//   ngOnInit(): void {
-//     this.vehicleId = this.route.snapshot.paramMap.get('id');
-//     if (this.vehicleId) {
-//       this.loadVehicleTimeline(this.currentWeekStart);
-//     }
-    
-//     this.updateCurrentTimeIndicator();
-//     this.timeIndicatorInterval = setInterval(() => {
-//       this.updateCurrentTimeIndicator();
-//     }, 60000); // Update every minute
-//   }
-
-//   ngOnDestroy(): void {
-//     if (this.timeIndicatorInterval) {
-//       clearInterval(this.timeIndicatorInterval);
-//     }
-//   }
-
-//   updateCurrentTimeIndicator(): void {
-//     const now = new Date();
-//     const minutesPastMidnight = now.getHours() * 60 + now.getMinutes();
-//     this.currentTimeTop = (minutesPastMidnight / 60) * this.HOUR_SLOT_HEIGHT;
-//     this.todayKey = this.getDateKey(now);
-//   }
-
-//   loadVehicleTimeline(weekStart: Date): void {
-//     if (!this.vehicleId) return;
-
-//     const from = new Date(weekStart);
-//     from.setHours(0, 0, 0, 0);
-
-//     const to = new Date(from);
-//     to.setDate(from.getDate() + 6);
-//     to.setHours(23, 59, 59, 999);
-
-//     const params = new HttpParams()
-//       .set('from', from.toISOString().split('T')[0])
-//       .set('to', to.toISOString().split('T')[0]);
-
-//     this.http.get<any[]>(`${environment.apiUrl}/vehicles/${this.vehicleId}/timeline`, { params })
-//       .subscribe({
-//         next: data => {
-//           this.vehicleTimelineData = data;
-//           this.processRidesForDisplay(); 
-//         },
-//         error: err => {
-//           console.error('❌ Error loading vehicle timeline:', err);
-//           this.vehicleTimelineData = [];
-//           this.processRidesForDisplay();
-//         }
-//       });
-//   }
-  
-//   processRidesForDisplay(): void {
-//     const dailyRides = new Map<string, RenderableRide[]>();
-//     this.getDaysRange().forEach(day => dailyRides.set(this.getDateKey(day), []));
-
-//     for (const ride of this.vehicleTimelineData) {
-//       const rideStart = new Date(ride.start_datetime);
-//       const rideEnd = new Date(ride.end_datetime);
-//       let loopDay = new Date(rideStart);
-//       loopDay.setHours(0, 0, 0, 0);
-
-//       while (loopDay <= rideEnd) {
-//         const dayKey = this.getDateKey(loopDay);
-//         if (dailyRides.has(dayKey)) {
-//           const blockStart = (rideStart > loopDay) ? rideStart : loopDay;
-//           const endOfDay = new Date(loopDay);
-//           endOfDay.setHours(23, 59, 59, 999);
-//           const blockEnd = (rideEnd < endOfDay) ? rideEnd : endOfDay;
-          
-//           const startMinutes = blockStart.getHours() * 60 + blockStart.getMinutes();
-//           const endMinutes = blockEnd.getHours() * 60 + blockEnd.getMinutes();
-//           const durationMinutes = Math.max(15, endMinutes - startMinutes);
-
-//           dailyRides.get(dayKey)!.push({
-//             ...ride,
-//             top: (startMinutes / 60) * this.HOUR_SLOT_HEIGHT,
-//             height: (durationMinutes / 60) * this.HOUR_SLOT_HEIGHT,
-//           });
-//         }
-//         loopDay.setDate(loopDay.getDate() + 1);
-//       }
-//     }
-
-//     dailyRides.forEach((rides, dayKey) => {
-//         const sortedRides = rides.sort((a, b) => a.top - b.top);
-//         const collisionGroups: RenderableRide[][] = [];
-
-//         for (const ride of sortedRides) {
-//             let placed = false;
-//             for (const group of collisionGroups) {
-//                 const lastRideInGroup = group[group.length - 1];
-//                 if (ride.top >= (lastRideInGroup.top + lastRideInGroup.height)) {
-//                     group.push(ride);
-//                     placed = true;
-//                     break;
-//                 }
-//             }
-//             if (!placed) {
-//                 collisionGroups.push([ride]);
-//             }
-//         }
-        
-//         const numColumns = collisionGroups.length;
-//         collisionGroups.forEach((group, colIndex) => {
-//             for (const ride of group) {
-//                 ride.width = 100 / numColumns;
-//                 ride.left = colIndex * (100 / numColumns);
-//             }
-//         });
-        
-//         this.processedRides.set(dayKey, sortedRides);
-//     });
-//   }
-
-//   getColorByStatus(status: string): string {
-//     switch (status?.toLowerCase()) {
-//       case 'approved': return '#2e7d32';
-//       case 'pending': return '#ff8f00';
-//       case 'rejected':return '#c62828';
-//       case 'completed': return '#1565c0';
-//       default: return '#546e7a';
-//     }
-//   }
-  
-//   getDateKey(date: Date): string {
-//     return date.toISOString().split('T')[0];
-//   }
- 
-//   getDaysRange(): Date[] {
-//     const days: Date[] = [];
-//     for (let i = 0; i < 7; i++) {
-//       const day = new Date(this.currentWeekStart);
-//       day.setDate(this.currentWeekStart.getDate() + i);
-//       days.push(day);
-//     }
-//     return days;
-//   }
-
-//   getHoursRange(): number[] {
-//     return Array.from({ length: 24 }, (_, i) => i);
-//   }
-
-//   getStartOfWeek(date: Date): Date {
-//     const d = new Date(date);
-//     d.setDate(d.getDate() - d.getDay());
-//     d.setHours(0, 0, 0, 0);
-//     return d;
-//   }
-
-//   getWeekEnd(startOfWeek: Date): Date {
-//     const end = new Date(startOfWeek);
-//     end.setDate(end.getDate() + 6);
-//     return end;
-//   }
-
-//   navigateWeek(offset: number): void {
-//     const newStartDate = new Date(this.currentWeekStart);
-//     newStartDate.setDate(newStartDate.getDate() + offset * 7);
-//     this.currentWeekStart = newStartDate;
-//     this.weekEnd = this.getWeekEnd(this.currentWeekStart);
-//     this.loadVehicleTimeline(this.currentWeekStart);
-//   }
-// }
