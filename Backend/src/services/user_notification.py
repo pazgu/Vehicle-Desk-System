@@ -1,5 +1,7 @@
 from sqlalchemy.orm import Session
 from uuid import UUID
+
+from ..models.vehicle_model import Vehicle
 from ..models.notification_model import Notification, NotificationType
 from datetime import datetime, timezone
 from ..models.notification_model import Notification, NotificationType
@@ -59,7 +61,7 @@ async def send_notification_async(
 
 
 
-def create_system_notification(user_id, title, message, order_id=None):
+def create_system_notification(user_id, title, message, order_id=None,vehicle_id=None):
     db = SessionLocal()
     try:
         notif = Notification(
@@ -68,7 +70,8 @@ def create_system_notification(user_id, title, message, order_id=None):
             title=title,
             message=message,
             sent_at=datetime.now(timezone.utc),
-            order_id=order_id
+            order_id=order_id,
+            vehicle_id=vehicle_id
         )
         db.add(notif)
         db.commit()
@@ -87,6 +90,7 @@ def create_system_notification(user_id, title, message, order_id=None):
             "notification_type": notif.notification_type.value,
             "sent_at": notif.sent_at.isoformat(),
             "order_id": str(notif.order_id) if notif.order_id else None,
+            "vehicle_id": str(notif.vehicle_id) if notif.vehicle_id else None,
         }, room=str(user_id)))
 
         return notif
@@ -97,14 +101,15 @@ def create_system_notification(user_id, title, message, order_id=None):
 
 #this was created to be used in the completion form function since ->
 # using the original create_system_notification is problematic 
-def create_system_notification_with_db(db: Session, user_id, title, message, order_id=None):
+def create_system_notification_with_db(db: Session, user_id, title, message, order_id=None,vehicle_id=None):
     notif = Notification(
         user_id=user_id,
         notification_type=NotificationType.system,
         title=title,
         message=message,
         sent_at=datetime.now(timezone.utc),
-        order_id=order_id
+        order_id=order_id,
+        vehicle_id=vehicle_id
     )
     db.add(notif)
     return notif  # don't commit here — let caller handle it
@@ -116,6 +121,15 @@ def send_admin_odometer_notification(vehicle_id: UUID, odometer_reading: float):
 
         if not admins or odometer_reading < 10000:
             return None
+        
+        if(vehicle_id):
+            plate_number = (
+                db.query(Vehicle.plate_number)
+                .filter(Vehicle.id == vehicle_id)
+                .scalar()
+            )
+
+        
 
         notifications = []
         for admin in admins:
@@ -123,7 +137,7 @@ def send_admin_odometer_notification(vehicle_id: UUID, odometer_reading: float):
                 user_id=admin.employee_id,
                 notification_type=NotificationType.system,
                 title="Vehicle Odometer Update",
-                message=f"Vehicle {vehicle_id} has an odometer reading of {odometer_reading} km.",
+                message = f"{plate_number} לרכב עם מספר רישוי " + f" ק״מ {odometer_reading} יש מד אוץ של ",
                 sent_at=datetime.now(timezone.utc)
             )
             db.add(notif)

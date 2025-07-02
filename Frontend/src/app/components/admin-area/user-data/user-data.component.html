@@ -55,8 +55,6 @@
               <th class="column-department">מחלקה</th>
               <th class="column-email">כתובת דואר אלקטרוני</th>
               <th class="column-actions">פעולות</th>
-              <th class="column-license">סטטוס רישיון</th>
-
             </tr>
           </thead>
           <tbody>
@@ -64,8 +62,16 @@
   <td colspan="5" class="no-results">לא נמצאו משתמשים תואמים</td>
 </tr>
 
+
+
 <tr *ngFor="let user of pagedUsers" (click)="goToUserCard(user.employee_id)" class="clickable-row">
-              <td class="column-name">{{ user.first_name }} {{ user.last_name }}</td>
+              <td>
+  <div class="column-name">
+        <small *ngIf="licenceExpiredMap[user.employee_id]" class="expired"> ⚠️ </small>
+    <span>{{ user.first_name }} {{ user.last_name }}</span>
+  </div>
+</td>
+
               <td class="column-role">{{ user.role }}</td>
               <td class="column-department">
   {{ departmentNames[user.department_id] || user.department_id }}
@@ -91,15 +97,6 @@
   </div>
               </td>
 
-              <td class="column-license">
-  <span 
-    [ngClass]="{
-      'badge-valid': user.license_check_passed === true,
-      'badge-invalid': user.license_check_passed === false
-    }">
-    {{ user.license_check_passed ? 'בתוקף' : 'לא בתוקף' }}
-  </span>
-</td>
 
               
             </tr>
