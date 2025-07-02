@@ -30,12 +30,27 @@
         </div>
         <div class="button-container">
           <button class="submit-btn" (click)="handleStep1Next()">הבא</button>
+      
+
           <small *ngIf="showStep1Error" class="error-text">יש לבחור עובד מהמחלקה כדי להמשיך</small>
         </div>
       </div>
 
       <!-- Step 2: Ride details form -->
+       
       <div *ngIf="step === 2">
+        
+          <!-- Backdrop -->
+<div class="request-backdrop" *ngIf="step === 2 && disableRequest"></div>
+
+<!-- Modal -->
+<div class="disable-request" *ngIf="step === 2 && disableRequest">
+  <p>העובד אינו מחזיק ברישיון ממשלתי תקף ולא ניתן להזמין עבורו נסיעה</p>
+  <small>לעדכון פרטי רישיון יש ליצור קשר עם המנהל</small>
+</div>
+
+
+
         <div class="form-content">
           <!-- Row 1: ride_period + ride_date + ride_type -->
           <div class="row">
