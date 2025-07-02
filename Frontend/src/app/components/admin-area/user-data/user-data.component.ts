@@ -24,19 +24,22 @@ export class UserDataComponent implements OnInit {
   filtersCollapsed = false;
   searchTerm = '';
   selectedRole: string = '';
-availableRoles: string[] = [];
+  availableRoles: string[] = [];
+  license_expiry_date?: string;
+licenceExpiredMap: { [userId: string]: boolean } = {};
 
   constructor(private userService: UserService, 
     private router: Router,
-  private toastservice: ToastService,
-private socketservice: SocketService,
-private dialog: MatDialog) {}
+    private toastservice: ToastService,
+    private socketservice: SocketService,
+    private dialog: MatDialog) {}
 
   ngOnInit(): void {
   this.userService.getAllUsers().subscribe({
     next: (users) => {
       this.users = users;
       this.filteredLogs = [...users];
+      this.checkLicence(users)
 
       this.availableRoles = Array.from(new Set(users.map(u => u.role))).filter(Boolean);
 
@@ -44,6 +47,7 @@ private dialog: MatDialog) {}
         if (deletedUser) {
           this.users = this.users.filter(u => u.employee_id !== deletedUser.id);
           this.filterLogs(); // ✅ fix: changed from `this.filteredLogs()` to `this.filterLogs()`
+
         }
       });
     },
@@ -114,6 +118,20 @@ deleteUser(userId: string): void {
         this.toastservice.show('שגיאה במחיקת המשתמש ❌', 'error');
       }
     });
+  });
+}
+checkLicence(users: User[]): void {
+  console.log("Checking expired licenses...");
+  const now = new Date();
+
+  users.forEach(user => {
+    if (user.license_expiry_date) {
+      const expiryDate = new Date(user.license_expiry_date);
+      const isExpired = expiryDate < now;
+      this.licenceExpiredMap[user.employee_id] = isExpired;
+    } else {
+      this.licenceExpiredMap[user.employee_id] = false;
+    }
   });
 }
 
