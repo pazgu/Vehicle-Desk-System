@@ -6,7 +6,7 @@
 
       <div class="vehicle-buttons-bar">
         <div class="left-buttons">
-          <button class="add-vehicle-btn" (click)="navigateToNewVehicle()">
+          <button class="add-vehicle-btn" (click)="navigateToNewVehicle()" *ngIf="userRole !== 'supervisor'">
             הוסף רכב חדש +
           </button>
         </div>
