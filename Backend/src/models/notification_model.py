@@ -20,6 +20,7 @@ class Notification(Base):
     message = Column(Text, nullable=False)
     sent_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
     order_id = Column(UUID(as_uuid=True), ForeignKey("rides.id"), nullable=True)
+    vehicle_id = Column(UUID(as_uuid=True), ForeignKey("vehicles.id"), nullable=True)  # ✅
 
     # Relationship to Ride (order)
     ride = relationship("Ride", back_populates="notifications", lazy="joined", uselist=False)

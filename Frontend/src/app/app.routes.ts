@@ -46,7 +46,7 @@ export const routes: Routes = [
   { path: 'user-data', component: UserDataComponent,canActivate: [ProtectedRouteGuard] }, 
   { path: 'vehicle-details/:id', component: VehicleCardItemComponent },
   { path: 'vehicle-dashboard', component: VehicleDashboardComponent },
-  { path: 'vehicle-dashboard/new-vehicle', component: AddVehicleComponent },
+  { path: 'vehicle-dashboard/new-vehicle', component: AddVehicleComponent},
   { path: 'ride-completion-form/:ride_id', component: RideCompletionFormComponent },
   { path: 'audit-logs', component: AuditLogsComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
@@ -73,7 +73,7 @@ export const routes: Routes = [
 },
 
 {
-  path: 'admin/daily-inspections',
+  path: 'admin/critical-issues',
   loadComponent: () =>
     import('./components/admin-area/admin-inspections/admin-inspections.component')
       .then(m => m.AdminInspectionsComponent),

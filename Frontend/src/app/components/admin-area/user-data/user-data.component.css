@@ -278,3 +278,28 @@ position: absolute;
   gap: 1rem;
   align-items: center;
 }
+
+.expired {
+  color: red;
+  font-size: 1.4em;
+  text-align: center;
+  position: relative; /* required for absolute tooltip positioning */
+  cursor: help; /* optional: shows a question mark cursor */
+}
+
+.expired:hover::after {
+  content: "רישיון פג תוקף";
+  position: absolute;
+  top: -25px;  /* adjust as needed */
+  right: 50%;
+  transform: translateX(50%);
+  background: #fff3cd;
+  color: #000;
+  padding: 4px 8px;
+  border: 1px solid #f5c2c7;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-size: 0.46em;
+  z-index: 1000;
+}
+
