@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core'; // Make sure OnInit is imported
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { VehicleService } from '../../../services/vehicle.service';
@@ -12,12 +12,12 @@ import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-vehicle-dashboard',
-  standalone: true, // Add standalone if it's a standalone component
+  standalone: true,
   imports: [CommonModule, FormsModule, CardModule],
   templateUrl: './vehicle-dashboard.component.html',
   styleUrl: './vehicle-dashboard.component.css'
 })
-export class VehicleDashboardComponent implements OnInit { // Implement OnInit
+export class VehicleDashboardComponent implements OnInit {
 
   vehicles: VehicleInItem[] = [];
   mostUsedVehicles: VehicleInItem[] = [];
@@ -35,6 +35,9 @@ export class VehicleDashboardComponent implements OnInit { // Implement OnInit
 
   userRole: string | null = null;
 
+  // New property to store department ID to Name mapping
+  departmentMap: Map<string, string> = new Map();
+
   constructor(
     private vehicleService: VehicleService,
     private router: Router,
@@ -45,24 +48,47 @@ export class VehicleDashboardComponent implements OnInit { // Implement OnInit
 
   ngOnInit(): void {
     this.getUserRole();
-    this.loadVehicles();
-    this.fetchVehicleTypes();
-    this.loadVehicleUsageData();
+    this.fetchAndMapDepartments().then(() => { // Ensure departments are loaded before vehicles
+      this.loadVehicles();
+      this.fetchVehicleTypes();
+      this.loadVehicleUsageData();
+    });
 
     this.socketService.newVehicle$.subscribe((vehicleData) => {
       if (vehicleData && vehicleData.id) {
         console.log('🆕 Vehicle received via socket:', vehicleData);
-
         const alreadyExists = this.vehicles.some(v => v.id === vehicleData.id);
         if (!alreadyExists) {
-          this.vehicles.unshift(vehicleData);
+          // If a new vehicle comes via socket, ensure its department name is resolved
+          const departmentName = this.departmentMap.get(vehicleData.department_id || '');
+          const vehicleWithDepartmentName: VehicleInItem = {
+            ...vehicleData,
+            department: departmentName || (vehicleData.department_id ? 'מחלקה לא ידועה' : null) // Default if ID exists but name not found
+          };
+          this.vehicles.unshift(vehicleWithDepartmentName);
         }
       }
     });
   }
 
+  // New method to fetch departments and populate the map
+  async fetchAndMapDepartments(): Promise<void> {
+    try {
+      const departments = await this.http.get<{ id: string, name: string }[]>(`${environment.apiUrl}/departments`).toPromise();
+      if (departments) {
+        departments.forEach(dept => {
+          this.departmentMap.set(dept.id, dept.name);
+        });
+        console.log('Departments mapped:', this.departmentMap);
+      }
+    } catch (err) {
+      console.error('Failed to fetch departments for mapping', err);
+      this.toastService.show('שגיאה בטעינת נתוני מחלקות', 'error');
+    }
+  }
+
   getUserRole(): void {
-    if (typeof localStorage !== 'undefined') { 
+    if (typeof localStorage !== 'undefined') {
       this.userRole = localStorage.getItem('role');
       console.log('User role from local storage:', this.userRole);
     }
@@ -79,15 +105,21 @@ export class VehicleDashboardComponent implements OnInit { // Implement OnInit
   loadVehicles(): void {
     this.vehicleService.getAllVehicles().subscribe(
       (data) => {
-        this.vehicles = Array.isArray(data) ? data : [];
+        // Here's the key part: map department_id to department name
+        this.vehicles = Array.isArray(data) ? data.map(vehicle => ({
+          ...vehicle,
+          department: this.departmentMap.get(vehicle.department_id || '') || (vehicle.department_id ? 'מחלקה לא ידועה' : 'ללא מחלקה')
+        })) : [];
         this.showingMostUsed = false;
-        console.log('Vehicles loaded:', this.vehicles);
+        console.log('Vehicles loaded with department names:', this.vehicles);
       },
       (error) => {
         console.error('Error loading vehicles:', error);
       }
     );
   }
+
+  // Rest of your methods remain mostly the same...
 
   loadVehicleUsageData(): void {
     this.http.get<{ plate_number: string; vehicle_model: string; ride_count: number }[]>(
@@ -157,7 +189,12 @@ export class VehicleDashboardComponent implements OnInit { // Implement OnInit
 
     this.vehicleService.getAllVehicles().subscribe(
       (allVehicles) => {
-        this.vehicles = Array.isArray(allVehicles) ? allVehicles : [];
+        // Apply department name mapping to allVehicles before filtering
+        const vehiclesWithNames = Array.isArray(allVehicles) ? allVehicles.map(vehicle => ({
+          ...vehicle,
+          department: this.departmentMap.get(vehicle.department_id || '') || (vehicle.department_id ? 'מחלקה לא ידועה' : 'ללא מחלקה')
+        })) : [];
+        this.vehicles = vehiclesWithNames; // Update this.vehicles with mapped names
 
         this.vehicleService.getMostUsedVehiclesThisMonth(year, month).subscribe({
           next: (response) => {
@@ -165,8 +202,14 @@ export class VehicleDashboardComponent implements OnInit { // Implement OnInit
 
             const enrichedStats = response.stats
               .map((stat: any) => {
-                const match = this.vehicles.find(v => v.id === stat.vehicle_id);
-                return match ? { ...match, ride_count: stat.total_rides } : null;
+                const match = vehiclesWithNames.find(v => v.id === stat.vehicle_id); // Use vehiclesWithNames here
+                if (match) {
+                  return {
+                    ...match,
+                    ride_count: stat.total_rides
+                  };
+                }
+                return null;
               })
               .filter((v) => v !== null) as VehicleInItem[];
 
