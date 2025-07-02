@@ -27,7 +27,7 @@
     >
       <td class="cell">{{ order.start_datetime | date: 'dd/MM/yyyy' }}</td>
       <td class="cell">{{ order.start_datetime | date: 'HH:mm' }}</td>
-      <td class="cell">{{ order.ride_type === 'operational' ? 'תפעולית' : 'מנהלתית' }}</td>
+      <td class="cell">{{ order.ride_type === 'operational' ? 'מבצעית' : 'מנהלתית' }}</td>
       <td class="cell">{{ order.estimated_distance }} ק״מ</td>
       <td class="cell">{{ order.start_location }}</td>
       <td class="cell">{{ order.stop }}</td>
