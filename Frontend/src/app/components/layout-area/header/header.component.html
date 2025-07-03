@@ -73,11 +73,11 @@
      <a routerLink="/notifications">
   <img src="/assets/images/bell-icon.png" alt="Notifications" />
     <span
-    class="badge"
-    *ngIf="(unreadCount$ | async) as count"
-    [hidden]="count === 0">
-      {{ count }}
-  </span>
+  class="badge"
+  *ngIf="(unreadCount$ | async) as count"
+  [hidden]="count === 0">
+  {{ count }}
+</span>
     </a>
     </div> 
   </div>

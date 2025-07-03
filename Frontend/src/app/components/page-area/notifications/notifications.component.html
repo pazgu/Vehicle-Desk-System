@@ -25,9 +25,9 @@
     </div>
 
     <div class="pagination">
-      <button (click)="prevPage()" [disabled]="currentPage === 1">◀</button>
+      <button (click)="prevPage()" [disabled]="currentPage === 1">▶</button>
       <span>עמוד {{ currentPage }} מתוך {{ totalPages }}</span>
-      <button (click)="nextPage()" [disabled]="currentPage === totalPages">▶</button>
+      <button (click)="nextPage()" [disabled]="currentPage === totalPages">◀</button>
     </div>
   </div>
 </div>
