@@ -76,7 +76,7 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate):
         "new_status": new_ride.status.value
     })
     await send_admin_odometer_notification(vehicle.id, vehicle.odometer_reading)
-    print(f"send_admin_odometer_notification called with vehicle_id={vehicle.id}, odometer_reading={odometer_reading}")
+    print(f"send_admin_odometer_notification called with vehicle_id={vehicle.id}, odometer_reading={vehicle.odometer_reading}")
 
 
     # Notification for delegated ride
