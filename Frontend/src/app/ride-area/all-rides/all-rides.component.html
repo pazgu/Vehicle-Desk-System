@@ -1,5 +1,4 @@
 <div class="page-container">
-  <!-- Warning Message -->
   <div class="exceeded-rides-warming" *ngIf="exceededMaxRides() && warningVisible">
     <h2>⚠️שים לב⚠️</h2>
     <p>
@@ -9,55 +8,51 @@
     <button (click)="hideWarning()">הסתר</button>
   </div>
 
-  <!-- Show Warning Again Button -->
   <div class="floating-warning-container" *ngIf="!warningVisible && exceededMaxRides()">
     <button (click)="showWarning()">⚠️</button>
   </div>
-  
+
   <div class="orders-wrapper">
     <div id="header-wrap">
-    <h1>ההזמנות שלי</h1>    
-    <button class="back-btn" (click)="goBack()">חזור ←</button>
+      <h1>ההזמנות שלי</h1>
+      <button class="back-btn" (click)="goBack()">חזור ←</button>
     </div>
     <br>
     <div class="ride-filter-buttons">
-      <button [ngClass]="{ 'active': rideViewMode === 'future' }" (click)="rideViewMode = 'future'; fetchRides()">הצג נסיעות עתידיות</button>
-      <button [ngClass]="{ 'active': rideViewMode === 'past' }" (click)="rideViewMode = 'past'; fetchRides()">הצג נסיעות קודמות</button>
-      <button [ngClass]="{ 'active': rideViewMode === 'all' }" (click)="rideViewMode = 'all'; fetchRides()">הצג הכל</button>
+      <button [ngClass]="{ 'active': rideViewMode === 'future' }" (click)="rideViewMode = 'future'; applyFiltersAndSort()">הצג נסיעות עתידיות</button>
+      <button [ngClass]="{ 'active': rideViewMode === 'past' }" (click)="rideViewMode = 'past'; applyFiltersAndSort()">הצג נסיעות קודמות</button>
+      <button [ngClass]="{ 'active': rideViewMode === 'all' }" (click)="rideViewMode = 'all'; applyFiltersAndSort()">הצג הכל</button>
 
-      <!-- Archive Icon Button -->
       <img
-       src="assets/images/trash_icon.png"
-       alt="הזמנות בארכיון"
-       width="40"
-       height="40"
-       title="הזמנות בארכיון"
-       style="cursor: pointer; margin-right: 4px;"
-       (click)="goToArchivedOrders()"
-       />
+        src="assets/images/trash_icon.png"
+        alt="הזמנות בארכיון"
+        width="40"
+        height="40"
+        title="הזמנות בארכיון"
+        style="cursor: pointer; margin-right: 4px;"
+        (click)="goToArchivedOrders()"
+      />
     </div>
 
-    <!-- Sort + Filter Toggle Bar -->
     <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; direction: rtl;">
       <div>
         <label for="sort">מיין לפי: </label>
-        <select id="sort" [(ngModel)]="sortBy">
+        <select id="sort" [(ngModel)]="sortBy" (change)="applyFiltersAndSort()">
           <option value="recent">נוסף לאחרונה</option>
           <option value="date">תאריך</option>
           <option value="status">סטטוס</option>
         </select>
       </div>
 
-      <button class="filter" (click)="showFilters = !showFilters">
+      <button class="filter" (click)="toggleFiltersVisibility()">
         {{ showFilters ? 'הסתר סינון' : 'הצג סינון' }}
       </button>
     </div>
 
-    <!-- Toggleable Filters -->
     <div *ngIf="showFilters" style="margin-bottom: 1.5rem; background: #f7f7f7; padding: 1rem; border-radius: 8px;">
       <div style="margin-bottom: 1rem;">
         <label for="statusFilter">סטטוס:</label>
-        <select id="statusFilter" [(ngModel)]="statusFilter" (ngModelChange)="fetchRides()">
+        <select id="statusFilter" [(ngModel)]="statusFilter" (change)="applyFiltersAndSort()">
           <option value="">הצג הכל</option>
           <option value="approved">מאושר</option>
           <option value="pending">ממתין</option>
@@ -65,25 +60,25 @@
         </select>
       </div>
 
-      <div style="display: flex; gap: 1rem;">החל מ: 
+      <div style="display: flex; gap: 1rem;">החל מ:
         <input
           id="startDate"
           type="date"
           [(ngModel)]="startDate"
           [min]="minDate"
           [max]="maxDate"
-          (change)="validateDate('start'); fetchRides()" />
-        עד: 
+          (change)="validateDate('start'); applyFiltersAndSort()" />
+        עד:
         <input
           id="endDate"
           type="date"
           [(ngModel)]="endDate"
           [min]="minDate"
           [max]="maxDate"
-          (change)="validateDate('end'); fetchRides()" />
-        
+          (change)="validateDate('end'); applyFiltersAndSort()" />
+
         <label *ngIf="rideViewMode !== 'future'">
-          <input type="checkbox" [(ngModel)]="showOldOrders" />
+          <input type="checkbox" [(ngModel)]="showOldOrders" (change)="applyFiltersAndSort()" />
           הצג גם הזמנות מלפני חודש
         </label>
       </div>
@@ -94,9 +89,7 @@
       <button class="new-ride-btn" (click)="goToNewRide()"> + הזמן נסיעה חדשה</button>
     </div>
 
-    <!-- Orders List -->
     <div *ngIf="filteredOrders.length > 0">
-      <!-- Header Row -->
       <div class="orders-header-row">
         <div class="icon-cell">סטטוס</div>
         <div class="cell">תאריך</div>
@@ -106,7 +99,6 @@
         <div class="cell">פעולות</div>
       </div>
 
-      <!-- Data Rows -->
       <div
         class="orders-data-row"
         *ngFor="let order of pagedOrders"
@@ -136,47 +128,47 @@
             style="font-size: 1.3rem;">
           </span>
         </div>
-        
+
         <div class="cell">{{ order.date }}</div>
-        
+
         <div class="cell">{{ order.time }}</div>
-        
+
         <div class="cell">
           {{ order.type }}
           <span *ngIf="isPaidOrder(order)" style="color: #ffc107; font-weight: bold; margin-right: 8px;">
             💲
           </span>
         </div>
-        
+
         <div class="cell">{{ order.distance }}</div>
 
         <div class="modify-buttons">
-  <!-- Edit Button -->
-  <button
-    class="modify"
-    (click)="canEdit(order) ? editOrder(order) : null; $event.stopPropagation()"
-    [disabled]="!canEdit(order)"
-    [style.opacity]="canEdit(order) ? '1' : '0.5'"
-    [style.cursor]="canEdit(order) ? 'pointer' : 'not-allowed'">
-    ✏️
-  </button>
+          <button
+            class="modify"
+            (click)="canEdit(order) ? editOrder(order) : null; $event.stopPropagation()"
+            [disabled]="!canEdit(order)"
+            [style.opacity]="canEdit(order) ? '1' : '0.5'"
+            [style.cursor]="canEdit(order) ? 'pointer' : 'not-allowed'">
+            ✏️
+          </button>
 
-  <!-- Delete Button -->
-  <button
-    class="delete"
-    [disabled]="!canDelete(order)"
-    [style.opacity]="canDelete(order) ? '1' : '0.5'"
-    (click)="canDelete(order) ? deleteOrder(order) : null ; $event.stopPropagation()"
-    [style.cursor]="canDelete(order) ? 'pointer' : 'not-allowed'">
-    🗑️
-  </button>
-
-
+          <button
+            class="delete"
+            [disabled]="!canDelete(order)"
+            [style.opacity]="canDelete(order) ? '1' : '0.5'"
+            (click)="canDelete(order) ? deleteOrder(order) : null ; $event.stopPropagation()"
+            [style.cursor]="canDelete(order) ? 'pointer' : 'not-allowed'">
+            🗑️
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- Pagination -->
+    <div *ngIf="!loading && filteredOrders.length === 0 && (rideViewMode !== 'all' || statusFilter || startDate || endDate || showOldOrders)" class="no-orders-message">
+        לא נמצאו הזמנות התואמות את המסננים שבחרת.
+    </div>
+
+
     <div class="pagination-controls">
       <button (click)="prevPage()" [disabled]="currentPage === 1">
         ▶
