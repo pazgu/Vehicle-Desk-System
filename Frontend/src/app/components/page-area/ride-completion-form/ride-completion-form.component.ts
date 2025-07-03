@@ -64,6 +64,7 @@ export class RideCompletionFormComponent implements OnInit {
     this.rideService.getRideById(this.rideId).subscribe(ride => {
       console.log('Fetched ride:', ride);
     this.currentRide = ride;
+    console.log('currentRide:', this.currentRide);
 
        this.rideReportService.getRidesWithLocations().subscribe(ridesWithLocations => {
         console.log('ride with loc:',ridesWithLocations)
@@ -88,7 +89,6 @@ export class RideCompletionFormComponent implements OnInit {
       return;
     }
   console.log('rideId:', this.rideId);
-  console.log('currentRide:', this.currentRide);
 
 
     this.form = this.fb.group({
@@ -138,9 +138,10 @@ loadFuelType(vehicleId: string) {
     }
       this.loadFuelType(this.currentRide.vehicle_id)
 
-     if (!this.form.value.fueled) {
+     if (this.form.value.fueled =='false') {
        if(localStorage.getItem('role')=='employee')
-        { if (this.VehicleFuelType === 'electric') {
+        { 
+          if (this.VehicleFuelType === 'electric') {
       this.toastService.showPersistent('הרכב טרם נטען. אנא טען לפני ההחזרה.', 'neutral');
     } else if (this.VehicleFuelType === 'hybrid') {
       this.toastService.showPersistent('הרכב לא תודלק ולא נטען. יש להשלים לפני ההחזרה.', 'neutral');

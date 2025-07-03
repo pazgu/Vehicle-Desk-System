@@ -414,7 +414,9 @@ def get_rides_with_locations(db: Session = Depends(get_db)):
     return rides
 @router.get("/api/rides/{ride_id}", response_model=RideSchema)
 def read_ride(ride_id: UUID, db: Session = Depends(get_db)):
+
     ride = get_ride_by_id(db, ride_id)
+    print('ride to return:',ride)
     return ride
 
 

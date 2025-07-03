@@ -8,6 +8,8 @@ import { ActivatedRoute } from '@angular/router';
 import { SocketService } from '../../../services/socket.service';
 import { ToastService } from '../../../services/toast.service';
 import { FormsModule } from '@angular/forms'; // Ensure FormsModule is imported for ngModel
+import { CriticalIssue } from '../../../models/critical-issue.model';
+
 
 @Component({
   selector: 'app-admin-inspections',
@@ -17,7 +19,7 @@ import { FormsModule } from '@angular/forms'; // Ensure FormsModule is imported 
   styleUrls: ['./admin-inspections.component.css']
 })
 export class AdminInspectionsComponent implements OnInit {
-  inspections: any[] = [];
+  inspections: (CriticalIssue | any)[] = [];
   loading = true;
   highlighted = false;
   showProblematicFilters = false;
@@ -25,6 +27,10 @@ export class AdminInspectionsComponent implements OnInit {
   showCriticalIssues = false;
 
   private lastInspectionId: string | null = null;
+  isCriticalMode = false;
+  selectedIssue: CriticalIssue | null = null;
+
+
 
   constructor(
     private http: HttpClient,
@@ -35,6 +41,10 @@ export class AdminInspectionsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+
+     // Detect mode via route path
+  const currentPath = this.route.snapshot.routeConfig?.path;
+  this.isCriticalMode = currentPath === 'admin/critical-issues';
     // ✅ Highlight row if query param exists
     this.route.queryParams.subscribe(params => {
       this.highlighted = params['highlight'] === '1';
@@ -75,35 +85,50 @@ export class AdminInspectionsComponent implements OnInit {
     });
   }
 
-  loadInspections(): void {
-    this.loading = true;
+  private mapCriticalIssues(raw: any[]): CriticalIssue[] {
+  return raw.map(item => ({
+    timestamp: item.timestamp,
+    source_type: item.source_type,
+    responsible_user: item.responsible_user,
+    vehicle_info: item.vehicle_info || '',
+    issue_summary: item.issue_summary
+  }));
+}
 
-    let params = new HttpParams();
-    // Only add problem_type param if the problematic filters are visible AND
-    // at least one of the specific issue types is selected.
-    if (this.showProblematicFilters && (this.showMediumIssues || this.showCriticalIssues)) {
-      if (this.showMediumIssues && !this.showCriticalIssues) {
-        params = params.set('problem_type', 'medium');
-      } else if (!this.showMediumIssues && this.showCriticalIssues) {
-        params = params.set('problem_type', 'critical');
-      } else if (this.showMediumIssues && this.showCriticalIssues) {
-        params = params.set('problem_type', 'medium,critical');
-      }
+loadInspections(): void {
+  this.loading = true;
+
+  let url = this.isCriticalMode
+    ? `${environment.apiUrl}/critical-issues`
+    : `${environment.apiUrl}/inspections/today`;
+
+  let params = new HttpParams();
+
+  if (!this.isCriticalMode && this.showProblematicFilters && (this.showMediumIssues || this.showCriticalIssues)) {
+    if (this.showMediumIssues && !this.showCriticalIssues) {
+      params = params.set('problem_type', 'medium');
+    } else if (!this.showMediumIssues && this.showCriticalIssues) {
+      params = params.set('problem_type', 'critical');
+    } else if (this.showMediumIssues && this.showCriticalIssues) {
+      params = params.set('problem_type', 'medium,critical');
     }
-    // If showProblematicFilters is false, or if it's true but no sub-checkboxes are selected,
-    // then 'params' will remain empty, and the backend will return all inspections.
-
-    this.http.get<any[]>(`${environment.apiUrl}/inspections/today`, { params }).subscribe({
-      next: (data) => {
-        this.inspections = data;
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-        this.toastService.show('❌ שגיאה בטעינת בדיקות רכבים להיום', 'error');
-      }
-    });
   }
+
+  this.http.get<any[]>(url, { params }).subscribe({
+    next: (data) => {
+      this.inspections = this.isCriticalMode ? this.mapCriticalIssues(data) : data;
+      this.loading = false;
+    },
+    error: () => {
+      this.loading = false;
+      const errText = this.isCriticalMode
+        ? 'שגיאה בטעינת רשימת החריגות'
+        : 'שגיאה בטעינת בדיקות רכבים להיום';
+      this.toastService.show(`❌ ${errText}`, 'error');
+    }
+  });
+}
+
 
   // New helper method: checks if any problematic issue filter checkboxes are actually selected
   // This is different from `showProblematicFilters` which only toggles the visibility of the checkboxes.
