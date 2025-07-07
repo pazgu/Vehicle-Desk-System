@@ -176,14 +176,17 @@ async def send_admin_odometer_notification(vehicle_id: UUID, odometer_reading: f
 
 
 
-def get_supervisor_id(user_id: UUID, db: Session) -> UUID:
-    # Step 1: Get user's department ID
+def get_supervisor_id(user_id: UUID, db: Session) -> UUID | None:
     user = db.query(User).filter(User.employee_id == user_id).first()
-    print(f"👤 User found: {user}")
-
     if not user:
         return None
 
+    # הנחה: יש לך טבלה/מודל Department עם שדה supervisor_id
+    department = db.query(Department).filter(Department.id == user.department_id).first()
+    if not department:
+        return None
+
+    return department.supervisor_id
 
     # Step 2: Get department's supervisor
     department = db.query(Department).filter(Department.id == user.department_id).first()
@@ -194,7 +197,7 @@ def get_supervisor_id(user_id: UUID, db: Session) -> UUID:
 
 
 
-def get_user_name(db: Session, user_id: str) -> str:
+def get_user_name(db: Session, user_id: UUID) -> str:
     user = db.query(User).filter(User.employee_id == user_id).first()
     if user:
         return user.full_name if hasattr(user, 'full_name') else user.username

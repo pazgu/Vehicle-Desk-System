@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>בקשת נסיעה חדשה</title>
+  <style>
+    body {
+      background-color: #f6f6f6;
+      font-family: Arial, sans-serif;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      background-color: #ffffff;
+      max-width: 600px;
+      margin: 30px auto;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+    }
+    .header {
+      text-align: center;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #ddd;
+    }
+    .header h1 {
+      margin: 0;
+      color: #2c3e50;
+    }
+    .content {
+      padding: 20px 0;
+    }
+    .content p {
+      margin: 0 0 10px;
+      line-height: 1.6;
+    }
+    .footer {
+      text-align: center;
+      color: #999;
+      font-size: 12px;
+      margin-top: 20px;
+      border-top: 1px solid #ddd;
+      padding-top: 10px;
+    }
+    .button {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #3498db;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>בקשת נסיעה חדשה</h1>
+    </div>
+    <div class="content">
+      <p>שלום {{SUPERVISOR_NAME}},</p>
+      <p>התקבלה בקשת נסיעה חדשה מאת <strong>{{EMPLOYEE_NAME}}</strong>.</p>
+      <p><strong>יעד:</strong> {{DESTINATION}}</p>
+      <p><strong>תאריך ושעה:</strong> {{DATE_TIME}}</p>
+      <p><strong>רכב מבוקש:</strong> {{PLATE_NUMBER}}</p>
+      <p><strong>מרחק מוערך:</strong> {{DISTANCE}} ק"מ</p>
+      <p><strong>סטטוס:</strong> {{STATUS}}</p>
+
+      <a href="" class="button">צפייה בפרטי הבקשה</a>
+    </div>
+    <div class="footer">
+      הודעה זו נשלחה ממערכת ניהול הנסיעות. אין להשיב למייל זה.
+    </div>
+  </div>
+</body>
+</html>

@@ -54,6 +54,8 @@ from ..models.city_model import City
 from sqlalchemy import cast
 from ..services.user_form import get_ride_needing_feedback
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+from src.services.email_service import send_email, load_email_template, get_user_email
+from src.services.email_service import async_send_email
 
 from ..utils.time_utils import is_time_in_blocked_window
 from ..schemas.new_ride_schema import RideResponse
@@ -173,47 +175,52 @@ def get_user_2specific_order():
     # Implementation pending
     return {"message": "Not implemented yet"}
 
-@router.post("/api/orders/{user_id}", status_code=fastapi_status.HTTP_201_CREATED)
 
-async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
+
+
+
+@router.post("/api/orders/{user_id}", status_code=fastapi_status.HTTP_201_CREATED)
+async def create_order(
+    user_id: UUID,
+    ride_request: RideCreate,
+    db: Session = Depends(get_db),
+    token: str = Depends(oauth2_scheme)
+):
     role_check(allowed_roles=["employee", "admin"], token=token)
     identity_check(user_id=str(user_id), token=token)
-
-    print("📥 Received RideCreate object:", ride_request.dict())
 
     try:
         new_ride = await create_ride(db, user_id, ride_request)
         schedule_ride_start(new_ride.id, new_ride.start_datetime)
         warning_flag = is_time_in_blocked_window(new_ride.start_datetime)
-        department_id=get_user_department(user_id=user_id,db=db)
-        # ✅ Emit real-time event
+        department_id = get_user_department(user_id=user_id, db=db)
+
         await sio.emit("new_ride_request", {
             "ride_id": str(new_ride.id),
             "user_id": str(user_id),
-            "employee_name":new_ride.username,
+            "employee_name": new_ride.username,
             "status": new_ride.status,
             "destination": new_ride.stop,
             "end_datetime": str(new_ride.end_datetime),
-            "date_and_time":str(new_ride.start_datetime),
-            "vehicle_id":str(new_ride.vehicle_id),
-            "requested_vehicle_plate":new_ride.plate_number,
-            "department_id":str(department_id),
-            "distance":new_ride.estimated_distance_km,
-
+            "date_and_time": str(new_ride.start_datetime),
+            "vehicle_id": str(new_ride.vehicle_id),
+            "requested_vehicle_plate": new_ride.plate_number,
+            "department_id": str(department_id),
+            "distance": new_ride.estimated_distance_km,
         })
 
         supervisor_id = get_supervisor_id(user_id, db)
         employee_name = get_user_name(db, new_ride.user_id)
 
         if supervisor_id:
-           supervisor_notification= create_system_notification(
+            supervisor_notification = create_system_notification(
                 user_id=supervisor_id,
                 title="בקשת נסיעה חדשה",
                 message=f"שלח בקשה חדשה {employee_name} העובד",
                 order_id=new_ride.id
             )
-            # 🔥 Emit to supervisor
-           await sio.emit("new_notification", {
+
+            await sio.emit("new_notification", {
                 "id": str(supervisor_notification.id),
                 "user_id": str(supervisor_notification.user_id),
                 "title": supervisor_notification.title,
@@ -221,11 +228,33 @@ async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = De
                 "notification_type": supervisor_notification.notification_type.value,
                 "sent_at": supervisor_notification.sent_at.isoformat(),
                 "order_id": str(supervisor_notification.order_id) if supervisor_notification.order_id else None,
-                "order_status":new_ride.status
+                "order_status": new_ride.status
             })
+
+            # שליחת מייל למנהל - כאן הקוראים ל-async_send_email
+            supervisor_email = get_user_email(supervisor_id, db)
+            if supervisor_email:
+                html_content = load_email_template("new_ride_request.html", {
+                    "SUPERVISOR_NAME": get_user_name(db, supervisor_id) or "מנהל",
+                    "EMPLOYEE_NAME": employee_name,
+                    "DESTINATION": new_ride.stop,
+                    "DATE_TIME": str(new_ride.start_datetime),
+                    "PLATE_NUMBER": new_ride.plate_number or "לא נבחר",
+                    "DISTANCE": str(new_ride.estimated_distance_km),
+                    "STATUS": new_ride.status,
+                    "LINK_TO_ORDER": f"https://your-app-url.com/orders/{new_ride.id}"
+                })
+
+                await async_send_email(
+                    to_email=supervisor_email,
+                    subject="📄 בקשת נסיעה חדשה מחכה לאישורך",
+                    html_content=html_content
+                )
+            else:
+                logger.warning("No supervisor email found — skipping email.")
+
         else:
             logger.warning("No supervisor found — skipping supervisor notification.")
-
 
         confirmation = create_system_notification(
             user_id=new_ride.user_id,
@@ -234,7 +263,6 @@ async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = De
             order_id=new_ride.id
         )
 
-        # 🔥 Emit the notification over Socket.IO to the user's room
         await sio.emit("new_notification", {
             "id": str(confirmation.id),
             "user_id": str(confirmation.user_id),
@@ -243,14 +271,13 @@ async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = De
             "notification_type": confirmation.notification_type.value,
             "sent_at": confirmation.sent_at.isoformat(),
             "order_id": str(confirmation.order_id) if confirmation.order_id else None,
-            "order_status":new_ride.status
+            "order_status": new_ride.status
         })
 
-
         return {
-    **RideResponse.model_validate(new_ride).dict(),
-    "inspector_warning": warning_flag
-}
+            **RideResponse.model_validate(new_ride).dict(),
+            "inspector_warning": warning_flag
+        }
 
     except Exception as e:
         logger.error(f"Order creation failed: {str(e)}")
@@ -258,6 +285,7 @@ async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = De
             status_code=fastapi_status.HTTP_400_BAD_REQUEST,
             detail=f"Failed to create order: {str(e)}"
         )
+
 
 @router.get("/api/departments")
 def get_departments_route():
@@ -405,7 +433,7 @@ def get_rides_with_locations(db: Session = Depends(get_db)):
 
         rides.append({
             "id": str(ride.id),
-            "start_location_name": FROM_CITY_NAME,  # hardcoded
+            "start_location_name": FROM_CITY,  # hardcoded
             "destination_name": FROM_CITY_NAME,     # hardcoded
             "stop_name": stop_city.name if stop_city else None,
             "extra_stops_names": extra_stop_names,
@@ -557,7 +585,7 @@ def get_distance(
         return {"distance_km": total_distance}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-
+        
 @router.get("/api/cities")
 def get_cities_route(db: Session = Depends(get_db)):
     cities = get_cities(db)

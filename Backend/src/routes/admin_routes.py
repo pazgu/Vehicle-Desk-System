@@ -46,7 +46,7 @@ from fastapi import HTTPException
 from ..services.admin_user_service import create_user_by_admin , get_users_service
 from ..schemas.user_response_schema import PaginatedUserResponse
 from src.utils.auth import get_current_user
-from ..services.license_service import upload_license_file_service 
+from ..services.license_service import upload_license_file_service , check_expired_licenses
 
 
 router = APIRouter()
@@ -664,3 +664,8 @@ def upload_user_license_route(
     db: Session = Depends(get_db)
 ):
     return upload_license_file_service(db=db, user_id=user_id, file=file)
+
+
+@router.post("/admin/force-expired-license-check")
+def force_license_check(db: Session = Depends(get_db)):
+    return check_expired_licenses(db)
