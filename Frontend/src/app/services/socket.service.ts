@@ -9,7 +9,7 @@ import { NotificationService } from './notification';
 export class SocketService {
 
   private socket!: Socket;
-
+   usersLicense$ = new Subject<any>();
   // ✅ Will remind you to replace this with actual backend URL
   private readonly SOCKET_URL = environment.socketUrl; // ✅ now uses env
 
@@ -140,6 +140,10 @@ this.socket.on('order_deleted', (data: any) => {
       this.vehicleStatusUpdated$.next(data);
     });
 
+    this.socket.on('user_license_updated', (data) => {
+      console.log('License updated event:', data);
+      this.usersLicense$.next(data);
+    });
 
     this.socket.on('audit_log_updated', (data: any) => {
       console.log('📝 Audit log updated via socket:', data);
