@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>בקשת נסיעה חדשה</title>
+  <title>בקשת נסיעה חדשה - BookIt</title>
   <style>
     body {
       background-color: #f6f6f6;
@@ -21,13 +21,17 @@
       box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
     }
     .header {
+      background-color: #942222;
+      color: white;
       text-align: center;
-      padding-bottom: 20px;
-      border-bottom: 1px solid #ddd;
+      padding: 20px;
+      border-radius: 10px 10px 0 0;
+      margin: -20px -20px 20px -20px;
     }
     .header h1 {
       margin: 0;
-      color: #2c3e50;
+      font-size: 24px;
+      font-weight: bold;
     }
     .content {
       padding: 20px 0;
@@ -35,6 +39,61 @@
     .content p {
       margin: 0 0 10px;
       line-height: 1.6;
+    }
+    .employee-highlight {
+      background-color: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+      border-left: 4px solid #942222;
+    }
+    .employee-name {
+      font-weight: bold;
+      color: #942222;
+      font-size: 18px;
+    }
+    .details-grid {
+      margin: 20px 0;
+    }
+    .detail-item {
+      background-color: #f8f9fa;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 6px;
+      border-left: 3px solid #942222;
+    }
+    .detail-label {
+      font-weight: bold;
+      color: #942222;
+      font-size: 14px;
+    }
+    .detail-value {
+      color: #333;
+      font-size: 16px;
+      margin-top: 5px;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 6px 12px;
+      background-color: #942222;
+      color: white;
+      border-radius: 15px;
+      font-weight: bold;
+      font-size: 12px;
+      margin-top: 10px;
+    }
+    .button {
+      display: inline-block;
+      padding: 12px 25px;
+      background-color: #942222;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+    .button:hover {
+      background-color: #7a1d1d;
     }
     .footer {
       text-align: center;
@@ -44,15 +103,6 @@
       border-top: 1px solid #ddd;
       padding-top: 10px;
     }
-    .button {
-      display: inline-block;
-      padding: 10px 20px;
-      background-color: #3498db;
-      color: white;
-      text-decoration: none;
-      border-radius: 5px;
-      margin-top: 15px;
-    }
   </style>
 </head>
 <body>
@@ -60,17 +110,43 @@
     <div class="header">
       <h1>בקשת נסיעה חדשה</h1>
     </div>
+    
     <div class="content">
       <p>שלום {{SUPERVISOR_NAME}},</p>
-      <p>התקבלה בקשת נסיעה חדשה מאת <strong>{{EMPLOYEE_NAME}}</strong>.</p>
-      <p><strong>יעד:</strong> {{DESTINATION}}</p>
-      <p><strong>תאריך ושעה:</strong> {{DATE_TIME}}</p>
-      <p><strong>רכב מבוקש:</strong> {{PLATE_NUMBER}}</p>
-      <p><strong>מרחק מוערך:</strong> {{DISTANCE}} ק"מ</p>
-      <p><strong>סטטוס:</strong> {{STATUS}}</p>
-
-      <a href="" class="button">צפייה בפרטי הבקשה</a>
+      
+      <div class="employee-highlight">
+        <div class="employee-name">{{EMPLOYEE_NAME}}</div>
+        <p>שלח/ה בקשת נסיעה חדשה</p>
+      </div>
+      
+      <div class="details-grid">
+        <div class="detail-item">
+          <div class="detail-label">יעד:</div>
+          <div class="detail-value">{{DESTINATION}}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">תאריך ושעה:</div>
+          <div class="detail-value">{{DATE_TIME}}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">רכב מבוקש:</div>
+          <div class="detail-value">{{PLATE_NUMBER}}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">מרחק מוערך:</div>
+          <div class="detail-value">{{DISTANCE}} ק"מ</div>
+        </div>
+      </div>
+      
+      <div style="text-align: center;">
+        <span class="status-badge">{{STATUS}}</span>
+      </div>
+      
+      <div style="text-align: center;">
+        <a href="{{LINK_TO_ORDER}}" class="button">צפייה בפרטי הבקשה</a>
+      </div>
     </div>
+    
     <div class="footer">
       הודעה זו נשלחה ממערכת ניהול הנסיעות. אין להשיב למייל זה.
     </div>
