@@ -48,19 +48,18 @@ from ..models.ride_model import PendingRideSchema
 from ..utils.scheduler import schedule_ride_start
 from apscheduler.jobstores.base import JobLookupError
 from ..utils.scheduler import scheduler
-from ..services.city_service import calculate_distance
-from ..services.city_service import get_cities,get_city
+from ..services.city_service import get_cities,get_city, calculate_distance
 from ..models.city_model import City
 from sqlalchemy import cast
 from ..services.user_form import get_ride_needing_feedback
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from src.schemas.department_schema import DepartmentOut
 from src.models.department_model import Department
-from src.services.email_service import send_email, load_email_template, get_user_email
-from src.services.email_service import async_send_email
-
+from src.services.email_service import send_email, load_email_template, get_user_email, async_send_email
 from ..utils.time_utils import is_time_in_blocked_window
 from ..schemas.new_ride_schema import RideResponse
+from ..services.ride_reminder_service import schedule_ride_reminder_email
+
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -196,6 +195,7 @@ async def create_order(
     try:
         new_ride = await create_ride(db, user_id, ride_request)
         schedule_ride_start(new_ride.id, new_ride.start_datetime)
+        schedule_ride_reminder_email(new_ride.id, new_ride.start_datetime)
         warning_flag = is_time_in_blocked_window(new_ride.start_datetime)
         department_id = get_user_department(user_id=user_id, db=db)
 
