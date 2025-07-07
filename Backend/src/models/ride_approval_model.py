@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Enum, DateTime, ForeignKey
+from sqlalchemy import Column, Enum, DateTime, ForeignKey, Text, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from src.models.base import Base
@@ -21,3 +21,5 @@ class RideApproval(Base):
     role = Column(Enum(ApprovalRole), nullable=False)
     status = Column(Enum(ApprovalStatus), nullable=False)
     timestamp = Column(DateTime, nullable=False, default=datetime.utcnow)
+    severity = Column(String, nullable=True)  # Should match the DB check constraint
+    issue_description = Column(Text, nullable=True)
