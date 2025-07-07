@@ -6,7 +6,7 @@ from sqlalchemy import func, cast
 from sqlalchemy import and_ , or_ , not_ , select
 from ..models.ride_model import Ride, RideStatus
 from ..models.user_model import User
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from ..schemas.vehicle_schema import VehicleOut, InUseVehicleOut
 from uuid import UUID
 from sqlalchemy import text
@@ -57,6 +57,7 @@ def get_vehicles_with_optional_status(
             Vehicle.vehicle_model,
             Vehicle.image_url,
             Vehicle.department_id, 
+            Vehicle.lease_expiry,
             User.employee_id.label("user_id"),
             User.first_name,
             User.last_name,
@@ -88,6 +89,9 @@ def get_vehicles_with_optional_status(
     result = []
     for row in vehicles:
         data = dict(row._mapping)
+        lease_expiry = data.get("lease_expiry")
+        data["canDelete"] = lease_expiry.date() < date.today() if lease_expiry else False
+
         if data["status"] == VehicleStatus.in_use:
             result.append(InUseVehicleOut(**data))
         else:
@@ -180,8 +184,13 @@ def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID) -> List[Ve
 
 def get_vehicle_by_id(vehicle_id: str, db: Session):
     vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
+
     if not vehicle:
         return None
+
+    lease_expired = vehicle.lease_expiry and vehicle.lease_expiry.date() < date.today()
+    can_delete = lease_expired and vehicle.status != VehicleStatus.in_use
+
     return {
         "id": str(vehicle.id),
         "plate_number": vehicle.plate_number,
@@ -195,7 +204,8 @@ def get_vehicle_by_id(vehicle_id: str, db: Session):
         "vehicle_model": vehicle.vehicle_model,
         "image_url": vehicle.image_url,
         "lease_expiry": vehicle.lease_expiry,
-        "department_id": vehicle.department_id 
+        "department_id": vehicle.department_id,
+        "canDelete": can_delete 
     }
 
 def freeze_vehicle_service(db: Session, vehicle_id: UUID, reason: str, changed_by: UUID):
@@ -244,3 +254,22 @@ def get_available_vehicles_by_type_and_time(
     
     vehicles = query.all()
     return vehicles
+
+
+def delete_vehicle_by_id(vehicle_id: UUID, db: Session, user_id: UUID):
+    vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="Vehicle not found")
+
+    if vehicle.status == VehicleStatus.in_use:
+        raise HTTPException(status_code=400, detail="Cannot delete a vehicle that is currently in use")
+
+    if not vehicle.lease_expiry or vehicle.lease_expiry.date() >= date.today():
+        raise HTTPException(status_code=400, detail="Cannot delete: lease not expired.")
+
+    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id)})
+    db.delete(vehicle)
+    db.commit()
+    db.execute(text("SET session.audit.user_id = DEFAULT"))
+
+    return {"message": f"Vehicle {vehicle.plate_number} deleted successfully."}

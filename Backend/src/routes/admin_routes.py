@@ -24,7 +24,7 @@ from src.models.vehicle_model import Vehicle
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 from ..schemas.vehicle_schema import VehicleOut , InUseVehicleOut , VehicleStatusUpdate
 from ..utils.auth import get_current_user, token_check
-from ..services.vehicle_service import get_vehicles_with_optional_status,update_vehicle_status,get_vehicle_by_id, get_available_vehicles_for_ride_by_id
+from ..services.vehicle_service import get_vehicles_with_optional_status,update_vehicle_status,get_vehicle_by_id, get_available_vehicles_for_ride_by_id,delete_vehicle_by_id
 from ..services.user_notification import send_admin_odometer_notification
 from datetime import date, datetime, timedelta
 from src.models.vehicle_inspection_model import VehicleInspection
@@ -618,6 +618,17 @@ def upload_user_license_route(
 def force_license_check(db: Session = Depends(get_db)):
     return check_expired_licenses(db)
 
+
+@router.delete("/vehicles/{vehicle_id}")
+def delete_vehicle(
+    request: Request,  
+    vehicle_id: UUID,
+    db: Session = Depends(get_db),
+    token: str = Depends(oauth2_scheme)
+):
+    user = get_current_user(request)
+    role_check(["admin"], token)
+    return delete_vehicle_by_id(vehicle_id, db, user.employee_id)  # ✅ not user.id
 
 @router.get("/critical-trip-issues", response_model=List[TripCompletionIssueSchema])
 def fetch_critical_trip_issues(db: Session = Depends(get_db)):

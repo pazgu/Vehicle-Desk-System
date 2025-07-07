@@ -36,7 +36,7 @@ def filter_rides(query, status: Optional[RideStatus], from_date, to_date):
 
 def build_dashboard_item(
     ride_id, user_first_name, user_last_name, vehicle_id,
-    start_datetime, estimated_distance_km, status
+    start_datetime, estimated_distance_km, status, submitted_at
 ):
     return RideDashboardItem(
         ride_id=ride_id,
