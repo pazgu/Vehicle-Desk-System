@@ -54,6 +54,8 @@ from ..models.city_model import City
 from sqlalchemy import cast
 from ..services.user_form import get_ride_needing_feedback
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+from src.schemas.department_schema import DepartmentOut
+from src.models.department_model import Department
 
 from ..utils.time_utils import is_time_in_blocked_window
 from ..schemas.new_ride_schema import RideResponse
@@ -262,6 +264,13 @@ async def create_order(user_id: UUID, ride_request: RideCreate, db: Session = De
 @router.get("/api/departments")
 def get_departments_route():
     return get_departments()
+
+@router.get("/api/departments/{department_id}", response_model=DepartmentOut)
+def get_department_by_id(department_id: UUID, db: Session = Depends(get_db)):
+    department = db.query(Department).filter(Department.id == department_id).first()
+    if not department:
+        raise HTTPException(status_code=404, detail="Department not found")
+    return department
 
 @router.patch("/api/orders/{order_id}")
 async def patch_order(
