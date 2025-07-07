@@ -46,7 +46,7 @@ from fastapi import HTTPException
 from ..services.admin_user_service import create_user_by_admin , get_users_service
 from ..schemas.user_response_schema import PaginatedUserResponse
 from src.utils.auth import get_current_user
-from ..services.license_service import upload_license_file_service 
+from ..services.license_service import upload_license_file_service , check_expired_licenses
 
 
 router = APIRouter()
@@ -310,26 +310,30 @@ def get_filtered_vehicles(
 
 
 
-@router.post("/notifications/admin", include_in_schema=True,   dependencies=[] )
-def send_admin_notification_simple_route(db: Session = Depends(get_db)):
-    vehicle = db.query(Vehicle).first()  # Get any vehicle (you can adjust logic later if needed)
-    
-    if not vehicle:
-        raise HTTPException(status_code=404, detail="No vehicle found.")
+@router.post("/notifications/admin", include_in_schema=True)
+async def send_admin_notification_simple_route(db: Session = Depends(get_db)):
+    vehicles = db.query(Vehicle).all()
 
-    notifications = send_admin_odometer_notification(vehicle.id, vehicle.odometer_reading)
+    if not vehicles:
+        raise HTTPException(status_code=404, detail="No vehicles found.")
 
-    if not notifications:
-        raise HTTPException(status_code=204, detail="No admins found or odometer below threshold.")
+    all_notifications = []
+
+    for vehicle in vehicles:
+        notifications = await send_admin_odometer_notification(vehicle.id, vehicle.odometer_reading)
+
+        if notifications:
+            all_notifications.extend(notifications)
+
+    if not all_notifications:
+        raise HTTPException(status_code=204, detail="No admins found or odometer below threshold for all vehicles.")
 
     return {
         "detail": "Notifications sent",
-        "count": len(notifications),
-        "vehicle_id": str(vehicle.id),
-        "plate_number": vehicle.plate_number,
-        "odometer_reading": vehicle.odometer_reading
-
+        "count": len(all_notifications),
+        "vehicles_checked": len(vehicles),
     }
+
 
 
 # @router.get("/inspections/today", response_model=List[VehicleInspectionSchema])
@@ -651,6 +655,12 @@ def upload_user_license_route(
     db: Session = Depends(get_db)
 ):
     return upload_license_file_service(db=db, user_id=user_id, file=file)
+
+
+@router.post("/admin/force-expired-license-check")
+def force_license_check(db: Session = Depends(get_db)):
+    return check_expired_licenses(db)
+
 
 
 @router.delete("/vehicles/{vehicle_id}")

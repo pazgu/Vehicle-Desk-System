@@ -452,3 +452,27 @@ input[type="time"], input[type="number"], input[type="text"], select {
 .distance-info.success strong {
   font-weight: 600;
 }
+.request-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(66, 74, 81, 0.3); /* Same as #424a5154 */
+  z-index: 100; /* Below the modal */
+}
+
+.disable-request {
+  display: flex;
+  flex-direction: column;
+  z-index: 200; /* On top of backdrop */
+  position: fixed;
+  background-color: rgb(255, 248, 243);
+  padding: 16px;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  left: 50%;
+  top: 25%;
+  transform: translate(-50%, -25%);
+  direction: rtl;
+  font-family: 'Alef', sans-serif;
+}

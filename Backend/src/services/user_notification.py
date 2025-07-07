@@ -114,38 +114,59 @@ def create_system_notification_with_db(db: Session, user_id, title, message, ord
     db.add(notif)
     return notif  # don't commit here — let caller handle it
 
-def send_admin_odometer_notification(vehicle_id: UUID, odometer_reading: float):
+async def send_admin_odometer_notification(vehicle_id: UUID, odometer_reading: float):
     db = SessionLocal()
     try:
+        print(f"send_admin_odometer_notification called with vehicle_id={vehicle_id}, odometer_reading={odometer_reading}")
         admins = db.query(User).filter(User.role == 'admin').all()
-
+        print(f"Admins: {admins}, Odo: {odometer_reading}")
         if not admins or odometer_reading < 10000:
             return None
-        
-        if(vehicle_id):
+
+        plate_number = None
+        if vehicle_id:
             plate_number = (
                 db.query(Vehicle.plate_number)
                 .filter(Vehicle.id == vehicle_id)
                 .scalar()
             )
 
-        
-
         notifications = []
         for admin in admins:
-            notif = Notification(
-                user_id=admin.employee_id,
-                notification_type=NotificationType.system,
-                title="Vehicle Odometer Update",
-                message = f"{plate_number} לרכב עם מספר רישוי " + f" ק״מ {odometer_reading} יש מד אוץ של ",
-                sent_at=datetime.now(timezone.utc)
-            )
-            db.add(notif)
-            notifications.append(notif)
+            exists_admin = db.query(Notification).filter(
+                Notification.user_id == admin.employee_id,
+                Notification.vehicle_id == vehicle_id,
+                Notification.title == "Vehicle Odometer Update"
+            ).first()
+            if not exists_admin:
+                notif = Notification(
+                    user_id=admin.employee_id,
+                    notification_type=NotificationType.system,
+                    title="Vehicle Odometer Update",
+                    message=f"{plate_number} לרכב עם מספר רישוי ק״מ {odometer_reading} יש מד אוץ של ",
+                    sent_at=datetime.now(timezone.utc),
+                    vehicle_id=vehicle_id
+                )
+                db.add(notif)
+                notifications.append(notif)
 
         db.commit()
-        return notifications
 
+        if notifications:
+            print('before emit')
+            for notif in notifications:
+                await sio.emit(
+                    "new_odometer_notification",
+                    {"updated_notifications": [notif.to_dict()]},
+                    room=str(notif.user_id)
+                )
+            print('✅ just emitted updated_notifications to each admin room')
+        else:
+            print('❌ No new notifications to emit')
+
+        return notifications
+    except Exception as e:
+        print(f"Exception in send_admin_odometer_notification: {e}")
     finally:
         db.close()
 
@@ -155,14 +176,17 @@ def send_admin_odometer_notification(vehicle_id: UUID, odometer_reading: float):
 
 
 
-def get_supervisor_id(user_id: UUID, db: Session) -> UUID:
-    # Step 1: Get user's department ID
+def get_supervisor_id(user_id: UUID, db: Session) -> UUID | None:
     user = db.query(User).filter(User.employee_id == user_id).first()
-    print(f"👤 User found: {user}")
-
     if not user:
         return None
 
+    # הנחה: יש לך טבלה/מודל Department עם שדה supervisor_id
+    department = db.query(Department).filter(Department.id == user.department_id).first()
+    if not department:
+        return None
+
+    return department.supervisor_id
 
     # Step 2: Get department's supervisor
     department = db.query(Department).filter(Department.id == user.department_id).first()
@@ -173,7 +197,7 @@ def get_supervisor_id(user_id: UUID, db: Session) -> UUID:
 
 
 
-def get_user_name(db: Session, user_id: str) -> str:
+def get_user_name(db: Session, user_id: UUID) -> str:
     user = db.query(User).filter(User.employee_id == user_id).first()
     if user:
         return user.full_name if hasattr(user, 'full_name') else user.username
