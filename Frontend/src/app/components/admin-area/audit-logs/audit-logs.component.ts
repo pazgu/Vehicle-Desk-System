@@ -51,6 +51,8 @@ export class AuditLogsComponent implements OnInit {
   filtersCollapsed = true;
 
   cityMap: { [id: string]: string } = {};
+  departments: { id: string; name: string }[] = [];
+
 
 
   loading = true;
@@ -71,7 +73,7 @@ export class AuditLogsComponent implements OnInit {
     vehicle_model: 'דגם רכב',
     freeze_details: 'פרטי הקפאה',
     current_location: 'מיקום נוכחי',
-    department_id: 'מזהה מחלקה',
+    department_id: 'שם מחלקה',
     odometer_reading: 'מד מרחק',
   };
 
@@ -134,6 +136,14 @@ export class AuditLogsComponent implements OnInit {
 
   };
 
+  private departmentHebrewMap: { [key: string]: string } = {
+    Engineering: 'הנדסה',
+    HR: 'משאבי אנוש',
+    'IT Department': 'טכנولוגיות מידע',
+    Finance: 'כספים',
+    Security: 'ביטחון'
+  };
+
   constructor(
     private http: HttpClient,
     private route: ActivatedRoute,
@@ -148,6 +158,26 @@ export class AuditLogsComponent implements OnInit {
   getCityName(id: string): string {
     return this.cityMap[id] || id;
   }
+
+  fetchDepartments(): void {
+    this.http.get<any[]>('http://localhost:8000/api/departments').subscribe({
+      next: (data) => {
+        this.departments = data.map(dep => ({
+          ...dep,
+          name: this.departmentHebrewMap[dep.name] || dep.name
+        }));
+      },
+      error: (err: any) => {
+        console.error('Failed to fetch departments', err);
+        this.departments = [];
+      }
+    });
+  }
+
+  getDepartmentNameById(id: string): string {
+  const dep = this.departments.find(d => d.id === id);
+  return dep ? dep.name : 'לא משוייך למחלקה';
+}
 
 // In AuditLogsComponent, inside fetchAuditLogs method
 fetchAuditLogs(fromDate?: string, toDate?: string) {
@@ -191,6 +221,8 @@ fetchAuditLogs(fromDate?: string, toDate?: string) {
     this.route.queryParams.subscribe(params => {
       this.highlighted = params['highlight'] === '1';
     });
+
+    this.fetchDepartments();
 
 
     this.socketService.notifications$.subscribe((notif) => {
@@ -388,7 +420,7 @@ fetchAuditLogs(fromDate?: string, toDate?: string) {
       { label: 'סיבת הקפאה', oldValue: oldData.freeze_reason, newValue: newData.freeze_reason },
       { label: 'פרטי הקפאה', oldValue: oldData.freeze_details, newValue: newData.freeze_details },
       { label: 'מיקום נוכחי', oldValue: oldData.current_location, newValue: newData.current_location },
-      { label: 'מזהה מחלקה', oldValue: oldData.department_id, newValue: newData.department_id },
+      { label: 'שם מחלקה', oldValue: oldData.department_id, newValue: newData.department_id },
       { label: 'קילומטראז\'', oldValue: oldData.odometer_reading, newValue: newData.odometer_reading },
       { label: 'דגם רכב', oldValue: oldData.vehicle_model, newValue: newData.vehicle_model },
       { label: 'תמונה', oldValue: oldData.image_url, newValue: newData.image_url }

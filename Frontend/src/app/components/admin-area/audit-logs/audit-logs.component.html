@@ -4,21 +4,21 @@
       <h1>צפייה ביומני ביקורת</h1>
 
       <div class="filters-row">
-  <div class="filter-section">
-    <button class="filter-button" (click)="showFilters = !showFilters">
-      {{ showFilters ? 'הסתר חיפוש' : 'הצג חיפוש' }}
-    </button>
-  </div>
-  <div class="filter-actions-row">
-    <button class="collapse-btn" (click)="filtersCollapsed = !filtersCollapsed">
-      {{ filtersCollapsed ? 'הצג אפשרויות סינון וייצוא' : 'הסתר אפשרויות סינון וייצוא' }}
-    </button>
-    <label class="problematic-only-label">
-      <input type="checkbox" [(ngModel)]="problematicOnly" (change)="fetchAuditLogs()" />
-      הצג רק בדיקות עם בעיות
-    </label>
-  </div>
-</div>
+        <div class="filter-section">
+          <button class="filter-button" (click)="showFilters = !showFilters">
+            {{ showFilters ? 'הסתר חיפוש' : 'הצג חיפוש' }}
+          </button>
+        </div>
+        <div class="filter-actions-row">
+          <button class="collapse-btn" (click)="filtersCollapsed = !filtersCollapsed">
+            {{ filtersCollapsed ? 'הצג אפשרויות סינון וייצוא' : 'הסתר אפשרויות סינון וייצוא' }}
+          </button>
+          <label class="problematic-only-label">
+            <input type="checkbox" [(ngModel)]="problematicOnly" (change)="fetchAuditLogs()" />
+            הצג רק בדיקות עם בעיות
+          </label>
+        </div>
+      </div>
 
       <div *ngIf="showFilters" class="search-container">
         <input type="text" class="audit-search-input" placeholder="חיפוש לפי סוג ישות, מזהה ישות או מי שינה"
@@ -131,9 +131,9 @@
               <td class="audit-td">{{ log.created_at | date:'dd/MM/yyyy HH:mm' }}</td>
             </tr>
           </tbody>
-           <div *ngIf="filteredLogs?.length === 0 && !selectedLog" class="empty-state">
-        לא נמצאו רשומות ביקורת
-      </div>
+          <div *ngIf="filteredLogs?.length === 0 && !selectedLog" class="empty-state">
+            לא נמצאו רשומות ביקורת
+          </div>
         </table>
         <div class="pagination-controls" dir="rtl" style="text-align: center; margin-top: 1.5rem;">
           <button (click)="prevPage()" [disabled]="currentPage === 1">▶</button>
@@ -246,8 +246,10 @@
                   <div class="field-value">{{ selectedLog.change_data.current_location }}</div>
                 </div>
                 <div class="field-row">
-                  <div class="field-label">מזהה מחלקה</div>
-                  <div class="field-value">{{ selectedLog.change_data.department_id || 'לא משוייך למחלקה'}}</div>
+                  <div class="field-label">שם מחלקה</div>
+                  <div class="field-value">
+                    {{ getDepartmentNameById(selectedLog.change_data.department_id) }}
+                  </div>
                 </div>
                 <div class="field-row">
                   <div class="field-label">ק"מ נוכחי</div>
