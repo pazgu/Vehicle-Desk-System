@@ -85,6 +85,13 @@ export const routes: Routes = [
 },
 
 {
+  path: 'vehicle-details/:id/timeline',
+  loadComponent: () => import('./components/vehicle-area/vehicle-timeline/vehicle-timeline.component')
+    .then(m => m.VehicleTimelineComponent),
+  canActivate: [ProtectedRouteGuard]
+},
+
+{
   path: 'admin/add-new-user',
   loadComponent: () =>
     import('./components/admin-area/add-new-user/add-new-user.component').then(

@@ -1,4 +1,5 @@
-<h2 class="section-title">בדיקות רכבים שבוצעו היום</h2>
+<h2 class="section-title" *ngIf="!isCriticalMode">בדיקות רכבים שבוצעו היום</h2>
+<h2 class="section-title" *ngIf="isCriticalMode">חריגות</h2>
 
 <div *ngIf="loading" class="loading">טוען...</div>
 
@@ -30,22 +31,50 @@
   </div>
 
   <table class="inspection-table" *ngIf="inspections.length > 0">
-    <thead>
-      <tr>
-        <th>📅 תאריך</th>
-        <th>🧪 בודק</th>
-        <th>📍 הערות</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let item of inspections" [class.highlight]="highlighted">
-        <td>{{ item.inspection_date | date: 'short' }}</td>
-        <td>{{ item.inspected_by }}</td>
-        <td>
-          {{ item.issues_found || 'לא דווחו בעיות' }}
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <thead>
+    <tr *ngIf="isCriticalMode">
+      <th>📅 תאריך</th>
+      <th>🧾 סוג</th>
+      <th>👤 אחראי</th>
+      <th>🚗 רכב</th>
+      <th>📝 תיאור</th>
+    </tr>
+    <tr *ngIf="!isCriticalMode">
+      <th>📅 תאריך</th>
+      <th>🧪 בודק</th>
+      <th>📍 הערות</th>
+    </tr>
+  </thead>
+  <tbody>
+<tr *ngFor="let item of inspections" [class.highlight]="highlighted" (click)="selectedIssue = item">
+      <!-- Critical Mode -->
+      <td *ngIf="isCriticalMode">{{ item.timestamp | date: 'short' }}</td>
+      <td *ngIf="isCriticalMode">{{ item.source_type }}</td>
+      <td *ngIf="isCriticalMode">{{ item.responsible_user }}</td>
+      <td *ngIf="isCriticalMode">{{ item.vehicle_info || '—' }}</td>
+      <td *ngIf="isCriticalMode">{{ item.issue_summary }}</td>
+
+      <!-- Daily Inspection Mode -->
+      <td *ngIf="!isCriticalMode">{{ item.inspection_date | date: 'short' }}</td>
+      <td *ngIf="!isCriticalMode">{{ item.inspected_by }}</td>
+      <td *ngIf="!isCriticalMode">{{ item.issues_found || 'לא דווחו בעיות' }}</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="modal-overlay" *ngIf="selectedIssue && isCriticalMode" (click)="selectedIssue = null">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <button class="close-btn" (click)="selectedIssue = null">×</button>
+
+    <h3>🔎 פירוט החריגה</h3>
+    <p><strong>תיאור מלא:</strong> {{ selectedIssue.issue_summary }}</p>
+    <p><strong>רכב:</strong> {{ selectedIssue.vehicle_info || '—' }}</p>
+    <p><strong>אחראי:</strong> {{ selectedIssue.responsible_user }}</p>
+    <p><strong>תאריך:</strong> {{ selectedIssue.timestamp | date:'medium' }}</p>
+    <p><strong>סוג:</strong> {{ selectedIssue.source_type }}</p>
+  </div>
+</div>
+
+
 
 </div>

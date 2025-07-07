@@ -1,0 +1,1080 @@
+/* ... (keep all previous CSS from :host to .day-label) ...
+:host {
+  display: block;
+  padding: 1.5rem;
+  font-family: var(--font-family-alef);
+}
+
+
+.timeline-page-wrapper {
+  background-color: rgb(245, 241, 241); 
+  padding: 15px;
+  border-radius: 12px;
+  max-width: 1200px; 
+  margin: 0 auto; 
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); 
+}
+
+.timeline-page-container {
+    padding: 10px; 
+
+
+.timeline-container {
+  width: 100%;
+}
+
+.timeline-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  background-color: white; 
+  border-top-left-radius: 8px; 
+  border-top-right-radius: 8px;
+  padding-top: 1rem; 
+  position: relative;
+  z-index: 3;
+}
+
+.header-main {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    padding-inline: 1rem;
+}
+
+.timeline-title {
+  font-size: 1.75rem;
+  color: #942222;
+  margin: 0;
+  font-family: 'Alef', sans-serif;
+}
+
+.header-main p {
+    margin: 0;
+    font-size: 1rem;
+    color: #555;
+}
+
+.week-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  padding-inline: 1rem; 
+
+.week-controls button {
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.week-controls button:hover {
+    background-color: #e0e0e0;
+}
+
+.week-label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.timeline-body {
+    display: flex;
+    background-color: white; 
+    border-radius: 8px;
+    overflow: hidden; 
+}
+
+.timeline-hours-labels {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.hour-label-header {
+    height: 40px; 
+    border-left: 1px solid #e0e0e0;
+    background-color: rgb(249, 249, 249); }
+
+.hour-label-slot {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 1rem;
+    border-top: 1px solid #e0e0e0;
+    border-left: 1px solid #e0e0e0;
+    background-color: rgb(253, 253, 253);
+}
+
+.hour-text {
+    font-size: 0.8rem;
+    color: #333;
+    font-variant-numeric: tabular-nums;
+}
+
+.timeline-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  flex-grow: 1;
+  position: relative;
+  z-index: 2;
+}
+
+.timeline-day {
+  border-left: 1px solid #e0e0e0;
+  min-width: 120px;
+    border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.timeline-day:last-child {
+    border-left: none;
+}
+
+.day-label {
+  font-weight: 600;
+  text-align: center;
+  padding: 0.5rem;
+  height: 40px;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #ccc;
+  background-color: rgb(249, 249, 249); 
+  position: relative;
+  top: 0;
+  z-index: 2   ;
+}
+
+.timeline-hours {
+  position: relative;
+  height: calc(24 * 40px);
+}
+
+.hour-slot {
+  height: 40px;
+  border-top: 1px dashed #ddd;
+  box-sizing: border-box;
+}
+
+.ride-block {
+  position: absolute;
+  right: 8px;
+  left: 8px;
+  border-radius: 4px;
+  color: #333; 
+  z-index: 1;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding: 0px 6px;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding-top: 8px;
+}
+
+.ride-block:hover {
+    transform: scale(1.02);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    z-index: 10;
+}
+
+.ride-info {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    
+}
+
+.ride-driver {
+    font-weight: 600;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    line-height: 1.2;
+}
+
+.ride-status {
+    font-size: 0.65rem;
+    opacity: 0.9;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    margin-top: 2px;
+    line-height: 1.2;
+}
+
+.ride-purpose {
+    font-size: 0.7rem;
+    opacity: 0.9;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    line-height: 1.2;
+}
+
+.ride-block.is-midnight-block:hover {
+    z-index: 10;
+} */
+
+/* :host {
+  display: block;
+  padding: 1.5rem;
+  font-family: var(--font-family-alef);
+}
+
+.timeline-page-wrapper {
+  background-color: rgb(245, 241, 241);
+  padding: 15px;
+  border-radius: 12px;
+  max-width: 1200px;
+  margin: 0 auto;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.timeline-page-container {
+  padding: 10px;
+}
+
+.timeline-container {
+  width: 100%;
+}
+
+.timeline-header {
+  text-align: center;
+  padding: 1rem;
+  background-color: white;
+  border-radius: 8px 8px 0 0;
+  position: relative;
+  z-index: 3;
+  margin-bottom: 1.5rem;
+}
+
+.timeline-title {
+  font-size: 1.75rem;
+  color: #942222;
+  margin: 0 auto 0.5rem auto;
+  font-family: 'Alef', sans-serif;
+}
+
+.header-sub {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.week-controls {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.week-controls button {
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.week-controls button:hover {
+  background-color: #e0e0e0;
+}
+
+.week-label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.timeline-body {
+  display: flex;
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.timeline-hours-labels {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.hour-label-header {
+  height: 40px;
+  border-left: 1px solid #e0e0e0;
+  background-color: rgb(249, 249, 249);
+}
+
+.hour-label-slot {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1rem;
+  border-top: 1px solid #e0e0e0;
+  border-left: 1px solid #e0e0e0;
+  background-color: rgb(253, 253, 253);
+}
+
+.hour-text {
+  font-size: 0.8rem;
+  color: #333;
+  font-variant-numeric: tabular-nums;
+}
+
+.timeline-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  flex-grow: 1;
+  position: relative;
+  z-index: 2;
+}
+
+.timeline-day {
+  border-left: 1px solid #e0e0e0;
+  min-width: 120px;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.timeline-day:last-child {
+  border-left: none;
+}
+
+.day-label {
+  font-weight: 600;
+  text-align: center;
+  padding: 0.5rem;
+  height: 40px;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #ccc;
+  background-color: rgb(249, 249, 249);
+  position: relative;
+  z-index: 2;
+}
+
+.timeline-hours {
+  position: relative;
+  height: calc(24 * 40px);
+}
+
+.hour-slot {
+  height: 40px;
+  border-top: 1px dashed #ddd;
+  box-sizing: border-box;
+}
+
+.ride-block {
+  position: absolute;
+  right: 8px;
+  left: 8px;
+  border-radius: 4px;
+  color: #333;
+  z-index: 1;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding: 8px 6px 0;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.ride-block:hover {
+  transform: scale(1.02);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  z-index: 10;
+}
+
+.ride-block.is-midnight-block:hover {
+  z-index: 10;
+}
+
+.ride-info {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.ride-driver {
+  font-weight: 600;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  line-height: 1.2;
+}
+
+.ride-status {
+  font-size: 0.65rem;
+  opacity: 0.9;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  margin-top: 2px;
+  line-height: 1.2;
+}
+
+.ride-purpose {
+  font-size: 0.7rem;
+  opacity: 0.9;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  line-height: 1.2;
+}
+ */
+
+
+
+
+
+ /* :host {
+  display: block;
+  padding: 1.5rem;
+  font-family: var(--font-family-alef);
+}
+
+.timeline-page-wrapper {
+  background: linear-gradient(135deg, #f8f6f6 0%, #f0eaea 100%);
+  padding: 20px;
+  border-radius: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(10px);
+}
+
+.timeline-page-container {
+  padding: 15px;
+}
+
+.timeline-container {
+  width: 100%;
+}
+
+.timeline-header {
+  text-align: center;
+  padding: 2rem 1.5rem;
+  background: linear-gradient(145deg, #ffffff 0%, #fafafa 100%);
+  border-radius: 16px 16px 0 0;
+  position: relative;
+  z-index: 3;
+  margin-bottom: 0;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.04);
+}
+
+.timeline-title {
+  font-size: 2rem;
+  color: #942222;
+  margin: 0 auto 1rem auto;
+  font-family: 'Alef', sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.header-sub {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.week-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 1rem 2rem;
+  border-radius: 50px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.week-controls button {
+  background: linear-gradient(145deg, #ffffff 0%, #f8f8f8 100%);
+  border: 1px solid rgba(148, 34, 34, 0.1);
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  color: #555;
+  position: relative;
+  overflow: hidden;
+}
+
+.week-controls button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(148, 34, 34, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.week-controls button:hover::before {
+  left: 100%;
+}
+
+.week-controls button:hover {
+  background: linear-gradient(145deg, #942222 0%, #a52828 100%);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(148, 34, 34, 0.25);
+}
+
+.week-controls button:active {
+  transform: translateY(0);
+}
+
+.week-label {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+  min-width: 200px;
+}
+
+.timeline-body {
+  display: flex;
+  background: linear-gradient(145deg, #ffffff 0%, #fdfdfd 100%);
+  border-radius: 0 0 16px 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.timeline-hours-labels {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #fafafa 0%, #f5f5f5 100%);
+}
+
+.hour-label-header {
+  height: 50px;
+  border-right: 2px solid rgba(148, 34, 34, 0.1);
+  background: linear-gradient(145deg, #f9f9f9 0%, #f0f0f0 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hour-label-slot {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  border-right: 2px solid rgba(148, 34, 34, 0.1);
+  background: linear-gradient(90deg, #fdfdfd 0%, #fafafa 100%);
+  position: relative;
+}
+
+.hour-label-slot::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2px;
+  height: 60%;
+  background: linear-gradient(180deg, transparent, rgba(148, 34, 34, 0.2), transparent);
+}
+
+.hour-text {
+  font-size: 0.85rem;
+  color: #666;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.timeline-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  flex-grow: 1;
+  position: relative;
+  z-index: 2;
+}
+
+.timeline-day {
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
+  min-width: 140px;
+  position: relative;
+}
+
+.timeline-day::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: linear-gradient(180deg, transparent 0%, rgba(148, 34, 34, 0.02) 100%);
+  pointer-events: none;
+}
+
+.timeline-day:last-child {
+  border-right: none;
+}
+
+.day-label {
+  font-weight: 700;
+  text-align: center;
+  padding: 1rem 0.5rem;
+  height: 50px;
+  font-size: 0.95rem;
+  border-bottom: 2px solid rgba(148, 34, 34, 0.1);
+  background: linear-gradient(145deg, #f9f9f9 0%, #f0f0f0 100%);
+  position: relative;
+  z-index: 2;
+  color: #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.timeline-hours {
+  position: relative;
+  height: calc(24 * 50px);
+  background: linear-gradient(180deg, #fdfdfd 0%, #fafafa 100%);
+}
+
+.hour-slot {
+  height: 50px;
+  border-top: 1px dashed rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  position: relative;
+}
+
+.hour-slot:nth-child(even) {
+  background: rgba(148, 34, 34, 0.01);
+}
+
+.ride-block {
+  position: absolute;
+  right: 10px;
+  left: 10px;
+  border-radius: 12px;
+  color: #333;
+  z-index: 1;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding: 12px 8px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  position: relative;
+}
+
+.ride-block::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #942222, #c42d2d);
+  border-radius: 12px 12px 0 0;
+}
+
+.ride-block:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 40px rgba(148, 34, 34, 0.2);
+  z-index: 10;
+  border-color: rgba(148, 34, 34, 0.2);
+}
+
+.ride-block.is-midnight-block:hover {
+  z-index: 10;
+}
+
+.ride-info {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 2px;
+}
+
+.ride-driver {
+  font-weight: 700;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  line-height: 1.3;
+  color: #333;
+}
+
+.ride-status {
+  font-size: 0.7rem;
+  opacity: 0.8;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  line-height: 1.2;
+  color: #666;
+  font-weight: 500;
+}
+
+.ride-purpose {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  line-height: 1.2;
+  color: #888;
+} */
+
+
+:host {
+  display: block;
+  padding: 1.5rem;
+  font-family: var(--font-family-alef);
+}
+
+/* Wrapper and Layout */
+.timeline-page-wrapper {
+  background: linear-gradient(135deg, #f8f6f6 0%, #f0eaea 100%);
+  padding: 20px;
+  border-radius: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(10px);
+}
+
+.timeline-page-container {
+  padding: 15px;
+}
+
+.timeline-container {
+  width: 100%;
+}
+
+/* Header */
+.timeline-header {
+  text-align: center;
+  padding: 2rem 1.5rem;
+  background: linear-gradient(145deg, #ffffff 0%, #fafafa 100%);
+  border-radius: 16px 16px 0 0;
+  position: relative;
+  z-index: 3;
+  margin-bottom: 0;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.04);
+}
+
+.timeline-title {
+  font-size: 2rem;
+  color: #942222;
+  margin: 0 auto 1rem auto;
+  font-family: 'Alef', sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.header-sub {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.week-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 1rem 2rem;
+  border-radius: 50px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.week-controls button {
+  background: linear-gradient(145deg, #ffffff 0%, #f8f8f8 100%);
+  border: 1px solid rgba(148, 34, 34, 0.1);
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  color: #555;
+  position: relative;
+  overflow: hidden;
+}
+
+.week-controls button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(148, 34, 34, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.week-controls button:hover::before {
+  left: 100%;
+}
+
+.week-controls button:hover {
+  background: linear-gradient(145deg, #942222 0%, #a52828 100%);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(148, 34, 34, 0.25);
+}
+
+.week-controls button:active {
+  transform: translateY(0);
+}
+
+.week-label {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+  min-width: 200px;
+}
+
+/* Timeline Body */
+.timeline-body {
+  display: flex;
+  background: linear-gradient(145deg, #ffffff 0%, #fdfdfd 100%);
+  border-radius: 0 0 16px 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Hour Labels Column */
+.timeline-hours-labels {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #fafafa 0%, #f5f5f5 100%);
+}
+
+.hour-label-header {
+  height: 40px;
+  border-right: 2px solid rgba(148, 34, 34, 0.1);
+  background: linear-gradient(145deg, #f9f9f9 0%, #f0f0f0 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hour-label-slot {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  border-right: 2px solid rgba(148, 34, 34, 0.1);
+  background: linear-gradient(90deg, #fdfdfd 0%, #fafafa 100%);
+  position: relative;
+}
+
+.hour-label-slot::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2px;
+  height: 60%;
+  background: linear-gradient(180deg, transparent, rgba(148, 34, 34, 0.2), transparent);
+}
+
+.hour-text {
+  font-size: 0.85rem;
+  color: #666;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+/* Day Columns */
+.timeline-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  flex-grow: 1;
+  position: relative;
+  z-index: 2;
+}
+
+.timeline-day {
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
+  min-width: 140px;
+  position: relative;
+}
+
+.timeline-day::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: linear-gradient(180deg, transparent 0%, rgba(148, 34, 34, 0.02) 100%);
+  pointer-events: none;
+}
+
+.timeline-day:last-child {
+  border-right: none;
+}
+
+.day-label {
+  font-weight: 700;
+  text-align: center;
+  padding: 1rem 0.5rem;
+  height: 40px;
+  font-size: 0.95rem;
+  border-bottom: 2px solid rgba(148, 34, 34, 0.1);
+  background: linear-gradient(145deg, #f9f9f9 0%, #f0f0f0 100%);
+  position: relative;
+  z-index: 2;
+  color: #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+/* Grid structure inside day cell */
+.timeline-hours {
+  position: relative;
+  height: calc(24 * 40px);
+  background: linear-gradient(180deg, #fdfdfd 0%, #fafafa 100%);
+}
+
+.hour-slot {
+  height: 40px;
+  border-top: 1px dashed rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  position: relative;
+}
+
+.hour-slot:nth-child(even) {
+  background: rgba(148, 34, 34, 0.01);
+}
+
+/* Ride block styling */
+.ride-block {
+  position: absolute;
+  right: 10px;
+  left: 10px;
+  border-radius: 12px;
+  color: #333;
+  z-index: 5;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding: 12px 8px 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+
+
+.ride-block:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 40px rgba(148, 34, 34, 0.2);
+  z-index: 15;
+  border-color: rgba(148, 34, 34, 0.2);
+}
+
+.ride-block.is-midnight-block:hover {
+  z-index: 15;
+}
+
+.ride-info {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 2px;
+}
+
+.ride-driver {
+  font-weight: 700;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  line-height: 1.3;
+  color: #333;
+}
+
+.ride-status {
+  font-size: 0.7rem;
+  opacity: 0.8;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  line-height: 1.2;
+  color: #666;
+  font-weight: 500;
+}
+
+.ride-purpose {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  line-height: 1.2;
+  color: #888;
+}
+
+.back-btn {
+  position: absolute;
+  top: 20px; /* Adjust position as needed */
+  left: 20px; /* Better for RTL layout */
+  width: 100px;
+  height: 30px;
+  color: #942222;
+  font-family: var(--font-family-alef);
+  font-size: 16px;
+  font-weight: bold;
+  padding: 1px 2px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  background: none;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.back-btn:hover {
+  transform: scale(1.03);
+}

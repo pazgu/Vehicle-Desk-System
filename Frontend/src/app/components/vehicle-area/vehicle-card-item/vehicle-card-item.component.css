@@ -240,3 +240,26 @@
 .back-btn:hover {
   transform: scale(1.03);
 }
+
+
+.timeline-button-inline {
+  background-color: #655e5e;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.timeline-button-inline:hover {
+  background-color: #973838dc; /* Darker red on hover */
+  box-shadow: 0 2px 8px #ad3131e3; /* Stronger shadow on hover */
+}
+
+.button-spacing {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}

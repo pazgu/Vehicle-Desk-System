@@ -12,7 +12,7 @@ from ..models.vehicle_model import Vehicle
 from ..utils.socket_manager import sio
 from src.constants import OFFROAD_TYPES
 from fastapi import HTTPException
-from ..services.user_notification import create_system_notification
+from ..services.user_notification import create_system_notification, send_admin_odometer_notification
 
 def is_offroad_vehicle(vehicle_type: str) -> bool:
     return any(keyword.lower() in vehicle_type.lower() for keyword in OFFROAD_TYPES)
@@ -63,15 +63,21 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate):
         extra_stops = ride.extra_stops or None
     )
 
+    vehicle.odometer_reading += ride.estimated_distance_km
 
     db.add(new_ride)
     db.commit()
     db.refresh(new_ride)
+    db.refresh(vehicle)
+
     print('extra stops in back:',new_ride.extra_stops)
     await sio.emit("ride_status_updated", {
         "ride_id": str(new_ride.id),
         "new_status": new_ride.status.value
     })
+    await send_admin_odometer_notification(vehicle.id, vehicle.odometer_reading)
+    print(f"send_admin_odometer_notification called with vehicle_id={vehicle.id}, odometer_reading={vehicle.odometer_reading}")
+
 
     # Notification for delegated ride
     if ride.target_type == "other" and ride.user_id:
