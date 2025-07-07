@@ -108,7 +108,7 @@ export class VehicleDashboardComponent implements OnInit {
         // Here's the key part: map department_id to department name
         this.vehicles = Array.isArray(data) ? data.map(vehicle => ({
           ...vehicle,
-          department: this.departmentMap.get(vehicle.department_id || '') || (vehicle.department_id ? 'מחלקה לא ידועה' : 'ללא מחלקה')
+          department: this.departmentMap.get(vehicle.department_id || '') || (vehicle.department_id ? 'מחלקה לא ידועה' : 'לא משוייך למחלקה')
         })) : [];
         this.showingMostUsed = false;
         console.log('Vehicles loaded with department names:', this.vehicles);

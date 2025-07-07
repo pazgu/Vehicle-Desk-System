@@ -30,7 +30,7 @@
           <p><strong>סוג דלק:</strong> {{ translateFuelType(vehicle.fuel_type) }}</p>
           <p><strong>פעם אחרונה בשימוש:</strong> {{ vehicle.last_used_at | date: 'yyyy-MM-dd HH:mm' }}</p>
           <p><strong>מיקום נוכחי:</strong> {{ vehicle.current_location }}</p>
-          <p><strong>מחלקה:</strong> {{ departmentName || 'אין מחלקה' }}</p>
+          <p><strong>מחלקה:</strong> {{ departmentName || 'לא משוייך למחלקה' }}</p>
 
           <p *ngIf="vehicle.reason_for_4x4">
             <strong>סיבת 4x4:</strong> {{ vehicle.reason_for_4x4 }}
