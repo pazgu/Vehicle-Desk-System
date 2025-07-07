@@ -5,7 +5,6 @@ from sqlalchemy import String, extract, func, and_, or_
 from uuid import UUID
 
 from typing import Optional
-from sqlalchemy.orm import Session
 from datetime import date
 
 from ..models.ride_model import Ride, RideStatus
@@ -15,6 +14,16 @@ from ..schemas.ride_dashboard_item import RideDashboardItem
 import calendar
 from ..models.vehicle_inspection_model import VehicleInspection
 from ..models.monthly_vehicle_usage_model import MonthlyVehicleUsage
+from src.models.ride_approval_model import RideApproval
+from src.models.ride_model import Ride
+from typing import List
+from src.models.vehicle_inspection_model import VehicleInspection
+from src.models.ride_approval_model import RideApproval
+from datetime import datetime
+from typing import List, Dict, Any
+from sqlalchemy import or_, and_
+from src.models.ride_approval_model import RideApproval  # double check this import!
+
 
 def filter_rides(query, status: Optional[RideStatus], from_date, to_date):
     if status:
@@ -256,3 +265,142 @@ def get_all_time_vehicle_usage_stats(db: Session) -> List[dict]:
         for row in usage_data
     ]
 
+def get_critical_trip_issues(db: Session) -> List[dict]:
+    results = (
+        db.query(RideApproval)
+        .filter(RideApproval.status == "rejected")
+        .all()
+    )
+
+    issues = []
+    for item in results:
+        issues.append({
+            "ride_id": item.ride_id,
+            "approved_by": item.approved_by,
+            "role": item.role,
+            "status": item.status,
+            "timestamp": item.timestamp,
+            "severity": "critical",  # we mark all rejections as critical
+            "issue_description": f"Trip was rejected by {item.role}"  # optional short desc
+        })
+
+    return issues
+
+
+def get_all_critical_issues_combined(db: Session) -> List[Dict[str, Any]]:
+    results = []
+
+    # 🚨 From inspector table (VehicleInspection)
+    inspector_issues = db.query(VehicleInspection).filter(
+        VehicleInspection.critical_issue_bool == True
+    ).all()
+
+    for issue in inspector_issues:
+        results.append({
+            "inspection_id": str(issue.inspection_id),
+            "ride_id": None, #not used in front!!
+            "approved_by": str(issue.inspected_by),
+            "role": "inspector",
+            "status": "critical",
+            "severity": "critical",
+            "issue_description": issue.issues_found or "בעיה חמורה זוהתה במהלך בדיקה",
+            "timestamp": issue.inspection_date,
+            "vehicle_info": f"Vehicle ID: {issue.vehicle_id}" if hasattr(issue, 'vehicle_id') else ""
+        })
+
+    # 🚨 From ride approvals table (Trip Completion)
+    trip_issues = db.query(RideApproval).filter(
+        RideApproval.status == "rejected"
+    ).all()
+
+    for issue in trip_issues:
+        results.append({
+            "inspection_id": None,
+            "ride_id": str(issue.ride_id),
+            "approved_by": str(issue.approved_by),
+            "role": issue.role,
+            "status": issue.status,
+            "severity": "critical",  # Mark all rejections as critical
+            "issue_description": f"נסיעה נדחתה על ידי {issue.role}",
+            "timestamp": issue.timestamp,
+            "vehicle_info": f"Ride ID: "
+        })
+
+    print("🧪 Critical Issues Combined:", results)
+
+    # ⏱️ Sort by most recent
+    return sorted(results, key=lambda x: x["timestamp"], reverse=True)
+
+def get_critical_issue_by_id(issue_id: str, db: Session) -> Optional[Dict[str, Any]]:
+    """
+    Get a specific critical issue by ID — supports both inspection_id and composite ride_id+timestamp.
+    """
+    try:
+        # If it's a valid UUID → must be from inspector form
+        uuid_id = UUID(issue_id)
+        # Try VehicleInspection (inspector issue)
+        inspection = db.query(VehicleInspection).filter(
+            VehicleInspection.inspection_id == uuid_id,
+            VehicleInspection.critical_issue_bool == True
+        ).first()
+
+        if inspection:
+           return {
+            "id": str(inspection.inspection_id),
+            "inspection_id": inspection.inspection_id,
+            "ride_id": None,
+            "approved_by": inspection.inspected_by,
+            "submitted_by": inspection.inspected_by,
+            "role": "inspector",
+            "type": "inspector",
+            "status": "critical",
+            "severity": "critical",
+            "issue_description": inspection.issues_found or "בעיה חמורה זוהתה במהלך בדיקה",
+            "issue_text": inspection.issues_found or "בעיה חמורה זוהתה במהלך בדיקה",
+            "timestamp": inspection.inspection_date,
+            "vehicle_info": f"רכב מספר ",
+            "inspection_details": {
+                "clean": inspection.clean,
+                "fuel_checked": inspection.fuel_checked,
+                "no_items_left": inspection.no_items_left,
+                "issues_found": inspection.issues_found,
+            }
+        }
+
+    except ValueError:
+        pass  # Not a UUID → fall back to RideApproval
+
+    # Try RideApproval (trip rejection issue with composite ID)
+    try:
+        ride_id_part, timestamp_part = issue_id.split("-20", 1)
+        ride_id = UUID(ride_id_part)
+        timestamp = "20" + timestamp_part  # Rebuild ISO timestamp
+
+        approval = db.query(RideApproval).filter(
+            RideApproval.ride_id == ride_id,
+            RideApproval.timestamp == timestamp,
+            RideApproval.status == "rejected"
+        ).first()
+
+        if approval:
+            return {
+            "id": issue_id,
+            "inspection_id": None,
+            "ride_id": approval.ride_id,
+            "approved_by": approval.approved_by,
+            "submitted_by": approval.approved_by,
+            "role": approval.role,
+            "type": "trip_completion",
+            "status": approval.status,
+            "severity": approval.severity,
+            "issue_description": approval.issue_description,
+            "issue_text": f"נסיעה נדחתה על ידי {approval.role}",
+            "timestamp": approval.timestamp,
+            "vehicle_info": None,
+            "inspection_details": None
+        }
+
+    except Exception as e:
+        print(f"❌ Error parsing ride approval ID: {e}")
+
+    return None

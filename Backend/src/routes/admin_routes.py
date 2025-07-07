@@ -6,6 +6,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 from src.schemas.user_response_schema import UserResponse, UserUpdate
 from src.schemas.ride_dashboard_item import RideDashboardItem
+from src.schemas.trip_completion_schema import RawCriticalIssueSchema, TripCompletionIssueSchema
 from src.services.user_data import get_user_by_id, get_all_users
 from src.services.admin_rides_service import (
     get_all_orders,
@@ -38,7 +39,7 @@ from src.services import admin_service
 from ..schemas.audit_schema import AuditLogsSchema
 from src.services.audit_service import get_all_audit_logs
 from ..utils.socket_manager import sio
-from ..services.admin_rides_service import get_current_month_vehicle_usage ,  get_vehicle_usage_stats
+from ..services.admin_rides_service import get_critical_trip_issues, get_current_month_vehicle_usage ,  get_vehicle_usage_stats
 from fastapi.security import OAuth2PasswordBearer
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 from ..utils.auth import role_check
@@ -47,6 +48,11 @@ from ..services.admin_user_service import create_user_by_admin , get_users_servi
 from ..schemas.user_response_schema import PaginatedUserResponse
 from src.utils.auth import get_current_user
 from ..services.license_service import upload_license_file_service , check_expired_licenses
+from ..services.license_service import upload_license_file_service 
+from src.services.admin_rides_service import get_all_critical_issues_combined
+from src.services.admin_rides_service import get_critical_issue_by_id 
+
+
 
 
 router = APIRouter()
@@ -335,19 +341,7 @@ async def send_admin_notification_simple_route(db: Session = Depends(get_db)):
     }
 
 
-
-# @router.get("/inspections/today", response_model=List[VehicleInspectionSchema])
-# def get_today_inspections(db: Session = Depends(get_db)):
-#     today_start = datetime.combine(date.today(), datetime.min.time())
-#     tomorrow_start = today_start + timedelta(days=1)
-
-#     inspections = db.query(VehicleInspection).filter(
-#         VehicleInspection.inspection_date >= today_start,
-#         VehicleInspection.inspection_date < tomorrow_start
-#     ).order_by(VehicleInspection.inspection_date.desc()).all()
-
-#     return inspections
-@router.get("/inspections/today", response_model=List[VehicleInspectionSchema])
+@router.get("/inspections/today", response_model=List[RawCriticalIssueSchema])
 def get_today_inspections(
     problem_type: Optional[str] = None,
     db: Session = Depends(get_db)
@@ -403,7 +397,32 @@ def get_today_inspections(
         )
 
     inspections = query.order_by(VehicleInspection.inspection_date.desc()).all()
-    return inspections
+
+    response_data = []
+    for insp in inspections:
+        response_data.append({
+            "inspection_id": str(insp.inspection_id),
+            "ride_id": None,
+            "submitted_by": str(insp.inspected_by),  # 👈 FRONT expects this!
+            "role": "inspector",
+            "type": "inspector",  # 👈 match RawCriticalIssue
+            "status": "critical" if insp.critical_issue_bool else "medium",
+            "severity": "critical" if insp.critical_issue_bool else "medium",
+            "issue_description": insp.issues_found,
+            "issue_text": insp.issues_found,
+            "timestamp": insp.inspection_date,
+            "vehicle_id": None,
+            "vehicle_info": f"רכב:",
+            "inspection_details": {
+                "clean": insp.clean,
+                "fuel_checked": insp.fuel_checked,
+                "no_items_left": insp.no_items_left,
+                "issues_found": insp.issues_found,
+            }
+        })
+
+    return response_data
+
 
 # This function will be called later by another function with a GET route.
 @router.post("/stats/archive-last-month")
@@ -560,68 +579,6 @@ def get_vehicle_usage_current_month(db: Session = Depends(get_db)):
     return stats
 
 
-
-
-
-@router.get("/inspections/today", response_model=List[VehicleInspectionSchema])
-def get_today_inspections(
-    problem_type: Optional[str] = None,
-    db: Session = Depends(get_db)
-):
-    today_start = datetime.combine(date.today(), datetime.min.time())
-    tomorrow_start = today_start + timedelta(days=1)
-
-    query = db.query(VehicleInspection).filter(
-        VehicleInspection.inspection_date >= today_start,
-        VehicleInspection.inspection_date < tomorrow_start
-    )
-
-    if problem_type == "medium":
-        query = query.filter(
-            and_(
-                or_(
-                    VehicleInspection.clean == False,
-                    VehicleInspection.fuel_checked == False,
-                    VehicleInspection.no_items_left == False
-                ),
-                VehicleInspection.critical_issue_bool == False
-            )
-        )
-    elif problem_type == "critical":
-        query = query.filter(
-            or_(
-                VehicleInspection.critical_issue_bool == True,
-                and_(
-                    VehicleInspection.issues_found != None,
-                    VehicleInspection.issues_found != ""
-                )
-            )
-        )
-    elif problem_type == "medium,critical":
-        query = query.filter(
-            or_(
-                and_(
-                    or_(
-                        VehicleInspection.clean == False,
-                        VehicleInspection.fuel_checked == False,
-                        VehicleInspection.no_items_left == False
-                    ),
-                    VehicleInspection.critical_issue_bool == False
-                ),
-                or_(
-                    VehicleInspection.critical_issue_bool == True,
-                    and_(
-                        VehicleInspection.issues_found != None,
-                        VehicleInspection.issues_found != ""
-                    )
-                )
-            )
-        )
-
-    inspections = query.order_by(VehicleInspection.inspection_date.desc()).all()
-    return inspections
-
-
 @router.get("/users", response_model=PaginatedUserResponse)
 def get_all_users_route(
     db: Session = Depends(get_db),
@@ -662,7 +619,6 @@ def force_license_check(db: Session = Depends(get_db)):
     return check_expired_licenses(db)
 
 
-
 @router.delete("/vehicles/{vehicle_id}")
 def delete_vehicle(
     request: Request,  
@@ -673,3 +629,66 @@ def delete_vehicle(
     user = get_current_user(request)
     role_check(["admin"], token)
     return delete_vehicle_by_id(vehicle_id, db, user.employee_id)  # ✅ not user.id
+
+@router.get("/critical-trip-issues", response_model=List[TripCompletionIssueSchema])
+def fetch_critical_trip_issues(db: Session = Depends(get_db)):
+    return get_critical_trip_issues(db)
+
+@router.get("/critical-issues/{issue_id}",response_model=RawCriticalIssueSchema)
+def get_critical_issue_details(issue_id: str, db: Session = Depends(get_db)):
+    """
+    Get detailed information about a specific critical issue
+    """
+    try:
+        issue_details = get_critical_issue_by_id(issue_id, db)
+        if not issue_details:
+            raise HTTPException(status_code=404, detail="Critical issue not found")
+
+        return issue_details  # ✅ this line is now correctly indented
+    except HTTPException:
+        raise
+    except Exception as e:
+        print("❌ Error fetching critical issue details:", str(e))
+        raise HTTPException(status_code=500, detail=f"Failed to fetch issue details: {str(e)}")
+
+# @router.get("/critical-issues", response_model=List[TripCompletionIssueSchema])
+# def get_all_critical_issues(db: Session = Depends(get_db)):
+#     raw_data = get_all_critical_issues_combined(db)
+#     return [TripCompletionIssueSchema(**item) for item in raw_data]
+
+@router.get("/critical-issues", response_model=List[RawCriticalIssueSchema])
+def get_all_critical_issues(db: Session = Depends(get_db)):
+    """
+    Get all critical issues from both inspector checks and ride approvals
+    """
+    try:
+        raw_data = get_all_critical_issues_combined(db)
+        print("🪵 Raw data from service:", raw_data)
+        
+        # Transform to match schema
+        transformed_data = []
+        for item in raw_data:
+            # Create a unique ID based on available identifiers
+            unique_id = item.get('inspection_id') or item.get('ride_id') or f"{item['approved_by']}-{item['timestamp']}"
+            
+            transformed_item = {
+            "id": unique_id,
+            "inspection_id": item.get('inspection_id'),
+            "ride_id": item.get('ride_id'),
+            "approved_by": item['approved_by'],
+            "submitted_by": item['approved_by'],  # ✅ NEW
+            "role": item['role'],
+            "type": item['role'],                 # ✅ NEW
+            "status": item['status'],
+            "severity": item['severity'],
+            "issue_description": item['issue_description'],
+            "issue_text": item['issue_description'],  # ✅ NEW
+            "timestamp": item['timestamp'],
+            "vehicle_info": item.get('vehicle_info', '')
+        }
+            transformed_data.append(transformed_item)
+        
+        return [RawCriticalIssueSchema(**item) for item in transformed_data]
+    except Exception as e:
+        print("❌ Error in get_all_critical_issues:", str(e))
+        raise HTTPException(status_code=500, detail=f"Failed to fetch critical issues: {str(e)}")
