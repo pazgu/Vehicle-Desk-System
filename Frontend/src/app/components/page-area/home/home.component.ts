@@ -25,7 +25,6 @@ import { User } from '../../../models/user.model';
 import { Observable } from 'rxjs';
 import { LayoutComponent } from '../../layout-area/layout/layout.component';
 import { AuthService } from '../../../services/auth.service';
-
 // Define the interface for pending vehicle
 interface PendingVehicle {
   vehicle_id: string;
@@ -160,6 +159,42 @@ export class NewRideComponent implements OnInit {
         destination: city
       });
     });
+    this.socketService.usersLicense$.subscribe(update => {
+  console.log('🚨 Received update from socket:', update);
+
+  const { id, has_government_license, license_expiry_date } = update;
+
+  const selectedUserId =
+    this.rideForm.get('target_type')?.value === 'self'
+      ? this.getUserIdFromAuthService()
+      : this.rideForm.get('target_employee_id')?.value;
+
+  if (id !== selectedUserId) return;
+
+  const expiryDate = license_expiry_date ? new Date(license_expiry_date) : null;
+  const now = new Date();
+  const licenseValid =
+    has_government_license === true &&
+    expiryDate instanceof Date &&
+    !isNaN(expiryDate.getTime()) &&
+    expiryDate >= now;
+
+  if (licenseValid) {
+    this.disableRequest = false;
+    console.log('✅ License is valid via socket');
+  } else {
+    this.disableRequest = true;
+    console.warn('🚫 License is missing or expired via socket');
+    this.toastService.show(
+      'לא ניתן לשלוח בקשה: למשתמש שנבחר אין רישיון ממשלתי תקף. לעדכון פרטים יש ליצור קשר עם המנהל.',
+      'error'
+    );
+  }
+});
+
+
+
+
   }
 
   getUserIdFromAuthService(): string | null {
@@ -474,6 +509,12 @@ export class NewRideComponent implements OnInit {
     if (selectedCar && !this.availableCars.some(car => car.id === selectedCar)) {
       this.rideForm.get('car')?.setValue(null);
     }
+
+    this.availableCars = this.allCars.filter(car =>
+  car.type === selectedType &&
+  (car as any).can_order !== false
+);
+
   }
 
   onRideTypeChange(): void {

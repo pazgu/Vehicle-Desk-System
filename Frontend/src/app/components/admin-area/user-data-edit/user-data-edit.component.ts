@@ -49,6 +49,24 @@ export class UserDataEditComponent implements OnInit {
     this.loadUserData();
     this.fetchDepartments();
     this.loadRoles();
+    this.userForm.get('license_expiry_date')?.valueChanges.subscribe((value: string) => {
+    const expiry = value ? new Date(value) : null;
+    const today = new Date();
+
+    if (expiry && !isNaN(expiry.getTime())) {
+      if (expiry >= today) {
+        this.userForm.get('has_government_license')?.setValue(true, { emitEvent: false });
+      } else {
+        this.userForm.get('has_government_license')?.setValue(false, { emitEvent: false });
+      }
+    }
+  });
+
+  this.userForm.get('has_government_license')?.valueChanges.subscribe((checked: boolean) => {
+    if (!checked) {
+      this.userForm.get('license_expiry_date')?.setValue('');
+    }
+  });
 
       const sub = this.socketService.usersLicense$.subscribe(update => {
   if (!this.user || this.user.employee_id !== update.id) return;
@@ -85,7 +103,7 @@ export class UserDataEditComponent implements OnInit {
 
     });
   }
-
+  
   get f() {
     return this.userForm.controls;
   }
