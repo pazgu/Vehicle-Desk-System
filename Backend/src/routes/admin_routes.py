@@ -168,6 +168,15 @@ async def edit_user_by_id_route(
         raise HTTPException(status_code=500, detail="Failed to update user")
 
     db.refresh(user)
+    # When user license is updated, emit event to clients:
+    await sio.emit('user_license_updated', {
+    "id": str(user.employee_id),
+    "license_expiry_date": user.license_expiry_date.isoformat() if user.license_expiry_date else None,
+    "has_government_license": bool(user.has_government_license),
+    "license_file_url": user.license_file_url or ""
+})
+
+
     db.execute(text("SET session.audit.user_id = DEFAULT"))
     return user
 @router.get("/roles")
