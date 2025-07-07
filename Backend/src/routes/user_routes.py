@@ -54,6 +54,8 @@ from ..models.city_model import City
 from sqlalchemy import cast
 from ..services.user_form import get_ride_needing_feedback
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+from src.schemas.department_schema import DepartmentOut
+from src.models.department_model import Department
 from src.services.email_service import send_email, load_email_template, get_user_email
 from src.services.email_service import async_send_email
 
@@ -70,6 +72,8 @@ import os
 load_dotenv()  # Load environment variables from .env
 FROM_CITY = os.getenv("FROM_CITY")
 FROM_CITY_NAME = os.getenv("FROM_CITY", "Unknown City")
+# BOOKIT_URL = os.getenv("BOOKIT_FRONTEND_URL", "http://localhost:4200")  
+
 
 @router.post("/api/register")
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
@@ -234,17 +238,20 @@ async def create_order(
             # שליחת מייל למנהל - כאן הקוראים ל-async_send_email
             supervisor_email = get_user_email(supervisor_id, db)
             if supervisor_email:
+                # Get the city name from the city ID
+                destination_city = db.query(City).filter(City.id == new_ride.stop).first()
+                destination_name = destination_city.name if destination_city else str(new_ride.stop)
+
                 html_content = load_email_template("new_ride_request.html", {
                     "SUPERVISOR_NAME": get_user_name(db, supervisor_id) or "מנהל",
                     "EMPLOYEE_NAME": employee_name,
-                    "DESTINATION": new_ride.stop,
+                    "DESTINATION": destination_name,  # Now shows the city name
                     "DATE_TIME": str(new_ride.start_datetime),
                     "PLATE_NUMBER": new_ride.plate_number or "לא נבחר",
                     "DISTANCE": str(new_ride.estimated_distance_km),
                     "STATUS": new_ride.status,
-                    "LINK_TO_ORDER": f"https://your-app-url.com/orders/{new_ride.id}"
-                })
-
+                    # "LINK_TO_ORDER": f"{BOOKIT_URL}/home?order_id={new_ride.id}"
+                    })
                 await async_send_email(
                     to_email=supervisor_email,
                     subject="📄 בקשת נסיעה חדשה מחכה לאישורך",
@@ -290,6 +297,13 @@ async def create_order(
 @router.get("/api/departments")
 def get_departments_route():
     return get_departments()
+
+@router.get("/api/departments/{department_id}", response_model=DepartmentOut)
+def get_department_by_id(department_id: UUID, db: Session = Depends(get_db)):
+    department = db.query(Department).filter(Department.id == department_id).first()
+    if not department:
+        raise HTTPException(status_code=404, detail="Department not found")
+    return department
 
 @router.patch("/api/orders/{order_id}")
 async def patch_order(

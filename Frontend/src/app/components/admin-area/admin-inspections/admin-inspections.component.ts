@@ -9,6 +9,8 @@ import { SocketService } from '../../../services/socket.service';
 import { ToastService } from '../../../services/toast.service';
 import { FormsModule } from '@angular/forms'; // Ensure FormsModule is imported for ngModel
 import { CriticalIssue } from '../../../models/critical-issue.model';
+import { RawCriticalIssue } from '../../../models/raw-critical-issue.model'; // add this line
+
 
 
 @Component({
@@ -29,6 +31,8 @@ export class AdminInspectionsComponent implements OnInit {
   private lastInspectionId: string | null = null;
   isCriticalMode = false;
   selectedIssue: CriticalIssue | null = null;
+  selectedIssueDetails: any = null;
+
 
 
 
@@ -45,6 +49,7 @@ export class AdminInspectionsComponent implements OnInit {
      // Detect mode via route path
   const currentPath = this.route.snapshot.routeConfig?.path;
   this.isCriticalMode = currentPath === 'admin/critical-issues';
+  console.log('is critical in nginit is:',this.isCriticalMode)
     // ✅ Highlight row if query param exists
     this.route.queryParams.subscribe(params => {
       this.highlighted = params['highlight'] === '1';
@@ -52,6 +57,7 @@ export class AdminInspectionsComponent implements OnInit {
 
     // ✅ Load inspections on mount
     this.loadInspections();
+
 
     // 🔔 Listen for critical inspection notifications
     this.socketService.notifications$.subscribe((notif) => {
@@ -76,7 +82,10 @@ export class AdminInspectionsComponent implements OnInit {
         // For simplicity, just adding it to the list for now, but a full re-load
         // `this.loadInspections();` might be safer if filtering logic is complex
         // and needs to be strictly applied on new data.
-        this.inspections.unshift(newInspection);
+        console.log('🚨 Incoming newInspection data:', newInspection);
+
+        const mapped = this.isCriticalMode ? this.mapCriticalIssues([newInspection])[0] : newInspection;
+        this.inspections.unshift(mapped);
         this.cdr.detectChanges(); // Manually trigger change detection for unshift
 
         this.toastService.show('📢 התקבלה בדיקה חדשה');
@@ -84,16 +93,60 @@ export class AdminInspectionsComponent implements OnInit {
       }
     });
   }
+private mapCriticalIssues(raw: RawCriticalIssue[]): CriticalIssue[] {
+  return raw
+    .map(item => {
+          let id: string;
 
-  private mapCriticalIssues(raw: any[]): CriticalIssue[] {
-  return raw.map(item => ({
-    timestamp: item.timestamp,
-    source_type: item.source_type,
-    responsible_user: item.responsible_user,
-    vehicle_info: item.vehicle_info || '',
-    issue_summary: item.issue_summary
-  }));
+          if (item.inspection_id) {
+            id = item.inspection_id;
+          } else if (item.ride_id) {
+            id = item.ride_id;
+          } else {
+            // Invalid item — skip it, don't include it in the mapped array
+            return null as any;
+          }
+       let source_type: 'Inspector' | 'Trip Completion';
+
+      if (item.role === 'inspector' || item.inspection_id) {
+        source_type = 'Inspector';
+      }
+      else {
+        source_type = item.role === 'inspector' ? 'Inspector' : 'Trip Completion';
+      }
+
+  const mappedItem: CriticalIssue = {
+  id: item.inspection_id || `${item.approved_by ?? item.submitted_by}-${item.timestamp}`,
+  timestamp: item.timestamp,
+  source_type: item.role === 'inspector' || item.type === 'inspector' ? 'Inspector' : 'Trip Completion',
+  responsible_user: item.approved_by || item.submitted_by || 'לא ידוע',
+  vehicle_info: item.vehicle_info || item.vehicle_id || '',
+  issue_summary: item.issue_description || item.issue_text || 'אין תיאור',
+};
+
+if (item.inspection_id) {
+  mappedItem.inspection_id = item.inspection_id;
 }
+if (item.ride_id) {
+  mappedItem.ride_id = item.ride_id;
+}
+
+
+      // Only add optional properties if they exist
+      if (item.inspection_id) {
+        mappedItem.inspection_id = item.inspection_id;
+      }
+      if (item.ride_id) {
+        mappedItem.ride_id = item.ride_id;
+      }
+
+      return mappedItem;
+    })
+    .filter(item => item !== null); // Remove the type predicate since we're not filtering out any items
+}
+
+
+
 
 loadInspections(): void {
   this.loading = true;
@@ -114,11 +167,13 @@ loadInspections(): void {
     }
   }
 
-  this.http.get<any[]>(url, { params }).subscribe({
-    next: (data) => {
-      this.inspections = this.isCriticalMode ? this.mapCriticalIssues(data) : data;
-      this.loading = false;
-    },
+this.http.get<RawCriticalIssue[]>(url, { params }).subscribe({
+  next: (data) => {
+    console.log('📦 Raw API data for issues:', data);
+    this.inspections = this.isCriticalMode ? this.mapCriticalIssues(data) : data;
+    console.log('📊 After mapping:', this.inspections);
+    this.loading = false;
+  },
     error: () => {
       this.loading = false;
       const errText = this.isCriticalMode
@@ -144,4 +199,32 @@ loadInspections(): void {
       console.warn('🔇 Audio failed to play (autoplay policy):', err);
     });
   }
+
+loadIssueDetails(issue: any): void {
+  const id = issue?.id;
+  console.log('🆔 issue id to load details:', id, issue); // 👈 debug log
+
+  if (!id) {
+    this.toastService.show("❌ לא ניתן לפתוח את החריגה - מזהה חסר", 'error');
+    return;
+  }
+
+  this.http.get(`${environment.apiUrl}/critical-issues/${id}`).subscribe({
+   
+    next: (data) => {
+      console.log("issues from backend:",data)
+      this.selectedIssueDetails = data;
+    },
+    error: () => {
+      this.toastService.show("❌ שגיאה בטעינת פרטי חריגה", 'error');
+    }
+  });
+}
+
+openIssueDetails(issue: any): void {
+  this.loadIssueDetails(issue);
+}
+
+
+
 }

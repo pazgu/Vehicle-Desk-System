@@ -13,5 +13,6 @@ export interface Vehicle {
   image_url: string;
   lease_expiry?: string;
   department_id?: string;
+  canDelete: boolean;
 
 }

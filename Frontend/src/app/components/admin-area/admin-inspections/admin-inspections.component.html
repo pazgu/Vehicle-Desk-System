@@ -46,7 +46,10 @@
     </tr>
   </thead>
   <tbody>
-<tr *ngFor="let item of inspections" [class.highlight]="highlighted" (click)="selectedIssue = item">
+<tr *ngFor="let item of inspections"
+    [class.highlight]="highlighted"
+    (click)="isCriticalMode ? loadIssueDetails(item) : selectedIssue = item">
+
       <!-- Critical Mode -->
       <td *ngIf="isCriticalMode">{{ item.timestamp | date: 'short' }}</td>
       <td *ngIf="isCriticalMode">{{ item.source_type }}</td>
@@ -62,18 +65,19 @@
   </tbody>
 </table>
 
-<div class="modal-overlay" *ngIf="selectedIssue && isCriticalMode" (click)="selectedIssue = null">
+<div class="modal-overlay" *ngIf="selectedIssueDetails && isCriticalMode" (click)="selectedIssueDetails = null">
   <div class="modal-content" (click)="$event.stopPropagation()">
-    <button class="close-btn" (click)="selectedIssue = null">×</button>
+    <button class="close-btn" (click)="selectedIssueDetails = null">×</button>
 
     <h3>🔎 פירוט החריגה</h3>
-    <p><strong>תיאור מלא:</strong> {{ selectedIssue.issue_summary }}</p>
-    <p><strong>רכב:</strong> {{ selectedIssue.vehicle_info || '—' }}</p>
-    <p><strong>אחראי:</strong> {{ selectedIssue.responsible_user }}</p>
-    <p><strong>תאריך:</strong> {{ selectedIssue.timestamp | date:'medium' }}</p>
-    <p><strong>סוג:</strong> {{ selectedIssue.source_type }}</p>
+    <p><strong>תיאור מלא:</strong> {{ selectedIssueDetails.issue_text }}</p>
+    <p><strong>רכב:</strong> {{ selectedIssueDetails.vehicle_id || '—' }}</p>
+    <p><strong>אחראי:</strong> {{ selectedIssueDetails.submitted_by }}</p>
+    <p><strong>תאריך:</strong> {{ selectedIssueDetails.timestamp | date:'medium' }}</p>
+    <p><strong>סוג:</strong> {{ selectedIssueDetails.type }}</p>
   </div>
 </div>
+
 
 
 
