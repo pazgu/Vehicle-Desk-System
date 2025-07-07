@@ -9,6 +9,10 @@ def get_all_users(db: Session):
     return db.query(User).all()
 
 
-def get_user_department(user_id: str, db: Session) -> str:
+
+def get_user_department(user_id: UUID, db: Session) -> UUID | None:
     user = db.query(User).filter(User.employee_id == user_id).first()
     return user.department_id if user else None
+
+
+   
