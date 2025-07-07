@@ -24,7 +24,7 @@
 </div>
 
 
-            <div class="form-content" [formGroup]="form">
+            <div class="form-content" *ngIf="currentRide"  [formGroup]="form">
                 <div class="question">
                     <p class="question-text">האם החזרת את הרכב?</p>
                     <div class="options">

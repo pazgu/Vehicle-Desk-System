@@ -27,4 +27,14 @@ class Notification(Base):
     
 
 
-    
+    def to_dict(self):
+        return {
+            "id": str(self.id),
+            "user_id": str(self.user_id),
+            "title": self.title,
+            "message": self.message,
+            "notification_type": self.notification_type.value if self.notification_type else None,
+            "sent_at": self.sent_at.isoformat() if self.sent_at else None,
+            "order_id": str(self.order_id) if self.order_id else None,
+            "vehicle_id": str(self.vehicle_id) if self.vehicle_id else None
+        }

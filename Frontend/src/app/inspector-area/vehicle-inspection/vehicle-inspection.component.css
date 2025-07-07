@@ -102,4 +102,6 @@ input[type="range"] {
   transition: width 0.3s ease, background-color 0.3s ease;
 }
 
-
+small{
+  font-size: 13px;
+}

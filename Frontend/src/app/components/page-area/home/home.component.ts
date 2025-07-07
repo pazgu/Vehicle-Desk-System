@@ -12,7 +12,7 @@ import {
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ToastService } from '../../../services/toast.service';
-import { RideService } from '../../../services/ride.service'; 
+import { RideService } from '../../../services/ride.service';
 import { HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { VehicleService } from '../../../services/vehicle.service';
@@ -20,6 +20,11 @@ import { SocketService } from '../../../services/socket.service';
 import { CityService } from '../../../services/city.service';
 import { Location } from '@angular/common';
 import { FuelType, FuelTypeResponse } from '../../../models/vehicle-dashboard-item/vehicle-out-item.module';
+import { UserService } from '../../../services/user_service';
+import { User } from '../../../models/user.model';
+import { Observable } from 'rxjs';
+import { LayoutComponent } from '../../layout-area/layout/layout.component';
+import { AuthService } from '../../../services/auth.service';
 
 // Define the interface for pending vehicle
 interface PendingVehicle {
@@ -83,6 +88,8 @@ export class NewRideComponent implements OnInit {
   availableCars: Vehicle[] = [];
   vehicleTypes: string[] = [];
   pendingVehicles: PendingVehicle[] = [];
+  disableRequest: boolean = false;
+
 
   constructor(
     private fb: FormBuilder,
@@ -92,11 +99,27 @@ export class NewRideComponent implements OnInit {
     private vehicleService: VehicleService,
     private socketService: SocketService,
     private location: Location,
-    private cityService: CityService
-  ) {}
+    private cityService: CityService,
+    private UserService: UserService,
+    private AuthService: AuthService
+  ) { }
 
   ngOnInit(): void {
     this.initializeComponent();
+
+    // IMPORTANT: Trigger initial license check for 'self'
+    // valueChanges won't fire for the default 'self' value on init.
+    const initialTargetType = this.rideForm.get('target_type')?.value;
+    if (initialTargetType === 'self') {
+      const currentUserId = this.getUserIdFromAuthService();
+      if (currentUserId) {
+        this.checkGovernmentLicence(currentUserId);
+      } else {
+        console.warn('Current user ID not found in AuthService during ngOnInit. Disabling request.');
+        this.toastService.show('שגיאה: מזהה משתמש נוכחי לא נמצא.', 'error');
+        this.disableRequest = true;
+      }
+    }
   }
 
   private initializeComponent(): void {
@@ -139,13 +162,57 @@ export class NewRideComponent implements OnInit {
     });
   }
 
+  getUserIdFromAuthService(): string | null {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      return null;
+    }
+    try {
+      const payloadJson = atob(token.split('.')[1]);
+      const payload = JSON.parse(payloadJson);
+      return payload.sub || null;
+    } catch (err) {
+      console.error('[GET USER ID] Error parsing token payload:', err);
+      return null;
+    }
+  }
+
+
   private setupFormSubscriptions(): void {
-    // Target type changes
+    // 1. Handle changes to 'target_type' (self vs. other)
     this.rideForm.get('target_type')?.valueChanges.subscribe(type => {
       if (type === 'other') {
         this.fetchDepartmentEmployees();
-      } else {
-        this.rideForm.get('target_employee_id')?.setValue(null);
+        // Reset target_employee_id when switching to 'other'.
+        // This will trigger the target_employee_id subscription, which will then
+        // set disableRequest to false (as employeeId becomes null initially).
+        this.rideForm.get('target_employee_id')?.setValue(null, { emitEvent: true });
+      } else { // type is 'self'
+        // When switching to 'self', check the current user's license directly.
+        const currentUserId = this.getUserIdFromAuthService();
+        if (currentUserId) {
+          this.checkGovernmentLicence(currentUserId);
+        } else {
+          console.warn('Current user ID not found in AuthService (target_type subscription). Disabling request.');
+          this.toastService.show('שגיאה: מזהה משתמש נוכחי לא נמצא.', 'error');
+          this.disableRequest = true;
+        }
+        // Set target_employee_id to null for 'self' without emitting an event
+        // to avoid redundant checks by the target_employee_id subscription.
+        this.rideForm.get('target_employee_id')?.setValue(null, { emitEvent: false });
+      }
+    });
+
+    // 2. Handle changes to 'target_employee_id' (only relevant for 'other' type selections)
+    this.rideForm.get('target_employee_id')?.valueChanges.subscribe(employeeId => {
+      const targetType = this.rideForm.get('target_type')?.value;
+      // Only check license if target_type is 'other' and an employeeId is actually selected.
+      if (targetType === 'other' && employeeId) {
+        this.checkGovernmentLicence(employeeId);
+      } else if (!employeeId) {
+        // If employeeId becomes null (e.g., cleared field), reset disableRequest.
+        // The target_type subscription handles the 'self' scenario.
+        this.disableRequest = false;
       }
     });
 
@@ -182,36 +249,41 @@ export class NewRideComponent implements OnInit {
     });
 
     this.rideForm.get('estimated_distance_km')?.valueChanges.subscribe((value) => {
-      if (value ) {
+      if (value) {
         this.estimated_distance_with_buffer = +(value * 1.1).toFixed(2);
       }
     });
   }
 
- private calculateRouteDistance(): void {
-  const startRaw = this.rideForm.get('start_location')?.value;
-  const stopRaw = this.rideForm.get('stop')?.value;
-  const extraStops = this.extraStops.value || [];
+  private calculateRouteDistance(): void {
+    const startRaw = this.rideForm.get('start_location')?.value;
+    const stopRaw = this.rideForm.get('stop')?.value;
+    const extraStops = this.extraStops.value || [];
 
-  if (!startRaw || !stopRaw) {
-    this.resetDistanceValues();
-    return;
+    if (!startRaw || !stopRaw) {
+      this.resetDistanceValues();
+      return;
+    }
+
+    const start = typeof startRaw === 'string' ? startRaw : startRaw.id;
+    const stop = typeof stopRaw === 'string' ? stopRaw : stopRaw.id;
+
+    if (!start || !stop || start === stop) {
+      this.resetDistanceValues();
+      return;
+    }
+
+    let routeStops = [...extraStops];
+    // Ensure 'stop' is always the last destination.
+    // Filter out any null/undefined/empty strings from extraStops.
+    routeStops = routeStops.filter((id: string) => !!id && typeof id === 'string' && id.trim() !== '');
+    routeStops.push(stop); // Add the main stop as the final destination.
+
+    console.log('📦 Raw stop:', stopRaw, '| extraStops:', extraStops, '| Final routeStops:', routeStops);
+
+
+    this.fetchEstimatedDistance(start, routeStops);
   }
-
-  const start = typeof startRaw === 'string' ? startRaw : startRaw.id;
-  const stop = typeof stopRaw === 'string' ? stopRaw : stopRaw.id;
-
-  if (!start || !stop || start === stop) {
-    this.resetDistanceValues();
-    return;
-  }
-
-const routeStops = [...extraStops.filter((id: string) => !!id), stop];
-console.log('📦 Raw stop:', stopRaw, '| extraStops:', extraStops);
-
-
-  this.fetchEstimatedDistance(start, routeStops);
-}
 
 
   private resetDistanceValues(): void {
@@ -227,6 +299,12 @@ console.log('📦 Raw stop:', stopRaw, '| extraStops:', extraStops);
 
     if (!targetType || (targetType === 'other' && !targetEmployeeId)) {
       this.showStep1Error = true;
+      return;
+    }
+
+    // After validation, check if the request is disabled by license check
+    if (this.disableRequest) {
+      this.toastService.show('לא ניתן לשלוח בקשה: למשתמש שנבחר אין רישיון ממשלתי תקף. לעדכון פרטים יש ליצור קשר עם המנהל.', 'error');
       return;
     }
 
@@ -267,7 +345,7 @@ console.log('📦 Raw stop:', stopRaw, '| extraStops:', extraStops);
   }
 
   private fetchDepartmentEmployees(): void {
-    const currentUserId = localStorage.getItem('employee_id');
+    const currentUserId = this.getUserIdFromAuthService();
     if (!currentUserId) return;
 
     this.rideService.getDepartmentEmployees(currentUserId).subscribe({
@@ -298,7 +376,7 @@ console.log('📦 Raw stop:', stopRaw, '| extraStops:', extraStops);
             vehicle_model: v.vehicle_model || 'רכב ללא דגם',
             freeze_reason: v.freeze_reason ?? null
           }));
-        
+
         this.updateAvailableCars();
       },
       error: () => {
@@ -311,9 +389,9 @@ console.log('📦 Raw stop:', stopRaw, '| extraStops:', extraStops);
     this.vehicleService.getPendingCars().subscribe({
       next: (response: any) => {
         console.log('Raw API response:', response);
-        
+
         let pendingData: any[] = [];
-        
+
         if (Array.isArray(response)) {
           pendingData = response;
         } else if (response && Array.isArray(response.data)) {
@@ -361,7 +439,6 @@ console.log('📦 Raw stop:', stopRaw, '| extraStops:', extraStops);
 
     console.log(`🌍 Requesting route distance: ${from} → ${toArray.join(' → ')}`);
     this.isLoadingDistance = true;
-  if(toArray) toArray = toArray.filter(to => to && typeof to === 'string' && to.trim() !== '');
     this.rideService.getRouteDistance(from, toArray).subscribe({
       next: (response) => {
         const realDistance = response.distance_km;
@@ -369,10 +446,10 @@ console.log('📦 Raw stop:', stopRaw, '| extraStops:', extraStops);
 
         this.fetchedDistance = realDistance;
         this.estimated_distance_with_buffer = +(realDistance * 1.1).toFixed(2);
-        
+
         this.rideForm.get('estimated_distance_km')?.setValue(realDistance, { emitEvent: false });
         this.isLoadingDistance = false;
-        
+
         console.log(`Distance set: ${realDistance} km, Buffer: ${this.estimated_distance_with_buffer} km`);
       },
       error: (err) => {
@@ -389,12 +466,19 @@ console.log('📦 Raw stop:', stopRaw, '| extraStops:', extraStops);
     const selectedType = this.rideForm.get('vehicle_type')?.value;
     if (selectedType) {
       this.availableCars = this.allCars.filter(car => car.type === selectedType);
+    } else {
+      this.availableCars = []; // No type selected, no cars available
+    }
+    // Also reset car selection if current car is no longer available
+    const selectedCar = this.rideForm.get('car')?.value;
+    if (selectedCar && !this.availableCars.some(car => car.id === selectedCar)) {
+      this.rideForm.get('car')?.setValue(null);
     }
   }
 
   onRideTypeChange(): void {
     this.updateAvailableCars();
-    this.rideForm.get('car')?.setValue('');
+    this.rideForm.get('car')?.setValue(null); // Clear selected car when ride type changes
 
     if (this.availableCars.length === 0) {
       this.toastService.show('אין רכבים זמינים מסוג זה', 'error');
@@ -403,15 +487,21 @@ console.log('📦 Raw stop:', stopRaw, '| extraStops:', extraStops);
 
   private updateVehicleTypeValidation(value: string): void {
     const vehicleTypeReason = this.rideForm.get('vehicle_type_reason');
-    
-    if (value?.toLowerCase().includes('jeep') || 
-        value?.toLowerCase().includes('van') || 
-        value?.toLowerCase().includes('4x4')) {
+
+    if (value?.toLowerCase().includes('jeep') ||
+      value?.toLowerCase().includes('van') ||
+      value?.toLowerCase().includes('4x4')) {
       vehicleTypeReason?.setValidators([Validators.required]);
     } else {
       vehicleTypeReason?.clearValidators();
     }
     vehicleTypeReason?.updateValueAndValidity();
+
+    // Reset four_by_four_reason if not 4x4
+    const fourByFourReason = this.rideForm.get('four_by_four_reason');
+    if (!value?.toLowerCase().includes('4x4')) {
+      fourByFourReason?.setValue('');
+    }
   }
 
   // Vehicle availability checking
@@ -429,10 +519,10 @@ console.log('📦 Raw stop:', stopRaw, '| extraStops:', extraStops);
 
     return this.pendingVehicles.some(pv => {
       const normalizedPendingDate = this.normalizeDateString(pv.date);
-      
-      const basicMatch = pv.vehicle_id === vehicle_id && 
-                        normalizedPendingDate === normalizedRideDate;
-      
+
+      const basicMatch = pv.vehicle_id === vehicle_id &&
+        normalizedPendingDate === normalizedRideDate;
+
       if (!basicMatch) {
         return false;
       }
@@ -443,12 +533,12 @@ console.log('📦 Raw stop:', stopRaw, '| extraStops:', extraStops);
       }
 
       const pendingEndTimeWithBuffer = this.addHoursToTime(pv.end_time, 2);
-      
+
       const hasTimeOverlap = this.checkTimeOverlap(
         startTime, endTime,
         pv.start_time, pendingEndTimeWithBuffer
       );
-      
+
       return hasTimeOverlap;
     });
   }
@@ -459,10 +549,10 @@ console.log('📦 Raw stop:', stopRaw, '| extraStops:', extraStops);
     const date = new Date();
     date.setHours(hours, minutes, 0, 0);
     date.setHours(date.getHours() + hoursToAdd);
-    
+
     const newHours = date.getHours();
     const newMinutes = date.getMinutes();
-    
+
     return `${newHours.toString().padStart(2, '0')}:${newMinutes.toString().padStart(2, '0')}`;
   }
 
@@ -482,14 +572,14 @@ console.log('📦 Raw stop:', stopRaw, '| extraStops:', extraStops);
     if (!timeStr || typeof timeStr !== 'string') {
       return 0;
     }
-    
+
     const [hours, minutes] = timeStr.split(':').map(Number);
     return (hours * 60) + (minutes || 0);
   }
 
   private normalizeDateString(dateStr: string): string {
     if (!dateStr) return '';
-    
+
     try {
       const date = new Date(dateStr);
       if (isNaN(date.getTime())) {
@@ -522,9 +612,10 @@ console.log('📦 Raw stop:', stopRaw, '| extraStops:', extraStops);
 
     if (value === 'night') {
       nightEndControl?.setValidators([Validators.required]);
-      rideDateControl?.clearValidators();
+      rideDateControl?.clearValidators(); // Remove validators from rideDate for night period
     } else {
       nightEndControl?.clearValidators();
+      nightEndControl?.setValue(''); // Clear night end date if not night period
       rideDateControl?.setValidators([
         Validators.required,
         this.validYearRangeValidator(2025, 2099)
@@ -587,8 +678,53 @@ console.log('📦 Raw stop:', stopRaw, '| extraStops:', extraStops);
     this.submit(true);
   }
 
+  checkGovernmentLicence(employeeId: string): void {
+    console.log('🔍 Checking government license for user ID:', employeeId);
+
+    if (!employeeId) {
+      console.warn('⚠️ No employeeId provided for license check. Setting disableRequest to false.');
+      this.disableRequest = false; // If no ID, ensure request is NOT disabled by this function
+      return;
+    }
+
+    this.UserService.getUserById(employeeId).subscribe({
+      next: (user) => {
+        console.log('✅ User fetched from API:', user);
+
+        if ('has_government_license' in user) {
+          const hasLicense = user.has_government_license;
+          console.log(`📄 License status: ${hasLicense ? '✅ HAS license' : '❌ NO license'}`);
+
+          if (hasLicense) {
+            console.log('🎉 User has a valid government license. Enabling request.');
+            this.disableRequest = false; // User has license, enable
+          } else {
+            console.warn('🚫 User does NOT have a valid government license. Disabling request.');
+      this.toastService.show('לא ניתן לשלוח בקשה: למשתמש שנבחר אין רישיון ממשלתי תקף. לעדכון פרטים יש ליצור קשר עם המנהל.', 'error');
+            this.disableRequest = true; // User has no license, disable
+          }
+        } else {
+          console.error('🚨 user object missing has_government_license property:', user);
+          this.toastService.show('שגיאה: פרטי רישיון ממשלתי לא נמצאו.', 'error');
+          this.disableRequest = true; // Assume disabled if property is missing
+        }
+      },
+      error: (err) => {
+        console.error('❌ Failed to fetch user data from API:', err);
+        this.toastService.show('שגיאה בבדיקת רישיון ממשלתי', 'error');
+        this.disableRequest = true; // Disable on API error
+      }
+    });
+  }
+
   // Form submission
   submit(confirmedWarning = false): void {
+    // IMPORTANT: Check disableRequest at the very start
+    if (this.disableRequest) {
+      this.toastService.show('לא ניתן לשלוח בקשה: למשתמש שנבחר אין רישיון ממשלתי תקףץ לעדכון פרטים יש ליצור קשר עם המנהל.', 'error');
+      return; // Prevent form submission
+    }
+
     // Form validation
     if (this.rideForm.invalid) {
       this.rideForm.markAllAsTouched();
@@ -630,7 +766,7 @@ console.log('📦 Raw stop:', stopRaw, '| extraStops:', extraStops);
     }
 
     // User validation
-    const user_id = localStorage.getItem('employee_id');
+    const user_id = this.getUserIdFromAuthService();
     if (!user_id) {
       this.toastService.show('שגיאת זיהוי משתמש - התחבר מחדש', 'error');
       return;
@@ -655,8 +791,8 @@ console.log('📦 Raw stop:', stopRaw, '| extraStops:', extraStops);
 
     // Prepare form data
     const formData = {
-      user_id: rider_id, 
-      override_user_id: requester_id, 
+      user_id: rider_id,
+      override_user_id: requester_id,
       ride_type: this.rideForm.get('ride_type')?.value,
       start_datetime,
       vehicle_id: vehicleId,
@@ -705,15 +841,16 @@ console.log('📦 Raw stop:', stopRaw, '| extraStops:', extraStops);
   }
 
   private showFuelTypeMessage(): void {
-    if(localStorage.getItem('role')=='employee')
-      {   if (this.vehicleFuelType === 'electric') {
-      this.toastService.showPersistent('אנא ודא כי הרכב טעון לפני ההחזרה.', 'neutral');
-    } else if (this.vehicleFuelType === 'hybrid') {
-      this.toastService.showPersistent('אנא ודא כי יש מספיק דלק וטעינה לפני ההחזרה.', 'neutral');
-    } else if (this.vehicleFuelType === 'gasoline') {
-      this.toastService.showPersistent('אנא ודא כי מיכל הדלק מלא לפני ההחזרה.', 'neutral');
-    }}
- 
+    if (localStorage.getItem('role') == 'employee') {
+      if (this.vehicleFuelType === 'electric') {
+        this.toastService.showPersistent('אנא ודא כי הרכב טעון לפני ההחזרה.', 'neutral');
+      } else if (this.vehicleFuelType === 'hybrid') {
+        this.toastService.showPersistent('אנא ודא כי יש מספיק דלק וטעינה לפני ההחזרה.', 'neutral');
+      } else if (this.vehicleFuelType === 'gasoline') {
+        this.toastService.showPersistent('אנא ודא כי מיכל הדלק מלא לפני ההחזרה.', 'neutral');
+      }
+    }
+
   }
 
   // Form getters
