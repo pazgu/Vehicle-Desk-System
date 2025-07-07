@@ -255,6 +255,24 @@ navigateToTimeline(): void {
   }
 }
 
+  confirmDelete(vehicle: any): void {
+  const confirmMsg = `תוקף חוזה ההשכרה של רכב ${vehicle.plate_number} פג.\nהאם את/ה בטוח/ה שברצונך למחוק את הרכב?`;
+  const confirmed = confirm(confirmMsg);
+
+  if (confirmed) {
+    this.vehicleService.deleteVehicle(vehicle.id).subscribe({
+      next: () => {
+        alert(`הרכב ${vehicle.plate_number} נמחק בהצלחה.`);
+        this.navigateRouter.navigate(['/vehicle-dashboard']);
+      },
+      error: (err) => {
+        console.error("❌ מחיקת הרכב נכשלה:", err);
+        const msg = err?.error?.detail || "מחיקת הרכב נכשלה.";
+        alert(msg);
+      }
+    });
+  }
+}
 
 }
 

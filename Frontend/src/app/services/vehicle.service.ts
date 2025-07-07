@@ -104,6 +104,9 @@ getFuelTypeByVehicleId(vehicleId: string): Observable<FuelTypeResponse> {
     map(res => res.vehicle_types)
   );
 }
+deleteVehicle(vehicleId: string): Observable<void> {
+  return this.http.delete<void>(`${environment.apiUrl}/vehicles/${vehicleId}`);
+}
 
 
 
