@@ -6,12 +6,14 @@
       לא נמצאו הודעות עבורך
     </div>
 
-    <div
-      class="notification"
-      *ngFor="let note of pagedNotifications"
-      (click)="note.order_id ? goToOrder(note.order_id) : null"
-      [ngClass]="note.order_status ? getStatusClass(note.order_status) : 'neutral'"
-    >
+    <div 
+  class="notification"
+  *ngFor="let note of pagedNotifications"
+    (click)="handleNotificationClick(note)"
+  [class]="note.order_status ? getStatusClass(note.order_status) : 
+           note.notification_type ? getLeaseAlerts(note.notification_type) : 'neutral'"
+  [class.lease-alert]="note.title === 'Vehicle Lease Expiry'"
+>
       <div class="content">
         <!-- <img
           [src]="note.order_status ? getStatusIcon(note.order_status) : '/assets/images/message.png'"
