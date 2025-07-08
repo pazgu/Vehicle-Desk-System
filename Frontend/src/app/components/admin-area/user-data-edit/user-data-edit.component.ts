@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -9,20 +9,29 @@ import { Injectable } from '@angular/core';
 import { RedirectByRoleComponent } from '../../../services/redirect-by-role';
 import { Router } from '@angular/router';
 import { validateVerticalPosition } from '@angular/cdk/overlay';
+import { SocketService } from '../../../services/socket.service';
+import { Subscription } from 'rxjs';
+import { Socket } from 'socket.io-client';
+
+
 @Component({
   selector: 'app-user-data',
   templateUrl: './user-data-edit.component.html',
   styleUrls: ['./user-data-edit.component.css'],
   standalone: true,
   imports: [RouterModule, ReactiveFormsModule, CommonModule]
-})export class UserDataEditComponent implements OnInit {
+})
+export class UserDataEditComponent implements OnInit {
   userForm!: FormGroup;
   userId: string | null = null;
   user: any = null;
   departments: Array<{ id: string; name: string }> = [];
   roles: string[] = [];
   selectedFile: File | null = null;
-selectedFileName = '';
+  selectedFileName = '';
+  users: any[] = [];
+  licenceExpiredMap: { [userId: string]: boolean } = {};
+  private subs: Subscription[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -30,7 +39,9 @@ selectedFileName = '';
     private userService: UserService,
     private toastService: ToastService,
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private socketService: SocketService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -38,6 +49,43 @@ selectedFileName = '';
     this.loadUserData();
     this.fetchDepartments();
     this.loadRoles();
+    this.userForm.get('license_expiry_date')?.valueChanges.subscribe((value: string) => {
+    const expiry = value ? new Date(value) : null;
+    const today = new Date();
+
+    if (expiry && !isNaN(expiry.getTime())) {
+      if (expiry >= today) {
+        this.userForm.get('has_government_license')?.setValue(true, { emitEvent: false });
+      } else {
+        this.userForm.get('has_government_license')?.setValue(false, { emitEvent: false });
+      }
+    }
+  });
+
+  this.userForm.get('has_government_license')?.valueChanges.subscribe((checked: boolean) => {
+    if (!checked) {
+      this.userForm.get('license_expiry_date')?.setValue('');
+    }
+  });
+
+      const sub = this.socketService.usersLicense$.subscribe(update => {
+  if (!this.user || this.user.employee_id !== update.id) return;
+
+  this.user = { ...this.user, ...update };
+
+  if (update.license_expiry_date) {
+    this.user.license_expiry_date = new Date(update.license_expiry_date);
+  }
+
+  this.userForm.patchValue({
+    license_expiry_date: this.user.license_expiry_date.toISOString().substring(0, 10),
+    has_government_license: this.user.has_government_license,
+    license_file_url: this.user.license_file_url
+  });
+
+  this.cdr.detectChanges();
+});
+
   }
 
   initForm(): void {
@@ -55,7 +103,7 @@ selectedFileName = '';
 
     });
   }
-
+  
   get f() {
     return this.userForm.controls;
   }
@@ -83,6 +131,7 @@ selectedFileName = '';
         this.toastService.show('שגיאה בטעינת תפקידים', 'error');
         this.roles = [];
       }
+
     });
   }
 
@@ -95,7 +144,7 @@ selectedFileName = '';
         next: (user) => {
           console.log('User data:', user);
           this.user = user;
-
+          this.users= [this.user]
           this.userForm.patchValue({
             first_name: user.first_name,
             last_name: user.last_name,
