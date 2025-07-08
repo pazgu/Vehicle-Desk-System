@@ -1,9 +1,12 @@
+import asyncio
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from typing import List
 from dotenv import load_dotenv
 import os
+from pathlib import Path
+
 
 load_dotenv()
 
@@ -26,7 +29,7 @@ def send_email(subject: str, body: str, recipients: List[str]):
 
 
 
-    msg.attach(MIMEText(body, 'plain'))
+    msg.attach(MIMEText(body, 'html'))
 
     print(f"📧 Sending email to {recipients}")
 
@@ -38,3 +41,30 @@ def send_email(subject: str, body: str, recipients: List[str]):
         print(f"✅ Email successfully sent to {recipients}")
     except Exception as e:
         print(f"❌ Failed to send email to {recipients}: {e}")
+
+
+def load_email_template(template_name: str) -> str:
+    """
+    Load an HTML email template from the templates/email/ directory.
+    """
+    base_path = Path(__file__).resolve().parent.parent
+    template_path = base_path / "templates" / "emails" / template_name
+
+    if not template_path.exists():
+        raise FileNotFoundError(f"Email template not found: {template_path}")
+
+    return template_path.read_text(encoding="utf-8")
+
+async def async_send_email(subject: str, body: str, recipients: List[str]):
+    """
+    Runs the synchronous send_email function in a separate thread 
+    to avoid blocking the main asyncio event loop.
+    """
+    loop = asyncio.get_running_loop()
+    await loop.run_in_executor(
+        None,  # Uses the default thread pool executor
+        send_email,
+        subject,
+        body,
+        recipients
+    )

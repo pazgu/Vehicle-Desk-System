@@ -23,5 +23,7 @@ class OrderCardItem(BaseModel):
     submitted_at: datetime
     emergency_event: Optional[str] = None  # Optional field for emergency event
     extra_stops: Optional[List[UUID]] = None 
+    rejection_reason: Optional[str] = None
+
     class Config:
         from_attributes = True

@@ -30,6 +30,8 @@ def send_email(to_email: str, subject: str, html_content: str, text_content: str
         sg = SendGridAPIClient(SENDGRID_API_KEY)
         response = sg.send(message)
         print(f"✅ Email sent: {response.status_code}")
+        print(f"📩 Response body: {response.body}")
+        print(f"📨 Response headers: {response.headers}")
         return response
     except Exception as e:
         print(f"❌ Error sending email: {e}")

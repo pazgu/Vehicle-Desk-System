@@ -16,8 +16,18 @@ from ..utils.audit_utils import log_action
 from typing import List
 from sqlalchemy.orm import Session
 from uuid import UUID
-from src.models.notification_model import Notification
 from src.models.user_model import User  # assuming you have this model with department info and role
+from ..utils.email_utils import send_email, load_email_template, async_send_email, load_email_template
+  # adjust import path if needed
+  
+  
+  #helper function
+def get_user_email(user_id: UUID, db: Session) -> str | None:
+    """Fetches a user's email from the database by their ID."""
+    user = db.query(User).filter(User.employee_id == user_id).first()
+    if user and user.email:
+        return user.email
+    return None
 
 
 from ..utils.socket_manager import sio
@@ -65,8 +75,6 @@ def get_department_orders(department_id: str, db: Session) -> List[RideDashboard
     return dashboard_items
 
 
-from uuid import UUID
-
 def get_department_specific_order(department_id: str, order_id: str, db: Session) -> OrderCardItem:
     """
     Fetch the details of a specific order for a department.
@@ -104,7 +112,7 @@ def get_department_specific_order(department_id: str, order_id: str, db: Session
     return order_details
 
 
-async def edit_order_status(department_id: str, order_id: str, new_status: str,user_id: UUID, db: Session) -> bool:
+async def edit_order_status(department_id: str, order_id: str, new_status: str,user_id: UUID, db: Session, rejection_reason: str | None = None) -> bool:
     """
     Edit the status of a specific order for a department and sends a notification.
     """
@@ -120,10 +128,13 @@ async def edit_order_status(department_id: str, order_id: str, new_status: str,u
     )
 
     if not order:
-        return False  # Or raise an exception if the order is not found
+            raise HTTPException(status_code=404, detail="ההזמנה לא נמצאה")
+
 
     # Update the status of the order
     order.status = new_status
+    if new_status.lower() == "rejected":
+        order.rejection_reason = rejection_reason
     db.commit()
     print(f"\n !!!!!!!!!!!!!!!!!!!!!!!! \n")
 
@@ -173,31 +184,169 @@ async def edit_order_status(department_id: str, order_id: str, new_status: str,u
     db.add(notification)
     db.commit()
     db.refresh(notification)
+    
+     # Fetch extra details for email + Socket
+    user = db.query(User).filter(User.employee_id == order.user_id).first()
+    vehicle = db.query(Vehicle).filter(Vehicle.id == order.vehicle_id).first()
 
+    
+
+    # if user and vehicle:
+    #     employee_email = get_user_email(order.user_id, db) # Use the helper function
+
+    #     if employee_email:
+    #         # Determine which template to use and the subject
+    #         template_name = ""
+    #         email_subject = ""
+    #         if new_status.lower() == "approved":
+    #             template_name = "ride_approved.html"
+    #             email_subject = "✅ הנסיעה שלך אושרה"
+    #         elif new_status.lower() == "rejected":
+    #             template_name = "ride_rejected.html"
+    #             email_subject = "❌ הבקשה שלך נדחתה"
+
+    #         if template_name: # Only proceed if a valid template name was set
+    #             html_template = load_email_template(template_name) # Load the raw HTML template
+
+    #             # Manually replace the placeholders from the context
+    #             body = html_template.replace("{{EMPLOYEE_NAME}}", f"{user.first_name} {user.last_name}")
+    #             body = body.replace("{{DESTINATION}}", order.destination)
+    #             body = body.replace("{{DATE_TIME}}", order.start_datetime.strftime("%Y-%m-%d %H:%M"))
+    #             body = body.replace("{{PLATE_NUMBER}}", vehicle.plate_number)
+    #             body = body.replace("{{DISTANCE}}", f"{order.estimated_distance_km} ק״מ")
+    #             # Add rejection reason only if it's a rejected email
+    #             if new_status.lower() == "rejected":
+    #                 body = body.replace("{{REJECTION_REASON}}", rejection_reason or "לא צוינה סיבה")
+    #             else:
+    #                 # If the status is NOT rejected, ensure the REJECTION_REASON placeholder is removed
+    #                 # This prevents "{{REJECTION_REASON}}" from appearing literally in approved emails
+    #                 body = body.replace("{{REJECTION_REASON}}", "")
+
+    #             # Handle APPROVER_NAME for both templates
+    #             body = body.replace("{{APPROVER_NAME}}", "המנהל שלך")
+
+
+    #             # Call the async_send_email function with the correct arguments
+    #             await async_send_email(
+    #                 subject=email_subject,
+    #                 body=body,
+    #                 recipients=[employee_email] # Ensure recipients is a list
+    #             )
+                
+    # if user and vehicle:
+    #     email = user.email
+    #     full_name = f"{user.first_name} {user.last_name}"
+    #     vehicle_plate = vehicle.plate_number
+    #     destination = order.destination
+    #     date_time = order.start_datetime.strftime("%Y-%m-%d %H:%M")
+    #     distance_km = f"{order.estimated_distance_km} ק״מ"
+
+    #     if new_status.lower() == "approved":
+    #         html = load_email_template("ride_approved.html")
+    #         html = html.replace("{{EMPLOYEE_NAME}}", full_name)\
+    #                    .replace("{{DESTINATION}}", destination)\
+    #                    .replace("{{DATE_TIME}}", date_time)\
+    #                    .replace("{{APPROVER_NAME}}", "המנהל שלך")\
+    #                    .replace("{{PLATE_NUMBER}}", vehicle_plate)\
+    #                    .replace("{{DISTANCE}}", distance_km)
+
+    #         send_email("אישור נסיעה", html, [email])
+
+
+
+    #     elif new_status.lower() == "rejected":
+    #        html = load_email_template("ride_rejected.html")
+    #        html = html.replace("{{EMPLOYEE_NAME}}", full_name)\
+    #                   .replace("{{DESTINATION}}", destination)\
+    #                   .replace("{{DATE_TIME}}", date_time)\
+    #                   .replace("{{APPROVER_NAME}}", "המנהל שלך")\
+    #                   .replace("{{PLATE_NUMBER}}", vehicle_plate)\
+    #                   .replace("{{DISTANCE}}", distance_km)
+    #        send_email("הנסיעה נדחתה", html, [email])
+
+
+
+    if user and vehicle:
+        employee_email = get_user_email(order.user_id, db) # Use the helper function
+
+        if employee_email:
+            # Determine which template to use and the subject
+            template_name = ""
+            email_subject = ""
+            if new_status.lower() == "approved":
+                template_name = "ride_approved.html"
+                email_subject = "✅ הנסיעה שלך אושרה"
+            elif new_status.lower() == "rejected":
+                template_name = "ride_rejected.html"
+                email_subject = "❌ הבקשה שלך נדחתה"
+
+            if template_name: # Only proceed if a valid template name was set
+                html_template = load_email_template(template_name) # Load the raw HTML template
+
+                # Manually replace the placeholders from the context
+                body = html_template.replace("{{EMPLOYEE_NAME}}", f"{user.first_name} {user.last_name}")
+                body = body.replace("{{DESTINATION}}", order.destination)
+                body = body.replace("{{DATE_TIME}}", order.start_datetime.strftime("%Y-%m-%d %H:%M"))
+                body = body.replace("{{PLATE_NUMBER}}", vehicle.plate_number)
+                body = body.replace("{{DISTANCE}}", f"{order.estimated_distance_km} ק״מ")
+
+                # Handle REJECTION_REASON for both approved and rejected emails
+                if new_status.lower() == "rejected":
+                    body = body.replace("{{REJECTION_REASON}}", rejection_reason or "לא צוינה סיבה")
+                else:
+                    # If the status is NOT rejected, ensure the REJECTION_REASON placeholder is removed
+                    body = body.replace("{{REJECTION_REASON}}", "")
+
+                # Handle APPROVER_NAME for both templates
+                body = body.replace("{{APPROVER_NAME}}", "המנהל שלך")
+
+                # --- ADD THESE DETAILED DEBUG PRINTS ---
+                print(f"\n--- DEBUG EMAIL PRE-SEND (from edit_order_status) ---")
+                print(f"Template used: {template_name}")
+                print(f"Final Subject: {email_subject}")
+                print(f"Final Recipient: {employee_email}")
+                print(f"Order ID: {order.id}")
+                print(f"Order Status: {order.status}")
+                print(f"User Full Name: {user.first_name} {user.last_name}")
+                print(f"Destination: {order.destination}")
+                print(f"Date/Time: {order.start_datetime.strftime('%Y-%m-%d %H:%M')}")
+                print(f"Vehicle Plate: {vehicle.plate_number}")
+                print(f"Distance: {order.estimated_distance_km} ק״מ")
+                if new_status.lower() == "rejected":
+                    print(f"Rejection Reason: {rejection_reason or 'לא צוינה סיבה'}")
+                print(f"\n--- Full HTML Body (first 500 chars) ---\n{body[:500]}...")
+                print(f"\n--- Full HTML Body (last 500 chars) ---\n{body[-500:]}...")
+                print(f"\n--- END DEBUG EMAIL PRE-SEND ---")
+                # --- END DETAILED DEBUG PRINTS ---
+
+                await async_send_email(
+                    subject=email_subject,
+                    body=body,
+                    recipients=[employee_email]
+                )
+
+    # Always reset the audit session var
     db.execute(text("SET session.audit.user_id = DEFAULT"))
-  
-    await sio.emit(
-        "ride_status_updated",
-        {
-            "ride_id": str(order.id),
-            "new_status": order.status
-        })
 
-   
-    await sio.emit("new_notification",
-        {
-            "id": str(notification.id),
-            "user_id": str(notification.user_id),
-            "title": notification.title,
-            "message": notification.message,
-            "notification_type": notification.notification_type.value,
-            "sent_at": notification.sent_at.isoformat(),
-            "order_id": str(notification.order_id) if notification.order_id else None,
-            "order_status": order.status
-        }
-    )
+    await sio.emit("ride_status_updated", {
+        "ride_id": str(order.id),
+        "new_status": order.status
+    })
+
+    await sio.emit("new_notification", {
+        "id": str(notification.id),
+        "user_id": str(notification.user_id),
+        "title": notification.title,
+        "message": notification.message,
+        "notification_type": notification.notification_type.value,
+        "sent_at": notification.sent_at.isoformat(),
+        "order_id": str(notification.order_id) if notification.order_id else None,
+        "order_status": order.status
+    })
 
     return order, notification
+    
+
 
 
 def get_department_notifications(department_id: UUID, db: Session) -> List[Notification]:
