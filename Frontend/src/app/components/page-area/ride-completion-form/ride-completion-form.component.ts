@@ -96,6 +96,7 @@ export class RideCompletionFormComponent implements OnInit {
       freeze_details: [''],
       completed: ['', Validators.required],
       fueled: ['', Validators.required],
+      is_vehicle_ready_for_next_ride: [true, Validators.required] 
     });
 
 
@@ -126,9 +127,10 @@ loadFuelType(vehicleId: string) {
     this.form.get('emergency_event')?.setValue(value);
   }
 
-  setFormValue(controlName: string, value: string): void {
-    this.form.get(controlName)?.setValue(value);
-  }
+ setFormValue(controlName: string, value: string | boolean): void {
+  this.form.get(controlName)?.setValue(value);
+}
+
 
   onSubmit(): void {
     if (this.form.invalid) {
@@ -158,7 +160,8 @@ loadFuelType(vehicleId: string) {
       freeze_details: rawForm.freeze_details || '',
       completed: rawForm.completed === 'true',
       fueled: rawForm.fueled === 'true',
-        changed_by: localStorage.getItem('user_id') || '' // Make sure this is a string!
+      is_vehicle_ready_for_next_ride: rawForm.is_vehicle_ready_for_next_ride === true, // ✅ NEW FIELD
+      changed_by: localStorage.getItem('user_id') || '' // Make sure this is a string!
 
     };
     console.log('Form Data:', formData);

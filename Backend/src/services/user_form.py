@@ -35,56 +35,68 @@ def mark_feedback_submitted(db: Session, ride_id: str):
     """
     ride = db.query(Ride).filter_by(id=ride_id).first()
     if ride:
-        print(f'ride before feedback is true,id:{ride_id},feedback:{ride.feedback_submitted}')
+        # print(f'ride before feedback is true,id:{ride_id},feedback:{ride.feedback_submitted}')
         ride.feedback_submitted = True
-        print(f'ride after feedback is true,id:{ride_id},feedback:{ride.feedback_submitted}')
+        # print(f'ride after feedback is true,id:{ride_id},feedback:{ride.feedback_submitted}')
 
         db.commit()
     return ride
 
 async def process_completion_form(db: Session, user: User, form_data: CompletionFormData):
-    print("this is the current user:",user.username)
-    print("dep id:",user.department_id)
-    print("user id:",user.employee_id)
-    print("changed by received:",form_data.changed_by)
- 
+    # print("this is the current user:",user.username)
+    # print("dep id:",user.department_id)
+    # print("user id:",user.employee_id)
+    # print("changed by received:",form_data.changed_by)
+    # print('formdata:',form_data)
+    # print('formdata is vehicle ready:',form_data.is_vehicle_ready_for_next_ride)
     # 1. Get the ride for this user
     ride = db.query(Ride).filter_by(id=form_data.ride_id, user_id=user.employee_id).first()
     if not ride:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ride not found")
     
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user.employee_id)})
+    supervisors = db.query(User).filter_by(
+                department_id=user.department_id,
+                role=UserRole.supervisor
+            ).all()
 
-
-    print ("ride id",ride.id)
+    # print ("ride id",ride.id)
     # 2. Set emergency event if provided
     if form_data.emergency_event:
         ride.emergency_event = form_data.emergency_event
 
     # 3. If ride is completed, update ride status and vehicle status
-    print("completed?",form_data.completed)
+    # print("completed?",form_data.completed)
     if form_data.completed:
-        ride.status = RideStatus.completed
-        print("ride status set to completed")
+        try:
+            # print("ride:", ride)
+            ride.status = RideStatus.completed
+            # print("ride status set to completed",flush=True)
+            # print('about to update monthly usage',flush=True)
+            update_monthly_usage_stats(db=db, ride=ride)
+            # print('after updateing monthly usage',flush=True)
+        except Exception as e:
+            print("Exception after ride.status:", repr(e))    
 
-        # הוספת עדכון סטטיסטיקות שימוש ברכב:
-        update_monthly_usage_stats(db=db, ride=ride)
         # Increment completed trips count for the employee immediately.
+        # print('before increment_completed_trip_stat',flush=True)
         increment_completed_trip_stat(db, ride.user_id, ride.start_datetime)
+        # print('after increment_completed_trip_stat',flush=True)
 
         # 4. Update vehicle status
+        # print('before quering vehicles',flush=True)
         vehicle = db.query(Vehicle).filter_by(id=ride.vehicle_id).first()
+        # print('after quering vehicles',flush=True)
         if not vehicle:
             raise HTTPException(status_code=404, detail="Vehicle not found")
-
+        
+        # print('before checking if emergency is true:',form_data.emergency_event,flush=True)
         if (form_data.emergency_event =='true'):
+            # print('inside emergency is true',flush=True)
             vehicle.status = VehicleStatus.frozen  # Freeze vehicle due to emergency
             vehicle.freeze_reason = FreezeReason.accident
             vehicle.freeze_details = form_data.freeze_details
-            supervisors = db.query(User).filter_by(
-                department_id=user.department_id,
-                role=UserRole.supervisor
-            ).all()
+           
 
             for supervisor in supervisors:
                 notification=create_system_notification_with_db(
@@ -100,8 +112,29 @@ async def process_completion_form(db: Session, user: User, form_data: Completion
 
 
         else:
+            # print('emergency is false and vehicle is available',flush=True)
             vehicle.status = VehicleStatus.available  # Set available if no emergency
+        # print('after the else block',flush=True)    
 
+        # print("RAW is_vehicle_ready_for_next_ride:", repr(form_data.is_vehicle_ready_for_next_ride),flush=True)
+        # print("Type:", type(form_data.is_vehicle_ready_for_next_ride),flush=True)
+    
+        if form_data.is_vehicle_ready_for_next_ride is False:
+            # print('inside is ready for nrxt is false',flush=True)
+                
+            for supervisor in supervisors:
+                notification=create_system_notification_with_db(
+                            db=db,
+                            user_id=supervisor.employee_id,
+                            title="רכב לא מוכן לנסיעה הבאה",
+                            message=f"לא מוכן לנסיעה הבאה {vehicle.plate_number} רכב ",
+                            vehicle_id=vehicle.id
+                        )
+                        # Schedule the coroutine to run on the main thread's event loop
+                loop = asyncio.get_running_loop()  # ✅ Safe inside async functions
+                loop.call_soon_threadsafe(asyncio.create_task, emit_new_notification(notification=notification, vehicle_id=vehicle.id))
+
+        # print('after and out of the is ready for next block',flush=True)
         # 5. If vehicle not fueled, notify supervisor(s)
         if not form_data.fueled:
             supervisors = db.query(User).filter_by(
@@ -136,3 +169,4 @@ async def process_completion_form(db: Session, user: User, form_data: Completion
     db.commit()
     
     return {"message": "Completion form processed successfully."}
+
