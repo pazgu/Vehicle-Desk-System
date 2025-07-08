@@ -205,8 +205,12 @@ def get_user_name(db: Session, user_id: UUID) -> str:
 
 
 
-async def emit_new_notification(notification: NotificationOut, order_status: RideStatus):
-    await sio.emit("new_notification", {
+async def emit_new_notification(
+    notification: NotificationOut,
+    order_status: RideStatus = None,
+    vehicle_id: str = None
+):
+    payload = {
         "id": str(notification.id),
         "user_id": str(notification.user_id),
         "title": notification.title,
@@ -214,5 +218,8 @@ async def emit_new_notification(notification: NotificationOut, order_status: Rid
         "notification_type": notification.notification_type.value,
         "sent_at": notification.sent_at.isoformat(),
         "order_id": str(notification.order_id) if notification.order_id else None,
-        "order_status": order_status
-    })
+        "order_status": order_status.value if order_status else None,
+        "vehicle_id": vehicle_id if vehicle_id else None
+    }
+
+    await sio.emit("new_notification", payload)
