@@ -55,16 +55,16 @@ def load_email_template(template_name: str) -> str:
 
     return template_path.read_text(encoding="utf-8")
 
-async def async_send_email(subject: str, body: str, recipients: List[str]):
-    """
-    Runs the synchronous send_email function in a separate thread 
-    to avoid blocking the main asyncio event loop.
-    """
-    loop = asyncio.get_running_loop()
-    await loop.run_in_executor(
-        None,  # Uses the default thread pool executor
-        send_email,
-        subject,
-        body,
-        recipients
-    )
+# async def async_send_email(subject: str, body: str, recipients: List[str]):
+#     """
+#     Runs the synchronous send_email function in a separate thread 
+#     to avoid blocking the main asyncio event loop.
+#     """
+#     loop = asyncio.get_running_loop()
+#     await loop.run_in_executor(
+#         None,  # Uses the default thread pool executor
+#         send_email,
+#         subject,
+#         body,
+#         recipients
+#     )
