@@ -292,8 +292,8 @@ def periodic_check_vehicle():
     future.result(timeout=5)
 
 
-scheduler.add_job(periodic_check, 'interval', seconds=60)
-scheduler.add_job(periodic_check_vehicle, 'interval', seconds=60)
+scheduler.add_job(periodic_check, 'interval', days=1)
+scheduler.add_job(periodic_check_vehicle, 'interval', days=1)
 
 
 scheduler.start()
