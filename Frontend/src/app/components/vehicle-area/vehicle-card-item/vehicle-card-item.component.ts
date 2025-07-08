@@ -46,7 +46,7 @@ export class VehicleCardItemComponent implements OnInit {
           }
         });
       } else {
-        this.departmentName = 'אין מחלקה';
+        this.departmentName = 'לא משוייך למחלקה';
       }
 
       this.getAllRidesForCurrentVehicle(vehicleData.id);

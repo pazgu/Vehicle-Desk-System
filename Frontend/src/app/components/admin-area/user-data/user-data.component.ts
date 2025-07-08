@@ -9,6 +9,8 @@ import { ConfirmDialogComponent } from '../../../ride-area/confirm-dialog/confir
 import { ToastService } from '../../../services/toast.service';
 import { SocketService } from '../../../services/socket.service';
 import { MatDialog } from '@angular/material/dialog';
+import { ChangeDetectorRef } from '@angular/core';
+
 @Component({
   selector: 'app-user-data',
   templateUrl: './user-data.component.html',
@@ -32,7 +34,9 @@ licenceExpiredMap: { [userId: string]: boolean } = {};
     private router: Router,
     private toastservice: ToastService,
     private socketservice: SocketService,
-    private dialog: MatDialog) {}
+    private dialog: MatDialog,
+    private cdr: ChangeDetectorRef
+) {}
 
   ngOnInit(): void {
   this.userService.getAllUsers().subscribe({
@@ -50,6 +54,21 @@ licenceExpiredMap: { [userId: string]: boolean } = {};
 
         }
       });
+      this.socketservice.usersLicense$.subscribe(update => {
+  const idx = this.users.findIndex(u => u.employee_id === update.id);
+  if (idx === -1) return;
+
+  const updatedUser = { ...this.users[idx], ...update };
+  if (update.license_expiry_date) {
+    updatedUser.license_expiry_date = new Date(update.license_expiry_date);
+  }
+
+  this.users[idx] = updatedUser;
+  this.licenceExpiredMap[update.id] = updatedUser.license_expiry_date < new Date();
+
+  this.cdr.detectChanges();  // Only if you’re using OnPush
+});
+
     },
     error: (err) => console.error('Failed to fetch users', err),
   });

@@ -48,10 +48,6 @@ export class NotificationsComponent implements OnInit {
     this.notificationService.getAdminNotifications().subscribe({
       next: (data) => {
         console.log('🛠 Admin notification raw data:', data);
-
-     
-   
-   
   },
   error: (err) => {
     console.error('Failed to fetch admin notifications:', err);
@@ -217,6 +213,10 @@ this.socketService.odometerNotif$.subscribe(
     }
   }
 
+  goToVehicle(vehicleId: string): void {
+    this.router.navigate([`/vehicle-details/${vehicleId}`])
+  }
+
   get pagedNotifications() {
     const start = (this.currentPage - 1) * this.notificationsPerPage;
     return this.notifications.slice(start, start + this.notificationsPerPage);
@@ -264,6 +264,8 @@ this.socketService.odometerNotif$.subscribe(
     default: return 'neutral';
   }
 }
+
+
 getStatusIcon(status?: string): string {
   if (!status) {
     return '/assets/images/clock.png'; // fallback icon
@@ -287,9 +289,18 @@ getStatusIcon(status?: string): string {
     });
   } else if (notif.order_id) {
     this.goToOrder(notif.order_id);
-  } else {
+
+  } else if (notif.vehicle_id){
+    this.goToVehicle(notif.vehicle_id);
+  }
+  else {
+    console.log(notif)
     console.log('ℹ️ Notification has no specific route.');
   }
+}
+
+getLeaseAlerts(title: string): string {
+  return title == "Vehicle Lease Expiry" ? "lease-alert" : "";
 }
 
 }
