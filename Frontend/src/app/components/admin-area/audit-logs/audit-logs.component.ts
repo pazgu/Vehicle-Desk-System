@@ -59,6 +59,22 @@ export class AuditLogsComponent implements OnInit {
   highlighted = false;
   private lastInspectionId: string | null = null;
 
+  userFieldLabels: { [key: string]: string } = {
+    role: 'תפקיד',
+    email: 'אימייל',
+    username: 'שם משתמש',
+    first_name: 'שם פרטי',
+    last_name: 'שם משפחה',
+    employee_id: 'מזהה עובד',
+    department_id: 'מזהה מחלקה',
+    license_file_url: 'קובץ רישיון',
+    license_expiry_date: 'תוקף רישיון',
+    has_government_license: 'רישיון ממשלתי',
+  };
+
+  getUserFieldLabel(key: string): string {
+    return this.userFieldLabels[key] || key;
+  }
 
 
   vehicleFieldLabels: { [key: string]: string } = {
@@ -406,7 +422,10 @@ fetchAuditLogs(fromDate?: string, toDate?: string) {
       { label: 'אימייל', oldValue: oldData.email, newValue: newData.email },
       { label: 'תפקיד', oldValue: oldData.role, newValue: newData.role },
       { label: 'מזהה עובד', oldValue: oldData.employee_id, newValue: newData.employee_id },
-      { label: 'מזהה מחלקה', oldValue: oldData.department_id, newValue: newData.department_id }
+      { label: 'מזהה מחלקה', oldValue: oldData.department_id, newValue: newData.department_id },
+      { label: 'רישיון ממשלתי', oldValue: oldData.has_government_license, newValue: newData.has_government_license },
+      { label: 'תוקף רישיון', oldValue: oldData.license_expiry_date, newValue: newData.license_expiry_date },
+      { label: 'קובץ רישיון', oldValue: oldData.license_file_url, newValue: newData.license_file_url },
     ];
   }
 
