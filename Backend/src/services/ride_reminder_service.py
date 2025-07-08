@@ -87,7 +87,7 @@ def send_ride_reminder(ride_id: str):
             "DATE_TIME": ride.start_datetime.strftime("%Y-%m-%d %H:%M"), # Format as needed
             "PLATE_NUMBER": vehicle_plate,
             "DISTANCE": f"{ride.estimated_distance_km:.1f}" if ride.estimated_distance_km is not None else "לא ידוע",
-            "LINK_TO_ORDER": f"{BOOKIT_FRONTEND_URL}/rides/{ride.id}" # Adjust frontend route as needed
+            "LINK_TO_ORDER": f"{BOOKIT_FRONTEND_URL}/ride/details/{ride.id}" # Adjust frontend route as needed
         })
 
         # Send the email asynchronously
