@@ -422,7 +422,7 @@ fetchAuditLogs(fromDate?: string, toDate?: string) {
       { label: 'אימייל', oldValue: oldData.email, newValue: newData.email },
       { label: 'תפקיד', oldValue: this.translateUserRole(oldData.role), newValue: this.translateUserRole(newData.role) },
       { label: 'מזהה עובד', oldValue: oldData.employee_id, newValue: newData.employee_id },
-      { label: 'מחלקה', oldValue: this.getDepartmentNameById(oldData.department_id), newValue: this.getDepartmentNameById(newData.department_id) }
+      { label: 'מחלקה', oldValue: this.getDepartmentNameById(oldData.department_id), newValue: this.getDepartmentNameById(newData.department_id) },
       { label: 'רישיון ממשלתי', oldValue: oldData.has_government_license, newValue: newData.has_government_license },
       { label: 'תוקף רישיון', oldValue: oldData.license_expiry_date, newValue: newData.license_expiry_date },
       { label: 'קובץ רישיון', oldValue: oldData.license_file_url, newValue: newData.license_file_url },
