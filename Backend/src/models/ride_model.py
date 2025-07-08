@@ -46,6 +46,8 @@ class Ride(Base):
     is_archive = Column(Boolean, default=False, name="isArchive")
     override_user_id = Column(UUID(as_uuid=True), ForeignKey("users.employee_id"), nullable=True)
     feedback_submitted= Column(Boolean, default=False) 
+    rejection_reason = Column(Text, nullable=True)
+
 
 class PendingRideSchema(BaseModel):
     vehicle_id: uuid.UUID  # ✅ Use this, not sqlalchemy.UUID

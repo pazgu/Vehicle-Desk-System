@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>נסיעה נדחתה</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            direction: rtl;
+            text-align: right;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .content {
+            padding: 30px;
+        }
+        .rejection-badge {
+            background-color: #ffebee;
+            border: 2px solid #f44336;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .rejection-badge .icon {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .details-table th,
+        .details-table td {
+            padding: 12px 15px;
+            text-align: right;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .details-table th {
+            background-color: #e9ecef;
+            font-weight: 600;
+            color: #495057;
+        }
+        .details-table tr:last-child td {
+            border-bottom: none;
+        }
+        .reason-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .reason-box h3 {
+            color: #856404;
+            margin-top: 0;
+            font-size: 16px;
+        }
+        .reason-box p {
+            color: #856404;
+            margin-bottom: 0;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 600;
+            margin: 10px 0;
+        }
+        .greeting {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .message {
+            color: #555;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .next-steps {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .next-steps h3 {
+            color: #1976d2;
+            margin-top: 0;
+            font-size: 16px;
+        }
+        .next-steps ul {
+            color: #1976d2;
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚗 Bookit - מערכת ניהול רכבים</h1>
+        </div>
+        
+        <div class="content">
+            <div class="rejection-badge">
+                <div class="icon">❌</div>
+                <h2 style="color: #f44336; margin: 0;">הנסיעה שלך נדחתה</h2>
+            </div>
+            
+            <div class="greeting">
+                שלום {{EMPLOYEE_NAME}},
+            </div>
+            
+            <div class="message">
+                <p>אנו מצטערים להודיע לך שהבקשה שלך לנסיעה נדחתה על ידי {{APPROVER_NAME}}.</p>
+                <p>להלן פרטי הבקשה שנדחתה:</p>
+            </div>
+            
+            <table class="details-table">
+                <tr>
+                    <th>יעד</th>
+                    <td>{{DESTINATION}}</td>
+                </tr>
+                <tr>
+                    <th>תאריך ושעה</th>
+                    <td>{{DATE_TIME}}</td>
+                </tr>
+                <tr>
+                    <th>מספר רכב</th>
+                    <td>{{PLATE_NUMBER}}</td>
+                </tr>
+                <tr>
+                    <th>מרחק מוערך</th>
+                    <td>{{DISTANCE}}</td>
+                </tr>
+            </table>
+            
+            <div class="reason-box">
+                <h3>📋 סיבת הדחייה:</h3>
+                <p>{{REJECTION_REASON}}</p>
+            </div>
+            
+            <div class="next-steps">
+                <h3>📌 צעדים הבאים:</h3>
+                <ul>
+                    <li>פנה למנהל המחלקה שלך לקבלת הבהרות נוספות</li>
+                    <li>ניתן להגיש בקשה חדשה לאחר תיקון הבעיה</li>
+                    <li>בדוק אם ישנן חלופות לנסיעה המבוקשת</li>
+                    <li>וודא שכל הפרטים בבקשה הבאה יהיו מדויקים</li>
+                </ul>
+            </div>
+            
+            <div class="message">
+                <p><strong>זקוק לעזרה?</strong> אנא פנה למנהל המחלקה שלך או לצוות התמיכה במערכת.</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>מערכת Bookit - ניהול רכבים חכם ויעיל</p>
+            <p>במידה ויש שאלות, אנא פנה למנהל המחלקה שלך</p>
+        </div>
+    </div>
+</body>
+</html>
