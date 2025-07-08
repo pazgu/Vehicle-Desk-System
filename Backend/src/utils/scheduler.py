@@ -97,15 +97,20 @@ async def check_vehicle_lease_expiry():
             Vehicle.lease_expiry <= three_months_later,
             Vehicle.lease_expiry >= now
         ).with_entities(Vehicle, Department).all()
+        print('b4: expiring vehicles were found',vehicles_expiring)
         print('before if')
 
         if not vehicles_expiring:
             return
         
         print('expiring vehicles were found',vehicles_expiring)
-
         # Get all admins once
         admins = db.query(User).filter(User.role == "admin").all()
+        print("admins found:", admins)
+
+        # Print usernames
+        admin_usernames = [admin.username for admin in admins]
+        print("admin usernames:", admin_usernames)
 
         for vehicle, department in vehicles_expiring:
             supervisor_id = department.supervisor_id
@@ -120,7 +125,7 @@ async def check_vehicle_lease_expiry():
                     notif = create_system_notification(
                         user_id=supervisor_id,
                         title="Vehicle Lease Expiry",
-                        message = f"{vehicle.plate_number} תוקף השימוש ברכב עם מספר רישוי "+f"{vehicle.lease_expiry.date()} יפוג בתאריך ",
+                        message = f"תוקף השימוש ברכב עם מספר רישוי {vehicle.plate_number} יפוג בתאריך {vehicle.lease_expiry.date()}",                        
                         vehicle_id=vehicle.id
                     )
 
@@ -143,10 +148,11 @@ async def check_vehicle_lease_expiry():
                     Notification.title == "Vehicle Lease Expiry"
                 ).first()
                 if not exists_admin:
+                    print('admin sent to:',admin.username)
                     admin_notif = create_system_notification(
                         user_id=admin.employee_id,
                         title="Vehicle Lease Expiry",
-                        message = f"{vehicle.plate_number} תוקף השימוש ברכב עם מספר רישוי "+f"{vehicle.lease_expiry.date()} יפוג בתאריך ",
+                        message = f"תוקף השימוש ברכב עם מספר רישוי {vehicle.plate_number} יפוג בתאריך {vehicle.lease_expiry.date()}",                        
                         vehicle_id=vehicle.id
 
                         )
@@ -286,7 +292,7 @@ def periodic_check_vehicle():
     future.result(timeout=5)
 
 
-scheduler.add_job(periodic_check, 'interval', seconds=60)
+scheduler.add_job(periodic_check, 'interval', days=1)
 scheduler.add_job(periodic_check_vehicle, 'interval', days=1)
 
 
