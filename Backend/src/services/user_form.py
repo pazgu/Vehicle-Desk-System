@@ -1,6 +1,8 @@
 import asyncio
 from sqlalchemy import text
 from sqlalchemy.orm import Session
+
+from ..services.email_service import async_send_email, get_user_email, load_email_template
 from ..models.user_model import User,UserRole
 from ..models.ride_model import Ride,RideStatus
 from ..models.notification_model import Notification,NotificationType
@@ -8,12 +10,14 @@ from ..models.vehicle_model import Vehicle, VehicleStatus,FreezeReason
 from ..schemas.form_schema import CompletionFormData
 from fastapi import HTTPException, status
 from datetime import datetime, timezone
-from .user_notification import create_system_notification_with_db
+from .user_notification import create_system_notification_with_db, get_user_name
 from .monthly_trip_counts import increment_completed_trip_stat
 from ..services.user_notification import emit_new_notification
 from ..utils.socket_manager import sio
 from typing import Optional
 from ..services.admin_rides_service import update_monthly_usage_stats
+import os
+BOOKIT_URL = os.getenv("BOOKIT_FRONTEND_URL", "http://localhost:4200")
 
 def get_ride_needing_feedback(db: Session, user_id: int) -> Optional[Ride]:
 
@@ -109,7 +113,33 @@ async def process_completion_form(db: Session, user: User, form_data: Completion
                  # Schedule the coroutine to run on the main thread's event loop
                 loop = asyncio.get_running_loop()  # ✅ Safe inside async functions
                 loop.call_soon_threadsafe(asyncio.create_task, emit_new_notification(notification, ride.status))
-
+            
+                    # --- EMAIL NOTIFICATION FOR EMERGENCY ---
+                supervisor_email = get_user_email(supervisor.employee_id, db)
+                if supervisor_email:
+                    employee_name = get_user_name(db, user.employee_id)
+                    supervisor_name = get_user_name(db, supervisor.employee_id) or "מנהל"
+                    html_content = load_email_template("emergency_alert.html", { # You'll need to create this template
+                            "SUPERVISOR_NAME": supervisor_name,
+                            "EMPLOYEE_NAME": employee_name,
+                            "PLATE_NUMBER": vehicle.plate_number,
+                            "RIDE_ID": str(ride.id),
+                            "FREEZE_REASON": vehicle.freeze_reason.value,
+                            "FREEZE_DETAILS": vehicle.freeze_details,
+                            "LINK_TO_RIDE": f"{BOOKIT_URL}/ride/details/{ride.id}" # Example link
+                        })
+                    try:
+                        await async_send_email(
+                                to_email=supervisor_email,
+                                subject=f"🚨 התרעה: רכב {vehicle.plate_number} עבר תאונה",
+                                html_content=html_content
+                            )
+                        print(f"Sent emergency email notification to {supervisor_email}")
+                    except Exception as email_e:
+                            print(f"Failed to send emergency email to {supervisor_email}: {repr(email_e)}")
+                    else:
+                        print(f"No email found for supervisor {supervisor.employee_id} for emergency alert.")
+                    # --- END EMAIL NOTIFICATION ---    
 
         else:
             print('emergency is false and vehicle is available',flush=True)
@@ -133,6 +163,31 @@ async def process_completion_form(db: Session, user: User, form_data: Completion
                         # Schedule the coroutine to run on the main thread's event loop
                 loop = asyncio.get_running_loop()  # ✅ Safe inside async functions
                 loop.call_soon_threadsafe(asyncio.create_task, emit_new_notification(notification=notification, vehicle_id=vehicle.id))
+                 # --- EMAIL NOTIFICATION FOR VEHICLE NOT READY ---
+                supervisor_email = get_user_email(supervisor.employee_id, db)
+                if supervisor_email:
+                    employee_name = get_user_name(db, user.employee_id)
+                    supervisor_name = get_user_name(db, supervisor.employee_id) or "מנהל"
+                    html_content = load_email_template("vehicle_not_ready.html", { # Using the new template
+                            "SUPERVISOR_NAME": supervisor_name,
+                            "EMPLOYEE_NAME": employee_name,
+                            "PLATE_NUMBER": vehicle.plate_number,
+                            "VEHICLE_ID": str(vehicle.id), # Added for clarity in email
+                            "LINK_TO_VEHICLE": f"{BOOKIT_URL}/vehicle-details/{vehicle.id}" # Example link to vehicle details
+                        })
+                    try:
+                        await async_send_email(
+                                to_email=supervisor_email,
+                                subject=f"⚠️ התרעה: רכב {vehicle.plate_number} לא מוכן לנסיעה הבאה",
+                                html_content=html_content
+                            )
+                        print(f"Sent 'not ready' email notification to {supervisor_email}")
+                    except Exception as email_e:
+                            print(f"Failed to send 'not ready' email to {supervisor_email}: {repr(email_e)}")
+                    else:
+                        print(f"No email found for supervisor {supervisor.employee_id} for 'not ready' alert.")
+                    # --- END EMAIL NOTIFICATION ---
+
 
         print('after and out of the is ready for next block',flush=True)
         # 5. If vehicle not fueled, notify supervisor(s)

@@ -219,7 +219,7 @@ async def emit_new_notification(
         "sent_at": notification.sent_at.isoformat(),
         "order_id": str(notification.order_id) if notification.order_id else None,
         "order_status": order_status.value if order_status else None,
-        "vehicle_id": vehicle_id if vehicle_id else None
+        "vehicle_id": str(vehicle_id) if vehicle_id else None
     }
 
     await sio.emit("new_notification", payload)
