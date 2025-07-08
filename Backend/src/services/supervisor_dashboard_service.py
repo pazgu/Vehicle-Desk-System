@@ -17,17 +17,17 @@ from typing import List
 from sqlalchemy.orm import Session
 from uuid import UUID
 from src.models.user_model import User  # assuming you have this model with department info and role
-from ..utils.email_utils import send_email, load_email_template, async_send_email, load_email_template
-  # adjust import path if needed
+# from ..utils.email_utils import send_email, load_email_template, load_email_template
+from ..services.email_service import async_send_email, load_email_template, get_user_email
   
   
   #helper function
-def get_user_email(user_id: UUID, db: Session) -> str | None:
-    """Fetches a user's email from the database by their ID."""
-    user = db.query(User).filter(User.employee_id == user_id).first()
-    if user and user.email:
-        return user.email
-    return None
+# def get_user_email(user_id: UUID, db: Session) -> str | None:
+#     """Fetches a user's email from the database by their ID."""
+#     user = db.query(User).filter(User.employee_id == user_id).first()
+#     if user and user.email:
+#         return user.email
+#     return None
 
 
 from ..utils.socket_manager import sio
@@ -189,82 +189,6 @@ async def edit_order_status(department_id: str, order_id: str, new_status: str,u
     user = db.query(User).filter(User.employee_id == order.user_id).first()
     vehicle = db.query(Vehicle).filter(Vehicle.id == order.vehicle_id).first()
 
-    
-
-    # if user and vehicle:
-    #     employee_email = get_user_email(order.user_id, db) # Use the helper function
-
-    #     if employee_email:
-    #         # Determine which template to use and the subject
-    #         template_name = ""
-    #         email_subject = ""
-    #         if new_status.lower() == "approved":
-    #             template_name = "ride_approved.html"
-    #             email_subject = "✅ הנסיעה שלך אושרה"
-    #         elif new_status.lower() == "rejected":
-    #             template_name = "ride_rejected.html"
-    #             email_subject = "❌ הבקשה שלך נדחתה"
-
-    #         if template_name: # Only proceed if a valid template name was set
-    #             html_template = load_email_template(template_name) # Load the raw HTML template
-
-    #             # Manually replace the placeholders from the context
-    #             body = html_template.replace("{{EMPLOYEE_NAME}}", f"{user.first_name} {user.last_name}")
-    #             body = body.replace("{{DESTINATION}}", order.destination)
-    #             body = body.replace("{{DATE_TIME}}", order.start_datetime.strftime("%Y-%m-%d %H:%M"))
-    #             body = body.replace("{{PLATE_NUMBER}}", vehicle.plate_number)
-    #             body = body.replace("{{DISTANCE}}", f"{order.estimated_distance_km} ק״מ")
-    #             # Add rejection reason only if it's a rejected email
-    #             if new_status.lower() == "rejected":
-    #                 body = body.replace("{{REJECTION_REASON}}", rejection_reason or "לא צוינה סיבה")
-    #             else:
-    #                 # If the status is NOT rejected, ensure the REJECTION_REASON placeholder is removed
-    #                 # This prevents "{{REJECTION_REASON}}" from appearing literally in approved emails
-    #                 body = body.replace("{{REJECTION_REASON}}", "")
-
-    #             # Handle APPROVER_NAME for both templates
-    #             body = body.replace("{{APPROVER_NAME}}", "המנהל שלך")
-
-
-    #             # Call the async_send_email function with the correct arguments
-    #             await async_send_email(
-    #                 subject=email_subject,
-    #                 body=body,
-    #                 recipients=[employee_email] # Ensure recipients is a list
-    #             )
-                
-    # if user and vehicle:
-    #     email = user.email
-    #     full_name = f"{user.first_name} {user.last_name}"
-    #     vehicle_plate = vehicle.plate_number
-    #     destination = order.destination
-    #     date_time = order.start_datetime.strftime("%Y-%m-%d %H:%M")
-    #     distance_km = f"{order.estimated_distance_km} ק״מ"
-
-    #     if new_status.lower() == "approved":
-    #         html = load_email_template("ride_approved.html")
-    #         html = html.replace("{{EMPLOYEE_NAME}}", full_name)\
-    #                    .replace("{{DESTINATION}}", destination)\
-    #                    .replace("{{DATE_TIME}}", date_time)\
-    #                    .replace("{{APPROVER_NAME}}", "המנהל שלך")\
-    #                    .replace("{{PLATE_NUMBER}}", vehicle_plate)\
-    #                    .replace("{{DISTANCE}}", distance_km)
-
-    #         send_email("אישור נסיעה", html, [email])
-
-
-
-    #     elif new_status.lower() == "rejected":
-    #        html = load_email_template("ride_rejected.html")
-    #        html = html.replace("{{EMPLOYEE_NAME}}", full_name)\
-    #                   .replace("{{DESTINATION}}", destination)\
-    #                   .replace("{{DATE_TIME}}", date_time)\
-    #                   .replace("{{APPROVER_NAME}}", "המנהל שלך")\
-    #                   .replace("{{PLATE_NUMBER}}", vehicle_plate)\
-    #                   .replace("{{DISTANCE}}", distance_km)
-    #        send_email("הנסיעה נדחתה", html, [email])
-
-
 
     if user and vehicle:
         employee_email = get_user_email(order.user_id, db) # Use the helper function
@@ -281,14 +205,27 @@ async def edit_order_status(department_id: str, order_id: str, new_status: str,u
                 email_subject = "❌ הבקשה שלך נדחתה"
 
             if template_name: # Only proceed if a valid template name was set
-                html_template = load_email_template(template_name) # Load the raw HTML template
+                template_context = {
+                    "EMPLOYEE_NAME": f"{user.first_name} {user.last_name}",
+                    "DESTINATION": order.destination,
+                    "DATE_TIME": order.start_datetime.strftime("%Y-%m-%d %H:%M"),
+                    "PLATE_NUMBER": vehicle.plate_number,
+                    "DISTANCE": f"{order.estimated_distance_km} ק״מ",
+                    "APPROVER_NAME": "המנהל שלך" # Keep this static for now, or fetch actual approver name
+                }
 
-                # Manually replace the placeholders from the context
-                body = html_template.replace("{{EMPLOYEE_NAME}}", f"{user.first_name} {user.last_name}")
-                body = body.replace("{{DESTINATION}}", order.destination)
-                body = body.replace("{{DATE_TIME}}", order.start_datetime.strftime("%Y-%m-%d %H:%M"))
-                body = body.replace("{{PLATE_NUMBER}}", vehicle.plate_number)
-                body = body.replace("{{DISTANCE}}", f"{order.estimated_distance_km} ק״מ")
+                # Add rejection reason to context only if status is rejected
+                if new_status.lower() == "rejected":
+                    template_context["REJECTION_REASON"] = rejection_reason or "לא צוינה סיבה"
+                else:
+                    # Ensure REJECTION_REASON is cleared even if template for approved has it
+                    template_context["REJECTION_REASON"] = ""
+
+                # Load the email template and automatically replace placeholders using the context
+                body = load_email_template(template_name, template_context)
+
+
+
 
                 # Handle REJECTION_REASON for both approved and rejected emails
                 if new_status.lower() == "rejected":
@@ -320,9 +257,9 @@ async def edit_order_status(department_id: str, order_id: str, new_status: str,u
                 # --- END DETAILED DEBUG PRINTS ---
 
                 await async_send_email(
+                    to_email = employee_email,
                     subject=email_subject,
-                    body=body,
-                    recipients=[employee_email]
+                    html_content=body
                 )
 
     # Always reset the audit session var
