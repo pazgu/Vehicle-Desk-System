@@ -17,4 +17,5 @@ class NotificationOut(BaseModel):
     sent_at: datetime
     order_id: Optional[UUID]
     order_status: Optional[str]
+    vehicle_id: Optional[UUID]
     

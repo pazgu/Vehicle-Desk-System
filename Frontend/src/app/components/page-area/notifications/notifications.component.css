@@ -53,12 +53,28 @@
   color: #a4262c; /* Dark red text */
 }
 
+
+.notification.lease-alert {
+  background-color: #fcfbea; 
+  border: 1px solid #d9a025;
+  color: #a48f26;
+  box-shadow: 0 2px 4px #942222af;
+}
+
+
 /* Neutral – Gray */
 .notification.neutral {
   background-color: #927f7f2c; /* Light gray background */
   border: 1px solid #9d9a9a;
   color: #666;
 }
+
+.notification {
+  background-color: #927f7f2c; /* Light gray background */
+  border: 1px solid #9d9a9a;
+  color: #666;
+}
+
 
 .time {
   font-weight: bold;
