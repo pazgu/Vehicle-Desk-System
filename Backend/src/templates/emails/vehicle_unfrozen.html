@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>הרכב הוסר מהקפאה - BookIt</title>
+  <style>
+    body {
+      background-color: #f6f6f6;
+      font-family: Arial, sans-serif;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      background-color: #ffffff;
+      max-width: 600px;
+      margin: 30px auto;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+    }
+    .header {
+      background-color: #28a745;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      border-radius: 10px 10px 0 0;
+      margin: -20px -20px 20px -20px;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .unfreeze-icon {
+      font-size: 48px;
+      margin-bottom: 10px;
+      display: block;
+    }
+    .content {
+      padding: 20px 0;
+    }
+    .content p {
+      margin: 0 0 10px;
+      line-height: 1.6;
+    }
+    .detail-item {
+      background-color: #f8f9fa;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 6px;
+      border-right: 3px solid #28a745;
+    }
+    .detail-label {
+      font-weight: bold;
+      color: #28a745;
+      font-size: 14px;
+    }
+    .detail-value {
+      color: #333;
+      font-size: 16px;
+      margin-top: 5px;
+    }
+    .contact-info {
+      background-color: #e7f3ff;
+      border: 1px solid #b8daff;
+      border-radius: 6px;
+      padding: 15px;
+      margin: 20px 0;
+      text-align: center;
+    }
+    .footer {
+      text-align: center;
+      color: #999;
+      font-size: 12px;
+      margin-top: 20px;
+      border-top: 1px solid #ddd;
+      padding-top: 10px;
+    }
+    .logo {
+      font-weight: bold;
+      color: #28a745;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <span class="unfreeze-icon">✅</span>
+      <h1>הרכב הוסר מהקפאה</h1>
+    </div>
+
+    <div class="content">
+      <p>שלום,</p>
+      <p>הרכב שלך הוסר מהקפאה במערכת <strong>BookIt</strong>. להלן הפרטים:</p>
+
+      <div class="detail-item">
+        <div class="detail-label">מספר רכב:</div>
+        <div class="detail-value">{{PLATE_NUMBER}}</div>
+      </div>
+
+      <div class="detail-item">
+        <div class="detail-label">דגם רכב:</div>
+        <div class="detail-value">{{VEHICLE_MODEL}}</div>
+      </div>
+
+      <div class="detail-item">
+        <div class="detail-label">תאריך ושעת השחרור:</div>
+        <div class="detail-value">{{DATE_TIME}}</div>
+      </div>
+
+      <div class="detail-item">
+        <div class="detail-label">הוסר מהקפאה על ידי:</div>
+        <div class="detail-value">{{UNFROZEN_BY}}</div>
+      </div>
+
+      <div class="contact-info">
+        <p><strong>יש שאלות?</strong></p>
+        <p>ניתן לפנות למחלקה הרלוונטית או לצוות התמיכה</p>
+      </div>
+    </div>
+
+    <div class="footer">
+      תודה, צוות <span class="logo">BookIt</span> 🚗<br>
+      הודעה זו נשלחה ממערכת ניהול הרכבים. אין להשיב למייל זה.
+    </div>
+  </div>
+</body>
+</html>
