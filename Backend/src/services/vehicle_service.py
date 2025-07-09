@@ -16,6 +16,8 @@ from ..models.vehicle_inspection_model import VehicleInspection
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 from ..utils.audit_utils import log_action 
 from ..schemas.user_rides_schema import RideSchema 
+from ..services.email_service import get_user_email, load_email_template, async_send_email, send_email
+
 
 # def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
 #     inspection = VehicleInspection(
@@ -107,20 +109,65 @@ def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_re
         raise HTTPException(status_code=404, detail="Vehicle not found")
 
     try:
+        old_status = vehicle.status  #Save before updating
         if new_status == VehicleStatus.frozen:
             if not freeze_reason:
                 raise HTTPException(status_code=400, detail="freeze_reason is required when setting status to 'frozen'")
             vehicle.freeze_reason = freeze_reason
-
         elif vehicle.status == VehicleStatus.frozen and new_status != VehicleStatus.frozen:
             vehicle.freeze_reason = None
 
         vehicle.status = new_status
         db.commit()
         db.refresh(vehicle)
+        
+        
+        # Get the supervisor from the same department
+        supervisor = db.query(User).filter(
+            User.department_id == vehicle.department_id,
+            User.role == "supervisor"
+        ).first()
+        
+          # Get the user who performed the change (could be inspector or admin)
+        inspector = db.query(User).filter(User.employee_id == changed_by).first()
+        
+        print("📧 Supervisor found:", supervisor.full_name if supervisor else "None")
+        print("📨 Supervisor email:", supervisor.email if supervisor and supervisor.email else "No email")
+        print("👤 Inspector email:", inspector.email if inspector and inspector.email else "No email")
+
+
+        
+        # ✅ Only send if supervisor or inspector emails exist
+        if (supervisor and supervisor.email) or (inspector and inspector.email):
+            context = {
+                "PLATE_NUMBER": vehicle.plate_number,
+                "VEHICLE_MODEL": vehicle.vehicle_model,
+                "DATE_TIME": datetime.now().strftime("%d/%m/%Y %H:%M"),
+                "FROZEN_BY": inspector.first_name if inspector and inspector.first_name else "המערכת",
+                "FREEZE_REASON": freeze_reason or "לא צוינה",
+                "FREEZE_DETAILS": notes or "אין פרטים נוספים"
+            }
+
+            if new_status == VehicleStatus.frozen:
+                html = load_email_template("vehicle_frozen.html", context)
+                if supervisor and supervisor.email:
+                    send_email(supervisor.email, "📌 הרכב הוקפא במערכת BookIt", html)
+                if inspector and inspector.email:
+                    send_email(inspector.email, "📌 הרכב הוקפא במערכת BookIt", html)
+
+            elif old_status == VehicleStatus.frozen and new_status != VehicleStatus.frozen:
+                html = load_email_template("vehicle_unfrozen.html", context)
+                if supervisor and supervisor.email:
+                    send_email(supervisor.email, "✅ הרכב שוחרר ממעמד הקפאה", html)
+                if inspector and inspector.email:
+                    send_email(inspector.email, "✅ הרכב שוחרר ממעמד הקפאה", html)
+        
+                    
+                    
     except SQLAlchemyError as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    
 
     # log_action(
     #     db=db,
