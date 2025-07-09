@@ -29,14 +29,17 @@ def send_email(to_email: str, subject: str, html_content: str, text_content: str
     try:
         sg = SendGridAPIClient(SENDGRID_API_KEY)
         response = sg.send(message)
-        print(f"✅ Email sent: {response.status_code}")
-        print(f"📩 Response body: {response.body}")
-        print(f"📨 Response headers: {response.headers}")
-        return response
+
+        if 200 <= response.status_code < 300:
+            print(f"✅ Email sent successfully with status: {response.status_code}")
+            return True # <--- Return True for success
+        else:
+            print(f"❌ SendGrid returned an error status: {response.status_code}")
+            return False # <--- Return False for a non-2xx status
+
     except Exception as e:
-        print(f"❌ Error sending email: {e}")
-        # כאן ניתן להחליט האם לזרוק או לא את החריגה
-        #raise
+        print(f"❌ An exception occurred while sending email: {e}")
+        return False # <--- Return False on an exception
 
 
 # הפונקציה האסינכרונית שתריץ את send_email בצורה לא חוסמת
