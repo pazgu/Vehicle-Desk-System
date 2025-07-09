@@ -87,6 +87,7 @@ this.socketService.feedbackNeeded$.subscribe((data) => {
     this.toastService.show('התנתקת בהצלחה', 'success');
     this.router.navigate(['/login']);
     this.toastService.clearAll()
+    
   }
 
   getUserId(): string | null {
