@@ -94,6 +94,8 @@ async def process_completion_form(db: Session, user: User, form_data: Completion
         if not vehicle:
             raise HTTPException(status_code=404, detail="Vehicle not found")
         
+        vehicle.last_used_at = ride.end_datetime
+        
         # print('before checking if emergency is true:',form_data.emergency_event,flush=True)
         if (form_data.emergency_event =='true'):
             # print('inside emergency is true',flush=True)
