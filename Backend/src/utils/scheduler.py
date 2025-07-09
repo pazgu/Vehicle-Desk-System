@@ -23,6 +23,9 @@ from ..services.user_notification import create_system_notification,get_supervis
 import logging
 main_loop = asyncio.get_event_loop()
 logger = logging.getLogger(__name__)
+from sqlalchemy import func, or_
+
+
 
 def schedule_ride_start(ride_id: str, start_datetime: datetime):
     print('start ride was scheduled')
@@ -85,6 +88,88 @@ def check_and_complete_rides():
         print(f"❌ Error while updating completed rides: {e}")
     finally:
         db.close()
+
+async def check_inactive_vehicles():
+    db: Session = SessionLocal()
+    try:
+        now = datetime.now(timezone.utc)
+        one_week_ago = now - timedelta(days=7)
+
+        # Get all vehicles
+        all_vehicles = db.query(Vehicle).all()
+
+        # Get latest ride per vehicle (if any)
+        recent_rides_subq = db.query(
+            Ride.vehicle_id,
+            func.max(Ride.end_datetime).label("last_ride")
+        ).filter(
+            Ride.status == "completed"
+        ).group_by(Ride.vehicle_id).subquery()
+
+        # Join vehicles to recent ride
+        inactive_vehicles = db.query(Vehicle, recent_rides_subq.c.last_ride).outerjoin(
+            recent_rides_subq, Vehicle.id == recent_rides_subq.c.vehicle_id
+        ).filter(
+            or_(
+                recent_rides_subq.c.last_ride == None,
+                recent_rides_subq.c.last_ride < one_week_ago
+            )
+        ).all()
+
+        if not inactive_vehicles:
+            return
+
+        admins = db.query(User).filter(User.role == "admin").all()
+
+        for vehicle, last_ride in inactive_vehicles:
+            last_used_date = last_ride.date() if last_ride else "לא ידוע"
+
+            for admin in admins:
+                # Check if already notified
+                exists = db.query(Notification).filter(
+                    Notification.user_id == admin.employee_id,
+                    Notification.vehicle_id == vehicle.id,
+                    Notification.title == "Inactive Vehicle"
+                ).first()
+
+                if exists:
+                    continue
+
+                notif = create_system_notification(
+                    user_id=admin.employee_id,
+                    title="Inactive Vehicle",
+                    message=f"הרכב עם מספר רישוי {vehicle.plate_number} לא היה בשימוש מאז {last_used_date}",
+                    vehicle_id=vehicle.id
+                )
+
+                admin_email = get_user_email(admin.employee_id, db)
+                if admin_email:
+                    html_content = load_email_template("inactive_vehicle.html", {
+                        "ADMIN_NAME": get_user_name(db, admin.employee_id),
+                        "VEHICLE": vehicle.vehicle_model,
+                        "PLATE_NUMBER": vehicle.plate_number,
+                        "LAST_RIDE_DATE": last_used_date
+                    })
+                    await async_send_email(
+                        to_email=admin_email,
+                        subject="קיים במערכת רכב שלא היה בשימוש מעל לשבוע ",
+                        html_content=html_content
+                    )
+
+                await sio.emit("vehicle_expiry_notification", {
+                    "id": str(notif.id),
+                    "user_id": str(notif.user_id),
+                    "title": notif.title,
+                    "message": notif.message,
+                    "notification_type": notif.notification_type.value,
+                    "sent_at": notif.sent_at.isoformat(),
+                    "vehicle_id": str(vehicle.id),
+                    "plate_number": vehicle.plate_number
+                }, room=str(admin.employee_id))
+
+    finally:
+        db.close()
+
 
 async def check_vehicle_lease_expiry():
     db: Session = SessionLocal()
@@ -328,12 +413,13 @@ def periodic_check():
 
 def periodic_check_vehicle():
     print('periodic_check_vehicle was called')
+    future = asyncio.run_coroutine_threadsafe(check_inactive_vehicles(), main_loop)
     future = asyncio.run_coroutine_threadsafe(check_vehicle_lease_expiry(), main_loop)
     future.result(timeout=5)
 
 
-scheduler.add_job(periodic_check, 'interval', seconds=30)
-scheduler.add_job(periodic_check_vehicle, 'interval', seconds=30)
+scheduler.add_job(periodic_check, 'interval', days=1)
+scheduler.add_job(periodic_check_vehicle, 'interval', seconds=60)
 
 
 scheduler.start()
