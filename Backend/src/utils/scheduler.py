@@ -27,9 +27,11 @@ load_dotenv()
 BOOKIT_URL = os.getenv("BOOKIT_FRONTEND_URL", "http://localhost:4200")
 
 scheduler = BackgroundScheduler(timezone=pytz.timezone("Asia/Jerusalem"))
-
-
+from ..services.email_service import get_user_email, load_email_template, async_send_email
+from ..services.user_notification import create_system_notification,get_supervisor_id,get_user_name
+import logging
 main_loop = asyncio.get_event_loop()
+logger = logging.getLogger(__name__)
 
 def schedule_ride_start(ride_id: str, start_datetime: datetime):
     print('start ride was scheduled')
@@ -138,6 +140,26 @@ async def check_vehicle_lease_expiry():
                         vehicle_id=vehicle.id
                     )
 
+
+                    supervisor_email = get_user_email(supervisor_id, db)
+                    if supervisor_email:
+                        html_content = load_email_template("lease_expired.html", {
+                            "SUPERVISOR_NAME": get_user_name(db, supervisor_id),
+                            "VEHICLE_ID": vehicle.id,
+                            "VEHICLE": vehicle.vehicle_model,
+                            "PLATE": vehicle.plate_number,
+                            "PLATE_NUMBER": vehicle.plate_number,
+                            "EXPIRY_DATE": vehicle.lease_expiry
+                            })
+                        await async_send_email(
+                            to_email=supervisor_email,
+                            subject="קיים במערכת רכב שתקפו יפוג בקרוב",
+                            html_content=html_content
+                        )
+                    else:
+                        logger.warning("No supervisor email found — skipping email.")
+
+
                     await sio.emit("vehicle_expiry_notification", {
                         "id": str(notif.id),
                         "user_id": str(notif.user_id),
@@ -163,8 +185,26 @@ async def check_vehicle_lease_expiry():
                         title="Vehicle Lease Expiry",
                         message = f"תוקף השימוש ברכב עם מספר רישוי {vehicle.plate_number} יפוג בתאריך {vehicle.lease_expiry.date()}",                        
                         vehicle_id=vehicle.id
-
                         )
+                    
+                    admin_email = get_user_email(admin.employee_id, db)
+                    if admin_email:
+                        html_content = load_email_template("lease_expired.html", {
+                            "SUPERVISOR_NAME": get_user_name(db, admin.employee_id),
+                            "VEHICLE_ID": vehicle.id,
+                            "VEHICLE": vehicle.vehicle_model,
+                            "PLATE": vehicle.plate_number,
+                            "PLATE_NUMBER": vehicle.plate_number,
+                            "EXPIRY_DATE": vehicle.lease_expiry
+                            })
+                        await async_send_email(
+                            to_email=admin.email,
+                            subject="קיים במערכת רכב שתקפו יפוג בקרוב",
+                            html_content=html_content
+                        )
+                    else:
+                        logger.warning("No supervisor email found — skipping email.")
+
 
                     await sio.emit("vehicle_expiry_notification", {
                         "id": str(admin_notif.id),

@@ -7,7 +7,7 @@ import { ToastService } from '../../services/toast.service';
 import { SocketService } from '../../services/socket.service';
 import { Location } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
-import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { ConfirmDialogComponent } from '../../components/page-area/confirm-dialog/confirm-dialog.component';
 import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
@@ -509,7 +509,7 @@ export class AllRidesComponent implements OnInit {
       return;
     }
 
-    const dialogRef = this.dialog.open(ConfirmDialogComponent);
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {width: '380px', height:'190px', data: {}});
 
     dialogRef.afterClosed().subscribe(confirmed => {
       if (!confirmed) return;
