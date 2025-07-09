@@ -199,6 +199,8 @@ async def create_order(
         warning_flag = is_time_in_blocked_window(new_ride.start_datetime)
         department_id = get_user_department(user_id=user_id, db=db)
 
+        email_sent_successfully = True
+
         await sio.emit("new_ride_request", {
             "ride_id": str(new_ride.id),
             "user_id": str(user_id),
@@ -214,15 +216,25 @@ async def create_order(
         })
 
         supervisor_id = get_supervisor_id(user_id, db)
-        employee_name = get_user_name(db, new_ride.user_id)
-
         if supervisor_id:
+            employee_name = get_user_name(db, new_ride.user_id)
+            
+            # Create and send socket notification to supervisor
             supervisor_notification = create_system_notification(
                 user_id=supervisor_id,
                 title="בקשת נסיעה חדשה",
                 message=f"שלח בקשה חדשה {employee_name} העובד",
                 order_id=new_ride.id
             )
+            # employee_name = get_user_name(db, new_ride.user_id)
+
+        # if supervisor_id:
+        #     supervisor_notification = create_system_notification(
+        #         user_id=supervisor_id,
+        #         title="בקשת נסיעה חדשה",
+        #         message=f"שלח בקשה חדשה {employee_name} העובד",
+        #         order_id=new_ride.id
+        #     )
 
             await sio.emit("new_notification", {
                 "id": str(supervisor_notification.id),
@@ -251,17 +263,24 @@ async def create_order(
                     "DISTANCE": str(new_ride.estimated_distance_km),
                     "STATUS": new_ride.status,
                     # "LINK_TO_ORDER": f"{BOOKIT_URL}/home?order_id={new_ride.id}"
-                    })
-                await async_send_email(
+                })
+                
+                email_sent_successfully = await async_send_email(
                     to_email=supervisor_email,
                     subject="📄 בקשת נסיעה חדשה מחכה לאישורך",
                     html_content=html_content
                 )
+
+                # await async_send_email(
+                #     to_email=supervisor_email,
+                #     subject="📄 בקשת נסיעה חדשה מחכה לאישורך",
+                #     html_content=html_content
+                # )
             else:
-                logger.warning("No supervisor email found — skipping email.")
+                logger.warning(f"No supervisor email found for supervisor ID {supervisor_id} — skipping email.")
 
         else:
-            logger.warning("No supervisor found — skipping supervisor notification.")
+            logger.warning(f"No supervisor found for user ID {user_id} — skipping supervisor notification and email.")
 
         confirmation = create_system_notification(
             user_id=new_ride.user_id,
@@ -283,7 +302,8 @@ async def create_order(
 
         return {
             **RideResponse.model_validate(new_ride).dict(),
-            "inspector_warning": warning_flag
+            "inspector_warning": warning_flag,
+            "email_status": "ok" if email_sent_successfully else "failed"
         }
 
     except Exception as e:
