@@ -6,6 +6,9 @@ import { CardModule } from 'primeng/card';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
+import { MatDialog } from '@angular/material/dialog'; // Add this import at the top
+import { ConfirmDialogComponent } from '../../page-area/confirm-dialog/confirm-dialog.component'; // Adjust the path as needed
+
 @Component({
   selector: 'app-vehicle-card-item',
   templateUrl: './vehicle-card-item.component.html',
@@ -22,7 +25,7 @@ export class VehicleCardItemComponent implements OnInit {
   departmentName: string = '';
 
 
-  constructor(private navigateRouter: Router, private route: ActivatedRoute, private vehicleService: VehicleService, private http: HttpClient) { }
+  constructor(private navigateRouter: Router, private route: ActivatedRoute, private vehicleService: VehicleService, private http: HttpClient, private dialog: MatDialog) { }
 
   ngOnInit(): void {
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -256,10 +259,16 @@ navigateToTimeline(): void {
 }
 
   confirmDelete(vehicle: any): void {
-  const confirmMsg = `תוקף חוזה ההשכרה של רכב ${vehicle.plate_number} פג.\nהאם את/ה בטוח/ה שברצונך למחוק את הרכב?`;
-  const confirmed = confirm(confirmMsg);
+  const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+    width: '400px',
+    data: {
+      message: `תוקף חוזה ההשכרה של רכב ${vehicle.plate_number} פג.\nהאם את/ה בטוח/ה שברצונך למחוק את הרכב?`
+    }
+  });
 
-  if (confirmed) {
+  dialogRef.afterClosed().subscribe(confirmed => {
+    if (!confirmed) return;
+
     this.vehicleService.deleteVehicle(vehicle.id).subscribe({
       next: () => {
         alert(`הרכב ${vehicle.plate_number} נמחק בהצלחה.`);
@@ -271,8 +280,7 @@ navigateToTimeline(): void {
         alert(msg);
       }
     });
-  }
+  });
 }
-
 }
 

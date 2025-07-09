@@ -117,7 +117,7 @@ licenceExpiredMap: { [userId: string]: boolean } = {};
 
 
 deleteUser(userId: string): void {
-  const dialogRef = this.dialog.open(ConfirmDialogComponent);
+  const dialogRef = this.dialog.open(ConfirmDialogComponent, {width: '380px', height:'190px', data: {}});
 
   dialogRef.afterClosed().subscribe(confirmed => {
     if (!confirmed) return;
