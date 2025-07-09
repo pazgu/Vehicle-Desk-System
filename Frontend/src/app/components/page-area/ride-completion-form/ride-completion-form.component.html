@@ -42,6 +42,23 @@
                     </div>
                     <div class="divider"></div>
                 </div>
+    <div class="question">
+  <p class="question-text">האם הרכב מוכן לנסיעה הבאה?</p>
+  <div class="options">
+    <div
+      class="option"
+      [ngClass]="{ selected: form.get('is_vehicle_ready_for_next_ride')?.value === true }"
+      (click)="setFormValue('is_vehicle_ready_for_next_ride', true)"
+    >כן</div>
+    <div
+      class="option"
+      [ngClass]="{ selected: form.get('is_vehicle_ready_for_next_ride')?.value === false }"
+      (click)="setFormValue('is_vehicle_ready_for_next_ride', false)"
+    >לא</div>
+  </div>
+  <div class="divider"></div>
+</div>
+
 
                 <div class="question">
                     <p class="question-text">האם קרה דבר שונה מהרגיל במהלך הנסיעה?</p>

@@ -8,4 +8,5 @@ class CompletionFormData(BaseModel):
     emergency_event: Optional[str] = None
     freeze_details:Optional[str] = None
     changed_by: str
+    is_vehicle_ready_for_next_ride: bool
     

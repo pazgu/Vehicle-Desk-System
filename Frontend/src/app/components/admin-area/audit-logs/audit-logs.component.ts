@@ -89,7 +89,7 @@ export class AuditLogsComponent implements OnInit {
     vehicle_model: 'דגם רכב',
     freeze_details: 'פרטי הקפאה',
     current_location: 'מיקום נוכחי',
-    department_id: 'שם מחלקה',
+    department_id: 'מחלקה',
     odometer_reading: 'מד מרחק',
   };
 
@@ -113,13 +113,13 @@ export class AuditLogsComponent implements OnInit {
         oldValue: `${this.getCityName(oldData.start_location)} → ${this.getCityName(oldData.stop)} → ${this.getCityName(oldData.destination)}`,
         newValue: `${this.getCityName(newData.start_location)} → ${this.getCityName(newData.stop)} → ${this.getCityName(newData.destination)}`
       },
-      { label: 'סוג נסיעה', oldValue: oldData.ride_type, newValue: newData.ride_type },
+      { label: 'סוג נסיעה', oldValue: this.translateRideType(oldData.ride_type), newValue: this.translateRideType(newData.ride_type) },
       { label: 'סיבת בחירה ברכב 4X4', oldValue: oldData.vehicle_type_reason, newValue: newData.vehicle_type_reason },
       { label: 'משתמש', oldValue: oldData.user_id, newValue: newData.user_id },
       { label: 'משתמש עוקף', oldValue: oldData.override_user_id, newValue: newData.override_user_id },
       { label: 'רכב', oldValue: oldData.vehicle_id, newValue: newData.vehicle_id },
-      { label: 'סטטוס', oldValue: oldData.status, newValue: newData.status },
-      { label: 'ארכיון', oldValue: oldData.isArchive, newValue: newData.isArchive },
+      { label: 'סטטוס', oldValue: this.translateRideStatus(oldData.status), newValue: this.translateRideStatus(newData.status) },
+      // { label: 'ארכיון', oldValue: oldData.isArchive, newValue: newData.isArchive },
       { label: 'זמן התחלה', oldValue: oldData.start_datetime, newValue: newData.start_datetime },
       { label: 'זמן סיום', oldValue: oldData.end_datetime, newValue: newData.end_datetime },
       { label: 'תאריך שליחה', oldValue: oldData.submitted_at, newValue: newData.submitted_at },
@@ -135,7 +135,7 @@ export class AuditLogsComponent implements OnInit {
     stop: 'עצירה',
     status: 'סטטוס',
     user_id: 'מזהה משתמש',
-    isArchive: 'ארכיון',
+    // isArchive: 'ארכיון',
     ride_type: 'סוג נסיעה',
     vehicle_id: 'מזהה רכב',
     destination: 'יעד',
@@ -155,7 +155,7 @@ export class AuditLogsComponent implements OnInit {
   private departmentHebrewMap: { [key: string]: string } = {
     Engineering: 'הנדסה',
     HR: 'משאבי אנוש',
-    'IT Department': 'טכנولוגיות מידע',
+    'IT Department': 'טכנולוגיות מידע',
     Finance: 'כספים',
     Security: 'ביטחון'
   };
@@ -420,9 +420,9 @@ fetchAuditLogs(fromDate?: string, toDate?: string) {
       { label: 'שם משפחה', oldValue: oldData.last_name, newValue: newData.last_name },
       { label: 'שם משתמש', oldValue: oldData.username, newValue: newData.username },
       { label: 'אימייל', oldValue: oldData.email, newValue: newData.email },
-      { label: 'תפקיד', oldValue: oldData.role, newValue: newData.role },
+      { label: 'תפקיד', oldValue: this.translateUserRole(oldData.role), newValue: this.translateUserRole(newData.role) },
       { label: 'מזהה עובד', oldValue: oldData.employee_id, newValue: newData.employee_id },
-      { label: 'מזהה מחלקה', oldValue: oldData.department_id, newValue: newData.department_id },
+      { label: 'מחלקה', oldValue: this.getDepartmentNameById(oldData.department_id), newValue: this.getDepartmentNameById(newData.department_id) },
       { label: 'רישיון ממשלתי', oldValue: oldData.has_government_license, newValue: newData.has_government_license },
       { label: 'תוקף רישיון', oldValue: oldData.license_expiry_date, newValue: newData.license_expiry_date },
       { label: 'קובץ רישיון', oldValue: oldData.license_file_url, newValue: newData.license_file_url },
@@ -433,13 +433,13 @@ fetchAuditLogs(fromDate?: string, toDate?: string) {
     return [
       { label: 'מספר רכב', oldValue: oldData.plate_number, newValue: newData.plate_number },
       { label: 'סוג רכב', oldValue: oldData.type, newValue: newData.type },
-      { label: 'סוג דלק', oldValue: oldData.fuel_type, newValue: newData.fuel_type },
-      { label: 'סטטוס', oldValue: oldData.status, newValue: newData.status },
+      { label: 'סוג דלק', oldValue: this.translateFuelType(oldData.fuel_type), newValue: this.translateFuelType(newData.fuel_type) },
+      { label: 'סטטוס', oldValue: this.translateVehicleStatus(oldData.status), newValue: this.translateVehicleStatus(newData.status) },
       { label: 'שימוש אחרון', oldValue: oldData.last_used_at, newValue: newData.last_used_at }, // <-- Added this line
-      { label: 'סיבת הקפאה', oldValue: oldData.freeze_reason, newValue: newData.freeze_reason },
+      { label: 'סיבת הקפאה', oldValue: this.translateFreezeReason(oldData.freeze_reason), newValue: this.translateFreezeReason(newData.freeze_reason) },
       { label: 'פרטי הקפאה', oldValue: oldData.freeze_details, newValue: newData.freeze_details },
       { label: 'מיקום נוכחי', oldValue: oldData.current_location, newValue: newData.current_location },
-      { label: 'שם מחלקה', oldValue: oldData.department_id, newValue: newData.department_id },
+      { label: 'מחלקה', oldValue: this.getDepartmentNameById(oldData.department_id), newValue: this.getDepartmentNameById(newData.department_id) },
       { label: 'קילומטראז\'', oldValue: oldData.odometer_reading, newValue: newData.odometer_reading },
       { label: 'דגם רכב', oldValue: oldData.vehicle_model, newValue: newData.vehicle_model },
       { label: 'תמונה', oldValue: oldData.image_url, newValue: newData.image_url }
@@ -450,6 +450,92 @@ fetchAuditLogs(fromDate?: string, toDate?: string) {
     if (vehicleId) {
       this.router.navigate(['/vehicle-details', vehicleId]);
       // Or: this.router.navigate(['/vehicles', vehicleId]);
+    }
+  }
+  translateFuelType(fuelType: string | null | undefined): string {
+    if (!fuelType) return '';
+    switch (fuelType.toLowerCase()) {
+      case 'electric':
+        return 'חשמלי';
+      case 'hybrid':
+        return 'היברידי';
+      case 'gasoline':
+        return 'בנזין';
+      default:
+        return fuelType;
+    }
+  }  
+
+   translateVehicleStatus(status: string | null | undefined): string {
+    if (!status) return '';
+    switch (status.toLowerCase()) {
+      case 'available':
+        return 'זמין';
+      case 'in_use':
+        return 'בשימוש';
+      case 'frozen':
+        return 'מוקפא';
+      default:
+        return status;
+    }
+  }
+  translateRideStatus(status: string | null | undefined): string {
+    if (!status) return '';
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return 'ממתין';
+      case 'approved':
+        return 'מאושר';
+      case 'rejected':
+        return 'נדחה';
+      case 'in_progress':
+        return 'בתהליך';
+      case 'completed':
+        return 'הושלם';
+      default:
+        return status;
+    }
+  }
+
+  translateUserRole(userRole: string | null | undefined): string {
+    if (!userRole) return '';
+    switch (userRole.toLowerCase()) {
+      case 'admin':
+        return 'מנהל';
+      case 'employee':
+        return 'עובד';
+      case 'superuser':
+        return 'מנהל ישיר';
+      case 'inspector':
+        return 'בודק';
+      default:
+        return userRole;
+    }
+  }
+
+  translateFreezeReason(freezeReason: string | null | undefined): string {
+    if (!freezeReason) return '';
+    switch (freezeReason.toLowerCase()) {
+      case 'accident':
+        return 'תאונה';
+      case 'maintenance':
+        return 'תחזוקה';
+      case 'personal':
+        return 'אישי';
+      default:
+        return freezeReason;
+    }
+  }
+
+  translateRideType(rideType: string | null | undefined): string {
+    if (!rideType) return '';
+    switch (rideType.toLowerCase()) {
+      case 'administrative':
+        return 'מנהלתית';
+      case 'operational':
+        return 'מבצעית';
+      default:
+        return rideType;
     }
   }
 }
