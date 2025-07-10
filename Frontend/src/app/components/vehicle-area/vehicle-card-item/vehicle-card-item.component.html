@@ -11,9 +11,7 @@
       <div class="vehicle-horizontal-content">
         <div class="right-side">
           <div class="usage-line">
-            <div
-              class="usage-indicator"
-              [style.background-color]="getUsageBarColor(vehicle.plate_number)">
+            <div class="usage-indicator" [style.background-color]="getUsageBarColor(vehicle.plate_number)">
             </div>
             <span class="usage-number" *ngIf="getVehicleUsageCount(vehicle.plate_number) > 0">
               {{ getVehicleUsageCount(vehicle.plate_number) }} נסיעות קיימות לרכב זה
@@ -28,7 +26,10 @@
           <p><strong>סטטוס:</strong> {{ translateStatus(vehicle.status) }}</p>
           <p><strong>סוג רכב:</strong> {{ translateType(vehicle.type) }}</p>
           <p><strong>סוג דלק:</strong> {{ translateFuelType(vehicle.fuel_type) }}</p>
-          <p><strong>פעם אחרונה בשימוש:</strong> {{ vehicle.last_used_at | date: 'yyyy-MM-dd HH:mm' }}</p>
+          <p>
+            <strong>פעם אחרונה בשימוש:</strong>
+            {{ formatLastUsedAt(vehicle.last_used_at) }}
+          </p>
           <p><strong>מיקום נוכחי:</strong> {{ vehicle.current_location }}</p>
           <p><strong>מחלקה:</strong> {{ departmentName || 'לא משוייך למחלקה' }}</p>
 
@@ -55,9 +56,8 @@
           </p>
 
           <!-- Unfreeze button -->
-          <button class="unfreeze-button button-spacing"
-                  (click)="updateVehicleStatus('available')"
-                  *ngIf="vehicle.status === 'frozen'">
+          <button class="unfreeze-button button-spacing" (click)="updateVehicleStatus('available')"
+            *ngIf="vehicle.status === 'frozen'">
             שחרור מהקפאה
           </button>
 
@@ -82,11 +82,8 @@
           </div>
 
           <!-- ✅ Delete button: outside freeze logic -->
-          <button
-            *ngIf="vehicle.canDelete && vehicle.status !== 'in_use'"
-            class="freeze-button"
-            (click)="confirmDelete(vehicle)"
-            title="Leasing expired – eligible for deletion">
+          <button *ngIf="vehicle.canDelete && vehicle.status !== 'in_use'" class="freeze-button"
+            (click)="confirmDelete(vehicle)" title="Leasing expired – eligible for deletion">
             מחיקת רכב
           </button>
 
