@@ -27,6 +27,15 @@ def send_email(to_email: str, subject: str, html_content: str, text_content: str
     )
 
     try:
+        # --- DEBUGGING ADDITION START ---
+        if not SENDGRID_API_KEY:
+            print("DEBUG: SENDGRID_API_KEY is not loaded from .env. Check your .env file path and variable name.")
+            raise ValueError("SENDGRID_API_KEY is missing.")
+        else:
+            # Print a masked version of the key to confirm it's loaded without exposing it fully
+            masked_key = f"{SENDGRID_API_KEY[:5]}...{SENDGRID_API_KEY[-5:]}"
+            print(f"DEBUG: Using SendGrid API Key (masked): {masked_key}")
+        # --- DEBUGGING ADDITION END ---
         sg = SendGridAPIClient(SENDGRID_API_KEY)
         response = sg.send(message)
         print(f"✅ Email sent: {response.status_code}")
@@ -36,7 +45,7 @@ def send_email(to_email: str, subject: str, html_content: str, text_content: str
     except Exception as e:
         print(f"❌ Error sending email: {e}")
         # כאן ניתן להחליט האם לזרוק או לא את החריגה
-        #raise
+        raise
 
 
 # הפונקציה האסינכרונית שתריץ את send_email בצורה לא חוסמת
