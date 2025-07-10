@@ -34,7 +34,8 @@ def create_user(user_data: UserCreate, db: Session):
             email=user_data.email,
             password=hash_password(user_data.password),
             role=user_data.role,
-            department_id=department_id
+            department_id=department_id,
+            has_government_license= False
         )
 
         db.add(new_user)
@@ -56,12 +57,14 @@ def create_user(user_data: UserCreate, db: Session):
             db.commit()
 
         token_data = create_access_token(
+            user_id=str(new_user.employee_id),
             employee_id=str(new_user.employee_id),
             username=new_user.username,
             first_name=new_user.first_name,
             last_name=new_user.last_name,
             role=new_user.role,
-            department_id=new_user.department_id  
+            department_id=new_user.department_id,
+            has_government_license= False
         )
 
         

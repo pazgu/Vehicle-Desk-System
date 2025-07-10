@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { environment } from '../../../../environments/environment';
@@ -27,7 +27,8 @@ export class LayoutComponent implements OnInit,OnDestroy {
   pendingRideId: string | null = null;
   feedbackCheckComplete = false;
   loggedIn = false;
-
+   isFeedbackPage: boolean = false;
+   private routerSubscription: Subscription | undefined;
   private unsubscribe$ = new Subject<void>();
 
   constructor(
@@ -51,6 +52,14 @@ export class LayoutComponent implements OnInit,OnDestroy {
         this.loggedIn = isLoggedIn;
         this.checkFeedbackNeeded();
       });
+      this.routerSubscription = this.router.events.subscribe(event => {
+      if (event instanceof NavigationEnd) {
+        this.isFeedbackPage = event.urlAfterRedirects.includes('/ride-completion-form');
+      }
+    });
+
+    // Initial check in case the component loads directly on the feedback page
+    this.isFeedbackPage = this.router.url.includes('/ride-completion-form');
 
     const storedRideId = localStorage.getItem('pending_feedback_ride');
     if (storedRideId) {
@@ -73,17 +82,25 @@ export class LayoutComponent implements OnInit,OnDestroy {
     this.unsubscribe$.complete();
     console.log('[ON DESTROY] LayoutComponent destroyed. Subscriptions unsubscribed.');
     this.subscription.unsubscribe();
+      if (this.routerSubscription) {
+      this.routerSubscription.unsubscribe();
+    }
 
+  }
+    hideFeedbackButton(): void {
+    console.log('[HIDE FEEDBACK BUTTON] Hiding feedback button and clearing state.');
+    this.feedbackCheckComplete = true; // Set to true to allow *ngIf to evaluate
+    this.pendingRideId = null; // This will hide the button
+    localStorage.removeItem('pending_feedback_ride'); // Clear stored ID
+    
   }
 
   checkFeedbackNeeded(): void {
     const userId = this.getUserIdFromAuthService();
 
-    if (!userId) {
-      console.log('[CHECK FEEDBACK] No user ID found or user logged out. Skipping API check.');
-      this.feedbackCheckComplete = true;
-      this.pendingRideId = null;
-      localStorage.removeItem('pending_feedback_ride');
+ if (!userId) {
+      console.log('[CHECK FEEDBACK] No user ID found or user logged out. Calling hideFeedbackButton().');
+      this.hideFeedbackButton(); // Call the new function here
       return;
     }
 
