@@ -266,6 +266,11 @@ def delete_vehicle_by_id(vehicle_id: UUID, db: Session, user_id: UUID):
 
     if not vehicle.lease_expiry or vehicle.lease_expiry.date() >= date.today():
         raise HTTPException(status_code=400, detail="Cannot delete: lease not expired.")
+    if vehicle.status == VehicleStatus.frozen:
+        raise HTTPException(status_code=400, detail="Cannot delete: vehicle is frozen")
+    if vehicle.is_archived:
+        raise HTTPException(status_code=400, detail="Cannot delete: the vehicle is archived.")
+
 
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id)})
     db.delete(vehicle)
