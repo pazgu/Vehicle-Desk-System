@@ -263,3 +263,10 @@
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
 }
+.lease-expired-warning {
+  color: red;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}

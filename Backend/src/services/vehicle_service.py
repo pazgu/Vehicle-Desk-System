@@ -19,6 +19,9 @@ from ..schemas.user_rides_schema import RideSchema
 from ..services.email_service import get_user_email, load_email_template, async_send_email, send_email
 from datetime import datetime
 
+from ..services.email_service import get_user_email, load_email_template, async_send_email, send_email
+from datetime import datetime
+
 
 # def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
 #     inspection = VehicleInspection(
@@ -77,7 +80,8 @@ def get_vehicles_with_optional_status(
         ) 
     )    
     .outerjoin(User, User.employee_id == Ride.user_id)
-    .filter(Vehicle.lease_expiry >= datetime.utcnow()) # Add this line to filter out expired leases
+    .filter(Vehicle.lease_expiry >= datetime.utcnow(),
+            Vehicle.is_archived == False) # Add this line to filter out expired leases
 )
     if status:
         query = query.filter(Vehicle.status == status)
@@ -383,3 +387,56 @@ def delete_vehicle_by_id(vehicle_id: UUID, db: Session, user_id: UUID):
     db.execute(text("SET session.audit.user_id = DEFAULT"))
 
     return {"message": f"Vehicle {vehicle.plate_number} deleted successfully."}
+
+def archive_vehicle_by_id(vehicle_id: UUID, db: Session, user_id: UUID) -> Vehicle:
+    vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="Vehicle not found")
+
+    if vehicle.status != VehicleStatus.frozen:
+        raise HTTPException(status_code=400, detail="Can only archive vehicles that are frozen.")
+
+    if not vehicle.lease_expiry or vehicle.lease_expiry.date() >= date.today():
+        raise HTTPException(status_code=400, detail="Cannot archive: lease not expired.")
+
+    if vehicle.is_archived:
+        raise HTTPException(status_code=400, detail="Vehicle is already archived.")
+
+    # Check for related data (e.g., rides)
+    has_related_data = db.execute(
+        text("SELECT EXISTS (SELECT 1 FROM rides WHERE vehicle_id = :vehicle_id)"),
+        {"vehicle_id": str(vehicle_id)}
+    ).scalar()
+
+    if not has_related_data:
+        raise HTTPException(status_code=400, detail="Cannot archive: vehicle has no related data (rides, logs, etc.).")
+
+    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id)})
+
+    vehicle.is_archived = True
+    vehicle.archived_at = datetime.utcnow()
+    db.commit()
+
+    # Manually insert audit log for reason visibility
+    db.execute(
+        text("""
+            INSERT INTO audit_logs (
+                action, entity_type, entity_id, change_data,
+                changed_by, checkbox_value, inspected_at, notes
+            ) VALUES (
+                :action, :entity_type, :entity_id, :change_data,
+                :changed_by, FALSE, now(), :notes
+            )
+        """),
+        {
+            "action": "ARCHIVE",
+            "entity_type": "Vehicle",
+            "entity_id": str(vehicle.id),
+            "change_data": '{"archived": true}',
+            "changed_by": str(user_id),
+            "notes": "Vehicle archived manually by admin"
+        }
+    )
+
+    db.execute(text("SET session.audit.user_id = DEFAULT"))
+    return vehicle

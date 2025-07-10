@@ -8,12 +8,14 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { MatDialog } from '@angular/material/dialog'; // Add this import at the top
 import { ConfirmDialogComponent } from '../../page-area/confirm-dialog/confirm-dialog.component'; // Adjust the path as needed
+import { MatIconModule } from '@angular/material/icon';
+import { Observable } from 'rxjs';  
 
 @Component({
   selector: 'app-vehicle-card-item',
   templateUrl: './vehicle-card-item.component.html',
   styleUrls: ['./vehicle-card-item.component.css'],
-  imports: [CommonModule, CardModule, FormsModule],
+  imports: [CommonModule, CardModule, FormsModule, MatIconModule],
 })
 export class VehicleCardItemComponent implements OnInit {
   vehicle: any;
@@ -252,36 +254,78 @@ export class VehicleCardItemComponent implements OnInit {
     });
   }
 
-  navigateToTimeline(): void {
-    if (this.vehicle?.id) {
-      this.navigateRouter.navigate([`/vehicle-details/${this.vehicle.id}/timeline`]);
-    }
+navigateToTimeline(): void {
+  if (this.vehicle?.id) {
+    this.navigateRouter.navigate([`/vehicle-details/${this.vehicle.id}/timeline`]);
+  }
+}
+confirmDelete(vehicle: any): void {
+  let message = `תוקף חוזה ההשכרה של רכב ${vehicle.plate_number} פג.\n`;
+
+  if (vehicle.status === 'frozen') {
+    message += `הרכב מוקפא ולכן לא יימחק, אלא יועבר לארכיון.\n`;
+    message += `האם את/ה בטוח/ה שברצונך לארכב את הרכב?`;
+  } else {
+    message += `האם את/ה בטוח/ה שברצונך למחוק את הרכב?`;
   }
 
-  confirmDelete(vehicle: any): void {
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: '400px',
-      data: {
-        message: `תוקף חוזה ההשכרה של רכב ${vehicle.plate_number} פג.\nהאם את/ה בטוח/ה שברצונך למחוק את הרכב?`
-      }
-    });
+  const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+    width: '400px',
+    data: { message }
+  });
 
     dialogRef.afterClosed().subscribe(confirmed => {
       if (!confirmed) return;
 
-      this.vehicleService.deleteVehicle(vehicle.id).subscribe({
+      const action$: Observable<any> = vehicle.status === 'frozen'
+      ? this.vehicleService.archiveVehicle(vehicle.id)
+      : this.vehicleService.deleteVehicle(vehicle.id);
+
+    action$.subscribe({
+      next: () => {
+        const actionText = vehicle.status === 'frozen' ? 'נארכב' : 'נמחק';
+        alert(`הרכב ${vehicle.plate_number} ${actionText} בהצלחה.`);
+        this.navigateRouter.navigate(['/vehicle-dashboard']);
+      },
+      error: (err) => {
+        console.error("❌ פעולה נכשלה:", err);
+        const msg = err?.error?.detail || "הפעולה נכשלה.";
+        alert(msg);
+      }
+    });
+  });
+}
+
+confirmArchive(vehicle: any): void {
+  const message = `תוקף חוזה ההשכרה של רכב ${vehicle.plate_number} פג והרכב מוקפא.\nלא ניתן למחוק את הרכב, אך ניתן לארכב אותו.\n\nהאם את/ה בטוח/ה שברצונך לארכב את הרכב?`;
+
+  const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+    width: '400px',
+    data: { message }
+  });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (!confirmed) return;
+
+    this.vehicleService.archiveVehicle(vehicle.id).subscribe({
         next: () => {
-          alert(`הרכב ${vehicle.plate_number} נמחק בהצלחה.`);
+          alert(`הרכב ${vehicle.plate_number} נארכב בהצלחה.`);
           this.navigateRouter.navigate(['/vehicle-dashboard']);
         },
         error: (err) => {
-          console.error("❌ מחיקת הרכב נכשלה:", err);
-          const msg = err?.error?.detail || "מחיקת הרכב נכשלה.";
+          console.error("❌ כשלון בארכוב:", err);
+          const msg = err?.error?.detail || "הארכוב נכשל.";
           alert(msg);
         }
       });
     });
   }
+
+
+isLeaseExpired(expiry: string): boolean {
+  return new Date(expiry) < new Date();
+}
+
 
   formatLastUsedAt(dateStr: string | null | undefined): string {
     if (!dateStr) return 'לא בוצעו נסיעות';
