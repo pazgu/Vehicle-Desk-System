@@ -17,6 +17,7 @@ from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 from ..utils.audit_utils import log_action 
 from ..schemas.user_rides_schema import RideSchema 
 from ..services.email_service import get_user_email, load_email_template, async_send_email, send_email
+from datetime import datetime
 
 
 # def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
@@ -103,13 +104,19 @@ def get_vehicles_with_optional_status(
     return result
 
 def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_reason: str, db: Session, changed_by: UUID, notes: Optional[str] = None):
+    FREEZE_REASON_TRANSLATIONS = {
+    "accident": "תאונה",
+    "maintenance": "תחזוקה",
+    "personal": "אישי "
+}
+
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(changed_by)})
     vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
     if not vehicle:
         raise HTTPException(status_code=404, detail="Vehicle not found")
 
     try:
-        old_status = vehicle.status  #Save before updating
+        old_status = vehicle.status  # Save before updating
         if new_status == VehicleStatus.frozen:
             if not freeze_reason:
                 raise HTTPException(status_code=400, detail="freeze_reason is required when setting status to 'frozen'")
@@ -120,54 +127,105 @@ def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_re
         vehicle.status = new_status
         db.commit()
         db.refresh(vehicle)
-        
-        
-        # Get the supervisor from the same department
-        supervisor = db.query(User).filter(
-            User.department_id == vehicle.department_id,
-            User.role == "supervisor"
-        ).first()
-        
-          # Get the user who performed the change (could be inspector or admin)
-        inspector = db.query(User).filter(User.employee_id == changed_by).first()
-        
-        print("📧 Supervisor found:", supervisor.full_name if supervisor else "None")
-        print("📨 Supervisor email:", supervisor.email if supervisor and supervisor.email else "No email")
-        print("👤 Inspector email:", inspector.email if inspector and inspector.email else "No email")
+
+        # 🔍 Try to find a supervisor from the same department (if any)
+        # --- Email Recipient Determination Logic ---
+        recipient_emails_set: set[str] = set() # Use a set to handle duplicates automatically
+        log_messages: List[str] = []
+
+        # 1. Get the user who performed the change (actor - e.g., Yorgo or Zalman)
+        # Find the actor to use their name in the email context, but NOT necessarily as a recipient
+        actor_user = db.query(User).filter(User.employee_id == changed_by).first()
+        if not actor_user:
+            log_messages.append("Actor user not found for context.")
+
+        # NEW LOGIC FOR RECIPIENTS: STRICTLY ONLY SUPERVISORS
+        supervisor_found_for_vehicle_department = False
+
+        if vehicle.department_id:
+            # Try to find a supervisor in the vehicle's specific department
+            department_supervisor = db.query(User).filter(
+                User.department_id == vehicle.department_id,
+                User.role == "supervisor",
+                User.email.isnot(None),
+                User.email != ''
+            ).first()
+
+            if department_supervisor and department_supervisor.email:
+                recipient_emails_set.add(department_supervisor.email)
+                log_messages.append(f"Added department-specific supervisor's email: {department_supervisor.email}")
+                supervisor_found_for_vehicle_department = True
+            else:
+                log_messages.append(f"No specific supervisor found for vehicle's department {vehicle.department_id}.")
+        else:
+            log_messages.append(f"Vehicle {vehicle.plate_number} has no department ID.")
 
 
-        
-        # ✅ Only send if supervisor or inspector emails exist
-        if (supervisor and supervisor.email) or (inspector and inspector.email):
-            context = {
-                "PLATE_NUMBER": vehicle.plate_number,
-                "VEHICLE_MODEL": vehicle.vehicle_model,
-                "DATE_TIME": datetime.now().strftime("%d/%m/%Y %H:%M"),
-                "FROZEN_BY": inspector.first_name if inspector and inspector.first_name else "המערכת",
-                "FREEZE_REASON": freeze_reason or "לא צוינה",
-                "FREEZE_DETAILS": notes or "אין פרטים נוספים"
-            }
+        # If no department-specific supervisor was found OR vehicle has no department,
+        # THEN notify ALL general supervisors.
+        if not supervisor_found_for_vehicle_department:
+            log_messages.append("Falling back to all general supervisors.")
+            general_supervisors = db.query(User).filter(
+                User.role == "supervisor",
+                User.email.isnot(None),
+                User.email != ''
+            ).all()
+            for sup_user in general_supervisors:
+                recipient_emails_set.add(sup_user.email)
+                log_messages.append(f"Added general supervisor's email: {sup_user.email}")
 
-            if new_status == VehicleStatus.frozen:
-                html = load_email_template("vehicle_frozen.html", context)
-                if supervisor and supervisor.email:
-                    send_email(supervisor.email, "📌 הרכב הוקפא במערכת BookIt", html)
-                if inspector and inspector.email:
-                    send_email(inspector.email, "📌 הרכב הוקפא במערכת BookIt", html)
+        # Convert the set to a list for iteration
+        recipient_emails = list(recipient_emails_set)
 
-            elif old_status == VehicleStatus.frozen and new_status != VehicleStatus.frozen:
-                html = load_email_template("vehicle_unfrozen.html", context)
-                if supervisor and supervisor.email:
-                    send_email(supervisor.email, "✅ הרכב שוחרר ממעמד הקפאה", html)
-                if inspector and inspector.email:
-                    send_email(inspector.email, "✅ הרכב שוחרר ממעמד הקפאה", html)
-        
-                    
-                    
+
+        print("\n".join(log_messages))
+        print(f"Final determined email recipients: {', '.join(recipient_emails) if recipient_emails else 'None'}")
+
+        # --- Prepare Email Content ---
+        context = {
+            "PLATE_NUMBER": vehicle.plate_number,
+            "VEHICLE_MODEL": vehicle.vehicle_model if vehicle.vehicle_model else "N/A",
+            "DATE_TIME": datetime.now().strftime("%d/%m/%Y %H:%M"),
+            "FIRST_NAME": actor_user.first_name if actor_user and actor_user.first_name else "המערכת",
+            "FREEZE_REASON": FREEZE_REASON_TRANSLATIONS.get(
+                str(freeze_reason).split(".")[-1],  # fallback to raw key if not found
+                str(freeze_reason).split(".")[-1]),
+            "FREEZE_DETAILS": notes or "אין פרטים נוספים"
+        }
+
+        # --- Send Emails ---
+        if recipient_emails:
+            try:
+                subject = ""
+                html_content = ""
+
+                if new_status == VehicleStatus.frozen:
+                    subject = "📌 BookIt System Update: Vehicle Frozen"
+                    html_content = load_email_template("vehicle_frozen.html", context)
+                elif old_status == VehicleStatus.frozen and new_status != VehicleStatus.frozen:
+                    subject = "✅ BookIt System Update: Vehicle Unfrozen"
+                    html_content = load_email_template("vehicle_unfrozen.html", context)
+                else:
+                    print("No email action defined for this specific status change. Skipping email sending.")
+                    return {"vehicle_id": vehicle.id, "new_status": vehicle.status, "freeze_reason": vehicle.freeze_reason}
+
+                for email_address in recipient_emails:
+                    send_email(email_address, subject, html_content)
+                    print(f"✅ Email sent successfully to {email_address}.")
+
+            except Exception as e:
+                print(f"❌ Error during email sending process: {e}")
+        else:
+            print("No eligible recipients found, skipping email notification.")
+
     except SQLAlchemyError as e:
         db.rollback()
+        print(f"❌ Database error in update_vehicle_status: {e}")
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
-    
+    except Exception as e:
+        db.rollback()
+        print(f"❌ An unexpected error occurred in update_vehicle_status: {e}")
+        raise HTTPException(status_code=500, detail=f"An internal server error occurred: {str(e)}")
 
     # log_action(
     #     db=db,
