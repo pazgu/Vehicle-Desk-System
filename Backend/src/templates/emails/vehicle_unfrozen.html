@@ -2,14 +2,17 @@
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>הרכב הוסר מהקפאה - BookIt</title>
   <style>
     body {
       background-color: #f6f6f6;
-      font-family: Arial, sans-serif;
+      font-family: 'Arial Hebrew', Arial, sans-serif; /* Prioritize Hebrew font */
       color: #333;
       margin: 0;
       padding: 0;
+      line-height: 1.6; /* General line height for readability */
+      text-align: right; /* Default text alignment for RTL */
     }
     .container {
       background-color: #ffffff;
@@ -18,68 +21,98 @@
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+      overflow: hidden; /* Clear floats, etc. */
     }
     .header {
-      background-color: #28a745;
+      background-color: #28a745; /* Green for unfreeze success */
       color: white;
-      text-align: center;
-      padding: 20px;
+      text-align: center; /* Header content still centered */
+      padding: 25px 20px; /* More vertical padding */
       border-radius: 10px 10px 0 0;
-      margin: -20px -20px 20px -20px;
+      margin: -20px -20px 20px -20px; /* Match container padding for full width */
     }
     .header h1 {
       margin: 0;
-      font-size: 24px;
+      font-size: 28px; /* Slightly larger */
       font-weight: bold;
+      line-height: 1.2;
     }
     .unfreeze-icon {
-      font-size: 48px;
+      font-size: 56px; /* Larger icon */
       margin-bottom: 10px;
       display: block;
     }
     .content {
-      padding: 20px 0;
+      padding: 20px; /* Consistent padding */
     }
     .content p {
-      margin: 0 0 10px;
-      line-height: 1.6;
+      margin: 0 0 15px; /* More spacing between paragraphs */
+      text-align: right;
     }
     .detail-item {
-      background-color: #f8f9fa;
-      padding: 12px;
-      margin: 8px 0;
+      background-color: #f8f9fa; /* Light grey */
+      padding: 15px; /* More padding */
+      margin-bottom: 10px; /* Space between items */
       border-radius: 6px;
-      border-right: 3px solid #28a745;
+      border-right: 3px solid #28a745; /* Changed from border-left to border-right for RTL, matching header color */
+      text-align: right; /* Ensure content aligns right */
     }
     .detail-label {
       font-weight: bold;
-      color: #28a745;
-      font-size: 14px;
+      color: #28a745; /* Green */
+      font-size: 15px; /* Slightly larger */
+      margin-bottom: 5px;
+      display: block; /* Ensures label and value are on separate lines within item */
     }
     .detail-value {
       color: #333;
+      font-size: 17px; /* Slightly larger */
+      word-wrap: break-word; /* Prevents long values from overflowing */
+    }
+    .reason-box {
+      background-color: #fff3cd; /* Light yellow */
+      border: 1px solid #ffeaa7; /* Yellow border */
+      border-radius: 6px;
+      padding: 18px; /* More padding */
+      margin: 20px 0; /* Vertical margin */
+      text-align: right; /* RTL alignment */
+    }
+    .reason-box .reason-label {
+      font-weight: bold;
+      color: #856404; /* Dark yellow */
+      font-size: 15px;
+      margin-bottom: 8px;
+      display: block;
+    }
+    .reason-box .reason-text {
+      color: #856404; /* Dark yellow */
       font-size: 16px;
-      margin-top: 5px;
+      line-height: 1.5;
     }
     .contact-info {
-      background-color: #e7f3ff;
-      border: 1px solid #b8daff;
+      background-color: #e7f3ff; /* Light blue */
+      border: 1px solid #b8daff; /* Blue border */
       border-radius: 6px;
-      padding: 15px;
-      margin: 20px 0;
-      text-align: center;
+      padding: 18px; /* More padding */
+      margin: 25px 0; /* More vertical margin */
+      text-align: center; /* Contact info remains centered */
+    }
+    .contact-info p {
+      margin: 8px 0;
+      color: #004085; /* Dark blue */
+      font-size: 14px;
     }
     .footer {
       text-align: center;
       color: #999;
       font-size: 12px;
-      margin-top: 20px;
-      border-top: 1px solid #ddd;
-      padding-top: 10px;
+      margin-top: 30px; /* More space above footer */
+      border-top: 1px solid #eee; /* Lighter border */
+      padding-top: 15px; /* More padding */
     }
     .logo {
       font-weight: bold;
-      color: #28a745;
+      color: #28a745; /* Green */
     }
   </style>
 </head>
@@ -92,36 +125,41 @@
 
     <div class="content">
       <p>שלום,</p>
-      <p>הרכב שלך הוסר מהקפאה במערכת <strong>BookIt</strong>. להלן הפרטים:</p>
+      <p>הרכב הבא הוסר מהקפאה במערכת <strong>BookIt</strong>. להלן הפרטים המלאים:</p>
 
       <div class="detail-item">
-        <div class="detail-label">מספר רכב:</div>
+        <div class="detail-label">:מספר רכב</div>
         <div class="detail-value">{{PLATE_NUMBER}}</div>
       </div>
 
       <div class="detail-item">
-        <div class="detail-label">דגם רכב:</div>
+        <div class="detail-label">:דגם רכב</div>
         <div class="detail-value">{{VEHICLE_MODEL}}</div>
       </div>
 
       <div class="detail-item">
-        <div class="detail-label">תאריך ושעת השחרור:</div>
+        <div class="detail-label">:תאריך ושעת השחרור</div>
         <div class="detail-value">{{DATE_TIME}}</div>
       </div>
 
       <div class="detail-item">
-        <div class="detail-label">הוסר מהקפאה על ידי:</div>
-        <div class="detail-value">{{UNFROZEN_BY}}</div>
+        <div class="detail-label">:הוסר מהקפאה על ידי</div>
+        <div class="detail-value">{{FIRST_NAME}}</div>
+      </div>
+
+      <div class="reason-box">
+        <div class="reason-label">:סיבת השחרור</div>
+        <div class="reason-text">{{UNFREEZE_REASON}}</div>
       </div>
 
       <div class="contact-info">
-        <p><strong>יש שאלות?</strong></p>
+        <p><strong>?יש שאלות</strong></p>
         <p>ניתן לפנות למחלקה הרלוונטית או לצוות התמיכה</p>
       </div>
     </div>
 
     <div class="footer">
-      תודה, צוות <span class="logo">BookIt</span> 🚗<br>
+      תודה,<br> צוות <span class="logo">BookIt</span> 🚗<br>
       הודעה זו נשלחה ממערכת ניהול הרכבים. אין להשיב למייל זה.
     </div>
   </div>
