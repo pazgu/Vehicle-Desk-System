@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <style>
+        body { font-family: Arial, sans-serif; color: #333; background-color: #f9f9f9; }
+        .container { padding: 20px; background-color: #fff; border-radius: 10px; max-width: 600px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .title { font-size: 24px; margin-bottom: 20px; }
+        .critical { color: red; font-weight: bold; }
+        .success { color: green; }
+        .section { margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">🚗 דוח בדיקת רכב</div>
+        
+        <div class="section">
+            <strong>תאריך הבדיקה:</strong> {{ inspection_date }}
+        </div>
+        
+        <div class="section">
+            <strong>בדק על ידי:</strong> {{ inspector_name }}
+        </div>
+
+        <div class="section">
+            <strong>תקלות:</strong><br/>
+            {% if issues_found %}
+                <div>{{ issues_found }}</div>
+            {% else %}
+                <div class="success">לא נמצאו תקלות</div>
+            {% endif %}
+        </div>
+
+        {% if critical_issue_bool %}
+        <div class="section critical">
+            ⚠️ תקלה קריטית דווחה!
+        </div>
+        {% endif %}
+        
+        <div class="section">
+            <strong>ניקיון:</strong> {{ clean }}<br/>
+            <strong>תדלוק:</strong> {{ fuel_checked }}<br/>
+            <strong>אין חפצים:</strong> {{ no_items_left }}
+        </div>
+    </div>
+</body>
+</html>

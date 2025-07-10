@@ -60,7 +60,12 @@
   color: #a48f26;
   box-shadow: 0 2px 4px #942222af;
 }
-
+.notification.inactive-alert {
+  background-color: #fffdcd; 
+  border: 1px solid #f0942b;
+  color: #a48f26;
+  box-shadow: 0 2px 4px #942222af;
+}
 
 /* Neutral – Gray */
 .notification.neutral {
