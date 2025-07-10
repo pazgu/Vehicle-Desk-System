@@ -50,16 +50,18 @@ async def create_inspection(data: VehicleInspectionSchema, db: Session):
             print("❌ Failed to emit new_inspection event:", socket_error)
 
         # שליחת מייל על תקלה קריטית אם קיימת
+     
         if data.critical_issue_bool and data.issues_found and data.issues_found.strip():
             inspector = db.query(User).filter(User.employee_id == data.inspected_by).first()
             inspector_name = f"{inspector.first_name} {inspector.last_name}" if inspector else "לא ידוע"
 
-            supervisor_users = db.query(User).filter(User.role == UserRole.supervisor).all()
+            # מביא גם סופרווייזורים וגם אדמינים
+            recipients = db.query(User).filter(User.role.in_([UserRole.supervisor, UserRole.admin])).all()
 
-            for supervisor in supervisor_users:
-                email = get_user_email(supervisor.employee_id, db)
+            for user in recipients:
+                email = get_user_email(user.employee_id, db)
                 if not email:
-                    print(f"⚠️ Supervisor {supervisor.username} has no email, skipping.")
+                    print(f"⚠️ User {user.username} has no email, skipping.")
                     continue
 
                 context = {
@@ -80,7 +82,7 @@ async def create_inspection(data: VehicleInspectionSchema, db: Session):
                     html_content=html_content
                 )
 
-                print(f"📧 Critical issue email sent to supervisor {supervisor.username} ({email})")
+                print(f"📧 Critical issue email sent to {user.username} ({email})")
 
         return inspection
 
