@@ -114,9 +114,15 @@
       </div>
 
       <!-- Empty state -->
-      <div *ngIf="filteredVehicles?.length === 0" class="empty-state" style="text-align: center; margin-top: 2rem;">
-        לא נמצאו רכבים
+     <div *ngIf="filteredVehicles?.length === 0" class="empty-state" style="text-align: center; margin-top: 2rem;">
+  <ng-container *ngIf="showInactive; else noVehicles">
+    כל הרכבים היו בשימוש בשבוע האחרון ✅
+  </ng-container>
+  <ng-template #noVehicles>
+    לא נמצאו רכבים
+  </ng-template>
+</div>
+
       </div>
     </div>
-  </div>
 </div>
