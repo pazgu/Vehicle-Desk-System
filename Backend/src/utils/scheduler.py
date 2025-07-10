@@ -2,6 +2,9 @@ import asyncio
 
 from dotenv import load_dotenv
 
+from ..models.audit_log_model import AuditLog
+from ..models.monthly_vehicle_usage_model import MonthlyVehicleUsage
+from sqlalchemy.dialects.postgresql import UUID
 from ..models.city_model import City
 from ..services.email_service import async_send_email, load_email_template
 from ..models.notification_model import Notification
@@ -32,7 +35,7 @@ from ..services.user_notification import create_system_notification,get_supervis
 import logging
 main_loop = asyncio.get_event_loop()
 logger = logging.getLogger(__name__)
-from sqlalchemy import func, or_
+from sqlalchemy import and_, cast, func, or_
 
 
 
@@ -305,6 +308,111 @@ async def check_vehicle_lease_expiry():
     finally:
         db.close()
 
+async def delete_old_archived_vehicles():
+    """
+    Checks for vehicles that have been archived for more than three months
+    and deletes them, along with ALL their associated records from specified tables.
+    """
+    db: Session = SessionLocal()
+    try:
+        now = datetime.now(timezone.utc)
+        three_months_ago = now - timedelta(days=90) # Approximately 3 months
+
+        # 1. Find vehicles to delete
+        vehicles_to_delete = db.query(Vehicle).filter(
+            and_(
+                Vehicle.is_archived == True,
+                Vehicle.archived_at <= three_months_ago
+            )
+        ).all()
+
+        if not vehicles_to_delete:
+            print("No old archived vehicles found for deletion.")
+            return
+
+        print(f"Found {len(vehicles_to_delete)} archived vehicles older than 3 months to delete.")
+
+        for vehicle in vehicles_to_delete:
+            print(f"\nProcessing vehicle ID: {vehicle.id}, Plate Number: {vehicle.plate_number}, Archived At: {vehicle.archived_at}")
+
+            # --- Delete related records in specific order (children first) ---
+
+            # Delete related Notifications (tbl: notifications, col: vehicle_id)
+            notifications_to_delete = db.query(Notification).filter(
+                Notification.vehicle_id == vehicle.id
+            ).all()
+            if notifications_to_delete:
+                print(f"  Deleting {len(notifications_to_delete)} notifications for vehicle ID {vehicle.id}...")
+                for notification in notifications_to_delete:
+                    db.delete(notification)
+            else:
+                print(f"  No notifications found for vehicle ID {vehicle.id}.")
+
+            # Delete related Rides (tbl: rides, col: vehicle_id)
+            rides_to_delete = db.query(Ride).filter(
+                Ride.vehicle_id == vehicle.id
+            ).all()
+            if rides_to_delete:
+                print(f"  Deleting {len(rides_to_delete)} rides for vehicle ID {vehicle.id}...")
+                for ride in rides_to_delete:
+                    db.delete(ride)
+            else:
+                print(f"  No rides found for vehicle ID {vehicle.id}.")
+
+            # Delete related Monthly Vehicle Usage (tbl: monthly_vehicle_usage, col: vehicle_id)
+            # Assuming 'vehicle_id' is the correct column name, not 'vehivle_id'
+            monthly_usage_to_delete = db.query(MonthlyVehicleUsage).filter(
+                MonthlyVehicleUsage.vehicle_id == vehicle.id
+            ).all()
+            if monthly_usage_to_delete:
+                print(f"  Deleting {len(monthly_usage_to_delete)} monthly vehicle usage records for vehicle ID {vehicle.id}...")
+                for usage in monthly_usage_to_delete:
+                    db.delete(usage)
+            else:
+                print(f"  No monthly vehicle usage records found for vehicle ID {vehicle.id}.")
+
+            # Delete related Audit Logs (tbl: audit_logs, col: entity_id)
+            audit_logs_to_delete = db.query(AuditLog).filter(
+                # Use and_ to combine multiple conditions properly
+                and_(
+                    cast(AuditLog.entity_id, UUID) == vehicle.id,
+                    AuditLog.entity_type == 'Vehicle'
+                )
+            ).all()
+            if audit_logs_to_delete:
+                print(f"  Deleting {len(audit_logs_to_delete)} audit log entries for vehicle ID {vehicle.id}...")
+                for log in audit_logs_to_delete:
+                    db.delete(log)
+            else:
+                print(f"  No audit log entries found for vehicle ID {vehicle.id}.")
+
+            # Delete related Archived Audit Logs (tbl: audit_logs_archive, col: entity_id)
+            # audit_logs_archive_to_delete = db.query(AuditLogArchive).filter(
+            #     AuditLogArchive.entity_id == vehicle.id
+            #     # IMPORTANT: Same as above, if AuditLogArchive has an 'entity_type' column, add a filter:
+            #     # and_(AuditLogArchive.entity_id == vehicle.id, AuditLogArchive.entity_type == 'Vehicle')
+            # ).all()
+            # if audit_logs_archive_to_delete:
+            #     print(f"  Deleting {len(audit_logs_archive_to_delete)} archived audit log entries for vehicle ID {vehicle.id}...")
+            #     for log in audit_logs_archive_to_delete:
+            #         db.delete(log)
+            # else:
+            #     print(f"  No archived audit log entries found for vehicle ID {vehicle.id}.")
+
+            # 2. Finally, delete the Vehicle itself
+            print(f"  Deleting vehicle ID: {vehicle.id}")
+            db.delete(vehicle)
+
+        db.commit()
+        print("\nSuccessfully deleted old archived vehicles and all their associated records.")
+
+    except Exception as e:
+        db.rollback()
+        print(f"An error occurred during deletion of old archived vehicles and their related data: {e}")
+        # Log this error properly in a real application
+    finally:
+        db.close()
+        
 async def notify_ride_needs_feedback(user_id: int):
     print(f'Notifying feedback needed for user {user_id}')
     db = SessionLocal()
@@ -549,8 +657,23 @@ def periodic_check_ride_status():
 
 
 
+ 
+
+def periodic_delete_archived_vehicles():
+    print('periodic_delete_archived_vehicles was called')
+    future = asyncio.run_coroutine_threadsafe(delete_old_archived_vehicles(), main_loop)
+    try:
+        future.result(timeout=60) # Increased timeout to 60 seconds
+    except asyncio.TimeoutError:
+        print("Timeout: delete_old_archived_vehicles took too long to complete.")
+    except Exception as e:
+        print(f"Error running delete_old_archived_vehicles: {e}")       
+
+
+
 scheduler.add_job(periodic_check_vehicle, 'interval', days=1)
 scheduler.add_job(periodic_check_ride_status, 'interval', seconds=60)
+scheduler.add_job(periodic_delete_archived_vehicles, 'interval',  days=30)
 
 
 scheduler.start()
