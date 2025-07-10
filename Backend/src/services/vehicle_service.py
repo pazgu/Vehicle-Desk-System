@@ -44,38 +44,38 @@ def get_vehicles_with_optional_status(
     vehicle_type: Optional[str] = None  
 ) -> List[Union[VehicleOut, InUseVehicleOut]]:
     query = (
-        db.query(
-            Vehicle.id,
-            Vehicle.plate_number,
-            Vehicle.type,
-            Vehicle.fuel_type,
-            Vehicle.status,
-            Vehicle.freeze_reason,
-            Vehicle.last_used_at,
-            Vehicle.current_location,
-            Vehicle.odometer_reading,
-            Vehicle.vehicle_model,
-            Vehicle.image_url,
-            Vehicle.department_id, 
-            Vehicle.lease_expiry,
-            User.employee_id.label("user_id"),
-            User.first_name,
-            User.last_name,
-            Ride.start_datetime,
-            Ride.end_datetime,
-        )
-        .outerjoin(
-            Ride,
-            and_(
-                Ride.vehicle_id == Vehicle.id,
-                Ride.status == "approved",
-                Ride.start_datetime <= datetime.now(),     
-                Ride.end_datetime >= datetime.now()      
-            ) 
-        )    
-        .outerjoin(User, User.employee_id == Ride.user_id)
+    db.query(
+        Vehicle.id,
+        Vehicle.plate_number,
+        Vehicle.type,
+        Vehicle.fuel_type,
+        Vehicle.status,
+        Vehicle.freeze_reason,
+        Vehicle.last_used_at,
+        Vehicle.current_location,
+        Vehicle.odometer_reading,
+        Vehicle.vehicle_model,
+        Vehicle.image_url,
+        Vehicle.department_id, 
+        Vehicle.lease_expiry,
+        User.employee_id.label("user_id"),
+        User.first_name,
+        User.last_name,
+        Ride.start_datetime,
+        Ride.end_datetime,
     )
-
+    .outerjoin(
+        Ride,
+        and_(
+            Ride.vehicle_id == Vehicle.id,
+            Ride.status == "approved",
+            Ride.start_datetime <= datetime.now(),    
+            Ride.end_datetime >= datetime.now()      
+        ) 
+    )    
+    .outerjoin(User, User.employee_id == Ride.user_id)
+    .filter(Vehicle.lease_expiry >= datetime.utcnow()) # Add this line to filter out expired leases
+)
     if status:
         query = query.filter(Vehicle.status == status)
 
