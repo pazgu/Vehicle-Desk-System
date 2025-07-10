@@ -6,7 +6,7 @@ from sqlalchemy import func, cast
 from sqlalchemy import and_ , or_ , not_ , select
 from ..models.ride_model import Ride, RideStatus
 from ..models.user_model import User
-from datetime import datetime, timezone, date
+from datetime import datetime, timezone, date, timedelta
 from ..schemas.vehicle_schema import VehicleOut, InUseVehicleOut
 from uuid import UUID
 from sqlalchemy import text
@@ -16,6 +16,7 @@ from ..models.vehicle_inspection_model import VehicleInspection
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 from ..utils.audit_utils import log_action 
 from ..schemas.user_rides_schema import RideSchema 
+from src.utils.database import SessionLocal
 
 # def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
 #     inspection = VehicleInspection(
@@ -273,3 +274,41 @@ def delete_vehicle_by_id(vehicle_id: UUID, db: Session, user_id: UUID):
     db.execute(text("SET session.audit.user_id = DEFAULT"))
 
     return {"message": f"Vehicle {vehicle.plate_number} deleted successfully."}
+
+
+
+
+async def get_inactive_vehicles():
+    db: Session = SessionLocal()
+    try:
+        now = datetime.now(timezone.utc)
+        one_week_ago = now - timedelta(days=7)
+
+        # Get all vehicles
+        all_vehicles = db.query(Vehicle).all()
+
+        # Get latest ride per vehicle (if any)
+        recent_rides_subq = db.query(
+            Ride.vehicle_id,
+            func.max(Ride.end_datetime).label("last_ride")
+        ).filter(
+            Ride.status == "completed"
+        ).group_by(Ride.vehicle_id).subquery()
+
+        # Join vehicles to recent ride
+        inactive_vehicles = db.query(Vehicle, recent_rides_subq.c.last_ride).outerjoin(
+            recent_rides_subq, Vehicle.id == recent_rides_subq.c.vehicle_id
+        ).filter(
+            or_(
+                recent_rides_subq.c.last_ride == None,
+                recent_rides_subq.c.last_ride < one_week_ago
+            )
+        ).all()
+
+        if not inactive_vehicles:
+            return
+        else :
+            return inactive_vehicles
+        
+    finally:
+        db.close()

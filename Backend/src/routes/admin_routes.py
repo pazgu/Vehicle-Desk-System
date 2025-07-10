@@ -54,7 +54,6 @@ from src.services.admin_rides_service import get_critical_issue_by_id
 
 
 
-
 router = APIRouter()
 
 @router.get("/orders", response_model=list[RideDashboardItem])
