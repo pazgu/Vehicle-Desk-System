@@ -10,7 +10,8 @@
       <div class="vehicle-horizontal-content">
         <div class="right-side">
           <div class="usage-line">
-            <div class="usage-indicator" [style.background-color]="getUsageBarColor(vehicle.plate_number)"></div>
+            <div class="usage-indicator" [style.background-color]="getUsageBarColor(vehicle.plate_number)">
+            </div>
             <span class="usage-number" *ngIf="getVehicleUsageCount(vehicle.plate_number) > 0">
               {{ getVehicleUsageCount(vehicle.plate_number) }} נסיעות קיימות לרכב זה
             </span>

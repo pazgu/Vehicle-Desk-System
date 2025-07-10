@@ -274,10 +274,10 @@ confirmDelete(vehicle: any): void {
     data: { message }
   });
 
-  dialogRef.afterClosed().subscribe(confirmed => {
-    if (!confirmed) return;
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (!confirmed) return;
 
-    const action$: Observable<any> = vehicle.status === 'frozen'
+      const action$: Observable<any> = vehicle.status === 'frozen'
       ? this.vehicleService.archiveVehicle(vehicle.id)
       : this.vehicleService.deleteVehicle(vehicle.id);
 
@@ -308,23 +308,45 @@ confirmArchive(vehicle: any): void {
       if (!confirmed) return;
 
     this.vehicleService.archiveVehicle(vehicle.id).subscribe({
-      next: () => {
-        alert(`הרכב ${vehicle.plate_number} נארכב בהצלחה.`);
-        this.navigateRouter.navigate(['/vehicle-dashboard']);
-      },
-      error: (err) => {
-        console.error("❌ כשלון בארכוב:", err);
-        const msg = err?.error?.detail || "הארכוב נכשל.";
-        alert(msg);
-      }
+        next: () => {
+          alert(`הרכב ${vehicle.plate_number} נארכב בהצלחה.`);
+          this.navigateRouter.navigate(['/vehicle-dashboard']);
+        },
+        error: (err) => {
+          console.error("❌ כשלון בארכוב:", err);
+          const msg = err?.error?.detail || "הארכוב נכשל.";
+          alert(msg);
+        }
+      });
     });
-  });
-}
+  }
 
 
 isLeaseExpired(expiry: string): boolean {
   return new Date(expiry) < new Date();
 }
 
+
+  formatLastUsedAt(dateStr: string | null | undefined): string {
+    if (!dateStr) return 'לא בוצעו נסיעות';
+    const date = new Date(dateStr);
+    const now = new Date();
+
+    // Remove time for comparison
+    const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const nowOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    const diffDays = Math.floor((+nowOnly - +dateOnly) / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) {
+      return `היום, ${date.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}`;
+    }
+    if (diffDays === 1) {
+      return `אתמול, ${date.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}`;
+    }
+    return date.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' }) +
+      ' ' +
+      date.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+  }
 }
 
