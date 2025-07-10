@@ -108,6 +108,19 @@ deleteVehicle(vehicleId: string): Observable<void> {
   return this.http.delete<void>(`${environment.apiUrl}/vehicles/${vehicleId}`);
 }
 
+archiveVehicle(vehicleId: string) {
+  return this.http.post(`${environment.apiUrl}/vehicles/${vehicleId}/archive`, {});
+}
+
+getArchivedVehicles() {
+  return this.http.get<any[]>(`${this.apiUrl}/archived-vehicles`);
+}
+
+deleteArchivedVehicle(vehicleId: string) {
+  return this.http.delete(`${this.apiUrl}/archived-vehicles/${vehicleId}`);
+}
+
+
 
 
 }
