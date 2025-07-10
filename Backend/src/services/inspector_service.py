@@ -90,3 +90,5 @@ async def create_inspection(data: VehicleInspectionSchema, db: Session):
         print("❌ Failed to save inspection:", e)
         db.rollback()
         raise HTTPException(status_code=500, detail="Failed to save inspection.")
+
+        # 
