@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <title>התראה על חוסר שימוש ברכב</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            direction: rtl;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            text-align: right;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #ffc107, #e0a800);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .content {
+            padding: 30px;
+            text-align: right;
+        }
+        .alert-badge {
+            background-color: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .alert-badge .icon {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+        .alert-badge h2 {
+            color: #856404;
+            margin: 0;
+            text-align: center;
+        }
+        .greeting {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: right;
+        }
+        .message {
+            color: #555;
+            font-size: 16px;
+            text-align: right;
+        }
+        .message p {
+            margin-bottom: 15px;
+        }
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .details-table th,
+        .details-table td {
+            padding: 12px 15px;
+            text-align: right;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .details-table th {
+            background-color: #e9ecef;
+            font-weight: 600;
+            color: #495057;
+        }
+        .details-table tr:last-child td {
+            border-bottom: none;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>התראה על חוסר שימוש ברכב</h1>
+        </div>
+
+        <div class="content">
+            <div class="greeting">
+                שלום {{ADMIN_NAME}_

@@ -30,37 +30,37 @@ export class VehicleCardItemComponent implements OnInit {
   constructor(private navigateRouter: Router, private route: ActivatedRoute, private vehicleService: VehicleService, private http: HttpClient, private dialog: MatDialog) { }
 
   ngOnInit(): void {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  this.loadVehicleUsageData();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    this.loadVehicleUsageData();
 
-  const id = this.route.snapshot.paramMap.get('id');
-  if (id) {
-    this.vehicleService.getVehicleById(id).subscribe(vehicleData => {
-      console.log('Vehicle from API:', vehicleData);
-      this.vehicle = vehicleData;
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.vehicleService.getVehicleById(id).subscribe(vehicleData => {
+        console.log('Vehicle from API:', vehicleData);
+        this.vehicle = vehicleData;
 
-      // ✅ FIX HERE: move department logic INSIDE the subscribe block
-      if (vehicleData.department_id) {
-        this.http.get<any>(`${environment.apiUrl}/departments/${vehicleData.department_id}`).subscribe({
-          next: (dept) => {
-            this.departmentName = dept.name;
-          },
-          error: (err) => {
-            console.error('Failed to fetch department name:', err);
-            this.departmentName = 'לא ידוע';
-          }
-        });
-      } else {
-        this.departmentName = 'לא משוייך למחלקה';
-      }
+        // ✅ FIX HERE: move department logic INSIDE the subscribe block
+        if (vehicleData.department_id) {
+          this.http.get<any>(`${environment.apiUrl}/departments/${vehicleData.department_id}`).subscribe({
+            next: (dept) => {
+              this.departmentName = dept.name;
+            },
+            error: (err) => {
+              console.error('Failed to fetch department name:', err);
+              this.departmentName = 'לא ידוע';
+            }
+          });
+        } else {
+          this.departmentName = 'לא משוייך למחלקה';
+        }
 
-      this.getAllRidesForCurrentVehicle(vehicleData.id);
-    });
+        this.getAllRidesForCurrentVehicle(vehicleData.id);
+      });
+    }
   }
-}
 
 
- 
+
   getCardClass(status: string): string {
     switch (status) {
       case 'available': return 'card-available';
@@ -150,13 +150,13 @@ export class VehicleCardItemComponent implements OnInit {
   // Modified updateVehicleStatus to accept the new status and optionally the freeze reason
   updateVehicleStatus(newStatus: string, reason?: string): void {
     if (!this.vehicle?.id) return;
-  
+
     this.vehicleService.updateVehicleStatus(this.vehicle.id, newStatus, reason).subscribe({
       next: (response) => {
         console.log(`Vehicle status updated to '${newStatus}':`, response);
         this.vehicle.status = newStatus; // Update the local status
         this.vehicle.freeze_reason = newStatus === 'frozen' ? reason : null; // Clear freeze reason if unfreezing
-  
+
         // Reset the dropdown and hide it if freezing
         if (newStatus === 'frozen') {
           this.freezeReason = '';
@@ -171,7 +171,7 @@ export class VehicleCardItemComponent implements OnInit {
     this.navigateRouter.navigate(['/vehicle-dashboard']); // או הנתיב המתאים שלך
   }
 
-  
+
   // Show the freeze reason input field
   showFreezeReasonField(): void {
     this.isFreezeReasonFieldVisible = true;
@@ -182,7 +182,7 @@ export class VehicleCardItemComponent implements OnInit {
     if (!this.freezeReason.trim()) {
       alert('יש להזין סיבת הקפאה');
       return;
-  }
+    }
 
     console.log('Freezing vehicle with reason:', this.freezeReason); // Log the freeze reason
 
@@ -195,21 +195,21 @@ export class VehicleCardItemComponent implements OnInit {
 
   }
 
-   getUsageBarColor(plateNumber: string): string {
+  getUsageBarColor(plateNumber: string): string {
     const level = this.getUsageLevel(plateNumber);
     switch (level) {
       case 'high': return '#FF5252';    // Red
       case 'medium': return '#FFC107';  // Yellow
       case 'good': return '#42A5F5';    // Blue
-      case 'hide': return'rgba(255, 255, 255, 0)'// Gray (hidden)
+      case 'hide': return 'rgba(255, 255, 255, 0)'// Gray (hidden)
       default: return '#E0E0E0';        // Gray
     }
   }
-   getUsageLevel(plateNumber: string): 'high' | 'medium' | 'good' | 'hide'{
+  getUsageLevel(plateNumber: string): 'high' | 'medium' | 'good' | 'hide' {
     const count = this.getVehicleUsageCount(plateNumber);
     if (count > 10) return 'high';
     if (count >= 5) return 'medium';
-    if (count == 0 ) return 'hide';
+    if (count == 0) return 'hide';
     return 'good';
   }
   // Get usage bar width percentage (0-100%)
@@ -219,40 +219,40 @@ export class VehicleCardItemComponent implements OnInit {
     const maxRides = 15;
     return Math.min((count / maxRides) * 100, 100);
   }
-    getVehicleUsageCount(plateNumber: string): number {
+  getVehicleUsageCount(plateNumber: string): number {
     return this.topUsedVehiclesMap[plateNumber] || 0;
   }
 
   getAllRidesForCurrentVehicle(vehicleId: string): void {
-  this.http.get<{ vehicle_id: string, date_and_time: string }[]>(`${environment.apiUrl}/orders`).subscribe({
-    next: (rides) => {
-      
-      const count = rides.filter(ride => {
- if (ride.vehicle_id !== vehicleId) return false;
- 
- // Check if ride has a date field
- if (!ride.date_and_time) return false;
- 
- const rideDate = new Date(ride.date_and_time);
- const currentDate = new Date();
- 
- // Check if ride is from current month and year
- return rideDate.getMonth() === currentDate.getMonth() && 
-        rideDate.getFullYear() === currentDate.getFullYear();
-}).length;
+    this.http.get<{ vehicle_id: string, date_and_time: string }[]>(`${environment.apiUrl}/orders`).subscribe({
+      next: (rides) => {
+
+        const count = rides.filter(ride => {
+          if (ride.vehicle_id !== vehicleId) return false;
+
+          // Check if ride has a date field
+          if (!ride.date_and_time) return false;
+
+          const rideDate = new Date(ride.date_and_time);
+          const currentDate = new Date();
+
+          // Check if ride is from current month and year
+          return rideDate.getMonth() === currentDate.getMonth() &&
+            rideDate.getFullYear() === currentDate.getFullYear();
+        }).length;
 
 
-      console.log(`Vehicle ${vehicleId} appears in ${count} rides`);
-      
-      // Store the count in the component property
-      this.currentVehicleRideCount = count;
-    },
-    error: (err) => {
-      console.error('Error fetching rides:', err);
-      this.currentVehicleRideCount = 0;
-    }
-  });
-}
+        console.log(`Vehicle ${vehicleId} appears in ${count} rides`);
+
+        // Store the count in the component property
+        this.currentVehicleRideCount = count;
+      },
+      error: (err) => {
+        console.error('Error fetching rides:', err);
+        this.currentVehicleRideCount = 0;
+      }
+    });
+  }
 
 navigateToTimeline(): void {
   if (this.vehicle?.id) {
@@ -304,8 +304,8 @@ confirmArchive(vehicle: any): void {
     data: { message }
   });
 
-  dialogRef.afterClosed().subscribe(confirmed => {
-    if (!confirmed) return;
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (!confirmed) return;
 
     this.vehicleService.archiveVehicle(vehicle.id).subscribe({
       next: () => {
