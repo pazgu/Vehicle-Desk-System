@@ -22,7 +22,7 @@ export class VehicleDashboardComponent implements OnInit {
   vehicles: VehicleInItem[] = [];
   mostUsedVehicles: VehicleInItem[] = [];
   showingMostUsed: boolean = false;
-
+  showInactive: boolean = false;
   selectedType: string = '';
   statusFilter: string = '';
   typeFilter: string = '';
@@ -287,6 +287,16 @@ export class VehicleDashboardComponent implements OnInit {
     if (this.typeFilter) {
       filtered = filtered.filter(vehicle => vehicle.type === this.typeFilter);
     }
+
+  if (this.showInactive) {
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+  filtered = filtered.filter(vehicle => {
+    const lastUsed = vehicle.last_used_at ? new Date(vehicle.last_used_at) : null;
+    return !lastUsed || lastUsed < oneWeekAgo;
+  });
+}
 
     if (this.sortBy) {
       return [...filtered].sort((a, b) => a.status.localeCompare(b.status));

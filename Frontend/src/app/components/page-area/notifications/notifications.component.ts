@@ -303,4 +303,8 @@ getLeaseAlerts(title: string): string {
   return title == "Vehicle Lease Expiry" ? "lease-alert" : "";
 }
 
+getInactiveAlerts(title: string): string {
+  return title == "Inactive Vehicle" ? "inactive-alert" : "";
+}
+
 }

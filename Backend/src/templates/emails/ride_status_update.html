@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>עדכון סטטוס נסיעה - BookIt</title>
+  <style>
+    :root {
+        /* Define a default value for the linter. This will be overridden by inline style. */
+        --dynamic-status-color: #999999; 
+    }
+    body {
+      background-color: #f6f6f6;
+      font-family: Arial, sans-serif;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      background-color: #ffffff;
+      max-width: 600px;
+      margin: 30px auto;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+    }
+    .header {
+      background-color: #942222;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      border-radius: 10px 10px 0 0;
+      margin: -20px -20px 20px -20px;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .content {
+      padding: 20px 0;
+    }
+    .content p {
+      margin: 0 0 10px;
+      line-height: 1.6;
+    }
+    .status-highlight {
+      background-color: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+      border-left: 4px solid #942222; 
+    }
+    .status-highlight .status-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        color: white;
+        border-radius: 15px;
+        font-weight: bold;
+        font-size: 14px; 
+        min-width: 80px; 
+        text-align: center;
+        /* Use the CSS variable here */
+        background-color: var(--dynamic-status-color); 
+    }
+    .details-grid {
+      margin: 20px 0;
+    }
+    .detail-item {
+      background-color: #f8f9fa;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 6px;
+      border-left: 3px solid #942222;
+    }
+    .detail-label {
+      font-weight: bold;
+      color: #942222;
+      font-size: 14px;
+    }
+    .detail-value {
+      color: #333;
+      font-size: 16px;
+      margin-top: 5px;
+    }
+    .button {
+      display: inline-block;
+      padding: 12px 25px;
+      background-color: #942222;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+    .button:hover {
+      background-color: #7a1d1d;
+    }
+    .footer {
+      text-align: center;
+      color: #999;
+      font-size: 12px;
+      margin-top: 20px;
+      border-top: 1px solid #ddd;
+      padding-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>עדכון סטטוס נסיעה</h1>
+    </div>
+    
+    <div class="content">
+      <p>שלום {{USER_NAME}},</p>
+      
+      <p>לפנייך עדכון לגבי סטטוס בקשת הנסיעה שלך:</p>
+      
+      <div class="status-highlight">
+        <p style="--dynamic-status-color: {{STATUS_COLOR}};">
+            סטטוס נוכחי: <span class="status-badge">{{STATUS_HEBREW}}</span>
+        </p>
+        <p>{{STATUS_MESSAGE}}</p>
+      </div>
+      
+      <div class="details-grid">
+        <div class="detail-item">
+          <div class="detail-label">מזהה נסיעה:</div>
+          <div class="detail-value">{{RIDE_ID}}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">יעד:</div>
+          <div class="detail-value">{{DESTINATION}}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">תאריך ושעה:</div>
+          <div class="detail-value">{{DATE_TIME}}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">רכב מבוקש:</div>
+          <div class="detail-value">{{PLATE_NUMBER}}</div>
+        </div>
+      </div>
+      
+      <div style="text-align: center;">
+        <p>לפרטים נוספים וצפייה בבקשה:</p>
+        <a href="{{LINK_TO_RIDE}}" class="button">צפייה בבקשה שלי</a>
+      </div>
+    </div>
+    
+    <div class="footer">
+      הודעה זו נשלחה ממערכת ניהול הנסיעות. אין להשיב למייל זה.
+    </div>
+  </div>
+</body>
+</html>

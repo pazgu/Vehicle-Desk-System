@@ -45,5 +45,4 @@ class Vehicle(Base):
     is_archived = Column(Boolean, default=False, nullable=False)
     archived_at = Column(DateTime, nullable=True)
 
-
    
