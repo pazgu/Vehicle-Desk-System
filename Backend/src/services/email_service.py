@@ -55,8 +55,6 @@ def send_email(to_email: str, subject: str, html_content: str, text_content: str
         return response
     except Exception as e:
         print(f"❌ Error sending email: {e}")
-        # אפשר לבחור אם לזרוק את החריגה:
-        # raise
 
 async def async_send_email(to_email: str, subject: str, html_content: str, text_content: str = ""):
     """
