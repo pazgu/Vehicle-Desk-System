@@ -22,6 +22,7 @@ import { ResetPasswordComponent } from './components/auth-area/reset-password/re
 import { AdminAnalyticsComponent } from './components/admin-area/admin-analytics/admin-analytics.component';
 import { AddNewUserComponent } from './components/admin-area/add-new-user/add-new-user.component';
 import { AddVehicleComponent } from './components/vehicle-area/add-vehicle/add-vehicle.component';
+import { ArchivedVehiclesComponent } from './components/vehicle-area/archived-vehicles/archived-vehicles.component';
 
 
 export const routes: Routes = [
@@ -51,6 +52,7 @@ export const routes: Routes = [
   { path: 'audit-logs', component: AuditLogsComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
   { path: 'reset-password/:token', component: ResetPasswordComponent },
+    { path: 'vehicles/archived', component: ArchivedVehiclesComponent },
   {
   path: 'admin/analytics',
   component: AdminAnalyticsComponent,
