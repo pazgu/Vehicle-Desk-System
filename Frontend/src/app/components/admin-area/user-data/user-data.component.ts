@@ -5,7 +5,7 @@ import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { ConfirmDialogComponent } from '../../../ride-area/confirm-dialog/confirm-dialog.component';
+import { ConfirmDialogComponent } from '../../page-area/confirm-dialog/confirm-dialog.component';
 import { ToastService } from '../../../services/toast.service';
 import { SocketService } from '../../../services/socket.service';
 import { MatDialog } from '@angular/material/dialog';
@@ -117,7 +117,7 @@ licenceExpiredMap: { [userId: string]: boolean } = {};
 
 
 deleteUser(userId: string): void {
-  const dialogRef = this.dialog.open(ConfirmDialogComponent);
+  const dialogRef = this.dialog.open(ConfirmDialogComponent, {width: '380px', height:'190px', data: {}});
 
   dialogRef.afterClosed().subscribe(confirmed => {
     if (!confirmed) return;

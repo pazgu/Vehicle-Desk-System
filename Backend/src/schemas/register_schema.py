@@ -21,7 +21,7 @@ class UserCreate(BaseModel):
     phone: Optional[str] = None
     department_id: UUID
     password: str  # important: this is usually hashed before storing
-    has_government_license: bool 
+    has_government_license: bool = False
     license_file_url: Optional[str] = None
     license_expiry_date: Optional[date] = None
 

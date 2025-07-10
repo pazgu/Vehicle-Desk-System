@@ -1,0 +1,22 @@
+*{
+    font-family: 'alef'
+}
+
+.smalltxt{
+    direction: rtl;
+    padding-left: 105px;
+    color: rgb(94, 0, 0);
+}
+
+
+mat-dialog-content, mat-dialog-actions, .smalltxt, p {
+  font-size: 1rem;
+  text-align: right;
+}
+
+mat-dialog-actions {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: flex-start !important; /* Force align buttons to the left */
+  direction: ltr;
+}

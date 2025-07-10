@@ -10,7 +10,7 @@ from src.models.base import Base
 
 class VehicleInspection(Base):
     __tablename__ = "vehicle_inspections"
-
+   
     inspection_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     inspection_date = Column(DateTime, nullable=False, default=datetime.now(timezone.utc))
 

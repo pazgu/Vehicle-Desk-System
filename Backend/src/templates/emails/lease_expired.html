@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <title>התראה על סיום חוזה רכב</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            direction: rtl;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            text-align: right;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #d9534f, #c9302c);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .content {
+            padding: 30px;
+            text-align: right;
+        }
+        .alert-badge {
+            background-color: #fcebea;
+            border: 2px solid #d9534f;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .alert-badge .icon {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            overflow: hidden;
+            direction: rtl;
+        }
+        .details-table th,
+        .details-table td {
+            padding: 12px 15px;
+            text-align: right;
+            border-bottom: 1px solid #e9ecef;
+            direction: rtl;
+        }
+        .details-table th {
+            background-color: #e9ecef;
+            font-weight: 600;
+            color: #495057;
+        }
+        .details-table tr:last-child td {
+            border-bottom: none;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .greeting {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: right;
+        }
+        .message {
+            color: #555;
+            font-size: 16px;
+            text-align: right;
+        }
+        .message p {
+            text-align: right;
+            margin-bottom: 15px;
+        }
+        .alert-badge h2 {
+            color: #c9302c;
+            margin: 0;
+            text-align: center;
+        }
+        /* Ensure all text content is properly aligned */
+        * {
+            direction: rtl;
+        }
+        /* Override for specific elements that should be centered */
+        .header, .alert-badge, .footer {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1> התראה על סיום חוזה רכב</h1>
+        </div>
+
+        <div class="content">
+            <div class="greeting">
+                שלום {{SUPERVISOR_NAME}},
+            </div>
+
+            <div class="alert-badge">
+                <div class="icon">⚠️</div>
+                <h2>תוקף החוזה של הרכב הבא עומד להסתיים</h2>
+            </div>
+
+            <div class="message">
+                <p>ברצוננו לעדכן אותך כי תוקף השימוש ברכב <strong>{{VEHICLE}}</strong> (מספר רישוי <strong>{{PLATE_NUMBER}}</strong>) יפוג בתאריך <strong>{{EXPIRY_DATE}}</strong>.</p>
+                <p>נא לפעול בהתאם להנחיות ולהיערך לכך מראש.</p>
+            </div>
+
+            <table class="details-table">
+                <tr>
+                    <th>דגם רכב</th>
+                    <td>{{VEHICLE}}</td>
+                </tr>
+                <tr>
+                    <th>מספר רישוי</th>
+                    <td>{{PLATE_NUMBER}}</td>
+                </tr>
+                <tr>
+                    <th>תאריך סיום חוזה</th>
+                    <td>{{EXPIRY_DATE}}</td>
+                </tr>
+            </table>
+
+        </div>
+
+        <div class="footer">
+            <p>Bookit - מערכת לניהול רכבים</p>
+            <p>הודעה זו נשלחה באופן אוטומטי</p>
+        </div>
+    </div>
+</body>
+</html>
