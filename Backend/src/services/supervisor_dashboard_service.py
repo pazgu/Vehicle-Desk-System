@@ -332,9 +332,13 @@ async def start_ride(db: Session, ride_id: UUID):
     )
     vehicle.last_used_at = func.now()
 
-    # 2️⃣ Update ride status
+    # 2️⃣ Update ride status + pickup time
     ride.status = RideStatus.in_progress
     print('ride status was changed to in_progress')
+
+    if ride.actual_pickup_time is None:
+        ride.actual_pickup_time = datetime.utcnow() 
+
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": f"{ride.user_id}"})
 
     db.commit()
