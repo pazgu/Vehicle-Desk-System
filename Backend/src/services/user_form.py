@@ -71,23 +71,17 @@ async def process_completion_form(db: Session, user: User, form_data: Completion
     if form_data.emergency_event:
         ride.emergency_event = form_data.emergency_event
 
-    # 3. If ride is completed, update ride status and vehicle status
-    # print("completed?",form_data.completed)
-    if form_data.completed:
-        try:
+    # כאן אנחנו תמיד מעדכנים את הסטטוס כ־completed
+    try:
             # print("ride:", ride)
-            ride.status = RideStatus.completed
+        ride.status = RideStatus.completed
             # print("ride status set to completed",flush=True)
             # print('about to update monthly usage',flush=True)
-            update_monthly_usage_stats(db=db, ride=ride)
+        update_monthly_usage_stats(db=db, ride=ride)
             # print('after updateing monthly usage',flush=True)
-        except Exception as e:
-            print("Exception after ride.status:", repr(e))    
-
-        # Increment completed trips count for the employee immediately.
-        # print('before increment_completed_trip_stat',flush=True)
         increment_completed_trip_stat(db, ride.user_id, ride.start_datetime)
-        # print('after increment_completed_trip_stat',flush=True)
+    except Exception as e:
+        print("Exception after ride.status:", repr(e))    
 
         # 4. Update vehicle status
         # print('before quering vehicles',flush=True)
@@ -95,6 +89,8 @@ async def process_completion_form(db: Session, user: User, form_data: Completion
         # print('after quering vehicles',flush=True)
         if not vehicle:
             raise HTTPException(status_code=404, detail="Vehicle not found")
+        
+        vehicle.last_used_at = ride.end_datetime
         
         # print('before checking if emergency is true:',form_data.emergency_event,flush=True)
         if (form_data.emergency_event =='true'):
@@ -108,8 +104,8 @@ async def process_completion_form(db: Session, user: User, form_data: Completion
                 notification=create_system_notification_with_db(
                     db=db,
                     user_id=supervisor.employee_id,
-                    title="רכב עבר תאונה",
-                    message=f"{vehicle.plate_number} עבר תאונה ברכב {user.last_name} {user.first_name} המשתמש ",
+                    title="חריגה בסיום הנסיעה",
+                    message=f"{vehicle.plate_number} עבר חריגה בסיום הנסיעה {user.last_name} {user.first_name} המשתמש ",
                     order_id=ride.id
                 )
                  # Schedule the coroutine to run on the main thread's event loop
@@ -133,7 +129,7 @@ async def process_completion_form(db: Session, user: User, form_data: Completion
                     try:
                         await async_send_email(
                                 to_email=supervisor_email,
-                                subject=f"🚨 התרעה: רכב {vehicle.plate_number} עבר תאונה",
+                                subject=f"🚨 התרעה: חריגה בסיום הנסיעה {vehicle.plate_number} ",
                                 html_content=html_content
                             )
                         print(f"Sent emergency email notification to {supervisor_email}")
