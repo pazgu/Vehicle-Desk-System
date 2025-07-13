@@ -44,7 +44,7 @@ def get_vehicle_fuel_type(vehicle_id: UUID, db: Session = Depends(get_db)):
     return {"vehicle_id": str(vehicle.id), "fuel_type": vehicle.fuel_type}
 
 
-@router.patch("/{vehicle_id}/status")
+@router.patch("/vehicles-status/{vehicle_id}") 
 def patch_vehicle_status(
     vehicle_id: UUID,
     status_update: VehicleStatusUpdate,

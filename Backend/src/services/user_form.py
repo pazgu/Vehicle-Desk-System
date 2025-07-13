@@ -1,4 +1,5 @@
 import asyncio
+from dotenv import load_dotenv
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -17,6 +18,7 @@ from ..utils.socket_manager import sio
 from typing import Optional
 from ..services.admin_rides_service import update_monthly_usage_stats
 import os
+load_dotenv() 
 BOOKIT_URL = os.getenv("BOOKIT_FRONTEND_URL", "http://localhost:4200")
 
 def get_ride_needing_feedback(db: Session, user_id: int) -> Optional[Ride]:
@@ -87,6 +89,8 @@ async def process_completion_form(db: Session, user: User, form_data: Completion
         # print('after quering vehicles',flush=True)
         if not vehicle:
             raise HTTPException(status_code=404, detail="Vehicle not found")
+        
+        vehicle.last_used_at = ride.end_datetime
         
         # print('before checking if emergency is true:',form_data.emergency_event,flush=True)
         if (form_data.emergency_event =='true'):

@@ -52,7 +52,7 @@ export class VehicleService {
   }
 
   updateVehicleStatus(id: string, new_status: string, freeze_reason?: string): Observable<any> {
-    const url = `${this.apiUrl}/${id}/status`;
+    const url = `${this.apiUrl}/vehicles-status/${id}`;
     const body = { new_status, freeze_reason }; // Adjust field names to match backend expectations
     console.log('Sending payload to backend:', body); // Log the payload
     return this.http.patch<any>(url, body);
@@ -107,6 +107,19 @@ getFuelTypeByVehicleId(vehicleId: string): Observable<FuelTypeResponse> {
 deleteVehicle(vehicleId: string): Observable<void> {
   return this.http.delete<void>(`${environment.apiUrl}/vehicles/${vehicleId}`);
 }
+
+archiveVehicle(vehicleId: string) {
+  return this.http.post(`${environment.apiUrl}/vehicles/${vehicleId}/archive`, {});
+}
+
+getArchivedVehicles() {
+  return this.http.get<any[]>(`${this.apiUrl}/archived-vehicles`);
+}
+
+deleteArchivedVehicle(vehicleId: string) {
+  return this.http.delete(`${this.apiUrl}/archived-vehicles/${vehicleId}`);
+}
+
 
 
 

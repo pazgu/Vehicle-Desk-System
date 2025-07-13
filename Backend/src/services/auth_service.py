@@ -18,7 +18,16 @@ ALGORITHM = environ.get("ALGORITHM", "HS256")
 
 
 
-def create_access_token(user_id: UUID,employee_id: UUID, username: str,first_name:str,last_name:str, role: str,department_id: Optional[UUID] = None, expires_delta: timedelta = None):
+def create_access_token(user_id: UUID,
+                        employee_id: UUID, 
+                        username: str,
+                        first_name:str,
+                        last_name:str, 
+                        role: str,
+                        department_id: Optional[UUID] = None, 
+                        has_government_license: bool = False,
+                        expires_delta: timedelta = None):
+                        
     expire = datetime.utcnow() + (expires_delta or timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES)))
 
     payload = {
@@ -29,6 +38,7 @@ def create_access_token(user_id: UUID,employee_id: UUID, username: str,first_nam
         "last_name":last_name,
         "role": role,
         "department_id": str(department_id) if department_id else None,
+        "has_government_license": has_government_license,
         "exp": expire
     }
     encoded_jwt = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
@@ -41,6 +51,7 @@ def create_access_token(user_id: UUID,employee_id: UUID, username: str,first_nam
         "last_name":last_name,
         "role": role,
         "department_id": department_id,
+        "has_government_license": False,
         "token_type": "bearer"
     }
 
