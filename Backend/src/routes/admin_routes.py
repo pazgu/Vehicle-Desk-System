@@ -700,9 +700,15 @@ def get_critical_issue_details(issue_id: str, db: Session = Depends(get_db)):
 #     except Exception as e:
 #         print("❌ Error in get_all_critical_issues:", str(e))
 #         raise HTTPException(status_code=500, detail=f"Failed to fetch critical issues: {str(e)}")
+from typing import Optional, List, Any, Dict
+from fastapi import APIRouter, Query, Depends
+from sqlalchemy.orm import Session
+from sqlalchemy import or_, and_
 
-from typing import Dict, Any
-
+# Assuming these are your SQLAlchemy models and Pydantic schemas
+# from .models import VehicleInspection, Ride # Make sure these are imported
+# from .schemas import VehicleInspectionSchema, OrderCardItem # Make sure these are imported
+# from .database import get_db # Make sure this is imported
 
 router = APIRouter()
 
@@ -711,6 +717,9 @@ def get_critical_issues(
     problem_type: Optional[str] = Query(None),
     db: Session = Depends(get_db)
 ):
+    # Initialize rides_data as an empty list by default
+    rides_data = []
+
     # VehicleInspection logic
     query = db.query(VehicleInspection)
     if problem_type == "medium":
@@ -719,7 +728,7 @@ def get_critical_issues(
                 or_(
                     VehicleInspection.fuel_checked == False,
                 ),
-                VehicleInspection.critical_issue_bool == False
+                VehicleInspection.critical_issue_bool == False,
             )
         )
     elif problem_type == "critical":
@@ -732,6 +741,10 @@ def get_critical_issues(
                 )
             )
         )
+        # Add rides with emergency_event == "true" when problem_type is "critical"
+        rides = db.query(Ride).filter(Ride.emergency_event == "true").all()
+        rides_data = [OrderCardItem.from_orm(r) for r in rides]
+
     elif problem_type == "medium,critical":
         query = query.filter(
             or_(
@@ -750,12 +763,12 @@ def get_critical_issues(
                 )
             )
         )
+        # Add rides with emergency_event == "true" when problem_type is "medium,critical"
+        rides = db.query(Ride).filter(Ride.emergency_event == "true").all()
+        rides_data = [OrderCardItem.from_orm(r) for r in rides]
+
     inspections = query.order_by(VehicleInspection.inspection_date.desc()).all()
     inspections_data = [VehicleInspectionSchema.from_orm(i) for i in inspections]
-
-    # Rides with emergency_event == "true"
-    rides = db.query(Ride).filter(Ride.emergency_event == "true").all()
-    rides_data = [OrderCardItem.from_orm(r) for r in rides]
 
     return {
         "inspections": inspections_data,
