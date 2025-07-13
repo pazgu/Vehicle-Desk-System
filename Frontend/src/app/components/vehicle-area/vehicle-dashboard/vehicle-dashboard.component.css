@@ -508,31 +508,17 @@ button {
 }
 
 
-
-
-
-
-
-
-
-
-
-/* Styles for inactive vehicles */
-.vehicle-card.is-inactive {
-    border: 2px solid #942222; /* Red border for inactive cars */
-    box-shadow: 0 0 8px rgba(255, 82, 82, 0.5); /* Optional: red glow */
-}
-
 .inactive-badge {
     position: absolute;
     top: 10px;
     left: 10px;
     background-color: #942222; /* Red background */
     color: white;
+    border: none;
     padding: 5px 10px;
     border-radius: 5px;
-    font-size: 0.8em;
+    font-size: 0.7em;
     font-weight: bold;
     z-index: 10; /* Ensure it's on top */
-    direction: rtl; /* For Hebrew text */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
