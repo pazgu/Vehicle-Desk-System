@@ -152,3 +152,5 @@ def get_vehicle_timeline(
     ).all()
 
     return [RideTimelineSchema(**dict(row._mapping)) for row in rides]
+
+

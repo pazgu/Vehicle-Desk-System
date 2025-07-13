@@ -51,8 +51,7 @@ from ..services.license_service import upload_license_file_service , check_expir
 from ..services.license_service import upload_license_file_service 
 from src.services.admin_rides_service import get_all_critical_issues_combined
 from src.services.admin_rides_service import get_critical_issue_by_id 
-
-
+from src.schemas.order_card_item import OrderCardItem
 
 
 router = APIRouter()
@@ -665,39 +664,100 @@ def get_critical_issue_details(issue_id: str, db: Session = Depends(get_db)):
 #     raw_data = get_all_critical_issues_combined(db)
 #     return [TripCompletionIssueSchema(**item) for item in raw_data]
 
-@router.get("/critical-issues", response_model=List[RawCriticalIssueSchema])
-def get_all_critical_issues(db: Session = Depends(get_db)):
-    """
-    Get all critical issues from both inspector checks and ride approvals
-    """
-    try:
-        raw_data = get_all_critical_issues_combined(db)
-        print("🪵 Raw data from service:", raw_data)
+# @router.get("/critical-issues", response_model=List[RawCriticalIssueSchema])
+# def get_all_critical_issues(db: Session = Depends(get_db)):
+#     """
+#     Get all critical issues from both inspector checks and ride approvals
+#     """
+#     try:
+#         raw_data = get_all_critical_issues_combined(db)
+#         print("🪵 Raw data from service:", raw_data)
         
-        # Transform to match schema
-        transformed_data = []
-        for item in raw_data:
-            # Create a unique ID based on available identifiers
-            unique_id = item.get('inspection_id') or item.get('ride_id') or f"{item['approved_by']}-{item['timestamp']}"
+#         # Transform to match schema
+#         transformed_data = []
+#         for item in raw_data:
+#             # Create a unique ID based on available identifiers
+#             unique_id = item.get('inspection_id') or item.get('ride_id') or f"{item['approved_by']}-{item['timestamp']}"
             
-            transformed_item = {
-            "id": unique_id,
-            "inspection_id": item.get('inspection_id'),
-            "ride_id": item.get('ride_id'),
-            "approved_by": item['approved_by'],
-            "submitted_by": item['approved_by'],  # ✅ NEW
-            "role": item['role'],
-            "type": item['role'],                 # ✅ NEW
-            "status": item['status'],
-            "severity": item['severity'],
-            "issue_description": item['issue_description'],
-            "issue_text": item['issue_description'],  # ✅ NEW
-            "timestamp": item['timestamp'],
-            "vehicle_info": item.get('vehicle_info', '')
-        }
-            transformed_data.append(transformed_item)
+#             transformed_item = {
+#             "id": unique_id,
+#             "inspection_id": item.get('inspection_id'),
+#             "ride_id": item.get('ride_id'),
+#             "approved_by": item['approved_by'],
+#             "submitted_by": item['approved_by'],  # ✅ NEW
+#             "role": item['role'],
+#             "type": item['role'],                 # ✅ NEW
+#             "status": item['status'],
+#             "severity": item['severity'],
+#             "issue_description": item['issue_description'],
+#             "issue_text": item['issue_description'],  # ✅ NEW
+#             "timestamp": item['timestamp'],
+#             "vehicle_info": item.get('vehicle_info', '')
+#         }
+#             transformed_data.append(transformed_item)
         
-        return [RawCriticalIssueSchema(**item) for item in transformed_data]
-    except Exception as e:
-        print("❌ Error in get_all_critical_issues:", str(e))
-        raise HTTPException(status_code=500, detail=f"Failed to fetch critical issues: {str(e)}")
+#         return [RawCriticalIssueSchema(**item) for item in transformed_data]
+#     except Exception as e:
+#         print("❌ Error in get_all_critical_issues:", str(e))
+#         raise HTTPException(status_code=500, detail=f"Failed to fetch critical issues: {str(e)}")
+
+from typing import Dict, Any
+
+
+router = APIRouter()
+
+@router.get("/critical-issues", response_model=Dict[str, List[Any]])
+def get_critical_issues(
+    problem_type: Optional[str] = Query(None),
+    db: Session = Depends(get_db)
+):
+    # VehicleInspection logic
+    query = db.query(VehicleInspection)
+    if problem_type == "medium":
+        query = query.filter(
+            and_(
+                or_(
+                    VehicleInspection.fuel_checked == False,
+                ),
+                VehicleInspection.critical_issue_bool == False
+            )
+        )
+    elif problem_type == "critical":
+        query = query.filter(
+            or_(
+                VehicleInspection.critical_issue_bool == True,
+                and_(
+                    VehicleInspection.issues_found != None,
+                    VehicleInspection.issues_found != ""
+                )
+            )
+        )
+    elif problem_type == "medium,critical":
+        query = query.filter(
+            or_(
+                and_(
+                    or_(
+                        VehicleInspection.fuel_checked == False,
+                    ),
+                    VehicleInspection.critical_issue_bool == False
+                ),
+                or_(
+                    VehicleInspection.critical_issue_bool == True,
+                    and_(
+                        VehicleInspection.issues_found != None,
+                        VehicleInspection.issues_found != ""
+                    )
+                )
+            )
+        )
+    inspections = query.order_by(VehicleInspection.inspection_date.desc()).all()
+    inspections_data = [VehicleInspectionSchema.from_orm(i) for i in inspections]
+
+    # Rides with emergency_event == "true"
+    rides = db.query(Ride).filter(Ride.emergency_event == "true").all()
+    rides_data = [OrderCardItem.from_orm(r) for r in rides]
+
+    return {
+        "inspections": inspections_data,
+        "rides": rides_data
+    }

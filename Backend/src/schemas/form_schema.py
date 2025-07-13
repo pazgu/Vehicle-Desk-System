@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
 from uuid import UUID
+
 class CompletionFormData(BaseModel):
     ride_id: UUID
     completed: bool 

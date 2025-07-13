@@ -147,17 +147,14 @@ if (item.ride_id) {
 
 
 
-
 loadInspections(): void {
   this.loading = true;
 
-  let url = this.isCriticalMode
-    ? `${environment.apiUrl}/critical-issues`
-    : `${environment.apiUrl}/inspections/today`;
-
+  const url = `${environment.apiUrl}/critical-issues`;
   let params = new HttpParams();
 
-  if (!this.isCriticalMode && this.showProblematicFilters && (this.showMediumIssues || this.showCriticalIssues)) {
+  // If you still want to support filtering by problem_type, keep this block:
+  if (this.showProblematicFilters && (this.showMediumIssues || this.showCriticalIssues)) {
     if (this.showMediumIssues && !this.showCriticalIssues) {
       params = params.set('problem_type', 'medium');
     } else if (!this.showMediumIssues && this.showCriticalIssues) {
@@ -167,22 +164,20 @@ loadInspections(): void {
     }
   }
 
-this.http.get<RawCriticalIssue[]>(url, { params }).subscribe({
-  next: (data) => {
-    console.log('📦 Raw API data for issues:', data);
-    this.inspections = this.isCriticalMode ? this.mapCriticalIssues(data) : data;
-    console.log('📊 After mapping:', this.inspections);
-    this.loading = false;
-  },
+  this.http.get<RawCriticalIssue[]>(url, { params }).subscribe({
+    next: (data) => {
+      console.log('📦 Raw API data for issues:', data);
+      this.inspections = this.mapCriticalIssues(data);
+      console.log('📊 After mapping:', this.inspections);
+      this.loading = false;
+    },
     error: () => {
       this.loading = false;
-      const errText = this.isCriticalMode
-        ? 'שגיאה בטעינת רשימת החריגות'
-        : 'שגיאה בטעינת בדיקות רכבים להיום';
-      this.toastService.show(`❌ ${errText}`, 'error');
+      this.toastService.show('❌ שגיאה בטעינת רשימת החריגות', 'error');
     }
   });
 }
+
 
 
   // New helper method: checks if any problematic issue filter checkboxes are actually selected
