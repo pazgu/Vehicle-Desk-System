@@ -284,6 +284,8 @@ export class AdminInspectionsComponent implements OnInit {
         params = params.set('problem_type', 'medium,critical');
       }
     }
+    // If showProblematicFilters is false or neither checkbox is checked,
+    // params will remain empty, and the backend will return all data.
 
     this.http.get<{ inspections: VehicleInspection[]; rides: OrderCardItem[] }>(url, { params }).subscribe({
       next: (data) => {
@@ -300,26 +302,10 @@ export class AdminInspectionsComponent implements OnInit {
     });
   }
 
+  // This method is now simplified because the backend already filters the 'inspections' array.
+  // It simply ensures that 'filteredInspections' reflects the 'inspections' array
+  // which is already correctly filtered by the API call in loadData().
   applyInspectionFilters(): void {
-    // If showProblematicFilters is false (meaning the filter section is hidden)
-    // or if both checkboxes are unchecked, then display all original inspections.
-    if (!this.showProblematicFilters || (!this.showMediumIssues && !this.showCriticalIssues)) {
-      this.filteredInspections = [...this.inspections]; // Reset to all original inspections
-      return;
-    }
-
-    this.filteredInspections = this.inspections.filter(insp => {
-      const hasMediumIssue = insp.issues_found && insp.issues_found.toLowerCase().includes('medium'); // Assuming 'medium' is in issues_found
-      const hasCriticalIssue = insp.critical_issue_bool;
-
-      if (this.showMediumIssues && this.showCriticalIssues) {
-        return hasMediumIssue || hasCriticalIssue;
-      } else if (this.showMediumIssues) {
-        return hasMediumIssue;
-      } else if (this.showCriticalIssues) {
-        return hasCriticalIssue;
-      }
-      return false; // Should not be reached if conditions above handle all cases
-    });
+    this.filteredInspections = [...this.inspections];
   }
 }
