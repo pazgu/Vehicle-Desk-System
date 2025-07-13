@@ -42,63 +42,72 @@ def get_vehicles_with_optional_status(
     db: Session,
     status: Optional[VehicleStatus] = None,
     vehicle_type: Optional[str] = None  
-) -> List[Union[VehicleOut, InUseVehicleOut]]:
-    query = (
-        db.query(
-            Vehicle.id,
-            Vehicle.plate_number,
-            Vehicle.type,
-            Vehicle.fuel_type,
-            Vehicle.status,
-            Vehicle.freeze_reason,
-            Vehicle.last_used_at,
-            Vehicle.current_location,
-            Vehicle.odometer_reading,
-            Vehicle.vehicle_model,
-            Vehicle.image_url,
-            Vehicle.department_id, 
-            Vehicle.lease_expiry,
-            User.employee_id.label("user_id"),
-            User.first_name,
-            User.last_name,
-            Ride.start_datetime,
-            Ride.end_datetime,
-        )
-        .outerjoin(
-            Ride,
-            and_(
-                Ride.vehicle_id == Vehicle.id,
-                Ride.status == "approved",
-                Ride.start_datetime <= datetime.now(),     
-                Ride.end_datetime >= datetime.now()      
-            ) 
-        )    
-        .outerjoin(User, User.employee_id == Ride.user_id)
-    )
+) -> List[Vehicle]:
+# List[Union[VehicleOut, InUseVehicleOut]]:
+#     query = (
+#         db.query(
+#             Vehicle.id,
+#             Vehicle.plate_number,
+#             Vehicle.type,
+#             Vehicle.fuel_type,
+#             Vehicle.status,
+#             Vehicle.freeze_reason,
+#             Vehicle.last_used_at,
+#             Vehicle.current_location,
+#             Vehicle.odometer_reading,
+#             Vehicle.vehicle_model,
+#             Vehicle.image_url,
+#             Vehicle.department_id, 
+#             Vehicle.lease_expiry,
+#             User.employee_id.label("user_id"),
+#             User.first_name,
+#             User.last_name,
+#             Ride.start_datetime,
+#             Ride.end_datetime,
+#         )
+#         .outerjoin(
+#             Ride,
+#             and_(
+#                 Ride.vehicle_id == Vehicle.id,
+#                 Ride.status == "approved",
+#                 Ride.start_datetime <= datetime.now(),     
+#                 Ride.end_datetime >= datetime.now()      
+#             ) 
+#         )    
+#         .outerjoin(User, User.employee_id == Ride.user_id)
+#     )
 
-    if status:
-        query = query.filter(Vehicle.status == status)
+#     if status:
+#         query = query.filter(Vehicle.status == status)
 
     
-    if vehicle_type:  # ✅ Add this part to filter by type
+#     if vehicle_type:  # ✅ Add this part to filter by type
+#         query = query.filter(func.lower(Vehicle.type) == vehicle_type.lower())
+
+
+#     vehicles = query.all()
+
+#     result = []
+#     for row in vehicles:
+#         data = dict(row._mapping)
+#         lease_expiry = data.get("lease_expiry")
+#         data["canDelete"] = lease_expiry.date() < date.today() if lease_expiry else False
+
+#         if data["status"] == VehicleStatus.in_use:
+#             result.append(InUseVehicleOut(**data))
+#         else:
+#             result.append(VehicleOut(**data))
+
+#     print("Result:", result)
+#     return result
+    query = db.query(Vehicle)
+    if status:
+        query = query.filter(Vehicle.status == status)
+    if vehicle_type:
         query = query.filter(func.lower(Vehicle.type) == vehicle_type.lower())
-
-
     vehicles = query.all()
+    return vehicles
 
-    result = []
-    for row in vehicles:
-        data = dict(row._mapping)
-        lease_expiry = data.get("lease_expiry")
-        data["canDelete"] = lease_expiry.date() < date.today() if lease_expiry else False
-
-        if data["status"] == VehicleStatus.in_use:
-            result.append(InUseVehicleOut(**data))
-        else:
-            result.append(VehicleOut(**data))
-
-    print("Result:", result)
-    return result
 
 def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_reason: str, db: Session, changed_by: UUID, notes: Optional[str] = None):
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(changed_by)})
