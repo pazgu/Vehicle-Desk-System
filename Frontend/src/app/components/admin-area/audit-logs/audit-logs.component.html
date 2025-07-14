@@ -228,6 +228,30 @@
                   <div class="field-label">מחלקה</div>
                   <div class="field-value">{{ getDepartmentNameById(selectedLog.change_data.department_id) }}</div>
                 </div>
+                 <div class="field-row">
+                  <div class="field-label">רישיון ממשלתי</div>
+                  <div class="field-value">{{ selectedLog.change_data.has_government_license ? 'כן' : 'לא' }}</div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">קובץ רישיון</div>
+                  <div class="field-value">
+                    <ng-container *ngIf="selectedLog.change_data.license_file_url; else noLicenseFile">
+                      <a [href]="selectedLog.change_data.license_file_url" target="_blank">קובץ רישיון</a>
+                    </ng-container>
+                    <ng-template #noLicenseFile>לא קיים</ng-template>
+                  </div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">תוקף רישיון</div>
+                  <div class="field-value">
+                    <ng-container *ngIf="selectedLog.change_data.license_expiry_date; else noExpiryDate">
+                      {{ selectedLog.change_data.license_expiry_date | date:'dd/MM/yyyy' }}
+                    </ng-container>
+                    <ng-template #noExpiryDate>לא קיים</ng-template>
+                  </div>
+                </div>
               </div>
               <div *ngIf="selectedLog.entity_type === 'Vehicle'" class="entity-fields">
                 <div *ngIf="selectedLog.change_data?.image_url" class="vehicle-image-row">
