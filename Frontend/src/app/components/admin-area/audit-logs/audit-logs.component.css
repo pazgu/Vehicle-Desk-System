@@ -218,6 +218,11 @@
   background: #dc5b5b !important;
 }
 
+
+.cancelled-due-to-no-show-row {
+  background-color: #e0d6e8 !important;
+}
+
 .in-progress-row{
   background: linear-gradient(45deg, #27ae60 25%, #2ecc71 25%, #2ecc71 50%, #27ae60 50%, #27ae60 75%, #2ecc71 75%);
   background-size: 20px 20px;
@@ -226,7 +231,7 @@
 
 
 .empty-state {
-  color: #90a4ae;
+  color: #fafcfd;
   font-size: 1.2rem;
   margin-top: 2rem;
   text-align: center;
@@ -661,6 +666,24 @@
   /* Same as your .delete-row background */
   border: 1.5px solid #903d34;
 }
+.status-indicator.cancelled-due-to-no-show {
+  background-color: #e0d6e8; /* אפור־סגול רך */
+  border: #a398b3 1.6px solid; /* מסגרת סגלגלה */
+}
+.status-indicator.reserved{
+  background-color: #d7c7b7; /* חום בהיר, ניטרלי */
+  border: #987f6a 1.6px solid; /* חום כהה למסגרת */
+}
+
+
+
+
+
+
+
+
+
+
 
 .export-button {
   background-color: #f5f5f5;

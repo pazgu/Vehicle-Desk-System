@@ -20,8 +20,8 @@ class RideStatus(str, enum.Enum):
     in_progress = "in_progress"
     completed = "completed"
     cancelled = "cancelled"
-   
-
+    cancelled_due_to_no_show = "cancelled_due_to_no_show"  
+    reserved = "reserved"
 
 class Ride(Base):
     __tablename__ = "rides"
@@ -31,6 +31,7 @@ class Ride(Base):
     vehicle_id = Column(UUID(as_uuid=True), ForeignKey("vehicles.id"), nullable=False)
     ride_type = Column(Enum(RideType), nullable=False, index=True)
     start_datetime = Column(DateTime, nullable=False, index=True)
+    actual_pickup_time = Column(DateTime(timezone=True), nullable=True)
     end_datetime = Column(DateTime, nullable=False, index=True)
     start_location = Column(Text, nullable=False)
     stop = Column(Text, nullable=False)

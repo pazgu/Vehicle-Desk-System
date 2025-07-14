@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from typing import Optional , List
 from datetime import datetime
 from sqlalchemy.orm import Session
+from src.schemas.vehicle_inspection_schema import VehicleInspectionOut
 from src.schemas.user_response_schema import UserResponse, UserUpdate
 from src.schemas.ride_dashboard_item import RideDashboardItem
 from src.schemas.trip_completion_schema import RawCriticalIssueSchema, TripCompletionIssueSchema
@@ -24,7 +25,7 @@ from src.models.vehicle_model import Vehicle
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 from ..schemas.vehicle_schema import VehicleOut , InUseVehicleOut , VehicleStatusUpdate
 from ..utils.auth import get_current_user, token_check
-from ..services.vehicle_service import get_vehicles_with_optional_status,update_vehicle_status,get_vehicle_by_id, get_available_vehicles_for_ride_by_id,delete_vehicle_by_id
+from ..services.vehicle_service import archive_vehicle_by_id, get_vehicles_with_optional_status,update_vehicle_status,get_vehicle_by_id, get_available_vehicles_for_ride_by_id,delete_vehicle_by_id
 from ..services.user_notification import send_admin_odometer_notification
 from datetime import date, datetime, timedelta
 from src.models.vehicle_inspection_model import VehicleInspection
@@ -51,8 +52,7 @@ from ..services.license_service import upload_license_file_service , check_expir
 from ..services.license_service import upload_license_file_service 
 from src.services.admin_rides_service import get_all_critical_issues_combined
 from src.services.admin_rides_service import get_critical_issue_by_id 
-
-
+from src.schemas.order_card_item import OrderCardItem
 
 
 router = APIRouter()
@@ -639,6 +639,63 @@ def delete_vehicle(
     role_check(["admin"], token)
     return delete_vehicle_by_id(vehicle_id, db, user.employee_id)  # ✅ not user.id
 
+@router.post("/vehicles/{vehicle_id}/archive")
+def archive_vehicle(
+    request: Request,
+    vehicle_id: UUID,
+    db: Session = Depends(get_db),
+    token: str = Depends(oauth2_scheme)
+):
+    user = get_current_user(request)
+    role_check(["admin"], token)
+    return archive_vehicle_by_id(vehicle_id, db, user.employee_id)
+
+@router.get("/archived-vehicles", response_model=List[VehicleOut])
+def get_archived_vehicles(
+    db: Session = Depends(get_db),
+    token: str = Depends(oauth2_scheme)
+):
+    role_check(["admin"], token)
+
+    vehicles = (
+        db.query(Vehicle)
+        .filter(Vehicle.is_archived == True)
+        .all()
+    )
+
+    result = []
+    for v in vehicles:
+        data = VehicleOut.from_orm(v).dict()
+        data["canDelete"] = False
+
+        if v.archived_at:
+            archive_age = (datetime.now() - v.archived_at).days
+            if archive_age >= 90:
+                data["canDelete"] = True
+
+        result.append(data)
+
+    return result
+
+@router.delete("/vehicles/{vehicle_id}/delete-archived")
+def delete_archived_vehicle(
+    vehicle_id: UUID,
+    db: Session = Depends(get_db),
+    token: str = Depends(oauth2_scheme)
+):
+    role_check(["admin"], token)
+
+    vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id, Vehicle.is_archived == True).first()
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="Archived vehicle not found")
+
+    if not vehicle.archived_at or (datetime.now() - vehicle.archived_at).days < 90:
+        raise HTTPException(status_code=403, detail="Cannot delete vehicle before 3 months of archiving")
+
+    db.delete(vehicle)
+    db.commit()
+    return {"message": "Vehicle permanently deleted"}
+
 @router.get("/critical-trip-issues", response_model=List[TripCompletionIssueSchema])
 def fetch_critical_trip_issues(db: Session = Depends(get_db)):
     return get_critical_trip_issues(db)
@@ -665,39 +722,116 @@ def get_critical_issue_details(issue_id: str, db: Session = Depends(get_db)):
 #     raw_data = get_all_critical_issues_combined(db)
 #     return [TripCompletionIssueSchema(**item) for item in raw_data]
 
-@router.get("/critical-issues", response_model=List[RawCriticalIssueSchema])
-def get_all_critical_issues(db: Session = Depends(get_db)):
-    """
-    Get all critical issues from both inspector checks and ride approvals
-    """
-    try:
-        raw_data = get_all_critical_issues_combined(db)
-        print("🪵 Raw data from service:", raw_data)
+# @router.get("/critical-issues", response_model=List[RawCriticalIssueSchema])
+# def get_all_critical_issues(db: Session = Depends(get_db)):
+#     """
+#     Get all critical issues from both inspector checks and ride approvals
+#     """
+#     try:
+#         raw_data = get_all_critical_issues_combined(db)
+#         print("🪵 Raw data from service:", raw_data)
         
-        # Transform to match schema
-        transformed_data = []
-        for item in raw_data:
-            # Create a unique ID based on available identifiers
-            unique_id = item.get('inspection_id') or item.get('ride_id') or f"{item['approved_by']}-{item['timestamp']}"
+#         # Transform to match schema
+#         transformed_data = []
+#         for item in raw_data:
+#             # Create a unique ID based on available identifiers
+#             unique_id = item.get('inspection_id') or item.get('ride_id') or f"{item['approved_by']}-{item['timestamp']}"
             
-            transformed_item = {
-            "id": unique_id,
-            "inspection_id": item.get('inspection_id'),
-            "ride_id": item.get('ride_id'),
-            "approved_by": item['approved_by'],
-            "submitted_by": item['approved_by'],  # ✅ NEW
-            "role": item['role'],
-            "type": item['role'],                 # ✅ NEW
-            "status": item['status'],
-            "severity": item['severity'],
-            "issue_description": item['issue_description'],
-            "issue_text": item['issue_description'],  # ✅ NEW
-            "timestamp": item['timestamp'],
-            "vehicle_info": item.get('vehicle_info', '')
-        }
-            transformed_data.append(transformed_item)
+#             transformed_item = {
+#             "id": unique_id,
+#             "inspection_id": item.get('inspection_id'),
+#             "ride_id": item.get('ride_id'),
+#             "approved_by": item['approved_by'],
+#             "submitted_by": item['approved_by'],  # ✅ NEW
+#             "role": item['role'],
+#             "type": item['role'],                 # ✅ NEW
+#             "status": item['status'],
+#             "severity": item['severity'],
+#             "issue_description": item['issue_description'],
+#             "issue_text": item['issue_description'],  # ✅ NEW
+#             "timestamp": item['timestamp'],
+#             "vehicle_info": item.get('vehicle_info', '')
+#         }
+#             transformed_data.append(transformed_item)
         
-        return [RawCriticalIssueSchema(**item) for item in transformed_data]
-    except Exception as e:
-        print("❌ Error in get_all_critical_issues:", str(e))
-        raise HTTPException(status_code=500, detail=f"Failed to fetch critical issues: {str(e)}")
+#         return [RawCriticalIssueSchema(**item) for item in transformed_data]
+#     except Exception as e:
+#         print("❌ Error in get_all_critical_issues:", str(e))
+#         raise HTTPException(status_code=500, detail=f"Failed to fetch critical issues: {str(e)}")
+
+
+
+
+from typing import Dict, Any
+@router.get("/critical-issues", response_model=Dict[str, List[Any]])
+def get_critical_issues(
+    problem_type: Optional[str] = Query(None),
+    db: Session = Depends(get_db)
+):
+    # Initialize the query for VehicleInspections
+    inspections_query = db.query(VehicleInspection)
+
+    # Initialize rides_data by fetching ALL rides with emergency_event == "true" by default.
+    rides = db.query(Ride).filter(Ride.emergency_event == "true").all()
+    rides_data = [OrderCardItem.from_orm(r) for r in rides]
+
+    if problem_type == "medium":
+        inspections_query = inspections_query.filter(
+            VehicleInspection.fuel_checked == False
+        )
+        rides_data = []
+
+    elif problem_type == "critical":
+        inspections_query = inspections_query.filter(
+            or_(
+                VehicleInspection.critical_issue_bool == True,
+                and_(
+                    VehicleInspection.issues_found != None,
+                    VehicleInspection.issues_found != ""
+                )
+            )
+        )
+
+    elif problem_type == "medium,critical":
+        inspections_query = inspections_query.filter(
+            or_(
+                and_(
+                    or_(
+                        VehicleInspection.fuel_checked == False,
+                    ),
+                    VehicleInspection.critical_issue_bool == False
+                ),
+                or_(
+                    VehicleInspection.critical_issue_bool == True,
+                    and_(
+                        VehicleInspection.issues_found != None,
+                        VehicleInspection.issues_found != ""
+                    )
+                )
+            )
+        )
+
+    else: # problem_type is None
+        inspections_query = inspections_query.filter(
+            or_(
+                VehicleInspection.fuel_checked == False,
+                and_(
+                    VehicleInspection.critical_issue_bool == True,
+                    and_(
+                        VehicleInspection.issues_found != None,
+                        VehicleInspection.issues_found != ""
+                    )
+                )
+            )
+        )
+
+    # Execute the VehicleInspection query
+    inspections = inspections_query.order_by(VehicleInspection.inspection_date.desc()).all()
+    
+    # Use VehicleInspectionOut with from_orm
+    inspections_data = [VehicleInspectionOut.from_orm(i) for i in inspections]
+
+    return {
+        "inspections": inspections_data,
+        "rides": rides_data
+    }
