@@ -1,0 +1,39 @@
+<div class="page-wrapper">
+  <div class="page-container">
+    <div class="vehicles-wrapper">
+      <h1 style="text-align: right;">רכבים בארכיון</h1>
+      <br>
+
+      <div class="vehicles-cards">
+        <p-card *ngFor="let vehicle of archivedVehicles" class="vehicle-card card-frozen">
+
+          <ng-template pTemplate="header">
+            <div class="usage-line">
+              <div class="usage-indicator" style="background-color: #942222;"></div>
+              <span class="usage-number">רכב בארכיון</span>
+            </div>
+            <div class="vehicle-image-wrapper">
+              <img *ngIf="vehicle.image_url" [src]="vehicle.image_url" alt="תמונה של הרכב" />
+            </div>
+          </ng-template>
+
+          <h3>רכב: {{ vehicle.plate_number }}</h3>
+          <p><strong>דגם:</strong> {{ vehicle.vehicle_model }}</p>
+          <p><strong>תוקף חוזה:</strong> {{ vehicle.lease_expiry | date: 'dd/MM/yyyy' }}</p>
+          <p><strong>תאריך ארכוב:</strong> {{ vehicle.updated_at | date: 'dd/MM/yyyy HH:mm' }}</p>
+          <p *ngIf="vehicle.freeze_reason">
+            <strong>סיבת הקפאה:</strong> {{ vehicle.freeze_reason }}
+          </p>
+
+          <button *ngIf="isDeletable(vehicle.updated_at)" class="add-vehicle-btn" (click)="confirmDelete(vehicle.id, vehicle.plate_number)">
+            מחק לצמיתות
+          </button>
+        </p-card>
+      </div>
+
+      <div *ngIf="archivedVehicles.length === 0" class="empty-state">
+        לא נמצאו רכבים בארכיון
+      </div>
+    </div>
+  </div>
+</div>

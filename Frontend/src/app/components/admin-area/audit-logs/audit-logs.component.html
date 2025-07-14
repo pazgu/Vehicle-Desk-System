@@ -88,6 +88,12 @@
           <div class="status-item">
             <span class="status-indicator delete"></span> נמחק
           </div>
+          <div class="status-item">
+            <span class="status-indicator cancelled-due-to-no-show"></span>  בוטל עקב אי הגעה
+          </div>
+          <div class="status-item">
+            <span class="status-indicator reserved"></span> שמור 
+          </div>
         </div>
       </div>
 
@@ -123,7 +129,11 @@
                     (log.entity_type === 'Vehicle' && (
                       (log.action === 'UPDATE' && (log.change_data?.new?.status === 'available' || log.change_data?.new?.status === 'approved')) ||
                       log.action === 'INSERT'
-                    ))
+                    )),
+                  'cancelled-due-to-no-show':
+                  (log.entity_type === 'Ride' && (log.action === 'UPDATE' && log.change_data?.new?.status === 'cancelled_due_to_no_show')),
+                  'reserved':
+                  (log.action === 'UPDATE' && log.change_data?.new?.status === 'reserved')
                 }" (click)="showDetails(log)">
               <td class="audit-td">{{ log.action }}</td>
               <td class="audit-td">{{ log.entity_type }}</td>
@@ -544,6 +554,87 @@
               </div>
             </div>
           </div>
+
+          <div *ngIf="selectedLog.action === 'DELETE' && selectedLog.entity_type === 'Vehicle'">
+  <div class="data-card delete-data">
+    <h4>פרטי רכב שנמחק</h4>
+    <div class="entity-fields">
+
+      <div class="field-row">
+        <div class="field-label">מספר רישוי</div>
+        <div class="field-value">{{ selectedLog.change_data.plate_number }}</div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-label">סוג רכב</div>
+        <div class="field-value">{{ selectedLog.change_data.type }}</div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-label">סטטוס</div>
+        <div class="field-value">{{ translateRideStatus(selectedLog.change_data.status) }}</div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-label">סוג דלק</div>
+        <div class="field-value">{{ translateFuelType(selectedLog.change_data.fuel_type) }}</div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-label">מודל רכב</div>
+        <div class="field-value">{{ selectedLog.change_data.vehicle_model }}</div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-label">מיקום נוכחי</div>
+        <div class="field-value">{{ selectedLog.change_data.current_location }}</div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-label">מחלקה</div>
+        <div class="field-value">{{ getDepartmentNameById(selectedLog.change_data.department_id) }}</div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-label">ק"מ נוכחי</div>
+        <div class="field-value">{{ selectedLog.change_data.odometer_reading }}</div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-label">תאריך סיום ליסינג</div>
+        <div class="field-value">{{ selectedLog.change_data.lease_expiry | date:'dd/MM/yyyy' }}</div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-label">סיבת הקפאה</div>
+        <div class="field-value">{{ selectedLog.change_data.freeze_reason || '-' }}</div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-label">פרטי הקפאה</div>
+        <div class="field-value">{{ selectedLog.change_data.freeze_details || '-' }}</div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-label">שימוש אחרון</div>
+        <div class="field-value">
+          {{ selectedLog.change_data.last_used_at ? (selectedLog.change_data.last_used_at | date:'dd/MM/yyyy HH:mm') : '-' }}
+        </div>
+      </div>
+
+      <div class="field-row" *ngIf="selectedLog.change_data.image_url">
+        <div class="field-label">תמונה</div>
+        <div class="field-value">
+          <img [src]="selectedLog.change_data.image_url"
+               alt="תמונת רכב"
+               style="max-height: 120px; max-width: 160px; border: 1px solid #ccc;" />
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 
           <button class="close-details-button" (click)="closeDetails()">סגור</button>
         </div>

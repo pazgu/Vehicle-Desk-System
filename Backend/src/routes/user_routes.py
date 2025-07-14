@@ -178,10 +178,6 @@ def get_user_2specific_order():
     # Implementation pending
     return {"message": "Not implemented yet"}
 
-
-
-
-
 @router.post("/api/orders/{user_id}", status_code=fastapi_status.HTTP_201_CREATED)
 async def create_order(
     user_id: UUID,
@@ -312,6 +308,7 @@ async def create_order(
             status_code=fastapi_status.HTTP_400_BAD_REQUEST,
             detail=f"Failed to create order: {str(e)}"
         )
+
 
 
 @router.get("/api/departments")
