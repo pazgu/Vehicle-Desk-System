@@ -310,11 +310,5 @@ export class AdminInspectionsComponent implements OnInit {
     this.filteredInspections = [...this.inspections];
   }
 
-  naviagteToVehicle(vehicleId: string): void {
-    this.router.navigate(['/vehicle-details', vehicleId]);
-  }
 
-    naviagteToRide(rideId: string): void {
-    this.router.navigate(['/ride/details/', rideId]);
-  }
 }

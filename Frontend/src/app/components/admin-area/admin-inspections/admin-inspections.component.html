@@ -113,7 +113,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let insp of filteredInspections" (click)="naviagteToVehicle(insp.vehicle_id)">
+        <tr *ngFor="let insp of filteredInspections">
           <td>{{ insp.inspection_date | date: 'short' }}</td>
           <td>{{ insp.inspected_by }}</td>
           <td>{{ insp.clean ? '✔️' : '❌' }}</td>
@@ -132,6 +132,7 @@
     <table class="inspection-table">
       <thead>
         <tr>
+          <th>מזהה נסיעה</th>
           <th>תאריך התחלה</th>
           <th>נהג</th>
           <th>סטטוס</th>
@@ -140,7 +141,8 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let ride of rides" (click)="naviagteToRide(ride.id)">
+        <tr *ngFor="let ride of rides">
+          <td>{{ ride.id }}</td>
           <td>{{ ride.start_datetime | date: 'short' }}</td>
           <td>{{ ride.user_id }}</td>
           <td>{{ ride.status }}</td>
