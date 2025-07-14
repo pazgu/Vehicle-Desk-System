@@ -32,6 +32,8 @@ class RideSchema(BaseModel):
     status: RideStatus
     submitted_at: datetime
     user_id: UUID 
+    vehicle: FuelType
+    actual_pickup_time: Optional[datetime] = None
     vehicle_id: UUID
 
     class Config:

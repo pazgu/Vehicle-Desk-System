@@ -25,7 +25,7 @@ from src.models.vehicle_model import Vehicle
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 from ..schemas.vehicle_schema import VehicleOut , InUseVehicleOut , VehicleStatusUpdate
 from ..utils.auth import get_current_user, token_check
-from ..services.vehicle_service import get_vehicles_with_optional_status,update_vehicle_status,get_vehicle_by_id, get_available_vehicles_for_ride_by_id,delete_vehicle_by_id
+from ..services.vehicle_service import archive_vehicle_by_id, get_vehicles_with_optional_status,update_vehicle_status,get_vehicle_by_id, get_available_vehicles_for_ride_by_id,delete_vehicle_by_id
 from ..services.user_notification import send_admin_odometer_notification
 from datetime import date, datetime, timedelta
 from src.models.vehicle_inspection_model import VehicleInspection
@@ -638,6 +638,63 @@ def delete_vehicle(
     user = get_current_user(request)
     role_check(["admin"], token)
     return delete_vehicle_by_id(vehicle_id, db, user.employee_id)  # ✅ not user.id
+
+@router.post("/vehicles/{vehicle_id}/archive")
+def archive_vehicle(
+    request: Request,
+    vehicle_id: UUID,
+    db: Session = Depends(get_db),
+    token: str = Depends(oauth2_scheme)
+):
+    user = get_current_user(request)
+    role_check(["admin"], token)
+    return archive_vehicle_by_id(vehicle_id, db, user.employee_id)
+
+@router.get("/archived-vehicles", response_model=List[VehicleOut])
+def get_archived_vehicles(
+    db: Session = Depends(get_db),
+    token: str = Depends(oauth2_scheme)
+):
+    role_check(["admin"], token)
+
+    vehicles = (
+        db.query(Vehicle)
+        .filter(Vehicle.is_archived == True)
+        .all()
+    )
+
+    result = []
+    for v in vehicles:
+        data = VehicleOut.from_orm(v).dict()
+        data["canDelete"] = False
+
+        if v.archived_at:
+            archive_age = (datetime.now() - v.archived_at).days
+            if archive_age >= 90:
+                data["canDelete"] = True
+
+        result.append(data)
+
+    return result
+
+@router.delete("/vehicles/{vehicle_id}/delete-archived")
+def delete_archived_vehicle(
+    vehicle_id: UUID,
+    db: Session = Depends(get_db),
+    token: str = Depends(oauth2_scheme)
+):
+    role_check(["admin"], token)
+
+    vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id, Vehicle.is_archived == True).first()
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="Archived vehicle not found")
+
+    if not vehicle.archived_at or (datetime.now() - vehicle.archived_at).days < 90:
+        raise HTTPException(status_code=403, detail="Cannot delete vehicle before 3 months of archiving")
+
+    db.delete(vehicle)
+    db.commit()
+    return {"message": "Vehicle permanently deleted"}
 
 @router.get("/critical-trip-issues", response_model=List[TripCompletionIssueSchema])
 def fetch_critical_trip_issues(db: Session = Depends(get_db)):

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Text, Enum, DateTime
+from sqlalchemy import Column, String, Integer, Text, Enum, DateTime, Boolean
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from src.models.base import Base
@@ -42,6 +42,7 @@ class Vehicle(Base):
     image_url = Column(Text, nullable=False)
     lease_expiry = Column(DateTime, nullable=True)
     department_id = Column(UUID(as_uuid=True), nullable=True)
-
+    is_archived = Column(Boolean, default=False, nullable=False)
+    archived_at = Column(DateTime, nullable=True)
 
    

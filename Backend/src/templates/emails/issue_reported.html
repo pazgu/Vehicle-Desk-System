@@ -2,46 +2,227 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>דוח בדיקת רכב - BookIt</title>
     <style>
-        body { font-family: Arial, sans-serif; color: #333; background-color: #f9f9f9; }
-        .container { padding: 20px; background-color: #fff; border-radius: 10px; max-width: 600px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .title { font-size: 24px; margin-bottom: 20px; }
-        .critical { color: red; font-weight: bold; }
-        .success { color: green; }
-        .section { margin-bottom: 15px; }
+        body {
+            background-color: #f6f6f6;
+            font-family: 'Arial Hebrew', Arial, sans-serif;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            text-align: right;
+        }
+        
+        .container {
+            background-color: #ffffff;
+            max-width: 600px;
+            margin: 30px auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background-color: #1e3a8a;
+            color: white;
+            text-align: center;
+            padding: 25px 20px;
+            border-radius: 10px 10px 0 0;
+            margin: -20px -20px 20px -20px;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: bold;
+            line-height: 1.2;
+        }
+        
+        .inspection-icon {
+            font-size: 56px;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .content {
+            padding: 20px;
+        }
+        
+        .content p {
+            margin: 0 0 15px;
+            text-align: right;
+        }
+        
+        .detail-item {
+            background-color: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border-right: 3px solid #1e3a8a;
+            text-align: right;
+        }
+        
+        .detail-label {
+            font-weight: bold;
+            color: #1e3a8a;
+            font-size: 15px;
+            margin-bottom: 5px;
+            display: block;
+        }
+        
+        .detail-value {
+            color: #333;
+            font-size: 17px;
+            word-wrap: break-word;
+        }
+        
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .critical {
+            background-color: #dc3545;
+            color: white;
+            border-right: 3px solid #dc3545;
+        }
+        
+        .critical .detail-label {
+            color: white;
+        }
+        
+        .issues-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+            padding: 18px;
+            margin: 20px 0;
+            text-align: right;
+        }
+        
+        .issues-box .reason-label {
+            font-weight: bold;
+            color: #856404;
+            font-size: 15px;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .issues-box .reason-text {
+            color: #856404;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        
+        .checklist {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .checklist-item {
+            background-color: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+            border-right: 3px solid #1e3a8a;
+        }
+        
+        .checklist-label {
+            font-weight: bold;
+            color: #1e3a8a;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .checklist-value {
+            color: #333;
+            font-size: 16px;
+        }
+        
+        .footer {
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+        
+        .logo {
+            font-weight: bold;
+            color: #1e3a8a;
+        }
+        
+        @media (max-width: 600px) {
+            .checklist {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="title">🚗 דוח בדיקת רכב</div>
-        
-        <div class="section">
-            <strong>תאריך הבדיקה:</strong> {{ inspection_date }}
-        </div>
-        
-        <div class="section">
-            <strong>בדק על ידי:</strong> {{ inspector_name }}
+        <div class="header">
+            <span class="inspection-icon">🚗</span>
+            <h1>דוח בדיקת רכב</h1>
         </div>
 
-        <div class="section">
-            <strong>תקלות:</strong><br/>
-            {% if issues_found %}
-                <div>{{ issues_found }}</div>
-            {% else %}
-                <div class="success">לא נמצאו תקלות</div>
+        <div class="content">
+            <div class="detail-item">
+                <div class="detail-label">:תאריך הבדיקה</div>
+                <div class="detail-value">{{ inspection_date }}</div>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">:בדק על ידי</div>
+                <div class="detail-value">{{ inspector_name }}</div>
+            </div>
+
+            <div class="issues-box">
+                <div class="reason-label">:תקלות שנמצאו</div>
+                <div class="reason-text">
+                    {% if issues_found %}
+                        {{ issues_found }}
+                    {% else %}
+                        <span class="success">✅ לא נמצאו תקלות</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if critical_issue_bool %}
+            <div class="detail-item critical">
+                <div class="detail-label">⚠️ !תקלה קריטית דווחה</div>
+                <div class="detail-value">יש לטפל בתקלה זו לפני השימוש ברכב</div>
+            </div>
             {% endif %}
+
+            <div class="detail-item">
+                <div class="detail-label">:בדיקות נוספות</div>
+                <div class="checklist">
+                    <div class="checklist-item">
+                        <div class="checklist-label">ניקיון</div>
+                        <div class="checklist-value">{{ clean }}</div>
+                    </div>
+                    <div class="checklist-item">
+                        <div class="checklist-label">תדלוק</div>
+                        <div class="checklist-value">{{ fuel_checked }}</div>
+                    </div>
+                    <div class="checklist-item">
+                        <div class="checklist-label">אין חפצים</div>
+                        <div class="checklist-value">{{ no_items_left }}</div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        {% if critical_issue_bool %}
-        <div class="section critical">
-            ⚠️ תקלה קריטית דווחה!
-        </div>
-        {% endif %}
-        
-        <div class="section">
-            <strong>ניקיון:</strong> {{ clean }}<br/>
-            <strong>תדלוק:</strong> {{ fuel_checked }}<br/>
-            <strong>אין חפצים:</strong> {{ no_items_left }}
+        <div class="footer">
+            תודה,<br> צוות <span class="logo">BookIt</span> 🚗<br>
+            דוח זה נוצר אוטומטית ממערכת ניהול הרכבים
         </div>
     </div>
 </body>

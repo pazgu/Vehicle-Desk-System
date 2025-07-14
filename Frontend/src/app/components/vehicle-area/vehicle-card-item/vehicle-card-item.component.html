@@ -6,7 +6,6 @@
   <br />
 
   <div class="vehicle-details-content">
-    <!-- existing card remains unchanged -->
     <p-card *ngIf="vehicle" class="vehicle-details-card" [ngClass]="getCardClass(vehicle.status)">
       <div class="vehicle-horizontal-content">
         <div class="right-side">
@@ -22,6 +21,9 @@
 
         <div class="vehicle-details-info">
           <h2>רכב: {{ vehicle.plate_number }}</h2>
+          <div *ngIf="isLeaseExpired(vehicle.lease_expiry)" class="lease-expired-warning">
+            <mat-icon color="warn">warning</mat-icon> חוזה ההשכרה פג
+          </div>
           <p><strong>דגם:</strong> {{ vehicle.vehicle_model }}</p>
           <p><strong>סטטוס:</strong> {{ translateStatus(vehicle.status) }}</p>
           <p><strong>סוג רכב:</strong> {{ translateType(vehicle.type) }}</p>
@@ -67,7 +69,6 @@
               הקפא רכב
             </button>
 
-            <!-- Freeze reason dropdown -->
             <div *ngIf="isFreezeReasonFieldVisible" class="freeze-reason-container">
               <select [(ngModel)]="freezeReason" class="freeze-reason-dropdown">
                 <option value="" disabled selected>בחר סיבת הקפאה</option>
@@ -81,9 +82,22 @@
             </div>
           </div>
 
-          <!-- ✅ Delete button: outside freeze logic -->
-          <button *ngIf="vehicle.canDelete && vehicle.status !== 'in_use'" class="freeze-button"
-            (click)="confirmDelete(vehicle)" title="Leasing expired – eligible for deletion">
+          <!-- ✅ Split Delete & Archive Buttons -->
+          <!-- 🧊 Archive button -->
+          <button
+            *ngIf="vehicle.status === 'frozen' && isLeaseExpired(vehicle.lease_expiry) && vehicle.canDelete"
+            class="freeze-button"
+            (click)="confirmArchive(vehicle)"
+            title="הרכב מוקפא – ניתן לארכב">
+            ארכוב רכב
+          </button>
+
+          <!-- 🗑 Delete button -->
+          <button
+            *ngIf="vehicle.status !== 'frozen' && vehicle.status !== 'in_use' && isLeaseExpired(vehicle.lease_expiry) && vehicle.canDelete"
+            class="freeze-button"
+            (click)="confirmDelete(vehicle)"
+            title="תוקף החוזה פג – ניתן למחוק">
             מחיקת רכב
           </button>
 
