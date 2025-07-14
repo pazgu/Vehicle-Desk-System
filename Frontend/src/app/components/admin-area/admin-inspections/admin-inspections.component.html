@@ -140,7 +140,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let ride of rides">
+        <tr *ngFor="let ride of rides" (click)="naviagteToRide(ride.id)">
           <td>{{ ride.start_datetime | date: 'short' }}</td>
           <td>{{ ride.user_id }}</td>
           <td>{{ ride.status }}</td>
