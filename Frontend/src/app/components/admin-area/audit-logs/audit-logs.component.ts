@@ -443,6 +443,7 @@ fetchAuditLogs(fromDate?: string, toDate?: string) {
       { label: 'מיקום נוכחי', oldValue: oldData.current_location, newValue: newData.current_location },
       { label: 'מחלקה', oldValue: this.getDepartmentNameById(oldData.department_id), newValue: this.getDepartmentNameById(newData.department_id) },
       { label: 'קילומטראז\'', oldValue: oldData.odometer_reading, newValue: newData.odometer_reading },
+      { label: 'תאריך סיום ליסינג', oldValue: oldData.lease_expiry, newValue: newData.lease_expiry },
       { label: 'דגם רכב', oldValue: oldData.vehicle_model, newValue: newData.vehicle_model },
       { label: 'תמונה', oldValue: oldData.image_url, newValue: newData.image_url }
     ];
