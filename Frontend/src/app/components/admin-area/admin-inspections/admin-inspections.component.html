@@ -1,81 +1,3 @@
-<!-- <h2 class="section-title" *ngIf="!isCriticalMode">בדיקות רכבים שבוצעו היום</h2>
-<h2 class="section-title" *ngIf="isCriticalMode">חריגות</h2>
-
-<div *ngIf="loading" class="loading">טוען...</div>
-
-<div class="admin-inspections-container" *ngIf="!loading">
-
-  <div class="problematic-only-filter" dir="rtl">
-    <button (click)="showProblematicFilters = !showProblematicFilters">
-      {{ showProblematicFilters ? 'הסתר אפשרויות סינון' : 'הצג בדיקות עם בעיות' }}
-    </button>
-
-    <div *ngIf="showProblematicFilters">
-      <label style="display: block; margin-bottom: 0.5em;">
-        <input type="checkbox" [(ngModel)]="showMediumIssues" (change)="loadInspections()" />
-        הצג בעיות - דרגה בינונית
-      </label>
-      <label style="display: block;">
-        <input type="checkbox" [(ngModel)]="showCriticalIssues" (change)="loadInspections()" />
-        הצג בעיות - דרגה חריגה
-      </label>
-    </div>
-  </div>
-
-  <div *ngIf="inspections.length === 0 && !anyFiltersSelected()" class="empty">
-    אין בדיקות להצגה
-  </div>
-
-  <div *ngIf="inspections.length === 0 && anyFiltersSelected()" class="empty-filtered-results">
-    אין בדיקות תואמות לתנאי הסינון שנבחרו.
-  </div>
-
-  <table class="inspection-table" *ngIf="inspections.length > 0">
-  <thead>
-    <tr *ngIf="isCriticalMode">
-      <th>📅 תאריך</th>
-      <th>🧾 סוג</th>
-      <th>👤 אחראי</th>
-      <th>🚗 רכב</th>
-      <th>📝 תיאור</th>
-    </tr>
-    <tr *ngIf="!isCriticalMode">
-      <th>📅 תאריך</th>
-      <th>🧪 בודק</th>
-      <th>📍 הערות</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr *ngFor="let item of inspections"
-    [class.highlight]="highlighted"
-    (click)="isCriticalMode ? loadIssueDetails(item) : selectedIssue = item">
-
-      <td *ngIf="isCriticalMode">{{ item.timestamp | date: 'short' }}</td>
-      <td *ngIf="isCriticalMode">{{ item.source_type }}</td>
-      <td *ngIf="isCriticalMode">{{ item.responsible_user }}</td>
-      <td *ngIf="isCriticalMode">{{ item.vehicle_info || '—' }}</td>
-      <td *ngIf="isCriticalMode">{{ item.issue_summary }}</td>
-
-      <td *ngIf="!isCriticalMode">{{ item.inspection_date | date: 'short' }}</td>
-      <td *ngIf="!isCriticalMode">{{ item.inspected_by }}</td>
-      <td *ngIf="!isCriticalMode">{{ item.issues_found || 'לא דווחו בעיות' }}</td>
-    </tr>
-  </tbody>
-</table>
-
-<div class="modal-overlay" *ngIf="selectedIssueDetails && isCriticalMode" (click)="selectedIssueDetails = null">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <button class="close-btn" (click)="selectedIssueDetails = null">×</button>
-
-    <h3>🔎 פירוט החריגה</h3>
-    <p><strong>תיאור מלא:</strong> {{ selectedIssueDetails.issue_text }}</p>
-    <p><strong>רכב:</strong> {{ selectedIssueDetails.vehicle_id || '—' }}</p>
-    <p><strong>אחראי:</strong> {{ selectedIssueDetails.submitted_by }}</p>
-    <p><strong>תאריך:</strong> {{ selectedIssueDetails.timestamp | date:'medium' }}</p>
-    <p><strong>סוג:</strong> {{ selectedIssueDetails.type }}</p>
-  </div>
-</div>
-</div> -->
 
 <div *ngIf="loading" class="loading">טוען...</div>
 
@@ -86,11 +8,11 @@
       {{ showProblematicFilters ? 'הסתר אפשרויות סינון' : 'הצג בדיקות עם בעיות' }}
     </button>
     <div *ngIf="showProblematicFilters">
-      <label style="display: block; margin-bottom: 0.5em;">
+      <label style="cursor:pointer; block; margin-bottom: 0.5em;">
         <input type="checkbox" [(ngModel)]="showMediumIssues" (change)="loadData()" />
         הצג בעיות - דרגה בינונית
       </label>
-      <label style="display: block;">
+      <label style="cursor: pointer; display: block;">
         <input type="checkbox" [(ngModel)]="showCriticalIssues" (change)="loadData()" />
         הצג בעיות - דרגה חריגה
       </label>

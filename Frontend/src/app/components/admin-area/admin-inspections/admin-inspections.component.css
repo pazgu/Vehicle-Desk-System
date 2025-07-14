@@ -93,7 +93,6 @@
 .inspection-table tbody tr:hover {
   background-color: #f0f0f0;
   color: #942222;
-  cursor: pointer;
 }
 
 /* Section headers within the table body */
@@ -179,3 +178,4 @@ button:disabled {
 .highlight {
   background-color: #e0f2f7 !important; /* A light blue for highlighting */
 }
+
