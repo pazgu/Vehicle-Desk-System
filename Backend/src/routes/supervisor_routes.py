@@ -132,9 +132,16 @@ def freeze_vehicle(request: FreezeVehicleRequest, db: Session = Depends(get_db),
     return freeze_vehicle_service(db, request.vehicle_id, request.reason, user_id)
 
 @router.post("/rides/{ride_id}/start")
-def start_ride_route(ride_id: UUID, db: Session = Depends(get_db)):
+async def start_ride_route(ride_id: UUID, db: Session = Depends(get_db)):
     try:
-        start_ride(db, ride_id)
-        return {"message": "Ride started, vehicle marked as in use"}
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        ride, vehicle = await start_ride(db, ride_id)
+        return {
+            "message": "Ride started, vehicle marked as in use",
+            "ride_id": str(ride.id),
+            "vehicle_id": str(vehicle.id),
+            "status": ride.status.value
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")

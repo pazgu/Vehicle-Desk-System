@@ -88,6 +88,12 @@
           <div class="status-item">
             <span class="status-indicator delete"></span> נמחק
           </div>
+          <div class="status-item">
+            <span class="status-indicator cancelled-due-to-no-show"></span>  בוטל עקב אי הגעה
+          </div>
+          <div class="status-item">
+            <span class="status-indicator reserved"></span> שמור 
+          </div>
         </div>
       </div>
 
@@ -123,7 +129,11 @@
                     (log.entity_type === 'Vehicle' && (
                       (log.action === 'UPDATE' && (log.change_data?.new?.status === 'available' || log.change_data?.new?.status === 'approved')) ||
                       log.action === 'INSERT'
-                    ))
+                    )),
+                  'cancelled-due-to-no-show':
+                  (log.entity_type === 'Ride' && (log.action === 'UPDATE' && log.change_data?.new?.status === 'cancelled_due_to_no_show')),
+                  'reserved':
+                  (log.action === 'UPDATE' && log.change_data?.new?.status === 'reserved')
                 }" (click)="showDetails(log)">
               <td class="audit-td">{{ log.action }}</td>
               <td class="audit-td">{{ log.entity_type }}</td>
