@@ -1,0 +1,121 @@
+.page-wrapper {
+  direction: rtl;
+  background: rgba(255, 251, 251, 1);
+  padding: 2rem;
+  font-family: var(--font-family-alef);
+  color: var(--text-rgb-107-26-26);
+}
+
+.page-container {
+  max-width: 960px;
+  margin: auto;
+}
+
+.vehicles-wrapper {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+}
+
+.vehicles-wrapper h1 {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: #811313;
+}
+
+.vehicles-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.vehicle-card {
+  border-radius: 16px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  background-color: #fdfdfd;
+  text-align: right;
+}
+
+.vehicle-card h3 {
+  font-size: 20px;
+  color: #942222;
+  margin-top: 0.5rem;
+}
+
+.vehicle-card p {
+  margin: 0.4rem 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.vehicle-image-wrapper {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.vehicle-image-wrapper img {
+  max-width: 100%;
+  max-height: 160px;
+  border-radius: 8px;
+  object-fit: cover;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.usage-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0.5rem;
+}
+
+.usage-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.usage-number {
+  font-weight: bold;
+  color: #811313;
+}
+
+.add-vehicle-btn {
+  background-color: #942222;
+  color: white;
+  font-family: var(--font-family-alef);
+  font-size: 14px;
+  font-weight: bold;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+  margin-top: 1rem;
+  display: inline-block;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.add-vehicle-btn:hover {
+  background-color: #7c1b1b;
+  transform: scale(1.03);
+}
+
+.add-vehicle-btn:active {
+  transform: scale(0.97);
+}
+
+.empty-state {
+  margin-top: 2rem;
+  background-color: #942222;
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+  text-align: center;
+  padding: 20px;
+  border-radius: 12px;
+  font-family: var(--font-family-alef);
+}

@@ -10,7 +10,17 @@
             הוסף רכב חדש +
           </button>
         </div>
+  <img 
+        src="assets/images/trash_icon.png"
+        alt="הזמנות בארכיון"
+        width="40"
+        height="40"
+        title="הזמנות בארכיון"
+        style="cursor: pointer; margin-right: 4px;"
+        (click)="goToArchivedOrders()"
+     />
 
+    </div>
         <div class="right-buttons">
           <button class="filter" (click)="showFilters = !showFilters">
             {{ showFilters ? 'הסתר סינון' : 'הצג סינון' }}
@@ -125,4 +135,3 @@
 
       </div>
     </div>
-</div>
