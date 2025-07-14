@@ -12,6 +12,7 @@ class VehicleInspectionOut(BaseModel):
     no_items_left: bool
     critical_issue_bool: bool
     issues_found: Optional[str]
+    vehicle_id: Optional[UUID]
 
     class Config:
-        orm_mode = True
+        from_attributes = True 

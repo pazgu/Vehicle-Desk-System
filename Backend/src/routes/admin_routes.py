@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from typing import Optional , List
 from datetime import datetime
 from sqlalchemy.orm import Session
+from src.schemas.vehicle_inspection_schema import VehicleInspectionOut
 from src.schemas.user_response_schema import UserResponse, UserUpdate
 from src.schemas.ride_dashboard_item import RideDashboardItem
 from src.schemas.trip_completion_schema import RawCriticalIssueSchema, TripCompletionIssueSchema
@@ -704,21 +705,7 @@ def get_critical_issue_details(issue_id: str, db: Session = Depends(get_db)):
 
 
 
-
-
-
-from typing import Optional, List, Any, Dict
-from fastapi import APIRouter, Query, Depends
-from sqlalchemy.orm import Session
-from sqlalchemy import or_, and_
-
-# Assuming these are your SQLAlchemy models and Pydantic schemas
-# from .models import VehicleInspection, Ride # Make sure these are correctly imported
-# from .schemas import VehicleInspectionSchema, OrderCardItem # Make sure these are correctly imported
-# from .database import get_db # Make sure this is correctly imported
-
-router = APIRouter()
-
+from typing import Dict, Any
 @router.get("/critical-issues", response_model=Dict[str, List[Any]])
 def get_critical_issues(
     problem_type: Optional[str] = Query(None),
@@ -728,20 +715,16 @@ def get_critical_issues(
     inspections_query = db.query(VehicleInspection)
 
     # Initialize rides_data by fetching ALL rides with emergency_event == "true" by default.
-    # This will be overridden to an empty list only if problem_type == "medium".
     rides = db.query(Ride).filter(Ride.emergency_event == "true").all()
     rides_data = [OrderCardItem.from_orm(r) for r in rides]
 
     if problem_type == "medium":
-        # Vehicle Inspections: Only those with fuel_checked == False
         inspections_query = inspections_query.filter(
             VehicleInspection.fuel_checked == False
         )
-        # Rides: No rides should be returned for "medium" problem type
         rides_data = []
 
     elif problem_type == "critical":
-        # Vehicle Inspections: critical_issue_bool == True OR issues_found is not None/empty
         inspections_query = inspections_query.filter(
             or_(
                 VehicleInspection.critical_issue_bool == True,
@@ -751,11 +734,8 @@ def get_critical_issues(
                 )
             )
         )
-        # Rides: Remain as initially populated (emergency rides)
 
     elif problem_type == "medium,critical":
-        # Vehicle Inspections: Keep the original combined logic for "medium,critical"
-        # (fuel_checked == False AND critical_issue_bool == False) OR (critical_issue_bool == True OR issues_found not None/empty)
         inspections_query = inspections_query.filter(
             or_(
                 and_(
@@ -773,27 +753,26 @@ def get_critical_issues(
                 )
             )
         )
-        # Rides: Remain as initially populated (emergency rides)
 
-    else: # problem_type is None (or any other unspecified value)
-        # Vehicle Inspections: fuel_checked == False OR (critical_issue_bool == True AND issues_found is not None/empty)
+    else: # problem_type is None
         inspections_query = inspections_query.filter(
             or_(
-                VehicleInspection.fuel_checked == False, # "Medium" part of the combined default
-                and_( # "Critical" part of the combined default
+                VehicleInspection.fuel_checked == False,
+                and_(
                     VehicleInspection.critical_issue_bool == True,
-                    and_( # issues_found must be not None AND not empty
+                    and_(
                         VehicleInspection.issues_found != None,
                         VehicleInspection.issues_found != ""
                     )
                 )
             )
         )
-        # Rides: Remain as initially populated (emergency rides)
 
     # Execute the VehicleInspection query
     inspections = inspections_query.order_by(VehicleInspection.inspection_date.desc()).all()
-    inspections_data = [VehicleInspectionSchema.from_orm(i) for i in inspections]
+    
+    # Use VehicleInspectionOut with from_orm
+    inspections_data = [VehicleInspectionOut.from_orm(i) for i in inspections]
 
     return {
         "inspections": inspections_data,

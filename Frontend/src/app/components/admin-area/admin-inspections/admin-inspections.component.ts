@@ -239,6 +239,7 @@ import { ToastService } from '../../../services/toast.service';
 import { FormsModule } from '@angular/forms';
 import { VehicleInspection } from '../../../models/vehicle-inspections.model';
 import { OrderCardItem } from '../../../models/order-card-item.module';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-admin-inspections',
@@ -261,7 +262,8 @@ export class AdminInspectionsComponent implements OnInit {
     private route: ActivatedRoute,
     private socketService: SocketService,
     private toastService: ToastService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private router: Router
   ) { }
 
   ngOnInit(): void {
@@ -308,5 +310,9 @@ export class AdminInspectionsComponent implements OnInit {
   // which is already correctly filtered by the API call in loadData().
   applyInspectionFilters(): void {
     this.filteredInspections = [...this.inspections];
+  }
+
+  naviagteToVehicle(vehicleId: string): void {
+    this.router.navigate(['/vehicle-details', vehicleId]);
   }
 }

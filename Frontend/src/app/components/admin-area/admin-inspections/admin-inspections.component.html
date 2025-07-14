@@ -75,11 +75,8 @@
     <p><strong>סוג:</strong> {{ selectedIssueDetails.type }}</p>
   </div>
 </div>
-
-
-
-
 </div> -->
+
 <div *ngIf="loading" class="loading">טוען...</div>
 
 <div *ngIf="!loading" class="admin-inspections-container">
@@ -100,26 +97,23 @@
     </div>
   </div>
 
-  <table class="inspection-table" *ngIf="inspections.length > 0 || rides.length > 0">
-    <thead>
-      <tr>
-        <th>סוג רשומה</th>
-        <th>תאריך/תאריך התחלה</th>
-        <th>בודק/נהג</th>
-        <th>סטטוס/נקי/רכב</th>
-        <th>דלק נבדק/מרחק בפועל (ק"מ)</th>
-        <th>אין חפצים</th>
-        <th>בעיה קריטית/אירוע חירום</th>
-        <th>הערות</th>
-      </tr>
-    </thead>
-    <tbody>
-      <ng-container *ngIf="inspections.length > 0">
+  <!-- Inspections Table -->
+  <ng-container *ngIf="filteredInspections.length > 0">
+    <h2 style="text-align: right; color: #942222; margin-top: 2rem; margin-bottom: 1rem;">בדיקות רכבים</h2>
+    <table class="inspection-table">
+      <thead>
         <tr>
-          <td colspan="8" class="table-section-header">בדיקות רכבים</td>
+          <th>תאריך</th>
+          <th>בודק</th>
+          <th>נקי</th>
+          <th>דלק נבדק</th>
+          <th>אין חפצים</th>
+          <th>בעיה קריטית</th>
+          <th>הערות</th>
         </tr>
-        <tr *ngFor="let insp of filteredInspections">
-          <td>בדיקת רכב</td>
+      </thead>
+      <tbody>
+        <tr *ngFor="let insp of filteredInspections" (click)="naviagteToVehicle(insp.vehicle_id)">
           <td>{{ insp.inspection_date | date: 'short' }}</td>
           <td>{{ insp.inspected_by }}</td>
           <td>{{ insp.clean ? '✔️' : '❌' }}</td>
@@ -128,28 +122,34 @@
           <td>{{ insp.critical_issue_bool ? 'כן' : 'לא' }}</td>
           <td>{{ insp.issues_found || '—' }}</td>
         </tr>
-      </ng-container>
+      </tbody>
+    </table>
+  </ng-container>
 
-      <ng-container *ngIf="rides.length > 0">
-        <tr *ngIf="inspections.length > 0">
-          <td colspan="8" class="table-separator"></td>
-        </tr>
+  <!-- Rides Table -->
+  <ng-container *ngIf="rides.length > 0">
+    <h2 style="text-align: right; color: #942222; margin-top: 2rem; margin-bottom: 1rem;">נסיעות עם אירוע חירום</h2>
+    <table class="inspection-table">
+      <thead>
         <tr>
-          <td colspan="8" class="table-section-header">נסיעות עם אירוע חירום</td>
+          <th>תאריך התחלה</th>
+          <th>נהג</th>
+          <th>סטטוס</th>
+          <th>מרחק בפועל (ק"מ)</th>
+          <th>אירוע חירום</th>
         </tr>
+      </thead>
+      <tbody>
         <tr *ngFor="let ride of rides">
-          <td>נסיעת חירום</td>
           <td>{{ ride.start_datetime | date: 'short' }}</td>
           <td>{{ ride.user_id }}</td>
           <td>{{ ride.status }}</td>
           <td>{{ ride.actual_distance_km }}</td>
-          <td>—</td>
           <td>{{ ride.emergency_event === 'true' ? 'כן' : 'לא' }}</td>
-          <td>—</td>
         </tr>
-      </ng-container>
-    </tbody>
-  </table>
+      </tbody>
+    </table>
+  </ng-container>
 
-  <div *ngIf="inspections.length === 0 && rides.length === 0">אין נתונים להצגה</div>
+  <div *ngIf="filteredInspections.length === 0 && rides.length === 0" style="text-align: right; margin-top: 2rem;">אין נתונים להצגה</div>
 </div>
