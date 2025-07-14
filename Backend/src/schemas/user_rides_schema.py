@@ -28,13 +28,11 @@ class RideSchema(BaseModel):
     start_datetime: datetime
     end_datetime: datetime
     estimated_distance: str
-    actual_distance: str
     status: RideStatus
     submitted_at: datetime
     user_id: UUID 
     vehicle: FuelType
     actual_pickup_time: Optional[datetime] = None
-    vehicle_id: UUID
 
     class Config:
         from_attributes = True
