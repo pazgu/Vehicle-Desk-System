@@ -205,6 +205,10 @@
                   <div class="field-value">{{ selectedLog.change_data.email }}</div>
                 </div>
                 <div class="field-row">
+                  <div class="field-label">טלפון</div>
+                  <div class="field-value">{{ selectedLog.change_data.phone || '-' }}</div>
+                </div>
+                <div class="field-row">
                   <div class="field-label">שם משתמש</div>
                   <div class="field-value">{{ selectedLog.change_data.username }}</div>
                 </div>
@@ -223,6 +227,30 @@
                 <div class="field-row">
                   <div class="field-label">מחלקה</div>
                   <div class="field-value">{{ getDepartmentNameById(selectedLog.change_data.department_id) }}</div>
+                </div>
+                 <div class="field-row">
+                  <div class="field-label">רישיון ממשלתי</div>
+                  <div class="field-value">{{ selectedLog.change_data.has_government_license ? 'כן' : 'לא' }}</div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">קובץ רישיון</div>
+                  <div class="field-value">
+                    <ng-container *ngIf="selectedLog.change_data.license_file_url; else noLicenseFile">
+                      <a [href]="selectedLog.change_data.license_file_url" target="_blank">קובץ רישיון</a>
+                    </ng-container>
+                    <ng-template #noLicenseFile>לא קיים</ng-template>
+                  </div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">תוקף רישיון</div>
+                  <div class="field-value">
+                    <ng-container *ngIf="selectedLog.change_data.license_expiry_date; else noExpiryDate">
+                      {{ selectedLog.change_data.license_expiry_date | date:'dd/MM/yyyy' }}
+                    </ng-container>
+                    <ng-template #noExpiryDate>לא קיים</ng-template>
+                  </div>
                 </div>
               </div>
               <div *ngIf="selectedLog.entity_type === 'Vehicle'" class="entity-fields">
@@ -486,8 +514,8 @@
                 </div>
 
                 <div class="field-row">
-                  <div class="field-label">אימייל</div>
-                  <div class="field-value">{{ selectedLog.change_data.email }}</div>
+                  <div class="field-label">מחלקה</div>
+                  <div class="field-value">{{ getDepartmentNameById(selectedLog.change_data.department_id) }}</div>
                 </div>
 
                 <div class="field-row">
@@ -511,8 +539,18 @@
                 </div>
 
                 <div class="field-row">
-                  <div class="field-label">מחלקה</div>
-                  <div class="field-value">{{ getDepartmentNameById(selectedLog.change_data.department_id) }}</div>
+                  <div class="field-label">אימייל</div>
+                  <div class="field-value">{{ selectedLog.change_data.email }}</div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">טלפון</div>
+                  <div class="field-value">{{ selectedLog.change_data.phone || '-' }}</div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">רישיון ממשלתי</div>
+                  <div class="field-value">{{ selectedLog.change_data.has_government_license ? 'כן' : 'לא' }}</div>
                 </div>
 
                 <div class="field-row">
@@ -535,9 +573,84 @@
                   </div>
                 </div>
 
+
+              </div>
+            </div>
+          </div>
+          <div *ngIf="selectedLog.action === 'DELETE' && selectedLog.entity_type === 'Vehicle'">
+            <div class="data-card delete-data">
+              <h4>פרטי רכב שנמחק</h4>
+              <div class="entity-fields">
+
                 <div class="field-row">
-                  <div class="field-label">רישיון ממשלתי</div>
-                  <div class="field-value">{{ selectedLog.change_data.has_government_license ? 'כן' : 'לא' }}</div>
+                  <div class="field-label">מספר רישוי</div>
+                  <div class="field-value">{{ selectedLog.change_data.plate_number }}</div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">סוג רכב</div>
+                  <div class="field-value">{{ selectedLog.change_data.type }}</div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">סטטוס</div>
+                  <div class="field-value">{{ translateRideStatus(selectedLog.change_data.status) }}</div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">סוג דלק</div>
+                  <div class="field-value">{{ translateFuelType(selectedLog.change_data.fuel_type) }}</div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">מודל רכב</div>
+                  <div class="field-value">{{ selectedLog.change_data.vehicle_model }}</div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">מיקום נוכחי</div>
+                  <div class="field-value">{{ selectedLog.change_data.current_location }}</div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">מחלקה</div>
+                  <div class="field-value">{{ getDepartmentNameById(selectedLog.change_data.department_id) }}</div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">ק"מ נוכחי</div>
+                  <div class="field-value">{{ selectedLog.change_data.odometer_reading }}</div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">תאריך סיום ליסינג</div>
+                  <div class="field-value">{{ selectedLog.change_data.lease_expiry | date:'dd/MM/yyyy' }}</div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">סיבת הקפאה</div>
+                  <div class="field-value">{{ selectedLog.change_data.freeze_reason || '-' }}</div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">פרטי הקפאה</div>
+                  <div class="field-value">{{ selectedLog.change_data.freeze_details || '-' }}</div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-label">שימוש אחרון</div>
+                  <div class="field-value">
+                    {{ selectedLog.change_data.last_used_at ? (selectedLog.change_data.last_used_at | date:'dd/MM/yyyy
+                    HH:mm') : '-' }}
+                  </div>
+                </div>
+
+                <div class="field-row" *ngIf="selectedLog.change_data.image_url">
+                  <div class="field-label">תמונה</div>
+                  <div class="field-value">
+                    <img [src]="selectedLog.change_data.image_url" alt="תמונת רכב"
+                      style="max-height: 120px; max-width: 160px; border: 1px solid #ccc;" />
+                  </div>
                 </div>
 
               </div>
@@ -555,85 +668,7 @@
             </div>
           </div>
 
-          <div *ngIf="selectedLog.action === 'DELETE' && selectedLog.entity_type === 'Vehicle'">
-  <div class="data-card delete-data">
-    <h4>פרטי רכב שנמחק</h4>
-    <div class="entity-fields">
 
-      <div class="field-row">
-        <div class="field-label">מספר רישוי</div>
-        <div class="field-value">{{ selectedLog.change_data.plate_number }}</div>
-      </div>
-
-      <div class="field-row">
-        <div class="field-label">סוג רכב</div>
-        <div class="field-value">{{ selectedLog.change_data.type }}</div>
-      </div>
-
-      <div class="field-row">
-        <div class="field-label">סטטוס</div>
-        <div class="field-value">{{ translateRideStatus(selectedLog.change_data.status) }}</div>
-      </div>
-
-      <div class="field-row">
-        <div class="field-label">סוג דלק</div>
-        <div class="field-value">{{ translateFuelType(selectedLog.change_data.fuel_type) }}</div>
-      </div>
-
-      <div class="field-row">
-        <div class="field-label">מודל רכב</div>
-        <div class="field-value">{{ selectedLog.change_data.vehicle_model }}</div>
-      </div>
-
-      <div class="field-row">
-        <div class="field-label">מיקום נוכחי</div>
-        <div class="field-value">{{ selectedLog.change_data.current_location }}</div>
-      </div>
-
-      <div class="field-row">
-        <div class="field-label">מחלקה</div>
-        <div class="field-value">{{ getDepartmentNameById(selectedLog.change_data.department_id) }}</div>
-      </div>
-
-      <div class="field-row">
-        <div class="field-label">ק"מ נוכחי</div>
-        <div class="field-value">{{ selectedLog.change_data.odometer_reading }}</div>
-      </div>
-
-      <div class="field-row">
-        <div class="field-label">תאריך סיום ליסינג</div>
-        <div class="field-value">{{ selectedLog.change_data.lease_expiry | date:'dd/MM/yyyy' }}</div>
-      </div>
-
-      <div class="field-row">
-        <div class="field-label">סיבת הקפאה</div>
-        <div class="field-value">{{ selectedLog.change_data.freeze_reason || '-' }}</div>
-      </div>
-
-      <div class="field-row">
-        <div class="field-label">פרטי הקפאה</div>
-        <div class="field-value">{{ selectedLog.change_data.freeze_details || '-' }}</div>
-      </div>
-
-      <div class="field-row">
-        <div class="field-label">שימוש אחרון</div>
-        <div class="field-value">
-          {{ selectedLog.change_data.last_used_at ? (selectedLog.change_data.last_used_at | date:'dd/MM/yyyy HH:mm') : '-' }}
-        </div>
-      </div>
-
-      <div class="field-row" *ngIf="selectedLog.change_data.image_url">
-        <div class="field-label">תמונה</div>
-        <div class="field-value">
-          <img [src]="selectedLog.change_data.image_url"
-               alt="תמונת רכב"
-               style="max-height: 120px; max-width: 160px; border: 1px solid #ccc;" />
-        </div>
-      </div>
-
-    </div>
-  </div>
-</div>
 
 
           <button class="close-details-button" (click)="closeDetails()">סגור</button>
