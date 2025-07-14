@@ -80,8 +80,7 @@ def get_vehicles_with_optional_status(
         ) 
     )    
     .outerjoin(User, User.employee_id == Ride.user_id)
-    .filter(Vehicle.lease_expiry >= datetime.utcnow(),
-            Vehicle.is_archived == False) # Add this line to filter out expired leases
+    .filter(Vehicle.is_archived == False)
 )
     if status:
         query = query.filter(Vehicle.status == status)
