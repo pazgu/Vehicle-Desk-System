@@ -23,4 +23,3 @@ class VehicleInspection(Base):
     no_items_left = Column(Boolean, nullable=False)
     critical_issue_bool = Column(Boolean, nullable=False, default=False)
     issues_found = Column(Text, nullable=True)
-    vehicle_id = Column(UUID(as_uuid=True), ForeignKey("vehicles.vehicle_id"), nullable=True)
