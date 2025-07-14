@@ -7,23 +7,50 @@
   font-family: 'Alef', sans-serif;
 }
 
-
 .custom-toast.persistent {
-  padding-right: 35px; /* Leave space for close button */
+  position: fixed !important;
+  bottom: 20px !important;
+  right: 20px !important;
+  top: auto !important; /* Explicitly reset top */
+  left: auto !important; /* Explicitly reset left */
+  padding: 16px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 1290;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: fit-content;
+  max-width: 400px;
+  height: 50px;
 }
 
-.toast-close-btn {
-  position: absolute;
-  right: 8px;
-  top: 4px;
-  background: transparent;
-  color: #fff;
-  border: none;
-  font-size: 16px;
+.toast-ok-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: black;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 6px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
-  z-index: 1300;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
 }
+
+.toast-ok-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+.toast-ok-btn:active {
+  transform: translateY(0);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+
+
 
 
 .custom-toast {
@@ -53,6 +80,7 @@
 }
 .custom-toast.neutral {
   background-color: #afbff3;
+  color:black;
 }
 
 @keyframes slideIn {
