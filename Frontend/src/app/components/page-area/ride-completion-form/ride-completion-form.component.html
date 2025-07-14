@@ -25,14 +25,14 @@
 
 
             <div class="form-content" *ngIf="currentRide"  [formGroup]="form">
-                <div class="question">
+                <!-- <div class="question">
                     <p class="question-text">האם החזרת את הרכב?</p>
                     <div class="options">
                         <div class="option" [ngClass]="{ selected: form.get('completed')?.value === 'true' }" (click)="setFormValue('completed', 'true')">כן</div>
                         <div class="option" [ngClass]="{ selected: form.get('completed')?.value === 'false' }" (click)="setFormValue('completed', 'false')">לא</div>
                     </div>
                     <div class="divider"></div>
-                </div>
+                </div> -->
 
                 <div class="question">
                     <p class="question-text">האם הטענת/תדלקת את הרכב?</p>

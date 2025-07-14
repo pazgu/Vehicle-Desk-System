@@ -320,6 +320,8 @@ export class AllRidesComponent implements OnInit {
       case 'rejected': return 'נדחה';
       case 'completed': return 'הושלם';
       case 'in_progress': return 'בתהליך';
+      case 'cancelled_due_to_no_show': return 'בוטל – אי הגעה';
+      case 'reserved': return 'מוזמן';
       default: return 'סטטוס לא ידוע';
     }
   }
@@ -330,6 +332,8 @@ export class AllRidesComponent implements OnInit {
       case 'pending': return 'status-yellow';
       case 'rejected': return 'status-red';
       case 'in_progress': return 'status_in_progress';
+      case 'cancelled_due_to_no_show': return 'status-cancelled-no-show';
+      case 'reserved': return 'status-reserved';
       default: return '';
     }
   }
