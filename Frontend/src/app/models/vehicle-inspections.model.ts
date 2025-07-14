@@ -7,4 +7,5 @@ export interface VehicleInspection {
   no_items_left: boolean;
   critical_issue_bool: boolean;
   issues_found: string | null;
+  vehicle_id: string;
 }
