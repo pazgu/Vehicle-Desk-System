@@ -218,10 +218,6 @@
   background: #dc5b5b !important;
 }
 
-.reserved-row {
-  background-color: #9e734e !important;
-}
-
 .cancelled-due-to-no-show-row {
   background-color: #e0d6e8 !important;
 }
@@ -672,10 +668,6 @@
 .status-indicator.cancelled-due-to-no-show {
   background-color: #e0d6e8; /* אפור־סגול רך */
   border: #a398b3 1.6px solid; /* מסגרת סגלגלה */
-}
-.status-indicator.reserved{
-  background-color: #d7c7b7; /* חום בהיר, ניטרלי */
-  border: #987f6a 1.6px solid; /* חום כהה למסגרת */
 }
 
 
