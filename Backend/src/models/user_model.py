@@ -28,3 +28,5 @@ class User(Base):
     license_file_url = Column(String, nullable=True)
     license_expiry_date = Column(Date, nullable=True)
     
+
+   

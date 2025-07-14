@@ -1,7 +1,7 @@
 import asyncio
 
 from dotenv import load_dotenv
-
+from src.services.no_show_service import auto_cancel_no_show_rides
 from ..models.city_model import City
 from ..services.email_service import async_send_email, load_email_template
 from ..models.notification_model import Notification
@@ -554,8 +554,29 @@ scheduler.add_job(periodic_check_ride_status, 'interval', seconds=60)
 
 
 scheduler.start()
+
+def periodic_no_show_cleanup():
+    print("⏰ Running periodic no-show cleanup...")
+    db = SessionLocal()
+    try:
+        from services.no_show_service import auto_cancel_no_show_rides
+        auto_cancel_no_show_rides(db)
+    except Exception as e:
+        print("❌ Error during no-show cleanup:", e)
+    finally:
+        db.close()
+
+scheduler.add_job(periodic_no_show_cleanup, 'interval', minutes=30)
+
+def start_scheduler():
+    scheduler.add_job(notify_admins_daily, 'cron', hour=6, minute=0)
+    scheduler.start()
+
+
+
         
 def start_scheduler():
     scheduler = BackgroundScheduler(timezone=pytz.timezone("Asia/Jerusalem"))
     scheduler.add_job(notify_admins_daily, 'cron', hour=6, minute=0)
     scheduler.start()
+
