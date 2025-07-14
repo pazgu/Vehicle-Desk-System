@@ -7,7 +7,7 @@ import { TagModule } from 'primeng/tag';
 import { DividerModule } from 'primeng/divider';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { OrderService } from '../../../services/order.service';
-import { OrderCardItem } from '../../../models/order-card-item/order-card-item.module';
+import { OrderCardItem } from '../../../models/order-card-item.module';
 import { finalize } from 'rxjs/operators';
 import { CityService } from '../../../services/city.service';
 

@@ -85,27 +85,11 @@ def get_vehicles_with_optional_status(
 )
     if status:
         query = query.filter(Vehicle.status == status)
-
-    
-    if vehicle_type:  # ✅ Add this part to filter by type
+    if vehicle_type:
         query = query.filter(func.lower(Vehicle.type) == vehicle_type.lower())
-
-
     vehicles = query.all()
+    return vehicles
 
-    result = []
-    for row in vehicles:
-        data = dict(row._mapping)
-        lease_expiry = data.get("lease_expiry")
-        data["canDelete"] = lease_expiry.date() < date.today() if lease_expiry else False
-
-        if data["status"] == VehicleStatus.in_use:
-            result.append(InUseVehicleOut(**data))
-        else:
-            result.append(VehicleOut(**data))
-
-    print("Result:", result)
-    return result
 
 def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_reason: str, db: Session, changed_by: UUID, notes: Optional[str] = None):
     FREEZE_REASON_TRANSLATIONS = {
