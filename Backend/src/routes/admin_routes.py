@@ -700,15 +700,22 @@ def get_critical_issue_details(issue_id: str, db: Session = Depends(get_db)):
 #     except Exception as e:
 #         print("❌ Error in get_all_critical_issues:", str(e))
 #         raise HTTPException(status_code=500, detail=f"Failed to fetch critical issues: {str(e)}")
+
+
+
+
+
+
+
 from typing import Optional, List, Any, Dict
 from fastapi import APIRouter, Query, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_
 
 # Assuming these are your SQLAlchemy models and Pydantic schemas
-# from .models import VehicleInspection, Ride # Make sure these are imported
-# from .schemas import VehicleInspectionSchema, OrderCardItem # Make sure these are imported
-# from .database import get_db # Make sure this is imported
+# from .models import VehicleInspection, Ride # Make sure these are correctly imported
+# from .schemas import VehicleInspectionSchema, OrderCardItem # Make sure these are correctly imported
+# from .database import get_db # Make sure this is correctly imported
 
 router = APIRouter()
 
@@ -717,22 +724,25 @@ def get_critical_issues(
     problem_type: Optional[str] = Query(None),
     db: Session = Depends(get_db)
 ):
-    # Initialize rides_data as an empty list by default
-    rides_data = []
+    # Initialize the query for VehicleInspections
+    inspections_query = db.query(VehicleInspection)
 
-    # VehicleInspection logic
-    query = db.query(VehicleInspection)
+    # Initialize rides_data by fetching ALL rides with emergency_event == "true" by default.
+    # This will be overridden to an empty list only if problem_type == "medium".
+    rides = db.query(Ride).filter(Ride.emergency_event == "true").all()
+    rides_data = [OrderCardItem.from_orm(r) for r in rides]
+
     if problem_type == "medium":
-        query = query.filter(
-            and_(
-                or_(
-                    VehicleInspection.fuel_checked == False,
-                ),
-                VehicleInspection.critical_issue_bool == False,
-            )
+        # Vehicle Inspections: Only those with fuel_checked == False
+        inspections_query = inspections_query.filter(
+            VehicleInspection.fuel_checked == False
         )
+        # Rides: No rides should be returned for "medium" problem type
+        rides_data = []
+
     elif problem_type == "critical":
-        query = query.filter(
+        # Vehicle Inspections: critical_issue_bool == True OR issues_found is not None/empty
+        inspections_query = inspections_query.filter(
             or_(
                 VehicleInspection.critical_issue_bool == True,
                 and_(
@@ -741,12 +751,12 @@ def get_critical_issues(
                 )
             )
         )
-        # Add rides with emergency_event == "true" when problem_type is "critical"
-        rides = db.query(Ride).filter(Ride.emergency_event == "true").all()
-        rides_data = [OrderCardItem.from_orm(r) for r in rides]
+        # Rides: Remain as initially populated (emergency rides)
 
     elif problem_type == "medium,critical":
-        query = query.filter(
+        # Vehicle Inspections: Keep the original combined logic for "medium,critical"
+        # (fuel_checked == False AND critical_issue_bool == False) OR (critical_issue_bool == True OR issues_found not None/empty)
+        inspections_query = inspections_query.filter(
             or_(
                 and_(
                     or_(
@@ -763,11 +773,26 @@ def get_critical_issues(
                 )
             )
         )
-        # Add rides with emergency_event == "true" when problem_type is "medium,critical"
-        rides = db.query(Ride).filter(Ride.emergency_event == "true").all()
-        rides_data = [OrderCardItem.from_orm(r) for r in rides]
+        # Rides: Remain as initially populated (emergency rides)
 
-    inspections = query.order_by(VehicleInspection.inspection_date.desc()).all()
+    else: # problem_type is None (or any other unspecified value)
+        # Vehicle Inspections: fuel_checked == False OR (critical_issue_bool == True AND issues_found is not None/empty)
+        inspections_query = inspections_query.filter(
+            or_(
+                VehicleInspection.fuel_checked == False, # "Medium" part of the combined default
+                and_( # "Critical" part of the combined default
+                    VehicleInspection.critical_issue_bool == True,
+                    and_( # issues_found must be not None AND not empty
+                        VehicleInspection.issues_found != None,
+                        VehicleInspection.issues_found != ""
+                    )
+                )
+            )
+        )
+        # Rides: Remain as initially populated (emergency rides)
+
+    # Execute the VehicleInspection query
+    inspections = inspections_query.order_by(VehicleInspection.inspection_date.desc()).all()
     inspections_data = [VehicleInspectionSchema.from_orm(i) for i in inspections]
 
     return {

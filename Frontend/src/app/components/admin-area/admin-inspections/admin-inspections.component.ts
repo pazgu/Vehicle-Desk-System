@@ -229,7 +229,6 @@
 
 // }
 
-
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpParams } from '@angular/common/http';
@@ -300,6 +299,8 @@ export class AdminInspectionsComponent implements OnInit {
         this.toastService.show('❌ שגיאה בטעינת נתונים', 'error');
       }
     });
+    console.log('🚀 Inspections loaded:', this.inspections);
+    console.log('🚀 Rides loaded:', this.rides) ;
   }
 
   // This method is now simplified because the backend already filters the 'inspections' array.
