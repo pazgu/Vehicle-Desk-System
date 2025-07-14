@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, String, Enum, ForeignKey , Boolean , Date
+from sqlalchemy import Column, String, Enum, ForeignKey , Boolean , Date , DateTime
 from sqlalchemy.dialects.postgresql import UUID
 from src.models.base import Base
 import enum
@@ -27,6 +27,8 @@ class User(Base):
     has_government_license = Column(Boolean, default=False)
     license_file_url = Column(String, nullable=True)
     license_expiry_date = Column(Date, nullable=True)
+    
+
     
 
    

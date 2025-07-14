@@ -20,7 +20,7 @@ class RideStatus(str, enum.Enum):
     in_progress = "in_progress"
     completed = "completed"
     cancelled = "cancelled"
-    cancelled_due_to_no_show = "cancelled_due_to_no_show"
+   
 
 
 class Ride(Base):
@@ -49,7 +49,7 @@ class Ride(Base):
     override_user_id = Column(UUID(as_uuid=True), ForeignKey("users.employee_id"), nullable=True)
     feedback_submitted= Column(Boolean, default=False) 
     rejection_reason = Column(Text, nullable=True)
-    actual_pickup_time = Column(DateTime, nullable=True)
+   
 
 
 class PendingRideSchema(BaseModel):
