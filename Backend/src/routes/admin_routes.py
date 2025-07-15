@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query,Header, Request, st
 from uuid import UUID
 from fastapi.staticfiles import StaticFiles
 from typing import Optional , List
-from datetime import datetime
+from datetime import datetime, time
 from sqlalchemy.orm import Session
 from src.schemas.vehicle_inspection_schema import VehicleInspectionOut
 from src.schemas.user_response_schema import UserResponse, UserUpdate
@@ -669,7 +669,12 @@ def get_archived_vehicles(
         data["canDelete"] = False
 
         if v.archived_at:
-            archive_age = (datetime.now() - v.archived_at).days
+            if isinstance(v.archived_at, time):
+                archived_at_dt = datetime.combine(datetime.today(), v.archived_at)
+            else:
+                archived_at_dt = v.archived_at
+
+            archive_age = (datetime.now() - archived_at_dt).days
             if archive_age >= 90:
                 data["canDelete"] = True
 
