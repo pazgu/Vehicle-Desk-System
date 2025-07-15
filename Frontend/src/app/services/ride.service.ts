@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -31,6 +32,7 @@ getRideById(rideId: string): Observable<any> {
   const headers = new HttpHeaders({
     Authorization: `Bearer ${token}`
   });
+  
 
   return this.http.get(`http://localhost:8000/api/rides/${rideId}`, { headers });
 }
@@ -43,6 +45,16 @@ updateRide(rideId: string, data: any): Observable<any> {
 
   return this.http.patch(`http://localhost:8000/api/orders/${rideId}`, data, { headers });
 }
+
+startRide(rideId: string): Observable<any> {
+  const token = localStorage.getItem('access_token');
+  const headers = new HttpHeaders({
+    Authorization: `Bearer ${token}`
+  });
+
+  return this.http.post(`${environment.apiUrl}/rides/${rideId}/start`, {}, { headers });
+}
+
 
 getArchivedOrders(userId: string): Observable<any[]> {
   const token = localStorage.getItem('access_token');

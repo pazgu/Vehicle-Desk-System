@@ -12,7 +12,7 @@ from sqlalchemy import text
 from ..services.new_ride_service import create_ride 
 from fastapi.responses import JSONResponse
 from typing import List, Optional, Union
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from ..schemas.user_rides_schema import RideSchema, RideStatus
 from ..services.user_rides_service import get_future_rides, get_past_rides , get_all_rides
 from ..utils.database import get_db
@@ -309,7 +309,22 @@ async def create_order(
             detail=f"Failed to create order: {str(e)}"
         )
 
+@router.get("/api/rides_supposed-to-start")
+def check_started_approved_rides(db: Session = Depends(get_db)):
+    # Use timezone-aware or naive depending on your DB!
+    now = datetime.now(timezone.utc)  # ✅ naive
+    # OR
+    # now = datetime.now(timezone.utc) # ✅ aware
+    
+    rides = db.query(Ride).filter(
+        Ride.status == RideStatus.approved,
+        Ride.start_datetime <= now,
+        now <= Ride.start_datetime + text("interval '2 hours'")
+    ).all()
+    print({"rides_supposed_to_start": [ride.id for ride in rides]})
 
+
+    return {"rides_supposed_to_start": [ride.id for ride in rides]}
 
 @router.get("/api/departments")
 def get_departments_route():

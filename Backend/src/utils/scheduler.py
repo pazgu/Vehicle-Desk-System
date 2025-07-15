@@ -1,6 +1,7 @@
 import asyncio
 
 from dotenv import load_dotenv
+from fastapi import HTTPException
 
 from ..models.audit_log_model import AuditLog
 from ..models.monthly_vehicle_usage_model import MonthlyVehicleUsage
@@ -35,7 +36,7 @@ from ..services.user_notification import create_system_notification,get_supervis
 import logging
 main_loop = asyncio.get_event_loop()
 logger = logging.getLogger(__name__)
-from sqlalchemy import and_, cast, func, or_
+from sqlalchemy import and_, cast, func, or_, text
 
 
 
@@ -64,18 +65,27 @@ async def start_ride_with_new_session(ride_id: str):
     print('start ride with new session was called')
     db = SessionLocal()
     try:
-        res=await start_ride(db, ride_id)
-        ride=res[0]
-        vehicle=res[1]
+        ride = db.query(Ride).filter(Ride.id == ride_id).first()
+        if not ride:
+            raise HTTPException(status_code=404, detail="Ride not found")
+
+        if ride.status != RideStatus.approved:
+            raise HTTPException(status_code=400, detail="Ride must be approved before starting")
+
+        # ride=res[0]
+        # vehicle=res[1]
          # 3️⃣ Emit ride update
-        await sio.emit("ride_status_updated", {
-            "ride_id": str(ride.id),
-            "new_status": ride.status.value
-        })
-        # 4️⃣ Emit vehicle update
-        await sio.emit("vehicle_status_updated", {
-            "id": str(vehicle.id),
-            "status": vehicle.status.value
+        # await sio.emit("ride_status_updated", {
+        #     "ride_id": str(ride.id),
+        #     "new_status": ride.status.value
+        # })
+        # # 4️⃣ Emit vehicle update
+        # await sio.emit("vehicle_status_updated", {
+        #     "id": str(vehicle.id),
+        #     "status": vehicle.status.value
+        # })
+        await sio.emit("ride_supposed_to_start", {
+            "ride_id": str(ride.id)
         })
     finally:
         db.close()
@@ -308,6 +318,41 @@ async def check_vehicle_lease_expiry():
     finally:
         db.close()
 
+async def check_and_cancel_unstarted_rides():
+    db: Session = SessionLocal()
+    try:
+        now = datetime.now(timezone.utc)
+        two_hours_ago = now - timedelta(hours=2)
+
+        rides = db.query(Ride).filter(
+            Ride.status == RideStatus.approved,
+            Ride.start_datetime <= two_hours_ago,
+            Ride.actual_pickup_time == None
+        ).all()
+
+        print(f'Found {len(rides)} rides to cancel due to no show')
+
+        for ride in rides:
+            # Mark the ride as cancelled due to no show
+            ride.status = RideStatus.cancelled_due_to_no_show
+
+            # Free the vehicle
+            if ride.vehicle_id:
+                vehicle = db.query(Vehicle).filter(Vehicle.id == ride.vehicle_id).first()
+                if vehicle:
+                    vehicle.status = 'available'
+
+            db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(ride.user_id)})
+
+
+        db.commit()
+
+    except Exception as e:
+        print(f'Error in check_and_cancel_unstarted_rides: {e}')
+        db.rollback()
+    finally:
+        db.close()
+
 async def delete_old_archived_vehicles():
     """
     Checks for vehicles that have been archived for more than three months
@@ -451,6 +496,12 @@ def periodic_check():
             print('Coroutine result:', result)
         except Exception as e:
             print('Coroutine error:', e)
+
+
+def periodic_check_unstarted_rides(): 
+    print('periodic_check_unstarted_rides was called')
+    future = asyncio.run_coroutine_threadsafe(check_and_cancel_unstarted_rides(), main_loop)
+    future.result(timeout=5)            
 
 
 def check_and_schedule_ride_emails():
@@ -674,6 +725,7 @@ def periodic_delete_archived_vehicles():
 scheduler.add_job(periodic_check_vehicle, 'interval', days=1)
 scheduler.add_job(periodic_check_ride_status, 'interval', seconds=60)
 scheduler.add_job(periodic_delete_archived_vehicles, 'interval',  days=30)
+scheduler.add_job(periodic_check_unstarted_rides, 'interval', minutes=1)
 
 
 scheduler.start()

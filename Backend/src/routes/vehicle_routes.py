@@ -31,8 +31,7 @@ router = APIRouter()
     
 
 @router.get("/all-vehicles", response_model=List[VehicleOut])
-def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = Depends(get_db)
-    ,payload: dict = Depends(token_check)):
+def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = Depends(get_db), payload: dict = Depends(token_check)):
     vehicles = get_vehicles_with_optional_status(db, status)
     return vehicles
 
@@ -153,3 +152,5 @@ def get_vehicle_timeline(
     ).all()
 
     return [RideTimelineSchema(**dict(row._mapping)) for row in rides]
+
+

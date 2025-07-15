@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { of } from 'rxjs';
+import { StartedRidesResponse } from '../models/ride.model';
 
 
 @Injectable({
@@ -80,6 +81,15 @@ export class MyRidesService {
 
     return params;
   }
+ checkStartedApprovedRides(): Observable<StartedRidesResponse> {
+  const token = localStorage.getItem('access_token');
+  const headers = new HttpHeaders({
+    Authorization: `Bearer ${token}`
+  });
+
+  return this.http.get<StartedRidesResponse>(environment.ridesSupposedToStartUrl, { headers });
+}
+
 
 
 }
