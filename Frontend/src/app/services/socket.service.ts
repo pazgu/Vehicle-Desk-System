@@ -26,6 +26,7 @@ export class SocketService {
 public  feedbackNeeded$ = new ReplaySubject<any>(1);
 public vehicleExpiry$=new BehaviorSubject<any>(null);
 public odometerNotif$=new BehaviorSubject<any>(null);
+public rideSupposedToStart$=new BehaviorSubject<any>(null);
 
   constructor(private notificationService: NotificationService) {
     this.connectToSocket(); // ✅ now always tries to connect (later you can add env check)
@@ -123,6 +124,10 @@ this.socket.on('order_deleted', (data: any) => {
     this.socket.on('new_ride_request', (data: any) => {
       console.log('🚗 New ride request received via socket:', data);
       this.rideRequests$.next(data);
+    });
+    this.socket.on('ride_supposed_to_start', (data: any) => {
+      console.log('🚗 a ride supposed to start:', data);
+      this.rideSupposedToStart$.next(data);
     });
 
     this.socket.on('new_inspection', (data: any) => {

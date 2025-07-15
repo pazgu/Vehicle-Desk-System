@@ -129,7 +129,16 @@
   margin-top: 1rem;
   padding: 0;
 }
-
+.ride-started {
+  background-color: white !important; /* Or any style you want */
+  color: black;
+}
+.started-gif-icon {
+  width: 20px;  /* adjust as needed */
+  height: 20px; /* adjust as needed */
+  margin-left: 4px; /* space from main icon */
+  vertical-align: middle;
+}
   
   button {
     background: none;
