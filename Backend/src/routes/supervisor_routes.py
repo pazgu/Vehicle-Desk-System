@@ -14,7 +14,7 @@ from ..utils.auth import supervisor_check, token_check
 from ..services.supervisor_dashboard_service import vehicle_inspection_logic , start_ride
 from ..utils.auth import supervisor_check, token_check
 from ..schemas.vehicle_schema import FreezeVehicleRequest
-
+from ..utils.socket_manager import sio
 router = APIRouter()
 
 
@@ -135,6 +135,18 @@ def freeze_vehicle(request: FreezeVehicleRequest, db: Session = Depends(get_db),
 async def start_ride_route(ride_id: UUID, db: Session = Depends(get_db)):
     try:
         ride, vehicle = await start_ride(db, ride_id)
+       
+        #  3️⃣ Emit ride update
+        await sio.emit("ride_status_updated", {
+            "ride_id": str(ride.id),
+            "new_status": ride.status.value
+        })
+        # 4️⃣ Emit vehicle update
+        await sio.emit("vehicle_status_updated", {
+            "id": str(vehicle.id),
+            "status": vehicle.status.value
+        })
+
         return {
             "message": "Ride started, vehicle marked as in use",
             "ride_id": str(ride.id),
