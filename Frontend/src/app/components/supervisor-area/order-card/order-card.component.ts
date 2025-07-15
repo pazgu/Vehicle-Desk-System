@@ -185,6 +185,8 @@ getCityName(id: string): string {
         return 'נדחה';
       case 'in_progress':
         return 'בתהליך';
+      case 'cancelled_due_to_no_show':
+        return 'בוטלה-נסיעה לא יצאה';  
       default:
         return status;
     }
