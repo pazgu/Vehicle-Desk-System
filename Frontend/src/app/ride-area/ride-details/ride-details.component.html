@@ -68,6 +68,7 @@
      ride?.status === 'approved' ? 'מאושר': 
      ride?.status === 'completed' ? 'הושלם' : 
      ride?.status === 'in_progress' ? 'בתהליך' :
-     ride?.status === 'rejected' ? 'נדחה' : '' }}
+     ride?.status === 'rejected' ? 'נדחה' : 
+      ride?.status === 'cancelled_due_to_no_show' ? 'בוטלה-נסיעה לא יצאה' : ''  }}
 </span>  </div>
 </div>
