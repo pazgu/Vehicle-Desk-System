@@ -1,4 +1,4 @@
-<h2 class="section-title" *ngIf="!isCriticalMode">בדיקות רכבים שבוצעו היום</h2>
+<!-- <h2 class="section-title" *ngIf="!isCriticalMode">בדיקות רכבים שבוצעו היום</h2>
 <h2 class="section-title" *ngIf="isCriticalMode">חריגות</h2>
 
 <div *ngIf="loading" class="loading">טוען...</div>
@@ -50,14 +50,12 @@
     [class.highlight]="highlighted"
     (click)="isCriticalMode ? loadIssueDetails(item) : selectedIssue = item">
 
-      <!-- Critical Mode -->
       <td *ngIf="isCriticalMode">{{ item.timestamp | date: 'short' }}</td>
       <td *ngIf="isCriticalMode">{{ item.source_type }}</td>
       <td *ngIf="isCriticalMode">{{ item.responsible_user }}</td>
       <td *ngIf="isCriticalMode">{{ item.vehicle_info || '—' }}</td>
       <td *ngIf="isCriticalMode">{{ item.issue_summary }}</td>
 
-      <!-- Daily Inspection Mode -->
       <td *ngIf="!isCriticalMode">{{ item.inspection_date | date: 'short' }}</td>
       <td *ngIf="!isCriticalMode">{{ item.inspected_by }}</td>
       <td *ngIf="!isCriticalMode">{{ item.issues_found || 'לא דווחו בעיות' }}</td>
@@ -77,8 +75,82 @@
     <p><strong>סוג:</strong> {{ selectedIssueDetails.type }}</p>
   </div>
 </div>
+</div> -->
 
+<div *ngIf="loading" class="loading">טוען...</div>
 
+<div *ngIf="!loading" class="admin-inspections-container">
+  <h1 style="text-align: right; color: #942222; margin-bottom: 1rem;">חריגות</h1>
+  <div class="problematic-only-filter" dir="rtl">
+    <button (click)="showProblematicFilters = !showProblematicFilters">
+      {{ showProblematicFilters ? 'הסתר אפשרויות סינון' : 'הצג בדיקות עם בעיות' }}
+    </button>
+    <div *ngIf="showProblematicFilters">
+      <label style="display: block; margin-bottom: 0.5em;">
+        <input type="checkbox" [(ngModel)]="showMediumIssues" (change)="loadData()" />
+        הצג בעיות - דרגה בינונית
+      </label>
+      <label style="display: block;">
+        <input type="checkbox" [(ngModel)]="showCriticalIssues" (change)="loadData()" />
+        הצג בעיות - דרגה חריגה
+      </label>
+    </div>
+  </div>
 
+  <!-- Inspections Table -->
+  <ng-container *ngIf="filteredInspections.length > 0">
+    <h2 style="text-align: right; color: #942222; margin-top: 2rem; margin-bottom: 1rem;">בדיקות רכבים</h2>
+    <table class="inspection-table">
+      <thead>
+        <tr>
+          <th>תאריך</th>
+          <th>בודק</th>
+          <th>נקי</th>
+          <th>דלק נבדק</th>
+          <th>אין חפצים</th>
+          <th>בעיה קריטית</th>
+          <th>הערות</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let insp of filteredInspections" (click)="naviagteToVehicle(insp.vehicle_id)">
+          <td>{{ insp.inspection_date | date: 'short' }}</td>
+          <td>{{ insp.inspected_by }}</td>
+          <td>{{ insp.clean ? '✔️' : '❌' }}</td>
+          <td>{{ insp.fuel_checked ? '✔️' : '❌' }}</td>
+          <td>{{ insp.no_items_left ? '✔️' : '❌' }}</td>
+          <td>{{ insp.critical_issue_bool ? 'כן' : 'לא' }}</td>
+          <td>{{ insp.issues_found || '—' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </ng-container>
 
+  <!-- Rides Table -->
+  <ng-container *ngIf="rides.length > 0">
+    <h2 style="text-align: right; color: #942222; margin-top: 2rem; margin-bottom: 1rem;">נסיעות עם אירוע חירום</h2>
+    <table class="inspection-table">
+      <thead>
+        <tr>
+          <th>תאריך התחלה</th>
+          <th>נהג</th>
+          <th>סטטוס</th>
+          <th>מרחק בפועל (ק"מ)</th>
+          <th>אירוע חירום</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let ride of rides">
+          <td>{{ ride.start_datetime | date: 'short' }}</td>
+          <td>{{ ride.user_id }}</td>
+          <td>{{ ride.status }}</td>
+          <td>{{ ride.actual_distance_km }}</td>
+          <td>{{ ride.emergency_event === 'true' ? 'כן' : 'לא' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </ng-container>
+
+  <div *ngIf="filteredInspections.length === 0 && rides.length === 0" style="text-align: right; margin-top: 2rem;">אין נתונים להצגה</div>
 </div>
+

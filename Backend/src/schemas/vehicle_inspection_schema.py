@@ -14,4 +14,4 @@ class VehicleInspectionOut(BaseModel):
     issues_found: Optional[str]
 
     class Config:
-        orm_mode = True
+        from_attributes = True 

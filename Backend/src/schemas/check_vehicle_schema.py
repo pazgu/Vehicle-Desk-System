@@ -14,3 +14,5 @@ class VehicleInspectionSchema(BaseModel):
     no_items_left: bool
     critical_issue_bool: bool = Field(default=False)
     issues_found: Optional[str] = None
+    class Config:
+        from_attributes = True
