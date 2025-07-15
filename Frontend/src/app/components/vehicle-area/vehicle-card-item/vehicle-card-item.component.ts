@@ -11,6 +11,7 @@ import { ConfirmDialogComponent } from '../../page-area/confirm-dialog/confirm-d
 import { MatIconModule } from '@angular/material/icon';
 import { Observable } from 'rxjs';
 import { Location } from '@angular/common';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-vehicle-card-item',
@@ -31,9 +32,11 @@ export class VehicleCardItemComponent implements OnInit {
   constructor(
     private navigateRouter: Router,
     private route: ActivatedRoute,
+    
     private vehicleService: VehicleService,
     private http: HttpClient,
-    private dialog: MatDialog,
+   
+     private dialog: MatDialog, private toastService: ToastService,
     private location: Location
   ) { }
 
@@ -286,13 +289,13 @@ export class VehicleCardItemComponent implements OnInit {
 
       this.vehicleService.deleteVehicle(vehicle.id).subscribe({
         next: () => {
-          alert(`הרכב ${vehicle.plate_number} נמחק בהצלחה.`);
+          this.toastService.show(`הרכב ${vehicle.plate_number} נמחק בהצלחה.`)
           this.location.back();
         },
         error: (err) => {
           console.error("❌ מחיקה נכשלה:", err);
           const msg = err?.error?.detail || "המחיקה נכשלה.";
-          alert(msg);
+          this.toastService.show(msg, 'error');
         }
       });
     });
@@ -316,13 +319,13 @@ export class VehicleCardItemComponent implements OnInit {
 
       this.vehicleService.archiveVehicle(vehicle.id).subscribe({
         next: () => {
-          alert(`הרכב ${vehicle.plate_number} נארכב בהצלחה.`);
+          this.toastService.show(`הרכב ${vehicle.plate_number} נארכב בהצלחה.`);
           this.location.back();
         },
         error: (err) => {
           console.error("❌ ארכוב נכשל:", err);
           const msg = err?.error?.detail || "הארכוב נכשל.";
-          alert(msg);
+          this.toastService.show(msg, 'error');
         }
       });
     });

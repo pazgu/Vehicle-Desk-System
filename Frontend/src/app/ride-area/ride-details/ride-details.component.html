@@ -1,6 +1,12 @@
 <div class="ride-card">
    <button class="back-btn" (click)="goBack()">חזור לרשימה ←</button>
   <h2 class="heading">פרטי הנסיעה</h2>
+<button 
+  *ngIf="canStartRide()"
+  class="start-ride-btn"
+  (click)="startRide()">
+  🚗 התחל נסיעה
+</button>
 
   <div class="detail-row">
     <span class="detail-label">תאריך:</span>
@@ -62,6 +68,7 @@
      ride?.status === 'approved' ? 'מאושר': 
      ride?.status === 'completed' ? 'הושלם' : 
      ride?.status === 'in_progress' ? 'בתהליך' :
-     ride?.status === 'rejected' ? 'נדחה' : '' }}
+     ride?.status === 'rejected' ? 'נדחה' : 
+      ride?.status === 'cancelled_due_to_no_show' ? 'בוטלה-נסיעה לא יצאה' : ''  }}
 </span>  </div>
 </div>

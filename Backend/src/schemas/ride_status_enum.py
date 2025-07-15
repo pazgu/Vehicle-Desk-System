@@ -8,6 +8,7 @@ class RideStatusEnum(str, Enum):
     in_progress = "in_progress"
     completed = "completed"
     cancelled = "cancelled"
+    cancelled_due_to_no_show="cancelled_due_to_no_show"
 
 class UpdateRideStatusRequest(BaseModel):
     status: RideStatusEnum
