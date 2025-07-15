@@ -123,7 +123,8 @@
              'pi-clock': !order.hasStarted &&order.status.toLowerCase() === 'pending',
              'pi-times-circle': !order.hasStarted &&order.status.toLowerCase() === 'rejected',
              'pi-list-check': !order.hasStarted &&order.status.toLowerCase() === 'completed',
-             'pi-forward': !order.hasStarted &&order.status.toLowerCase() === 'in_progress',              
+             'pi-forward': !order.hasStarted &&order.status.toLowerCase() === 'in_progress',  
+
             }"
             [title]="getStatusTooltip(order.status)"
             style="font-size: 1.3rem;">
@@ -133,6 +134,12 @@
               src="assets/images/timed-clock.gif"
               alt="Started"
               class="started-gif-icon"
+            />
+            <img
+              *ngIf="order.status.toLowerCase() === 'cancelled_due_to_no_show'"
+              src="assets/images/cancelled_no_show.png"
+              alt="Cancelled due to No Show"
+              class="cancelled-no-show-icon"
             />
         </div>
 
