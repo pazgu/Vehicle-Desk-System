@@ -112,7 +112,7 @@ export class AddNewUserComponent implements OnInit {
         this.addUserForm.reset();
         this.selectedFile = null;
         this.selectedFileName = '';
-        this.router.navigate(['/admin/analytics']);
+        this.router.navigate(['/user-data']);
       },
       error: (err) => {
         console.error(err);
