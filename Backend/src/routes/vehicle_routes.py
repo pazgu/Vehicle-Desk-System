@@ -10,7 +10,7 @@ from ..utils.socket_manager import sio
 from sqlalchemy.orm import Session
 from ..schemas.vehicle_schema import VehicleOut
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
-from ..utils.auth import token_check
+from ..utils.auth import token_check, get_current_user,role_check
 from ..utils.database import get_db
 from typing import List, Optional, Union
 from src.schemas.vehicle_create_schema import VehicleCreate
