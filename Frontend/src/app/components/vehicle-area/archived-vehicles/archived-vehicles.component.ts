@@ -9,7 +9,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { ToastService } from '../../../services/toast.service';
 import { MatDialog } from '@angular/material/dialog';
-import { ConfirmDialogComponent } from '../../page-area/confirm-dialog/confirm-dialog.component';
+import { ConfirmDialogComponent, ConfirmDialogData } from '../../page-area/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-archived-vehicles',
@@ -156,17 +156,18 @@ export class ArchivedVehiclesComponent implements OnInit {
     this.router.navigate(['/vehicle-details', vehicleId]);
   }
 
-  // Method to restore vehicle from archive (unarchive)
+  // Method to restore vehicle from archive (unarchive) - UPDATED
   restoreVehicle(vehicle: VehicleInItem): void {
     const message = `האם את/ה בטוח/ה שברצונך לשחזר את הרכב ${vehicle.plate_number} מהארכיון ולהחזיר אותו לפעילות?`;
     
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
       data: { 
-        message,
         title: 'שחזור רכב מהארכיון',
+        message,
         confirmText: 'שחזר',
-        cancelText: 'בטל'
+        cancelText: 'בטל',
+        isDestructive: false
       }
     });
 
@@ -186,15 +187,15 @@ export class ArchivedVehiclesComponent implements OnInit {
     });
   }
 
-  // Method to permanently delete vehicle
+  // Method to permanently delete vehicle - UPDATED
   permanentlyDeleteVehicle(vehicle: VehicleInItem): void {
     const message = `⚠️ האם את/ה בטוח/ה שברצונך למחוק לצמיתות את הרכב ${vehicle.plate_number}?\n\nפעולה זו לא ניתנת לביטול ותמחק את כל הנתונים הקשורים לרכב!`;
     
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '450px',
       data: { 
-        message,
         title: 'מחיקה לצמיתות',
+        message,
         confirmText: 'מחק לצמיתות',
         cancelText: 'בטל',
         isDestructive: true

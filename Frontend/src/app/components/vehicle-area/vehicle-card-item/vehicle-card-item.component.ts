@@ -7,7 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { MatDialog } from '@angular/material/dialog';
-import { ConfirmDialogComponent } from '../../page-area/confirm-dialog/confirm-dialog.component';
+import { ConfirmDialogComponent, ConfirmDialogData } from '../../page-area/confirm-dialog/confirm-dialog.component';
 import { MatIconModule } from '@angular/material/icon';
 import { Observable } from 'rxjs';
 import { Location } from '@angular/common';
@@ -32,16 +32,12 @@ export class VehicleCardItemComponent implements OnInit {
   constructor(
     private navigateRouter: Router,
     private route: ActivatedRoute,
-    
     private vehicleService: VehicleService,
     private http: HttpClient,
-   
-     private dialog: MatDialog, private toastService: ToastService,
+    private dialog: MatDialog, 
+    private toastService: ToastService,
     private location: Location
   ) { }
-
-
-// Replace the ngOnInit method in vehicle-card-item.component.ts
 
   ngOnInit(): void {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -79,8 +75,6 @@ export class VehicleCardItemComponent implements OnInit {
       });
     }
   }
-
-
 
   getCardClass(status: string): string {
     switch (status) {
@@ -198,7 +192,6 @@ export class VehicleCardItemComponent implements OnInit {
     });
   }
 
-
   // Show the freeze reason input field
   showFreezeReasonField(): void {
     this.isFreezeReasonFieldVisible = true;
@@ -252,7 +245,6 @@ export class VehicleCardItemComponent implements OnInit {
             rideDate.getFullYear() === currentDate.getFullYear();
         }).length;
 
-
         console.log(`Vehicle ${vehicleId} appears in ${count} rides`);
 
         // Store the count in the component property
@@ -271,16 +263,18 @@ export class VehicleCardItemComponent implements OnInit {
     }
   }
 
+  // UPDATED: Delete confirmation
   confirmDelete(vehicle: any): void {
     const message = `תוקף חוזה ההשכרה של רכב ${vehicle.plate_number} פג.\nהאם את/ה בטוח/ה שברצונך למחוק את הרכב?`;
 
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
       data: {
-        message,
         title: 'מחיקת רכב',
+        message,
         confirmText: 'מחק',
-        cancelText: 'בטל'
+        cancelText: 'בטל',
+        isDestructive: true
       }
     });
 
@@ -301,16 +295,18 @@ export class VehicleCardItemComponent implements OnInit {
     });
   }
 
+  // UPDATED: Archive confirmation
   confirmArchive(vehicle: any): void {
     const message = `תוקף חוזה ההשכרה של רכב ${vehicle.plate_number} פג והרכב מוקפא.\nלא ניתן למחוק את הרכב, אך ניתן לארכב אותו.\n\nהאם את/ה בטוח/ה שברצונך לארכב את הרכב?`;
 
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
       data: {
-        message,
         title: 'ארכוב רכב',
+        message,
         confirmText: 'ארכב',
-        cancelText: 'בטל'
+        cancelText: 'בטל',
+        isDestructive: false
       }
     });
 
@@ -331,16 +327,18 @@ export class VehicleCardItemComponent implements OnInit {
     });
   }
 
+  // UPDATED: Unfreeze confirmation
   confirmUnfreeze(): void {
     const message = `האם את/ה בטוח/ה שברצונך לשחרר את הרכב ${this.vehicle.plate_number} מהקפאה?`;
 
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
       data: {
-        message,
         title: 'שחרור מהקפאה',
+        message,
         confirmText: 'שחרר',
-        cancelText: 'בטל'
+        cancelText: 'בטל',
+        isDestructive: false
       }
     });
 
@@ -350,6 +348,7 @@ export class VehicleCardItemComponent implements OnInit {
     });
   }
 
+  // UPDATED: Freeze confirmation
   confirmFreeze(): void {
     if (!this.freezeReason.trim()) {
       alert('יש להזין סיבת הקפאה');
@@ -362,10 +361,11 @@ export class VehicleCardItemComponent implements OnInit {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
       data: {
-        message,
         title: 'הקפאת רכב',
+        message,
         confirmText: 'הקפא',
-        cancelText: 'בטל'
+        cancelText: 'בטל',
+        isDestructive: false
       }
     });
 
@@ -402,67 +402,66 @@ export class VehicleCardItemComponent implements OnInit {
       ' ' +
       date.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
   }
-  // Add these methods to vehicle-card-item.component.ts
 
-// Method to restore vehicle from archive
-restoreVehicle(vehicle: any): void {
-  const message = `האם את/ה בטוח/ה שברצונך לשחזר את הרכב ${vehicle.plate_number} מהארכיון ולהחזיר אותו לפעילות?`;
-  
-  const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-    width: '400px',
-    data: { 
-      message,
-      title: 'שחזור רכב מהארכיון',
-      confirmText: 'שחזר',
-      cancelText: 'בטל'
-    }
-  });
-
-  dialogRef.afterClosed().subscribe(confirmed => {
-    if (!confirmed) return;
-
-    this.vehicleService.restoreVehicle(vehicle.id).subscribe({
-      next: () => {
-        alert(`הרכב ${vehicle.plate_number} שוחזר בהצלחה מהארכיון`);
-        this.location.back();
-      },
-      error: (err) => {
-        console.error('❌ Error restoring vehicle:', err);
-        alert('שגיאה בשחזור הרכב מהארכיון');
+  // UPDATED: Method to restore vehicle from archive
+  restoreVehicle(vehicle: any): void {
+    const message = `האם את/ה בטוח/ה שברצונך לשחזר את הרכב ${vehicle.plate_number} מהארכיון ולהחזיר אותו לפעילות?`;
+    
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: { 
+        title: 'שחזור רכב מהארכיון',
+        message,
+        confirmText: 'שחזר',
+        cancelText: 'בטל',
+        isDestructive: false
       }
     });
-  });
-}
 
-// Method to permanently delete vehicle
-permanentlyDeleteVehicle(vehicle: any): void {
-  const message = `⚠️ האם את/ה בטוח/ה שברצונך למחוק לצמיתות את הרכב ${vehicle.plate_number}?\n\nפעולה זו לא ניתנת לביטול ותמחק את כל הנתונים הקשורים לרכב!`;
-  
-  const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-    width: '450px',
-    data: { 
-      message,
-      title: 'מחיקה לצמיתות',
-      confirmText: 'מחק לצמיתות',
-      cancelText: 'בטל',
-      isDestructive: true
-    }
-  });
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (!confirmed) return;
 
-  dialogRef.afterClosed().subscribe(confirmed => {
-    if (!confirmed) return;
+      this.vehicleService.restoreVehicle(vehicle.id).subscribe({
+        next: () => {
+          this.toastService.show(`הרכב ${vehicle.plate_number} שוחזר בהצלחה מהארכיון`, 'success');
+          this.location.back();
+        },
+        error: (err) => {
+          console.error('❌ Error restoring vehicle:', err);
+          this.toastService.show('שגיאה בשחזור הרכב מהארכיון', 'error');
+        }
+      });
+    });
+  }
 
-    this.vehicleService.permanentlyDeleteVehicle(vehicle.id).subscribe({
-      next: () => {
-        alert(`הרכב ${vehicle.plate_number} נמחק לצמיתות`);
-        this.location.back();
-      },
-      error: (err) => {
-        console.error('❌ Error permanently deleting vehicle:', err);
-        alert('שגיאה במחיקה לצמיתות של הרכב');
+  // UPDATED: Method to permanently delete vehicle
+  permanentlyDeleteVehicle(vehicle: any): void {
+    const message = `⚠️ האם את/ה בטוח/ה שברצונך למחוק לצמיתות את הרכב ${vehicle.plate_number}?\n\nפעולה זו לא ניתנת לביטול ותמחק את כל הנתונים הקשורים לרכב!`;
+    
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '450px',
+      data: { 
+        title: 'מחיקה לצמיתות',
+        message,
+        confirmText: 'מחק לצמיתות',
+        cancelText: 'בטל',
+        isDestructive: true
       }
     });
-  });
-}
-}
 
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (!confirmed) return;
+
+      this.vehicleService.permanentlyDeleteVehicle(vehicle.id).subscribe({
+        next: () => {
+          this.toastService.show(`הרכב ${vehicle.plate_number} נמחק לצמיתות`, 'success');
+          this.location.back();
+        },
+        error: (err) => {
+          console.error('❌ Error permanently deleting vehicle:', err);
+          this.toastService.show('שגיאה במחיקה לצמיתות של הרכב', 'error');
+        }
+      });
+    });
+  }
+}
