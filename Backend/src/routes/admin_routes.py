@@ -5,7 +5,7 @@ from typing import Optional , List
 from datetime import datetime
 from sqlalchemy.orm import Session
 from src.schemas.vehicle_inspection_schema import VehicleInspectionOut
-from src.schemas.user_response_schema import UserResponse, UserUpdate
+from src.schemas.user_response_schema import UserResponse
 from src.schemas.ride_dashboard_item import RideDashboardItem
 from src.schemas.trip_completion_schema import RawCriticalIssueSchema, TripCompletionIssueSchema
 from src.services.user_data import get_user_by_id, get_all_users
@@ -17,15 +17,15 @@ from src.services.admin_rides_service import (
     get_order_by_ride_id,
     get_all_time_vehicle_usage_stats 
 )
-from sqlalchemy import and_, or_
+from typing import Optional
+from datetime import datetime
 from sqlalchemy import and_, or_
 from ..utils.database import get_db
 from src.models.user_model import User , UserRole
 from src.models.vehicle_model import Vehicle
-from ..schemas.check_vehicle_schema import VehicleInspectionSchema
-from ..schemas.vehicle_schema import VehicleOut , InUseVehicleOut , VehicleStatusUpdate
+from ..schemas.vehicle_schema import VehicleOut
 from ..utils.auth import get_current_user, token_check
-from ..services.vehicle_service import archive_vehicle_by_id, get_vehicles_with_optional_status,update_vehicle_status,get_vehicle_by_id, get_available_vehicles_for_ride_by_id,delete_vehicle_by_id
+from ..services.vehicle_service import archive_vehicle_by_id, get_available_vehicles_for_ride_by_id,delete_vehicle_by_id
 from ..services.user_notification import send_admin_odometer_notification
 from datetime import date, datetime, timedelta
 from src.models.vehicle_inspection_model import VehicleInspection
@@ -33,7 +33,6 @@ from ..services.monthly_trip_counts import archive_last_month_stats
 from sqlalchemy import func, text
 from fastapi.responses import JSONResponse
 from src.models.ride_model import Ride
-from sqlalchemy import cast, Date
 from src.utils.stats import generate_monthly_vehicle_usage
 from ..schemas.register_schema import UserCreate
 from src.services import admin_service
@@ -50,7 +49,6 @@ from ..schemas.user_response_schema import PaginatedUserResponse
 from src.utils.auth import get_current_user
 from ..services.license_service import upload_license_file_service , check_expired_licenses
 from ..services.license_service import upload_license_file_service 
-from src.services.admin_rides_service import get_all_critical_issues_combined
 from src.services.admin_rides_service import get_critical_issue_by_id 
 from src.schemas.order_card_item import OrderCardItem
 
@@ -109,6 +107,9 @@ def fetch_user_by_id(user_id: UUID, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="User not found")
     return result
 
+
+
+
 @router.patch("/user-data-edit/{user_id}", response_model=UserResponse)
 async def edit_user_by_id_route(
     user_id: UUID,
@@ -137,25 +138,51 @@ async def edit_user_by_id_route(
 
     # Convert "true"/"false" string to actual boolean
     has_gov_license = has_government_license.lower() == "true"
+    
+    # --- Corrected and Simplified Validation Logic ---
+    
+    # Validation for the 'has_government_license' boolean field
+    if user.has_government_license is not None and has_gov_license != user.has_government_license:
+        raise HTTPException(
+            status_code=403,
+            detail="'Has government license' flag cannot be changed after initial upload."
+        )
 
-    # Handle license expiry date
-    if license_expiry_date:
-        try:
-            from datetime import datetime
-            user.license_expiry_date = datetime.strptime(license_expiry_date, "%Y-%m-%d").date()
-        except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid date format for license_expiry_date")
-
-    # Handle license file if provided
-    license_file_url = user.license_file_url
-    if license_file:
+    # Validation for the license file
+    # If a file is in the database AND a new file is being uploaded, raise an error.
+    if user.license_file_url is not None and license_file:
+        raise HTTPException(
+            status_code=403,
+            detail="Government license file cannot be re-uploaded after initial upload."
+        )
+    # If no file is in the database and a new file is being uploaded, save it.
+    if user.license_file_url is None and license_file:
         contents = await license_file.read()
         filename = f"uploads/{license_file.filename}"
         with open(filename, "wb") as f:
             f.write(contents)
-        license_file_url = f"/{filename}"
+        user.license_file_url = f"/{filename}"
 
-    # Apply updates
+    # Validation for the license expiry date
+    # If a date is in the database AND the new date is different, raise an error.
+    if user.license_expiry_date is not None and license_expiry_date:
+        try:
+            new_date = datetime.strptime(license_expiry_date, "%Y-%m-%d").date()
+            if new_date != user.license_expiry_date:
+                raise HTTPException(
+                    status_code=403,
+                    detail="License expiry date cannot be edited after initial upload."
+                )
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid date format for license_expiry_date")
+    # If no date is in the database and a new date is being submitted, save it.
+    if user.license_expiry_date is None and license_expiry_date:
+        try:
+            user.license_expiry_date = datetime.strptime(license_expiry_date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid date format for license_expiry_date")
+    
+    # Apply updates to the other, non-restricted fields.
     user.first_name = first_name
     user.last_name = last_name
     user.username = username
@@ -163,9 +190,8 @@ async def edit_user_by_id_route(
     user.phone = phone
     user.role = role
     user.department_id = department_id
-    user.has_government_license = has_gov_license
-    user.license_file_url = license_file_url
-
+    user.has_government_license = has_gov_license # This line must be here to handle the initial set
+    
     try:
         db.commit()
     except Exception as e:
@@ -174,17 +200,19 @@ async def edit_user_by_id_route(
         raise HTTPException(status_code=500, detail="Failed to update user")
 
     db.refresh(user)
-    # When user license is updated, emit event to clients:
-    await sio.emit('user_license_updated', {
-    "id": str(user.employee_id),
-    "license_expiry_date": user.license_expiry_date.isoformat() if user.license_expiry_date else None,
-    "has_government_license": bool(user.has_government_license),
-    "license_file_url": user.license_file_url or ""
-})
 
+    await sio.emit('user_license_updated', {
+        "id": str(user.employee_id),
+        "license_expiry_date": user.license_expiry_date.isoformat() if user.license_expiry_date else None,
+        "has_government_license": bool(user.has_government_license),
+        "license_file_url": user.license_file_url or ""
+    })
 
     db.execute(text("SET session.audit.user_id = DEFAULT"))
     return user
+
+
+
 @router.get("/roles")
 def get_roles():
     return [role.value for role in UserRole]
