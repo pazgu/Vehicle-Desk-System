@@ -23,7 +23,7 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate):
     vehicle = db.query(Vehicle).filter(Vehicle.id == ride.vehicle_id).first()
     if not vehicle:
         raise HTTPException(status_code=404, detail="Vehicle not found")
-    if vehicle.lease_expiry <= datetime.now():
+    if vehicle.lease_expiry <= datetime.utcnow():
         raise HTTPException(status_code=404, detail="Vehicle is expired")
 
 

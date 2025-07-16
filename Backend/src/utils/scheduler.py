@@ -1,6 +1,7 @@
 import asyncio
 
 from dotenv import load_dotenv
+from fastapi import HTTPException
 
 from ..models.audit_log_model import AuditLog
 from ..models.monthly_vehicle_usage_model import MonthlyVehicleUsage
@@ -35,7 +36,7 @@ from ..services.user_notification import create_system_notification,get_supervis
 import logging
 main_loop = asyncio.get_event_loop()
 logger = logging.getLogger(__name__)
-from sqlalchemy import and_, cast, func, or_
+from sqlalchemy import and_, cast, func, or_, text
 
 
 
@@ -64,18 +65,27 @@ async def start_ride_with_new_session(ride_id: str):
     print('start ride with new session was called')
     db = SessionLocal()
     try:
-        res=await start_ride(db, ride_id)
-        ride=res[0]
-        vehicle=res[1]
+        ride = db.query(Ride).filter(Ride.id == ride_id).first()
+        if not ride:
+            raise HTTPException(status_code=404, detail="Ride not found")
+
+        if ride.status != RideStatus.approved:
+            raise HTTPException(status_code=400, detail="Ride must be approved before starting")
+
+        # ride=res[0]
+        # vehicle=res[1]
          # 3️⃣ Emit ride update
-        await sio.emit("ride_status_updated", {
-            "ride_id": str(ride.id),
-            "new_status": ride.status.value
-        })
-        # 4️⃣ Emit vehicle update
-        await sio.emit("vehicle_status_updated", {
-            "id": str(vehicle.id),
-            "status": vehicle.status.value
+        # await sio.emit("ride_status_updated", {
+        #     "ride_id": str(ride.id),
+        #     "new_status": ride.status.value
+        # })
+        # # 4️⃣ Emit vehicle update
+        # await sio.emit("vehicle_status_updated", {
+        #     "id": str(vehicle.id),
+        #     "status": vehicle.status.value
+        # })
+        await sio.emit("ride_supposed_to_start", {
+            "ride_id": str(ride.id)
         })
     finally:
         db.close()
@@ -308,6 +318,54 @@ async def check_vehicle_lease_expiry():
     finally:
         db.close()
 
+async def check_and_cancel_unstarted_rides():
+    db: Session = SessionLocal()
+    try:
+        now = datetime.now(timezone.utc)
+        two_hours_ago = now - timedelta(hours=2)
+
+        rides = db.query(Ride).filter(
+            Ride.status == RideStatus.approved,
+            Ride.start_datetime <= two_hours_ago,
+            Ride.actual_pickup_time == None
+        ).all()
+
+        print(f'Found {len(rides)} rides to cancel due to no show')
+
+        for ride in rides:
+            ride.status = RideStatus.cancelled_due_to_no_show
+
+            vehicle = None  # default fallback
+            if ride.vehicle_id:
+                vehicle = db.query(Vehicle).filter(Vehicle.id == ride.vehicle_id).first()
+                if vehicle:
+                    vehicle.status = 'available'
+
+            db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(ride.user_id)})
+
+            db.commit()  # commit before await!
+
+            await sio.emit("ride_status_updated", {
+                "ride_id": str(ride.id),
+                "new_status": ride.status.value
+            })
+
+            if vehicle:
+                await sio.emit("vehicle_status_updated", {
+                    "id": str(vehicle.id),
+                    "status": vehicle.status.value
+                })
+
+            await notify_ride_cancelled_due_to_no_show(ride.id)
+
+        db.commit()
+
+    except Exception as e:
+        print(f'Error in check_and_cancel_unstarted_rides: {e}')
+        db.rollback()
+    finally:
+        db.close()
+
 async def delete_old_archived_vehicles():
     """
     Checks for vehicles that have been archived for more than three months
@@ -453,6 +511,12 @@ def periodic_check():
             print('Coroutine error:', e)
 
 
+def periodic_check_unstarted_rides(): 
+    print('periodic_check_unstarted_rides was called')
+    future = asyncio.run_coroutine_threadsafe(check_and_cancel_unstarted_rides(), main_loop)
+    future.result(timeout=5)            
+
+
 def check_and_schedule_ride_emails():
     db = SessionLocal()
     try:
@@ -468,7 +532,7 @@ def check_and_schedule_ride_emails():
     finally:
         db.close()
 
-scheduler.add_job(check_and_schedule_ride_emails, 'interval', minutes=5)
+scheduler.add_job(check_and_schedule_ride_emails, 'interval', minutes=15)
 scheduler.add_job(check_and_complete_rides, 'interval', minutes=5)
 
 def notify_admins_daily():
@@ -600,6 +664,104 @@ async def check_ride_status_and_notify_user():
     finally:
         db.close()
 
+
+async def notify_ride_cancelled_due_to_no_show(ride_id: int):
+    """
+    Notifies user and admin that a ride was cancelled due to no-show.
+    """
+    db: Session = SessionLocal()
+    try:
+        ride = db.query(Ride).filter(Ride.id == ride_id).first()
+        if not ride:
+            print(f"Ride ID {ride_id} not found.")
+            return
+
+        user = db.query(User).filter(User.employee_id == ride.user_id).first()
+        if not user:
+            print(f"User not found for ride ID {ride_id}.")
+            return
+
+        user_email = user.email
+        user_name = get_user_name(db, user.employee_id) or "משתמש יקר"
+
+        destination_name = str(ride.stop)
+        if ride.stop:
+            city = db.query(City).filter(City.id == ride.stop).first()
+            if city:
+                destination_name = city.name
+
+        plate_number = "לא הוקצה רכב"
+        if ride.vehicle_id:
+            vehicle = db.query(Vehicle).filter(Vehicle.id == ride.vehicle_id).first()
+            if vehicle:
+                plate_number = vehicle.plate_number
+
+        # 🟢 1. Send notification to user
+        notif_message = f"הנסיעה שלך ליעד {destination_name} בוטלה עקב אי התייצבות."
+        notification = create_system_notification(
+            user_id=user.employee_id,
+            title="עדכון: הנסיעה בוטלה עקב אי התייצבות",
+            message=notif_message,
+            order_id=ride.id
+        )
+        await emit_new_notification(
+            notification=notification,
+            room=str(user.employee_id),
+        )
+        print(f"Sent no-show cancellation notification to user {user.employee_id}")
+
+        # 🟢 2. Send notification to admin
+        admin_id = 1  # Replace with your real admin user ID or logic
+        admin_notification = create_system_notification(
+            user_id=admin_id,
+            title=f"הודעה: הנסיעה בוטלה עקב אי התייצבות",
+            message=f"הנסיעה של {user_name} ליעד {destination_name} בוטלה עקב אי התייצבות.",
+            order_id=ride.id
+        )
+        await emit_new_notification(
+            notification=admin_notification,
+            room=str(admin_id)
+        )
+        print(f"Sent no-show cancellation notification to admin {admin_id}")
+
+        # 🟢 3. Send email to user
+        if user_email:
+            html_content_user = load_email_template("ride_cancelled_no_show.html", {
+                "USER_NAME": user_name,
+                "DESTINATION": destination_name,
+                "DATE_TIME": ride.start_datetime.strftime("%Y-%m-%d %H:%M"),
+                "PLATE_NUMBER": plate_number,
+                "LINK_TO_RIDE": f"{BOOKIT_URL}/ride/details/{ride.id}"
+            })
+            await async_send_email(
+                to_email=user_email,
+                subject=f"❌ עדכון: הנסיעה שלך בוטלה עקב אי התייצבות",
+                html_content=html_content_user
+            )
+            print(f"Sent no-show cancellation email to {user_email}")
+
+        # 🟢 4. Send email to admin
+        admin_email = "admin@example.com"  # Replace with your admin email logic
+        html_content_admin = load_email_template("ride_cancelled_no_show_admin.html", {
+            "USER_NAME": user_name,
+            "DESTINATION": destination_name,
+            "DATE_TIME": ride.start_datetime.strftime("%Y-%m-%d %H:%M"),
+            "PLATE_NUMBER": plate_number,
+            "LINK_TO_RIDE": f"{BOOKIT_URL}/ride/details/{ride.id}"
+        })
+        await async_send_email(
+            to_email=admin_email,
+            subject=f"🚨 הודעה: הנסיעה של {user_name} בוטלה עקב אי התייצבות",
+            html_content=html_content_admin
+        )
+        print(f"Sent no-show cancellation email to admin")
+
+    except Exception as e:
+        print(f"Error notifying ride cancellation due to no-show: {repr(e)}")
+    finally:
+        db.close()
+
+
 def schedule_ride_completion_email(ride_id: str, end_datetime: datetime):
     run_time = end_datetime + timedelta(minutes=5)
     job_id = f"ride-email-{ride_id}"
@@ -674,6 +836,7 @@ def periodic_delete_archived_vehicles():
 scheduler.add_job(periodic_check_vehicle, 'interval', days=1)
 scheduler.add_job(periodic_check_ride_status, 'interval', seconds=60)
 scheduler.add_job(periodic_delete_archived_vehicles, 'interval',  days=30)
+scheduler.add_job(periodic_check_unstarted_rides, 'interval', minutes=1)
 
 
 scheduler.start()

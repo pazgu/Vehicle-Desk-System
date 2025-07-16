@@ -10,6 +10,7 @@ import { MatDialog } from '@angular/material/dialog'; // Add this import at the 
 import { ConfirmDialogComponent } from '../../page-area/confirm-dialog/confirm-dialog.component'; // Adjust the path as needed
 import { MatIconModule } from '@angular/material/icon';
 import { Observable } from 'rxjs';  
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-vehicle-card-item',
@@ -27,7 +28,9 @@ export class VehicleCardItemComponent implements OnInit {
   departmentName: string = '';
 
 
-  constructor(private navigateRouter: Router, private route: ActivatedRoute, private vehicleService: VehicleService, private http: HttpClient, private dialog: MatDialog) { }
+  constructor(private navigateRouter: Router, private route: ActivatedRoute, 
+    private vehicleService: VehicleService, private http: HttpClient,
+     private dialog: MatDialog, private toastService: ToastService) { }
 
   ngOnInit(): void {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -284,13 +287,13 @@ confirmDelete(vehicle: any): void {
     action$.subscribe({
       next: () => {
         const actionText = vehicle.status === 'frozen' ? 'נארכב' : 'נמחק';
-        alert(`הרכב ${vehicle.plate_number} ${actionText} בהצלחה.`);
+        this.toastService.show(`הרכב ${vehicle.plate_number} ${actionText} בהצלחה.`)
         this.navigateRouter.navigate(['/vehicle-dashboard']);
       },
       error: (err) => {
         console.error("❌ פעולה נכשלה:", err);
         const msg = err?.error?.detail || "הפעולה נכשלה.";
-        alert(msg);
+        this.toastService.show(msg, 'error');
       }
     });
   });
@@ -309,13 +312,13 @@ confirmArchive(vehicle: any): void {
 
     this.vehicleService.archiveVehicle(vehicle.id).subscribe({
         next: () => {
-          alert(`הרכב ${vehicle.plate_number} נארכב בהצלחה.`);
+          this.toastService.show(`הרכב ${vehicle.plate_number} נארכב בהצלחה.`);
           this.navigateRouter.navigate(['/vehicle-dashboard']);
         },
         error: (err) => {
           console.error("❌ כשלון בארכוב:", err);
           const msg = err?.error?.detail || "הארכוב נכשל.";
-          alert(msg);
+          this.toastService.show(msg, 'error');
         }
       });
     });

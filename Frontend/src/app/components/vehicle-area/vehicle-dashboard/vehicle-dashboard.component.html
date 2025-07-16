@@ -32,12 +32,10 @@
         </div>
       </div>
 
-      <!-- 🔔 Notice when filtering by most used -->
       <div *ngIf="showingMostUsed" style="text-align: right; font-weight: bold; color: #922;">
         מוצגים רכבים לפי כמות שימושים החודש
       </div>
 
-      <!-- Status Legend -->
       <div class="status-indicators">
         <p style="margin-bottom: 0.75rem; font-weight: 600;">מקרא צבעים</p>
         <div class="status-box">
@@ -53,7 +51,6 @@
         </div>
       </div>
 
-      <!-- Filters Section -->
       <div *ngIf="showFilters"
         style="margin-bottom: 1.5rem; background: #f7f7f7; padding: 1rem; border-radius: 8px; direction: rtl;">
         <div style="margin-bottom: 1rem; gap: 1rem; display: flex;">
@@ -73,23 +70,21 @@
             <option *ngFor="let type of vehicleTypes" [value]="type">{{ type }}</option>
           </select>
         </div>
-<div style="display: flex; align-items: center; gap: 0.5rem; direction: rtl;">
-  <input
-    type="checkbox"
-    id="showInactive"
-    [(ngModel)]="showInactive"
-    style="transform: scale(1.2); cursor: pointer;"
-  />
-  <label for="showInactive" style="cursor: pointer;">
-    הצג רק רכבים שלא היו בשימוש מעל לשבוע ⚠️
-  </label>
-</div>
-
+        <div style="display: flex; align-items: center; gap: 0.5rem; direction: rtl;">
+          <input
+            type="checkbox"
+            id="showInactive"
+            [(ngModel)]="showInactive"
+            style="transform: scale(1.2); cursor: pointer;"
+          />
+          <label for="showInactive" style="cursor: pointer;">
+            הצג רק רכבים שלא היו בשימוש מעל לשבוע ⚠️
+          </label>
+        </div>
       </div>
 
-      <!-- 🚘 Vehicle Cards -->
       <div class="vehicles-cards">
-        <p-card *ngFor="let vehicle of filteredVehicles" [styleClass]="'vehicle-card ' + getCardClass(vehicle.status)"
+        <p-card *ngFor="let vehicle of filteredVehicles" [styleClass]="'vehicle-card ' + getCardClass(vehicle.status) + (isInactive(vehicle.last_used_at) ? ' is-inactive' : '')"
           (click)="goToVehicleDetails(vehicle.id)">
 
           <ng-template pTemplate="header">
@@ -100,9 +95,11 @@
                   getVehicleUsageCount(vehicle.plate_number) }} נסיעות</span>
               </div>
             </div>
+            <div *ngIf="isInactive(vehicle.last_used_at)" class="inactive-badge">
+              לא פעיל
+            </div>
             <img *ngIf="vehicle.image_url" [src]="vehicle.image_url" alt="תמונה של הרכב"
               style="width: 100%; max-width: 250px; margin-top: 10px;" />
-
           </ng-template>
 
           <h3>רכב: {{ vehicle.plate_number }}</h3>
@@ -120,18 +117,23 @@
           <div *ngIf="vehicle.ride_count !== undefined">
             <strong>שימושים החודש:</strong> {{ vehicle.ride_count }}
           </div>
+
+          <div *ngIf="vehicle.last_used_at">
+            <strong>שימוש אחרון:</strong> {{ vehicle.last_used_at | date:'shortDate' }}
+          </div>
+
         </p-card>
       </div>
 
-      <!-- Empty state -->
-     <div *ngIf="filteredVehicles?.length === 0" class="empty-state" style="text-align: center; margin-top: 2rem;">
-  <ng-container *ngIf="showInactive; else noVehicles">
-    כל הרכבים היו בשימוש בשבוע האחרון ✅
-  </ng-container>
-  <ng-template #noVehicles>
-    לא נמצאו רכבים
-  </ng-template>
-</div>
+      <div *ngIf="filteredVehicles?.length === 0" class="empty-state" style="text-align: center; margin-top: 2rem;">
+        <ng-container *ngIf="showInactive; else noVehicles">
+          כל הרכבים היו בשימוש בשבוע האחרון ✅
+        </ng-container>
+        <ng-template #noVehicles>
+          לא נמצאו רכבים
+        </ng-template>
+      </div>
 
       </div>
     </div>
+</div>

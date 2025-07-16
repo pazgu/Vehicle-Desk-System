@@ -31,8 +31,7 @@ router = APIRouter()
     
 
 @router.get("/all-vehicles", response_model=List[VehicleOut])
-def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = Depends(get_db)
-    ,payload: dict = Depends(token_check)):
+def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = Depends(get_db), payload: dict = Depends(token_check)):
     vehicles = get_vehicles_with_optional_status(db, status)
     return vehicles
 
@@ -45,7 +44,7 @@ def get_vehicle_fuel_type(vehicle_id: UUID, db: Session = Depends(get_db)):
 
 
 @router.patch("/vehicles-status/{vehicle_id}") 
-def patch_vehicle_status(
+async def patch_vehicle_status(
     vehicle_id: UUID,
     status_update: VehicleStatusUpdate,
     db: Session = Depends(get_db),
@@ -57,7 +56,7 @@ def patch_vehicle_status(
     
     res=update_vehicle_status(vehicle_id, status_update.new_status, status_update.freeze_reason, db, user_id)
     new_status=res["new_status"]
-    sio.emit('vehicle_status_updated', {
+    await sio.emit('vehicle_status_updated', {
             "vehicle_id": str(vehicle_id),
             "status": new_status,
             "freeze_reason": res.get("freeze_reason", "")
@@ -153,3 +152,5 @@ def get_vehicle_timeline(
     ).all()
 
     return [RideTimelineSchema(**dict(row._mapping)) for row in rides]
+
+

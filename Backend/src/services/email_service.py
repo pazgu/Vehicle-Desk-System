@@ -69,6 +69,7 @@ def send_email(to_email: str, subject: str, html_content: str, text_content: str
 
 
 async def async_send_email(to_email: str, subject: str, html_content: str, text_content: str = ""):
+    print('in send email sending')
     """
     שליחה אסינכרונית (לא חוסמת) של מייל דרך SendGrid.
     """

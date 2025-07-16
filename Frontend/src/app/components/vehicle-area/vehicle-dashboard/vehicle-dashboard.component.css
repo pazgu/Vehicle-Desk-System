@@ -506,3 +506,19 @@ button {
         gap: 10px;
     }
 }
+
+
+.inactive-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: #942222; /* Red background */
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.7em;
+    font-weight: bold;
+    z-index: 10; /* Ensure it's on top */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
