@@ -139,8 +139,17 @@
   margin-left: 4px; /* space from main icon */
   vertical-align: middle;
 }
-  
-  button {
+.cancelled-no-show-icon{
+    width: 24px;  /* adjust as needed */
+  height: 24px; /* adjust as needed */
+  margin-left: 4px; /* space from main icon */
+  vertical-align: middle;
+}
+
+.status-cancelled-no-show{
+ background-color: #ffe1e184;
+}  
+button {
     background: none;
     border: none;
     font-size: 1.5rem;
