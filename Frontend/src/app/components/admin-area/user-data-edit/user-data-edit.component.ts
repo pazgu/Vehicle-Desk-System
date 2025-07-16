@@ -192,48 +192,105 @@ export class UserDataEditComponent implements OnInit {
     }
   }
 
-  onSubmit(): void {
-    if (this.userForm.valid && this.userId) {
-      const formValues = this.userForm.value;
-      const formData = new FormData();
-      console.log('Form values before processing:', formValues);
-      console.log('License expiry date from form:', formValues.license_expiry_date);
-      console.log('Type of license_expiry_date:', typeof formValues.license_expiry_date);
+  // onSubmit(): void {
+  //   if (this.userForm.valid && this.userId) {
+  //     const formValues = this.userForm.value;
+  //     const formData = new FormData();
+  //     console.log('Form values before processing:', formValues);
+  //     console.log('License expiry date from form:', formValues.license_expiry_date);
+  //     console.log('Type of license_expiry_date:', typeof formValues.license_expiry_date);
 
-      for (const key in formValues) {
-        if (this.hasExistingLicenseFile && key.startsWith('license_') && !this.selectedFile) {
-          continue;
-        }
+  //     for (const key in formValues) {
+  //       if (this.hasExistingLicenseFile && key.startsWith('license_') && !this.selectedFile) {
+  //         continue;
+  //       }
 
-        const value = formValues[key];
-        if (typeof value === 'boolean') {
-          formData.append(key, value ? 'true' : 'false');
-        } else if (value !== null && value !== undefined) {
-          formData.append(key, value.toString());
-        }
+  //       const value = formValues[key];
+  //       if (typeof value === 'boolean') {
+  //         formData.append(key, value ? 'true' : 'false');
+  //       } else if (value !== null && value !== undefined) {
+  //         formData.append(key, value.toString());
+  //       }
+  //     }
+
+  //     if (this.selectedFile) {
+  //       formData.append('license_file', this.selectedFile);
+  //     }
+
+  //     this.userService.updateUser(this.userId, formData).subscribe({
+  //       next: () => {
+  //         this.toastService.show('המשתמש עודכן בהצלחה', 'success');
+  //         setTimeout(() => {
+  //           this.router.navigate(['/user-data']);
+  //         }, 500);
+  //       },
+  //       error: (err) => {
+  //         console.error('Failed to update user:', err);
+  //         this.toastService.show('שגיאה בעדכון המשתמש', 'error');
+  //       }
+  //     });
+  //   } else {
+  //     Object.keys(this.userForm.controls).forEach(key => {
+  //       this.userForm.get(key)?.markAsTouched();
+  //     });
+  //   }
+  // }
+// --- This is the full, corrected `onSubmit` method. Replace your existing one with this. ---
+
+onSubmit(): void {
+  if (this.userForm.valid && this.userId) {
+    const formData = new FormData();
+    const formValues = this.userForm.value;
+
+    // Always append basic user data
+    formData.append('first_name', formValues.first_name);
+    formData.append('last_name', formValues.last_name);
+    formData.append('username', formValues.username);
+    formData.append('email', formValues.email);
+    formData.append('role', formValues.role);
+    formData.append('department_id', formValues.department_id);
+    formData.append('phone', formValues.phone);
+
+    // Only append the `has_government_license` field if the control is not disabled.
+    // This prevents sending `false` when a license exists.
+    const hasLicenseControl = this.userForm.get('has_government_license');
+    if (hasLicenseControl && !hasLicenseControl.disabled) {
+      formData.append('has_government_license', hasLicenseControl.value ? 'true' : 'false');
+    }
+    
+    // Logic for NEW license upload (when no file exists yet)
+    if (!this.hasExistingLicenseFile) {
+      if (formValues.license_expiry_date) {
+        formData.append('license_expiry_date', formValues.license_expiry_date);
       }
-
       if (this.selectedFile) {
         formData.append('license_file', this.selectedFile);
       }
-
-      this.userService.updateUser(this.userId, formData).subscribe({
-        next: () => {
-          this.toastService.show('המשתמש עודכן בהצלחה', 'success');
-          setTimeout(() => {
-            this.router.navigate(['/user-data']);
-          }, 500);
-        },
-        error: (err) => {
-          console.error('Failed to update user:', err);
-          this.toastService.show('שגיאה בעדכון המשתמש', 'error');
-        }
-      });
-    } else {
-      Object.keys(this.userForm.controls).forEach(key => {
-        this.userForm.get(key)?.markAsTouched();
-      });
     }
+    
+    // Logic for EXISTING license (when a file already exists)
+    // We don't send license details unless a new file is explicitly selected.
+    if (this.hasExistingLicenseFile && this.selectedFile) {
+        formData.append('license_file', this.selectedFile);
+    }
+    
+    this.userService.updateUser(this.userId, formData).subscribe({
+      next: (updatedUser) => {
+        console.log('User updated:', updatedUser);
+        this.toastService.show('המשתמש עודכן בהצלחה', 'success');
+        setTimeout(() => {
+          this.router.navigate(['/user-data']);
+        }, 500);
+      },
+      error: (err) => {
+        console.error('Failed to update user:', err);
+        this.toastService.show('שגיאה בעדכון המשתמש', 'error');
+      }
+    });
+  } else {
+    Object.keys(this.userForm.controls).forEach(key => {
+      this.userForm.get(key)?.markAsTouched();
+    });
   }
-
+}
 }
