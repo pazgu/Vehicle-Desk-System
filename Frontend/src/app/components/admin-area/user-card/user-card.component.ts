@@ -46,4 +46,5 @@ export class UserCardComponent implements OnInit {
     const fullUrl = environment.socketUrl + this.user.license_file_url;
     window.open(fullUrl, '_blank');
   }
+ 
 }
