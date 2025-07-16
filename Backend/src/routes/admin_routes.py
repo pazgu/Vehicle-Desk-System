@@ -109,7 +109,6 @@ def fetch_user_by_id(user_id: UUID, db: Session = Depends(get_db)):
 
 
 
-
 @router.patch("/user-data-edit/{user_id}", response_model=UserResponse)
 async def edit_user_by_id_route(
     user_id: UUID,
@@ -123,64 +122,86 @@ async def edit_user_by_id_route(
     has_government_license: str = Form(...),
     license_file: UploadFile = File(None),
     db: Session = Depends(get_db),
-    payload: dict = Depends(token_check),
+    payload: dict = Depends(token_check), # payload contains user_id and role from JWT
     license_expiry_date: Optional[str] = Form(None)
 ):
+    
+    print(f"\n--- Debugging edit_user_by_id_route ---")
+    print(f"User ID from URL path: {user_id} (Type: {type(user_id)})")
+    print(f"Payload from token_check: {payload}")
+    
+    user_id_from_token = payload.get("user_id") or payload.get("sub")
+    user_role_from_token = payload.get("role")
+
+    print(f"User ID from token: {user_id_from_token} (Type: {type(user_id_from_token)})")
+    print(f"User Role from token: {user_role_from_token} (Type: {type(user_role_from_token)})")
+    print(f"Comparison: str(user_id) == user_id_from_token -> {str(user_id) == user_id_from_token}")
+    print(f"Comparison: user_role_from_token == 'admin' -> {user_role_from_token == 'admin'}")
+    # --- DEBUGGING LOGS END ---
+
     user = db.query(User).filter(User.employee_id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    user_id_from_token = payload.get("user_id") or payload.get("sub")
     if not user_id_from_token:
         raise HTTPException(status_code=401, detail="User ID not found in token")
 
-    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id_from_token)})
+    if str(user_id) != user_id_from_token and user_role_from_token != "admin": # Adjust "admin" role name if different
+        print(f"DEBUG: Authorization FAILED. User {user_id_from_token} (Role: {user_role_from_token}) tried to edit {user_id}.")
+        raise HTTPException(status_code=403, detail="Not authorized to edit this user's data.")
 
-    # Convert "true"/"false" string to actual boolean
+    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id_from_token)})
     has_gov_license = has_government_license.lower() == "true"
-    
-    # --- Corrected and Simplified Validation Logic ---
-    
-    # Validation for the 'has_government_license' boolean field
-    if user.has_government_license is not None and has_gov_license != user.has_government_license:
+
+    if user.license_file_url is not None and has_gov_license != user.has_government_license:
+        print(f"DEBUG: License flag change FAILED (file exists). Current: {user.has_government_license}, New: {has_gov_license}")
         raise HTTPException(
             status_code=403,
             detail="'Has government license' flag cannot be changed after initial upload."
         )
 
-    # Validation for the license file
-    # If a file is in the database AND a new file is being uploaded, raise an error.
     if user.license_file_url is not None and license_file:
+        print(f"DEBUG: License file re-upload FAILED. Existing URL: {user.license_file_url}, New file: {license_file.filename}")
         raise HTTPException(
             status_code=403,
             detail="Government license file cannot be re-uploaded after initial upload."
         )
-    # If no file is in the database and a new file is being uploaded, save it.
+    # If no file exists in the database and a new file is provided, save it.
     if user.license_file_url is None and license_file:
-        contents = await license_file.read()
-        filename = f"uploads/{license_file.filename}"
-        with open(filename, "wb") as f:
-            f.write(contents)
-        user.license_file_url = f"/{filename}"
+        try:
+            contents = await license_file.read()
+            # Ensure 'uploads' directory exists and is writable
+            filename = f"uploads/{license_file.filename}"
+            with open(filename, "wb") as f:
+                f.write(contents)
+            user.license_file_url = f"/{filename}"
+            # If a file is uploaded, set has_government_license to True if it's not already set
+            if user.has_government_license is None:
+                user.has_government_license = True
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to save license file: {e}")
 
-    # Validation for the license expiry date
-    # If a date is in the database AND the new date is different, raise an error.
+    # If an expiry date already exists in the database AND the new date is different, forbid it.
     if user.license_expiry_date is not None and license_expiry_date:
         try:
             new_date = datetime.strptime(license_expiry_date, "%Y-%m-%d").date()
             if new_date != user.license_expiry_date:
+                print(f"DEBUG: License expiry date change FAILED. Current: {user.license_expiry_date}, New: {new_date}")
                 raise HTTPException(
                     status_code=403,
                     detail="License expiry date cannot be edited after initial upload."
                 )
         except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid date format for license_expiry_date")
-    # If no date is in the database and a new date is being submitted, save it.
+            raise HTTPException(status_code=400, detail="Invalid date format for license_expiry_date. Expected YYYY-MM-DD.")
+    # If no expiry date exists and a new date is provided, save it.
     if user.license_expiry_date is None and license_expiry_date:
         try:
             user.license_expiry_date = datetime.strptime(license_expiry_date, "%Y-%m-%d").date()
+            # If expiry date is set, ensure has_government_license is True if not already set
+            if user.has_government_license is None:
+                user.has_government_license = True
         except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid date format for license_expiry_date")
+            raise HTTPException(status_code=400, detail="Invalid date format for license_expiry_date. Expected YYYY-MM-DD.")
     
     # Apply updates to the other, non-restricted fields.
     user.first_name = first_name
@@ -190,17 +211,22 @@ async def edit_user_by_id_route(
     user.phone = phone
     user.role = role
     user.department_id = department_id
-    user.has_government_license = has_gov_license # This line must be here to handle the initial set
+    
+    # Only set has_government_license from form if it hasn't been set by file/date upload logic above
+    # and it's currently None in the DB. This handles the initial setting via the checkbox.
+    if user.has_government_license is None:
+        user.has_government_license = has_gov_license 
     
     try:
         db.commit()
     except Exception as e:
         db.rollback()
-        print("❌ Commit failed:", e)
-        raise HTTPException(status_code=500, detail="Failed to update user")
+        print("❌ Commit failed:", e) # Log the actual exception for debugging
+        raise HTTPException(status_code=500, detail="Failed to update user due to a database error.")
 
     db.refresh(user)
 
+    # Emit Socket.IO event on successful license update
     await sio.emit('user_license_updated', {
         "id": str(user.employee_id),
         "license_expiry_date": user.license_expiry_date.isoformat() if user.license_expiry_date else None,
@@ -208,8 +234,11 @@ async def edit_user_by_id_route(
         "license_file_url": user.license_file_url or ""
     })
 
+    # Reset session audit user ID
     db.execute(text("SET session.audit.user_id = DEFAULT"))
     return user
+
+
 
 
 
@@ -744,50 +773,6 @@ def get_critical_issue_details(issue_id: str, db: Session = Depends(get_db)):
     except Exception as e:
         print("❌ Error fetching critical issue details:", str(e))
         raise HTTPException(status_code=500, detail=f"Failed to fetch issue details: {str(e)}")
-
-# @router.get("/critical-issues", response_model=List[TripCompletionIssueSchema])
-# def get_all_critical_issues(db: Session = Depends(get_db)):
-#     raw_data = get_all_critical_issues_combined(db)
-#     return [TripCompletionIssueSchema(**item) for item in raw_data]
-
-# @router.get("/critical-issues", response_model=List[RawCriticalIssueSchema])
-# def get_all_critical_issues(db: Session = Depends(get_db)):
-#     """
-#     Get all critical issues from both inspector checks and ride approvals
-#     """
-#     try:
-#         raw_data = get_all_critical_issues_combined(db)
-#         print("🪵 Raw data from service:", raw_data)
-        
-#         # Transform to match schema
-#         transformed_data = []
-#         for item in raw_data:
-#             # Create a unique ID based on available identifiers
-#             unique_id = item.get('inspection_id') or item.get('ride_id') or f"{item['approved_by']}-{item['timestamp']}"
-            
-#             transformed_item = {
-#             "id": unique_id,
-#             "inspection_id": item.get('inspection_id'),
-#             "ride_id": item.get('ride_id'),
-#             "approved_by": item['approved_by'],
-#             "submitted_by": item['approved_by'],  # ✅ NEW
-#             "role": item['role'],
-#             "type": item['role'],                 # ✅ NEW
-#             "status": item['status'],
-#             "severity": item['severity'],
-#             "issue_description": item['issue_description'],
-#             "issue_text": item['issue_description'],  # ✅ NEW
-#             "timestamp": item['timestamp'],
-#             "vehicle_info": item.get('vehicle_info', '')
-#         }
-#             transformed_data.append(transformed_item)
-        
-#         return [RawCriticalIssueSchema(**item) for item in transformed_data]
-#     except Exception as e:
-#         print("❌ Error in get_all_critical_issues:", str(e))
-#         raise HTTPException(status_code=500, detail=f"Failed to fetch critical issues: {str(e)}")
-
-
 
 
 from typing import Dict, Any
