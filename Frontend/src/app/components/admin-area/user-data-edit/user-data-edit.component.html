@@ -38,42 +38,41 @@
             </select>
           </div>
 
-       <div class="form-group">
-  <label for="department">מחלקה</label>
-  <select id="department" formControlName="department_id" class="form-control">
-    <option value="" disabled>בחר מחלקה</option>
-    <option *ngFor="let dept of departments" [value]="dept.id">
-      {{ dept.name }}
-    </option>
-  </select>
-  <small *ngIf="f['department_id'].touched && f['department_id'].errors?.['required']" style="color:red;">
-    יש לבחור מחלקה
-  </small>
-</div>
-
+          <div class="form-group">
+            <label for="department">מחלקה</label>
+            <select id="department" formControlName="department_id" class="form-control">
+              <option value="" disabled>בחר מחלקה</option>
+              <option *ngFor="let dept of departments" [value]="dept.id">
+                {{ dept.name }}
+              </option>
+            </select>
+            <small *ngIf="f['department_id'].touched && f['department_id'].errors?.['required']" style="color:red;">
+              יש לבחור מחלקה
+            </small>
           </div>
-       <!-- Row 3 -->
-<div class="form-row">
-  <div class="form-group">
-    <label for="phone">מספר טלפון</label>
-    <input type="tel" id="phone" formControlName="phone" class="form-control" />
-    <small *ngIf="f['phone'].touched && f['phone'].invalid" style="color:red;">
-      יש להזין מספר טלפון תקין
-    </small>
-  </div>
-</div>
 
-
+        </div>
+        <!-- Row 3 -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="phone">מספר טלפון</label>
+            <input type="tel" id="phone" formControlName="phone" class="form-control" />
+            <small *ngIf="f['phone'].touched && f['phone'].invalid" style="color:red;">
+              יש להזין מספר טלפון תקין
+            </small>
+          </div>
+        </div>
 
         <!-- Row 3 -->
-       <div class="form-row">
-  <div class="form-group">
-    <label for="license_expiry_date">תוקף רישיון</label>
-    <input type="date" id="license_expiry_date" formControlName="license_expiry_date" class="form-control" />
-  </div>
-</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="license_expiry_date">תוקף רישיון</label>
+            <input type="date" id="license_expiry_date" formControlName="license_expiry_date" class="form-control"
+              [readonly]="!!userForm.get('license_expiry_date')?.value" />
+          </div>
+        </div>
 
-  <div class="form-row">
+        <div class="form-row">
           <div class="form-group">
             <label for="email">כתובת דואר אלקטרוני</label>
             <input type="email" id="email" formControlName="email" class="form-control" />
@@ -81,27 +80,28 @@
         </div>
 
         <!-- Row 4: Government License -->
-<div class="form-row">
-  <div class="form-group">
-    <label>האם למשתמש יש רישיון ממשלתי?</label>
-    <label class="switch">
-      <input
-        type="checkbox"
-        formControlName="has_government_license"
-      />
-      <span class="slider round"></span>
-    </label>
-  </div>
-</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>האם למשתמש יש רישיון ממשלתי?</label>
+            <label class="switch">
+              <input type="checkbox" formControlName="has_government_license" [disabled]="hasExistingLicenseFile" />
+              <span class="slider round"></span>
+            </label>
+          </div>
+        </div>
 
-<!-- Row 5: License File Upload (only if checkbox is checked) -->
-<div class="form-row" *ngIf="userForm.get('has_government_license')?.value">
-  <div class="form-group">
-    <label>העלה קובץ רישיון</label>
-    <input type="file" (change)="onFileSelected($event)" />
-    <div *ngIf="selectedFileName">{{ selectedFileName }}</div>
-  </div>
-</div>
+        <!-- Row 5: License File Upload (only if checkbox is checked) -->
+        <ng-container *ngIf="hasExistingLicenseFile">
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>קובץ רישיון ממשלתי שהועלה:</label>
+              <a [href]="userForm.get('license_file_url')?.value" target="_blank" class="uploaded-file-link">
+                הצג קובץ
+              </a>
+            </div>
+          </div>
+        </ng-container>
 
         <!-- Submit -->
         <div class="form-actions">

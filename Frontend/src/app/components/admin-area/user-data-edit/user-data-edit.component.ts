@@ -29,9 +29,9 @@ export class UserDataEditComponent implements OnInit {
   roles: string[] = [];
   selectedFile: File | null = null;
   selectedFileName = '';
-  users: any[] = [];
-  licenceExpiredMap: { [userId: string]: boolean } = {};
+  hasExistingLicenseFile = false;
   private subs: Subscription[] = [];
+
 
   constructor(
     private fb: FormBuilder,
@@ -42,51 +42,65 @@ export class UserDataEditComponent implements OnInit {
     private router: Router,
     private socketService: SocketService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.initForm();
     this.loadUserData();
     this.fetchDepartments();
     this.loadRoles();
-    this.userForm.get('license_expiry_date')?.valueChanges.subscribe((value: string) => {
-    const expiry = value ? new Date(value) : null;
-    const today = new Date();
+    this.setupFormSubscriptions();
+    this.setupSocketSubscriptions();
+  }
 
-    if (expiry && !isNaN(expiry.getTime())) {
-      if (expiry >= today) {
-        this.userForm.get('has_government_license')?.setValue(true, { emitEvent: false });
-      } else {
+  ngOnDestroy(): void {
+    this.subs.forEach(sub => sub.unsubscribe());
+  }
+
+  setupFormSubscriptions(): void {
+    const licenceExpirySub = this.userForm.get('license_expiry_date')?.valueChanges.subscribe((value: string) => {
+      const expiry = value ? new Date(value) : null;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      if (expiry && !isNaN(expiry.getTime())) {
+        this.userForm.get('has_government_license')?.setValue(expiry >= today, { emitEvent: false });
+      } else if (!value) {
         this.userForm.get('has_government_license')?.setValue(false, { emitEvent: false });
       }
-    }
-  });
+    });
 
-  this.userForm.get('has_government_license')?.valueChanges.subscribe((checked: boolean) => {
-    if (!checked) {
-      this.userForm.get('license_expiry_date')?.setValue('');
-    }
-  });
+    const hasLicenseSub = this.userForm.get('has_government_license')?.valueChanges.subscribe((checked: boolean) => {
+      if (!checked) {
+        this.userForm.get('license_expiry_date')?.setValue('');
+      }
+    });
 
-      const sub = this.socketService.usersLicense$.subscribe(update => {
-  if (!this.user || this.user.employee_id !== update.id) return;
-
-  this.user = { ...this.user, ...update };
-
-  if (update.license_expiry_date) {
-    this.user.license_expiry_date = new Date(update.license_expiry_date);
+    if (licenceExpirySub) this.subs.push(licenceExpirySub);
+    if (hasLicenseSub) this.subs.push(hasLicenseSub);
   }
 
-  this.userForm.patchValue({
-    license_expiry_date: this.user.license_expiry_date.toISOString().substring(0, 10),
-    has_government_license: this.user.has_government_license,
-    license_file_url: this.user.license_file_url
-  });
+  setupSocketSubscriptions(): void {
+    const sockeytSub = this.socketService.usersLicense$.subscribe(update => {
+      if (!this.user || this.user.employee_id !== update.id) return;
 
-  this.cdr.detectChanges();
-});
+      this.user = { ...this.user, ...update };
 
+      if (update.license_expiry_date) {
+        this.user.license_expiry_date = new Date(update.license_expiry_date);
+      }
+
+      this.userForm.patchValue({
+        license_expiry_date: this.user.license_expiry_date?.toISOString().substring(0, 10),
+        has_government_license: this.user.has_government_license,
+        license_file_url: this.user.license_file_url
+      });
+      this.hasExistingLicenseFile = !!this.user.license_file_url;
+      this.cdr.detectChanges();
+    });
+    this.subs.push(sockeytSub);
   }
+
 
   initForm(): void {
     this.userForm = this.fb.group({
@@ -103,7 +117,7 @@ export class UserDataEditComponent implements OnInit {
 
     });
   }
-  
+
   get f() {
     return this.userForm.controls;
   }
@@ -144,7 +158,7 @@ export class UserDataEditComponent implements OnInit {
         next: (user) => {
           console.log('User data:', user);
           this.user = user;
-          this.users= [this.user]
+          this.hasExistingLicenseFile = !!user.license_file_url;
           this.userForm.patchValue({
             first_name: user.first_name,
             last_name: user.last_name,
@@ -156,67 +170,70 @@ export class UserDataEditComponent implements OnInit {
             license_file_url: user.license_file_url,
             phone: user.phone,
             license_expiry_date: user.license_expiry_date
-  ? new Date(user.license_expiry_date).toISOString().substring(0, 10)
-  : ''
+              ? new Date(user.license_expiry_date).toISOString().substring(0, 10)
+              : ''
           });
         },
         error: (err) => {
           console.error('Failed to load user:', err);
+          this.toastService.show('שגיאה בטעינת פרטי המשתמש', 'error');
+
         }
       });
     }
   }
-  updateUser(userId: string, updateData: any) {
-    return this.http.patch(`http://localhost:8000/api/user-data-edit/${userId}`, updateData);
-  }
+
 
   onFileSelected(event: Event): void {
-  const input = event.target as HTMLInputElement;
-  if (input && input.files && input.files.length > 0) {
-    this.selectedFile = input.files[0];
-    this.selectedFileName = this.selectedFile.name;
+    const input = event.target as HTMLInputElement;
+    if (input && input.files && input.files.length > 0) {
+      this.selectedFile = input.files[0];
+      this.selectedFileName = this.selectedFile.name;
+    }
   }
-}
 
   onSubmit(): void {
-  if (this.userForm.valid && this.userId) {
-    const formValues = this.userForm.value;
-    const formData = new FormData();
+    if (this.userForm.valid && this.userId) {
+      const formValues = this.userForm.value;
+      const formData = new FormData();
       console.log('Form values before processing:', formValues);
-    console.log('License expiry date from form:', formValues.license_expiry_date);
-    console.log('Type of license_expiry_date:', typeof formValues.license_expiry_date);
-    
-    for (const key in formValues) {
-      const value = formValues[key];
-      if (typeof value === 'boolean') {
-        formData.append(key, value ? 'true' : 'false');
-      } else if (value !== null && value !== undefined) {
-        formData.append(key, value.toString());
-      }
-    }
+      console.log('License expiry date from form:', formValues.license_expiry_date);
+      console.log('Type of license_expiry_date:', typeof formValues.license_expiry_date);
 
-    if (this.selectedFile) {
-      formData.append('license_file', this.selectedFile);
-    }
+      for (const key in formValues) {
+        if (this.hasExistingLicenseFile && key.startsWith('license_') && !this.selectedFile) {
+          continue;
+        }
 
-    this.userService.updateUser(this.userId, formData).subscribe({
-      next: (updatedUser) => {
-        console.log('User updated:', updatedUser);
-        this.toastService.show('המשתמש עודכן בהצלחה', 'success');
-        setTimeout(() => {
-          this.router.navigate(['/user-data']);
-        }, 500);
-      },
-      error: (err) => {
-        console.error('Failed to update user:', err);
-        this.toastService.show('שגיאה בעדכון המשתמש', 'error');
+        const value = formValues[key];
+        if (typeof value === 'boolean') {
+          formData.append(key, value ? 'true' : 'false');
+        } else if (value !== null && value !== undefined) {
+          formData.append(key, value.toString());
+        }
       }
-    });
-  } else {
-    Object.keys(this.userForm.controls).forEach(key => {
-      this.userForm.get(key)?.markAsTouched();
-    });
+
+      if (this.selectedFile) {
+        formData.append('license_file', this.selectedFile);
+      }
+
+      this.userService.updateUser(this.userId, formData).subscribe({
+        next: () => {
+          this.toastService.show('המשתמש עודכן בהצלחה', 'success');
+          setTimeout(() => {
+            this.router.navigate(['/user-data']);
+          }, 500);
+        },
+        error: (err) => {
+          console.error('Failed to update user:', err);
+          this.toastService.show('שגיאה בעדכון המשתמש', 'error');
+        }
+      });
+    } else {
+      Object.keys(this.userForm.controls).forEach(key => {
+        this.userForm.get(key)?.markAsTouched();
+      });
+    }
   }
-}
 
 }
