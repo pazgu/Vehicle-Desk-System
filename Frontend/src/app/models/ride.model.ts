@@ -5,3 +5,11 @@ export interface RideLocationItem {
   destination_name: string;
   extra_stops_names?: string[];
 }
+
+export interface StartedRide {
+  id: string; 
+}
+
+export interface StartedRidesResponse {
+  rides_supposed_to_start: string[];
+}

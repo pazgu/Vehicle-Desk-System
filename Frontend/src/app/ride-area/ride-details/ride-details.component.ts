@@ -62,6 +62,29 @@ export class RideDetailsComponent implements OnInit {
    
   
   }
+canStartRide(): boolean {
+  if (!this.ride) return false;
+
+  const now = new Date();
+  const startTime = new Date(this.ride.start_datetime);
+
+  return this.ride.status === 'approved' && startTime <= now;
+}
+
+  startRide() {
+  if (!this.ride) return;
+
+  this.rideService.startRide(this.ride.ride_id).subscribe({
+    next: (updatedRide) => {
+      this.ride = updatedRide;
+      this.toastService.show('הנסיעה החלה בהצלחה! 🚗', 'success');
+    },
+    error: (err) => {
+      console.error('Error starting ride:', err);
+      this.toastService.show('שגיאה בהתחלת הנסיעה ❌', 'error');
+    }
+  });
+}
 
   getCityName(cityId: string): string {
   return this.cityMap[cityId] || 'לא ידוע';

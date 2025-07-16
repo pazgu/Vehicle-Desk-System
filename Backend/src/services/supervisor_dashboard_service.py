@@ -322,6 +322,8 @@ async def start_ride(db: Session, ride_id: UUID):
     if vehicle.status != VehicleStatus.available:
         raise HTTPException(status_code=400, detail="Vehicle is not available")
 
+    ride.actual_pickup_time=datetime.now(timezone.utc)
+
     # 1️⃣ Update vehicle status
     update_vehicle_status(
         vehicle_id=vehicle.id,

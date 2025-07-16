@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <title>ביטול נסיעה עקב אי התייצבות</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            direction: rtl;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            text-align: right;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #d9534f, #c9302c);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .content {
+            padding: 30px;
+        }
+        .message {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .details-table th,
+        .details-table td {
+            padding: 12px 15px;
+            text-align: right;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .details-table th {
+            background-color: #e9ecef;
+            font-weight: 600;
+            color: #495057;
+        }
+        .details-table tr:last-child td {
+            border-bottom: none;
+        }
+        .cta {
+            display: inline-block;
+            background-color: #d9534f;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>ביטול נסיעה עקב אי התייצבות</h1>
+        </div>
+        <div class="content">
+            <p class="message">שלום {{ SUPERVISOR_NAME }},</p>
+            <p class="message">הנסיעה של <strong>{{ USER_NAME }}</strong> ליעד <strong>{{ DESTINATION }}</strong> בתאריך <strong>{{ DATE_TIME }}</strong> בוטלה עקב אי התייצבות.</p>
+            <table class="details-table">
+                <tr>
+                    <th>שם משתמש</th>
+                    <td>{{ USER_NAME }}</td>
+                </tr>
+                <tr>
+                    <th>מספר רכב</th>
+                    <td>{{ PLATE_NUMBER }}</td>
+                </tr>
+                <tr>
+                    <th>יעד</th>
+                    <td>{{ DESTINATION }}</td>
+                </tr>
+                <tr>
+                    <th>תאריך נסיעה</th>
+                    <td>{{ DATE_TIME }}</td>
+                </tr>
+            </table>
+            <a href="{{ LINK_TO_RIDE }}" class="cta">לפרטי הנסיעה</a>
+        </div>
+        <div class="footer">
+            Bookit - מערכת לניהול רכבים
+        </div>
+    </div>
+</body>
+</html>

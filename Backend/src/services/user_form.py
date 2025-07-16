@@ -206,13 +206,13 @@ async def process_completion_form(db: Session, user: User, form_data: Completion
                 asyncio.create_task(emit_new_notification(notification, ride.status))
 
              # Emit ride status updated event
-        sio.emit('ride_status_updated', {
+        await sio.emit('ride_status_updated', {
             "ride_id": str(ride.id),
             "new_status": ride.status,
         })
 
         # Emit vehicle status updated event
-        sio.emit('vehicle_status_updated', {
+        await sio.emit('vehicle_status_updated', {
             "vehicle_id": str(vehicle.id),
             "status": vehicle.status,
         })
