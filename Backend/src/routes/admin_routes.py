@@ -249,16 +249,18 @@ def get_roles():
 
 @router.get("/no-show-events/count")
 def get_no_show_events_count_per_user(db: Session = Depends(get_db)):
-    # Join users + group by user
     results = (
         db.query(
             User.username,
             User.email,
             User.role,
-            func.count(NoShowEvent.id).label("no_show_count")
+            func.count(NoShowEvent.id).label("no_show_count"),
+            Vehicle.plate_number
         )
         .join(NoShowEvent, User.employee_id == NoShowEvent.user_id)
-        .group_by(User.employee_id)
+        .join(Ride, Ride.id == NoShowEvent.ride_id)
+        .join(Vehicle, Vehicle.id == Ride.vehicle_id)
+        .group_by(User.employee_id, Vehicle.plate_number)
         .all()
     )
 
@@ -268,7 +270,8 @@ def get_no_show_events_count_per_user(db: Session = Depends(get_db)):
                 "name": row.username,
                 "email": row.email,
                 "role": row.role,
-                "no_show_count": row.no_show_count
+                "no_show_count": row.no_show_count,
+                "plate_number": row.plate_number
             }
             for row in results
         ]
@@ -279,12 +282,13 @@ def get_recent_no_show_events_per_user(
     per_user_limit: int = Query(1, ge=1, le=3),
     db: Session = Depends(get_db)
 ):
-    # Use a window function to rank events per user by recency
+    # Window function to get recent events per user
     row_number = func.row_number().over(
         partition_by=NoShowEvent.user_id,
         order_by=NoShowEvent.occurred_at.desc()
     ).label("rn")
 
+    # Subquery with row numbers
     subq = (
         db.query(
             NoShowEvent.id.label("event_id"),
@@ -292,24 +296,32 @@ def get_recent_no_show_events_per_user(
             NoShowEvent.ride_id,
             NoShowEvent.occurred_at,
             row_number
-        )
-        .subquery()
+        ).subquery()
     )
 
-    # Wrap: only rows with rn <= limit
+    # Join subquery with Ride and Vehicle
     results = (
-        db.query(subq)
+        db.query(
+            subq.c.event_id,
+            subq.c.user_id,
+            subq.c.ride_id,
+            subq.c.occurred_at,
+            Vehicle.plate_number
+        )
+        .join(Ride, Ride.id == subq.c.ride_id)
+        .join(Vehicle, Vehicle.id == Ride.vehicle_id)
         .filter(subq.c.rn <= per_user_limit)
         .all()
     )
 
-    # Shape result using column names
+    # Format result
     events = [
         {
             "event_id": row.event_id,
             "user_id": row.user_id,
             "ride_id": row.ride_id,
-            "occurred_at": row.occurred_at.isoformat()
+            "occurred_at": row.occurred_at.isoformat(),
+            "plate_number": row.plate_number
         }
         for row in results
     ]

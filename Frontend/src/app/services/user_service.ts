@@ -25,6 +25,7 @@ export interface NoShowEvent {
   user_id: string;
   ride_id: string;
   occurred_at: string; // or Date if you're parsing it
+  plate_number:string;
 }
 
 
