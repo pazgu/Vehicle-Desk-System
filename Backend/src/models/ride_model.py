@@ -8,6 +8,7 @@ import uuid
 from sqlalchemy.sql import func
 from pydantic import BaseModel
 import uuid
+from sqlalchemy.orm import relationship
 
 class RideType(str, enum.Enum):
     administrative = "administrative"
@@ -50,6 +51,8 @@ class Ride(Base):
     override_user_id = Column(UUID(as_uuid=True), ForeignKey("users.employee_id"), nullable=True)
     feedback_submitted= Column(Boolean, default=False) 
     rejection_reason = Column(Text, nullable=True)
+    
+    no_show_events = relationship("NoShowEvent", back_populates="ride")
 
 
 class PendingRideSchema(BaseModel):

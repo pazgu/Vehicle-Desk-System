@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from typing import Optional , List
 from datetime import datetime, time
 from sqlalchemy.orm import Session
+from ..models.no_show_events import NoShowEvent
 from src.schemas.vehicle_inspection_schema import VehicleInspectionOut
 from src.schemas.user_response_schema import UserResponse
 from src.schemas.ride_dashboard_item import RideDashboardItem
@@ -246,6 +247,77 @@ async def edit_user_by_id_route(
 def get_roles():
     return [role.value for role in UserRole]
 
+@router.get("/no-show-events/count")
+def get_no_show_events_count_per_user(db: Session = Depends(get_db)):
+    # Join users + group by user
+    results = (
+        db.query(
+            User.username,
+            User.email,
+            User.role,
+            func.count(NoShowEvent.id).label("no_show_count")
+        )
+        .join(NoShowEvent, User.employee_id == NoShowEvent.user_id)
+        .group_by(User.employee_id)
+        .all()
+    )
+
+    return {
+        "users": [
+            {
+                "name": row.username,
+                "email": row.email,
+                "role": row.role,
+                "no_show_count": row.no_show_count
+            }
+            for row in results
+        ]
+    }
+
+@router.get("/no-show-events/recent")
+def get_recent_no_show_events_per_user(
+    per_user_limit: int = Query(1, ge=1, le=3),
+    db: Session = Depends(get_db)
+):
+    # Use a window function to rank events per user by recency
+    row_number = func.row_number().over(
+        partition_by=NoShowEvent.user_id,
+        order_by=NoShowEvent.occurred_at.desc()
+    ).label("rn")
+
+    subq = (
+        db.query(
+            NoShowEvent.id.label("event_id"),
+            NoShowEvent.user_id,
+            NoShowEvent.ride_id,
+            NoShowEvent.occurred_at,
+            row_number
+        )
+        .subquery()
+    )
+
+    # Wrap: only rows with rn <= limit
+    results = (
+        db.query(subq)
+        .filter(subq.c.rn <= per_user_limit)
+        .all()
+    )
+
+    # Shape result using column names
+    events = [
+        {
+            "event_id": row.event_id,
+            "user_id": row.user_id,
+            "ride_id": row.ride_id,
+            "occurred_at": row.occurred_at.isoformat()
+        }
+        for row in results
+    ]
+
+    return {
+        "per_user_limit": per_user_limit,
+        "events": events
+    }
 
 @router.post("/add-user", status_code=status.HTTP_201_CREATED)
 async def add_user_as_admin(
