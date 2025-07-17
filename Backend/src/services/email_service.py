@@ -77,12 +77,40 @@ async def async_send_email(to_email: str, subject: str, html_content: str, text_
     return await loop.run_in_executor(None, send_email, to_email, subject, html_content, text_content)
 def load_email_template(template_name: str, context: dict) -> str:
     template_path = os.path.join("src", "templates", "emails", template_name)
-    with open(template_path, "r", encoding="utf-8") as file:
-        content = file.read()
+    try:
+        with open(template_path, "r", encoding="utf-8") as file:
+            content = file.read()
 
-    for key, value in context.items():
-        content = content.replace(f"{{{{{key}}}}}", str(value))
-    return content
+        print(f"DEBUG: Template loaded. Original content length: {len(content)}")
+        print(f"DEBUG: Context values: {context}")
+        
+        # Replace placeholders with actual values
+        for key, value in context.items():
+            old_content = content
+            # Handle both formats: {{ KEY }} and {{KEY}}
+            content = content.replace(f"{{{{ {key} }}}}", str(value))  # With spaces
+            content = content.replace(f"{{{{{key}}}}}", str(value))    # Without spaces
+            
+            # Debug: Check if replacement happened
+            if old_content != content:
+                print(f"DEBUG: Replaced {key} with '{value}'")
+            else:
+                print(f"WARNING: No replacement made for {key}")
+        
+        # Check if any placeholders remain
+        import re
+        remaining_placeholders = re.findall(r'\{\{[^}]+\}\}', content)
+        if remaining_placeholders:
+            print(f"WARNING: Unreplaced placeholders found: {remaining_placeholders}")
+        
+        return content
+        
+    except FileNotFoundError:
+        print(f"ERROR: Template file {template_path} not found")
+        return ""
+    except Exception as e:
+        print(f"ERROR: Failed to load template {template_name}: {repr(e)}")
+        return ""
 
 def get_user_email(user_id: UUID, db: Session) -> str | None:
     """
