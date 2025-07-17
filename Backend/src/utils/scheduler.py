@@ -219,14 +219,14 @@ async def check_vehicle_lease_expiry():
         if not vehicles_expiring:
             return
         
-        print('expiring vehicles were found',vehicles_expiring)
+        #print('expiring vehicles were found',vehicles_expiring)
         # Get all admins once
         admins = db.query(User).filter(User.role == "admin").all()
-        print("admins found:", admins)
+        #print("admins found:", admins)
 
         # Print usernames
         admin_usernames = [admin.username for admin in admins]
-        print("admin usernames:", admin_usernames)
+        #print("admin usernames:", admin_usernames)
 
         for vehicle, department in vehicles_expiring:
             supervisor_id = department.supervisor_id
@@ -284,7 +284,7 @@ async def check_vehicle_lease_expiry():
                     Notification.title == "Vehicle Lease Expiry"
                 ).first()
                 if not exists_admin:
-                    print('admin sent to:',admin.username)
+                    #print('admin sent to:',admin.username)
                     admin_notif = create_system_notification(
                         user_id=admin.employee_id,
                         title="Vehicle Lease Expiry",
@@ -338,10 +338,10 @@ async def check_and_cancel_unstarted_rides():
         ).all()
         
 
-        print(f"INFO: Found {len(rides)} approved rides eligible for no-show cancellation.")
+        #print(f"INFO: Found {len(rides)} approved rides eligible for no-show cancellation.")
         
         if not rides: 
-            print("INFO: No new rides found for no-show cancellation in this run.")
+            #print("INFO: No new rides found for no-show cancellation in this run.")
             return # Exit if no rides found
         
         for ride in rides:
@@ -412,7 +412,7 @@ async def delete_old_archived_vehicles():
         print(f"Found {len(vehicles_to_delete)} archived vehicles older than 3 months to delete.")
 
         for vehicle in vehicles_to_delete:
-            print(f"\nProcessing vehicle ID: {vehicle.id}, Plate Number: {vehicle.plate_number}, Archived At: {vehicle.archived_at}")
+           # print(f"\nProcessing vehicle ID: {vehicle.id}, Plate Number: {vehicle.plate_number}, Archived At: {vehicle.archived_at}")
 
             # --- Delete related records in specific order (children first) ---
 
@@ -421,7 +421,7 @@ async def delete_old_archived_vehicles():
                 Notification.vehicle_id == vehicle.id
             ).all()
             if notifications_to_delete:
-                print(f"  Deleting {len(notifications_to_delete)} notifications for vehicle ID {vehicle.id}...")
+                #print(f"  Deleting {len(notifications_to_delete)} notifications for vehicle ID {vehicle.id}...")
                 for notification in notifications_to_delete:
                     db.delete(notification)
             else:
@@ -459,7 +459,7 @@ async def delete_old_archived_vehicles():
                 )
             ).all()
             if audit_logs_to_delete:
-                print(f"  Deleting {len(audit_logs_to_delete)} audit log entries for vehicle ID {vehicle.id}...")
+                #print(f"  Deleting {len(audit_logs_to_delete)} audit log entries for vehicle ID {vehicle.id}...")
                 for log in audit_logs_to_delete:
                     db.delete(log)
             else:
