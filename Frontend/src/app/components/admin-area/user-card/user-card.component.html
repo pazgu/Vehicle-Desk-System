@@ -71,7 +71,7 @@
     <tbody>
       <tr *ngFor="let event of NoShowsData.events">
         <td>{{ event.occurred_at | date:'yyyy-MM-dd' }}</td>
-        <td>{{ event.ride_id }}</td> <!-- Replace with vehicle name if you get it -->
+        <td>{{ event.plate_number }}</td> <!-- Replace with vehicle name if you get it -->
         <td>לא הגיע</td> <!-- fixed reason text -->
       </tr>
     </tbody>
