@@ -19,6 +19,10 @@
           <button class="filter" (click)="toggleVehicleMode()">
             {{ showingMostUsed ? 'הצג את כל הרכבים' : 'הכי בשימוש החודש' }}
           </button>
+
+          <button class="filter archive-btn" (click)="navigateToArchivedVehicles()">
+            📁 ארכיון רכבים
+          </button>
         </div>
       </div>
 
@@ -38,7 +42,15 @@
           <div class="status-item">
             <span class="status-indicator frozen"></span> מוקפא
           </div>
+          
         </div>
+        <br>
+          <div class="status-item" style="display: flex; align-items: center; gap: 5px;">
+            <div class="inactive-badge" style="position: static; transform: none; margin-top: 0;">
+              לא פעיל
+            </div>
+            <span>לא היה בשימוש מעל שבוע</span>
+          </div>
       </div>
 
       <div *ngIf="showFilters"
@@ -61,12 +73,8 @@
           </select>
         </div>
         <div style="display: flex; align-items: center; gap: 0.5rem; direction: rtl;">
-          <input
-            type="checkbox"
-            id="showInactive"
-            [(ngModel)]="showInactive"
-            style="transform: scale(1.2); cursor: pointer;"
-          />
+          <input type="checkbox" id="showInactive" [(ngModel)]="showInactive"
+            style="transform: scale(1.2); cursor: pointer;" />
           <label for="showInactive" style="cursor: pointer;">
             הצג רק רכבים שלא היו בשימוש מעל לשבוע ⚠️
           </label>
@@ -74,7 +82,8 @@
       </div>
 
       <div class="vehicles-cards">
-        <p-card *ngFor="let vehicle of filteredVehicles" [styleClass]="'vehicle-card ' + getCardClass(vehicle.status) + (isInactive(vehicle.last_used_at) ? ' is-inactive' : '')"
+        <p-card *ngFor="let vehicle of filteredVehicles"
+          [styleClass]="'vehicle-card ' + getCardClass(vehicle.status) + (isInactive(vehicle.last_used_at) ? ' is-inactive' : '')"
           (click)="goToVehicleDetails(vehicle.id)">
 
           <ng-template pTemplate="header">
