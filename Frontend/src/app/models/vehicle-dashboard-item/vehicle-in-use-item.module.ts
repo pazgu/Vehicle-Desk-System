@@ -18,4 +18,6 @@ export interface VehicleInItem {
   ride_count?: number;
   department: string; 
   department_id?: string;
+  archived_at?: string | null;
+  is_archived?: boolean;
 }

@@ -22,6 +22,8 @@ from datetime import datetime
 from ..services.email_service import get_user_email, load_email_template, async_send_email, send_email
 from datetime import datetime
 
+from fastapi.security import OAuth2PasswordBearer
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 # def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
 #     inspection = VehicleInspection(
@@ -297,7 +299,9 @@ def get_vehicle_by_id(vehicle_id: str, db: Session):
         "image_url": vehicle.image_url,
         "lease_expiry": vehicle.lease_expiry,
         "department_id": vehicle.department_id,
-        "canDelete": can_delete 
+        "canDelete": can_delete,
+        "is_archived": vehicle.is_archived, 
+        "archived_at": vehicle.archived_at   
     }
 
 def freeze_vehicle_service(db: Session, vehicle_id: UUID, reason: str, changed_by: UUID):

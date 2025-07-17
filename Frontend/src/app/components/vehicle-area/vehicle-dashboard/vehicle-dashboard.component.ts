@@ -312,4 +312,7 @@ export class VehicleDashboardComponent implements OnInit {
       return filtered;
     }
   }
+  navigateToArchivedVehicles(): void {
+  this.router.navigate(['/archived-vehicles']);
+}
 }

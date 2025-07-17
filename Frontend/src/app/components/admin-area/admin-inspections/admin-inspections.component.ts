@@ -301,8 +301,6 @@ export class AdminInspectionsComponent implements OnInit {
         this.toastService.show('❌ שגיאה בטעינת נתונים', 'error');
       }
     });
-    console.log('🚀 Inspections loaded:', this.inspections);
-    console.log('🚀 Rides loaded:', this.rides) ;
   }
 
   // This method is now simplified because the backend already filters the 'inspections' array.
@@ -312,7 +310,5 @@ export class AdminInspectionsComponent implements OnInit {
     this.filteredInspections = [...this.inspections];
   }
 
-  naviagteToVehicle(vehicleId: string): void {
-    this.router.navigate(['/vehicle-details', vehicleId]);
-  }
+
 }
