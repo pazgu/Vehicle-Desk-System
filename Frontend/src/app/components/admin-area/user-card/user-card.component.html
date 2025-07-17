@@ -43,6 +43,52 @@
           <span class="value">{{ user?.email }}</span>
         </div>
 
+</div>
+        
+
+
+
+<!-- No-Show Count -->
+
+
+<!-- Recent No-Show Events Table -->
+<!-- No-Show Count -->
+<div class="detail-row no-show-count" *ngIf="NoShowsData">
+  <span class="label"> אירועי היעדרות מנסיעות שהוזמנו:</span>
+ 
+</div>
+
+<!-- Recent No-Show Events Table -->
+<div class="no-show-events" *ngIf="NoShowsData?.events && NoShowsData.events.length > 0; else noNoShows">
+  <table class="no-show-table" dir="rtl" style="width:100%; text-align: right;">
+    <thead>
+      <tr>
+        <th>תאריך</th>
+        <th>רכב</th>
+        <th>סיבה</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let event of NoShowsData.events">
+        <td>{{ event.occurred_at | date:'yyyy-MM-dd' }}</td>
+        <td>{{ event.ride_id }}</td> <!-- Replace with vehicle name if you get it -->
+        <td>לא הגיע</td> <!-- fixed reason text -->
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<ng-template #noNoShows>
+  <p style="text-align: right;">לא נמצאו אירועי היעדרות אחרונים.</p>
+</ng-template>
+
+
+
+
+
+
+
+
         <!-- כפתור להצגת קובץ רישיון -->
         <div class="detail-row" *ngIf="user?.license_file_url">
           <span class="label">קובץ רישיון:</span>
@@ -54,6 +100,6 @@
       </div>
     </div>
   </div>
-</div>
+
 
 <router-outlet></router-outlet>
