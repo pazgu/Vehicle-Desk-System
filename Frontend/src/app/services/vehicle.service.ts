@@ -112,14 +112,25 @@ archiveVehicle(vehicleId: string) {
   return this.http.post(`${environment.apiUrl}/vehicles/${vehicleId}/archive`, {});
 }
 
-getArchivedVehicles() {
-  return this.http.get<any[]>(`${this.apiUrl}/archived-vehicles`);
+getArchivedVehicles(): Observable<VehicleInItem[]> {
+  return this.http.get<VehicleInItem[]>(`${this.apiUrl}/archived-vehicles`);
 }
 
 deleteArchivedVehicle(vehicleId: string) {
   return this.http.delete(`${this.apiUrl}/archived-vehicles/${vehicleId}`);
 }
 
+
+restoreVehicle(vehicleId: string): Observable<any> {
+  return this.http.put(`${this.apiUrl}/vehicles/${vehicleId}/restore`, {});
+}
+
+/**
+ * Permanently delete a vehicle (only for archived vehicles)
+ */
+permanentlyDeleteVehicle(vehicleId: string): Observable<any> {
+  return this.http.delete(`${this.apiUrl}/vehicles/${vehicleId}/permanent`);
+}
 
 
 
