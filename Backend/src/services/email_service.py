@@ -49,21 +49,16 @@ def send_email(to_email: str, subject: str, html_content: str, text_content: str
     try:
         # --- DEBUGGING ADDITION START ---
         if not SENDGRID_API_KEY:
-            print("DEBUG: SENDGRID_API_KEY is not loaded from .env. Check your .env file path and variable name.")
+            #print("DEBUG: SENDGRID_API_KEY is not loaded from .env. Check your .env file path and variable name.")
             raise ValueError("SENDGRID_API_KEY is missing.")
         else:
-            # Print a masked version of the key to confirm it's loaded without exposing it fully
             masked_key = f"{SENDGRID_API_KEY[:5]}...{SENDGRID_API_KEY[-5:]}"
-            print(f"DEBUG: Using SendGrid API Key (masked): {masked_key}")
         # --- DEBUGGING ADDITION END ---
         sg = SendGridAPIClient(SENDGRID_API_KEY)
         response = sg.send(message)
-        print(f"✅ Email sent: {response.status_code}")
-        print(f"📩 Response body: {response.body}")
-        print(f"📨 Response headers: {response.headers}")
         return response
     except Exception as e:
-        print(f"❌ Error sending email: {e}")
+        #print(f"❌ Error sending email: {e}")
         # כאן ניתן להחליט האם לזרוק או לא את החריגה
         raise
 
@@ -80,11 +75,6 @@ def load_email_template(template_name: str, context: dict) -> str:
     try:
         with open(template_path, "r", encoding="utf-8") as file:
             content = file.read()
-
-        print(f"DEBUG: Template loaded. Original content length: {len(content)}")
-        print(f"DEBUG: Context values: {context}")
-        
-        # Replace placeholders with actual values
         for key, value in context.items():
             old_content = content
             # Handle both formats: {{ KEY }} and {{KEY}}
@@ -93,23 +83,23 @@ def load_email_template(template_name: str, context: dict) -> str:
             
             # Debug: Check if replacement happened
             if old_content != content:
-                print(f"DEBUG: Replaced {key} with '{value}'")
+                #print(f"DEBUG: Replaced {key} with '{value}'")
             else:
-                print(f"WARNING: No replacement made for {key}")
+                #print(f"WARNING: No replacement made for {key}")
         
         # Check if any placeholders remain
         import re
         remaining_placeholders = re.findall(r'\{\{[^}]+\}\}', content)
         if remaining_placeholders:
-            print(f"WARNING: Unreplaced placeholders found: {remaining_placeholders}")
+            #print(f"WARNING: Unreplaced placeholders found: {remaining_placeholders}")
         
         return content
         
     except FileNotFoundError:
-        print(f"ERROR: Template file {template_path} not found")
+        #print(f"ERROR: Template file {template_path} not found")
         return ""
     except Exception as e:
-        print(f"ERROR: Failed to load template {template_name}: {repr(e)}")
+        #print(f"ERROR: Failed to load template {template_name}: {repr(e)}")
         return ""
 
 def get_user_email(user_id: UUID, db: Session) -> str | None:
