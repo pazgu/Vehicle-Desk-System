@@ -1,24 +1,24 @@
 <!DOCTYPE html>
-<html lang="he">
+<html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <title>ביטול נסיעה עקב אי התייצבות</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Arial', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             direction: rtl;
             background-color: #f5f5f5;
             margin: 0;
             padding: 20px;
             text-align: right;
-            line-height: 1.6;
+            line-height: 1.8;
         }
         .container {
             max-width: 600px;
             margin: 0 auto;
             background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             overflow: hidden;
         }
         .header {
@@ -29,83 +29,140 @@
         }
         .header h1 {
             margin: 0;
-            font-size: 24px;
+            font-size: 26px;
             font-weight: 600;
         }
         .content {
-            padding: 30px;
+            padding: 35px;
         }
         .message {
-            font-size: 16px;
+            font-size: 18px;
             color: #333;
+            margin-bottom: 25px;
+        }
+        .greeting {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2c3e50;
             margin-bottom: 20px;
+        }
+        .main-message {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            text-align: center;
         }
         .details-table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
+            margin: 30px 0;
             background-color: #f8f9fa;
-            border-radius: 8px;
+            border-radius: 10px;
             overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
         .details-table th,
         .details-table td {
-            padding: 12px 15px;
+            padding: 15px 20px;
             text-align: right;
             border-bottom: 1px solid #e9ecef;
         }
         .details-table th {
             background-color: #e9ecef;
-            font-weight: 600;
+            font-weight: 700;
             color: #495057;
+            font-size: 16px;
         }
-        .details-table tr:last-child td {
+        .details-table td {
+            background-color: white;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .details-table tr:last-child td,
+        .details-table tr:last-child th {
             border-bottom: none;
         }
         .cta {
             display: inline-block;
             background-color: #d9534f;
             color: white;
-            padding: 12px 20px;
-            border-radius: 5px;
+            padding: 15px 30px;
+            border-radius: 8px;
             text-decoration: none;
             font-weight: 600;
+            font-size: 16px;
+            margin-top: 20px;
+            transition: background-color 0.3s ease;
+        }
+        .cta:hover {
+            background-color: #c9302c;
         }
         .footer {
             background-color: #f8f9fa;
-            padding: 20px;
+            padding: 25px;
             text-align: center;
             color: #6c757d;
             font-size: 14px;
+            border-top: 1px solid #e9ecef;
+        }
+        .important-notice {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #721c24;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>ביטול נסיעה עקב אי התייצבות</h1>
+            <h1>🚫 ביטול נסיעה עקב אי התייצבות</h1>
         </div>
         <div class="content">
-            <p class="message">שלום {{ USER_NAME }},</p>
-            <p class="message">ברצוננו לעדכן כי הנסיעה שלך ליעד <strong>{{ DESTINATION }}</strong> בתאריך <strong>{{ DATE_TIME }}</strong> בוטלה עקב אי התייצבות.</p>
+            <p class="greeting">שלום {{ USER_NAME }},</p>
+            
+            <div class="main-message">
+                <p class="message">ברצוננו לעדכן כי הנסיעה שלך ליעד <strong>{{ DESTINATION }}</strong> בתאריך <strong>{{ DATE_TIME }}</strong> בוטלה עקב אי התייצבות.</p>
+            </div>
+            
+            <div class="important-notice">
+                <strong>שים לב:</strong> הנסיעה בוטלה אוטומטית מכיוון שלא התייצבת בזמן הנדרש.
+            </div>
+            
             <table class="details-table">
                 <tr>
-                    <th>מספר רכב</th>
-                    <td>{{ PLATE_NUMBER }}</td>
-                </tr>
-                <tr>
-                    <th>תאריך נסיעה</th>
-                    <td>{{ DATE_TIME }}</td>
+                    <th>שם משתמש</th>
+                    <td>{{ USER_NAME }}</td>
                 </tr>
                 <tr>
                     <th>יעד</th>
                     <td>{{ DESTINATION }}</td>
                 </tr>
+                <tr>
+                    <th>תאריך ושעה</th>
+                    <td>{{ DATE_TIME }}</td>
+                </tr>
+                <tr>
+                    <th>מספר רכב</th>
+                    <td>{{ PLATE_NUMBER }}</td>
+                </tr>
             </table>
-            <a href="{{ LINK_TO_RIDE }}" class="cta">לפרטי הנסיעה</a>
+            
+            <p class="message">
+                אם יש לך שאלות או הערות בנוגע לביטול הנסיעה, אנא צור קשר עם מחלקת התחבורה.
+            </p>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <a href="{{ LINK_TO_RIDE }}" class="cta">👁️ צפה בפרטי הנסיעה</a>
+            </div>
         </div>
         <div class="footer">
-            Bookit - מערכת לניהול רכבים
+            <strong>Bookit</strong> - מערכת לניהול רכבים<br>
+            מערכת אוטומטית - אנא אל תשיב למייל זה
         </div>
     </div>
 </body>
