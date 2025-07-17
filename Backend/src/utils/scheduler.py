@@ -3,6 +3,8 @@ import asyncio
 from dotenv import load_dotenv
 from fastapi import HTTPException
 
+from ..models.no_show_events import NoShowEvent
+
 from ..models.audit_log_model import AuditLog
 from ..models.monthly_vehicle_usage_model import MonthlyVehicleUsage
 from sqlalchemy.dialects.postgresql import UUID
@@ -321,8 +323,8 @@ async def check_vehicle_lease_expiry():
 async def check_and_cancel_unstarted_rides():
     db: Session = SessionLocal()
     try:
-        now = datetime.now(timezone.utc)
-        two_hours_ago = now - timedelta(hours=2)
+        now_utc = datetime.now(timezone.utc)
+        two_hours_ago = now_utc - timedelta(hours=2)
 
         rides = db.query(Ride).filter(
             Ride.status == RideStatus.approved,
@@ -335,15 +337,25 @@ async def check_and_cancel_unstarted_rides():
         for ride in rides:
             ride.status = RideStatus.cancelled_due_to_no_show
 
-            vehicle = None  # default fallback
+            vehicle = None
             if ride.vehicle_id:
                 vehicle = db.query(Vehicle).filter(Vehicle.id == ride.vehicle_id).first()
                 if vehicle:
                     vehicle.status = 'available'
 
-            db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(ride.user_id)})
+            # Create the NoShowEvent using ORM
+            no_show_event = NoShowEvent(
+                user_id=ride.user_id,
+                ride_id=ride.id,
+                occurred_at=now_utc.replace(tzinfo=None)  # make naive
+            )
+            db.add(no_show_event)
 
-            db.commit()  # commit before await!
+            # Optionally set audit user
+            db.execute(
+                text("SET session.audit.user_id = :user_id"),
+                {"user_id": str(ride.user_id)}
+            )
 
             await sio.emit("ride_status_updated", {
                 "ride_id": str(ride.id),
@@ -353,7 +365,7 @@ async def check_and_cancel_unstarted_rides():
             if vehicle:
                 await sio.emit("vehicle_status_updated", {
                     "id": str(vehicle.id),
-                    "status": vehicle.status.value
+                    "status": vehicle.status
                 })
 
             await notify_ride_cancelled_due_to_no_show(ride.id)
@@ -532,7 +544,7 @@ def check_and_schedule_ride_emails():
     finally:
         db.close()
 
-scheduler.add_job(check_and_schedule_ride_emails, 'interval', minutes=15)
+scheduler.add_job(check_and_schedule_ride_emails, 'interval', minutes=60)
 scheduler.add_job(check_and_complete_rides, 'interval', minutes=5)
 
 def notify_admins_daily():
