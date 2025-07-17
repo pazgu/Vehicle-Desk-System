@@ -1,9 +1,9 @@
 // user.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { User } from '../models/user.model';
-import { Observable } from 'rxjs';
-
+import { Observable, throwError, forkJoin } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 export interface NewUserPayload {
   first_name: string;
@@ -18,23 +18,37 @@ export interface NewUserPayload {
   has_government_license: boolean;
   license_file_url?: string;
   license_expiry_date?: Date;
+}
 
+export interface NoShowEvent {
+  id: string;
+  user_id: string;
+  ride_id: string;
+  occurred_at: string; // or Date if you're parsing it
 }
 
 
+export interface NoShowResponse {
+  count: number;
+  events: NoShowEvent[];
+}
 
 @Injectable({
   providedIn: 'root',
 })
-
 export class UserService {
-  private apiUrl = 'http://localhost:8000/api'; // or your actual backend base URL
+  private apiUrl = 'http://localhost:8000/api';
+  constructor(private http: HttpClient) {}
 
-  constructor(private http: HttpClient) { }
+  private getAuthHeaders(): HttpHeaders {
+    const token = localStorage.getItem('access_token');
+    return new HttpHeaders({ Authorization: `Bearer ${token}` });
+  }
 
   getAllUsers(): Observable<User[]> {
     return this.http.get<User[]>(`${this.apiUrl}/user-data`);
   }
+
   getUserById(id: string): Observable<User> {
     return this.http.get<User>(`${this.apiUrl}/user-data/${id}`);
   }
@@ -76,7 +90,58 @@ export class UserService {
     }
     return this.http.delete(`${this.apiUrl}/user-data/${userId}`, { headers });
   }
-  getDepartments() {
-    return this.http.get<{ id: string, name: string }[]>(`${this.apiUrl}/departments`);
+  
+
+
+ getDepartments(): Observable<{ id: string; name: string }[]> {
+  return this.http.get<{ id: string; name: string }[]>(`${this.apiUrl}/departments`);
+}
+
+  getNoShowCount(userId: string): Observable<number> {
+  const headers = this.getAuthHeaders();
+
+  return this.http.get<{ users: { name: string, email: string, role: string, no_show_count: number, user_id?: string }[] }>(
+    `${this.apiUrl}/no-show-events/count`,
+    { headers }
+  ).pipe(
+    map(response => {
+      // Find the user by ID — if you don’t have ID, use email or name
+      const match = response.users.find(user => user.user_id === userId);
+      return match?.no_show_count || 0;
+    }),
+    catchError(error => {
+      console.error('Error fetching no-show count:', error);
+      return throwError(() => error);
+    })
+  );
+}
+
+
+  getRecentNoShowEvents(userId: string, limit: number = 3): Observable<NoShowEvent[]> {
+  const headers = this.getAuthHeaders();
+  const params = new HttpParams()
+    .set('user_id', userId)
+    .set('per_user_limit', limit.toString());
+
+  return this.http.get<{ per_user_limit: number, events: NoShowEvent[] }>(
+    `${this.apiUrl}/no-show-events/recent`, 
+    { headers, params }
+  ).pipe(
+    map(res => res.events),
+    catchError(error => {
+      console.error('Error fetching recent no-show events:', error);
+      return throwError(() => error);
+    })
+  );
+}
+
+
+  getNoShowData(userId: string, limit: number = 3): Observable<NoShowResponse> {
+    return forkJoin({
+      count: this.getNoShowCount(userId),
+      events: this.getRecentNoShowEvents(userId, limit)
+    });
   }
 }
+
+
