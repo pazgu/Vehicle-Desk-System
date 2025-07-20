@@ -87,6 +87,11 @@ button {
   color: #171056;
 }
 
+:host ::ng-deep .row-cancelled-no-show {
+  background-color: #ffe1e184;
+  color: #2c2e30;
+}
+
 /* Status chip */
 .status-text {
   padding: 0.3rem 0.6rem;

@@ -15,7 +15,7 @@ export const environment = {
     vehicleUsageStatsUrl: 'http://localhost:8000/vehicles/usage-stats',
     vehicleStatsUrl: 'http://localhost:8000/api/vehicles/usage-stats',
     vehiclesTypes:'http://localhost:8000/api/vehicles/types'
-
+  ,ridesSupposedToStartUrl:'http://localhost:8000/api/rides_supposed-to-start'
 
 
 

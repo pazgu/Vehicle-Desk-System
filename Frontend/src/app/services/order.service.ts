@@ -3,7 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { RideDashboardItem } from '../models/ride-dashboard-item/ride-dashboard-item.module';
-import { OrderCardItem } from '../models/order-card-item/order-card-item.module';
+import { OrderCardItem } from '../models/order-card-item.module';
 import { RideLocationItem } from '../models/ride.model';
 @Injectable({
   providedIn: 'root'

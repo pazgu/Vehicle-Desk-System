@@ -130,7 +130,7 @@ this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
     this.orders = [...this.orders]
       
       const role=localStorage.getItem('role');
-      if(role==='supervisor' || role ==='employee'){
+      if(role==='supervisor' || role ==='employee' && updatedStatus!='approved'){
       this.toastService.show(' יש בקשה שעברה סטטוס','success')
       }
     }
@@ -178,6 +178,9 @@ this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
         case 'בתהליך':
           filtered = filtered.filter(order => order.status === 'in_progress');
           break;
+        case 'בוטלה-נסיעה לא יצאה':
+          filtered = filtered.filter(order => order.status === 'cancelled_due_to_no_show');
+          break;  
         default:
           break;
       }
@@ -224,6 +227,8 @@ this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
         return 'row-completed';
       case 'in_progress':
         return 'row-in-progress';
+      case 'cancelled_due_to_no_show':
+        return 'row-cancelled-no-show';  
       default:
         return '';
     }
@@ -248,6 +253,8 @@ this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
         return 'בוצע';
       case 'in_progress':
         return 'בתהליך';
+      case 'cancelled_due_to_no_show':
+        return 'בוטלה-נסיעה לא יצאה';  
       default:
         return status;
     }
@@ -265,6 +272,8 @@ this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
         return 'status-completed';
       case 'in_progress':
         return 'status-in-progress';
+      case 'cancelled_due_to_no_show':
+        return 'status-cancelled-no-show';  
       default:
         return '';
     }

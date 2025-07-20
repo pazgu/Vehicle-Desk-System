@@ -1,94 +1,117 @@
-.section-title {
-  text-align: center;
-  font-size: 26px;
-  color: #942222;
-  font-family: 'Alef', sans-serif;
-  margin-bottom: 1.5rem;
+:host {
+  display: block;
+  min-height: calc(100vh - 55px);
+  padding: 25px;
+  direction: rtl;
+  font-family: sans-serif;
 }
 
 .admin-inspections-container {
-  max-width: 950px;
+  background-color: rgba(245, 241, 241, 0.582);
+  padding: 10px;
+  border-radius: 12px;
+  max-width: 1050px;
   margin: 0 auto;
-  padding: 1.5rem;
-  background-color: #fff;
-  border-radius: 16px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-  font-family: 'Alef', sans-serif;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Section Title */
+.section-title {
+  color: #942222;
+  text-align: right;
+  margin-bottom: 1.5rem;
+}
+
+/* Loading and Empty States */
+.loading, .empty, .empty-filtered-results {
+  text-align: center;
+  padding: 20px;
+  font-size: 1.1rem;
+  color: #555;
+}
+
+/* Filter Button Styling */
+.problematic-only-filter button {
+  background: #942222;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.problematic-only-filter button:hover {
+  background-color: #7a1c1c;
+}
+
+.problematic-only-filter div { /* for the filter checkboxes container */
+  background: #f7f7f7;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  border: 1px solid #ddd;
+}
+
+.problematic-only-filter label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5em;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+/* Table styling */
+.inspection-table {
+  width: 90%;
+  margin: 0 auto; /* Centering the table */
+  border-radius: 15px;
+  border: 5px solid #942222;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center; /* Centering table content */
+  font-size: 14px;
   direction: rtl;
 }
 
-.inspection-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 16px;
-  text-align: right;
-}
-
-.inspection-table th,
-.inspection-table td {
-  border-bottom: 1px solid #e0e0e0;
-  padding: 12px 16px;
-}
-
-.inspection-table th {
-  background-color: #f5f5f5;
+.inspection-table thead tr th {
+  background-color: #942222;
+  color: white;
+  padding: 10px;
   font-weight: bold;
+  text-align: center; /* Centering header text */
 }
 
-.inspection-table tr:hover {
-  background-color: #f9f9f9;
+.inspection-table tbody tr td {
+  padding: 10px;
+  text-align: center; /* Centering body text */
+  border-bottom: 1px solid #e9ecef;
 }
 
-.highlight {
-  background-color: #ffe9e9;
-  border-right: 5px solid #e03131;
-}
-
-.loading,
-.empty {
-  text-align: center;
-  font-size: 18px;
-  color: #888;
-  margin-top: 2rem;
-}
-
-
-.problematic-only-filter {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  background: #f8f8f8;
-  border-radius: 8px;
-  padding: 0.7rem 1.2rem;
+.inspection-table tbody tr:hover {
+  background-color: #f0f0f0;
   color: #942222;
-  border: 1px solid #e0e0e0;
-  font-size: 0.9rem;
-  font-weight: 600;
-  transition: background-color 0.2s, color 0.2s, transform 0.1s;
 }
 
-input[type="checkbox"] {
-  width: 13px;
-  height: 13px;
-  accent-color: #942222; /* Modern browsers: change checkbox color */
-  cursor: pointer;
-  margin-left: 8px; /* Space between checkbox and label (for RTL, use margin-right) */
-  vertical-align: middle;
+/* Section headers within the table body */
+.inspection-table .table-section-header {
+  background-color: #f0f0f0;
+  color: #942222;
+  font-weight: bold;
+  text-align: center;
+  padding: 12px 10px;
+  border-bottom: 2px solid #942222;
 }
 
-
-.problematic-only-filter button{
-  background: none;
-    border: 1px solid #942222;
-    font-size: 0.9rem;
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-    color: #942222;
-    border-radius: 8px;
-    transition: all 0.2s;
+.inspection-table .table-separator {
+  height: 10px; /* Space between sections */
+  background-color: #f5f1f1;
+  border-bottom: none;
 }
 
+/* Modal Styling */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -96,31 +119,63 @@ input[type="checkbox"] {
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.6);
-  z-index: 1000;
   display: flex;
-  align-items: center;
   justify-content: center;
-  direction: rtl;
+  align-items: center;
+  z-index: 1000;
 }
 
 .modal-content {
-  background: #fff;
-  border-radius: 1rem;
-  padding: 2rem;
+  background-color: white;
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  position: relative;
   max-width: 500px;
   width: 90%;
   text-align: right;
-  font-family: "Alef", sans-serif;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-  position: relative;
+}
+
+.modal-content h3 {
+  color: #942222;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 0.5rem;
+}
+
+.modal-content p {
+  margin-bottom: 0.75rem;
+  line-height: 1.5;
+  color: #333;
+}
+
+.modal-content strong {
+  color: #555;
 }
 
 .close-btn {
   position: absolute;
   top: 10px;
-  left: 15px;
+  left: 10px;
   background: none;
   border: none;
-  font-size: 1.5rem;
+  font-size: 1.8rem;
+  color: #999;
   cursor: pointer;
 }
+
+.close-btn:hover {
+  color: #666;
+}
+
+/* Disabled button styling */
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Highlight for selected row (if applicable) */
+.highlight {
+  background-color: #e0f2f7 !important; /* A light blue for highlighting */
+}
+

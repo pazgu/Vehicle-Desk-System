@@ -7,7 +7,7 @@ import { TagModule } from 'primeng/tag';
 import { DividerModule } from 'primeng/divider';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { OrderService } from '../../../services/order.service';
-import { OrderCardItem } from '../../../models/order-card-item/order-card-item.module';
+import { OrderCardItem } from '../../../models/order-card-item.module';
 import { finalize } from 'rxjs/operators';
 import { CityService } from '../../../services/city.service';
 
@@ -185,6 +185,8 @@ getCityName(id: string): string {
         return 'נדחה';
       case 'in_progress':
         return 'בתהליך';
+      case 'cancelled_due_to_no_show':
+        return 'בוטלה-נסיעה לא יצאה';  
       default:
         return status;
     }

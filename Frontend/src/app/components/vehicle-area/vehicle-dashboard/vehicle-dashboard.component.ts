@@ -23,9 +23,11 @@ export class VehicleDashboardComponent implements OnInit {
   vehicles: VehicleInItem[] = [];
   mostUsedVehicles: VehicleInItem[] = [];
   showingMostUsed: boolean = false;
+
   inactiveVehicles: Vehicle[] = []; // vehicles not used in 7+ days
   InactiveFilter: boolean = false; // checkbox state
-
+  showInactive: boolean = false;
+  
   selectedType: string = '';
   statusFilter: string = '';
   typeFilter: string = '';
@@ -38,7 +40,6 @@ export class VehicleDashboardComponent implements OnInit {
 
   userRole: string | null = null;
 
-  // New property to store department ID to Name mapping
   departmentMap: Map<string, string> = new Map();
 
   constructor(
@@ -51,7 +52,7 @@ export class VehicleDashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.getUserRole();
-    this.fetchAndMapDepartments().then(() => { // Ensure departments are loaded before vehicles
+    this.fetchAndMapDepartments().then(() => {
       this.loadVehicles();
       this.fetchVehicleTypes();
       this.loadVehicleUsageData();
@@ -62,11 +63,10 @@ export class VehicleDashboardComponent implements OnInit {
         console.log('🆕 Vehicle received via socket:', vehicleData);
         const alreadyExists = this.vehicles.some(v => v.id === vehicleData.id);
         if (!alreadyExists) {
-          // If a new vehicle comes via socket, ensure its department name is resolved
           const departmentName = this.departmentMap.get(vehicleData.department_id || '');
           const vehicleWithDepartmentName: VehicleInItem = {
             ...vehicleData,
-            department: departmentName || (vehicleData.department_id ? 'מחלקה לא ידועה' : null) // Default if ID exists but name not found
+            department: departmentName || (vehicleData.department_id ? 'מחלקה לא ידועה' : null)
           };
           this.vehicles.unshift(vehicleWithDepartmentName);
         }
@@ -74,7 +74,6 @@ export class VehicleDashboardComponent implements OnInit {
     });
   }
 
-  // New method to fetch departments and populate the map
   async fetchAndMapDepartments(): Promise<void> {
     try {
       const departments = await this.http.get<{ id: string, name: string }[]>(`${environment.apiUrl}/departments`).toPromise();
@@ -108,7 +107,6 @@ export class VehicleDashboardComponent implements OnInit {
   loadVehicles(): void {
     this.vehicleService.getAllVehicles().subscribe(
       (data) => {
-        // Here's the key part: map department_id to department name
         this.vehicles = Array.isArray(data) ? data.map(vehicle => ({
           ...vehicle,
           department: this.departmentMap.get(vehicle.department_id || '') || (vehicle.department_id ? 'מחלקה לא ידועה' : 'לא משוייך למחלקה')
@@ -121,8 +119,6 @@ export class VehicleDashboardComponent implements OnInit {
       }
     );
   }
-
-  // Rest of your methods remain mostly the same...
 
   loadVehicleUsageData(): void {
     this.http.get<{ plate_number: string; vehicle_model: string; ride_count: number }[]>(
@@ -192,12 +188,11 @@ export class VehicleDashboardComponent implements OnInit {
 
     this.vehicleService.getAllVehicles().subscribe(
       (allVehicles) => {
-        // Apply department name mapping to allVehicles before filtering
         const vehiclesWithNames = Array.isArray(allVehicles) ? allVehicles.map(vehicle => ({
           ...vehicle,
           department: this.departmentMap.get(vehicle.department_id || '') || (vehicle.department_id ? 'מחלקה לא ידועה' : 'ללא מחלקה')
         })) : [];
-        this.vehicles = vehiclesWithNames; // Update this.vehicles with mapped names
+        this.vehicles = vehiclesWithNames;
 
         this.vehicleService.getMostUsedVehiclesThisMonth(year, month).subscribe({
           next: (response) => {
@@ -205,7 +200,7 @@ export class VehicleDashboardComponent implements OnInit {
 
             const enrichedStats = response.stats
               .map((stat: any) => {
-                const match = vehiclesWithNames.find(v => v.id === stat.vehicle_id); // Use vehiclesWithNames here
+                const match = vehiclesWithNames.find(v => v.id === stat.vehicle_id);
                 if (match) {
                   return {
                     ...match,
@@ -238,6 +233,10 @@ export class VehicleDashboardComponent implements OnInit {
     }
   }
 
+   goToArchivedOrders() {
+    this.router.navigate(['/vehicles/archived']);
+  }
+
   getCardClass(status: string | null | undefined): string {
     if (!status) return '';
     switch (status) {
@@ -268,6 +267,17 @@ getInactiveVehicles(): Observable<Vehicle[]> {
     } else {
       this.inactiveVehicles = [];
     }
+
+  // New method to check if a vehicle is inactive
+  isInactive(lastUsedAt: string | null | undefined): boolean {
+    if (!lastUsedAt) {
+      return true; // Consider vehicles with no last_used_at as inactive
+    }
+    const lastUsedDate = new Date(lastUsedAt);
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    return lastUsedDate < sevenDaysAgo;
+
   }
 
   translateStatus(status: string | null | undefined): string {
@@ -314,10 +324,23 @@ getInactiveVehicles(): Observable<Vehicle[]> {
     }
 
 
+  if (this.showInactive) {
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+  filtered = filtered.filter(vehicle => {
+    const lastUsed = vehicle.last_used_at ? new Date(vehicle.last_used_at) : null;
+    return !lastUsed || lastUsed < oneWeekAgo;
+  });
+}
+
     if (this.sortBy) {
       return [...filtered].sort((a, b) => a.status.localeCompare(b.status));
     } else {
       return filtered;
     }
   }
+  navigateToArchivedVehicles(): void {
+  this.router.navigate(['/archived-vehicles']);
+}
 }

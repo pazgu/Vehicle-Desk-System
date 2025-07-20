@@ -9,6 +9,7 @@ import { Location } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../../components/page-area/confirm-dialog/confirm-dialog.component';
 import { HttpErrorResponse } from '@angular/common/http';
+import { StartedRide, StartedRidesResponse } from '../../models/ride.model';
 
 @Component({
   selector: 'app-home',
@@ -18,6 +19,7 @@ import { HttpErrorResponse } from '@angular/common/http';
   styleUrls: ['./all-rides.component.css']
 })
 export class AllRidesComponent implements OnInit {
+  
   constructor(
     private router: Router,
     private rideService: MyRidesService,
@@ -27,6 +29,7 @@ export class AllRidesComponent implements OnInit {
     private location: Location,
     private dialog: MatDialog
   ) {}
+  
 
   goBack(): void {
     this.location.back();
@@ -97,6 +100,11 @@ export class AllRidesComponent implements OnInit {
         console.log('🔁 New ride event received - refreshing rides...');
         this.fetchRides();
       }
+    });
+     this.socketService.rideSupposedToStart$.subscribe(() => {
+        console.log('🔁 a ride supposed to start - refreshing rides...');
+        this.fetchRides();
+      
     });
 
     this.socketService.orderUpdated$.subscribe((updatedRide) => {
@@ -276,6 +284,22 @@ export class AllRidesComponent implements OnInit {
           }));
           localStorage.setItem('user_orders', JSON.stringify(this.orders));
           console.log('Orders from backend:', this.orders);
+          
+        // ✅ NOW call checkStartedApprovedRides
+        this.rideService.checkStartedApprovedRides().subscribe({
+          next: (res: StartedRidesResponse) => {
+            const startedRideIds = res.rides_supposed_to_start; // ✅ fix here
+            this.orders = this.orders.map(order => ({
+              ...order,
+              hasStarted: startedRideIds.includes(order.ride_id)
+            }));
+            console.log('rides that supposed tpo start:',startedRideIds)
+          },
+          error: (err) => {
+            console.error('Error checking started rides:', err);
+          }
+        });
+
         } else {
           this.orders = [];
         }
@@ -292,6 +316,8 @@ export class AllRidesComponent implements OnInit {
         }
       }
     });
+
+
   }
 
   // --- Other existing methods (no changes needed) ---
@@ -320,6 +346,8 @@ export class AllRidesComponent implements OnInit {
       case 'rejected': return 'נדחה';
       case 'completed': return 'הושלם';
       case 'in_progress': return 'בתהליך';
+      case 'cancelled_due_to_no_show': return 'בוטל – אי הגעה';
+      case 'reserved': return 'מוזמן';
       default: return 'סטטוס לא ידוע';
     }
   }
@@ -330,6 +358,8 @@ export class AllRidesComponent implements OnInit {
       case 'pending': return 'status-yellow';
       case 'rejected': return 'status-red';
       case 'in_progress': return 'status_in_progress';
+      case 'cancelled_due_to_no_show': return 'status-cancelled-no-show';
+      case 'reserved': return 'status-reserved';
       default: return '';
     }
   }

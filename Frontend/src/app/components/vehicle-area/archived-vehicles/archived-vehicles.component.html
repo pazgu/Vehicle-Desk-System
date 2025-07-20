@@ -1,0 +1,102 @@
+<div class="page-wrapper">
+  <div class="page-container">
+    <div class="vehicles-wrapper">
+      <div class="header-section">
+        <h1 style="text-align: right;">ארכיון רכבים</h1>
+        <button class="back-btn" (click)="goBackToDashboard()">חזור לדשבורד ←</button>
+      </div>
+      <br>
+
+      <div class="vehicle-buttons-bar">
+        <div class="left-buttons">
+          <!-- No add button for archived vehicles -->
+        </div>
+
+        <div class="right-buttons">
+          <button class="filter" (click)="showFilters = !showFilters">
+            {{ showFilters ? 'הסתר סינון' : 'הצג סינון' }}
+          </button>
+        </div>
+      </div>
+
+      <div class="archive-info-banner">
+        <p>כאן מוצגים רכבים שנארכבו. ניתן לשחזר רכבים או למחוק אותם לצמיתות.</p>
+      </div>
+
+      <div *ngIf="showFilters"
+        style="margin-bottom: 1.5rem; background: #f7f7f7; padding: 1rem; border-radius: 8px; direction: rtl;">
+        <div style="margin-bottom: 1rem; gap: 1rem; display: flex;">
+          <label for="typeFilter"> סוג:</label>
+          <select class="typeFilter" id="typeFilter" [(ngModel)]="typeFilter">
+            <option value="">הצג הכל</option>
+            <option *ngFor="let type of vehicleTypes" [value]="type">{{ type }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="vehicles-cards">
+        <p-card *ngFor="let vehicle of filteredVehicles" [styleClass]="'vehicle-card ' + getCardClass(vehicle.status)"
+          (click)="goToVehicleDetails(vehicle.id)">
+
+          <ng-template pTemplate="header">
+            <div class="usage-section">
+              <div class="usage-line">
+                <div class="usage-indicator" [style.background-color]="getUsageBarColor(vehicle.plate_number)"></div>
+                <span class="usage-number" *ngIf="getVehicleUsageCount(vehicle.plate_number)>0"> {{
+                  getVehicleUsageCount(vehicle.plate_number) }} נסיעות</span>
+              </div>
+            </div>
+            <div class="archived-badge">
+              מארכב
+            </div>
+            <img *ngIf="vehicle.image_url" [src]="vehicle.image_url" alt="תמונה של הרכב"
+              style="width: 100%; max-width: 250px; margin-top: 10px;" />
+          </ng-template>
+
+          <h3>רכב: {{ vehicle.plate_number }}</h3>
+          <div *ngIf="vehicle.vehicle_model">
+            <strong>דגם:</strong> {{ vehicle.vehicle_model }}
+          </div>
+
+          <div class="department-container">
+            <div *ngIf="vehicle.department" class="department-tag"
+              [ngClass]="{'no-department-tag': vehicle.department === 'לא משוייך למחלקה'}">
+              {{ vehicle.department }}
+            </div>
+          </div>
+
+          <div *ngIf="vehicle.ride_count !== undefined">
+            <strong>שימושים החודש:</strong> {{ vehicle.ride_count }}
+          </div>
+
+          <div *ngIf="vehicle.last_used_at">
+            <strong>שימוש אחרון:</strong> {{ vehicle.last_used_at | date:'shortDate' }}
+          </div>
+
+          <div *ngIf="vehicle.archived_at">
+            <strong>תאריך ארכוב:</strong> {{ vehicle.archived_at | date:'shortDate' }}
+          </div>
+
+          <!-- Action buttons for archived vehicles -->
+          <div class="archived-actions" style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+            <button class="restore-btn" (click)="$event.stopPropagation(); restoreVehicle(vehicle)"
+              title="שחזר רכב מהארכיון">
+              שחזר
+            </button>
+            <button class="permanent-delete-btn" (click)="$event.stopPropagation(); permanentlyDeleteVehicle(vehicle)"
+              title="מחק לצמיתות">
+              מחק לצמיתות
+            </button>
+          </div>
+
+        </p-card>
+      </div>
+
+      <div *ngIf="filteredVehicles?.length === 0" class="empty-state" style="text-align: center; margin-top: 2rem;">
+        <p>לא נמצאו רכבים בארכיון</p>
+        <button class="back-btn" (click)="goBackToDashboard()">חזור לדשבורד</button>
+      </div>
+
+    </div>
+  </div>
+</div>

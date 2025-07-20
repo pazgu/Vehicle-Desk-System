@@ -6,7 +6,7 @@
 .page-container {
     max-width: 1100px;
     margin: 0 auto;
-    background-color: rgba(245, 241, 241, 0.582);
+    background-color: rgb(255, 255, 255);
     border-radius: 14px;
     box-shadow: 0 2px 16px rgba(44, 62, 80, 0.07);
     padding: 2rem 2.5rem;
@@ -505,4 +505,59 @@ button {
         align-items: flex-start;
         gap: 10px;
     }
+}
+
+
+.inactive-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: #942222; /* Red background */
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.7em;
+    font-weight: bold;
+    z-index: 10; /* Ensure it's on top */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+/* Add this to your vehicle-dashboard.component.css */
+
+.archive-btn {
+  background: #795548 !important; /* Brown color for archive */
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.archive-btn:hover {
+  background: #5d4037 !important; /* Darker brown on hover */
+}
+
+/* Make sure the right-buttons container can handle more buttons */
+.right-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap; /* Allow wrapping if needed */
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+  .right-buttons {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .archive-btn {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
 }

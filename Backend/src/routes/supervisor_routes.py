@@ -14,7 +14,7 @@ from ..utils.auth import supervisor_check, token_check
 from ..services.supervisor_dashboard_service import vehicle_inspection_logic , start_ride
 from ..utils.auth import supervisor_check, token_check
 from ..schemas.vehicle_schema import FreezeVehicleRequest
-
+from ..utils.socket_manager import sio
 router = APIRouter()
 
 
@@ -132,9 +132,28 @@ def freeze_vehicle(request: FreezeVehicleRequest, db: Session = Depends(get_db),
     return freeze_vehicle_service(db, request.vehicle_id, request.reason, user_id)
 
 @router.post("/rides/{ride_id}/start")
-def start_ride_route(ride_id: UUID, db: Session = Depends(get_db)):
+async def start_ride_route(ride_id: UUID, db: Session = Depends(get_db)):
     try:
-        start_ride(db, ride_id)
-        return {"message": "Ride started, vehicle marked as in use"}
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        ride, vehicle = await start_ride(db, ride_id)
+       
+        #  3️⃣ Emit ride update
+        await sio.emit("ride_status_updated", {
+            "ride_id": str(ride.id),
+            "new_status": ride.status.value
+        })
+        # 4️⃣ Emit vehicle update
+        await sio.emit("vehicle_status_updated", {
+            "id": str(vehicle.id),
+            "status": vehicle.status.value
+        })
+
+        return {
+            "message": "Ride started, vehicle marked as in use",
+            "ride_id": str(ride.id),
+            "vehicle_id": str(vehicle.id),
+            "status": ride.status.value
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")

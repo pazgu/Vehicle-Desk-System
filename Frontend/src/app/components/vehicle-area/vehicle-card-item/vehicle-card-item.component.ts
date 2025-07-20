@@ -6,26 +6,38 @@ import { CardModule } from 'primeng/card';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
-import { MatDialog } from '@angular/material/dialog'; // Add this import at the top
-import { ConfirmDialogComponent } from '../../page-area/confirm-dialog/confirm-dialog.component'; // Adjust the path as needed
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmDialogComponent, ConfirmDialogData } from '../../page-area/confirm-dialog/confirm-dialog.component';
+import { MatIconModule } from '@angular/material/icon';
+import { Observable } from 'rxjs';
+import { Location } from '@angular/common';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-vehicle-card-item',
   templateUrl: './vehicle-card-item.component.html',
   styleUrls: ['./vehicle-card-item.component.css'],
-  imports: [CommonModule, CardModule, FormsModule],
+  standalone: true,
+  imports: [CommonModule, CardModule, FormsModule, MatIconModule],
 })
 export class VehicleCardItemComponent implements OnInit {
   vehicle: any;
-  isFreezeReasonFieldVisible: boolean = false; // Controls visibility of the input field
-  freezeReason: string = ''; // Holds the freeze reason entered by the user
+  isFreezeReasonFieldVisible: boolean = false;
+  freezeReason: string = '';
   topUsedVehiclesMap: Record<string, number> = {};
   vehicleUsageData: { plate_number: string; vehicle_model: string; ride_count: number }[] = [];
   currentVehicleRideCount: number = 0;
   departmentName: string = '';
 
-
-  constructor(private navigateRouter: Router, private route: ActivatedRoute, private vehicleService: VehicleService, private http: HttpClient, private dialog: MatDialog) { }
+  constructor(
+    private navigateRouter: Router,
+    private route: ActivatedRoute,
+    private vehicleService: VehicleService,
+    private http: HttpClient,
+    private dialog: MatDialog, 
+    private toastService: ToastService,
+    private location: Location
+  ) { }
 
   ngOnInit(): void {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -37,7 +49,14 @@ export class VehicleCardItemComponent implements OnInit {
         console.log('Vehicle from API:', vehicleData);
         this.vehicle = vehicleData;
 
-        // ✅ FIX HERE: move department logic INSIDE the subscribe block
+        // ✅ IMPORTANT: Check if vehicle is archived and update the display accordingly
+        if (vehicleData.is_archived) {
+          // Override status display for archived vehicles
+          this.vehicle.status = 'archived';
+          this.vehicle.displayStatus = 'מארכב';
+        }
+
+        // Department logic
         if (vehicleData.department_id) {
           this.http.get<any>(`${environment.apiUrl}/departments/${vehicleData.department_id}`).subscribe({
             next: (dept) => {
@@ -57,19 +76,18 @@ export class VehicleCardItemComponent implements OnInit {
     }
   }
 
-
-
   getCardClass(status: string): string {
     switch (status) {
       case 'available': return 'card-available';
       case 'in_use': return 'card-inuse';
       case 'frozen': return 'card-frozen';
+      case 'archived': return 'card-archived';
       default: return '';
     }
   }
 
   goBack(): void {
-    this.navigateRouter.navigate(['/vehicle-dashboard']);
+    this.location.back();
   }
 
   // New method to load vehicle usage data from analytics
@@ -91,6 +109,7 @@ export class VehicleCardItemComponent implements OnInit {
       }
     });
   }
+
   translateStatus(status: string | null | undefined): string {
     if (!status) return '';
     switch (status.toLowerCase()) {
@@ -100,6 +119,8 @@ export class VehicleCardItemComponent implements OnInit {
         return 'בשימוש';
       case 'frozen':
         return 'מוקפא';
+      case 'archived':
+        return 'מארכב';
       default:
         return status;
     }
@@ -145,64 +166,48 @@ export class VehicleCardItemComponent implements OnInit {
     }
   }
 
-  // Modified updateVehicleStatus to accept the new status and optionally the freeze reason
+  // ✅ FIXED: Updated to use location.back() instead of hardcoded navigation
   updateVehicleStatus(newStatus: string, reason?: string): void {
     if (!this.vehicle?.id) return;
 
     this.vehicleService.updateVehicleStatus(this.vehicle.id, newStatus, reason).subscribe({
       next: (response) => {
         console.log(`Vehicle status updated to '${newStatus}':`, response);
-        this.vehicle.status = newStatus; // Update the local status
-        this.vehicle.freeze_reason = newStatus === 'frozen' ? reason : null; // Clear freeze reason if unfreezing
+        this.vehicle.status = newStatus;
+        this.vehicle.freeze_reason = newStatus === 'frozen' ? reason : null;
 
         // Reset the dropdown and hide it if freezing
         if (newStatus === 'frozen') {
           this.freezeReason = '';
           this.isFreezeReasonFieldVisible = false;
         }
+
+        // ✅ FIXED: Use location.back() instead of hardcoded navigation
+        this.location.back();
       },
       error: (err) => {
         console.error(`Failed to update vehicle status to '${newStatus}':`, err);
         alert(`Failed to update vehicle status: ${err.error?.detail || err.message}`);
       }
     });
-    this.navigateRouter.navigate(['/vehicle-dashboard']); // או הנתיב המתאים שלך
   }
-
 
   // Show the freeze reason input field
   showFreezeReasonField(): void {
     this.isFreezeReasonFieldVisible = true;
   }
 
-  // Freeze the vehicle with the entered reason
-  freezeStatus(): void {
-    if (!this.freezeReason.trim()) {
-      alert('יש להזין סיבת הקפאה');
-      return;
-    }
-
-    console.log('Freezing vehicle with reason:', this.freezeReason); // Log the freeze reason
-
-    // Call the common updateVehicleStatus method with 'frozen' status and the reason
-    this.updateVehicleStatus('frozen', this.freezeReason);
-
-    // Reset the dropdown and hide it after successful freeze (or if error occurs, the UI will reflect actual state)
-    this.freezeReason = '';
-    this.isFreezeReasonFieldVisible = false;
-
-  }
-
   getUsageBarColor(plateNumber: string): string {
     const level = this.getUsageLevel(plateNumber);
     switch (level) {
-      case 'high': return '#FF5252';    // Red
-      case 'medium': return '#FFC107';  // Yellow
-      case 'good': return '#42A5F5';    // Blue
-      case 'hide': return 'rgba(255, 255, 255, 0)'// Gray (hidden)
-      default: return '#E0E0E0';        // Gray
+      case 'high': return '#FF5252';
+      case 'medium': return '#FFC107';
+      case 'good': return '#42A5F5';
+      case 'hide': return 'rgba(255, 255, 255, 0)';
+      default: return '#E0E0E0';
     }
   }
+
   getUsageLevel(plateNumber: string): 'high' | 'medium' | 'good' | 'hide' {
     const count = this.getVehicleUsageCount(plateNumber);
     if (count > 10) return 'high';
@@ -210,13 +215,14 @@ export class VehicleCardItemComponent implements OnInit {
     if (count == 0) return 'hide';
     return 'good';
   }
-  // Get usage bar width percentage (0-100%)
+
   getUsageBarWidth(plateNumber: string): number {
     const count = this.getVehicleUsageCount(plateNumber);
     // Scale to max 15 rides for 100% width
     const maxRides = 15;
     return Math.min((count / maxRides) * 100, 100);
   }
+
   getVehicleUsageCount(plateNumber: string): number {
     return this.topUsedVehiclesMap[plateNumber] || 0;
   }
@@ -239,7 +245,6 @@ export class VehicleCardItemComponent implements OnInit {
             rideDate.getFullYear() === currentDate.getFullYear();
         }).length;
 
-
         console.log(`Vehicle ${vehicleId} appears in ${count} rides`);
 
         // Store the count in the component property
@@ -258,11 +263,18 @@ export class VehicleCardItemComponent implements OnInit {
     }
   }
 
+  // UPDATED: Delete confirmation
   confirmDelete(vehicle: any): void {
+    const message = `תוקף חוזה ההשכרה של רכב ${vehicle.plate_number} פג.\nהאם את/ה בטוח/ה שברצונך למחוק את הרכב?`;
+
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
       data: {
-        message: `תוקף חוזה ההשכרה של רכב ${vehicle.plate_number} פג.\nהאם את/ה בטוח/ה שברצונך למחוק את הרכב?`
+        title: 'מחיקת רכב',
+        message,
+        confirmText: 'מחק',
+        cancelText: 'בטל',
+        isDestructive: true
       }
     });
 
@@ -271,16 +283,102 @@ export class VehicleCardItemComponent implements OnInit {
 
       this.vehicleService.deleteVehicle(vehicle.id).subscribe({
         next: () => {
-          alert(`הרכב ${vehicle.plate_number} נמחק בהצלחה.`);
-          this.navigateRouter.navigate(['/vehicle-dashboard']);
+          this.toastService.show(`הרכב ${vehicle.plate_number} נמחק בהצלחה.`)
+          this.location.back();
         },
         error: (err) => {
-          console.error("❌ מחיקת הרכב נכשלה:", err);
-          const msg = err?.error?.detail || "מחיקת הרכב נכשלה.";
-          alert(msg);
+          console.error("❌ מחיקה נכשלה:", err);
+          const msg = err?.error?.detail || "המחיקה נכשלה.";
+          this.toastService.show(msg, 'error');
         }
       });
     });
+  }
+
+  // UPDATED: Archive confirmation
+  confirmArchive(vehicle: any): void {
+    const message = `תוקף חוזה ההשכרה של רכב ${vehicle.plate_number} פג והרכב מוקפא.\nלא ניתן למחוק את הרכב, אך ניתן לארכב אותו.\n\nהאם את/ה בטוח/ה שברצונך לארכב את הרכב?`;
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'ארכוב רכב',
+        message,
+        confirmText: 'ארכב',
+        cancelText: 'בטל',
+        isDestructive: false
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (!confirmed) return;
+
+      this.vehicleService.archiveVehicle(vehicle.id).subscribe({
+        next: () => {
+          this.toastService.show(`הרכב ${vehicle.plate_number} נארכב בהצלחה.`);
+          this.location.back();
+        },
+        error: (err) => {
+          console.error("❌ ארכוב נכשל:", err);
+          const msg = err?.error?.detail || "הארכוב נכשל.";
+          this.toastService.show(msg, 'error');
+        }
+      });
+    });
+  }
+
+  // UPDATED: Unfreeze confirmation
+  confirmUnfreeze(): void {
+    const message = `האם את/ה בטוח/ה שברצונך לשחרר את הרכב ${this.vehicle.plate_number} מהקפאה?`;
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'שחרור מהקפאה',
+        message,
+        confirmText: 'שחרר',
+        cancelText: 'בטל',
+        isDestructive: false
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (!confirmed) return;
+      this.updateVehicleStatus('available');
+    });
+  }
+
+  // UPDATED: Freeze confirmation
+  confirmFreeze(): void {
+    if (!this.freezeReason.trim()) {
+      alert('יש להזין סיבת הקפאה');
+      return;
+    }
+
+    const reasonText = this.translateFreezeReason(this.freezeReason);
+    const message = `האם את/ה בטוח/ה שברצונך להקפיא את הרכב ${this.vehicle.plate_number}?\n\nסיבת הקפאה: ${reasonText}`;
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'הקפאת רכב',
+        message,
+        confirmText: 'הקפא',
+        cancelText: 'בטל',
+        isDestructive: false
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (!confirmed) return;
+      this.updateVehicleStatus('frozen', this.freezeReason);
+      this.freezeReason = '';
+      this.isFreezeReasonFieldVisible = false;
+    });
+  }
+
+  isLeaseExpired(expiry: string): boolean {
+    return new Date(expiry) < new Date();
   }
 
   formatLastUsedAt(dateStr: string | null | undefined): string {
@@ -304,5 +402,66 @@ export class VehicleCardItemComponent implements OnInit {
       ' ' +
       date.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
   }
-}
 
+  // UPDATED: Method to restore vehicle from archive
+  restoreVehicle(vehicle: any): void {
+    const message = `האם את/ה בטוח/ה שברצונך לשחזר את הרכב ${vehicle.plate_number} מהארכיון ולהחזיר אותו לפעילות?`;
+    
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: { 
+        title: 'שחזור רכב מהארכיון',
+        message,
+        confirmText: 'שחזר',
+        cancelText: 'בטל',
+        isDestructive: false
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (!confirmed) return;
+
+      this.vehicleService.restoreVehicle(vehicle.id).subscribe({
+        next: () => {
+          this.toastService.show(`הרכב ${vehicle.plate_number} שוחזר בהצלחה מהארכיון`, 'success');
+          this.location.back();
+        },
+        error: (err) => {
+          console.error('❌ Error restoring vehicle:', err);
+          this.toastService.show('שגיאה בשחזור הרכב מהארכיון', 'error');
+        }
+      });
+    });
+  }
+
+  // UPDATED: Method to permanently delete vehicle
+  permanentlyDeleteVehicle(vehicle: any): void {
+    const message = `⚠️ האם את/ה בטוח/ה שברצונך למחוק לצמיתות את הרכב ${vehicle.plate_number}?\n\nפעולה זו לא ניתנת לביטול ותמחק את כל הנתונים הקשורים לרכב!`;
+    
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '450px',
+      data: { 
+        title: 'מחיקה לצמיתות',
+        message,
+        confirmText: 'מחק לצמיתות',
+        cancelText: 'בטל',
+        isDestructive: true
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (!confirmed) return;
+
+      this.vehicleService.permanentlyDeleteVehicle(vehicle.id).subscribe({
+        next: () => {
+          this.toastService.show(`הרכב ${vehicle.plate_number} נמחק לצמיתות`, 'success');
+          this.location.back();
+        },
+        error: (err) => {
+          console.error('❌ Error permanently deleting vehicle:', err);
+          this.toastService.show('שגיאה במחיקה לצמיתות של הרכב', 'error');
+        }
+      });
+    });
+  }
+}

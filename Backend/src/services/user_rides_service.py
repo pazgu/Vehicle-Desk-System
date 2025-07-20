@@ -178,7 +178,8 @@ def get_ride_by_id(db: Session, ride_id: UUID) -> RideSchema:
         Ride.status,
         Ride.submitted_at,
         Ride.user_id,
-        Vehicle.fuel_type.label("vehicle")
+        Vehicle.fuel_type.label("vehicle"), 
+        Ride.actual_pickup_time,
     ).join(Vehicle, Ride.vehicle_id == Vehicle.id).filter(Ride.id == ride_id).first()
 
     if not ride:

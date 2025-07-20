@@ -1,6 +1,5 @@
 from src.models.department_model import Department
 from datetime import  date, time, datetime, timedelta, timezone
-
 from sqlalchemy import text,func, or_
 from ..services.vehicle_service import get_vehicles_with_optional_status,update_vehicle_status,get_vehicle_by_id, get_available_vehicles_for_ride_by_id, get_inactive_vehicles
 from fastapi import APIRouter, Depends, HTTPException, status , Query
@@ -10,7 +9,7 @@ from ..utils.socket_manager import sio
 from sqlalchemy.orm import Session
 from ..schemas.vehicle_schema import VehicleOut
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
-from ..utils.auth import token_check
+from ..utils.auth import token_check, get_current_user,role_check
 from ..utils.database import get_db
 from typing import List, Optional, Union
 from src.schemas.vehicle_create_schema import VehicleCreate
@@ -18,7 +17,8 @@ from src.models.vehicle_model import VehicleStatus, Vehicle
 from src.models.ride_model import Ride
 from src.models.user_model import User
 
- 
+from fastapi.security import OAuth2PasswordBearer
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 router = APIRouter()
 
@@ -33,8 +33,7 @@ router = APIRouter()
     
 
 @router.get("/all-vehicles", response_model=List[VehicleOut])
-def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = Depends(get_db)
-    ,payload: dict = Depends(token_check)):
+def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = Depends(get_db), payload: dict = Depends(token_check)):
     vehicles = get_vehicles_with_optional_status(db, status)
     return vehicles
 
@@ -47,7 +46,7 @@ def get_vehicle_fuel_type(vehicle_id: UUID, db: Session = Depends(get_db)):
 
 
 @router.patch("/vehicles-status/{vehicle_id}") 
-def patch_vehicle_status(
+async def patch_vehicle_status(
     vehicle_id: UUID,
     status_update: VehicleStatusUpdate,
     db: Session = Depends(get_db),
@@ -59,7 +58,7 @@ def patch_vehicle_status(
     
     res=update_vehicle_status(vehicle_id, status_update.new_status, status_update.freeze_reason, db, user_id)
     new_status=res["new_status"]
-    sio.emit('vehicle_status_updated', {
+    await sio.emit('vehicle_status_updated', {
             "vehicle_id": str(vehicle_id),
             "status": new_status,
             "freeze_reason": res.get("freeze_reason", "")
@@ -156,7 +155,6 @@ def get_vehicle_timeline(
 
     return [RideTimelineSchema(**dict(row._mapping)) for row in rides]
 
-
 @router.get("/vehicles/inactive", response_model=List[VehicleOut])
 def return_inactive_vehicle(db: Session = Depends(get_db)):
     
@@ -180,3 +178,53 @@ def return_inactive_vehicle(db: Session = Depends(get_db)):
     ).all()
 
     return [v for v, _ in inactive_vehicles]
+
+@router.put("/vehicles/{vehicle_id}/restore")
+def restore_vehicle(
+    request: Request,
+    vehicle_id: UUID,
+    db: Session = Depends(get_db),
+    token: str = Depends(oauth2_scheme)
+):
+    user = get_current_user(request)
+    role_check(["admin"], token)
+    
+    vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id, Vehicle.is_archived == True).first()
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="Archived vehicle not found")
+    
+    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user.employee_id)})
+    
+    # Restore the vehicle
+    vehicle.is_archived = False
+    vehicle.archived_at = None
+    # Set status back to available (or you can keep the previous status if you store it)
+    vehicle.status = VehicleStatus.available
+    
+    db.commit()
+    db.execute(text("SET session.audit.user_id = DEFAULT"))
+    
+    return {"message": f"Vehicle {vehicle.plate_number} restored successfully"}
+
+@router.delete("/vehicles/{vehicle_id}/permanent")
+def permanently_delete_vehicle(
+    request: Request,
+    vehicle_id: UUID,
+    db: Session = Depends(get_db),
+    token: str = Depends(oauth2_scheme)
+):
+    user = get_current_user(request)
+    role_check(["admin"], token)
+    
+    vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id, Vehicle.is_archived == True).first()
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="Archived vehicle not found")
+    
+    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user.employee_id)})
+    
+    # Permanently delete the vehicle
+    db.delete(vehicle)
+    db.commit()
+    db.execute(text("SET session.audit.user_id = DEFAULT"))
+    
+    return {"message": f"Vehicle {vehicle.plate_number} permanently deleted"}

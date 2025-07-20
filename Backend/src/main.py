@@ -69,11 +69,11 @@ async def handle_join(sid, data):
 # app = FastAPI() is the base app used for routers and middleware
 # sio_app wraps app with Socket.IO support — use this in uvicorn if you want sockets
 # Run with: uvicorn src.main:sio_app --reload
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # sio_app = ASGIApp(sio, other_asgi_app=app)
 sio_app = socketio.ASGIApp(sio, other_asgi_app=app)
 
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 @app.get("/test-email")
 def test_email():

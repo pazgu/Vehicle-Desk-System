@@ -20,6 +20,12 @@ from ..services.email_service import get_user_email, load_email_template, async_
 from datetime import datetime
 
 from src.utils.database import SessionLocal
+from ..services.email_service import get_user_email, load_email_template, async_send_email, send_email
+from datetime import datetime
+
+from fastapi.security import OAuth2PasswordBearer
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
 
 # def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
 #     inspection = VehicleInspection(
@@ -78,31 +84,15 @@ def get_vehicles_with_optional_status(
         ) 
     )    
     .outerjoin(User, User.employee_id == Ride.user_id)
-    .filter(Vehicle.lease_expiry >= datetime.utcnow()) # Add this line to filter out expired leases
+    .filter(Vehicle.is_archived == False)
 )
     if status:
         query = query.filter(Vehicle.status == status)
-
-    
-    if vehicle_type:  # ✅ Add this part to filter by type
+    if vehicle_type:
         query = query.filter(func.lower(Vehicle.type) == vehicle_type.lower())
-
-
     vehicles = query.all()
+    return vehicles
 
-    result = []
-    for row in vehicles:
-        data = dict(row._mapping)
-        lease_expiry = data.get("lease_expiry")
-        data["canDelete"] = lease_expiry.date() < date.today() if lease_expiry else False
-
-        if data["status"] == VehicleStatus.in_use:
-            result.append(InUseVehicleOut(**data))
-        else:
-            result.append(VehicleOut(**data))
-
-    print("Result:", result)
-    return result
 
 def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_reason: str, db: Session, changed_by: UUID, notes: Optional[str] = None):
     FREEZE_REASON_TRANSLATIONS = {
@@ -311,7 +301,9 @@ def get_vehicle_by_id(vehicle_id: str, db: Session):
         "image_url": vehicle.image_url,
         "lease_expiry": vehicle.lease_expiry,
         "department_id": vehicle.department_id,
-        "canDelete": can_delete 
+        "canDelete": can_delete,
+        "is_archived": vehicle.is_archived, 
+        "archived_at": vehicle.archived_at   
     }
 
 def freeze_vehicle_service(db: Session, vehicle_id: UUID, reason: str, changed_by: UUID):
@@ -387,7 +379,6 @@ def delete_vehicle_by_id(vehicle_id: UUID, db: Session, user_id: UUID):
 
 
 
-
 async def get_inactive_vehicles():
     db: Session = SessionLocal()
     try:
@@ -422,3 +413,57 @@ async def get_inactive_vehicles():
         
     finally:
         db.close()
+
+def archive_vehicle_by_id(vehicle_id: UUID, db: Session, user_id: UUID) -> Vehicle:
+    vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="Vehicle not found")
+
+    if vehicle.status != VehicleStatus.frozen:
+        raise HTTPException(status_code=400, detail="Can only archive vehicles that are frozen.")
+
+    if not vehicle.lease_expiry or vehicle.lease_expiry.date() >= date.today():
+        raise HTTPException(status_code=400, detail="Cannot archive: lease not expired.")
+
+    if vehicle.is_archived:
+        raise HTTPException(status_code=400, detail="Vehicle is already archived.")
+
+    # Check for related data (e.g., rides)
+    has_related_data = db.execute(
+        text("SELECT EXISTS (SELECT 1 FROM rides WHERE vehicle_id = :vehicle_id)"),
+        {"vehicle_id": str(vehicle_id)}
+    ).scalar()
+
+    if not has_related_data:
+        raise HTTPException(status_code=400, detail="Cannot archive: vehicle has no related data (rides, logs, etc.).")
+
+    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id)})
+
+    vehicle.is_archived = True
+    vehicle.archived_at = datetime.utcnow()
+    db.commit()
+
+    # Manually insert audit log for reason visibility
+    db.execute(
+        text("""
+            INSERT INTO audit_logs (
+                action, entity_type, entity_id, change_data,
+                changed_by, checkbox_value, inspected_at, notes
+            ) VALUES (
+                :action, :entity_type, :entity_id, :change_data,
+                :changed_by, FALSE, now(), :notes
+            )
+        """),
+        {
+            "action": "ARCHIVE",
+            "entity_type": "Vehicle",
+            "entity_id": str(vehicle.id),
+            "change_data": '{"archived": true}',
+            "changed_by": str(user_id),
+            "notes": "Vehicle archived manually by admin"
+        }
+    )
+
+    db.execute(text("SET session.audit.user_id = DEFAULT"))
+    return vehicle
+

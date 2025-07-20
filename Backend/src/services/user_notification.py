@@ -222,4 +222,4 @@ async def emit_new_notification(
         "vehicle_id": str(vehicle_id) if vehicle_id else None
     }
 
-    await sio.emit("new_notification", payload)
+    await sio.emit("new_notification", payload,room=str(notification.user_id))
