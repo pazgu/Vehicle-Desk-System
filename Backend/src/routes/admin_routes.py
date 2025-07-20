@@ -943,8 +943,6 @@ def get_critical_issues(
 
 
 
-router = APIRouter()
-
 @router.get("/statistics/no-show", response_model=NoShowStatsResponse)
 def get_no_show_statistics(
     from_date: Optional[datetime] = Query(None, description="Start date for filtering (inclusive)"),
