@@ -55,7 +55,6 @@ from src.schemas.order_card_item import OrderCardItem
 from src.schemas.statistics_schema import NoShowStatsResponse,TopNoShowUser
 from src.models.department_model import Department
 
-
 router = APIRouter()
 
 @router.get("/orders", response_model=list[RideDashboardItem])
@@ -944,8 +943,6 @@ def get_critical_issues(
 
 
 
-
-router = APIRouter()
 
 @router.get("/statistics/no-show", response_model=NoShowStatsResponse)
 def get_no_show_statistics(

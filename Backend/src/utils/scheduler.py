@@ -201,7 +201,6 @@ async def check_inactive_vehicles():
     finally:
         db.close()
 
-
 async def check_vehicle_lease_expiry():
     db: Session = SessionLocal()
     try:
