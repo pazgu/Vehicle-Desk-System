@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { of } from 'rxjs';
+import { StartedRidesResponse } from '../models/ride.model';
 
 
 @Injectable({
@@ -13,21 +14,22 @@ export class MyRidesService {
   private pastOrdersUrl = environment.pastOrdersUrl;
   private futureOrdersUrl = environment.futureOrdersUrl;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getFutureOrders(userId: string, filters?: any): Observable<any> {
     const token = localStorage.getItem('access_token');
     const headerss = new HttpHeaders({
       Authorization: `Bearer ${token}`
     });
-    const orders=this.http.get(`${this.futureOrdersUrl}/${userId}`, {
+    const orders = this.http.get(`${this.futureOrdersUrl}/${userId}`, {
       params: this.buildParams(filters),
       headers: headerss
     });
-    console.log(orders)
-    return orders
+    console.log(orders);
+    return orders;
   }
-  deleteOrder(OrderId: string):Observable<any>{
+
+  deleteOrder(OrderId: string): Observable<any> {
     const token = localStorage.getItem('access_token');
     const headerss = new HttpHeaders({
       Authorization: `Bearer ${token}`,
@@ -40,35 +42,35 @@ export class MyRidesService {
   getPastOrders(userId: string, filters?: any): Observable<any> {
     const token = localStorage.getItem('access_token');
     const headerss = new HttpHeaders()
-  .set('Authorization', `Bearer ${token}`)
-  .set('Accept', 'application/json');
+      .set('Authorization', `Bearer ${token}`)
+      .set('Accept', 'application/json');
 
-    const orders=this.http.get(`${this.pastOrdersUrl}`, {
+    const orders = this.http.get(`${this.pastOrdersUrl}/${userId}`, { // <-- This line was changed
       params: this.buildParams(filters),
       headers: headerss
     });
-    console.log(orders)
-    return orders
+    console.log(orders);
+    return orders;
   }
 
   getAllOrders(userId: string, filters?: any): Observable<any> {
-  const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem('access_token');
 
-  if (!token) {
-    console.error('No token found');
-    return of([]); // <-- import { of } from 'rxjs';
+    if (!token) {
+      console.error('No token found');
+      return of([]);
+    }
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json'
+    });
+
+    return this.http.get(`${this.allOrdersUrl}/${userId}`, {
+      params: this.buildParams(filters),
+      headers
+    });
   }
-
-  const headers = new HttpHeaders({
-    Authorization: `Bearer ${token}`,
-    Accept: 'application/json' // <--- Optional but helpful
-  });
-
-  return this.http.get(`${this.allOrdersUrl}/${userId}`, {
-    params: this.buildParams(filters),
-    headers
-  });
-}
 
   private buildParams(filters: any): HttpParams {
     let params = new HttpParams();
@@ -80,8 +82,14 @@ export class MyRidesService {
 
     return params;
   }
+  checkStartedApprovedRides(): Observable<StartedRidesResponse> {
+    const token = localStorage.getItem('access_token');
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`
+    });
+
+    return this.http.get<StartedRidesResponse>(environment.ridesSupposedToStartUrl, { headers });
+  }
 
 
 }
-
-

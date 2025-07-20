@@ -52,7 +52,7 @@ export const routes: Routes = [
   { path: 'audit-logs', component: AuditLogsComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
   { path: 'reset-password/:token', component: ResetPasswordComponent },
-  { path: 'vehicles/archived', component: ArchivedVehiclesComponent },
+  { path: 'archived-vehicles', component: ArchivedVehiclesComponent },
   {
   path: 'admin/analytics',
   component: AdminAnalyticsComponent,
