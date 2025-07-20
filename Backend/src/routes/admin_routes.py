@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query,Header, Request, status, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, Query,Header, Request, status, UploadFile, File, Form , Path , Body
 from uuid import UUID
 from fastapi.staticfiles import StaticFiles
 from typing import Optional , List
@@ -23,7 +23,7 @@ from ..utils.database import get_db
 from src.models.user_model import User , UserRole
 from src.models.vehicle_model import Vehicle
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
-from ..schemas.vehicle_schema import VehicleOut , InUseVehicleOut , VehicleStatusUpdate
+from ..schemas.vehicle_schema import VehicleOut , InUseVehicleOut , VehicleStatusUpdate , MileageUpdateRequest
 from ..utils.auth import get_current_user, token_check
 from ..services.vehicle_service import archive_vehicle_by_id, get_vehicles_with_optional_status,update_vehicle_status,get_vehicle_by_id, get_available_vehicles_for_ride_by_id,delete_vehicle_by_id
 from ..services.user_notification import send_admin_odometer_notification
@@ -53,6 +53,8 @@ from ..services.license_service import upload_license_file_service
 from src.services.admin_rides_service import get_all_critical_issues_combined
 from src.services.admin_rides_service import get_critical_issue_by_id 
 from src.schemas.order_card_item import OrderCardItem
+
+import pandas as pd
 
 
 router = APIRouter()
@@ -834,4 +836,113 @@ def get_critical_issues(
     return {
         "inspections": inspections_data,
         "rides": rides_data
+    }
+
+
+@router.post("/admin/vehicles/mileage/upload")
+async def upload_mileage_excel(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    token: str = Depends(oauth2_scheme)
+):
+    # בדיקת הרשאה – רק admin
+    role_check(["admin"], token)
+
+    # בדיקה שהקובץ הוא מסוג xlsx
+    if not file.filename.endswith(".xlsx"):
+        raise HTTPException(status_code=400, detail="File must be .xlsx format")
+
+    try:
+        df = pd.read_excel(file.file)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to read Excel file: {e}")
+
+    required_columns = {"Vehicle ID", "Vehicle Name", "Mileage"}
+    if not required_columns.issubset(set(df.columns)):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Excel is missing one of the required columns: {required_columns}"
+        )
+
+    success = []
+    errors = []
+
+    for index, row in df.iterrows():
+        row_number = index + 2  # שורת כותרת באקסל היא מספר 1
+
+        try:
+            vehicle_id = UUID(str(row["Vehicle ID"]))
+            mileage = row["Mileage"]
+            name = row.get("Vehicle Name", "Unknown")
+        except Exception:
+            errors.append({
+                "row": row_number,
+                "error": "Invalid UUID or data format",
+                "name": row.get("Vehicle Name", "Unknown")
+            })
+            continue
+
+        if not isinstance(mileage, (int, float)) or mileage < 0:
+            errors.append({
+                "row": row_number,
+                "vehicle_id": str(vehicle_id),
+                "error": f"Invalid mileage: {mileage}"
+            })
+            continue
+
+        vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
+        if not vehicle:
+            errors.append({
+                "row": row_number,
+                "vehicle_id": str(vehicle_id),
+                "error": "Vehicle not found",
+                "name": name
+            })
+            continue
+
+        # עדכון הרכב
+        vehicle.mileage = int(mileage)
+        vehicle.mileage_last_updated = datetime.utcnow()
+
+        success.append({
+            "row": row_number,
+            "vehicle_id": str(vehicle_id),
+            "name": name,
+            "new_mileage": int(mileage)
+        })
+
+    db.commit()
+
+    return {
+        "updated": success,
+        "errors": errors
+    }
+
+    
+@router.patch("/vehicles/{vehicle_id}/mileage")
+def manual_mileage_edit(
+    vehicle_id: UUID = Path(..., description="Vehicle UUID"),
+    request: MileageUpdateRequest = Body(...),
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="Vehicle not found")
+
+    if request.new_mileage < vehicle.mileage:
+        raise HTTPException(
+            status_code=400,
+            detail=f"New mileage ({request.new_mileage}) cannot be less than current mileage ({vehicle.mileage})"
+        )
+
+    vehicle.mileage = request.new_mileage
+    vehicle.mileage_last_updated = datetime.utcnow()
+
+    db.commit()
+
+    return {
+        "message": "Mileage updated successfully",
+        "vehicle_id": str(vehicle.id),
+        "new_mileage": request.new_mileage
     }
