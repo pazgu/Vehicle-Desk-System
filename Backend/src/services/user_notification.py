@@ -188,12 +188,6 @@ def get_supervisor_id(user_id: UUID, db: Session) -> UUID | None:
 
     return department.supervisor_id
 
-    # Step 2: Get department's supervisor
-    department = db.query(Department).filter(Department.id == user.department_id).first()
-    if not department or not department.supervisor_id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Supervisor not found for this department.")
-
-    return department.supervisor_id
 
 
 
