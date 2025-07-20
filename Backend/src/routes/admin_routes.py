@@ -55,7 +55,6 @@ from src.schemas.order_card_item import OrderCardItem
 from src.schemas.statistics_schema import NoShowStatsResponse,TopNoShowUser
 from src.models.department_model import Department
 
-
 router = APIRouter()
 
 @router.get("/orders", response_model=list[RideDashboardItem])

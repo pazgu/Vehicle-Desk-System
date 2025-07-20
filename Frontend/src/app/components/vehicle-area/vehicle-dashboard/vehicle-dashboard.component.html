@@ -72,8 +72,10 @@
             <option value="זמין">זמין</option>
             <option value="בשימוש">בשימוש</option>
             <option value="מוקפא">מוקפא</option>
+            
           </select>
         </div>
+
 
         <div style="margin-bottom: 1rem; gap: 1rem; display: flex;">
           <label for="typeFilter"> סוג:</label>
@@ -82,6 +84,20 @@
             <option *ngFor="let type of vehicleTypes" [value]="type">{{ type }}</option>
           </select>
         </div>
+
+
+        <div>
+          <input
+            class="InactiveFilter"
+            id="InactiveFilter"
+            type="checkbox"
+            [(ngModel)]="InactiveFilter"
+            (change)="onInactiveFilterChange()"
+          />
+          הצג מכוניות שלא היו בשימוש מעל לשבוע ⚠️
+        </div>
+
+
         <div style="display: flex; align-items: center; gap: 0.5rem; direction: rtl;">
           <input type="checkbox" id="showInactive" [(ngModel)]="showInactive"
             style="transform: scale(1.2); cursor: pointer;" />
