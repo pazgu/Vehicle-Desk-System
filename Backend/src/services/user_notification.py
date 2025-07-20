@@ -61,7 +61,7 @@ async def send_notification_async(
 
 
 
-def create_system_notification(user_id, title, message, order_id=None,vehicle_id=None):
+def create_system_notification(user_id, title, message, order_id=None,vehicle_id=None,relevant_user_id=None):
     db = SessionLocal()
     try:
         notif = Notification(
@@ -71,7 +71,9 @@ def create_system_notification(user_id, title, message, order_id=None,vehicle_id
             message=message,
             sent_at=datetime.now(timezone.utc),
             order_id=order_id,
-            vehicle_id=vehicle_id
+            vehicle_id=vehicle_id,
+            relevant_user_id=relevant_user_id
+        
         )
         db.add(notif)
         db.commit()
@@ -91,6 +93,7 @@ def create_system_notification(user_id, title, message, order_id=None,vehicle_id
             "sent_at": notif.sent_at.isoformat(),
             "order_id": str(notif.order_id) if notif.order_id else None,
             "vehicle_id": str(notif.vehicle_id) if notif.vehicle_id else None,
+            "relevant_user_id": str(notif.relevant_user_id) if notif.relevant_user_id else None,
         }, room=str(user_id)))
 
         return notif

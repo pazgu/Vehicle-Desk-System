@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>הודעת אי הגעה - משתמש עם 3 או יותר אי התייצבויות</title>
+    <style>
+        body {
+            font-family: 'Arial', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            direction: rtl;
+            background-color: #f5f5f5;
+            margin: 0; padding: 20px; text-align: right; line-height: 1.8;
+        }
+        .container {
+            max-width: 600px; margin: 0 auto;
+            background-color: white; border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #d9534f, #c9302c);
+            color: white; padding: 30px; text-align: center;
+        }
+        .header h1 {
+            margin: 0; font-size: 26px; font-weight: 600;
+        }
+        .content {
+            padding: 35px;
+        }
+        .message {
+            font-size: 18px; color: #333; margin-bottom: 25px;
+        }
+        .important-notice {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            text-align: center;
+            font-weight: 600;
+        }
+        .footer {
+            background-color: #f8f9fa; padding: 25px;
+            text-align: center; color: #6c757d; font-size: 14px;
+            border-top: 1px solid #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>משתמש עם 3 או יותר אי התייצבויות</h1>
+        </div>
+        <div class="content">
+            <p class="message">שלום {{ SUPERVISOR_NAME }},</p>
+            <div class="important-notice">
+                המשתמש <strong>{{ USER_NAME }}</strong> פספס {{ NO_SHOW_COUNT }} נסיעות.
+            </div>
+            <p class="message">
+                אנא בדוק את המצב ונהל את ההתראה בהתאם.
+            </p>
+        </div>
+        <div class="footer">
+            <strong>Bookit</strong> - מערכת לניהול רכבים<br>
+            מערכת אוטומטית - אנא אל תשיב למייל זה
+        </div>
+    </div>
+</body>
+</html>
