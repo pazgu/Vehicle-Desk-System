@@ -20,7 +20,7 @@ from src.services.admin_rides_service import (
 )
 from typing import Optional
 from datetime import datetime
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, or_ ,desc
 from ..utils.database import get_db
 from src.models.user_model import User , UserRole
 from src.models.vehicle_model import Vehicle
@@ -52,6 +52,8 @@ from ..services.license_service import upload_license_file_service , check_expir
 from ..services.license_service import upload_license_file_service 
 from src.services.admin_rides_service import get_critical_issue_by_id 
 from src.schemas.order_card_item import OrderCardItem
+from src.schemas.statistics_schema import NoShowStatsResponse,TopNoShowUser
+from src.models.department_model import Department
 
 
 router = APIRouter()
@@ -937,3 +939,67 @@ def get_critical_issues(
         "inspections": inspections_data,
         "rides": rides_data
     }
+
+
+
+
+router = APIRouter()
+
+@router.get("/statistics/no-show", response_model=NoShowStatsResponse)
+def get_no_show_statistics(
+    from_date: Optional[datetime] = Query(None, description="Start date for filtering (inclusive)"),
+    to_date: Optional[datetime] = Query(None, description="End date for filtering (inclusive)"),
+    page: int = Query(1, ge=1, description="Page number for pagination"),
+    page_size: int = Query(10, ge=1, le=100, description="Page size for pagination"),
+    db: Session = Depends(get_db),
+):
+    
+    query = db.query(NoShowEvent)
+    if from_date:
+        query = query.filter(NoShowEvent.occurred_at >= from_date)
+    if to_date:
+        query = query.filter(NoShowEvent.occurred_at <= to_date)
+    
+    total_no_show_events = query.count()
+
+    
+    unique_no_show_users = query.with_entities(NoShowEvent.user_id).distinct().count()
+
+    
+    offset = (page - 1) * page_size
+
+    top_users_query = (
+        db.query(
+            NoShowEvent.user_id,
+            func.concat(User.first_name, ' ', User.last_name).label("name"),
+            Department.name.label("department"),
+            func.count(NoShowEvent.id).label("count"),
+        )
+        .join(User, User.employee_id == NoShowEvent.user_id)
+        .join(Department, Department.id == User.department_id)
+        .filter(NoShowEvent.occurred_at >= from_date if from_date else True)
+        .filter(NoShowEvent.occurred_at <= to_date if to_date else True)
+        .group_by(NoShowEvent.user_id, User.first_name, User.last_name, Department.name)
+        .order_by(desc("count"))
+        .offset(offset)
+        .limit(page_size)
+        .all()
+    )
+
+    top_no_show_users = [
+        TopNoShowUser(
+            user_id=row.user_id,
+            name=row.name,
+            department=row.department or "",
+            count=row.count
+        )
+        for row in top_users_query
+    ]
+
+    return NoShowStatsResponse(
+        total_no_show_events=total_no_show_events,
+        unique_no_show_users=unique_no_show_users,
+        top_no_show_users=top_no_show_users
+    )
+
+    

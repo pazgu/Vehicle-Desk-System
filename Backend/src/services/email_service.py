@@ -91,7 +91,7 @@ def load_email_template(template_name: str, context: dict) -> str:
         import re
         remaining_placeholders = re.findall(r'\{\{[^}]+\}\}', content)
         # if remaining_placeholders:
-        #     #print(f"WARNING: Unreplaced placeholders found: {remaining_placeholders}")
+            #print(f"WARNING: Unreplaced placeholders found: {remaining_placeholders}")
         
         return content
         
