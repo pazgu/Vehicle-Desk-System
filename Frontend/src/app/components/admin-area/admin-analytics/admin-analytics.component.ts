@@ -16,6 +16,11 @@ import { cloneDeep } from 'lodash';
 import { VehicleService } from '../../../services/vehicle.service';
 import { FreezeReason, VehicleOutItem } from '../../../models/vehicle-dashboard-item/vehicle-out-item.module';
 import { ToastService } from '../../../services/toast.service';
+import { TopNoShowUser } from '../../../models/no-show-stats.model';
+import { StatisticsService } from '../../../services/statistics.service';
+import { UserService } from '../../../services/user_service';
+import { Router } from '@angular/router';
+
 
 pdfMake.vfs = pdfFonts.vfs;
 
@@ -47,13 +52,25 @@ export class AdminAnalyticsComponent implements OnInit {
   isMonthlyView = true; // monthly = default
 showChart = true;
 
-  selectedMonth = (new Date().getMonth() + 1).toString(); // default = current month
+selectedMonth = (new Date().getMonth() + 1).toString(); // default = current month
 selectedYear = new Date().getFullYear().toString(); // default = current year
 
 monthlyChartData: any;
 monthlyChartOptions: any;
 allTimeChartData: any;
 allTimeChartOptions: any;
+
+ // 🆕 No-show chart + summary + table
+  noShowChartData: any;
+  noShowChartOptions: any;
+  totalNoShows: number = 0;
+  uniqueNoShowUsers: number = 0;
+  topNoShowUsers: TopNoShowUser[] = [];
+
+  noShowFromDate?: string;
+  noShowToDate?: string; 
+
+
 topUsedVehiclesData: any;
 topUsedVehiclesOptions: any;
 monthlyStatsChartData: any;
@@ -62,6 +79,10 @@ monthlyStatsChartOptions: any;
 allTimeStatsChartData: any;
 allTimeStatsChartOptions: any;
 
+
+ // 🆕 ADD these two properties for department caching
+  private departmentsMap = new Map<string, string>(); // To store department ID -> Name
+  private departmentsLoaded: boolean = false;        // To track if departments are loaded
 
 
 months = [
@@ -85,12 +106,17 @@ years = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - i).toStr
 
 
  
-  constructor(private http: HttpClient, private socketService: SocketService,private vehicleService:VehicleService,  private toastService: ToastService ) {}
+  constructor(private http: HttpClient, private socketService: SocketService,private vehicleService:VehicleService,  private toastService: ToastService
+   ,private statisticsService: StatisticsService, private userService: UserService, private router: Router) {}
 
   ngOnInit() {
-     this.loadVehicleChart();
+  this.loadVehicleChart();
   this.loadRideChart();
   this.loadFrozenVehicles();
+  // this.loadNoShowStatistics();
+  this.loadDepartments(); // <--- Call this to load departments and then no-show stats
+
+
 
   // 👇 Only load monthly chart at start (do NOT override with all-time yet)
   // if (this.isMonthlyView) {
@@ -382,6 +408,94 @@ labels: updatedLabels,
     };
     return statusMap[status] || status;
   }
+
+  // 🆕 ADD this new method to load departments
+  private loadDepartments(): void {
+    this.userService.getDepartments().subscribe({
+      next: (departments) => {
+        departments.forEach(dep => this.departmentsMap.set(dep.id, dep.name));
+        this.departmentsLoaded = true; // Mark departments as loaded
+        console.log('AdminAnalyticsComponent: Departments loaded and cached.');
+        // Call loadNoShowStatistics ONLY after departments are successfully loaded
+        this.loadNoShowStatistics();
+      },
+      error: (err) => {
+        console.error('❌ Failed to load departments from UserService:', err);
+        this.toastService.show('אירעה שגיאה בטעינת נתוני מחלקות.', 'error');
+        this.departmentsLoaded = false; // Mark as failed to load
+        // If departments fail to load, still try to load no-show stats
+        // Department names in the table will then default to "מחלקה לא ידועה"
+        this.loadNoShowStatistics();
+      }
+    });
+  }
+
+  // 🆕 MODIFY: Adjust the initial call logic within loadNoShowStatistics()
+  loadNoShowStatistics(): void {
+    // 🆕 ADD this check: Prevent loading if departments are not ready yet,
+    // unless it's the initial call (indicated by empty topNoShowUsers).
+    // This handles cases where socket updates might trigger it too early.
+    if (!this.departmentsLoaded && this.topNoShowUsers.length === 0) {
+      console.warn('Attempted to load no-show stats before departments were loaded. Waiting for departments...');
+      return; // Exit and wait for loadDepartments to call it
+    }
+
+    this.statisticsService.getNoShowStatistics(this.noShowFromDate, this.noShowToDate).subscribe({
+      next: (data) => {
+        this.totalNoShows = data.total_no_show_events;
+        this.uniqueNoShowUsers = data.unique_no_show_users;
+        this.topNoShowUsers = data.top_no_show_users;
+
+        this.noShowChartData = {
+          labels: ['הושלמו', 'לא הגיעו'],
+          datasets: [{
+            data: [
+              data.completed_rides_count,
+              data.total_no_show_events
+            ],
+            backgroundColor: ['#66BB6A', '#EF5350'],
+            hoverBackgroundColor: ['#81C784', '#EF9A9A']
+          }]
+        };
+
+        this.noShowChartOptions = {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: {
+                font: { size: 14 },
+                usePointStyle: true
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context: any) {
+                  const totalRides = data.completed_rides_count + data.total_no_show_events;
+                  const percent = totalRides > 0 ? ((context.raw / totalRides) * 100).toFixed(1) : '0';
+                  return `${context.label}: ${context.raw} נסיעות (${percent}%)`; // Updated tooltip for percentage
+                }
+              }
+            }
+          }
+        };
+      },
+      error: (err) => {
+        console.error('❌ Failed to load no-show stats:', err);
+        this.toastService.show('אירעה שגיאה בטעינת נתוני אי-הגעה.', 'error');
+      }
+    });
+  }
+
+goToUserDetails(userId: string) {
+  this.router.navigate(['/admin/user-details', userId]);
+}
+ // 🆕 MODIFY: Use the component's internal departmentsMap
+  resolveDepartment(departmentId: string): string {
+    return this.departmentsMap.get(departmentId) || 'מחלקה לא ידועה';
+  }
+
 
  public exportPDF(): void {
   const isVehicleTab = this.activeTabIndex === 0;

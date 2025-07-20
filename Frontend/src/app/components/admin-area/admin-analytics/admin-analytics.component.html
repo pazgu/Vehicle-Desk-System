@@ -28,6 +28,10 @@
    <button [class.active]="activeTabIndex === 2" (click)="activeTabIndex = 2">
   שימוש חודשי ברכבים
 </button>
+  <button [class.active]="activeTabIndex === 3" (click)="activeTabIndex = 3">
+    סטטיסטיקות אי-הגעה
+  </button>
+
 </div>
 
 <p-tabView [(activeIndex)]="activeTabIndex">
@@ -110,3 +114,51 @@
     </div>
   </div>
 </p-tabPanel>
+  <!-- No‑Show Analytics Tab -->
+  <p-tabPanel>
+    <div>
+      <h3 class="section-heading">סטטיסטיקות אי-הגעה</h3>
+
+      <!-- Date Range Filter -->
+      <div class="date-filter-container">
+        <label>מתאריך:</label>
+        <input type="date" [(ngModel)]="noShowFromDate" (change)="loadNoShowStatistics()">
+        <label>עד תאריך:</label>
+        <input type="date" [(ngModel)]="noShowToDate" (change)="loadNoShowStatistics()">
+      </div>
+
+      <!-- Summary Cards -->
+      <div class="summary-cards">
+        <div class="card">סה"כ אי-הגעות: {{ totalNoShows }}</div>
+        <div class="card">משתמשים שונים: {{ uniqueNoShowUsers }}</div>
+      </div>
+
+      <!-- No‑Show Pie Chart -->
+      <p-chart
+        *ngIf="noShowChartData"
+        type="pie"
+        [data]="noShowChartData"
+        [options]="noShowChartOptions"
+      ></p-chart>
+
+      <!-- Top No‑Show Users Table -->
+      <table class="styled-table" *ngIf="topNoShowUsers.length">
+        <thead>
+          <tr>
+            <th>מזהה משתמש</th>
+            <th>שם</th>
+            <th>מחלקה</th>
+            <th>מספר אי-הגעות</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of topNoShowUsers" (click)="goToUserDetails(user.user_id)">
+            <td>{{ user.user_id }}</td>
+            <td>{{ user.name }}</td>
+            <td>{{ resolveDepartment(user.department_id) }}</td>
+            <td>{{ user.count }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </p-tabPanel>
