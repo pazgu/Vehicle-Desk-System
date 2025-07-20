@@ -4,6 +4,7 @@ from uuid import UUID
 from datetime import datetime
 
 from ..models.vehicle_model import FuelType, VehicleStatus, FreezeReason
+from pydantic import BaseModel, Field
 
 class VehicleOut(BaseModel):
     id: UUID
@@ -15,7 +16,8 @@ class VehicleOut(BaseModel):
     freeze_details: Optional[str] = None
     last_used_at: Optional[datetime] = None
     current_location: str
-    odometer_reading: int
+    mileage: int
+    mileage_last_updated: Optional[datetime] = None 
     vehicle_model: Optional[str] = None
     image_url: Optional[str] = None
     lease_expiry: Optional[datetime] = None  
@@ -34,7 +36,7 @@ class InUseVehicleOut(BaseModel):
     type: str
     fuel_type: FuelType
     status: VehicleStatus
-    odometer_reading: float
+    mileage: float
     vehicle_model: Optional[str] = None  
     image_url: Optional[str] = None  
     current_location: Optional[str] = None 
@@ -73,3 +75,6 @@ class VehicleAvailabilityRequest(BaseModel):
     vehicle_type: str
     start_datetime: datetime
     end_datetime: datetime
+
+class MileageUpdateRequest(BaseModel):
+    new_mileage: int = Field(..., ge=0, description="New mileage must be zero or positive")
