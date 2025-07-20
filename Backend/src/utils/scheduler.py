@@ -3,6 +3,8 @@ import asyncio
 from dotenv import load_dotenv
 from fastapi import HTTPException
 
+from ..routes.admin_routes import get_no_show_events_count_per_user
+
 from ..models.no_show_events import NoShowEvent
 
 from ..models.audit_log_model import AuditLog
@@ -579,6 +581,9 @@ def notify_admins_daily():
     finally:
         db.close()
 
+ 
+        
+
 
 async def check_ride_status_and_notify_user():
     """
@@ -866,6 +871,71 @@ async def notify_ride_cancelled_due_to_no_show(ride_id: uuid.UUID):
         db.close()
 
 
+async def check_and_notify_admin_about_no_shows():
+    print('check_and_notify_admin_about_no_shows was called')
+    db: Session = SessionLocal()
+    try:
+        data = get_no_show_events_count_per_user(db)
+        for user_info in data["users"]:
+            print(f'no show count {user_info["no_show_count"]}')
+            if user_info["no_show_count"] >= 3:
+                title = f"המשתמש {user_info['name']} פספס {user_info['no_show_count']} נסיעות"
+
+                existing = db.query(Notification).filter(
+                    Notification.title == title,
+                    Notification.relevant_user_id == user_info["employee_id"]
+                ).first()
+
+                if not existing:
+                    # Create system notification for all admins
+                    admins = db.query(User).filter(User.role == "admin").all()
+                    for admin in admins:
+                        admin_id = admin.employee_id
+                        if not admin_id:
+                            print(f"Admin ID not found for user {user_info['name']}. Skipping admin notification.")
+                            continue
+
+                        notif = create_system_notification(
+                            user_id=admin_id,
+                            title=title,
+                            message=f"המשתמש {user_info['name']} פספס {user_info['no_show_count']} נסיעות.",
+                            relevant_user_id=user_info["employee_id"]
+                        )
+                        await emit_new_notification(notification=notif)
+                        print('sent notification for admin')
+
+                    # Now send email to all admins
+                    for admin in admins:
+                        admin_email = admin.email
+                        supervisor_name = get_user_name(db, admin.employee_id) or "מפקח יקר"
+                        if admin_email:
+                            try:
+                                html_content_admin = load_email_template("users_passed_3_no_show.html", {
+                                    "SUPERVISOR_NAME": supervisor_name,
+                                    "USER_NAME": user_info["name"],
+                                    "NO_SHOW_COUNT": user_info["no_show_count"],
+                                })
+                                await async_send_email(
+                                    to_email=admin_email,
+                                    subject=f"🚨 משתמש עם 3 או יותר אי התייצבויות: {user_info['name']}",
+                                    html_content=html_content_admin
+                                )
+                                print(f"Sent 3+ no-show email to admin: {admin_email}")
+                            except Exception as email_err:
+                                print(f"ERROR: Failed to send 3+ no-show email")
+                        
+                    db.commit()
+
+    except Exception as e:
+        print(f"Error in check_and_notify_admin_about_no_shows: {e}")
+        db.rollback()
+    finally:
+        db.close()
+
+
+
+
+
 def schedule_ride_completion_email(ride_id: str, end_datetime: datetime):
     run_time = end_datetime + timedelta(minutes=5)
     job_id = f"ride-email-{ride_id}"
@@ -883,6 +953,9 @@ def schedule_ride_completion_email(ride_id: str, end_datetime: datetime):
         args=[ride_id],
         id=job_id
     )
+
+
+
 
 
 @scheduler.scheduled_job('interval', minutes=1)  # every 1 minute
@@ -922,6 +995,13 @@ def periodic_check_ride_status():
         print(f"Error running check_ride_status_and_notify_user: {e}")
 
 
+def periodic_check_no_show_users():
+    print("periodic_check_no_show_users was called")
+    future = asyncio.run_coroutine_threadsafe(check_and_notify_admin_about_no_shows(), main_loop)
+    try:
+        future.result(timeout=30)
+    except Exception as e:
+        print(f"Error running periodic_check_no_show_users: {e}")
 
  
 
@@ -938,6 +1018,7 @@ def periodic_delete_archived_vehicles():
 
 
 scheduler.add_job(periodic_check_vehicle, 'interval', days=1)
+scheduler.add_job(periodic_check_no_show_users, 'interval',seconds=60)
 scheduler.add_job(periodic_check_ride_status, 'interval', seconds=60)
 scheduler.add_job(periodic_delete_archived_vehicles, 'interval',  days=30)
 scheduler.add_job(periodic_check_unstarted_rides, 'interval', minutes=1)

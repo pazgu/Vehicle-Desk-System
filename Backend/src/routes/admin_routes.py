@@ -253,6 +253,7 @@ def get_roles():
 def get_no_show_events_count_per_user(db: Session = Depends(get_db)):
     results = (
         db.query(
+            User.employee_id,
             User.username,
             User.email,
             User.role,
@@ -269,6 +270,7 @@ def get_no_show_events_count_per_user(db: Session = Depends(get_db)):
     return {
         "users": [
             {
+                "employee_id": row.employee_id,
                 "name": row.username,
                 "email": row.email,
                 "role": row.role,
