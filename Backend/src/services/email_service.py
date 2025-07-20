@@ -81,6 +81,11 @@ def load_email_template(template_name: str, context: dict) -> str:
             content = content.replace(f"{{{{ {key} }}}}", str(value))  # With spaces
             content = content.replace(f"{{{{{key}}}}}", str(value))    # Without spaces
             
+            # # Debug: Check if replacement happened
+            # if old_content != content:
+            #     #print(f"DEBUG: Replaced {key} with '{value}'")
+            # else:
+            #     #print(f"WARNING: No replacement made for {key}")
             # Debug: Check if replacement happened
             # if old_content != content:
             #     #print(f"DEBUG: Replaced {key} with '{value}'")
@@ -90,6 +95,8 @@ def load_email_template(template_name: str, context: dict) -> str:
         # Check if any placeholders remain
         import re
         remaining_placeholders = re.findall(r'\{\{[^}]+\}\}', content)
+        # if remaining_placeholders:
+            #print(f"WARNING: Unreplaced placeholders found: {remaining_placeholders}")
         # if remaining_placeholders:
         #     #print(f"WARNING: Unreplaced placeholders found: {remaining_placeholders}")
         
