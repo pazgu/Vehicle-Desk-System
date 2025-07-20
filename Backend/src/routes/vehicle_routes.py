@@ -128,6 +128,9 @@ def get_vehicle_types(
         return {"vehicle_types": [vt[0] for vt in vehicle_types]}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+    
+
+ALLOWED_RIDE_STATUSES = ["approved", "in_progress", "completed"]
 @router.get("/vehicles/{vehicle_id}/timeline", response_model=List[RideTimelineSchema])
 def get_vehicle_timeline(
     vehicle_id: UUID,
@@ -150,7 +153,9 @@ def get_vehicle_timeline(
     ).join(User, Ride.user_id == User.employee_id).filter(
         Ride.vehicle_id == vehicle_id,
         Ride.start_datetime >= start_dt,
-        Ride.end_datetime <= end_dt
+        Ride.end_datetime <= end_dt,
+        Ride.status.in_(ALLOWED_RIDE_STATUSES)
+
     ).all()
 
     return [RideTimelineSchema(**dict(row._mapping)) for row in rides]
