@@ -1017,8 +1017,8 @@ def periodic_delete_archived_vehicles():
 
 
 scheduler.add_job(periodic_check_vehicle, 'interval', days=1)
-scheduler.add_job(periodic_check_no_show_users, 'interval',seconds=60)
-scheduler.add_job(periodic_check_ride_status, 'interval', seconds=60)
+scheduler.add_job(periodic_check_no_show_users, 'interval', minutes=15)
+scheduler.add_job(periodic_check_ride_status, 'interval', minutes=15)
 scheduler.add_job(periodic_delete_archived_vehicles, 'interval',  days=30)
 scheduler.add_job(periodic_check_unstarted_rides, 'interval', minutes=1)
 
