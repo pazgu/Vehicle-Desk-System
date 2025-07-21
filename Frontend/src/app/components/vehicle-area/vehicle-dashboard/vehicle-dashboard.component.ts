@@ -9,7 +9,8 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { SocketService } from '../../../services/socket.service';
 import { ToastService } from '../../../services/toast.service';
-
+import { Observable } from 'rxjs';
+import { Vehicle } from '../../../models/vehicle.model';
 @Component({
   selector: 'app-vehicle-dashboard',
   standalone: true,
@@ -22,7 +23,11 @@ export class VehicleDashboardComponent implements OnInit {
   vehicles: VehicleInItem[] = [];
   mostUsedVehicles: VehicleInItem[] = [];
   showingMostUsed: boolean = false;
+
+  inactiveVehicles: Vehicle[] = []; // vehicles not used in 7+ days
+  InactiveFilter: boolean = false; // checkbox state
   showInactive: boolean = false;
+  
   selectedType: string = '';
   statusFilter: string = '';
   typeFilter: string = '';
@@ -228,6 +233,10 @@ export class VehicleDashboardComponent implements OnInit {
     }
   }
 
+   goToArchivedOrders() {
+    this.router.navigate(['/vehicles/archived']);
+  }
+
   getCardClass(status: string | null | undefined): string {
     if (!status) return '';
     switch (status) {
@@ -242,6 +251,23 @@ export class VehicleDashboardComponent implements OnInit {
     }
   }
 
+getInactiveVehicles(): Observable<Vehicle[]> {
+  return this.http.get<Vehicle[]>(`${environment.apiUrl}/vehicles/inactive`);
+}
+  onInactiveFilterChange(): void {
+    if (this.InactiveFilter) {
+      this.getInactiveVehicles().subscribe({
+        next: (data) => {
+          this.inactiveVehicles = data;
+        },
+        error: (err) => {
+          console.error('Failed to load inactive vehicles', err);
+        },
+      });
+    } else {
+      this.inactiveVehicles = [];
+    }
+
   // New method to check if a vehicle is inactive
   isInactive(lastUsedAt: string | null | undefined): boolean {
     if (!lastUsedAt) {
@@ -251,6 +277,7 @@ export class VehicleDashboardComponent implements OnInit {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     return lastUsedDate < sevenDaysAgo;
+
   }
 
   translateStatus(status: string | null | undefined): string {
@@ -266,7 +293,7 @@ export class VehicleDashboardComponent implements OnInit {
         return status;
     }
   }
-
+  
   get filteredVehicles() {
     const baseList = this.showingMostUsed ? this.mostUsedVehicles : this.vehicles;
 
@@ -291,6 +318,11 @@ export class VehicleDashboardComponent implements OnInit {
     if (this.typeFilter) {
       filtered = filtered.filter(vehicle => vehicle.type === this.typeFilter);
     }
+     if (this.InactiveFilter && this.inactiveVehicles.length > 0) {
+      const inactiveIds = new Set(this.inactiveVehicles.map((v) => v.id));
+      filtered = filtered.filter((v) => inactiveIds.has(v.id));
+    }
+
 
   if (this.showInactive) {
   const oneWeekAgo = new Date();
@@ -308,4 +340,7 @@ export class VehicleDashboardComponent implements OnInit {
       return filtered;
     }
   }
+  navigateToArchivedVehicles(): void {
+  this.router.navigate(['/archived-vehicles']);
+}
 }

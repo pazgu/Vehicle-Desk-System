@@ -3,6 +3,7 @@ from sqlalchemy import Column, String, Enum, ForeignKey , Boolean , Date , DateT
 from sqlalchemy.dialects.postgresql import UUID
 from src.models.base import Base
 import enum
+from sqlalchemy.orm import relationship
 
 class UserRole(str, enum.Enum):
     anonymous = "anonymous"
@@ -29,6 +30,4 @@ class User(Base):
     license_expiry_date = Column(Date, nullable=True)
     
 
-    
-
-   
+    no_show_events = relationship("NoShowEvent", back_populates="user")

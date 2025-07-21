@@ -6,9 +6,8 @@
   font-family: sans-serif;
 }
 
-/* Page Wrapper - Adjusted for inspection container */
 .admin-inspections-container {
-  background-color: #fcfcfc; /* Changed to a very light background color */
+  background-color: rgba(245, 241, 241, 0.582);
   padding: 10px;
   border-radius: 12px;
   max-width: 1050px;
@@ -94,7 +93,6 @@
 .inspection-table tbody tr:hover {
   background-color: #f0f0f0;
   color: #942222;
-  cursor: pointer;
 }
 
 /* Section headers within the table body */
@@ -180,3 +178,4 @@ button:disabled {
 .highlight {
   background-color: #e0f2f7 !important; /* A light blue for highlighting */
 }
+

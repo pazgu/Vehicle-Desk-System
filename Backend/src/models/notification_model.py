@@ -21,6 +21,8 @@ class Notification(Base):
     sent_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
     order_id = Column(UUID(as_uuid=True), ForeignKey("rides.id"), nullable=True)
     vehicle_id = Column(UUID(as_uuid=True), ForeignKey("vehicles.id"), nullable=True)  # ✅
+    relevant_user_id = Column(UUID(as_uuid=True), ForeignKey("users.employee_id"), nullable=True)
+
 
     # Relationship to Ride (order)
     ride = relationship("Ride", back_populates="notifications", lazy="joined", uselist=False)
