@@ -102,18 +102,38 @@
   </small>
   </div>
 
-            <div class="input-group">
-              <label>שעת התחלה</label>
-              <input type="time" formControlName="start_time" />
-              <small *ngIf="rideForm.get('ride_period')?.value === 'morning' && f.start_time.touched && f.start_time.errors?.['required']" class="distance-info">חובה למלא את שדה זה</small>
-            </div>
+           <div class="input-group">
+  <label>שעת התחלה</label>
+  <input 
+    type="time" 
+    formControlName="start_time" 
+    step="900"
+    (blur)="validateTimeStep('start_time')"
+    (input)="onTimeInput($event, 'start_time')" />
+  <small *ngIf="rideForm.get('ride_period')?.value === 'morning' && f.start_time.touched && f.start_time.errors?.['required']" class="distance-info">
+    חובה למלא את שדה זה
+  </small>
+  <small *ngIf="f.start_time.touched && f.start_time.errors?.['invalidTimeStep']" class="distance-info">
+    נא לבחור זמן במרווחים של 15 דקות בלבד
+  </small>
+</div>
 
-            <div class="input-group">
-              <label>שעת סיום</label>
-              <input type="time" formControlName="end_time" />
-              <small *ngIf="rideForm.get('ride_period')?.value === 'morning' && f.end_time.touched && f.end_time.errors?.['required']" class="distance-info">חובה למלא את שדה זה</small>
-            </div>
-          </div>
+<div class="input-group">
+  <label>שעת סיום</label>
+  <input 
+    type="time" 
+    formControlName="end_time" 
+    step="900"
+    (blur)="validateTimeStep('end_time')"
+    (input)="onTimeInput($event, 'end_time')" />
+  <small *ngIf="rideForm.get('ride_period')?.value === 'morning' && f.end_time.touched && f.end_time.errors?.['required']" class="distance-info">
+    חובה למלא את שדה זה
+  </small>
+  <small *ngIf="f.end_time.touched && f.end_time.errors?.['invalidTimeStep']" class="distance-info">
+    נא לבחור זמן במרווחים של 15 דקות בלבד
+  </small>
+</div>
+</div>
 
           <!-- Night ride date range -->
           <div *ngIf="rideForm.get('ride_period')?.value === 'night'" class="row">
