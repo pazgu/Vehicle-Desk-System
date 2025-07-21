@@ -231,6 +231,50 @@ button {
     background-color: #0056b3;
 }
 
+
+
+.mileage-upload-section {
+  margin-top: 2rem;
+  padding: 1rem;
+  border-top: 1px solid #ccc;
+}
+
+.xlsx-upload-input {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.submit-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 0.3rem 0.6rem;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  font-size: 15px;
+}
+
+.submit-button:disabled {
+  background-color: #aaa;
+  cursor: not-allowed;
+}
+
+.upload-success {
+  color: green;
+  margin-top: 0.5rem;
+}
+
+.upload-error {
+  color: red;
+  margin-top: 0.5rem;
+}
+
+.upload-summary {
+  margin-top: 1rem;
+}
+
+
 .filters-container {
     display: none;
     background-color: #f8f9fa;

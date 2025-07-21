@@ -132,6 +132,12 @@ permanentlyDeleteVehicle(vehicleId: string): Observable<any> {
   return this.http.delete(`${this.apiUrl}/vehicles/${vehicleId}/permanent`);
 }
 
+uploadMileageReport(file: File): Observable<any> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  return this.http.post(`${this.apiUrl}/admin/vehicles/mileage/upload`, formData);
+}
 
 
 }
