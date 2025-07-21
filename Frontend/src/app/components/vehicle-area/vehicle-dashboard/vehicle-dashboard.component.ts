@@ -267,7 +267,7 @@ getInactiveVehicles(): Observable<Vehicle[]> {
     } else {
       this.inactiveVehicles = [];
     }
-
+  }
   // New method to check if a vehicle is inactive
   isInactive(lastUsedAt: string | null | undefined): boolean {
     if (!lastUsedAt) {
