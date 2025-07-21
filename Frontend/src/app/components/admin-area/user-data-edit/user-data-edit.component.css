@@ -235,3 +235,26 @@ label {
     width: 100%;
   }
 }
+
+.form-row button {
+  background: linear-gradient(135deg, #942222, #b52d2d);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(148, 34, 34, 0.2);
+  font-family: 'Alef', sans-serif;
+}
+
+.no-file-selected-display {
+  margin-top: 5px; /* Space between the label and this text */
+  margin-bottom: 10px; /* Space between this text and the button */
+  font-size: 0.9em; /* Slightly smaller text */
+  color: #888; /* A lighter grey for subtle indication */
+  font-style: italic; /* Emphasize that no file is selected */
+  padding-left: 5px; /* A little indent */
+}
