@@ -34,8 +34,9 @@
             📁 ארכיון רכבים
           </button>
         </div>
-      </div>
+</div>
 
+        
       <div *ngIf="showingMostUsed" style="text-align: right; font-weight: bold; color: #922;">
         מוצגים רכבים לפי כמות שימושים החודש
       </div>
@@ -106,6 +107,48 @@
           </label>
         </div>
       </div>
+
+
+<div class="mileage-upload-section">
+  <h2>העלאת דוח ק"מ חודשי</h2>
+
+  <input
+    type="file"
+    accept=".xlsx"
+    (change)="onFileSelected($event)"
+    class="xlsx-upload-input"
+  />
+
+  <button
+    class="submit-button"
+    [disabled]="!selectedFile || isLoading"
+    (click)="uploadMileageReport()"
+  >
+    {{ isLoading ? 'מעלה...' : 'שלח דוח' }}
+  </button>
+
+  <div *ngIf="uploadSuccess" class="upload-success">
+    ✔️ הדוח הועלה בהצלחה!
+  </div>
+
+  <div *ngIf="uploadError" class="upload-error">
+    ❌ שגיאה בהעלאת הדוח: {{ uploadError }}
+  </div>
+
+  <div *ngIf="uploadSummary" class="upload-summary">
+    <h3>סיכום:</h3>
+    <p><strong>מספר רכבים שעודכנו:</strong> {{ uploadSummary.vehiclesUpdated }}</p>
+    <div *ngIf="uploadSummary.warnings?.length">
+      <strong>אזהרות / שגיאות:</strong>
+      <ul>
+        <li *ngFor="let warning of uploadSummary.warnings">{{ warning }}</li>
+      </ul>
+    </div>
+  </div>
+</div>
+      
+<br>
+
 
       <div class="vehicles-cards">
         <p-card *ngFor="let vehicle of filteredVehicles"
