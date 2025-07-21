@@ -35,7 +35,7 @@ export class EditRideComponent implements OnInit {
   freeze_reason?: string | null;
   last_used_at?: string;
   current_location?: string;
-  odometer_reading: number;
+  mileage: number;
   image_url: string;
   vehicle_model: string;
   
@@ -80,7 +80,7 @@ this.vehicleService.getAllVehicles().subscribe({
       !!v.id &&
       !!v.type &&
       !!v.vehicle_model &&
-      typeof v.odometer_reading === 'number'
+      typeof v.mileage === 'number'
     );
 
     // 🔑 Only call loadRide after cars are loaded

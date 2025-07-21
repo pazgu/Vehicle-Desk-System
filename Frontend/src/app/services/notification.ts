@@ -8,7 +8,7 @@ export interface AdminNotificationResponse {
   count: number;
   plate_number: string;
   vehicle_id: string;
-  odometer_reading: number;
+  mileage: number;
 }
 
 @Injectable({

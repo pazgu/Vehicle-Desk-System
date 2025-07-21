@@ -117,13 +117,13 @@ def create_system_notification_with_db(db: Session, user_id, title, message, ord
     db.add(notif)
     return notif  # don't commit here — let caller handle it
 
-async def send_admin_odometer_notification(vehicle_id: UUID, odometer_reading: float):
+async def send_admin_odometer_notification(vehicle_id: UUID, mileage: float):
     db = SessionLocal()
     try:
-        print(f"send_admin_odometer_notification called with vehicle_id={vehicle_id}, odometer_reading={odometer_reading}")
+        print(f"send_admin_odometer_notification called with vehicle_id={vehicle_id}, mileage={mileage}")
         admins = db.query(User).filter(User.role == 'admin').all()
-        print(f"Admins: {admins}, Odo: {odometer_reading}")
-        if not admins or odometer_reading < 10000:
+        print(f"Admins: {admins}, Odo: {mileage}")
+        if not admins or mileage < 10000:
             return None
 
         plate_number = None
@@ -146,7 +146,7 @@ async def send_admin_odometer_notification(vehicle_id: UUID, odometer_reading: f
                     user_id=admin.employee_id,
                     notification_type=NotificationType.system,
                     title="Vehicle Odometer Update",
-                    message=f"{plate_number} לרכב עם מספר רישוי ק״מ {odometer_reading} יש מד אוץ של ",
+                    message=f"{plate_number} לרכב עם מספר רישוי ק״מ {mileage} יש מד אוץ של ",
                     sent_at=datetime.now(timezone.utc),
                     vehicle_id=vehicle_id
                 )

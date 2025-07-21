@@ -43,7 +43,7 @@ interface Vehicle {
   freeze_reason?: string | null;
   last_used_at?: string;
   current_location?: string;
-  odometer_reading: number;
+  mileage: number;
   image_url: string;
   vehicle_model: string;
 }
@@ -403,7 +403,7 @@ export class NewRideComponent implements OnInit {
             !!v.id &&
             !!v.type &&
             !!v.plate_number &&
-            typeof v.odometer_reading === 'number'
+            typeof v.mileage === 'number'
           )
           .map(v => ({
             ...v,
