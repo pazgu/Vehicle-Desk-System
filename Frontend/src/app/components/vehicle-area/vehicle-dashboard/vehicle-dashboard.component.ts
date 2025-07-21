@@ -33,7 +33,16 @@ export class VehicleDashboardComponent implements OnInit {
   typeFilter: string = '';
   showFilters: boolean = false;
   sortBy: string = 'date_and_time';
-  vehicleTypes: string[] = [];
+  vehicleTypes: { original: string; translated: string }[] = [];
+  vehicleTypeTranslations: { [key: string]: string } = {
+  'Private': 'פרטי',
+  'Small Commercial': 'מסחרי קטן',
+  'Large Commercial': 'מסחרי גדול',
+  '4x4 Pickup': '4x4 טנדר',
+  '4x4 SUV': '4x4 ג’יפ',
+  '8-Seater': 'מושבים 8'
+};
+
 
   topUsedVehiclesMap: Record<string, number> = {};
   vehicleUsageData: { plate_number: string; vehicle_model: string; ride_count: number }[] = [];
@@ -138,19 +147,23 @@ export class VehicleDashboardComponent implements OnInit {
     });
   }
 
-  fetchVehicleTypes() {
-    console.log('fetchVehicleTypes called');
-    this.vehicleService.getVehicleTypes().subscribe({
-      next: (types) => {
-        console.log('Fetched vehicle types:', types);
-        this.vehicleTypes = types || [];
-      },
-      error: (err) => {
-        console.error('Error fetching vehicle types:', err);
-        this.vehicleTypes = [];
-      }
-    });
-  }
+fetchVehicleTypes() {
+  console.log('fetchVehicleTypes called');
+  this.vehicleService.getVehicleTypes().subscribe({
+    next: (types) => {
+      console.log('Fetched vehicle types:', types);
+      this.vehicleTypes = (types || []).map(type => ({
+        original: type,
+        translated: this.vehicleTypeTranslations[type] || type // fallback to original if not found
+      }));
+    },
+    error: (err) => {
+      console.error('Error fetching vehicle types:', err);
+      this.vehicleTypes = [];
+    }
+  });
+}
+
 
   getVehicleUsageCount(plateNumber: string): number {
     return this.topUsedVehiclesMap[plateNumber] || 0;
