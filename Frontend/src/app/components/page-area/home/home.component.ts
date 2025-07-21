@@ -25,6 +25,7 @@ import { User } from '../../../models/user.model';
 import { Observable } from 'rxjs';
 import { LayoutComponent } from '../../layout-area/layout/layout.component';
 import { AuthService } from '../../../services/auth.service';
+import {  ValidationErrors } from '@angular/forms';
 // Define the interface for pending vehicle
 interface PendingVehicle {
   vehicle_id: string;
@@ -138,8 +139,8 @@ export class NewRideComponent implements OnInit {
       ride_period: ['morning'],
       ride_date: ['', [Validators.required, this.validYearRangeValidator(2025, 2099)]],
       ride_date_night_end: [''],
-      start_time: [''],
-      end_time: [''],
+        start_time: ['', [Validators.required, NewRideComponent.timeStepValidator]],
+  end_time: ['', [Validators.required, NewRideComponent.timeStepValidator]],
       estimated_distance_km: [null, Validators.required],
       ride_type: ['', Validators.required],
       vehicle_type: ['', Validators.required],
@@ -583,6 +584,72 @@ export class NewRideComponent implements OnInit {
       return hasTimeOverlap;
     });
   }
+
+  // Add these methods to your component class
+
+onTimeInput(event: Event, controlName: string): void {
+  const input = event.target as HTMLInputElement;
+  const time = input.value;
+  
+  if (time) {
+    const correctedTime = this.correctToNearestQuarter(time);
+    if (correctedTime !== time) {
+      this.rideForm.get(controlName)?.setValue(correctedTime);
+    }
+  }
+}
+
+validateTimeStep(controlName: string): void {
+  const control = this.rideForm.get(controlName);
+  if (control?.value) {
+    const isValid = this.isValidQuarterHourTime(control.value);
+    if (!isValid) {
+      control.setErrors({ ...control.errors, invalidTimeStep: true });
+    } else {
+      // Remove the invalidTimeStep error if it exists
+      if (control.errors) {
+        delete control.errors['invalidTimeStep'];
+        if (Object.keys(control.errors).length === 0) {
+          control.setErrors(null);
+        }
+      }
+    }
+  }
+}
+
+private isValidQuarterHourTime(time: string): boolean {
+  const [hours, minutes] = time.split(':').map(Number);
+  return [0, 15, 30, 45].includes(minutes);
+}
+
+private correctToNearestQuarter(time: string): string {
+  const [hours, minutes] = time.split(':').map(Number);
+  
+  // Round to nearest 15-minute interval
+  const quarterIntervals = [0, 15, 30, 45];
+  let closestQuarter = quarterIntervals.reduce((prev, curr) => 
+    Math.abs(curr - minutes) < Math.abs(prev - minutes) ? curr : prev
+  );
+  
+  // Handle edge case: if minutes > 52, round up to next hour
+  if (minutes > 52) {
+    closestQuarter = 0;
+    const newHours = hours === 23 ? 0 : hours + 1;
+    return `${newHours.toString().padStart(2, '0')}:00`;
+  }
+  
+  return `${hours.toString().padStart(2, '0')}:${closestQuarter.toString().padStart(2, '0')}`;
+}
+
+// Optional: Custom validator function that you can use in form initialization
+static timeStepValidator(control: AbstractControl): ValidationErrors | null {
+  if (!control.value) return null;
+  
+  const [hours, minutes] = control.value.split(':').map(Number);
+  const isValid = [0, 15, 30, 45].includes(minutes);
+  
+  return isValid ? null : { invalidTimeStep: true };
+}
 
   // Time and date utility methods
   private addHoursToTime(timeString: string, hoursToAdd: number): string {
