@@ -654,7 +654,7 @@ async def send_admin_notification_simple_route(db: Session = Depends(get_db)):
     all_notifications = []
 
     for vehicle in vehicles:
-        notifications = await send_admin_odometer_notification(vehicle.id, vehicle.odometer_reading)
+        notifications = await send_admin_odometer_notification(vehicle.id, vehicle.mileage)
 
         if notifications:
             all_notifications.extend(notifications)

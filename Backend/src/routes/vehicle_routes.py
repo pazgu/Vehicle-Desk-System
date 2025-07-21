@@ -2,7 +2,7 @@ from src.models.department_model import Department
 from datetime import  date, time, datetime, timedelta, timezone
 from sqlalchemy import text,func, or_
 from ..services.vehicle_service import get_vehicles_with_optional_status,update_vehicle_status,get_vehicle_by_id, get_available_vehicles_for_ride_by_id, get_inactive_vehicles
-from fastapi import APIRouter, Depends, HTTPException, status , Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, status , Query
 from uuid import UUID
 from ..schemas.vehicle_schema import VehicleStatusUpdate, RideTimelineSchema
 from ..utils.socket_manager import sio

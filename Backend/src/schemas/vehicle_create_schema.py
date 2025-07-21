@@ -15,7 +15,7 @@ class VehicleCreate(BaseModel):
     freeze_details: Optional[str] = None
     last_used_at: Optional[datetime] = None
     current_location: str
-    odometer_reading: int
+    mileage: int
     vehicle_model: str
     image_url: Optional[str] = None
     lease_expiry: datetime
