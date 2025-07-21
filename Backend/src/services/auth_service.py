@@ -26,7 +26,9 @@ def create_access_token(user_id: UUID,
                         role: str,
                         department_id: Optional[UUID] = None, 
                         has_government_license: bool = False,
-                        expires_delta: timedelta = None):
+                        expires_delta: timedelta = None,
+                        phone: str = None):
+
                         
     expire = datetime.utcnow() + (expires_delta or timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES)))
 
@@ -39,7 +41,8 @@ def create_access_token(user_id: UUID,
         "role": role,
         "department_id": str(department_id) if department_id else None,
         "has_government_license": has_government_license,
-        "exp": expire
+        "exp": expire,
+        "phone": phone
     }
     encoded_jwt = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
     return {
@@ -52,7 +55,8 @@ def create_access_token(user_id: UUID,
         "role": role,
         "department_id": department_id,
         "has_government_license": False,
-        "token_type": "bearer"
+        "token_type": "bearer",
+        "phone": phone
     }
 
 

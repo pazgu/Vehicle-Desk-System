@@ -48,7 +48,7 @@ export class VehicleCardItemComponent implements OnInit {
       this.vehicleService.getVehicleById(id).subscribe(vehicleData => {
         console.log('Vehicle from API:', vehicleData);
         this.vehicle = vehicleData;
-
+        this.vehicle.displayStatus = this.translateStatus(vehicleData.status);
         // ✅ IMPORTANT: Check if vehicle is archived and update the display accordingly
         if (vehicleData.is_archived) {
           // Override status display for archived vehicles
@@ -126,17 +126,20 @@ export class VehicleCardItemComponent implements OnInit {
     }
   }
 
-  translateType(type: string | undefined): string {
-    switch (type) {
-      case 'small': return 'קטן';
-      case 'large': return 'גדול';
-      case 'van': return 'ואן';
-      case '4x4': return '4x4';
-      case 'Jeep': return "ג'יפ";
-      case 'Pickup Truck': return 'טנדר';
-      default: return type || '';
-    }
-  }
+translateType(type: string | undefined): string {
+  const map: { [key: string]: string } = {
+    'Private': 'פרטי',
+    'Small Commercial': 'קטן מסחרי',
+    'Large Commercial': 'גדול מסחרי',
+    '4x4 Pickup': 'טנדר 4x4',
+    '4x4 SUV': 'ג׳יפ 4x4',
+    '8-Seater': '8 מושבים'
+  };
+
+  return map[type || ''] || type || '';
+}
+
+
 
   translateFuelType(fuelType: string | null | undefined): string {
     if (!fuelType) return '';

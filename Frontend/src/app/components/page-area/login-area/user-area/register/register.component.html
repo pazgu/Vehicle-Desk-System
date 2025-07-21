@@ -35,6 +35,14 @@
         <small *ngIf="f['email'].errors?.['email']" style="color:red;">יש להזין כתובת אימייל חוקית</small>
       </div>
 
+
+       <div>
+        <label>מספר טלפון</label>
+        <input type="phone" formControlName="phone">
+        <small *ngIf="f['phone'].touched && f['phone'].errors?.['required']" style="color:red;">יש להזין מספר טלפון</small>
+        <small *ngIf="f['phone'].errors?.['phone']" style="color:red;">יש להזין מספר טלפן תקין</small>
+      </div>
+
       <div>
         <label>סיסמה</label>
 <div class="password-container">

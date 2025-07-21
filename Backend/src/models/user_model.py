@@ -24,7 +24,7 @@ class User(Base):
     employee_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     password = Column(String, nullable=False)  # hashing afterwards
     role = Column(Enum(UserRole), nullable=False)
-    department_id = Column(UUID(as_uuid=True), ForeignKey("departments.id"), nullable=False)
+    department_id = Column(UUID(as_uuid=True), ForeignKey("departments.id"), nullable=True)
     has_government_license = Column(Boolean, default=False)
     license_file_url = Column(String, nullable=True)
     license_expiry_date = Column(Date, nullable=True)
