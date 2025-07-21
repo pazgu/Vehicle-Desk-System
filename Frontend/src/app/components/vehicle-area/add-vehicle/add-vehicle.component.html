@@ -115,9 +115,9 @@
       </div>
 
       <label>כמה הרכב עבר ב-ק"מ</label>
-      <input formControlName="odometer_reading" type="number" />
+      <input formControlName="mileage" type="number" />
       <div class="error"
-        *ngIf="vehicleForm.get('odometer_reading')?.touched && vehicleForm.get('odometer_reading')?.invalid">
+        *ngIf="vehicleForm.get('mileage')?.touched && vehicleForm.get('mileage')?.invalid">
         חובה להזין מספר ק"מ חוקי
       </div>
 

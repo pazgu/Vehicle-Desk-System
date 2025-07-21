@@ -36,7 +36,7 @@ export class AddVehicleComponent implements OnInit {
       type: ['', Validators.required],
       fuel_type: ['', Validators.required],
       current_location: ['', Validators.required],
-      odometer_reading: [0, [Validators.required, Validators.min(0)]],
+      mileage: [0, [Validators.required, Validators.min(0)]],
       vehicle_model: ['', Validators.required],
       // Initialize department_id with `null`.
       // Since department_id is Optional[UUID] = None on the backend,
