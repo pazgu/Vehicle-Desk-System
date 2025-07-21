@@ -27,7 +27,7 @@ export class VehicleDashboardComponent implements OnInit {
   inactiveVehicles: Vehicle[] = []; // vehicles not used in 7+ days
   InactiveFilter: boolean = false; // checkbox state
   showInactive: boolean = false;
-  
+
   selectedType: string = '';
   statusFilter: string = '';
   typeFilter: string = '';
@@ -246,7 +246,7 @@ fetchVehicleTypes() {
     }
   }
 
-   goToArchivedOrders() {
+  goToArchivedOrders() {
     this.router.navigate(['/vehicles/archived']);
   }
 
@@ -264,9 +264,9 @@ fetchVehicleTypes() {
     }
   }
 
-getInactiveVehicles(): Observable<Vehicle[]> {
-  return this.http.get<Vehicle[]>(`${environment.apiUrl}/vehicles/inactive`);
-}
+  getInactiveVehicles(): Observable<Vehicle[]> {
+    return this.http.get<Vehicle[]>(`${environment.apiUrl}/vehicles/inactive`);
+  }
   onInactiveFilterChange(): void {
     if (this.InactiveFilter) {
       this.getInactiveVehicles().subscribe({
@@ -306,7 +306,7 @@ getInactiveVehicles(): Observable<Vehicle[]> {
         return status;
     }
   }
-  
+
   get filteredVehicles() {
     const baseList = this.showingMostUsed ? this.mostUsedVehicles : this.vehicles;
 
@@ -331,21 +331,21 @@ getInactiveVehicles(): Observable<Vehicle[]> {
     if (this.typeFilter) {
       filtered = filtered.filter(vehicle => vehicle.type === this.typeFilter);
     }
-     if (this.InactiveFilter && this.inactiveVehicles.length > 0) {
+    if (this.InactiveFilter && this.inactiveVehicles.length > 0) {
       const inactiveIds = new Set(this.inactiveVehicles.map((v) => v.id));
       filtered = filtered.filter((v) => inactiveIds.has(v.id));
     }
 
 
-  if (this.showInactive) {
-  const oneWeekAgo = new Date();
-  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    if (this.showInactive) {
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
-  filtered = filtered.filter(vehicle => {
-    const lastUsed = vehicle.last_used_at ? new Date(vehicle.last_used_at) : null;
-    return !lastUsed || lastUsed < oneWeekAgo;
-  });
-}
+      filtered = filtered.filter(vehicle => {
+        const lastUsed = vehicle.last_used_at ? new Date(vehicle.last_used_at) : null;
+        return !lastUsed || lastUsed < oneWeekAgo;
+      });
+    }
 
     if (this.sortBy) {
       return [...filtered].sort((a, b) => a.status.localeCompare(b.status));
@@ -354,6 +354,6 @@ getInactiveVehicles(): Observable<Vehicle[]> {
     }
   }
   navigateToArchivedVehicles(): void {
-  this.router.navigate(['/archived-vehicles']);
-}
+    this.router.navigate(['/archived-vehicles']);
+  }
 }

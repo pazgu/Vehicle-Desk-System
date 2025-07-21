@@ -106,7 +106,7 @@
             <div class="form-group">
               <label>קובץ רישיון ממשלתי שהועלה:</label>
               <a [href]="userForm.get('license_file_url')?.value" target="_blank" class="uploaded-file-link">
-                הצג קובץ
+                <button (click)="openLicenseInNewTab()">הצג קובץ/תמונה</button>
               </a>
             </div>
           </div>

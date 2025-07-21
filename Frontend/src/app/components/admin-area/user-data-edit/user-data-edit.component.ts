@@ -11,6 +11,7 @@ import { Router } from '@angular/router';
 import { SocketService } from '../../../services/socket.service';
 import { Subscription } from 'rxjs';
 import { Socket } from 'socket.io-client';
+import { environment } from '../../../../environments/environment';
 
 
 @Component({
@@ -264,4 +265,10 @@ export class UserDataEditComponent implements OnInit {
       this.toastService.show('אנא מלא את כל השדות הנדרשים', 'error');
     }
   }
+
+    openLicenseInNewTab(): void {
+      if (!this.user?.license_file_url) return;
+      const fullUrl = environment.socketUrl + this.user.license_file_url;
+      window.open(fullUrl, '_blank');
+    }
 }
