@@ -1,9 +1,8 @@
 from src.models.department_model import Department
-from datetime import datetime, date, time
-
-from sqlalchemy import text
-from ..services.vehicle_service import get_vehicles_with_optional_status,update_vehicle_status,get_vehicle_by_id, get_available_vehicles_for_ride_by_id
-from fastapi import APIRouter, Depends, HTTPException, status , Query, Request
+from datetime import  date, time, datetime, timedelta, timezone
+from sqlalchemy import text,func, or_
+from ..services.vehicle_service import get_vehicles_with_optional_status,update_vehicle_status,get_vehicle_by_id, get_available_vehicles_for_ride_by_id, get_inactive_vehicles
+from fastapi import APIRouter, Depends, HTTPException, status , Query
 from uuid import UUID
 from ..schemas.vehicle_schema import VehicleStatusUpdate, RideTimelineSchema
 from ..utils.socket_manager import sio
@@ -20,6 +19,7 @@ from src.models.user_model import User
 
 from fastapi.security import OAuth2PasswordBearer
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
 router = APIRouter()
 
 # @router.post("/vehicle-inspection")
@@ -128,6 +128,9 @@ def get_vehicle_types(
         return {"vehicle_types": [vt[0] for vt in vehicle_types]}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+    
+
+ALLOWED_RIDE_STATUSES = ["approved", "in_progress", "completed"]
 @router.get("/vehicles/{vehicle_id}/timeline", response_model=List[RideTimelineSchema])
 def get_vehicle_timeline(
     vehicle_id: UUID,
@@ -150,12 +153,36 @@ def get_vehicle_timeline(
     ).join(User, Ride.user_id == User.employee_id).filter(
         Ride.vehicle_id == vehicle_id,
         Ride.start_datetime >= start_dt,
-        Ride.end_datetime <= end_dt
+        Ride.end_datetime <= end_dt,
+        Ride.status.in_(ALLOWED_RIDE_STATUSES)
+
     ).all()
 
     return [RideTimelineSchema(**dict(row._mapping)) for row in rides]
 
-# Add these endpoints to your backend vehicle router
+@router.get("/vehicles/inactive", response_model=List[VehicleOut])
+def return_inactive_vehicle(db: Session = Depends(get_db)):
+    
+    now = datetime.now(timezone.utc)
+    one_week_ago = now - timedelta(days=7)
+
+    recent_rides_subq = db.query(
+        Ride.vehicle_id,
+        func.max(Ride.end_datetime).label("last_ride")
+    ).filter(
+        Ride.status == "completed"
+    ).group_by(Ride.vehicle_id).subquery()
+
+    inactive_vehicles = db.query(Vehicle, recent_rides_subq.c.last_ride).outerjoin(
+        recent_rides_subq, Vehicle.id == recent_rides_subq.c.vehicle_id
+    ).filter(
+        or_(
+            recent_rides_subq.c.last_ride == None,
+            recent_rides_subq.c.last_ride < one_week_ago
+        )
+    ).all()
+
+    return [v for v, _ in inactive_vehicles]
 
 @router.put("/vehicles/{vehicle_id}/restore")
 def restore_vehicle(
