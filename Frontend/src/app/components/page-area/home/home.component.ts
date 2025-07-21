@@ -104,7 +104,7 @@ export class NewRideComponent implements OnInit {
     private cityService: CityService,
     private UserService: UserService,
     private AuthService: AuthService
-  ) {  this.generateTimeOptions();}
+  ) { }
 
   ngOnInit(): void {
     this.initializeComponent();
@@ -714,48 +714,6 @@ static timeStepValidator(control: AbstractControl): ValidationErrors | null {
       return selectedYear >= minYear && selectedYear <= maxYear ? null : { invalidYear: true };
     };
   }
-
-  
-  private generateTimeOptions(): void {
-    const options: { value: string; label: string }[] = [];
-    
-    for (let hour = 0; hour < 24; hour++) {
-      for (let minute = 0; minute < 60; minute += 15) {
-        const hourStr = hour.toString().padStart(2, '0');
-        const minuteStr = minute.toString().padStart(2, '0');
-        const timeValue = `${hourStr}:${minuteStr}`;
-        const timeLabel = `${hourStr}:${minuteStr}`;
-        
-        options.push({
-          value: timeValue,
-          label: timeLabel
-        });
-      }
-    }
-    
-    this.timeOptions = options;
-  }
-
-  // Optional: If you want different time ranges for different periods
-  getTimeOptionsForPeriod(period: string): { value: string; label: string }[] {
-    if (period === 'morning') {
-      // Return only morning hours (e.g., 06:00 - 12:00)
-      return this.timeOptions.filter(option => {
-        const hour = parseInt(option.value.split(':')[0]);
-        return hour >= 6 && hour <= 12;
-      });
-    } else if (period === 'evening') {
-      // Return only evening hours (e.g., 17:00 - 22:00)
-      return this.timeOptions.filter(option => {
-        const hour = parseInt(option.value.split(':')[0]);
-        return hour >= 17 && hour <= 22;
-      });
-    }
-    
-    // Return all options for other cases
-    return this.timeOptions;
-  }
-
 
   // Form period management
   onPeriodChange(value: string): void {
