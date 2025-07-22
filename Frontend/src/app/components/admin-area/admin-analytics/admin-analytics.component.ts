@@ -16,6 +16,11 @@ import { cloneDeep } from 'lodash';
 import { VehicleService } from '../../../services/vehicle.service';
 import { FreezeReason, VehicleOutItem } from '../../../models/vehicle-dashboard-item/vehicle-out-item.module';
 import { ToastService } from '../../../services/toast.service';
+import { TopNoShowUser } from '../../../models/no-show-stats.model';
+import { StatisticsService } from '../../../services/statistics.service';
+import { UserService } from '../../../services/user_service';
+import { Router } from '@angular/router';
+
 
 pdfMake.vfs = pdfFonts.vfs;
 
@@ -47,13 +52,23 @@ export class AdminAnalyticsComponent implements OnInit {
   isMonthlyView = true; // monthly = default
 showChart = true;
 
-  selectedMonth = (new Date().getMonth() + 1).toString(); // default = current month
+selectedMonth = (new Date().getMonth() + 1).toString(); // default = current month
 selectedYear = new Date().getFullYear().toString(); // default = current year
 
 monthlyChartData: any;
 monthlyChartOptions: any;
 allTimeChartData: any;
 allTimeChartOptions: any;
+
+ // 🆕 No-show chart + summary + table
+
+  totalNoShows: number = 0;
+  topNoShowUsers: TopNoShowUser[] = [];
+
+  noShowFromDate?: string;
+  noShowToDate?: string; 
+
+
 topUsedVehiclesData: any;
 topUsedVehiclesOptions: any;
 monthlyStatsChartData: any;
@@ -61,7 +76,12 @@ monthlyStatsChartOptions: any;
 
 allTimeStatsChartData: any;
 allTimeStatsChartOptions: any;
+uniqueNoShowUsers: number = 0;
 
+
+ // 🆕 ADD these two properties for department caching
+  private departmentsMap = new Map<string, string>(); // To store department ID -> Name
+  private departmentsLoaded: boolean = false;        // To track if departments are loaded
 
 
 months = [
@@ -81,16 +101,19 @@ months = [
 
 years = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - i).toString());
 
-
-
-
  
-  constructor(private http: HttpClient, private socketService: SocketService,private vehicleService:VehicleService,  private toastService: ToastService ) {}
+  constructor(private http: HttpClient, private socketService: SocketService,private vehicleService:VehicleService,  private toastService: ToastService
+   ,private statisticsService: StatisticsService, private userService: UserService, private router: Router) {}
 
   ngOnInit() {
-     this.loadVehicleChart();
+  this.loadVehicleChart();
   this.loadRideChart();
   this.loadFrozenVehicles();
+  this.loadNoShowStatistics();
+  this.loadDepartments(); // <--- Call this to load departments and then no-show stats
+
+
+
 
   // 👇 Only load monthly chart at start (do NOT override with all-time yet)
   // if (this.isMonthlyView) {
@@ -104,6 +127,7 @@ years = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - i).toStr
     this.socketService.rideStatusUpdated$.subscribe(() => {
       console.log('🔔 rideStatusUpdated$ triggered');
       this.loadRideChart();
+
     });
 
     this.socketService.vehicleStatusUpdated$.subscribe(() => {
@@ -362,6 +386,31 @@ labels: updatedLabels,
     this.activeTabIndex = index;
   }
 
+  public loadNoShowStatistics(): void {
+  const formattedFromDate = this.noShowFromDate || undefined;
+  const formattedToDate = this.noShowToDate || undefined;
+
+
+  this.statisticsService.getTopNoShowUsers(formattedFromDate, formattedToDate).subscribe({
+    next: (noShowData) => {
+      this.totalNoShows = noShowData.total_no_show_events;
+      this.uniqueNoShowUsers = noShowData.unique_no_show_users;
+      this.topNoShowUsers = noShowData.top_no_show_users;
+      console.log("👀 Top No-Show Users:", this.topNoShowUsers);
+
+    },
+    error: (err) => {
+      console.error('❌ Failed to load no-show statistics:', err);
+      this.toastService.show('אירעה שגיאה בטעינת נתוני אי-הגעה.', 'error');
+
+      // Reset values on error
+      this.topNoShowUsers = [];
+      this.totalNoShows = 0;
+      this.uniqueNoShowUsers = 0;
+    }
+  });
+}
+
   getHebrewLabel(status: string): string {
     const statusMap: { [key: string]: string } = {
       'available': 'זמין',
@@ -378,10 +427,41 @@ labels: updatedLabels,
       'rejected': 'נדחה',
       'in_progress': 'בתהליך',
       'completed': 'הושלם',
-      'cancelled': 'בוטל'
+      'cancelled_due_to_no_show': 'בוטלה-נסיעה לא בוצעה'
     };
     return statusMap[status] || status;
   }
+
+  // 🆕 ADD this new method to load departments
+  private loadDepartments(): void {
+    this.userService.getDepartments().subscribe({
+      next: (departments) => {
+        departments.forEach(dep => this.departmentsMap.set(dep.id, dep.name));
+        this.departmentsLoaded = true; // Mark departments as loaded
+        console.log('AdminAnalyticsComponent: Departments loaded and cached.');
+        // Call loadNoShowStatistics ONLY after departments are successfully loaded
+        this.loadNoShowStatistics();
+      },
+      error: (err) => {
+        console.error('❌ Failed to load departments from UserService:', err);
+        this.toastService.show('אירעה שגיאה בטעינת נתוני מחלקות.', 'error');
+        this.departmentsLoaded = false; // Mark as failed to load
+        // If departments fail to load, still try to load no-show stats
+        // Department names in the table will then default to "מחלקה לא ידועה"
+        this.loadNoShowStatistics();
+      }
+    });
+  }
+
+
+goToUserDetails(userId: string) {
+  this.router.navigate(['/user-card', userId]);
+}
+ // 🆕 MODIFY: Use the component's internal departmentsMap
+  resolveDepartment(departmentId: string): string {
+    return this.departmentsMap.get(departmentId) || 'מחלקה לא ידועה';
+  }
+
 
  public exportPDF(): void {
   const isVehicleTab = this.activeTabIndex === 0;
@@ -518,6 +598,22 @@ labels: updatedLabels,
   };
 
   pdfMake.createPdf(docDefinition).download(`${title}-${safeTimestamp}.pdf`);
+}
+
+// Add this method to your component for better performance with *ngFor
+trackByUserId(index: number, user: any): any {
+  return user.user_id;
+}
+
+// Optional: Add loading state for better UX
+isTableLoading = false;
+
+// Optional: Add method to handle keyboard navigation
+onTableKeydown(event: KeyboardEvent, user: any): void {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    this.goToUserDetails(user.user_id);
+  }
 }
 
 public exportExcel(): void {
@@ -707,7 +803,9 @@ const title = isVehicleTab
     'rejected': 'Rejected',
     'in_progress': 'In Progress',
     'completed': 'Completed',
-    'cancelled': 'Cancelled'
+    'cancelled': 'Cancelled',
+    'cancelled_due_to_no_show': 'Cancelled - No Show' // Add this line
+
   };
   return statusMap[status] || status;
 }
@@ -732,7 +830,8 @@ private reverseHebrewLabel(hebrewLabel: string): string {
     'נדחה': 'rejected',
     'בתהליך': 'in_progress',
     'הושלם': 'completed',
-    'בוטל': 'cancelled'
+    'בוטל': 'cancelled',
+
   };
   return reverseMap[hebrewLabel] || hebrewLabel;
 }

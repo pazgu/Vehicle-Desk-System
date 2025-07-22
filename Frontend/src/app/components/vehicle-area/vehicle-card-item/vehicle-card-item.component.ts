@@ -29,6 +29,9 @@ export class VehicleCardItemComponent implements OnInit {
   currentVehicleRideCount: number = 0;
   departmentName: string = '';
 
+  showMileageModal = false;
+newMileage: number = 0;
+currentDate = new Date();
   constructor(
     private navigateRouter: Router,
     private route: ActivatedRoute,
@@ -154,7 +157,29 @@ translateType(type: string | undefined): string {
         return fuelType;
     }
   }
+openMileageModal(): void {
+  this.newMileage = this.vehicle.mileage;
+  this.showMileageModal = true;
+  this.currentDate = new Date();
+}
 
+closeMileageModal(): void {
+  this.showMileageModal = false;
+}
+
+saveMileage(): void {
+  this.vehicleService.updateMilage(this.vehicle.id, this.newMileage).subscribe({
+    next: () => {
+      this.toastService.show(`קילומטראז' עודכן בהצלחה`, 'success');
+      this.vehicle.mileage = this.newMileage;
+      this.vehicle.mileage_last_updated = new Date();
+      this.closeMileageModal();
+    },
+    error: (err) => {
+      this.toastService.show(err.error?.detail || 'שגיאה בעדכון הקילומטראז׳', 'error');
+    }
+  });
+}
   translateFreezeReason(freezeReason: string | null | undefined): string {
     if (!freezeReason) return '';
     switch (freezeReason.toLowerCase()) {
@@ -436,6 +461,18 @@ translateType(type: string | undefined): string {
       });
     });
   }
+
+updateVehicleMilage(vehicle: any): void {
+  this.vehicleService.updateMilage(vehicle.id, vehicle.mileage).subscribe({
+    next: () => {
+      this.toastService.show(`קילומטראז' הרכב ${vehicle.plate_number} עודכן בהצלחה`, 'success');
+    },
+    error: (err) => {
+      this.toastService.show(err.error?.detail || 'אירעה שגיאה בעת עדכון הקילומטראז׳', 'error');
+    }
+  });
+}
+
 
   // UPDATED: Method to permanently delete vehicle
   permanentlyDeleteVehicle(vehicle: any): void {

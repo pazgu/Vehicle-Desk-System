@@ -51,6 +51,8 @@ class Ride(Base):
     override_user_id = Column(UUID(as_uuid=True), ForeignKey("users.employee_id"), nullable=True)
     feedback_submitted= Column(Boolean, default=False) 
     rejection_reason = Column(Text, nullable=True)
+    completion_date = Column(DateTime, nullable=True)
+
     
     no_show_events = relationship("NoShowEvent", back_populates="ride")
 
