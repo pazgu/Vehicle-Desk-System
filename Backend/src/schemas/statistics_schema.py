@@ -1,11 +1,11 @@
 from pydantic import BaseModel
 from uuid import UUID
-from typing import List
+from typing import List, Optional
 
 class TopNoShowUser(BaseModel):
     user_id: UUID
     name: str
-    department: str
+    department: Optional[str] = None 
     count: int
 
 class NoShowStatsResponse(BaseModel):
