@@ -943,7 +943,7 @@ def get_critical_issues(
 
 
 
-router = APIRouter()
+
 
 @router.get("/statistics/no-show", response_model=NoShowStatsResponse)
 def get_no_show_statistics(
@@ -953,33 +953,47 @@ def get_no_show_statistics(
     page_size: int = Query(10, ge=1, le=100, description="Page size for pagination"),
     db: Session = Depends(get_db),
 ):
-    
+    print("🧪 NO-SHOW STATS ENDPOINT DEBUG:")
+    print("FROM DATE:", from_date)
+    print("TO DATE:", to_date)
+    print("TYPE FROM:", type(from_date))
+    print("TYPE TO:", type(to_date))
+
+    # 1. Get total no-shows
     query = db.query(NoShowEvent)
     if from_date:
         query = query.filter(NoShowEvent.occurred_at >= from_date)
     if to_date:
         query = query.filter(NoShowEvent.occurred_at <= to_date)
-    
-    total_no_show_events = query.count()
 
-    
+    total_no_show_events = query.count()
     unique_no_show_users = query.with_entities(NoShowEvent.user_id).distinct().count()
 
-    
-    offset = (page - 1) * page_size
+    # 2. Get completed rides in same range
+    completed_query = db.query(Ride).filter(
+        Ride.status == "completed",
+        Ride.completion_date != None)
+    if from_date:
+        completed_query = completed_query.filter(Ride.completion_date >= from_date)
+    if to_date:
+        completed_query = completed_query.filter(Ride.completion_date <= to_date)
 
+    completed_rides_count = completed_query.count()
+
+    # 3. Get top users with pagination
+    offset = (page - 1) * page_size
     top_users_query = (
         db.query(
             NoShowEvent.user_id,
             func.concat(User.first_name, ' ', User.last_name).label("name"),
-            Department.name.label("department"),
+            Department.id.label("department_id"),
             func.count(NoShowEvent.id).label("count"),
         )
-        .join(User, User.employee_id == NoShowEvent.user_id)
-        .join(Department, Department.id == User.department_id)
+        .outerjoin(User, User.employee_id == NoShowEvent.user_id)
+        .outerjoin(Department, Department.id == User.department_id)
         .filter(NoShowEvent.occurred_at >= from_date if from_date else True)
         .filter(NoShowEvent.occurred_at <= to_date if to_date else True)
-        .group_by(NoShowEvent.user_id, User.first_name, User.last_name, Department.name)
+        .group_by(NoShowEvent.user_id, User.first_name, User.last_name, Department.id)
         .order_by(desc("count"))
         .offset(offset)
         .limit(page_size)
@@ -990,7 +1004,7 @@ def get_no_show_statistics(
         TopNoShowUser(
             user_id=row.user_id,
             name=row.name,
-            department=row.department or "",
+            department_id=row.department_id,
             count=row.count
         )
         for row in top_users_query
@@ -999,7 +1013,7 @@ def get_no_show_statistics(
     return NoShowStatsResponse(
         total_no_show_events=total_no_show_events,
         unique_no_show_users=unique_no_show_users,
+        completed_rides_count=completed_rides_count,
         top_no_show_users=top_no_show_users
     )
 
-    

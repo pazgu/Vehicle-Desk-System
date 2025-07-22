@@ -61,10 +61,8 @@ allTimeChartData: any;
 allTimeChartOptions: any;
 
  // 🆕 No-show chart + summary + table
-  noShowChartData: any;
-  noShowChartOptions: any;
+
   totalNoShows: number = 0;
-  uniqueNoShowUsers: number = 0;
   topNoShowUsers: TopNoShowUser[] = [];
 
   noShowFromDate?: string;
@@ -78,6 +76,7 @@ monthlyStatsChartOptions: any;
 
 allTimeStatsChartData: any;
 allTimeStatsChartOptions: any;
+uniqueNoShowUsers: number = 0;
 
 
  // 🆕 ADD these two properties for department caching
@@ -102,9 +101,6 @@ months = [
 
 years = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - i).toString());
 
-
-
-
  
   constructor(private http: HttpClient, private socketService: SocketService,private vehicleService:VehicleService,  private toastService: ToastService
    ,private statisticsService: StatisticsService, private userService: UserService, private router: Router) {}
@@ -113,8 +109,9 @@ years = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - i).toStr
   this.loadVehicleChart();
   this.loadRideChart();
   this.loadFrozenVehicles();
-  // this.loadNoShowStatistics();
+  this.loadNoShowStatistics();
   this.loadDepartments(); // <--- Call this to load departments and then no-show stats
+
 
 
 
@@ -130,6 +127,7 @@ years = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - i).toStr
     this.socketService.rideStatusUpdated$.subscribe(() => {
       console.log('🔔 rideStatusUpdated$ triggered');
       this.loadRideChart();
+
     });
 
     this.socketService.vehicleStatusUpdated$.subscribe(() => {
@@ -388,6 +386,31 @@ labels: updatedLabels,
     this.activeTabIndex = index;
   }
 
+  public loadNoShowStatistics(): void {
+  const formattedFromDate = this.noShowFromDate || undefined;
+  const formattedToDate = this.noShowToDate || undefined;
+
+
+  this.statisticsService.getTopNoShowUsers(formattedFromDate, formattedToDate).subscribe({
+    next: (noShowData) => {
+      this.totalNoShows = noShowData.total_no_show_events;
+      this.uniqueNoShowUsers = noShowData.unique_no_show_users;
+      this.topNoShowUsers = noShowData.top_no_show_users;
+      console.log("👀 Top No-Show Users:", this.topNoShowUsers);
+
+    },
+    error: (err) => {
+      console.error('❌ Failed to load no-show statistics:', err);
+      this.toastService.show('אירעה שגיאה בטעינת נתוני אי-הגעה.', 'error');
+
+      // Reset values on error
+      this.topNoShowUsers = [];
+      this.totalNoShows = 0;
+      this.uniqueNoShowUsers = 0;
+    }
+  });
+}
+
   getHebrewLabel(status: string): string {
     const statusMap: { [key: string]: string } = {
       'available': 'זמין',
@@ -404,7 +427,7 @@ labels: updatedLabels,
       'rejected': 'נדחה',
       'in_progress': 'בתהליך',
       'completed': 'הושלם',
-      'cancelled': 'בוטל'
+      'cancelled_due_to_no_show': 'בוטלה-נסיעה לא בוצעה'
     };
     return statusMap[status] || status;
   }
@@ -430,66 +453,9 @@ labels: updatedLabels,
     });
   }
 
-  // 🆕 MODIFY: Adjust the initial call logic within loadNoShowStatistics()
-  loadNoShowStatistics(): void {
-    // 🆕 ADD this check: Prevent loading if departments are not ready yet,
-    // unless it's the initial call (indicated by empty topNoShowUsers).
-    // This handles cases where socket updates might trigger it too early.
-    if (!this.departmentsLoaded && this.topNoShowUsers.length === 0) {
-      console.warn('Attempted to load no-show stats before departments were loaded. Waiting for departments...');
-      return; // Exit and wait for loadDepartments to call it
-    }
-
-    this.statisticsService.getNoShowStatistics(this.noShowFromDate, this.noShowToDate).subscribe({
-      next: (data) => {
-        this.totalNoShows = data.total_no_show_events;
-        this.uniqueNoShowUsers = data.unique_no_show_users;
-        this.topNoShowUsers = data.top_no_show_users;
-
-        this.noShowChartData = {
-          labels: ['הושלמו', 'לא הגיעו'],
-          datasets: [{
-            data: [
-              data.completed_rides_count,
-              data.total_no_show_events
-            ],
-            backgroundColor: ['#66BB6A', '#EF5350'],
-            hoverBackgroundColor: ['#81C784', '#EF9A9A']
-          }]
-        };
-
-        this.noShowChartOptions = {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'top',
-              labels: {
-                font: { size: 14 },
-                usePointStyle: true
-              }
-            },
-            tooltip: {
-              callbacks: {
-                label: function(context: any) {
-                  const totalRides = data.completed_rides_count + data.total_no_show_events;
-                  const percent = totalRides > 0 ? ((context.raw / totalRides) * 100).toFixed(1) : '0';
-                  return `${context.label}: ${context.raw} נסיעות (${percent}%)`; // Updated tooltip for percentage
-                }
-              }
-            }
-          }
-        };
-      },
-      error: (err) => {
-        console.error('❌ Failed to load no-show stats:', err);
-        this.toastService.show('אירעה שגיאה בטעינת נתוני אי-הגעה.', 'error');
-      }
-    });
-  }
 
 goToUserDetails(userId: string) {
-  this.router.navigate(['/admin/user-details', userId]);
+  this.router.navigate(['/user-card', userId]);
 }
  // 🆕 MODIFY: Use the component's internal departmentsMap
   resolveDepartment(departmentId: string): string {
@@ -632,6 +598,22 @@ goToUserDetails(userId: string) {
   };
 
   pdfMake.createPdf(docDefinition).download(`${title}-${safeTimestamp}.pdf`);
+}
+
+// Add this method to your component for better performance with *ngFor
+trackByUserId(index: number, user: any): any {
+  return user.user_id;
+}
+
+// Optional: Add loading state for better UX
+isTableLoading = false;
+
+// Optional: Add method to handle keyboard navigation
+onTableKeydown(event: KeyboardEvent, user: any): void {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    this.goToUserDetails(user.user_id);
+  }
 }
 
 public exportExcel(): void {
@@ -821,7 +803,9 @@ const title = isVehicleTab
     'rejected': 'Rejected',
     'in_progress': 'In Progress',
     'completed': 'Completed',
-    'cancelled': 'Cancelled'
+    'cancelled': 'Cancelled',
+    'cancelled_due_to_no_show': 'Cancelled - No Show' // Add this line
+
   };
   return statusMap[status] || status;
 }
@@ -846,7 +830,8 @@ private reverseHebrewLabel(hebrewLabel: string): string {
     'נדחה': 'rejected',
     'בתהליך': 'in_progress',
     'הושלם': 'completed',
-    'בוטל': 'cancelled'
+    'בוטל': 'cancelled',
+
   };
   return reverseMap[hebrewLabel] || hebrewLabel;
 }

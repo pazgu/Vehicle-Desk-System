@@ -126,39 +126,55 @@
         <label>עד תאריך:</label>
         <input type="date" [(ngModel)]="noShowToDate" (change)="loadNoShowStatistics()">
       </div>
-
-      <!-- Summary Cards -->
-      <div class="summary-cards">
-        <div class="card">סה"כ אי-הגעות: {{ totalNoShows }}</div>
-        <div class="card">משתמשים שונים: {{ uniqueNoShowUsers }}</div>
-      </div>
-
-      <!-- No‑Show Pie Chart -->
-      <p-chart
-        *ngIf="noShowChartData"
-        type="pie"
-        [data]="noShowChartData"
-        [options]="noShowChartOptions"
-      ></p-chart>
-
-      <!-- Top No‑Show Users Table -->
-      <table class="styled-table" *ngIf="topNoShowUsers.length">
-        <thead>
-          <tr>
-            <th>מזהה משתמש</th>
-            <th>שם</th>
-            <th>מחלקה</th>
-            <th>מספר אי-הגעות</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let user of topNoShowUsers" (click)="goToUserDetails(user.user_id)">
-            <td>{{ user.user_id }}</td>
-            <td>{{ user.name }}</td>
-            <td>{{ resolveDepartment(user.department_id) }}</td>
-            <td>{{ user.count }}</td>
-          </tr>
-        </tbody>
-      </table>
+<!-- Enhanced Summary Cards -->
+<div class="summary-cards">
+  <div class="card">
+    <div class="card-icon">📊</div>
+    <div class="card-content">
+      <div class="card-number">{{ totalNoShows }}</div>
+      <div class="card-label">סה"כ אי-הגעות</div>
     </div>
+  </div>
+  <div class="card">
+    <div class="card-icon">👥</div>
+    <div class="card-content">
+      <div class="card-number">{{ uniqueNoShowUsers }}</div>
+      <div class="card-label">משתמשים שונים</div>
+    </div>
+  </div>
+</div>
+
+<!-- Enhanced Table with Container -->
+<div class="table-container" *ngIf="topNoShowUsers && topNoShowUsers.length > 0; else noDataTemplate">
+  <table class="styled-table">
+    <thead>
+      <tr>
+        <th>מזהה משתמש</th>
+        <th>שם</th>
+        <th>מחלקה</th>
+        <th>מספר אי-הגעות</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let user of topNoShowUsers; trackBy: trackByUserId" 
+          (click)="goToUserDetails(user.user_id)"
+          [attr.data-user-id]="user.user_id"
+          class="table-row">
+        <td class="user-id">{{ user.user_id }}</td>
+        <td class="user-name">{{ user.name }}</td>
+        <td class="user-department">{{ resolveDepartment(user.department_id) }}</td>
+        <td class="no-show-count">{{ user.count }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- No Data Template -->
+<ng-template #noDataTemplate>
+  <div class="no-data-state">
+    <div class="no-data-icon">📋</div>
+    <div class="no-data-message">אין נתונים להצגה בטווח התאריכים הנבחר</div>
+  </div>
+</ng-template>
+  </div>
   </p-tabPanel>
