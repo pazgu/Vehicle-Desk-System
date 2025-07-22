@@ -322,7 +322,6 @@ async def start_ride(db: Session, ride_id: UUID):
     if vehicle.status != VehicleStatus.available:
         raise HTTPException(status_code=400, detail="Vehicle is not available")
 
-    ride.actual_pickup_time=datetime.now(timezone.utc)
 
     # 1️⃣ Update vehicle status
     update_vehicle_status(
@@ -335,11 +334,11 @@ async def start_ride(db: Session, ride_id: UUID):
     vehicle.last_used_at = func.now()
 
     # 2️⃣ Update ride status + pickup time
+    ride.actual_pickup_time = datetime.now(timezone.utc)
     ride.status = RideStatus.in_progress
     print('ride status was changed to in_progress')
 
-    if ride.actual_pickup_time is None:
-        ride.actual_pickup_time = datetime.utcnow() 
+   
 
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": f"{ride.user_id}"})
 

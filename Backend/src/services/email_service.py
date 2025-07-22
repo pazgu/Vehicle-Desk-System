@@ -81,6 +81,7 @@ def load_email_template(template_name: str, context: dict) -> str:
             content = content.replace(f"{{{{ {key} }}}}", str(value))  # With spaces
             content = content.replace(f"{{{{{key}}}}}", str(value))    # Without spaces
             
+            # Debug: Check if replacement happened
             # # Debug: Check if replacement happened
             # if old_content != content:
             #     #print(f"DEBUG: Replaced {key} with '{value}'")

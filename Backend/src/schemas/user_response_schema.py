@@ -18,7 +18,7 @@ class UserUpdate(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     email: Optional[EmailStr] = None
-    role: Optional[UserRole] = None   # <-- Use the Enum here
+    role: Optional[UserRole] = None 
     department_id: Optional[UUID] = None
     password: Optional[str] = None
     has_government_license: bool 
@@ -32,7 +32,7 @@ class UserResponse(BaseModel):
     email: EmailStr
     employee_id: UUID
     role: UserRole
-    department_id: UUID
+    department_id: Optional[UUID]
     has_government_license: bool
     license_file_url: Optional[str] = None
     license_expiry_date: Optional[date] = None

@@ -67,7 +67,7 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate):
         extra_stops = ride.extra_stops or None
     )
 
-    vehicle.odometer_reading += ride.estimated_distance_km
+    vehicle.mileage += ride.estimated_distance_km
 
     db.add(new_ride)
     db.commit()
@@ -79,8 +79,8 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate):
         "ride_id": str(new_ride.id),
         "new_status": new_ride.status.value
     })
-    await send_admin_odometer_notification(vehicle.id, vehicle.odometer_reading)
-    print(f"send_admin_odometer_notification called with vehicle_id={vehicle.id}, odometer_reading={vehicle.odometer_reading}")
+    await send_admin_odometer_notification(vehicle.id, vehicle.mileage)
+    print(f"send_admin_odometer_notification called with vehicle_id={vehicle.id}, mileage={vehicle.mileage}")
 
 
     # Notification for delegated ride
