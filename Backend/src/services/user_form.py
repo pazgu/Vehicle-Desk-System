@@ -77,6 +77,7 @@ async def process_completion_form(db: Session, user: User, form_data: Completion
             ride.status = RideStatus.completed
                 # print("ride status set to completed",flush=True)
                 # print('about to update monthly usage',flush=True)
+            ride.completion_date = datetime.now(timezone.utc)  # Set completion date    
             update_monthly_usage_stats(db=db, ride=ride)
                 # print('after updateing monthly usage',flush=True)
             increment_completed_trip_stat(db, ride.user_id, ride.start_datetime)
