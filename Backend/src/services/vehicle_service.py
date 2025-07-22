@@ -303,7 +303,8 @@ def get_vehicle_by_id(vehicle_id: str, db: Session):
         "department_id": vehicle.department_id,
         "canDelete": can_delete,
         "is_archived": vehicle.is_archived, 
-        "archived_at": vehicle.archived_at   
+        "archived_at": vehicle.archived_at,
+        "mileage_last_updated": vehicle.mileage_last_updated
     }
 
 def freeze_vehicle_service(db: Session, vehicle_id: UUID, reason: str, changed_by: UUID):
