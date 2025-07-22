@@ -61,7 +61,7 @@ async def send_notification_async(
 
 
 
-def create_system_notification(user_id, title, message, order_id=None,vehicle_id=None):
+def create_system_notification(user_id, title, message, order_id=None,vehicle_id=None,relevant_user_id=None):
     db = SessionLocal()
     try:
         notif = Notification(
@@ -71,7 +71,9 @@ def create_system_notification(user_id, title, message, order_id=None,vehicle_id
             message=message,
             sent_at=datetime.now(timezone.utc),
             order_id=order_id,
-            vehicle_id=vehicle_id
+            vehicle_id=vehicle_id,
+            relevant_user_id=relevant_user_id
+        
         )
         db.add(notif)
         db.commit()
@@ -91,6 +93,7 @@ def create_system_notification(user_id, title, message, order_id=None,vehicle_id
             "sent_at": notif.sent_at.isoformat(),
             "order_id": str(notif.order_id) if notif.order_id else None,
             "vehicle_id": str(notif.vehicle_id) if notif.vehicle_id else None,
+            "relevant_user_id": str(notif.relevant_user_id) if notif.relevant_user_id else None,
         }, room=str(user_id)))
 
         return notif
@@ -114,13 +117,13 @@ def create_system_notification_with_db(db: Session, user_id, title, message, ord
     db.add(notif)
     return notif  # don't commit here — let caller handle it
 
-async def send_admin_odometer_notification(vehicle_id: UUID, odometer_reading: float):
+async def send_admin_odometer_notification(vehicle_id: UUID, mileage: float):
     db = SessionLocal()
     try:
-        print(f"send_admin_odometer_notification called with vehicle_id={vehicle_id}, odometer_reading={odometer_reading}")
+        print(f"send_admin_odometer_notification called with vehicle_id={vehicle_id}, mileage={mileage}")
         admins = db.query(User).filter(User.role == 'admin').all()
-        print(f"Admins: {admins}, Odo: {odometer_reading}")
-        if not admins or odometer_reading < 10000:
+        print(f"Admins: {admins}, Odo: {mileage}")
+        if not admins or mileage < 10000:
             return None
 
         plate_number = None
@@ -143,7 +146,7 @@ async def send_admin_odometer_notification(vehicle_id: UUID, odometer_reading: f
                     user_id=admin.employee_id,
                     notification_type=NotificationType.system,
                     title="Vehicle Odometer Update",
-                    message=f"{plate_number} לרכב עם מספר רישוי ק״מ {odometer_reading} יש מד אוץ של ",
+                    message=f"{plate_number} לרכב עם מספר רישוי ק״מ {mileage} יש מד אוץ של ",
                     sent_at=datetime.now(timezone.utc),
                     vehicle_id=vehicle_id
                 )
@@ -188,12 +191,6 @@ def get_supervisor_id(user_id: UUID, db: Session) -> UUID | None:
 
     return department.supervisor_id
 
-    # Step 2: Get department's supervisor
-    department = db.query(Department).filter(Department.id == user.department_id).first()
-    if not department or not department.supervisor_id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Supervisor not found for this department.")
-
-    return department.supervisor_id
 
 
 
@@ -222,4 +219,4 @@ async def emit_new_notification(
         "vehicle_id": str(vehicle_id) if vehicle_id else None
     }
 
-    await sio.emit("new_notification", payload)
+    await sio.emit("new_notification", payload,room=str(notification.user_id))

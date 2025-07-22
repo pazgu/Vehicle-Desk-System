@@ -49,12 +49,10 @@ def send_email(to_email: str, subject: str, html_content: str, text_content: str
     try:
         # --- DEBUGGING ADDITION START ---
         if not SENDGRID_API_KEY:
-            print("DEBUG: SENDGRID_API_KEY is not loaded from .env. Check your .env file path and variable name.")
+            #print("DEBUG: SENDGRID_API_KEY is not loaded from .env. Check your .env file path and variable name.")
             raise ValueError("SENDGRID_API_KEY is missing.")
         else:
-            # Print a masked version of the key to confirm it's loaded without exposing it fully
             masked_key = f"{SENDGRID_API_KEY[:5]}...{SENDGRID_API_KEY[-5:]}"
-            print(f"DEBUG: Using SendGrid API Key (masked): {masked_key}")
         # --- DEBUGGING ADDITION END ---
         sg = SendGridAPIClient(SENDGRID_API_KEY)
         response = sg.send(message)
@@ -67,12 +65,13 @@ def send_email(to_email: str, subject: str, html_content: str, text_content: str
             return False # <--- Return False for a non-2xx status
 
     except Exception as e:
-        print(f"❌ Error sending email: {e}")
+        #print(f"❌ Error sending email: {e}")
         # כאן ניתן להחליט האם לזרוק או לא את החריגה
         raise
 
 
 async def async_send_email(to_email: str, subject: str, html_content: str, text_content: str = ""):
+    print('in send email sending')
     """
     שליחה אסינכרונית (לא חוסמת) של מייל דרך SendGrid.
     """
@@ -80,12 +79,28 @@ async def async_send_email(to_email: str, subject: str, html_content: str, text_
     return await loop.run_in_executor(None, send_email, to_email, subject, html_content, text_content)
 def load_email_template(template_name: str, context: dict) -> str:
     template_path = os.path.join("src", "templates", "emails", template_name)
-    with open(template_path, "r", encoding="utf-8") as file:
-        content = file.read()
-
-    for key, value in context.items():
-        content = content.replace(f"{{{{{key}}}}}", str(value))
-    return content
+    try:
+        with open(template_path, "r", encoding="utf-8") as file:
+            content = file.read()
+        for key, value in context.items():
+            old_content = content
+            # Handle both formats: {{ KEY }} and {{KEY}}
+            content = content.replace(f"{{{{ {key} }}}}", str(value))  # With spaces
+            content = content.replace(f"{{{{{key}}}}}", str(value))    # Without spaces
+            
+            # Debug: Check if replacement happened
+        
+        # Check if any placeholders remain
+        import re
+        remaining_placeholders = re.findall(r'\{\{[^}]+\}\}', content)
+        return content
+        
+    except FileNotFoundError:
+        #print(f"ERROR: Template file {template_path} not found")
+        return ""
+    except Exception as e:
+        #print(f"ERROR: Failed to load template {template_name}: {repr(e)}")
+        return ""
 
 def get_user_email(user_id: UUID, db: Session) -> str | None:
     """

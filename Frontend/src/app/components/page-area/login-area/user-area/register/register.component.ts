@@ -39,7 +39,8 @@ export class RegisterComponent implements OnInit {
       username: ['', [Validators.required, Validators.minLength(3), Validators.pattern(/^[A-Za-zא-ת]+$/)]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(8), Validators.pattern(/^(?=.*[A-Z])(?=.*\d).+$/)]],
-      department_id: ['', Validators.required]
+      department_id: ['', Validators.required],
+      phone: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]]
     });
 
     this.fetchDepartments();
@@ -96,7 +97,7 @@ export class RegisterComponent implements OnInit {
         localStorage.setItem('employee_id', response.employee_id);
         localStorage.setItem('role', response.role);
         localStorage.setItem('department_id', response.department_id);
-
+        localStorage.setItem('phone', response.phone);
         this.authService.setFullName(response.first_name, response.last_name);
         this.authService.setLoginState(true);
         this.authService.setRole(response.role);

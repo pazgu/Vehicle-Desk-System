@@ -130,7 +130,7 @@ this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
     this.orders = [...this.orders]
       
       const role=localStorage.getItem('role');
-      if(role==='supervisor' || role ==='employee'){
+      if(role==='supervisor' || role ==='employee' && updatedStatus!='approved'){
       this.toastService.show(' יש בקשה שעברה סטטוס','success')
       }
     }

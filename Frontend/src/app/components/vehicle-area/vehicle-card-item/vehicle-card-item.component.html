@@ -10,20 +10,26 @@
       <div class="vehicle-horizontal-content">
         <div class="right-side">
           <div class="usage-line">
-            <div class="usage-indicator" [style.background-color]="getUsageBarColor(vehicle.plate_number)">
-            </div>
+            <div class="usage-indicator" [style.background-color]="getUsageBarColor(vehicle.plate_number)"></div>
             <span class="usage-number" *ngIf="getVehicleUsageCount(vehicle.plate_number) > 0">
               {{ getVehicleUsageCount(vehicle.plate_number) }} נסיעות קיימות לרכב זה
             </span>
           </div>
-          <img *ngIf="vehicle.image_url" [src]="vehicle.image_url" alt="תמונה של הרכב" class="vehicle-details-img" />
+          <img
+            *ngIf="vehicle.image_url"
+            [src]="vehicle.image_url"
+            alt="תמונה של הרכב"
+            class="vehicle-details-img"
+          />
         </div>
 
         <div class="vehicle-details-info">
           <h2>רכב: {{ vehicle.plate_number }}</h2>
+
           <div *ngIf="isLeaseExpired(vehicle.lease_expiry)" class="lease-expired-warning">
             <mat-icon color="warn">warning</mat-icon> חוזה ההשכרה פג
           </div>
+
           <p><strong>דגם:</strong> {{ vehicle.vehicle_model }}</p>
           <p><strong>סטטוס:</strong> {{ translateStatus(vehicle.status) }}</p>
           <p><strong>סוג רכב:</strong> {{ translateType(vehicle.type) }}</p>
@@ -43,9 +49,10 @@
             <strong>סיבת הקפאה:</strong> {{ translateFreezeReason(vehicle.freeze_reason) }}
           </p>
 
-          <p><strong>ק״מ:</strong> {{ vehicle.odometer_reading }}</p>
+          <p><strong>ק״מ:</strong> {{ vehicle.mileage }}</p>
           <p><strong>מספר נסיעות לחודש זה:</strong> {{ currentVehicleRideCount }}</p>
           <p><strong>אחוז נסיעות לחודש זה:</strong></p>
+
           <div class="ride-progress">
             <span>{{ (currentVehicleRideCount / 20) * 100 | number:'1.0-0' }}%</span>
             <div class="progress-bar">
@@ -53,17 +60,20 @@
             </div>
           </div>
 
-          <p><strong>תוקף חוזה השכרה:</strong>
+          <p>
+            <strong>תוקף חוזה השכרה:</strong>
             {{ vehicle.lease_expiry ? (vehicle.lease_expiry | date: 'dd/MM/yyyy') : 'לא סופק' }}
           </p>
 
-          <!-- Unfreeze button -->
-          <button class="unfreeze-button button-spacing" (click)="updateVehicleStatus('available')"
+          <!-- שחרור מהקפאה -->
+          <button
+            class="unfreeze-button button-spacing"
+            (click)="confirmUnfreeze()"
             *ngIf="vehicle.status === 'frozen'">
             שחרור מהקפאה
           </button>
 
-          <!-- Freeze logic -->
+          <!-- הקפאת רכב -->
           <div *ngIf="vehicle.status === 'in-use' || vehicle.status === 'available'">
             <button class="freeze-button button-spacing" (click)="showFreezeReasonField()">
               הקפא רכב
@@ -76,14 +86,14 @@
                 <option value="accident">תאונה</option>
                 <option value="personal">אישי</option>
               </select>
-              <button class="confirm-freeze-button button-spacing" (click)="freezeStatus()">
+
+              <button class="confirm-freeze-button button-spacing" (click)="confirmFreeze()">
                 אישור הקפאה
               </button>
             </div>
           </div>
 
-          <!-- ✅ Split Delete & Archive Buttons -->
-          <!-- 🧊 Archive button -->
+          <!-- ארכוב -->
           <button
             *ngIf="vehicle.status === 'frozen' && isLeaseExpired(vehicle.lease_expiry) && vehicle.canDelete"
             class="freeze-button"
@@ -92,7 +102,7 @@
             ארכוב רכב
           </button>
 
-          <!-- 🗑 Delete button -->
+          <!-- מחיקה -->
           <button
             *ngIf="vehicle.status !== 'frozen' && vehicle.status !== 'in_use' && isLeaseExpired(vehicle.lease_expiry) && vehicle.canDelete"
             class="freeze-button"
@@ -101,6 +111,7 @@
             מחיקת רכב
           </button>
 
+          <!-- צפה בלוח זמנים -->
           <button class="timeline-button-inline button-spacing" (click)="navigateToTimeline()">
             צפה בלוח הזמנים
           </button>

@@ -10,7 +10,17 @@
             הוסף רכב חדש +
           </button>
         </div>
+  <img 
+        src="assets/images/trash_icon.png"
+        alt="הזמנות בארכיון"
+        width="40"
+        height="40"
+        title="הזמנות בארכיון"
+        style="cursor: pointer; margin-right: 4px;"
+        (click)="goToArchivedOrders()"
+     />
 
+    </div>
         <div class="right-buttons">
           <button class="filter" (click)="showFilters = !showFilters">
             {{ showFilters ? 'הסתר סינון' : 'הצג סינון' }}
@@ -19,9 +29,14 @@
           <button class="filter" (click)="toggleVehicleMode()">
             {{ showingMostUsed ? 'הצג את כל הרכבים' : 'הכי בשימוש החודש' }}
           </button>
-        </div>
-      </div>
 
+          <button class="filter archive-btn" (click)="navigateToArchivedVehicles()">
+            📁 ארכיון רכבים
+          </button>
+        </div>
+</div>
+
+        
       <div *ngIf="showingMostUsed" style="text-align: right; font-weight: bold; color: #922;">
         מוצגים רכבים לפי כמות שימושים החודש
       </div>
@@ -38,7 +53,15 @@
           <div class="status-item">
             <span class="status-indicator frozen"></span> מוקפא
           </div>
+          
         </div>
+        <br>
+          <div class="status-item" style="display: flex; align-items: center; gap: 5px;">
+            <div class="inactive-badge" style="position: static; transform: none; margin-top: 0;">
+              לא פעיל
+            </div>
+            <span>לא היה בשימוש מעל שבוע</span>
+          </div>
       </div>
 
       <div *ngIf="showFilters"
@@ -50,31 +73,86 @@
             <option value="זמין">זמין</option>
             <option value="בשימוש">בשימוש</option>
             <option value="מוקפא">מוקפא</option>
+            
           </select>
         </div>
+
 
         <div style="margin-bottom: 1rem; gap: 1rem; display: flex;">
           <label for="typeFilter"> סוג:</label>
           <select class="typeFilter" id="typeFilter" [(ngModel)]="typeFilter">
             <option value="">הצג הכל</option>
-            <option *ngFor="let type of vehicleTypes" [value]="type">{{ type }}</option>
+            <option *ngFor="let type of vehicleTypes" [value]="type.translated">{{ type.translated }}</option>
           </select>
         </div>
-        <div style="display: flex; align-items: center; gap: 0.5rem; direction: rtl;">
+
+
+        <div>
           <input
+            class="InactiveFilter"
+            id="InactiveFilter"
             type="checkbox"
-            id="showInactive"
-            [(ngModel)]="showInactive"
-            style="transform: scale(1.2); cursor: pointer;"
+            [(ngModel)]="InactiveFilter"
+            (change)="onInactiveFilterChange()"
           />
+          הצג מכוניות שלא היו בשימוש מעל לשבוע ⚠️
+        </div>
+
+
+        <div style="display: flex; align-items: center; gap: 0.5rem; direction: rtl;">
+          <input type="checkbox" id="showInactive" [(ngModel)]="showInactive"
+            style="transform: scale(1.2); cursor: pointer;" />
           <label for="showInactive" style="cursor: pointer;">
             הצג רק רכבים שלא היו בשימוש מעל לשבוע ⚠️
           </label>
         </div>
       </div>
 
+
+<div class="mileage-upload-section">
+  <h2>העלאת דוח ק"מ חודשי</h2>
+
+  <input
+    type="file"
+    accept=".xlsx"
+    (change)="onFileSelected($event)"
+    class="xlsx-upload-input"
+  />
+
+  <button
+    class="submit-button"
+    [disabled]="!selectedFile || isLoading"
+    (click)="uploadMileageReport()"
+  >
+    {{ isLoading ? 'מעלה...' : 'שלח דוח' }}
+  </button>
+
+  <div *ngIf="uploadSuccess" class="upload-success">
+    ✔️ הדוח הועלה בהצלחה!
+  </div>
+
+  <div *ngIf="uploadError" class="upload-error">
+    ❌ שגיאה בהעלאת הדוח: {{ uploadError }}
+  </div>
+
+  <div *ngIf="uploadSummary" class="upload-summary">
+    <h3>סיכום:</h3>
+    <p><strong>מספר רכבים שעודכנו:</strong> {{ uploadSummary.vehiclesUpdated }}</p>
+    <div *ngIf="uploadSummary.warnings?.length">
+      <strong>אזהרות / שגיאות:</strong>
+      <ul>
+        <li *ngFor="let warning of uploadSummary.warnings">{{ warning }}</li>
+      </ul>
+    </div>
+  </div>
+</div>
+      
+<br>
+
+
       <div class="vehicles-cards">
-        <p-card *ngFor="let vehicle of filteredVehicles" [styleClass]="'vehicle-card ' + getCardClass(vehicle.status) + (isInactive(vehicle.last_used_at) ? ' is-inactive' : '')"
+        <p-card *ngFor="let vehicle of filteredVehicles"
+          [styleClass]="'vehicle-card ' + getCardClass(vehicle.status) + (isInactive(vehicle.last_used_at) ? ' is-inactive' : '')"
           (click)="goToVehicleDetails(vehicle.id)">
 
           <ng-template pTemplate="header">
@@ -123,7 +201,6 @@
           לא נמצאו רכבים
         </ng-template>
       </div>
-
     </div>
   </div>
-</div>
+ 

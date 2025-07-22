@@ -3,6 +3,7 @@ from sqlalchemy import Column, String, Enum, ForeignKey , Boolean , Date
 from sqlalchemy.dialects.postgresql import UUID
 from src.models.base import Base
 import enum
+from sqlalchemy.orm import relationship
 
 class UserRole(str, enum.Enum):
     anonymous = "anonymous"
@@ -23,8 +24,10 @@ class User(Base):
     employee_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     password = Column(String, nullable=False)  # hashing afterwards
     role = Column(Enum(UserRole), nullable=False)
-    department_id = Column(UUID(as_uuid=True), ForeignKey("departments.id"), nullable=False)
+    department_id = Column(UUID(as_uuid=True), ForeignKey("departments.id"), nullable=True)
     has_government_license = Column(Boolean, default=False)
     license_file_url = Column(String, nullable=True)
     license_expiry_date = Column(Date, nullable=True)
     
+
+    no_show_events = relationship("NoShowEvent", back_populates="user")

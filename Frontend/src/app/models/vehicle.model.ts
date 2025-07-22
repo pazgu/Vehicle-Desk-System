@@ -8,7 +8,7 @@ export interface Vehicle {
   freeze_details?: string;
   last_used_at?: string;
   current_location: string;
-  odometer_reading: number;
+  mileage: number;
   vehicle_model: string;
   image_url: string;
   lease_expiry?: string;

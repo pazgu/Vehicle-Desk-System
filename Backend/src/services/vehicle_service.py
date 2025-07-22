@@ -6,7 +6,7 @@ from sqlalchemy import func, cast
 from sqlalchemy import and_ , or_ , not_ , select
 from ..models.ride_model import Ride, RideStatus
 from ..models.user_model import User
-from datetime import datetime, timezone, date
+from datetime import datetime, timezone, date, timedelta
 from ..schemas.vehicle_schema import VehicleOut, InUseVehicleOut
 from uuid import UUID
 from sqlalchemy import text
@@ -19,8 +19,12 @@ from ..schemas.user_rides_schema import RideSchema
 from ..services.email_service import get_user_email, load_email_template, async_send_email, send_email
 from datetime import datetime
 
+from src.utils.database import SessionLocal
 from ..services.email_service import get_user_email, load_email_template, async_send_email, send_email
 from datetime import datetime
+
+from fastapi.security import OAuth2PasswordBearer
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 # def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
@@ -59,7 +63,7 @@ def get_vehicles_with_optional_status(
         Vehicle.freeze_reason,
         Vehicle.last_used_at,
         Vehicle.current_location,
-        Vehicle.odometer_reading,
+        Vehicle.mileage,
         Vehicle.vehicle_model,
         Vehicle.image_url,
         Vehicle.department_id, 
@@ -292,12 +296,14 @@ def get_vehicle_by_id(vehicle_id: str, db: Session):
         "freeze_reason": vehicle.freeze_reason,
         "last_used_at": vehicle.last_used_at,
         "current_location": vehicle.current_location,
-        "odometer_reading": vehicle.odometer_reading,
+        "mileage": vehicle.mileage,
         "vehicle_model": vehicle.vehicle_model,
         "image_url": vehicle.image_url,
         "lease_expiry": vehicle.lease_expiry,
         "department_id": vehicle.department_id,
-        "canDelete": can_delete 
+        "canDelete": can_delete,
+        "is_archived": vehicle.is_archived, 
+        "archived_at": vehicle.archived_at   
     }
 
 def freeze_vehicle_service(db: Session, vehicle_id: UUID, reason: str, changed_by: UUID):
@@ -371,6 +377,43 @@ def delete_vehicle_by_id(vehicle_id: UUID, db: Session, user_id: UUID):
 
     return {"message": f"Vehicle {vehicle.plate_number} deleted successfully."}
 
+
+
+async def get_inactive_vehicles():
+    db: Session = SessionLocal()
+    try:
+        now = datetime.now(timezone.utc)
+        one_week_ago = now - timedelta(days=7)
+
+        # Get all vehicles
+        all_vehicles = db.query(Vehicle).all()
+
+        # Get latest ride per vehicle (if any)
+        recent_rides_subq = db.query(
+            Ride.vehicle_id,
+            func.max(Ride.end_datetime).label("last_ride")
+        ).filter(
+            Ride.status == "completed"
+        ).group_by(Ride.vehicle_id).subquery()
+
+        # Join vehicles to recent ride
+        inactive_vehicles = db.query(Vehicle, recent_rides_subq.c.last_ride).outerjoin(
+            recent_rides_subq, Vehicle.id == recent_rides_subq.c.vehicle_id
+        ).filter(
+            or_(
+                recent_rides_subq.c.last_ride == None,
+                recent_rides_subq.c.last_ride < one_week_ago
+            )
+        ).all()
+
+        if not inactive_vehicles:
+            return
+        else :
+            return inactive_vehicles
+        
+    finally:
+        db.close()
+
 def archive_vehicle_by_id(vehicle_id: UUID, db: Session, user_id: UUID) -> Vehicle:
     vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
     if not vehicle:
@@ -423,3 +466,4 @@ def archive_vehicle_by_id(vehicle_id: UUID, db: Session, user_id: UUID) -> Vehic
 
     db.execute(text("SET session.audit.user_id = DEFAULT"))
     return vehicle
+

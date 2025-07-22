@@ -7,7 +7,7 @@ export interface VehicleInItem {
   freeze_reason?: string | null;
   last_used_at?: string;
   current_location?: string;
-  odometer_reading: number;
+  mileage: number;
   vehicle_model: string;
   image_url: string;
   user_id?: string | null;
@@ -18,4 +18,6 @@ export interface VehicleInItem {
   ride_count?: number;
   department: string; 
   department_id?: string;
+  archived_at?: string | null;
+  is_archived?: boolean;
 }
