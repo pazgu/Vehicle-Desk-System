@@ -654,3 +654,432 @@ body {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+/* Summary Cards - Enhanced */
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+  direction: rtl;
+}
+
+.summary-cards .card {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.95));
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  padding: 1rem; 
+  text-align: center;
+  box-shadow: 
+    0 10px 30px rgba(148, 34, 34, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.6) inset;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  border-right: 5px solid #942222;
+}
+
+.summary-cards .card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #942222, #b91c1c, #dc2626);
+  background-size: 200% 100%;
+  animation: shimmer 3s infinite;
+}
+
+.summary-cards .card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 
+    0 20px 50px rgba(148, 34, 34, 0.15),
+    0 1px 0 rgba(255, 255, 255, 0.8) inset;
+  border-right-color: #b91c1c;
+}
+
+.summary-cards .card-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  display: block;
+  filter: drop-shadow(0 4px 8px rgba(148, 34, 34, 0.2));
+}
+
+.summary-cards .card-content {
+  font-family: 'Alef', sans-serif;
+}
+
+.summary-cards .card-number {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #942222;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 4px rgba(148, 34, 34, 0.1);
+}
+
+.summary-cards .card-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #4a5568;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* No-Show Users Table - Enhanced Red Theme */
+.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 2rem 0;
+  font-family: 'Alef', sans-serif;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 
+    0 15px 40px rgba(148, 34, 34, 0.12),
+    0 1px 0 rgba(255, 255, 255, 0.6) inset;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.98));
+  backdrop-filter: blur(25px);
+  border: 1px solid rgba(148, 34, 34, 0.1);
+  direction: rtl;
+  position: relative;
+}
+
+/* Table Header Styling - Red Theme */
+.styled-table thead {
+  background: linear-gradient(135deg, #942222 0%, #b91c1c 50%, #dc2626 100%);
+  position: relative;
+}
+
+.styled-table thead::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.15) 75%);
+  background-size: 30px 30px;
+  animation: tableHeaderAnimation 25s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes tableHeaderAnimation {
+  0% { background-position: 0 0; }
+  100% { background-position: 120px 120px; }
+}
+
+.styled-table th {
+  padding: 1.5rem 2rem;
+  text-align: center;
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  position: relative;
+  background: transparent;
+  border: none;
+  text-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+}
+
+.styled-table th::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 15%;
+  right: 15%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+  border-radius: 2px;
+}
+
+/* Table Body Styling - Enhanced */
+.styled-table tbody tr {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  background: rgba(255, 255, 255, 0.7);
+  border-bottom: 2px solid rgba(148, 34, 34, 0.08);
+}
+
+.styled-table tbody tr:nth-child(even) {
+  background: rgba(248, 250, 252, 0.7);
+}
+
+.styled-table tbody tr:hover {
+  background: linear-gradient(135deg, rgba(148, 34, 34, 0.08), rgba(185, 28, 28, 0.05));
+  transform: translateY(-2px) scale(1.005);
+  box-shadow: 
+    0 12px 35px rgba(148, 34, 34, 0.15),
+    0 1px 0 rgba(255, 255, 255, 0.9) inset;
+  border-radius: 12px;
+  z-index: 10;
+  position: relative;
+  border-bottom-color: transparent;
+}
+
+.styled-table tbody tr:hover::before {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  background: linear-gradient(135deg, #942222, #b91c1c, #dc2626);
+  border-radius: 4px 0 0 4px;
+}
+
+.styled-table tbody tr:active {
+  transform: translateY(0) scale(1.002);
+}
+
+/* Table Data Styling - Enhanced */
+.styled-table td {
+  padding: 1.3rem 2rem;
+  text-align: center;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2d3748;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+/* Special styling for different columns */
+.styled-table .user-id {
+  font-weight: 800;
+  color: #942222;
+  font-size: 1.1rem;
+  font-family: 'Courier New', monospace;
+  background: linear-gradient(135deg, rgba(148, 34, 34, 0.05), rgba(148, 34, 34, 0.02));
+  border-radius: 8px;
+  position: relative;
+}
+
+.styled-table .user-id::before {
+  content: '#';
+  color: rgba(148, 34, 34, 0.6);
+  margin-left: 0.3rem;
+  font-weight: 400;
+}
+
+.styled-table .user-name {
+  font-weight: 700;
+  color: #1a202c;
+  font-size: 1.05rem;
+}
+
+.styled-table .user-department {
+  color: #4a5568;
+  font-style: italic;
+  font-weight: 500;
+  background: linear-gradient(135deg, rgba(74, 85, 104, 0.05), rgba(74, 85, 104, 0.02));
+  border-radius: 6px;
+  padding: 0.5rem;
+}
+
+.styled-table .no-show-count {
+  font-weight: 900;
+  font-size: 1.2rem;
+  color: #ffffff;
+  background: linear-gradient(135deg, #942222, #b91c1c);
+  border-radius: 12px;
+  position: relative;
+  box-shadow: 
+    0 4px 12px rgba(148, 34, 34, 0.3),
+    0 1px 0 rgba(255, 255, 255, 0.2) inset;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.styled-table .no-show-count::before {
+  content: '⚠️';
+  margin-left: 0.6rem;
+  font-size: 1rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+/* Enhanced hover effects for individual cells */
+.styled-table tbody tr:hover .user-id {
+  color: #7c1d1d;
+  transform: scale(1.05);
+  background: linear-gradient(135deg, rgba(148, 34, 34, 0.12), rgba(148, 34, 34, 0.05));
+}
+
+.styled-table tbody tr:hover .user-name {
+  color: #0d1117;
+  transform: translateX(3px);
+}
+
+.styled-table tbody tr:hover .user-department {
+  background: linear-gradient(135deg, rgba(74, 85, 104, 0.12), rgba(74, 85, 104, 0.05));
+  transform: scale(1.02);
+}
+
+.styled-table tbody tr:hover .no-show-count {
+  background: linear-gradient(135deg, #7c1d1d, #991b1b);
+  box-shadow: 
+    0 8px 20px rgba(148, 34, 34, 0.4),
+    0 1px 0 rgba(255, 255, 255, 0.3) inset;
+  transform: scale(1.08);
+}
+
+/* Table container for better presentation */
+.table-container {
+  overflow-x: auto;
+  margin: 2rem 0;
+  border-radius: 20px;
+  box-shadow: 0 15px 40px rgba(148, 34, 34, 0.1);
+  position: relative;
+}
+
+.table-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, rgba(148, 34, 34, 0.02), rgba(185, 28, 28, 0.01));
+  pointer-events: none;
+  border-radius: 20px;
+}
+
+/* No Data State Styling */
+.no-data-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  background: linear-gradient(135deg, rgba(148, 34, 34, 0.05), rgba(248, 250, 252, 0.8));
+  border-radius: 20px;
+  margin: 2rem 0;
+  backdrop-filter: blur(10px);
+  border: 2px dashed rgba(148, 34, 34, 0.2);
+}
+
+.no-data-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  opacity: 0.6;
+}
+
+.no-data-message {
+  font-family: 'Alef', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #4a5568;
+  text-align: center;
+}
+
+/* Responsive design enhancements */
+@media (max-width: 768px) {
+  .styled-table th,
+  .styled-table td {
+    padding: 1rem 1.2rem;
+    font-size: 0.9rem;
+  }
+  
+  .styled-table th {
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+  }
+  
+  .styled-table .no-show-count {
+    font-size: 1.1rem;
+  }
+  
+  .summary-cards {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .summary-cards .card {
+    padding: 1.5rem;
+  }
+  
+  .summary-cards .card-number {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .styled-table {
+    font-size: 0.8rem;
+  }
+  
+  .styled-table th,
+  .styled-table td {
+    padding: 0.8rem 1rem;
+  }
+  
+  .styled-table th {
+    font-size: 0.75rem;
+    padding: 1.2rem 1rem;
+  }
+  
+  .styled-table .no-show-count::before {
+    display: none;
+  }
+  
+  .summary-cards .card-icon {
+    font-size: 2rem;
+  }
+  
+  .summary-cards .card-number {
+    font-size: 1.6rem;
+  }
+}
+
+/* Loading state for table */
+.table-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 250px;
+  background: linear-gradient(135deg, rgba(148, 34, 34, 0.05), rgba(255, 255, 255, 0.8));
+  border-radius: 20px;
+  backdrop-filter: blur(15px);
+  margin: 2rem 0;
+  border: 2px solid rgba(148, 34, 34, 0.1);
+}
+
+.table-loading::after {
+  content: '';
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(148, 34, 34, 0.3);
+  border-top: 5px solid #942222;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Additional subtle animations */
+.styled-table tbody tr::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(148, 34, 34, 0.03), rgba(185, 28, 28, 0.02));
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  border-radius: 12px;
+}
+
+.styled-table tbody tr:hover::after {
+  opacity: 1;
+}
