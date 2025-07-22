@@ -139,5 +139,8 @@ uploadMileageReport(file: File): Observable<any> {
   return this.http.post(`${this.apiUrl}/admin/vehicles/mileage/upload`, formData);
 }
 
-
+updateMilage(vehicleId: string, mileage: number): Observable<any> {
+  const body = { new_mileage: mileage };
+  return this.http.patch(`${this.apiUrl}/vehicles/${vehicleId}/mileage`, body); 
+}
 }

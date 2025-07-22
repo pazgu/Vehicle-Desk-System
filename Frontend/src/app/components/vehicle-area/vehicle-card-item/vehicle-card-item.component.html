@@ -49,7 +49,37 @@
             <strong>סיבת הקפאה:</strong> {{ translateFreezeReason(vehicle.freeze_reason) }}
           </p>
 
-          <p><strong>ק״מ:</strong> {{ vehicle.mileage }}</p>
+<!-- Mileage Display with Edit Button (shown only to admins) -->
+<p>
+  <strong>קילומטראז':</strong> {{ vehicle.mileage | number }} ק"מ
+  <button class="btn btn-sm btn-link" (click)="openMileageModal()">
+    ✏️ ערוך
+  </button>
+</p>
+<p><strong>עודכן לאחרונה:</strong> {{ vehicle.mileage_last_updated | date:'dd/MM/yyyy' }}</p>
+
+<!-- Edit Mileage Modal -->
+<div class="modal" [class.show]="showMileageModal" tabindex="-1" style="display: block;" *ngIf="showMileageModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">עדכון קילומטראז'</h5>
+        <button type="button" class="btn-close" (click)="closeMileageModal()"></button>
+      </div>
+      <div class="modal-body">
+        <label for="newMileage">קילומטראז' חדש:</label>
+        <input type="number" [(ngModel)]="newMileage" [min]="vehicle.mileage" class="form-control" id="newMileage" />
+
+        <small class="text-muted">התאריך: {{ currentDate | date:'dd/MM/yyyy HH:mm' }}</small>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeMileageModal()">ביטול</button>
+        <button class="btn btn-primary" [disabled]="newMileage <= vehicle.mileage" (click)="saveMileage()">שמור</button>
+      </div>
+    </div>
+  </div>
+</div>
+          
           <p><strong>מספר נסיעות לחודש זה:</strong> {{ currentVehicleRideCount }}</p>
           <p><strong>אחוז נסיעות לחודש זה:</strong></p>
 
