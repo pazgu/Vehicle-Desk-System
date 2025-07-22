@@ -121,13 +121,15 @@ export class AuditLogsComponent implements OnInit {
       { label: 'רכב', oldValue: oldData.vehicle_id, newValue: newData.vehicle_id },
       { label: 'סטטוס', oldValue: this.translateRideStatus(oldData.status), newValue: this.translateRideStatus(newData.status) },
       // { label: 'ארכיון', oldValue: oldData.isArchive, newValue: newData.isArchive },
-      { label: 'זמן התחלה', oldValue: oldData.start_datetime, newValue: newData.start_datetime },
+      { label: 'זמן התחלה מושער', oldValue: oldData.start_datetime, newValue: newData.start_datetime },
+      { label: 'זמן התחלה אמיתי', oldValue: oldData.actual_pickup_time, newValue: newData.actual_pickup_time },
       { label: 'זמן סיום', oldValue: oldData.end_datetime, newValue: newData.end_datetime },
       { label: 'תאריך שליחה', oldValue: oldData.submitted_at, newValue: newData.submitted_at },
       { label: 'מרחק מוערך (ק"מ)', oldValue: oldData.estimated_distance_km, newValue: newData.estimated_distance_km },
       { label: 'מרחק בפועל (ק"מ)', oldValue: oldData.actual_distance_km, newValue: newData.actual_distance_km },
       { label: 'בדיקת רישיון עברה', oldValue: oldData.license_check_passed, newValue: newData.license_check_passed },
-      { label: 'אירוע חירום', oldValue: oldData.emergency_event, newValue: newData.emergency_event }
+      { label: 'אירוע חירום', oldValue: oldData.emergency_event, newValue: newData.emergency_event },
+
     ];
   }
 
