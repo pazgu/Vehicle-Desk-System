@@ -10,12 +10,17 @@ from src.models.base import Base
 
 class VehicleInspection(Base):
     __tablename__ = "vehicle_inspections"
-   
+
     inspection_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     inspection_date = Column(DateTime, nullable=False, default=datetime.now(timezone.utc))
 
     # Foreign key to users table
     inspected_by = Column(UUID(as_uuid=True), ForeignKey("users.employee_id"), nullable=True)
+
+    # New foreign keys to vehicles table
+    dirty_vehicle_id = Column(UUID(as_uuid=True), ForeignKey("vehicles.id"), nullable=True)
+    items_left_vehicle_id = Column(UUID(as_uuid=True), ForeignKey("vehicles.id"), nullable=True)
+    critical_issue_vehicle_id = Column(UUID(as_uuid=True), ForeignKey("vehicles.id"), nullable=True)
 
     # Inspection details
     clean = Column(Boolean, nullable=False)
