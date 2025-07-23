@@ -16,40 +16,40 @@ export class MyRidesService {
 
   constructor(private http: HttpClient) { }
 
-  getFutureOrders(userId: string, filters?: any): Observable<any> {
+  // Helper method to create consistent headers
+  private getAuthHeaders(): HttpHeaders {
     const token = localStorage.getItem('access_token');
-    const headerss = new HttpHeaders({
-      Authorization: `Bearer ${token}`
+    return new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json'
     });
+  }
+
+  getFutureOrders(userId: string, filters?: any): Observable<any> {
+    const headers = this.getAuthHeaders();
     const orders = this.http.get(`${this.futureOrdersUrl}/${userId}`, {
       params: this.buildParams(filters),
-      headers: headerss
+      headers
     });
-    console.log(orders);
+    console.log('Fetching future orders for user:', userId);
     return orders;
   }
 
-  deleteOrder(OrderId: string): Observable<any> {
-    const token = localStorage.getItem('access_token');
-    const headerss = new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    });
-
-    return this.http.delete(`${this.allOrdersUrl}/${OrderId}`, { headers: headerss });
+  deleteOrder(orderId: string): Observable<any> {
+    const headers = this.getAuthHeaders().set('Content-Type', 'application/json');
+    
+    console.log('Deleting order:', orderId);
+    return this.http.delete(`${this.allOrdersUrl}/${orderId}`, { headers });
   }
 
   getPastOrders(userId: string, filters?: any): Observable<any> {
-    const token = localStorage.getItem('access_token');
-    const headerss = new HttpHeaders()
-      .set('Authorization', `Bearer ${token}`)
-      .set('Accept', 'application/json');
-
-    const orders = this.http.get(`${this.pastOrdersUrl}/${userId}`, { // <-- This line was changed
+    const headers = this.getAuthHeaders();
+    
+    const orders = this.http.get(`${this.pastOrdersUrl}/${userId}`, {
       params: this.buildParams(filters),
-      headers: headerss
+      headers
     });
-    console.log(orders);
+    console.log('Fetching past orders for user:', userId);
     return orders;
   }
 
@@ -61,11 +61,9 @@ export class MyRidesService {
       return of([]);
     }
 
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/json'
-    });
+    const headers = this.getAuthHeaders();
 
+    console.log('Fetching all orders for user:', userId, 'with filters:', filters);
     return this.http.get(`${this.allOrdersUrl}/${userId}`, {
       params: this.buildParams(filters),
       headers
@@ -82,12 +80,10 @@ export class MyRidesService {
 
     return params;
   }
-  checkStartedApprovedRides(): Observable<StartedRidesResponse> {
-    const token = localStorage.getItem('access_token');
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`
-    });
 
+  checkStartedApprovedRides(): Observable<StartedRidesResponse> {
+    const headers = this.getAuthHeaders();
+    
     return this.http.get<StartedRidesResponse>(environment.ridesSupposedToStartUrl, { headers });
   }
 

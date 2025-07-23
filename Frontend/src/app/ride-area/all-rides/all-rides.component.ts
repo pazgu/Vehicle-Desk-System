@@ -7,7 +7,7 @@ import { ToastService } from '../../services/toast.service';
 import { SocketService } from '../../services/socket.service';
 import { Location } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
-import { ConfirmDialogComponent } from '../../components/page-area/confirm-dialog/confirm-dialog.component';
+import { ConfirmDialogComponent, ConfirmDialogData } from '../../components/page-area/confirm-dialog/confirm-dialog.component';
 import { HttpErrorResponse } from '@angular/common/http';
 import { StartedRide, StartedRidesResponse } from '../../models/ride.model';
 
@@ -524,8 +524,7 @@ export class AllRidesComponent implements OnInit {
 
     this.router.navigate(['/ride/edit', order.ride_id]);
   }
-
-  deleteOrder(order: any): void {
+deleteOrder(order: any): void {
     const isPending = order.status.toLowerCase() === 'pending';
     const isFuture = this.parseDate(order.date) >= new Date();
 
@@ -539,7 +538,20 @@ export class AllRidesComponent implements OnInit {
       return;
     }
 
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {width: '380px', height:'190px', data: {}});
+    // Create proper dialog data
+    const dialogData: ConfirmDialogData = {
+      title: 'ביטול הזמנה',
+      message: `האם אתה בטוח שברצונך לבטל את ההזמנה?\n\nתאריך: ${order.date}\nשעה: ${order.time}\nסוג: ${order.type}`,
+      confirmText: 'בטל הזמנה',
+      cancelText: 'ביטול',
+      isDestructive: true
+    };
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      height: 'auto',
+      data: dialogData
+    });
 
     dialogRef.afterClosed().subscribe(confirmed => {
       if (!confirmed) return;
@@ -547,14 +559,19 @@ export class AllRidesComponent implements OnInit {
       this.rideService.deleteOrder(order.ride_id).subscribe({
         next: () => {
           this.toastService.show('ההזמנה בוטלה בהצלחה ✅', 'success');
-          this.socketService.deleteRequests$.subscribe((deletedRide) => {
-            if (deletedRide) {
-              console.log('a ride has been deleted via socket:', deletedRide);
-              this.fetchRides();
-            }
-          });
+          // Remove the order from local state immediately
+          const index = this.orders.findIndex(o => o.ride_id === order.ride_id);
+          if (index !== -1) {
+            this.orders = [
+              ...this.orders.slice(0, index),
+              ...this.orders.slice(index + 1)
+            ];
+          }
+          // Also refresh from server to ensure consistency
+          this.fetchRides();
         },
-        error: () => {
+        error: (error) => {
+          console.error('Error deleting order:', error);
           this.toastService.show('שגיאה בביטול ההזמנה ❌', 'error');
         }
       });
