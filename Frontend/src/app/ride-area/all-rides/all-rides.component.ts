@@ -559,6 +559,12 @@ deleteOrder(order: any): void {
       this.rideService.deleteOrder(order.ride_id).subscribe({
         next: () => {
           this.toastService.show('ההזמנה בוטלה בהצלחה ✅', 'success');
+          this.socketService.deleteRequests$.subscribe((deletedRide) => {
+          if (deletedRide) {
+            console.log('a ride has been deleted via socket:', deletedRide);
+            this.fetchRides();
+          }
+          });
           // Remove the order from local state immediately
           const index = this.orders.findIndex(o => o.ride_id === order.ride_id);
           if (index !== -1) {
