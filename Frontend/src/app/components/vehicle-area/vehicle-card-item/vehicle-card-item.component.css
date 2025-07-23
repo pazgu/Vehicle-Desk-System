@@ -270,3 +270,295 @@
   align-items: center;
   gap: 4px;
 }
+
+
+
+/* Mileage Display Styles - matching your design patterns */
+.mileage-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #cfcece;
+}
+
+.mileage-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.mileage-value {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.mileage-last-updated {
+  font-size: 0.85rem;
+  color: #655e5e;
+}
+
+.right-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.edit-mileage-btn {
+  background-color: #655e5e;
+  color: #fff;
+  border: none;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(52, 199, 89, 0.13);
+  letter-spacing: 0.3px;
+  min-width: 80px;
+}
+
+.edit-mileage-btn:hover,
+.edit-mileage-btn:focus {
+  background-color: #973838dc;
+  box-shadow: 0 2px 8px rgba(173, 49, 49, 0.89);
+}
+
+/* Modal Backdrop */
+.modal {
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+}
+
+.modal.show {
+  animation: fadeIn 0.15s ease-out;
+}
+
+/* Modal Dialog */
+.modal-dialog {
+  animation: slideDown 0.3s ease-out;
+  max-width: 500px;
+  background: none;
+}
+
+.modal-content {
+  border: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  border-radius: 0px;
+  background: #fff;
+}
+
+/* Modal Header */
+.modal-header {
+  background-color:  #973838dc;
+  color: white;
+  border-radius: 0px;
+  border-bottom: none;
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-title {
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.btn-close:hover {
+  opacity: 1;
+}
+
+/* Modal Body */
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-body label {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.5rem;
+  display: block;
+  font-size: 0.95rem;
+}
+
+.modal-body .form-control {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 0.5rem;
+  font-size: 1rem;
+  width: 100%;
+  margin-bottom: 1rem;
+  transition: border-color 0.2s;
+}
+
+.modal-body .form-control:focus {
+  outline: none;
+  border-color: #655e5e00;
+}
+
+.modal-body .form-control:invalid {
+  border-color: #973838dc;
+}
+
+.modal-body .text-muted {
+  background-color: #f8f9fa;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #cfcece;
+  display: inline-block;
+  font-size: 0.85rem;
+  color: #655e5e;
+}
+
+/* Modal Footer */
+.modal-footer {
+  border-top: 1px solid #cfcece;
+  padding: 1rem 1.5rem;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.modal-footer .btn {
+  padding: 0.35rem 0.9rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+  letter-spacing: 0.3px;
+  min-width: 80px;
+}
+
+.modal-footer .btn-secondary {
+  background-color: #cfcece;
+  color: #333;
+  box-shadow: 0 2px 8px rgba(207, 206, 206, 0.3);
+}
+
+.modal-footer .btn-secondary:hover {
+  background-color: #b8b7b7;
+  box-shadow: 0 2px 8px rgba(184, 183, 183, 0.5);
+}
+
+.modal-footer .btn-primary {
+  background-color: #655e5e;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(52, 199, 89, 0.13);
+}
+
+.modal-footer .btn-primary:hover:not(:disabled) {
+  background-color: #973838dc;
+  box-shadow: 0 2px 8px rgba(173, 49, 49, 0.89);
+}
+
+.modal-footer .btn-primary:disabled {
+  background-color: #cfcece;
+  color: #999;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Loading Spinner */
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.5rem;
+}
+
+/* Progress Indicator for Mileage (if needed) */
+.mileage-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: bold;
+  margin-top: 0.5rem;
+}
+
+.mileage-progress-bar {
+  width: 100px;
+  height: 4px;
+  background: #cfcece;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.mileage-progress-fill {
+  height: 100%;
+  background: #655e5e;
+  transition: width 0.3s ease;
+  border-radius: 2px;
+}
+
+/* Usage Indicator Style for Mileage Status */
+.usage-indicator {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  background: #655e5e;
+}
+
+/* RTL Support for Hebrew */
+[dir="rtl"] .modal-header,
+[dir="rtl"] .modal-body,
+[dir="rtl"] .modal-footer {
+  text-align: right;
+}
+
+[dir="rtl"] .modal-footer {
+  justify-content: flex-start;
+}
+
+[dir="rtl"] .mileage-info {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .right-side {
+  align-items: flex-start;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+
+
+/* Responsive Design */
+@media (max-width: 576px) {
+  .modal-dialog {
+    margin: 1rem;
+  }
+  
+  .modal-header,
+  .modal-body,
+  .modal-footer {
+    padding: 1rem;
+  }
+  
+}

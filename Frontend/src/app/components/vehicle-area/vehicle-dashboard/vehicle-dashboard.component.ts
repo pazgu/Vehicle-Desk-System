@@ -27,13 +27,22 @@ export class VehicleDashboardComponent implements OnInit {
   inactiveVehicles: Vehicle[] = []; // vehicles not used in 7+ days
   InactiveFilter: boolean = false; // checkbox state
   showInactive: boolean = false;
-  
+
   selectedType: string = '';
   statusFilter: string = '';
   typeFilter: string = '';
   showFilters: boolean = false;
   sortBy: string = 'date_and_time';
-  vehicleTypes: string[] = [];
+  vehicleTypes: { original: string; translated: string }[] = [];
+  vehicleTypeTranslations: { [key: string]: string } = {
+  'Private': 'פרטי',
+  'Small Commercial': 'מסחרי קטן',
+  'Large Commercial': 'מסחרי גדול',
+  '4x4 Pickup': '4x4 טנדר',
+  '4x4 SUV': '4x4 ג’יפ',
+  '8-Seater': 'מושבים 8'
+};
+
 
   topUsedVehiclesMap: Record<string, number> = {};
   vehicleUsageData: { plate_number: string; vehicle_model: string; ride_count: number }[] = [];
@@ -41,6 +50,11 @@ export class VehicleDashboardComponent implements OnInit {
   userRole: string | null = null;
 
   departmentMap: Map<string, string> = new Map();
+  selectedFile: File | null = null;
+isLoading = false;
+uploadSuccess = false;
+uploadError: string | null = null;
+uploadSummary: { vehiclesUpdated: number; warnings: string[] } | null = null;
 
   constructor(
     private vehicleService: VehicleService,
@@ -138,19 +152,23 @@ export class VehicleDashboardComponent implements OnInit {
     });
   }
 
-  fetchVehicleTypes() {
-    console.log('fetchVehicleTypes called');
-    this.vehicleService.getVehicleTypes().subscribe({
-      next: (types) => {
-        console.log('Fetched vehicle types:', types);
-        this.vehicleTypes = types || [];
-      },
-      error: (err) => {
-        console.error('Error fetching vehicle types:', err);
-        this.vehicleTypes = [];
-      }
-    });
-  }
+fetchVehicleTypes() {
+  console.log('fetchVehicleTypes called');
+  this.vehicleService.getVehicleTypes().subscribe({
+    next: (types) => {
+      console.log('Fetched vehicle types:', types);
+      this.vehicleTypes = (types || []).map(type => ({
+        original: type,
+        translated: this.vehicleTypeTranslations[type] || type // fallback to original if not found
+      }));
+    },
+    error: (err) => {
+      console.error('Error fetching vehicle types:', err);
+      this.vehicleTypes = [];
+    }
+  });
+}
+
 
   getVehicleUsageCount(plateNumber: string): number {
     return this.topUsedVehiclesMap[plateNumber] || 0;
@@ -233,7 +251,7 @@ export class VehicleDashboardComponent implements OnInit {
     }
   }
 
-   goToArchivedOrders() {
+  goToArchivedOrders() {
     this.router.navigate(['/vehicles/archived']);
   }
 
@@ -251,9 +269,9 @@ export class VehicleDashboardComponent implements OnInit {
     }
   }
 
-getInactiveVehicles(): Observable<Vehicle[]> {
-  return this.http.get<Vehicle[]>(`${environment.apiUrl}/vehicles/inactive`);
-}
+  getInactiveVehicles(): Observable<Vehicle[]> {
+    return this.http.get<Vehicle[]>(`${environment.apiUrl}/vehicles/inactive`);
+  }
   onInactiveFilterChange(): void {
     if (this.InactiveFilter) {
       this.getInactiveVehicles().subscribe({
@@ -267,7 +285,7 @@ getInactiveVehicles(): Observable<Vehicle[]> {
     } else {
       this.inactiveVehicles = [];
     }
-
+  }
   // New method to check if a vehicle is inactive
   isInactive(lastUsedAt: string | null | undefined): boolean {
     if (!lastUsedAt) {
@@ -279,6 +297,44 @@ getInactiveVehicles(): Observable<Vehicle[]> {
     return lastUsedDate < sevenDaysAgo;
 
   }
+
+  
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.selectedFile = input.files[0];
+      this.uploadError = null;
+      this.uploadSuccess = false;
+      this.uploadSummary = null;
+    }
+  }
+
+  uploadMileageReport() {
+    if (!this.selectedFile) return;
+
+    this.isLoading = true;
+    this.uploadError = null;
+    this.uploadSuccess = false;
+    this.uploadSummary = null;
+
+    this.vehicleService.uploadMileageReport(this.selectedFile).subscribe({
+      next: (response: any) => {
+        this.uploadSuccess = true;
+        this.uploadSummary = {
+          vehiclesUpdated: response.vehicles_updated || 0,
+          warnings: response.warnings || [],
+        };
+      },
+      error: (err) => {
+        this.uploadError = err.error?.detail || 'אירעה שגיאה בלתי צפויה';
+      },
+      complete: () => {
+        this.isLoading = false;
+        this.selectedFile = null;
+      },
+    });
+  }
+
 
   translateStatus(status: string | null | undefined): string {
     if (!status) return '';
@@ -293,7 +349,7 @@ getInactiveVehicles(): Observable<Vehicle[]> {
         return status;
     }
   }
-  
+
   get filteredVehicles() {
     const baseList = this.showingMostUsed ? this.mostUsedVehicles : this.vehicles;
 
@@ -318,21 +374,21 @@ getInactiveVehicles(): Observable<Vehicle[]> {
     if (this.typeFilter) {
       filtered = filtered.filter(vehicle => vehicle.type === this.typeFilter);
     }
-     if (this.InactiveFilter && this.inactiveVehicles.length > 0) {
+    if (this.InactiveFilter && this.inactiveVehicles.length > 0) {
       const inactiveIds = new Set(this.inactiveVehicles.map((v) => v.id));
       filtered = filtered.filter((v) => inactiveIds.has(v.id));
     }
 
 
-  if (this.showInactive) {
-  const oneWeekAgo = new Date();
-  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    if (this.showInactive) {
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
-  filtered = filtered.filter(vehicle => {
-    const lastUsed = vehicle.last_used_at ? new Date(vehicle.last_used_at) : null;
-    return !lastUsed || lastUsed < oneWeekAgo;
-  });
-}
+      filtered = filtered.filter(vehicle => {
+        const lastUsed = vehicle.last_used_at ? new Date(vehicle.last_used_at) : null;
+        return !lastUsed || lastUsed < oneWeekAgo;
+      });
+    }
 
     if (this.sortBy) {
       return [...filtered].sort((a, b) => a.status.localeCompare(b.status));
@@ -341,6 +397,6 @@ getInactiveVehicles(): Observable<Vehicle[]> {
     }
   }
   navigateToArchivedVehicles(): void {
-  this.router.navigate(['/archived-vehicles']);
-}
+    this.router.navigate(['/archived-vehicles']);
+  }
 }
