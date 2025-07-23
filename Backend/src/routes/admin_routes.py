@@ -1287,6 +1287,9 @@ def manual_mileage_edit(
     if not vehicle:
         raise HTTPException(status_code=404, detail="Vehicle not found")
 
+    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(current_user.employee_id)})
+
+
     if request.new_mileage < vehicle.mileage:
         raise HTTPException(
             status_code=400,
@@ -1297,6 +1300,9 @@ def manual_mileage_edit(
     vehicle.mileage_last_updated = datetime.utcnow()
 
     db.commit()
+
+    db.execute(text("SET session.audit.user_id = DEFAULT"))
+
 
     return {
         "message": "Mileage updated successfully",
