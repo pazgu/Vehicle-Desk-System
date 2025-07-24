@@ -218,8 +218,8 @@
   background: #dc5b5b !important;
 }
 
-.cancelled-due-to-no-show-row {
-  background-color: #e0d6e8 !important;
+.cancelled-due-to-no-show {
+  background: #e0d6e8 !important; /* or your desired color */
 }
 
 .in-progress-row{
