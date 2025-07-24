@@ -1083,3 +1083,30 @@ body {
 .styled-table tbody tr:hover::after {
   opacity: 1;
 }
+
+.critical-row {
+  background-color: #ffe0e0;
+  font-weight: bold;
+  color: #b71c1c;
+}
+
+.warning-row {
+  background-color: #fff3cd;
+}
+.filter-controls {
+  border: none !important;
+  background: transparent !important;
+  padding: 0;
+  box-shadow: none;
+}
+::ng-deep .p-tabview-nav {
+  background-color: white !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+::ng-deep .p-tabview-nav li .p-tabview-nav-link {
+  background-color: white !important; 
+  color: #1a1a1a !important;    
+  border: none !important;
+}

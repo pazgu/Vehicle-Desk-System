@@ -425,35 +425,47 @@ def get_roles():
 
 @router.get("/no-show-events/count")
 def get_no_show_events_count_per_user(db: Session = Depends(get_db)):
+    # Step 1: Query user + vehicle data
     results = (
         db.query(
             User.employee_id,
             User.username,
             User.email,
             User.role,
-            func.count(NoShowEvent.id).label("no_show_count"),
             Vehicle.plate_number
         )
         .join(NoShowEvent, User.employee_id == NoShowEvent.user_id)
         .join(Ride, Ride.id == NoShowEvent.ride_id)
         .join(Vehicle, Vehicle.id == Ride.vehicle_id)
-        .group_by(User.employee_id, Vehicle.plate_number)
         .all()
     )
 
-    return {
-        "users": [
-            {
-                "employee_id": row.employee_id,
+    # Step 2: Aggregate by user
+    user_data = {}
+
+    for row in results:
+        emp_id = row.employee_id
+        if emp_id not in user_data:
+            user_data[emp_id] = {
+                "employee_id": emp_id,
                 "name": row.username,
                 "email": row.email,
                 "role": row.role,
-                "no_show_count": row.no_show_count,
-                "plate_number": row.plate_number
+                "no_show_count": 0,
+                "plate_numbers": set()
             }
-            for row in results
-        ]
-    }
+
+        user_data[emp_id]["no_show_count"] += 1
+        user_data[emp_id]["plate_numbers"].add(row.plate_number)
+
+    # Step 3: Convert sets to lists
+    formatted_users = []
+    for data in user_data.values():
+        data["plate_numbers"] = list(data["plate_numbers"])
+        formatted_users.append(data)
+
+    return {"users": formatted_users}
+
 
 @router.get("/no-show-events/recent")
 def get_recent_no_show_events_per_user(
