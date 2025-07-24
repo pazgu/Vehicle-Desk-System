@@ -34,6 +34,74 @@ html, body {
   color: #007bff;
 }
 
+.time-select-container {
+  display: flex;
+  gap: 8px;
+  direction: ltr;
+}
+
+.time-select {
+  flex: 1;
+  min-width: 80px;
+}
+
+::ng-deep .ng-select {
+  font-family: inherit;
+  font-size: 14px;
+  border-radius: 6px;
+}
+
+::ng-deep .ng-select .ng-select-container {
+  border: 1px solid #ccc;
+  min-height: 36px;
+  padding: 0 6px;
+}
+
+::ng-deep .ng-dropdown-panel {
+  z-index: 9999 !important;
+}
+
+.custom-hour-dropdown {
+  max-height: 150px !important; /* Limit the dropdown height */
+  background-color: #e7c1c1;/* Change background color */
+  color: #333; /* Text color */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+/* Target the panel where options appear */
+::ng-deep .custom-hour-dropdown .ng-dropdown-panel {
+  max-height: 150px; /* Controls how tall the dropdown is */
+  overflow-y: auto;
+  overflow-x: hidden;
+  background-color: #fff0f0; /* Light red background */
+  border: 1px solid #333;
+}
+::ng-deep .custom-hour-dropdown .ng-dropdown-panel .ng-dropdown-panel-items {
+  max-height: unset !important;
+  overflow: visible !important;
+}
+
+/* Style individual options */
+::ng-deep .custom-hour-dropdown .ng-option {
+  background-color: #f8d7da;
+  color: #333;
+  padding: 8px;
+}
+
+/* Hover effect */
+::ng-deep .custom-hour-dropdown .ng-option:hover {
+  background-color: #0268d4;
+  color: white;
+}
+
+/* Selected option */
+::ng-deep .custom-hour-dropdown .ng-option-selected {
+  background-color: #0268d4;
+  color: white;
+}
+
+
+
 #extra-stop {
   display: flex;
   gap: 3px;
@@ -133,7 +201,7 @@ form .removeBtn {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    color: #007bff; /* Default active color */
+    color: #0079fb; /* Default active color */
 }
 
 form .addBtn:disabled {
