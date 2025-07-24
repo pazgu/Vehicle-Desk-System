@@ -1212,10 +1212,15 @@ def get_no_show_statistics(
 async def upload_mileage_excel(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    token: str = Depends(oauth2_scheme)
+    token: str = Depends(oauth2_scheme),
+    payload: dict = Depends(token_check)
 ):
+    user_id_from_token = payload.get("user_id") or payload.get("sub")
+
     # בדיקת הרשאה – רק admin
     role_check(["admin"], token)
+    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id_from_token)})
+
 
     # בדיקה שהקובץ הוא מסוג xlsx
     if not file.filename.endswith(".xlsx"):
@@ -1281,6 +1286,7 @@ async def upload_mileage_excel(
         })
 
     db.commit()
+    db.execute(text("SET session.audit.user_id = DEFAULT"))
 
     return {
         "updated": success,

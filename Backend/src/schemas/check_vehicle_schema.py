@@ -4,6 +4,12 @@ from uuid import UUID
 from datetime import datetime
 
 
+
+class IssueFoundSchema(BaseModel):
+    vehicle_id: UUID
+    issue_found: str
+
+
 class VehicleInspectionSchema(BaseModel):
     inspection_id: Optional[UUID] = None
     inspection_date: Optional[datetime] = None
@@ -19,6 +25,7 @@ class VehicleInspectionSchema(BaseModel):
     fuel_checked: bool
     no_items_left: bool
     critical_issue_bool: bool = Field(default=False)
-    issues_found: Optional[str] = None
+    issues_found: Optional[List[IssueFoundSchema]] = None
+
     class Config:
         from_attributes = True

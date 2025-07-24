@@ -16,4 +16,9 @@ export class InspectionService {
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
     return this.http.get<any[]>(`${this.apiUrl}/inspections/today`, { headers });
   }
+
+postInspection(inspectionData: any): Observable<any> {
+  return this.http.post<any>(`${environment.apiUrl}/vehicle-inspections`, inspectionData);
+}
+
 }
