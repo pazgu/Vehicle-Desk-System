@@ -24,8 +24,7 @@ import { AddNewUserComponent } from './components/admin-area/users/add-new-user/
 import { AddVehicleComponent } from './components/vehicle-area/add-vehicle/add-vehicle.component';
 import { ArchivedVehiclesComponent } from './components/vehicle-area/archived-vehicles/archived-vehicles.component';
 import { DepartmentDataComponent } from './components/admin-area/departments/department-data/department-data.component';
-import { DepartmentCardComponent } from './components/admin-area/departments/department-card/department-card.component';
-import { DepartmentEditComponent } from './components/admin-area/departments/department-edit/department-edit.component';
+import { DepartmentAddComponent } from './components/admin-area/departments/department-add/department-add.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -51,8 +50,7 @@ export const routes: Routes = [
   { path: 'vehicle-dashboard', component: VehicleDashboardComponent },
   { path: 'vehicle-dashboard/new-vehicle', component: AddVehicleComponent},
   { path: 'department-data', component: DepartmentDataComponent, canActivate: [ProtectedRouteGuard]},
-  { path: 'department-card', component: DepartmentDataComponent, canActivate: [ProtectedRouteGuard]},
-  { path: 'department-edit', component: DepartmentEditComponent, canActivate: [ProtectedRouteGuard]},
+  { path: 'department-card', component: DepartmentAddComponent, canActivate: [ProtectedRouteGuard]},
 
   { path: 'ride-completion-form/:ride_id', component: RideCompletionFormComponent },
   { path: 'audit-logs', component: AuditLogsComponent },
