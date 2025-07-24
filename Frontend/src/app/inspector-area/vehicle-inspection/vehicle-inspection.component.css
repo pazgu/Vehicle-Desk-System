@@ -1,28 +1,10 @@
-/* Container styling */
-.archived-container {
-  direction: rtl;
-  max-width: 720px;
-  margin: 2rem auto;
-  padding: 2rem;
-  background: rgba(255, 251, 251, 1);
-  border-radius: 16px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  font-family: var(--font-family-alef);
-  color: var(--text-rgb-107-26-26);
-}
 
-/* Header */
-.archived-container h1 {
-  text-align: center;
-  font-size: 28px;
-  margin-bottom: 1.5rem;
-}
 
 /* Labels and Inputs */
 label {
   display: block;
   font-size: 18px;
-  margin-top: 1rem;
+  margin-top: 2rem;
   margin-bottom: 0.3rem;
 }
 
@@ -80,7 +62,7 @@ textarea {
   padding: 1rem;
 }
 .error-msg {
-  color: red;
+  color: rgb(128, 0, 0);
   font-size: 14px;
   margin-bottom: 8px;
 }
@@ -91,9 +73,7 @@ textarea {
   font-weight: bold;
   color: #333;
 }
-input[type="range"] {
-  width: 100%;
-}
+
 
 .fuel-bar {
   height: 10px;
@@ -102,6 +82,95 @@ input[type="range"] {
   transition: width 0.3s ease, background-color 0.3s ease;
 }
 
-small{
-  font-size: 13px;
+
+/* Vehicle Issues Table */
+.vehicle-issues-table {
+  width: 100%;
+  max-width: 800px;
+  margin: 1rem auto;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.vehicle-issues-table th {
+  background-color: rgb(128, 0, 0);
+  color: white;
+  padding: 1rem;
+  margin-top: 60px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.vehicle-issues-table td {
+  padding: 0.75rem;
+  text-align: center;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.vehicle-issues-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.vehicle-issues-table td:first-child {
+  font-weight: bold;
+  color:rgb(128, 0, 0);
+}
+
+/* Custom Checkbox */
+.vehicle-issues-table input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  appearance: none;
+  background-color: #fff;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.vehicle-issues-table input[type="checkbox"]:checked {
+  background-color: #7b000c;
+  border-color: #79000c;
+}
+
+.vehicle-issues-table input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.vehicle-issues-table input[type="checkbox"] {
+  position: relative;
+}
+
+/* Submit Button */
+.cute-red-button {
+  background-color: #8b101d;
+  color: white;
+  border: none;
+  padding: 0.5rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  margin: 1rem auto;
+  display: block;
+  transition: background 0.2s ease;
+  margin-bottom: 50px !important
+}
+
+.cute-red-button:hover {
+  background-color: #ac0011;
+}
+
+.vehicle-issues-table {
+  margin-top: 50px;
 }

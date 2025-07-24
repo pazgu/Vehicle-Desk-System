@@ -75,6 +75,7 @@ async def process_completion_form(db: Session, user: User, form_data: Completion
         try:
                 # print("ride:", ride)
             ride.status = RideStatus.completed
+            
                 # print("ride status set to completed",flush=True)
                 # print('about to update monthly usage',flush=True)
             ride.completion_date = datetime.now(timezone.utc)  # Set completion date    
@@ -92,6 +93,7 @@ async def process_completion_form(db: Session, user: User, form_data: Completion
             raise HTTPException(status_code=404, detail="Vehicle not found")
         
         vehicle.last_used_at = ride.end_datetime
+        vehicle.last_user_id=ride.user_id
         
         # print('before checking if emergency is true:',form_data.emergency_event,flush=True)
         if (form_data.emergency_event =='true'):
