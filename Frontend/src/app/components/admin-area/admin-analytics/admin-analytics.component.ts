@@ -43,7 +43,7 @@ export class AdminAnalyticsComponent implements OnInit {
   vehicleChartOptions: any;
   rideChartData: any;
   rideChartOptions: any; 
-  selectedSortOption = 'default';
+  selectedSortOption = 'countDesc';
   activeTabIndex = 0;
   frozenVehicles=<VehicleOutItem[]>[];
   // Initialization flags
@@ -68,6 +68,12 @@ allTimeChartOptions: any;
   noShowFromDate?: string;
   noShowToDate?: string; 
 
+  filterOnePlus: boolean = false;
+  filterCritical: boolean = false;
+  allNoShowUsers: TopNoShowUser[] = [];
+  filteredNoShowUsers: TopNoShowUser[] = [];
+
+
 
 topUsedVehiclesData: any;
 topUsedVehiclesOptions: any;
@@ -77,7 +83,6 @@ monthlyStatsChartOptions: any;
 allTimeStatsChartData: any;
 allTimeStatsChartOptions: any;
 uniqueNoShowUsers: number = 0;
-
 
  // 🆕 ADD these two properties for department caching
   private departmentsMap = new Map<string, string>(); // To store department ID -> Name
@@ -396,6 +401,19 @@ labels: updatedLabels,
       this.totalNoShows = noShowData.total_no_show_events;
       this.uniqueNoShowUsers = noShowData.unique_no_show_users;
       this.topNoShowUsers = noShowData.top_no_show_users;
+const mappedUsers = noShowData.top_no_show_users.map(user => ({
+  ...user,
+  email: user.email || 'unknown@example.com',
+  role: user.role || 'לא ידוע',
+  employee_id: user.user_id,
+  no_show_count: user.count
+}));
+
+this.topNoShowUsers = mappedUsers;
+
+
+this.allNoShowUsers = mappedUsers;
+      this.applyNoShowFilter(); // Apply default filter/sort
       console.log("👀 Top No-Show Users:", this.topNoShowUsers);
 
     },
@@ -461,6 +479,38 @@ goToUserDetails(userId: string) {
   resolveDepartment(departmentId: string): string {
     return this.departmentsMap.get(departmentId) || 'מחלקה לא ידועה';
   }
+
+
+  applyNoShowFilter() {
+  let filtered = this.allNoShowUsers;
+
+  if (this.filterOnePlus) {
+    filtered = filtered.filter(u => (u.no_show_count ?? 0) >= 1 && (u.no_show_count ?? 0) <= 2);
+  }
+
+  if (this.filterCritical) {
+    filtered = filtered.filter(u => (u.no_show_count ?? 0) >= 3);
+  }
+
+  this.filteredNoShowUsers = this.sortUsers(filtered);
+}
+
+// ✅ Sort function based on selected dropdown option
+sortUsers(users: any[]) {
+  switch (this.selectedSortOption) {
+    case 'countAsc':
+      return users.sort((a, b) => a.no_show_count - b.no_show_count);
+    case 'countDesc':
+      return users.sort((a, b) => b.no_show_count - a.no_show_count);
+    case 'nameAsc':
+      return users.sort((a, b) => a.name.localeCompare(b.name));
+    case 'nameDesc':
+      return users.sort((a, b) => b.name.localeCompare(a.name));
+    default:
+      return users;
+  }
+}
+
 
 
  public exportPDF(): void {

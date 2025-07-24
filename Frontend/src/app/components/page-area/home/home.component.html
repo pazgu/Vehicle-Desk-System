@@ -104,12 +104,27 @@
 
            <div class="input-group">
   <label>שעת התחלה</label>
-  <input 
-    type="time" 
-    formControlName="start_time" 
-    step="900"
-    (blur)="validateTimeStep('start_time')"
-    (input)="onTimeInput($event, 'start_time')" />
+     <div class="time-select-container">
+    <ng-select
+      [items]="hours"
+      bindLabel=""
+      formControlName="start_hour"
+      placeholder="שעה"
+      class="time-select custom-hour-dropdown"
+      
+      [searchable]="false"
+      [clearable]="false">
+    </ng-select>
+    <ng-select
+      [items]="quarterHours"
+      bindLabel=""
+      formControlName="start_minute"
+      placeholder="דקות"
+      class="time-select custom-hour-dropdown"
+      [searchable]="false"
+      [clearable]="false">
+    </ng-select>
+  </div>
   <small *ngIf="rideForm.get('ride_period')?.value === 'morning' && f.start_time.touched && f.start_time.errors?.['required']" class="distance-info">
     חובה למלא את שדה זה
   </small>
@@ -120,12 +135,26 @@
 
 <div class="input-group">
   <label>שעת סיום</label>
-  <input 
-    type="time" 
-    formControlName="end_time" 
-    step="900"
-    (blur)="validateTimeStep('end_time')"
-    (input)="onTimeInput($event, 'end_time')" />
+ <div class="time-select-container">
+    <ng-select
+      [items]="hours"
+      bindLabel=""
+      formControlName="end_hour"
+      placeholder="שעה"
+      class="time-select custom-hour-dropdown"
+      [searchable]="false"
+      [clearable]="false">
+    </ng-select>
+    <ng-select
+      [items]="quarterHours"
+      bindLabel=""
+      formControlName="end_minute"
+      placeholder="דקות"
+      class="time-select custom-hour-dropdown"
+      [searchable]="false"
+      [clearable]="false">
+    </ng-select>
+    </div>
   <small *ngIf="rideForm.get('ride_period')?.value === 'morning' && f.end_time.touched && f.end_time.errors?.['required']" class="distance-info">
     חובה למלא את שדה זה
   </small>

@@ -1,112 +1,130 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 
-import { ToastService } from '../../services/toast.service';
 import { environment } from '../../../environments/environment';
+import { ToastService } from '../../services/toast.service';
+import { InspectionService } from '../../services/inspection.service';
+interface Vehicle {
+  id: string;
+  plate_number: string;
+}
+
+interface VehicleIssue {
+  vehicle_id: string;
+  plate: string;
+  dirty: boolean;
+  fuel_checked: boolean;
+  items_left: boolean;
+  critical_issue: boolean;
+  issues_found?: string;
+}
 
 @Component({
-  selector: 'app-vehicle-inspection',
+  selector: 'app-vehicle-issue-table',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './vehicle-inspection.component.html',
   styleUrls: ['./vehicle-inspection.component.css']
 })
 export class VehicleInspectionComponent implements OnInit {
-  inspectionForm!: FormGroup;
-  vehicleOptions: any[] = [];
+  vehicleIssues: VehicleIssue[] = [];
+  issues_found: string = '';
   loading = true;
+  submitting = false;
 
   constructor(
-    private fb: FormBuilder,
     private http: HttpClient,
     private router: Router,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private InspectorService: InspectionService
   ) {}
 
   ngOnInit(): void {
-    this.inspectionForm = this.fb.group({
-      clean: [false],
-      fuel_checked: [false],
-      no_items_left: [false],
-      critical_issue_bool: [false],
-      issues_found: ['']
-    });
-
-    this.inspectionForm.get('critical_issue_bool')?.valueChanges.subscribe(value => {
-      const field = this.inspectionForm.get('issues_found');
-      if (value === true) {
-        field?.setValidators([Validators.required]);
-      } else {
-        field?.clearValidators();
-        field?.setValue('');
-      }
-      field?.updateValueAndValidity();
-    });
-
     this.fetchVehicles();
   }
 
   fetchVehicles(): void {
-    this.http.get<any[]>(`${environment.apiUrl}/all-vehicles`).subscribe({
+    this.http.get<Vehicle[]>(`${environment.apiUrl}/all-vehicles`).subscribe({
       next: (vehicles) => {
-        this.vehicleOptions = vehicles;
+        this.vehicleIssues = vehicles.map(vehicle => ({
+          vehicle_id: vehicle.id,
+          plate: vehicle.plate_number,
+          dirty: false,
+          fuel_checked: false,
+          items_left: false,
+          critical_issue: false
+        }));
         this.loading = false;
       },
       error: () => {
-        const role = localStorage.getItem('role');
-        if (role !== 'inspector') {
-          this.toastService.show('שגיאה בטעינת רכבים', 'error');
-        }
+        this.toastService.show('שגיאה בטעינת רכבים', 'error');
         this.loading = false;
       }
     });
   }
 
-  submitInspection(): void {
-    console.log('🧪 Submit clicked');
-    console.log('Form value before submit:', this.inspectionForm.value);
+  submitIssues(): void {
+    this.submitting = true;
 
-    if (this.inspectionForm.invalid) {
-      console.warn('🛑 FORM IS INVALID', this.inspectionForm.value);
-      this.toastService.show('יש שגיאה בטופס, בדוק שוב את הערכים', 'error');
-      return;
-    }
+    const dirtyIds = this.vehicleIssues.filter(v => v.dirty).map(v => v.vehicle_id);
+    const itemsLeftIds = this.vehicleIssues.filter(v => v.items_left).map(v => v.vehicle_id);
+    const criticalIds = this.vehicleIssues.filter(v => v.critical_issue).map(v => v.vehicle_id);
 
-    const form = this.inspectionForm.value;
+    const fuelCheckedAll = this.vehicleIssues.every(v => v.fuel_checked);
+    const cleanAll = this.vehicleIssues.every(v => !v.dirty);
+    const itemsLeftNone = this.vehicleIssues.every(v => !v.items_left);
+    const hasCritical = criticalIds.length > 0;
 
-    const data = {
-      inspection_date: new Date(),
+    const payload = {
+      clean: cleanAll,
+      fuel_checked: fuelCheckedAll,
+      no_items_left: itemsLeftNone,
+      critical_issue_bool: hasCritical,
+      issues_found: this.vehicleIssues
+        .filter(v => v.critical_issue && v.issues_found?.trim())
+        .map(v => ({
+          vehicle_id: v.vehicle_id,
+          issue_found: v.issues_found?.trim() || ''
+        }))
+,
       inspected_by: localStorage.getItem('employee_id'),
-      clean: form.clean,
-      fuel_checked: form.fuel_checked,
-      no_items_left: form.no_items_left,
-      critical_issue_bool: form.critical_issue_bool,
-      issues_found: form.critical_issue_bool && form.issues_found?.trim()
-        ? form.issues_found.trim()
-        : null
+      dirty_vehicle_ids: dirtyIds,
+      items_left_vehicle_ids: itemsLeftIds,
+      critical_issue_vehicle_ids: criticalIds
     };
+console.log("issues:" , payload.issues_found);
+    const missingDescriptions = this.vehicleIssues.some(
+  v => v.critical_issue && (!v.issues_found || !v.issues_found)
+);
 
-    this.http.post(`${environment.apiUrl}/vehicle-inspections`, data).subscribe({
-      next: () => {
-        this.toastService.show('הבדיקה נשלחה בהצלחה', 'success');
-        const role = localStorage.getItem('role');
-        this.router.navigate([role === 'inspector' ? '/inspector/vehicles' : '/home']);
-      },
-      error: (err) => {
-        if (err.status === 401) {
-          this.toastService.show('הסתיים תוקף ההתחברות שלך. התחבר מחדש.', 'error');
-        } else {
-          this.toastService.show('שליחה נכשלה', 'error');
-        }
-      }
-    });
-  }
-
-  logClick(): void {
-    alert('🔍 Click detected!');
-  }
+if (missingDescriptions) {
+  this.toastService.show('יש למלא תיאור של האירוע החריג לכל רכב רלוונטי', 'error');
+  return;
 }
-//lala
+
+this.toastService.show('שולח בדיקה... יש להמתין');
+
+  this.InspectorService.postInspection(payload).subscribe({
+  next: () => {
+    console.log('✅ Issues submitted successfully:', payload);
+    this.toastService.show('הבדיקה נשלחה בהצלחה', 'success');
+    this.submitting = false;
+
+  },
+  error: (err) => {
+    console.error('❌ Failed to save inspection:', err);
+    this.toastService.show('שליחה נכשלה', 'error');
+          this.submitting = false;
+
+  }
+});
+
+  }
+  hasCriticalIssue(): boolean {
+  return this.vehicleIssues?.some(v => v.critical_issue) ?? false;
+}
+
+}

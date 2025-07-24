@@ -27,6 +27,14 @@ async def create_inspection(data: VehicleInspectionSchema, db: Session):
         inspections_created = []
 
         for vehicle_id in all_vehicle_ids:
+            issue_record = None
+            if data.issues_found:
+                issue_record = next(
+                    (item for item in data.issues_found if item.vehicle_id == vehicle_id),
+                    None
+                )
+            issue_text = issue_record.issue_found if issue_record else None
+
             inspection = VehicleInspection(
                 inspection_date=data.inspection_date or datetime.now(timezone.utc),
                 inspected_by=data.inspected_by,
@@ -34,7 +42,7 @@ async def create_inspection(data: VehicleInspectionSchema, db: Session):
                 fuel_checked=data.fuel_checked,
                 no_items_left=data.no_items_left,
                 critical_issue_bool=vehicle_id in critical_set,
-                issues_found=data.issues_found,
+                issues_found=issue_text,
                 dirty_vehicle_id=vehicle_id if vehicle_id in dirty_set else None,
                 items_left_vehicle_id=vehicle_id if vehicle_id in items_left_set else None,
                 critical_issue_vehicle_id=vehicle_id if vehicle_id in critical_set else None,
