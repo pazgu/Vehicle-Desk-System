@@ -26,6 +26,8 @@ import { Observable } from 'rxjs';
 import { LayoutComponent } from '../../layout-area/layout/layout.component';
 import { AuthService } from '../../../services/auth.service';
 import {  ValidationErrors } from '@angular/forms';
+import { NgSelectModule } from '@ng-select/ng-select';
+
 // Define the interface for pending vehicle
 interface PendingVehicle {
   vehicle_id: string;
@@ -67,13 +69,17 @@ interface Employee {
     ReactiveFormsModule,
     FormsModule,
     RouterModule,
-    HttpClientModule
+    HttpClientModule,
+    NgSelectModule
+
+
+
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
 export class NewRideComponent implements OnInit {
-  timeOptions: { value: string; label: string }[] = [];
+ timeOptions: string[] = [];
 
   rideForm!: FormGroup;
   minDate: string = '';
@@ -91,6 +97,8 @@ export class NewRideComponent implements OnInit {
   vehicleTypes: string[] = [];
   pendingVehicles: PendingVehicle[] = [];
   disableRequest: boolean = false;
+hours = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
+quarterHours = ['00', '15', '30', '45'];
 
 
   constructor(
@@ -108,6 +116,7 @@ export class NewRideComponent implements OnInit {
 
   ngOnInit(): void {
     this.initializeComponent();
+     
 
     // IMPORTANT: Trigger initial license check for 'self'
     // valueChanges won't fire for the default 'self' value on init.
@@ -132,6 +141,8 @@ export class NewRideComponent implements OnInit {
     this.fetchCities();
     this.loadVehicles();
     this.loadPendingVehicles();
+     this.generateTimeOptions();
+  this.setClosestQuarterHourTime();
   }
 
   private initializeForm(): void {
@@ -141,8 +152,12 @@ export class NewRideComponent implements OnInit {
       ride_period: ['morning'],
       ride_date: ['', [Validators.required, this.validYearRangeValidator(2025, 2099)]],
       ride_date_night_end: [''],
-        start_time: ['', [Validators.required, NewRideComponent.timeStepValidator]],
-  end_time: ['', [Validators.required, NewRideComponent.timeStepValidator]],
+       start_hour: ['', Validators.required],
+  start_minute: ['', Validators.required],
+  end_hour: ['', Validators.required],
+  end_minute: ['', Validators.required],
+        start_time: ['', Validators.required],
+  end_time: ['', Validators.required],
       estimated_distance_km: [null, Validators.required],
       ride_type: ['', Validators.required],
       vehicle_type: ['', Validators.required],
@@ -153,7 +168,7 @@ export class NewRideComponent implements OnInit {
       destination: [null],
       vehicle_type_reason: ['', Validators.required],
       four_by_four_reason: ['']
-    });
+    },{ validators: this.futureDateTimeValidator() });
 
     // Set default Tel Aviv location
     this.cityService.getCity('תל אביב').subscribe((city) => {
@@ -200,6 +215,28 @@ export class NewRideComponent implements OnInit {
 
   }
 
+
+  get startTime() {
+  const h = this.rideForm.get('start_hour')?.value;
+  const m = this.rideForm.get('start_minute')?.value;
+  return h && m ? `${h.padStart(2, '0')}:${m.padStart(2, '0')}` : null;
+}
+
+get endTime() {
+  const h = this.rideForm.get('end_hour')?.value;
+  const m = this.rideForm.get('end_minute')?.value;
+  return h && m ? `${h.padStart(2, '0')}:${m.padStart(2, '0')}` : null;
+}
+
+
+  generateTimeOptions() {
+  for (let hour = 0; hour < 24; hour++) {
+    for (let minutes of [0, 15, 30, 45]) {
+      const formatted = `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+      this.timeOptions.push(formatted);
+    }
+  }
+}
   getUserIdFromAuthService(): string | null {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -215,6 +252,46 @@ export class NewRideComponent implements OnInit {
     }
   }
 
+setClosestQuarterHourTime() {
+  const now = new Date();
+  const minutes = now.getMinutes();
+
+  // Calculate how many minutes to add to reach the next 15-min interval
+  const remainder = minutes % 15;
+  const addMinutes = remainder === 0 ? 15 : 15 - remainder;
+
+  now.setMinutes(minutes + addMinutes);
+  now.setSeconds(0);
+  now.setMilliseconds(0);
+
+  const startHour = now.getHours();
+  const startMinute = now.getMinutes();
+
+  // Calculate end time by adding 1 hour, adjust day wrap if needed
+  let endHour = startHour + 1;
+  let endMinute = startMinute;
+
+  if (endHour >= 24) {
+    endHour = 0;
+  }
+
+  const format = (num: number) => num.toString().padStart(2, '0');
+
+  const formattedStartTime = `${format(startHour)}:${format(startMinute)}`;
+
+  // Try to get next quarter time from timeOptions array
+  const startTimeIndex = this.timeOptions.indexOf(formattedStartTime);
+  const formattedEndTime = this.timeOptions[startTimeIndex + 1] || `${format(endHour)}:${format(endMinute)}`;
+
+  this.rideForm.patchValue({
+    start_time: formattedStartTime,
+    end_time: formattedEndTime,
+    start_hour: format(startHour),
+    start_minute: format(startMinute),
+    end_hour: format(endHour),
+    end_minute: format(endMinute),
+  });
+}
 
   private setupFormSubscriptions(): void {
     // 1. Handle changes to 'target_type' (self vs. other)
@@ -552,8 +629,8 @@ export class NewRideComponent implements OnInit {
   isPendingVehicle(vehicle_id: string): boolean {
     const rideDate = this.rideForm.get('ride_date')?.value;
     const ridePeriod = this.rideForm.get('ride_period')?.value;
-    const startTime = this.rideForm.get('start_time')?.value;
-    const endTime = this.rideForm.get('end_time')?.value;
+    const startTime = this.startTime;
+    const endTime = this.endTime;
 
     if (!rideDate || !ridePeriod || !vehicle_id || !startTime || !endTime) {
       return false;
@@ -826,6 +903,31 @@ static timeStepValidator(control: AbstractControl): ValidationErrors | null {
       }
     });
   }
+  
+futureDateTimeValidator(): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const date = control.get('ride_date')?.value;  // Your date control
+    const hour = control.get('start_hour')?.value;
+    const minute = control.get('start_minute')?.value;
+
+    if (!date || hour == null || minute == null) {
+      return null; // Don't validate if missing inputs yet
+    }
+
+    // Build selected Date object from form values
+    const selectedDateTime = new Date(date);
+    selectedDateTime.setHours(+hour, +minute, 0, 0);
+
+    const now = new Date();
+
+    // If selected time is before now => error
+    if (selectedDateTime <= now) {
+      return { dateTimeInPast: true };
+    }
+
+    return null; // valid
+  };
+}
 
   // Form submission
   submit(confirmedWarning = false): void {
@@ -859,8 +961,13 @@ static timeStepValidator(control: AbstractControl): ValidationErrors | null {
     const ridePeriod = this.rideForm.get('ride_period')?.value as 'morning' | 'night';
     const rideDate = this.rideForm.get('ride_date')?.value;
     const nightEndDate = this.rideForm.get('ride_date_night_end')?.value;
-    const startTime = this.rideForm.get('start_time')?.value;
-    const endTime = this.rideForm.get('end_time')?.value;
+    const startHour = this.rideForm.get('start_hour')?.value;
+    const startMinute = this.rideForm.get('start_minute')?.value;
+    const endHour = this.rideForm.get('end_hour')?.value;
+    const endMinute = this.rideForm.get('end_minute')?.value;
+
+    const startTime = `${startHour}:${startMinute}`;
+    const endTime = `${endHour}:${endMinute}`;
     const distance = this.rideForm.get('estimated_distance_km')?.value;
 
     // Time validation
@@ -892,6 +999,10 @@ static timeStepValidator(control: AbstractControl): ValidationErrors | null {
       rider_id = targetEmployeeId;
       requester_id = user_id;
     }
+    if (!startHour || !startMinute || !endHour || !endMinute) {
+  this.toastService.show('יש לבחור שעת התחלה ושעת סיום תקינה', 'error');
+  return;
+}
 
     // Build datetime strings
     const start_datetime = `${rideDate}T${startTime}`;
@@ -962,6 +1073,9 @@ static timeStepValidator(control: AbstractControl): ValidationErrors | null {
     }
 
   }
+  
+
+  
 
   // Form getters
   get f() {
@@ -971,6 +1085,10 @@ static timeStepValidator(control: AbstractControl): ValidationErrors | null {
       ride_date_night_end: this.rideForm.get('ride_date_night_end') as FormControl,
       start_time: this.rideForm.get('start_time') as FormControl,
       end_time: this.rideForm.get('end_time') as FormControl,
+       start_hour: this.rideForm.get('start_hour') as FormControl,
+    start_minute: this.rideForm.get('start_minute') as FormControl,
+    end_hour: this.rideForm.get('end_hour') as FormControl,
+    end_minute: this.rideForm.get('end_minute') as FormControl,
       estimated_distance_km: this.rideForm.get('estimated_distance_km') as FormControl,
       ride_type: this.rideForm.get('ride_type') as FormControl,
       vehicle_type: this.rideForm.get('vehicle_type') as FormControl,
