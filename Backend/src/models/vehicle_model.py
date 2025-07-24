@@ -45,5 +45,6 @@ class Vehicle(Base):
     department_id = Column(UUID(as_uuid=True), nullable=True)
     is_archived = Column(Boolean, default=False, nullable=False)
     archived_at = Column(DateTime, nullable=True)
+    last_user_id = Column(UUID(as_uuid=True),  nullable=True)
 
    

@@ -1024,8 +1024,18 @@ scheduler.add_job(periodic_check_unstarted_rides, 'interval', minutes=1)
 
 
 scheduler.start()
+
+
+
+def start_scheduler():
+    scheduler.add_job(notify_admins_daily, 'cron', hour=6, minute=0)
+    scheduler.start()
+
+
+
         
 def start_scheduler():
     scheduler = BackgroundScheduler(timezone=pytz.timezone("Asia/Jerusalem"))
     scheduler.add_job(notify_admins_daily, 'cron', hour=6, minute=0)
     scheduler.start()
+
