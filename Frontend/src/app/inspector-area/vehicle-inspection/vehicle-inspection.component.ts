@@ -6,7 +6,7 @@ import { Router } from '@angular/router';
 
 import { environment } from '../../../environments/environment';
 import { ToastService } from '../../services/toast.service';
-
+import { InspectionService } from '../../services/inspection.service';
 interface Vehicle {
   id: string;
   plate_number: string;
@@ -19,6 +19,7 @@ interface VehicleIssue {
   fuel_checked: boolean;
   items_left: boolean;
   critical_issue: boolean;
+  issues_found?: string;
 }
 
 @Component({
@@ -32,11 +33,13 @@ export class VehicleInspectionComponent implements OnInit {
   vehicleIssues: VehicleIssue[] = [];
   issues_found: string = '';
   loading = true;
+  submitting = false;
 
   constructor(
     private http: HttpClient,
     private router: Router,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private InspectorService: InspectionService
   ) {}
 
   ngOnInit(): void {
@@ -64,6 +67,8 @@ export class VehicleInspectionComponent implements OnInit {
   }
 
   submitIssues(): void {
+    this.submitting = true;
+
     const dirtyIds = this.vehicleIssues.filter(v => v.dirty).map(v => v.vehicle_id);
     const itemsLeftIds = this.vehicleIssues.filter(v => v.items_left).map(v => v.vehicle_id);
     const criticalIds = this.vehicleIssues.filter(v => v.critical_issue).map(v => v.vehicle_id);
@@ -78,28 +83,45 @@ export class VehicleInspectionComponent implements OnInit {
       fuel_checked: fuelCheckedAll,
       no_items_left: itemsLeftNone,
       critical_issue_bool: hasCritical,
-      issues_found: hasCritical ? this.issues_found.trim() : null,
+      issues_found: this.vehicleIssues
+        .filter(v => v.critical_issue && v.issues_found?.trim())
+        .map(v => ({
+          vehicle_id: v.vehicle_id,
+          issue_found: v.issues_found?.trim() || ''
+        }))
+,
       inspected_by: localStorage.getItem('employee_id'),
       dirty_vehicle_ids: dirtyIds,
       items_left_vehicle_ids: itemsLeftIds,
       critical_issue_vehicle_ids: criticalIds
     };
+console.log("issues:" , payload.issues_found);
+    const missingDescriptions = this.vehicleIssues.some(
+  v => v.critical_issue && (!v.issues_found || !v.issues_found)
+);
 
-    if (hasCritical && !this.issues_found.trim()) {
-      this.toastService.show('יש למלא תיאור של האירוע החריג', 'error');
-      return;
-    }
+if (missingDescriptions) {
+  this.toastService.show('יש למלא תיאור של האירוע החריג לכל רכב רלוונטי', 'error');
+  return;
+}
 
-    this.http.post(`${environment.apiUrl}/vehicle-inspections`, payload).subscribe({
-      next: () => {
-        console.log('Issues submitted successfully:', payload);
-        this.toastService.show('הבעיות נשלחו בהצלחה', 'success');
-        this.router.navigate(['/inspector/inspection']);
-      },
-      error: () => {
-        this.toastService.show('שליחה נכשלה', 'error');
-      }
-    });
+this.toastService.show('שולח בדיקה... יש להמתין');
+
+  this.InspectorService.postInspection(payload).subscribe({
+  next: () => {
+    console.log('✅ Issues submitted successfully:', payload);
+    this.toastService.show('הבדיקה נשלחה בהצלחה', 'success');
+    this.submitting = false;
+
+  },
+  error: (err) => {
+    console.error('❌ Failed to save inspection:', err);
+    this.toastService.show('שליחה נכשלה', 'error');
+          this.submitting = false;
+
+  }
+});
+
   }
   hasCriticalIssue(): boolean {
   return this.vehicleIssues?.some(v => v.critical_issue) ?? false;
