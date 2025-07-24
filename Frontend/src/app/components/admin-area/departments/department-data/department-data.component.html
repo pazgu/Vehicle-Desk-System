@@ -1,1 +1,11 @@
-<p>department-data works!</p>
+<div class="departments-container">
+  <h2>נתוני מחלקות</h2>
+  <div class="departments-list">
+    <div class="department-cards" *ngFor="let department of departments">
+        <div class="department-info">
+            <h3>{{ department.name }}</h3>
+            <p>מנהל מחלקה : {{ department.supervisor_id }}</p>
+        </div>
+  <!-- <button (click)="addNewDepartment()" class="add-department-button">הוסף מחלקה חדשה</button> -->
+
+</div>

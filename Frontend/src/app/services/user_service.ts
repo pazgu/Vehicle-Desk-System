@@ -95,7 +95,7 @@ export class UserService {
 
 
  getDepartments(): Observable<{ id: string; name: string }[]> {
-  return this.http.get<{ id: string; name: string }[]>(`${this.apiUrl}/departments`);
+  return this.http.get<{ id: string; name: string, supervisor_id: string }[]>(`${this.apiUrl}/departments`);
 }
 
   getNoShowCount(userId: string): Observable<number> {
