@@ -2,16 +2,16 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { UserService } from '../../../services/user_service';
-import { ToastService } from '../../../services/toast.service';
+import { UserService } from '../../../../services/user_service';
+import { ToastService } from '../../../../services/toast.service';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { RedirectByRoleComponent } from '../../../services/redirect-by-role';
+import { RedirectByRoleComponent } from '../../../../services/redirect-by-role';
 import { Router } from '@angular/router';
-import { SocketService } from '../../../services/socket.service';
+import { SocketService } from '../../../../services/socket.service';
 import { Subscription } from 'rxjs';
 import { Socket } from 'socket.io-client';
-import { environment } from '../../../../environments/environment';
+import { environment } from '../../../../../environments/environment';
 
 
 @Component({

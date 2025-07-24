@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { User } from '../../../models/user.model';
-import { UserService, NoShowResponse } from '../../../services/user_service';
-import { environment } from '../../../../environments/environment';
+import { User } from '../../../../models/user.model';
+import { UserService, NoShowResponse } from '../../../../services/user_service';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-user-card',

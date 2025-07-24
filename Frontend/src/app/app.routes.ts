@@ -9,9 +9,9 @@ import { OrderCardComponent } from './components/supervisor-area/order-card/orde
 import { NotificationsComponent } from './components/page-area/notifications/notifications.component';
 import { RedirectByRoleComponent } from './services/redirect-by-role';
 import { ProtectedRouteGuard } from './components/auth-area/protectedroute/protected-route.guard';
-import { UserDataComponent } from './components/admin-area/user-data/user-data.component';
-import { UserDataEditComponent } from './components/admin-area/user-data-edit/user-data-edit.component';
-import { UserCardComponent } from './components/admin-area/user-card/user-card.component';
+import { UserDataComponent } from './components/admin-area/users/user-data/user-data.component';
+import { UserDataEditComponent } from './components/admin-area/users/user-data-edit/user-data-edit.component';
+import { UserCardComponent } from './components/admin-area/users/user-card/user-card.component';
 import { VehicleCardItemComponent } from './components/vehicle-area/vehicle-card-item/vehicle-card-item.component';
 import { VehicleDashboardComponent } from './components/vehicle-area/vehicle-dashboard/vehicle-dashboard.component';
 import { RideCompletionFormComponent } from './components/page-area/ride-completion-form/ride-completion-form.component';
@@ -20,7 +20,7 @@ import { AvailableAndFrozenCarsComponent } from './inspector-area/available-and-
 import { ForgotPasswordComponent } from './components/auth-area/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './components/auth-area/reset-password/reset-password.component';
 import { AdminAnalyticsComponent } from './components/admin-area/admin-analytics/admin-analytics.component';
-import { AddNewUserComponent } from './components/admin-area/add-new-user/add-new-user.component';
+import { AddNewUserComponent } from './components/admin-area/users/add-new-user/add-new-user.component';
 import { AddVehicleComponent } from './components/vehicle-area/add-vehicle/add-vehicle.component';
 import { ArchivedVehiclesComponent } from './components/vehicle-area/archived-vehicles/archived-vehicles.component';
 
@@ -96,7 +96,7 @@ export const routes: Routes = [
 {
   path: 'admin/add-new-user',
   loadComponent: () =>
-    import('./components/admin-area/add-new-user/add-new-user.component').then(
+    import('./components/admin-area/users/add-new-user/add-new-user.component').then(
       m => m.AddNewUserComponent
     ),
   canActivate: [ProtectedRouteGuard], // assuming this is your existing guard
