@@ -211,6 +211,7 @@ async def create_order(
 
         supervisor_id = get_supervisor_id(user_id, db)
         employee_name = get_user_name(db, new_ride.user_id)
+        is_extended = (new_ride.end_datetime - new_ride.start_datetime) > timedelta(days=2)
 
         if supervisor_id:
             supervisor_notification = create_system_notification(
@@ -228,7 +229,10 @@ async def create_order(
                 "notification_type": supervisor_notification.notification_type.value,
                 "sent_at": supervisor_notification.sent_at.isoformat(),
                 "order_id": str(supervisor_notification.order_id) if supervisor_notification.order_id else None,
-                "order_status": new_ride.status
+                "order_status": new_ride.status,
+                "is_extended_request": is_extended 
+
+
             })
 
             # שליחת מייל למנהל - כאן הקוראים ל-async_send_email

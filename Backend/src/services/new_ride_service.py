@@ -82,7 +82,6 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate):
     await send_admin_odometer_notification(vehicle.id, vehicle.mileage)
     print(f"send_admin_odometer_notification called with vehicle_id={vehicle.id}, mileage={vehicle.mileage}")
 
-    is_extended = (new_ride.end_datetime - new_ride.start_datetime) > timedelta(days=2)
 
     # Notification for delegated ride
     if ride.target_type == "other" and ride.user_id:
@@ -101,7 +100,6 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate):
             "sent_at": delegated_notification.sent_at.isoformat(),
             "order_id": str(delegated_notification.order_id) if delegated_notification.order_id else None,
             "order_status": new_ride.status,
-            "is_extended_request": is_extended 
 
 
         })
