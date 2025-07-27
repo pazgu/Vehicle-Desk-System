@@ -6,7 +6,7 @@ from ..schemas.new_ride_schema import RideCreate, RideResponse
 from ..models.ride_model import Ride, RideStatus
 from ..models.user_model import User
 from ..utils.email_utils import send_email
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from ..utils.audit_utils import log_action
 from ..models.vehicle_model import Vehicle
 from ..utils.socket_manager import sio
@@ -82,6 +82,7 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate):
     await send_admin_odometer_notification(vehicle.id, vehicle.mileage)
     print(f"send_admin_odometer_notification called with vehicle_id={vehicle.id}, mileage={vehicle.mileage}")
 
+    is_extended = (new_ride.end_datetime - new_ride.start_datetime) > timedelta(days=2)
 
     # Notification for delegated ride
     if ride.target_type == "other" and ride.user_id:
@@ -99,7 +100,10 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate):
             "notification_type": delegated_notification.notification_type.value,
             "sent_at": delegated_notification.sent_at.isoformat(),
             "order_id": str(delegated_notification.order_id) if delegated_notification.order_id else None,
-            "order_status": new_ride.status
+            "order_status": new_ride.status,
+            "is_extended_request": is_extended 
+
+
         })
 
     admins = db.query(User).filter(User.role == "admin").all()
