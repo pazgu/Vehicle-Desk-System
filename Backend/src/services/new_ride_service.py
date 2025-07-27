@@ -6,7 +6,7 @@ from ..schemas.new_ride_schema import RideCreate, RideResponse
 from ..models.ride_model import Ride, RideStatus
 from ..models.user_model import User
 from ..utils.email_utils import send_email
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from ..utils.audit_utils import log_action
 from ..models.vehicle_model import Vehicle
 from ..utils.socket_manager import sio
@@ -99,7 +99,9 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate):
             "notification_type": delegated_notification.notification_type.value,
             "sent_at": delegated_notification.sent_at.isoformat(),
             "order_id": str(delegated_notification.order_id) if delegated_notification.order_id else None,
-            "order_status": new_ride.status
+            "order_status": new_ride.status,
+
+
         })
 
     admins = db.query(User).filter(User.role == "admin").all()
