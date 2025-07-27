@@ -1,8 +1,31 @@
 <div class="departments-container">
   <h2>נתוני מחלקות</h2>
-  <button class="add-department-button" >
+  <button (click)="toggleNewDepartmentMode()"  class="add-department-button" >
     + הוסף מחלקה חדשה
   </button>
+<div *ngIf="isNewDepartmentMode" class="new-department-form">
+  <form [formGroup]="newDepartmentForm" (ngSubmit)="submitNewDepartment()">
+ 
+    <div>
+      <label>שם מחלקה</label>
+      <input formControlName="name" type="text" />
+    </div>
+
+    <div>
+      <label>מנהל מחלקה</label>
+     <select formControlName="supervisor_id">
+  <option value="">בחר מנהל</option> <!-- 👈 Required default empty option -->
+  <option *ngFor="let user of users" [value]="user.employee_id">
+    {{ user.first_name }} {{ user.last_name }}
+  </option>
+</select>
+
+    </div>
+
+    <button type="submit" [disabled]="newDepartmentForm.invalid">שמור</button>
+  </form>
+</div>
+
   
   <div class="departments-list">
     <div class="department-cards" *ngFor="let department of departments">

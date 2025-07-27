@@ -166,6 +166,10 @@ getDepartmentsWithSupervisors(): Observable<{ id: string; name: string; supervis
       events: this.getRecentNoShowEvents(userId, limit)
     });
   }
+
+getSupervisors(): Observable<User[]> {
+  return this.http.get<User[]>(`${this.apiUrl}/all/supervisors`)
 }
 
 
+}
