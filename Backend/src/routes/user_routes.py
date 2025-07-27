@@ -237,7 +237,16 @@ async def create_order(
                 # Get the city name from the city ID
                 destination_city = db.query(City).filter(City.id == new_ride.stop).first()
                 destination_name = destination_city.name if destination_city else str(new_ride.stop)
-
+                duration_days = (new_ride.end_datetime - new_ride.start_datetime).days + 1
+               
+                extended_banner = ""
+                if ride_request.is_extended_request:
+                    extended_banner = f"""
+                    <div style="background-color: #fff3cd; color: #856404; padding: 15px; border-radius: 8px; border: 1px solid #ffeeba; margin-bottom: 20px; text-align: center;">
+                    ⚠️ <strong>בקשה זו כוללת נסיעה ארוכה של {duration_days} ימים ודורשת את תשומת לבך המיידית</strong>
+                    </div>
+                    """
+                
                 html_content = load_email_template("new_ride_request.html", {
                     "SUPERVISOR_NAME": get_user_name(db, supervisor_id) or "מנהל",
                     "EMPLOYEE_NAME": employee_name,
@@ -246,6 +255,8 @@ async def create_order(
                     "PLATE_NUMBER": new_ride.plate_number or "לא נבחר",
                     "DISTANCE": str(new_ride.estimated_distance_km),
                     "STATUS": new_ride.status,
+                    "EXTENDED_BANNER": extended_banner
+
                     # "LINK_TO_ORDER": f"{BOOKIT_URL}/home?order_id={new_ride.id}"
                     })
                 await async_send_email(

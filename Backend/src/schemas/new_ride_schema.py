@@ -33,6 +33,8 @@ class RideCreate(BaseModel):
     four_by_four_reason: Optional[str] = None 
     target_type: Optional[str] = "self"  # "Self" or "Other"
     extra_stops: Optional[List[UUID]] = None 
+    is_extended_request: Optional[bool] = False
+
     
 class RideResponse(BaseModel):
     id: UUID
@@ -54,6 +56,8 @@ class RideResponse(BaseModel):
     override_user_id: UUID
     plate_number: str
     extra_stops: Optional[List[UUID]] = None 
+    is_extended_request: Optional[bool] = False
+
 
 class RideWithWarningResponse(RideResponse):
     inspector_warning: bool
