@@ -3,6 +3,10 @@ export interface TopNoShowUser {
   name: string;
   department_id: string;
   count: number;
+  email?: string;
+  role?: string;
+  employee_id?: string; // used for row click
+  no_show_count?: number; // used in filters and ngClass
 }
 
 export interface NoShowStatsResponse {

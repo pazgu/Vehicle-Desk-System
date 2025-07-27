@@ -55,6 +55,8 @@ from src.services.admin_rides_service import get_critical_issue_by_id
 from src.schemas.order_card_item import OrderCardItem
 from src.schemas.statistics_schema import NoShowStatsResponse,TopNoShowUser
 from src.models.department_model import Department
+from src.schemas.department_schema import DepartmentCreate, DepartmentUpdate, DepartmentOut
+from src.services import department_service
 
 import pandas as pd
 
@@ -425,35 +427,47 @@ def get_roles():
 
 @router.get("/no-show-events/count")
 def get_no_show_events_count_per_user(db: Session = Depends(get_db)):
+    # Step 1: Query user + vehicle data
     results = (
         db.query(
             User.employee_id,
             User.username,
             User.email,
             User.role,
-            func.count(NoShowEvent.id).label("no_show_count"),
             Vehicle.plate_number
         )
         .join(NoShowEvent, User.employee_id == NoShowEvent.user_id)
         .join(Ride, Ride.id == NoShowEvent.ride_id)
         .join(Vehicle, Vehicle.id == Ride.vehicle_id)
-        .group_by(User.employee_id, Vehicle.plate_number)
         .all()
     )
 
-    return {
-        "users": [
-            {
-                "employee_id": row.employee_id,
+    # Step 2: Aggregate by user
+    user_data = {}
+
+    for row in results:
+        emp_id = row.employee_id
+        if emp_id not in user_data:
+            user_data[emp_id] = {
+                "employee_id": emp_id,
                 "name": row.username,
                 "email": row.email,
                 "role": row.role,
-                "no_show_count": row.no_show_count,
-                "plate_number": row.plate_number
+                "no_show_count": 0,
+                "plate_numbers": set()
             }
-            for row in results
-        ]
-    }
+
+        user_data[emp_id]["no_show_count"] += 1
+        user_data[emp_id]["plate_numbers"].add(row.plate_number)
+
+    # Step 3: Convert sets to lists
+    formatted_users = []
+    for data in user_data.values():
+        data["plate_numbers"] = list(data["plate_numbers"])
+        formatted_users.append(data)
+
+    return {"users": formatted_users}
+
 
 @router.get("/no-show-events/recent")
 def get_recent_no_show_events_per_user(
@@ -1200,10 +1214,15 @@ def get_no_show_statistics(
 async def upload_mileage_excel(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    token: str = Depends(oauth2_scheme)
+    token: str = Depends(oauth2_scheme),
+    payload: dict = Depends(token_check)
 ):
+    user_id_from_token = payload.get("user_id") or payload.get("sub")
+
     # בדיקת הרשאה – רק admin
     role_check(["admin"], token)
+    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id_from_token)})
+
 
     # בדיקה שהקובץ הוא מסוג xlsx
     if not file.filename.endswith(".xlsx"):
@@ -1269,6 +1288,7 @@ async def upload_mileage_excel(
         })
 
     db.commit()
+    db.execute(text("SET session.audit.user_id = DEFAULT"))
 
     return {
         "updated": success,
@@ -1309,3 +1329,22 @@ def manual_mileage_edit(
         "vehicle_id": str(vehicle.id),
         "new_mileage": request.new_mileage
     }
+
+@router.post("/departments", response_model=DepartmentOut, status_code=201)
+def create_department(dept: DepartmentCreate, db: Session = Depends(get_db)):
+    return department_service.create_department(db, dept)
+
+@router.patch("/departments/{department_id}", response_model=DepartmentOut)
+def patch_department(department_id: UUID, dept: DepartmentUpdate, db: Session = Depends(get_db)):
+    return department_service.update_department(db, department_id, dept)
+
+
+@router.get("/departments/supervisors")
+def get_supervisors(db: Session = Depends(get_db)):
+    supervisors = db.query(User).filter(User.role == UserRole.supervisor).all()
+    return [
+        {
+            "id": sup.employee_id,
+            "name": f"{sup.first_name} {sup.last_name}"
+        } for sup in supervisors
+    ]
