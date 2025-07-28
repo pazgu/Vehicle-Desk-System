@@ -5,8 +5,11 @@ from typing import List, Optional
 class TopNoShowUser(BaseModel):
     user_id: UUID
     name: str
-    department: Optional[str] = None 
+    department_id: Optional[UUID] = None
     count: int
+    email: Optional[str] = None
+    role: Optional[str] = None
+    employee_id: Optional[str] = None
 
 class NoShowStatsResponse(BaseModel):
     total_no_show_events: int
