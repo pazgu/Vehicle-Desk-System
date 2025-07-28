@@ -1,0 +1,582 @@
+/* Form Container */
+.form-container {
+  background-color: white;
+  padding: 20px 28px;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 750px;
+  margin: 0 auto;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  font-family: 'Alef', sans-serif;
+  direction: rtl;
+  min-height: 0;
+}
+
+/* Header */
+.form-container h2 {
+  color: #942222;
+  text-align: right;
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* Form Styling */
+.form-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Form Group */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group.center {
+  align-items: center;
+  margin-top: 20px;
+}
+
+/* Labels */
+.form-group label {
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+  text-align: right;
+  margin-bottom: 5px;
+}
+
+/* Input Fields */
+.form-group input,
+.form-group select {
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #d3b1b1;
+  background-color: #e7c1c1;
+  font-family: 'Assistant', sans-serif;
+  font-size: 16px;
+  direction: rtl;
+  text-align: right;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #942222;
+  box-shadow: 0 0 0 2px rgba(148, 34, 34, 0.1);
+}
+
+/* Select Specific Styling */
+.form-group select {
+  cursor: pointer;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: left 12px center;
+  background-size: 16px;
+  padding-left: 40px;
+}
+
+.form-group select option {
+  background-color: white;
+  color: #333;
+}
+
+/* Submit Button */
+.submit-btn {
+  background-color: #942222;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  font-family: 'Alef', sans-serif;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+  min-width: 150px;
+}
+
+.submit-btn:hover {
+  background-color: #7a1c1c;
+  transform: scale(1.03);
+}
+
+.submit-btn:active {
+  transform: scale(0.98);
+}
+
+/* Input validation states */
+.form-group input.ng-invalid.ng-touched,
+.form-group select.ng-invalid.ng-touched {
+  border-color: #dc3545;
+  background-color: #f8d7da;
+}
+
+.form-group input.ng-valid.ng-touched,
+.form-group select.ng-valid.ng-touched {
+  border-color: #28a745;
+  background-color: #d4edda;
+}
+
+/* Error messages */
+.error-text {
+  color: #dc3545;
+  font-size: 13px;
+  margin-top: 4px;
+  text-align: right;
+}
+
+/* Password Input Container - exactly like login */
+.password-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input {
+  width: 100%;
+  padding: 10px 40px 10px 10px; /* space for the icon on the right */
+  border: 1px solid #d3b1b1;
+  background: #e7c1c1;
+  border-radius: 5px;
+  font-size: 16px;
+  direction: rtl;
+  font-family: 'Assistant', sans-serif;
+}
+
+.show-password {
+  position: absolute;
+  left: 10px;
+  top: 20%;
+  cursor: pointer;
+  color: #555;
+  z-index: 90;
+  width: 30px;
+  height: 30px;
+}
+
+.show-password:hover {
+  color: #942222;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .form-container {
+    padding: 16px 20px;
+    margin: 10px;
+    width: calc(100% - 20px);
+  }
+  
+  .form-container h2 {
+    font-size: 20px;
+    margin-bottom: 16px;
+  }
+  
+  .form-group {
+    gap: 6px;
+  }
+  
+  .form-group input,
+  .form-group select {
+    padding: 12px;
+    font-size: 16px;
+  }
+  
+  .submit-btn {
+    padding: 14px 20px;
+    font-size: 16px;
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .form-container {
+    padding: 12px 16px;
+    border-radius: 8px;
+  }
+  
+  .form-container h2 {
+    font-size: 18px;
+  }
+  
+  .form-group input,
+  .form-group select {
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  .error {
+  color: red;
+  font-size: 0.8rem;
+  margin-top: 2px;
+}
+
+input.ng-touched.ng-invalid,
+select.ng-touched.ng-invalid {
+  border: 1px solid red;
+}
+
+}
+
+
+
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color:  #0ea70b;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #0ea70b;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+#warning{
+  color:rgb(220, 0, 0);
+  font-weight: bold;
+}
+.slider::after {
+  content: "לא";
+  position: absolute;
+  color: white;
+  font-size: 14px;
+  right: 10px;
+  top: 6px;
+  transition: 0.4s;
+}
+
+input:checked + .slider::after {
+  content: "כן";
+  right: 10px;
+  color: #333;
+}
+
+
+
+
+
+
+
+
+.form-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 30px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  direction: rtl;
+}
+
+.form-container h2 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 30px;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+  font-size: 14px;
+  text-align: right;
+}
+
+/* Text inputs */
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group select {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+  text-align: right;
+  direction: rtl;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+/* Select dropdowns */
+.form-group select {
+  cursor: pointer;
+  background-color: white;
+}
+
+.form-group select option {
+  text-align: right;
+  direction: rtl;
+}
+
+/* Password container */
+.password-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input {
+  width: 100%;
+  padding: 12px 45px 12px 15px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+  text-align: right;
+  direction: rtl;
+}
+
+.show-password {
+  position: absolute;
+  left: 12px;
+  cursor: pointer;
+  color: #666;
+  user-select: none;
+  z-index: 2;
+}
+
+.show-password:hover {
+  color: #007bff;
+}
+
+/* Toggle switch for government license */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+  margin-top: 5px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+}
+
+input:checked + .slider {
+  background-color: #28a745;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+/* Warning message */
+#warning {
+  color: #ff6b35;
+  background-color: #fff3e0;
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 4px solid #ff6b35;
+  margin: 15px 0;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Custom file upload */
+.custom-file-upload {
+  position: relative;
+}
+
+.custom-file-upload input[type="file"] {
+  display: none;
+}
+
+.file-upload-area {
+  width: 100%;
+  padding: 15px;
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  background-color: #fafafa;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 55px;
+  box-sizing: border-box;
+}
+
+.file-upload-area:hover {
+  border-color: #28a745;
+  background-color: #f8fff8;
+}
+
+.file-text {
+  color: #666;
+  font-size: 14px;
+  flex: 1;
+  text-align: right;
+  padding-right: 10px;
+}
+
+.choose-file-btn {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background-color 0.3s ease;
+}
+
+.choose-file-btn:hover {
+  background-color: #218838;
+}
+
+/* Error messages */
+.error {
+  display: block;
+  color: #dc3545;
+  font-size: 12px;
+  margin-top: 5px;
+  font-weight: 500;
+  text-align: right;
+}
+
+/* Submit button */
+.form-group.center {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.submit-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 15px 40px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  min-width: 150px;
+}
+
+.submit-btn:hover {
+  background-color: #0056b3;
+}
+
+.submit-btn:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .form-container {
+    margin: 20px;
+    padding: 20px;
+  }
+  
+  .form-container h2 {
+    font-size: 20px;
+  }
+}

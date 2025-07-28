@@ -95,7 +95,7 @@ def get_departments():
         departments = session.query(Department).all()
 
         # Prepare the response as a list of dicts
-        result = [{"id": dept.id, "name": dept.name} for dept in departments]
+        result = [{"id": dept.id, "name": dept.name, "supervisor_id": dept.supervisor_id} for dept in departments]
         return result
     
     finally:
