@@ -1173,32 +1173,46 @@ def get_no_show_statistics(
     # 3. Get top users with pagination
     offset = (page - 1) * page_size
     top_users_query = (
-        db.query(
-            NoShowEvent.user_id,
-            func.concat(User.first_name, ' ', User.last_name).label("name"),
-            Department.id.label("department_id"),
-            func.count(NoShowEvent.id).label("count"),
-        )
-        .outerjoin(User, User.employee_id == NoShowEvent.user_id)
-        .outerjoin(Department, Department.id == User.department_id)
-        .filter(NoShowEvent.occurred_at >= from_date if from_date else True)
-        .filter(NoShowEvent.occurred_at <= to_date if to_date else True)
-        .group_by(NoShowEvent.user_id, User.first_name, User.last_name, Department.id)
-        .order_by(desc("count"))
-        .offset(offset)
-        .limit(page_size)
-        .all()
+    db.query(
+        NoShowEvent.user_id,
+        func.concat(User.first_name, ' ', User.last_name).label("name"),
+        Department.id.label("department_id"),
+        func.count(NoShowEvent.id).label("count"),
+        User.email,
+        User.role,
+        User.employee_id,
     )
+    .outerjoin(User, User.employee_id == NoShowEvent.user_id)
+    .outerjoin(Department, Department.id == User.department_id)
+    .filter(NoShowEvent.occurred_at >= from_date if from_date else True)
+    .filter(NoShowEvent.occurred_at <= to_date if to_date else True)
+    .group_by(
+        NoShowEvent.user_id,
+        User.first_name,
+        User.last_name,
+        Department.id,
+        User.email,
+        User.role,
+        User.employee_id,
+    )
+    .order_by(desc("count"))
+    .offset(offset)
+    .limit(page_size)
+    .all()
+)
 
     top_no_show_users = [
-        TopNoShowUser(
-            user_id=row.user_id,
-            name=row.name,
-            department_id=row.department_id,
-            count=row.count
-        )
-        for row in top_users_query
-    ]
+    TopNoShowUser(
+        user_id=str(row.employee_id),
+        name=row.name,
+        department_id=row.department_id,
+        count=row.count,
+        email=row.email,
+        role=row.role,
+        employee_id=str(row.employee_id),
+    )
+    for row in top_users_query
+]
 
     return NoShowStatsResponse(
         total_no_show_events=total_no_show_events,
