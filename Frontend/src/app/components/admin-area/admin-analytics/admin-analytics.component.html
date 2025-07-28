@@ -39,7 +39,7 @@
 </div>
 
 <p-tabView [(activeIndex)]="activeTabIndex">
-  <p-tabPanel>
+  <p-tabPanel header=" " [headerStyle]="{ display: 'none' }">
     <div>
           <h3 class="section-heading">פילוח סטטוס רכבים</h3>
 
@@ -52,7 +52,7 @@
     </div>
   </p-tabPanel>
 
-  <p-tabPanel>
+  <p-tabPanel header=" " [headerStyle]="{ display: 'none' }">
     <div>
           <h3 class="section-heading">פילוח סטטוס נסיעות</h3>
 
@@ -65,7 +65,7 @@
     </div>
   </p-tabPanel>
   <!-- Vehicle Usage Chart Tab -->
-<p-tabPanel>
+<p-tabPanel header=" " [headerStyle]="{ display: 'none' }">
   <div class="date-filter-container" *ngIf="isMonthlyView">
     <label for="monthSelect">חודש:</label>
     <select id="monthSelect" [(ngModel)]="selectedMonth">
@@ -119,7 +119,7 @@
   </div>
 </p-tabPanel>
   <!-- No‑Show Analytics Tab -->
-  <p-tabPanel>
+  <p-tabPanel header=" " [headerStyle]="{ display: 'none' }">
     <div>
       <h3 class="section-heading">סטטיסטיקות אי-הגעה</h3>
 
@@ -185,7 +185,7 @@
   </p-tabPanel>
 
   <!-- 🆕 NEW TAB: No-Show Count by User -->
-<p-tabPanel header="ספירת נעדרים לפי משתמש">
+<p-tabPanel header=" " [headerStyle]="{ display: 'none' }">
   <div>
     <h3 class="section-heading">טבלת משתמשים נעדרים</h3>
 
