@@ -55,6 +55,8 @@ from src.services.admin_rides_service import get_critical_issue_by_id
 from src.schemas.order_card_item import OrderCardItem
 from src.schemas.statistics_schema import NoShowStatsResponse,TopNoShowUser
 from src.models.department_model import Department
+from src.schemas.department_schema import DepartmentCreate, DepartmentUpdate, DepartmentOut
+from src.services import department_service
 
 import pandas as pd
 
@@ -1327,3 +1329,22 @@ def manual_mileage_edit(
         "vehicle_id": str(vehicle.id),
         "new_mileage": request.new_mileage
     }
+
+@router.post("/departments", response_model=DepartmentOut, status_code=201)
+def create_department(dept: DepartmentCreate, db: Session = Depends(get_db)):
+    return department_service.create_department(db, dept)
+
+@router.patch("/departments/{department_id}", response_model=DepartmentOut)
+def patch_department(department_id: UUID, dept: DepartmentUpdate, db: Session = Depends(get_db)):
+    return department_service.update_department(db, department_id, dept)
+
+
+@router.get("/departments/supervisors")
+def get_supervisors(db: Session = Depends(get_db)):
+    supervisors = db.query(User).filter(User.role == UserRole.supervisor).all()
+    return [
+        {
+            "id": sup.employee_id,
+            "name": f"{sup.first_name} {sup.last_name}"
+        } for sup in supervisors
+    ]
