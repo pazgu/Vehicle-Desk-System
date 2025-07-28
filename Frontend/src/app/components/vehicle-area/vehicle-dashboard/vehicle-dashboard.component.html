@@ -1,71 +1,106 @@
 <div class="page-wrapper">
   <div class="page-container">
     <div class="vehicles-wrapper">
-      <h1 style="text-align: right;">רכבי מחלקה</h1>
-      <br>
 
-      <div class="vehicle-buttons-bar">
-        <div class="left-buttons">
-          <button class="add-vehicle-btn" (click)="navigateToNewVehicle()" *ngIf="userRole !== 'supervisor'">
-            הוסף רכב חדש +
-          </button>
+      <div class="top-header-section">
+        <h1 style="text-align: right;">רכבי מחלקה</h1>
+
+        <div class="header-actions-bar">
+          <div class="right-aligned-actions">
+            <button class="add-vehicle-btn" (click)="navigateToNewVehicle()" *ngIf="userRole !== 'supervisor'">
+              הוסף רכב חדש +
+            </button>
+            <img 
+              src="assets/images/trash_icon.png"
+              alt="הזמנות בארכיון"
+              width="40"
+              height="40"
+              title="הזמנות בארכיון"
+              style="cursor: pointer;"
+              (click)="goToArchivedOrders()"
+            />
+          </div>
+
+          <div class="left-aligned-actions">
+            <button class="filter" (click)="showFilters = !showFilters">
+              {{ showFilters ? 'הסתר סינון' : 'הצג סינון' }}
+            </button>
+
+            <button class="filter" (click)="toggleVehicleMode()">
+              {{ showingMostUsed ? 'הצג את כל הרכבים' : 'הכי בשימוש החודש' }}
+            </button>
+
+            <button class="filter archive-btn" (click)="navigateToArchivedVehicles()">
+              📁 ארכיון רכבים
+            </button>
+          </div>
         </div>
-  <img 
-        src="assets/images/trash_icon.png"
-        alt="הזמנות בארכיון"
-        width="40"
-        height="40"
-        title="הזמנות בארכיון"
-        style="cursor: pointer; margin-right: 4px;"
-        (click)="goToArchivedOrders()"
-     />
+      </div>
 
-    </div>
-        <div class="right-buttons">
-          <button class="filter" (click)="showFilters = !showFilters">
-            {{ showFilters ? 'הסתר סינון' : 'הצג סינון' }}
-          </button>
-
-          <button class="filter" (click)="toggleVehicleMode()">
-            {{ showingMostUsed ? 'הצג את כל הרכבים' : 'הכי בשימוש החודש' }}
-          </button>
-
-          <button class="filter archive-btn" (click)="navigateToArchivedVehicles()">
-            📁 ארכיון רכבים
-          </button>
-        </div>
-</div>
-
-        
-      <div *ngIf="showingMostUsed" style="text-align: right; font-weight: bold; color: #922;">
+      <div *ngIf="showingMostUsed" style="text-align: right; font-weight: bold; color: #922; margin-top: 1rem;">
         מוצגים רכבים לפי כמות שימושים החודש
       </div>
 
-      <div class="status-indicators">
-        <p style="margin-bottom: 0.75rem; font-weight: 600;">מקרא צבעים</p>
-        <div class="status-box">
-          <div class="status-item">
-            <span class="status-indicator available"></span> זמין
+      <div class="utility-sections-wrapper">
+        <div class="status-indicators">
+          <p style="margin-bottom: 0.75rem; font-weight: 600;">מקרא צבעים</p>
+          <div class="status-box">
+            <div class="status-item">
+              <span class="status-indicator available"></span> זמין
+            </div>
+            <div class="status-item">
+              <span class="status-indicator in-use"></span> בשימוש
+            </div>
+            <div class="status-item">
+              <span class="status-indicator frozen"></span> מוקפא
+            </div>
           </div>
-          <div class="status-item">
-            <span class="status-indicator in-use"></span> בשימוש
-          </div>
-          <div class="status-item">
-            <span class="status-indicator frozen"></span> מוקפא
-          </div>
-          
-        </div>
-        <br>
-          <div class="status-item" style="display: flex; align-items: center; gap: 5px;">
+          <div class="status-item" style="display: flex; align-items: center; gap: 5px; margin-top: 0.75rem;">
             <div class="inactive-badge" style="position: static; transform: none; margin-top: 0;">
               לא פעיל
             </div>
             <span>לא היה בשימוש מעל שבוע</span>
           </div>
+        </div>
+<div class="upload-btn-wrap">
+        <div class="mileage-upload-section">
+          <h2>העלאת דוח ק"מ חודשי</h2>
+          <input
+            type="file"
+            accept=".xlsx"
+            (change)="onFileSelected($event)"
+            class="xlsx-upload-input"
+          />
+          <button
+            class="submit-button"
+            [disabled]="!selectedFile || isLoading"
+            (click)="uploadMileageReport()"
+          >
+            {{ isLoading ? 'מעלה...' : 'שלח דוח' }}
+          </button>
+
+          </div>
+          <div *ngIf="uploadSuccess" class="upload-success">
+            ✔️ הדוח הועלה בהצלחה!
+          </div>
+          <div *ngIf="uploadError" class="upload-error">
+            ❌ שגיאה בהעלאת הדוח: {{ uploadError }}
+          </div>
+          <div *ngIf="uploadSummary" class="upload-summary">
+            <h3>סיכום:</h3>
+            <p><strong>מספר רכבים שעודכנו:</strong> {{ uploadSummary.vehiclesUpdated }}</p>
+            <div *ngIf="uploadSummary.warnings?.length">
+              <strong>אזהרות / שגיאות:</strong>
+              <ul>
+                <li *ngFor="let warning of uploadSummary.warnings">{{ warning }}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div *ngIf="showFilters"
-        style="margin-bottom: 1.5rem; background: #f7f7f7; padding: 1rem; border-radius: 8px; direction: rtl;">
+        style="margin-bottom: 1.5rem; background: #f7f7f7; padding: 1rem; border-radius: 8px; direction: rtl; margin-top: 1rem;">
         <div style="margin-bottom: 1rem; gap: 1rem; display: flex;">
           <label for="statusFilter"> סטטוס:</label>
           <select class="statusFilter" id="statusFilter" [(ngModel)]="statusFilter">
@@ -73,10 +108,8 @@
             <option value="זמין">זמין</option>
             <option value="בשימוש">בשימוש</option>
             <option value="מוקפא">מוקפא</option>
-            
           </select>
         </div>
-
 
         <div style="margin-bottom: 1rem; gap: 1rem; display: flex;">
           <label for="typeFilter"> סוג:</label>
@@ -85,7 +118,6 @@
             <option *ngFor="let type of vehicleTypes" [value]="type.translated">{{ type.translated }}</option>
           </select>
         </div>
-
 
         <div>
           <input
@@ -98,7 +130,6 @@
           הצג מכוניות שלא היו בשימוש מעל לשבוע ⚠️
         </div>
 
-
         <div style="display: flex; align-items: center; gap: 0.5rem; direction: rtl;">
           <input type="checkbox" id="showInactive" [(ngModel)]="showInactive"
             style="transform: scale(1.2); cursor: pointer;" />
@@ -108,47 +139,7 @@
         </div>
       </div>
 
-
-<div class="mileage-upload-section">
-  <h2>העלאת דוח ק"מ חודשי</h2>
-
-  <input
-    type="file"
-    accept=".xlsx"
-    (change)="onFileSelected($event)"
-    class="xlsx-upload-input"
-  />
-
-  <button
-    class="submit-button"
-    [disabled]="!selectedFile || isLoading"
-    (click)="uploadMileageReport()"
-  >
-    {{ isLoading ? 'מעלה...' : 'שלח דוח' }}
-  </button>
-
-  <div *ngIf="uploadSuccess" class="upload-success">
-    ✔️ הדוח הועלה בהצלחה!
-  </div>
-
-  <div *ngIf="uploadError" class="upload-error">
-    ❌ שגיאה בהעלאת הדוח: {{ uploadError }}
-  </div>
-
-  <div *ngIf="uploadSummary" class="upload-summary">
-    <h3>סיכום:</h3>
-    <p><strong>מספר רכבים שעודכנו:</strong> {{ uploadSummary.vehiclesUpdated }}</p>
-    <div *ngIf="uploadSummary.warnings?.length">
-      <strong>אזהרות / שגיאות:</strong>
-      <ul>
-        <li *ngFor="let warning of uploadSummary.warnings">{{ warning }}</li>
-      </ul>
-    </div>
-  </div>
-</div>
-      
-<br>
-
+      <br>
 
       <div class="vehicles-cards">
         <p-card *ngFor="let vehicle of filteredVehicles"
@@ -203,4 +194,4 @@
       </div>
     </div>
   </div>
- 
+</div>
