@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import { User } from '../../../models/user.model';
-import { UserService } from '../../../services/user_service';
+import { User } from '../../../../models/user.model';
+import { UserService } from '../../../../services/user_service';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { ConfirmDialogComponent } from '../../page-area/confirm-dialog/confirm-dialog.component';
-import { ToastService } from '../../../services/toast.service';
-import { SocketService } from '../../../services/socket.service';
+import { ConfirmDialogComponent } from '../../../page-area/confirm-dialog/confirm-dialog.component';
+import { ToastService } from '../../../../services/toast.service';
+import { SocketService } from '../../../../services/socket.service';
 import { MatDialog } from '@angular/material/dialog';
 import { ChangeDetectorRef } from '@angular/core';
 
