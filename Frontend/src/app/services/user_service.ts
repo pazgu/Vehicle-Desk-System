@@ -99,7 +99,7 @@ export class UserService {
 }
 
 
-getDepartmentsWithSupervisors(): Observable<{ id: string; name: string; supervisorName: string }[]> {
+getDepartmentsWithSupervisors(): Observable<{ id: string; name: string; supervisor_id: string; supervisorName: string }[]> {
   return this.http.get<{ id: string; name: string; supervisor_id: string }[]>(`${this.apiUrl}/departments`).pipe(
     switchMap(departments => {
       const departmentsWithNames$ = departments.map(dept =>
@@ -107,11 +107,13 @@ getDepartmentsWithSupervisors(): Observable<{ id: string; name: string; supervis
           map(user => ({
             id: dept.id,
             name: dept.name,
+            supervisor_id: dept.supervisor_id,     // keep this here
             supervisorName: `${user.first_name} ${user.last_name}`
           })),
           catchError(() => of({
             id: dept.id,
             name: dept.name,
+            supervisor_id: dept.supervisor_id,     // keep even on error
             supervisorName: 'לא ידוע'
           }))
         )
@@ -120,6 +122,7 @@ getDepartmentsWithSupervisors(): Observable<{ id: string; name: string; supervis
     })
   );
 }
+
 
   getNoShowCount(userId: string): Observable<number> {
   const headers = this.getAuthHeaders();

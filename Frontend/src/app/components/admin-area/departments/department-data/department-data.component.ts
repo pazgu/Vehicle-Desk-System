@@ -30,13 +30,13 @@ export class DepartmentDataComponent implements OnInit {
   users: any[] = [];
   isNewDepartmentMode: boolean = false;
   newDepartmentForm!: FormGroup;
-
-  // For the edit modal
   isEditModalOpen: boolean = false;
-  editDepartmentForm!: FormGroup; // Single form for the modal
-  editedDepartmentId: string | null = null; // To store the ID of the department being edited
-
+  editDepartmentForm!: FormGroup; 
+  editedDepartmentId: string | null = null; 
   hoveredDepartmentId: string | null = null;
+  isSubmitting: boolean = false; 
+
+
 
   ngOnInit() {
     this.loadDepartments();
@@ -52,11 +52,17 @@ export class DepartmentDataComponent implements OnInit {
       name: ['', Validators.required],
       supervisor_id: ['', Validators.required],
     });
+
+
+   
   }
 
   loadDepartments() {
     this.userService.getDepartmentsWithSupervisors().subscribe({
-      next: (departmentsdata) => (this.departments = departmentsdata),
+      next: (departmentsdata) => {
+      console.log('Departments loaded:', departmentsdata);
+      this.departments = departmentsdata;
+    },
       error: (err) => console.error('Error fetching departments:', err),
     });
   }
@@ -68,23 +74,36 @@ export class DepartmentDataComponent implements OnInit {
     });
   }
 
+getSupervisorName(supervisorId: string): string {
+  const supervisor = this.users.find(user => user.employee_id === supervisorId);
+  return supervisor ? `${supervisor.first_name} ${supervisor.last_name}` : 'לא ידוע';
+}
+
+  showToast(message: string, isError: boolean = false) {
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    toast.className = `custom-toast ${isError ? 'error' : 'success'}`;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+    toast.remove();
+  }, 3000);
+  }
+
   setHoveredDepartment(departmentId: string | null): void {
     this.hoveredDepartmentId = departmentId;
   }
 
-  // --- New Modal Logic ---
 
-  openEditModal(department: any) {
-  this.editedDepartmentId = department.id; // ✅ ADD THIS LINE
-
+ openEditModal(department: any) {
+  this.editedDepartmentId = department.id;
   this.editDepartmentForm.patchValue({
-    department_id: department.id, // still fine to keep this
+    department_id: department.id,
     name: department.name,
     supervisor_id: department.supervisor_id,
   });
-
   this.isEditModalOpen = true;
 }
+
 
 
   closeEditModal() {
@@ -92,44 +111,34 @@ export class DepartmentDataComponent implements OnInit {
     this.editDepartmentForm.reset(); // Reset the form in the modal
     this.editedDepartmentId = null; // Clear the edited department ID
   }
+updateDepartment() {
+  const departmentIdToUpdate = this.editedDepartmentId;
 
-  updateDepartment() {
-    // Re-check editedDepartmentId is not null or undefined here,
-    // and store it in a local constant for safer use.
-    const departmentIdToUpdate = this.editedDepartmentId;
+  if (this.editDepartmentForm.valid && departmentIdToUpdate !== null) {
+    const { name, supervisor_id } = this.editDepartmentForm.value;
 
-    if (this.editDepartmentForm.valid && departmentIdToUpdate !== null) {
-      const { name, supervisor_id, department_id } = this.editDepartmentForm.value;
-      console.log('Updating department with data:', {
-        department_id,
-        name,
-        supervisor_id,
-      });
-     
-      this.departmentService
-        .updateDepartment(String(departmentIdToUpdate), name, supervisor_id) // Explicitly cast to String
-        .subscribe({
-          next: () => {
-            this.closeEditModal(); // Close modal and reset form on success
-            this.loadDepartments(); // Reload departments to reflect changes
-          },
-          error: (err) => {
+    this.isSubmitting = true;
+    this.departmentService
+      .updateDepartment(String(departmentIdToUpdate), name, supervisor_id)
+      .subscribe({
+        next: () => {
+          this.isSubmitting = false;
+          this.closeEditModal();
+          this.loadDepartments();
+          this.showToast('המחלקה עודכנה בהצלחה');
+        },
+        error: (err) => {
+          this.isSubmitting = false;
+          if (err.status === 409) {
+            this.showToast('שם מחלקה כבר קיים', true);
+          } else {
             console.error('Error updating department:', err);
-            // Optionally, handle error display in the modal
-          },
-        });
-    } else {
-      // This block will be hit if editedDepartmentId is null or the form is invalid
-      console.error('Cannot update department: editedDepartmentId is null or form is invalid.', {
-  
-        formValid: this.editDepartmentForm.valid,
-        formValue: this.editDepartmentForm.value
+            this.showToast('שגיאה בעדכון מחלקה', true);
+          }
+        },
       });
-      // Optionally, show a user-friendly error message
-    }
   }
-
-  // --- Existing New Department Logic ---
+}
 
   toggleNewDepartmentMode() {
     this.isNewDepartmentMode = !this.isNewDepartmentMode;
@@ -137,24 +146,30 @@ export class DepartmentDataComponent implements OnInit {
       this.newDepartmentForm.reset();
     }
   }
+submitNewDepartment() {
+  if (this.newDepartmentForm.valid) {
+    const { name, supervisor_id } = this.newDepartmentForm.value;
 
-  submitNewDepartment() {
-    if (this.newDepartmentForm.valid) {
-      const { name, supervisor_id } = this.newDepartmentForm.value;
-      console.log('Creating new department with data:', { name, supervisor_id });
-
-      this.departmentService.createDepartment(name, supervisor_id).subscribe({
-        next: () => {
-          this.newDepartmentForm.reset();
-          this.isNewDepartmentMode = false;
-          this.loadDepartments();
-        },
-        error: (err) => {
-          console.error('Error creating department:', err),
-            // Optionally, handle error for user feedback
-            alert('Failed to create department. Please try again.');
-        },
-      });
-    }
+    this.isSubmitting = true;
+    this.departmentService.createDepartment(name, supervisor_id).subscribe({
+      next: () => {
+        this.newDepartmentForm.reset();
+        this.isNewDepartmentMode = false;
+        this.isSubmitting = false;
+        this.loadDepartments();
+        this.showToast('המחלקה נוספה בהצלחה');
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        if (err.status === 409) {
+          this.showToast('שם מחלקה כבר קיים', true);
+        } else {
+          console.error('Error creating department:', err);
+          this.showToast('שגיאה ביצירת מחלקה', true);
+        }
+      },
+    });
   }
+}
+
 }
