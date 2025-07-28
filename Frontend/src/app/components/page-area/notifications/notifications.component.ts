@@ -57,11 +57,13 @@ export class NotificationsComponent implements OnInit {
         next: (data) => {
         
           this.notifications = data.map(note => ({
+  
             ...note,
             timeAgo: formatDistanceToNow(new Date(note.sent_at), {
               addSuffix: true,
               locale: he,
             }),
+            
           }));
         },
         error: (err) => {
@@ -92,6 +94,7 @@ export class NotificationsComponent implements OnInit {
   const audio = new Audio('assets/sounds/notif.mp3');
   audio.play();
 }
+
 
 
     if (newNotif.message.includes('נדחתה')){
@@ -149,20 +152,24 @@ this.socketService.odometerNotif$.subscribe(
 
     } else {
       this.notificationService.getNotifications().subscribe({
-        next: (data) => {
-        
-          this.notifications = data.map(note => ({
-            ...note,
-            timeAgo: formatDistanceToNow(new Date(note.sent_at), {
-              addSuffix: true,
-              locale: he,
-            }),
-          }));
-        },
-        error: (err) => {
-          console.error('Failed to fetch notifications:', err);
-        }
-      });
+  next: (data) => {
+    this.notifications = data.map(note => {
+      const extended = note.is_extended_request;
+      console.log(`Notification ID: ${note.id}, is_extended_request:`, extended);      
+      return {
+        ...note,
+        timeAgo: formatDistanceToNow(new Date(note.sent_at), {
+          addSuffix: true,
+          locale: he,
+        }),
+      };
+    });
+  },
+  error: (err) => {
+    console.error('Failed to fetch notifications:', err);
+  }
+});
+
     }
     this.socketService.notifications$.subscribe((newNotif) => {
   if (newNotif && newNotif.user_id == userId) {

@@ -252,6 +252,26 @@ get endTime() {
     }
   }
 
+  get isExtendedRequest(): boolean {
+  const period = this.rideForm.get('ride_period')?.value;
+  const startDate = this.rideForm.get('ride_date')?.value;
+  const endDate = this.rideForm.get('ride_date_night_end')?.value;
+
+  if (period === 'night' && startDate && endDate) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    // Calculate the difference in days
+    const diffInMs = end.getTime() - start.getTime();
+    const diffInDays = diffInMs / (1000 * 60 * 60 * 24) + 1; // include both start and end date
+
+    return diffInDays >= 3;
+  }
+
+  return false;
+}
+
+
 setClosestQuarterHourTime() {
   const now = new Date();
   const minutes = now.getMinutes();
@@ -1025,6 +1045,8 @@ futureDateTimeValidator(): ValidatorFn {
       estimated_distance_km: Number(distance),
       actual_distance_km: Number(this.estimated_distance_with_buffer),
       four_by_four_reason: this.rideForm.get('four_by_four_reason')?.value,
+      is_extended_request: this.isExtendedRequest,
+
     };
 
     console.log('Ride data for backend:', formData);
@@ -1060,6 +1082,7 @@ futureDateTimeValidator(): ValidatorFn {
       }
     });
   }
+ 
 
   private showFuelTypeMessage(): void {
     if (localStorage.getItem('role') == 'employee') {
