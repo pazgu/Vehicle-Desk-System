@@ -328,3 +328,185 @@ cursor: cell;
     cursor: pointer;
     transition: all 0.3s ease;
 }
+
+
+
+
+
+/* New Department Form Styling */
+.new-department-form {
+    max-width: 500px;
+    margin: 0 auto 2rem auto;
+    padding: 2rem;
+    background: linear-gradient(135deg, 
+        rgba(220, 38, 38, 0.15) 0%, 
+        rgba(185, 28, 28, 0.1) 50%,
+        rgba(153, 27, 27, 0.05) 100%);
+    border: 1px solid rgba(220, 38, 38, 0.2);
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(220, 38, 38, 0.1);
+    opacity: 0;
+    transform: translateY(-20px);
+    animation: formSlideIn 0.5s ease-out forwards;
+}
+
+@keyframes formSlideIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.new-department-form form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.new-department-form div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.new-department-form label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.9rem;
+}
+
+.new-department-form input,
+.new-department-form select {
+    padding: 0.75rem 1rem;
+    border: 2px solid rgba(220, 38, 38, 0.2);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(5px);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    color: #374151;
+}
+
+.new-department-form input:focus,
+.new-department-form select:focus {
+    outline: none;
+    border-color: rgba(220, 38, 38, 0.5);
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.new-department-form button[type="submit"] {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.9), rgba(185, 28, 28, 0.9));
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.2);
+}
+
+.new-department-form button[type="submit"]:hover:not(:disabled) {
+    transform: translateY(-2px);
+    background: linear-gradient(135deg, rgba(239, 68, 68, 1), rgba(220, 38, 38, 1));
+    box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3);
+}
+
+.new-department-form button[type="submit"]:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+
+
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed; /* Stays in place even if the page scrolls */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
+  display: flex; /* Use flexbox for centering content */
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+  z-index: 1000; /* Ensure it's on top of other content */
+}
+
+/* Modal Content Box */
+.modal-content {
+  background-color: white;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  width: 90%; /* Adjust as needed */
+  max-width: 500px; /* Max width for larger screens */
+  transform: translateY(-50px); /* Small animation effect */
+  animation: slideIn 0.3s forwards ease-out; /* Simple animation */
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Form Group Styling (optional, to make inputs and labels look nice) */
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.form-group input,
+.form-group select {
+  width: calc(100% - 20px); /* Adjust for padding if needed */
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+/* Modal Actions (buttons) */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end; /* Align buttons to the right */
+  gap: 10px; /* Space between buttons */
+  margin-top: 20px;
+}
+
+.modal-actions button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.modal-actions button[type="submit"] {
+  background-color: #007bff; /* Blue for save */
+  color: white;
+}
+
+.modal-actions button[type="submit"]:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.modal-actions button[type="button"] {
+  background-color: #6c757d; /* Grey for cancel */
+  color: white;
+}

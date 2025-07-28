@@ -11,13 +11,14 @@ export class DepartmentService {
 
   constructor(private http: HttpClient) {}
 
-  createDepartment( name: string, supervisor_id: string): Observable<any[]> {
+  createDepartment(name: string, supervisor_id: string): Observable<any[]> {
     const url = `${this.apiUrl}/departments`;
-    const payload = {  name, supervisor_id };
+    const payload = { name, supervisor_id };
     return this.http.post<any[]>(url, payload);
   }
 
-  editDepartment(departmentId: string, name: string, supervisor_id: string): Observable<any> {
+  // Renamed from editDepartment to updateDepartment to match the component's call
+  updateDepartment(departmentId: string, name: string, supervisor_id: string): Observable<any> {
     const url = `${this.apiUrl}/departments/${departmentId}`;
     const updateData = { name, supervisor_id };
     return this.http.patch<any>(url, updateData);

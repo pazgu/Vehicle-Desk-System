@@ -1,45 +1,74 @@
 <div class="departments-container">
   <h2>נתוני מחלקות</h2>
-  <button (click)="toggleNewDepartmentMode()"  class="add-department-button" >
+  <button (click)="toggleNewDepartmentMode()" class="add-department-button">
     + הוסף מחלקה חדשה
   </button>
-<div *ngIf="isNewDepartmentMode" class="new-department-form">
-  <form [formGroup]="newDepartmentForm" (ngSubmit)="submitNewDepartment()">
- 
-    <div>
-      <label>שם מחלקה</label>
-      <input formControlName="name" type="text" />
-    </div>
+  <div *ngIf="isNewDepartmentMode" class="new-department-form">
+    <form [formGroup]="newDepartmentForm" (ngSubmit)="submitNewDepartment()">
+      <div>
+        <label>שם מחלקה</label>
+        <input formControlName="name" type="text" />
+      </div>
+      <div>
+        <label>מנהל מחלקה</label>
+        <select formControlName="supervisor_id">
+          <option value="">בחר מנהל</option>
+          <option *ngFor="let user of users" [value]="user.employee_id">
+            {{ user.first_name }} {{ user.last_name }}
+          </option>
+        </select>
+      </div>
+      <button type="submit" [disabled]="newDepartmentForm.invalid">שמור</button>
+    </form>
+  </div>
 
-    <div>
-      <label>מנהל מחלקה</label>
-     <select formControlName="supervisor_id">
-  <option value="">בחר מנהל</option> <!-- 👈 Required default empty option -->
-  <option *ngFor="let user of users" [value]="user.employee_id">
-    {{ user.first_name }} {{ user.last_name }}
-  </option>
-</select>
-
-    </div>
-
-    <button type="submit" [disabled]="newDepartmentForm.invalid">שמור</button>
-  </form>
-</div>
-
-  
   <div class="departments-list">
     <div class="department-cards" *ngFor="let department of departments">
-      <div class="department-info">
+      <div
+        class="department-info"
+        (mouseenter)="setHoveredDepartment(department.department_id)"
+        (mouseleave)="setHoveredDepartment(null)"
+      >
         <div class="department-title">
-          <h3>{{ department.name }}</h3>          <i class="pi pi-pencil" ></i>
-
+          <h3>{{ department.name }}</h3>
+          <i
+            *ngIf="hoveredDepartmentId === department.department_id"
+            (click)="openEditModal(department)"
+            class="pi pi-pencil edit-icon"
+            style="cursor: pointer; opacity: 0.7; margin-left: 10px"
+          ></i>
         </div>
-        
         <div class="department-supervisor">
-      
           <p>מנהל מחלקה : {{ department.supervisorName }}</p>
         </div>
       </div>
+    </div>
+  </div>
+
+  <div *ngIf="isEditModalOpen" class="modal-overlay">
+    <div class="modal-content">
+      <h3>ערוך מחלקה</h3>
+      <form [formGroup]="editDepartmentForm" (ngSubmit)="updateDepartment()">
+        <div class="form-group">
+          <label for="editName">שם מחלקה</label>
+          <input id="editName" formControlName="name" type="text" />
+        </div>
+        <div class="form-group">
+          <label for="editSupervisor">מנהל מחלקה</label>
+          <select id="editSupervisor" formControlName="supervisor_id">
+            <option value="">בחר מנהל</option>
+            <option *ngFor="let user of users" [value]="user.employee_id">
+              {{ user.first_name }} {{ user.last_name }}
+            </option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="submit" [disabled]="editDepartmentForm.invalid">
+            שמור
+          </button>
+          <button type="button" (click)="closeEditModal()">ביטול</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
