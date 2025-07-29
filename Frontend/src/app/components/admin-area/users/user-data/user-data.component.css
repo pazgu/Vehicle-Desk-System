@@ -11,7 +11,6 @@ body {
   box-sizing: border-box;
 }
 .page-container {
-
     min-height: calc(100vh - 55px);
   padding: 25px;
   direction: rtl;
@@ -53,7 +52,7 @@ body {
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
   width: 1200px;
-  max-width: 700px;
+  max-width: 740px;
   padding: 25px;
   margin-top: 50px;
   position: relative;
@@ -186,9 +185,20 @@ position: absolute;
   cursor: pointer;
   font-size: 1.2rem;
   transition: background-color 0.2s ease;
-    background: none;
+  background: none;
 
 }
+
+.block{
+  padding: 0.1rem 0.1rem;
+  color: rgb(0, 0, 0);
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: background-color 0.2s ease;
+  background: none;
+}
+
 /* Hover effect */
 .modify-buttons button.modify:hover {
   background-color: #c8e2ff;
@@ -303,3 +313,229 @@ position: absolute;
   z-index: 1000;
 }
 
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  width: 350px;
+  max-width: 95%;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
+}
+
+.modal-content h3 {
+  margin-top: 0;
+}
+
+.modal-content label {
+  display: block;
+  margin-top: 1rem;
+}
+
+.modal-content input,
+.modal-content select {
+  width: 100%;
+  padding: 0.4rem;
+  margin-top: 0.3rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.modal-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+button.cancel {
+  background-color: #ccc;
+}
+
+
+
+/* Blocked user row styling */
+.blocked-user-row {
+  background-color: #ffe6e6 !important; /* Light red background */
+  opacity: 0.7;
+}
+
+.blocked-user-row:hover {
+  background-color: #ffcccc !important; /* Slightly darker on hover */
+}
+
+/* Blocked text styling */
+.blocked-text {
+  color: #999 !important;
+  font-style: italic;
+}
+
+/* Blocked indicator */
+.blocked-indicator {
+  color: #dc3545;
+  font-weight: bold;
+  margin-left: 5px;
+}
+
+/* Unblock button styling */
+.unblock {
+  color: #33b151;
+  border: none;
+  padding: 6px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 5px;
+  font-size: 12px;
+  background: none;
+}
+
+.unblock:hover {
+  color: #218838;
+}
+
+/* Block button styling (existing, but making sure it's consistent) */
+.block {
+  color: #dc3545;
+  border: none;
+  padding: 6px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 5px;
+  font-size: 12px;
+  transition: background-color 0.2s;
+}
+
+.block:hover {
+  transform: scale(1.05);
+}
+
+/* Disabled button styling - only for modify and delete buttons */
+button.modify:disabled,
+button.delete:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #6c757d;
+}
+
+button.modify:disabled:hover,
+button.delete:disabled:hover {
+  background-color: #6c757d;
+}
+
+/* Expired license indicator */
+.expired {
+  color: #ffc107;
+  font-weight: bold;
+  margin-left: 5px;
+}
+
+/* Modal improvements */
+.modal-content h2 {
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.modal-content p {
+  margin-bottom: 20px;
+  color: #666;
+}
+
+.modal-content strong {
+  color: #333;
+}
+
+/* Form styling in modal */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #333;
+}
+
+.form-control {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.text-danger {
+  color: #dc3545;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+/* Button styling in modals */
+.modal-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.btn-primary {
+  background-color: #00ff73;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #00b36b;
+}
+
+.btn-secondary {
+  background-color: #ff9a9a;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #724444;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Tooltip styling for disabled buttons */
+[title] {
+  position: relative;
+}
+
+/* Action buttons container */
+.modify-buttons {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
