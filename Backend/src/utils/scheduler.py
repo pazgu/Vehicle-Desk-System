@@ -666,6 +666,30 @@ def periodic_check():
             print('Coroutine error:', e)
 
 
+def unblock_expired_users():
+    db = SessionLocal()
+    try:
+        now = datetime.now(timezone.utc)
+
+        expired_blocks = db.query(User).filter(
+            User.is_blocked == True,
+            User.block_expires_at.isnot(None),
+            User.block_expires_at < now
+        ).all()
+
+        for user in expired_blocks:
+            user.is_blocked = False
+            user.block_expires_at = None
+
+        db.commit()
+
+    except Exception as e:
+        print(f"❌ Error while unblocking users: {e}")
+        db.rollback()
+    finally:
+        db.close()
+
+
 def periodic_check_unstarted_rides(): 
     print('periodic_check_unstarted_rides was called')
     future = asyncio.run_coroutine_threadsafe(check_and_cancel_unstarted_rides(), main_loop)
@@ -688,8 +712,9 @@ def check_and_schedule_ride_emails():
         db.close()
 
 scheduler.add_job(check_and_schedule_ride_emails, 'interval', minutes=60)
+scheduler.add_job(unblock_expired_users, 'interval', minutes=1)
 scheduler.add_job(check_and_complete_rides, 'interval', minutes=5)
-scheduler.add_job(periodic_check_overdue_rides, 'interval', minutes=1)
+scheduler.add_job(periodic_check_overdue_rides, 'interval', minutes=10)
 
 def notify_admins_daily():
     print("⏰ Scheduler is triggering notification function.")
