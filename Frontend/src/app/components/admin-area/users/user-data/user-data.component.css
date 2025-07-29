@@ -506,21 +506,21 @@ button.delete:disabled:hover {
 }
 
 .btn-primary {
-  background-color: #007bff;
+  background-color: #00ff73;
   color: white;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: #0056b3;
+  background-color: #00b36b;
 }
 
 .btn-secondary {
-  background-color: #6c757d;
+  background-color: #ff9a9a;
   color: white;
 }
 
 .btn-secondary:hover {
-  background-color: #545b62;
+  background-color: #724444;
 }
 
 .btn:disabled {
