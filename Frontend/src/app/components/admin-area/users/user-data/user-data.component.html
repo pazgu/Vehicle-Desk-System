@@ -94,6 +94,14 @@
     class="delete">
     🗑️
   </button>
+
+<!-- Block Button -->
+<button class="block" onclick="event.stopPropagation()" (click)="openBlockUserModal(user)">
+  <i class="pi pi-ban"></i>
+</button>
+
+
+  
   </div>
               </td>
 
@@ -111,6 +119,30 @@
         </div>
       </div>
 
+<!-- Block User Modal -->
+<div *ngIf="isBlockModalOpen" class="modal-overlay">
+  <div class="modal-content">
+    <h3>חסימת משתמש</h3>
+
+    <form [formGroup]="blockUserForm" (ngSubmit)="updateBlockedUser()">
+      <label for="is_blocked">מצב חסימה:</label>
+      <select id="is_blocked" formControlName="is_blocked">
+        <option [value]="true">חסום</option>
+        <option [value]="false">לא חסום</option>
+      </select>
+
+      <label for="block_expires_at">תוקף החסימה:</label>
+      <input id="block_expires_at" type="datetime-local" formControlName="block_expires_at" />
+
+      <div class="modal-actions">
+        <button type="submit" [disabled]="blockUserForm.invalid || isSubmitting">
+         שלח
+        </button>
+        <button type="button" class="cancel" (click)="closeEditModal()">בטל</button>
+      </div>
+    </form>
+  </div>
+</div>
 
       </div>
     </div>
