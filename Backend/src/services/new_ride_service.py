@@ -37,6 +37,12 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate):
             status_code=403,
             detail="You must have a government license to request a ride."
         )
+    now = datetime.now(timezone.utc)
+    if user.is_blocked and user.block_expires_at and now < user.block_expires_at:
+        raise HTTPException(
+            status_code=403,
+            detail=f"You are currently blocked from booking until {user.block_expires_at.strftime('%Y-%m-%d %H:%M:%S')}."
+        )
 
     if is_offroad_vehicle(vehicle.type) and not ride.four_by_four_reason:
         raise HTTPException(
