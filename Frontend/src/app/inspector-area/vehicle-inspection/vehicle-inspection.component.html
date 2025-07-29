@@ -1,3 +1,16 @@
+<div class="search-container" style="margin: 16px; width: 400px;position: relative;">
+  <input
+    type="text"
+    placeholder="חפש לפי לוחית רישוי"
+    [(ngModel)]="searchTerm"
+    class="search-input"
+  />
+</div>
+<div style="text-align: left; margin-right: 16px;margin-top: 10px; position: absolute; ">
+  <button (click)="scrollToBottom()" style="background: none; border: none; cursor: pointer;">
+    <img src="/assets/images/arrows.png" style="width: 1 rem ;height: 2rem;;"/>
+  </button>
+</div>
 <table class="vehicle-issues-table">
   <thead>
     <tr>
@@ -9,7 +22,7 @@
     </tr>
   </thead>
   <tbody>
-    <tr *ngFor="let issue of vehicleIssues">
+    <tr *ngFor="let issue of filteredIssues">
       <td>{{ issue.plate }}</td>
       <td><input type="checkbox" [(ngModel)]="issue.dirty" /></td>
       <td>
@@ -36,4 +49,6 @@
 
 <button (click)="submitIssues()" class="cute-red-button">שלח בדיקות</button>
 <div *ngIf="submitting">שולח...</div>
+<div #bottom></div>
+
 
