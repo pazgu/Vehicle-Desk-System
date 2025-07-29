@@ -136,26 +136,7 @@
           <button (click)="nextPage()" [disabled]="currentPage === totalPages">◀</button>
         </div>
       </div>
-<div *ngFor="let user of pagedUsers" class="user-card">
-  <div class="user-actions">
-    <button
-      *ngIf="!user.is_blocked"
-      class="btn btn-warning"
-      (click)="openBlockUserModal(user)"
-    >
-      חסימת משתמש
-    </button>
 
-    <button
-      *ngIf="user.is_blocked"
-      class="btn btn-success"
-      (click)="openUnblockConfirmationModal(user)"
-    >
-      שחרור חסימה
-    </button>
-
-    </div>
-</div>
 
 <div *ngIf="isBlockUserModalOpen" class="modal-overlay">
   <div class="modal-content">
