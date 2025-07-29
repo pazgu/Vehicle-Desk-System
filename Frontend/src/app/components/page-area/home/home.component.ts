@@ -1067,9 +1067,22 @@ futureDateTimeValidator(): ValidatorFn {
         this.router.navigate(['/']);
       },
       error: (err) => {
-        this.toastService.show('שגיאה בשליחת הבקשה', 'error');
-        console.error('Submit error:', err);
-      }
+          const errorMessage = err.error?.detail || err.message || 'שגיאה לא ידועה';
+
+          if (errorMessage.includes('currently blocked')) {
+            // Extract date/time from backend message
+            const match = errorMessage.match(/until (\d{4}-\d{2}-\d{2})/);
+            const blockUntil = match ? match[1] : '';
+
+            // Translate and show the full message in Hebrew
+            const translated = `אתה חסום עד ${blockUntil}`;
+            this.toastService.show(translated, 'error');
+          }else {
+            this.toastService.show('שגיאה בשליחת הבקשה', 'error');
+          }
+
+          console.error('Submit error:', err);
+        }
     });
   }
 
