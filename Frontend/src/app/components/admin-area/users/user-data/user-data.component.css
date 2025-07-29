@@ -198,39 +198,6 @@ position: absolute;
   transition: background-color 0.2s ease;
   background: none;
 }
-.block:hover::after{
-  content: "חסום משתמש";
-  position: absolute;
-  background-color: #ffffff;
-  color: #721c24;
-  padding: 5px;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  margin-top: 10px;
-}
-
-
-.modify:hover::after{
-  content: "ערוך משתמש";
-  position: absolute;
-  background-color: #ffffff;
-  color: #721c24;
-  padding: 5px;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  margin-top: 10px;
-}
-
-.delete:hover::after{
-  content: "מחק משתמש";
-  position: absolute;
-  background-color: #ffffff;
-  color: #721c24;
-  padding: 5px;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  margin-top: 10px;
-}
 
 /* Hover effect */
 .modify-buttons button.modify:hover {
@@ -395,4 +362,180 @@ position: absolute;
 
 button.cancel {
   background-color: #ccc;
+}
+
+
+
+/* Blocked user row styling */
+.blocked-user-row {
+  background-color: #ffe6e6 !important; /* Light red background */
+  opacity: 0.7;
+}
+
+.blocked-user-row:hover {
+  background-color: #ffcccc !important; /* Slightly darker on hover */
+}
+
+/* Blocked text styling */
+.blocked-text {
+  color: #999 !important;
+  font-style: italic;
+}
+
+/* Blocked indicator */
+.blocked-indicator {
+  color: #dc3545;
+  font-weight: bold;
+  margin-left: 5px;
+}
+
+/* Unblock button styling */
+.unblock {
+  color: #33b151;
+  border: none;
+  padding: 6px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 5px;
+  font-size: 12px;
+  background: none;
+}
+
+.unblock:hover {
+  color: #218838;
+}
+
+/* Block button styling (existing, but making sure it's consistent) */
+.block {
+  color: #dc3545;
+  border: none;
+  padding: 6px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 5px;
+  font-size: 12px;
+  transition: background-color 0.2s;
+}
+
+.block:hover {
+  transform: scale(1.05);
+}
+
+/* Disabled button styling - only for modify and delete buttons */
+button.modify:disabled,
+button.delete:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #6c757d;
+}
+
+button.modify:disabled:hover,
+button.delete:disabled:hover {
+  background-color: #6c757d;
+}
+
+/* Expired license indicator */
+.expired {
+  color: #ffc107;
+  font-weight: bold;
+  margin-left: 5px;
+}
+
+/* Modal improvements */
+.modal-content h2 {
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.modal-content p {
+  margin-bottom: 20px;
+  color: #666;
+}
+
+.modal-content strong {
+  color: #333;
+}
+
+/* Form styling in modal */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #333;
+}
+
+.form-control {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.text-danger {
+  color: #dc3545;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+/* Button styling in modals */
+.modal-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #545b62;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Tooltip styling for disabled buttons */
+[title] {
+  position: relative;
+}
+
+/* Action buttons container */
+.modify-buttons {
+  display: flex;
+  gap: 5px;
+  align-items: center;
 }

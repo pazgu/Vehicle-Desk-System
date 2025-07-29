@@ -5,7 +5,7 @@ import { UserService } from '../../../../services/user_service';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms'; // Keep FormsModule if you have other template-driven forms
 import { ConfirmDialogComponent } from '../../../page-area/confirm-dialog/confirm-dialog.component';
 import { ToastService } from '../../../../services/toast.service';
 import { SocketService } from '../../../../services/socket.service';
@@ -15,14 +15,14 @@ import {
   FormBuilder,
   FormGroup,
   Validators,
-  ReactiveFormsModule,
+  ReactiveFormsModule, // <-- Ensure this is imported for reactive forms
 } from '@angular/forms';
 
 @Component({
   selector: 'app-user-data',
   templateUrl: './user-data.component.html',
   styleUrls: ['./user-data.component.css'],
-  imports: [RouterModule, CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [RouterModule, CommonModule, FormsModule, ReactiveFormsModule], // Add ReactiveFormsModule
 })
 export class UserDataComponent implements OnInit {
   users: User[] = [];
@@ -34,28 +34,30 @@ export class UserDataComponent implements OnInit {
   searchTerm = '';
   selectedRole: string = '';
   availableRoles: string[] = [];
-  license_expiry_date?: string;
+  license_expiry_date?: Date;
   licenceExpiredMap: { [userId: string]: boolean } = {};
-  isBlockModalOpen: boolean = false;
-  blockedUserId: string | null = null;
-  blockUserForm!: FormGroup;
-  isSubmitting: boolean = false;
+
+  // --- New/Updated Properties for Blocking ---
+  isBlockUserModalOpen: boolean = false; // Controls the block modal visibility
+  isUnblockConfirmationModalOpen: boolean = false; // Controls the unblock modal visibility
+  selectedUserForBlock: User | null = null; // Stores the user object selected for blocking/unblocking
+  blockUserForm!: FormGroup; // Reactive Form for block duration
+  isSubmitting: boolean = false; // To disable buttons during API calls
 
   constructor(
     private userService: UserService,
     private router: Router,
     private toastservice: ToastService,
     private socketservice: SocketService,
-    private dialog: MatDialog,
+    private dialog: MatDialog, // MatDialog might not be needed if you're building custom modals
     private cdr: ChangeDetectorRef,
-    private fb: FormBuilder
+    private fb: FormBuilder // Inject FormBuilder
   ) {}
 
   ngOnInit(): void {
+    // Initialize the reactive form for block user
     this.blockUserForm = this.fb.group({
-      employee_id: ['', Validators.required],
-      is_blocked: [false, Validators.required],
-      block_expires_at: ['', Validators.required],
+      blockDuration: [14, [Validators.required, Validators.min(1)]], // Default 14 days, min 1
     });
 
     this.userService.getAllUsers().subscribe({
@@ -74,6 +76,39 @@ export class UserDataComponent implements OnInit {
           }
         });
 
+        // Listen for user_block_status_updated socket event
+        this.socketservice.usersBlockStatus$.subscribe((update) => {
+          const idx = this.users.findIndex((u) => u.employee_id === update.id);
+          if (idx === -1) return;
+
+          // Create a new user object to ensure immutability and trigger change detection
+          const updatedUser = { ...this.users[idx], ...update };
+          if (update.block_expires_at) {
+            updatedUser.block_expires_at = new Date(update.block_expires_at);
+          } else {
+            updatedUser.block_expires_at = null; // Ensure it's null if cleared
+          }
+
+          // Update the user in the main array
+          this.users[idx] = updatedUser;
+
+          // Also update in filteredLogs if applicable
+          const filteredIdx = this.filteredLogs.findIndex((u) => u.employee_id === update.id);
+          if (filteredIdx !== -1) {
+            this.filteredLogs[filteredIdx] = updatedUser;
+          }
+
+          // If a modal is open for this user, close it after successful update
+          if (this.selectedUserForBlock?.employee_id === update.id) {
+            this.closeBlockUserModal(); // Close either block or unblock modal
+            this.closeUnblockConfirmationModal();
+          }
+
+          this.cdr.detectChanges(); // Manually trigger change detection if needed
+        });
+
+        // Also ensure your user_license_updated subscription correctly handles updates.
+        // I'm assuming you have socketservice.usersLicense$ defined and working.
         this.socketservice.usersLicense$.subscribe((update) => {
           const idx = this.users.findIndex((u) => u.employee_id === update.id);
           if (idx === -1) return;
@@ -83,27 +118,155 @@ export class UserDataComponent implements OnInit {
             updatedUser.license_expiry_date = new Date(update.license_expiry_date);
           }
 
-          // Update the user in the main array
           this.users[idx] = updatedUser;
-          this.licenceExpiredMap[update.id] = updatedUser.license_expiry_date < new Date();
+          this.licenceExpiredMap[update.id] = updatedUser.license_expiry_date ? updatedUser.license_expiry_date < new Date() : false;
 
           // If the blocked user modal is open for this user, update its form values
-          if (this.blockedUserId === update.id) {
-            this.blockUserForm.patchValue({
-              is_blocked: updatedUser.is_blocked ?? false,
-              block_expires_at: updatedUser.block_expires_at
-                ? new Date(updatedUser.block_expires_at).toISOString().slice(0, 16)
-                : '',
-            });
-          }
+          // (This part is less critical now as we reload users)
+          // if (this.blockedUserId === update.id) { ... }
 
           this.cdr.detectChanges();
         });
+
+
       },
       error: (err) => console.error('Failed to fetch users', err),
     });
   }
 
+  // --- Modal Control Methods ---
+  openBlockUserModal(user: User) {
+    this.selectedUserForBlock = user;
+    this.isBlockUserModalOpen = true;
+    this.blockUserForm.reset({ blockDuration: 14 }); // Reset with default
+  }
+
+  closeBlockUserModal() {
+    this.isBlockUserModalOpen = false;
+    this.selectedUserForBlock = null;
+    this.blockUserForm.reset();
+  }
+
+  openUnblockConfirmationModal(user: User) {
+    this.selectedUserForBlock = user;
+    this.isUnblockConfirmationModalOpen = true;
+  }
+
+  closeUnblockConfirmationModal() {
+    this.isUnblockConfirmationModalOpen = false;
+    this.selectedUserForBlock = null;
+  }
+
+  // --- Block/Unblock Logic ---
+
+  confirmBlockUser() {
+    if (this.blockUserForm.invalid || !this.selectedUserForBlock) {
+      this.toastservice.show('יש למלא את כל השדות הנדרשים ✅', 'error');
+      return;
+    }
+
+    this.isSubmitting = true;
+    const blockDuration = this.blockUserForm.get('blockDuration')?.value;
+    const now = new Date();
+    const blockExpiresAt = new Date(now.setDate(now.getDate() + blockDuration));
+
+    // Prepare FormData with ALL required fields + the block/unblock changes
+    const formData = this.createFormDataForUserUpdate(this.selectedUserForBlock, true, blockExpiresAt.toISOString().slice(0, 16)); // YYYY-MM-DDTHH:MM
+
+    this.userService.updateUser(this.selectedUserForBlock.employee_id, formData).subscribe({
+      next: () => {
+        // Socket.IO will handle updating the UI for users table
+        // We'll rely on the socket event to close the modal and show toast
+        // this.loadUsers(); // Optional: if you don't use sockets for user list updates
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        this.toastservice.show('שגיאה בחסימת המשתמש ❌', 'error');
+        console.error('Error blocking user:', err);
+      },
+    });
+  }
+
+  confirmUnblockUser() {
+    if (!this.selectedUserForBlock) {
+      return;
+    }
+
+    this.isSubmitting = true;
+
+    // Prepare FormData with ALL required fields + the unblock changes
+    const formData = this.createFormDataForUserUpdate(this.selectedUserForBlock, false, null); // Set is_blocked to false, block_expires_at to null
+
+    this.userService.updateUser(this.selectedUserForBlock.employee_id, formData).subscribe({
+      next: () => {
+        // Socket.IO will handle updating the UI for users table
+        // We'll rely on the socket event to close the modal and show toast
+        // this.loadUsers(); // Optional: if you don't use sockets for user list updates
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        this.toastservice.show('שגיאה בשחרור חסימת המשתמש ❌', 'error');
+        console.error('Error unblocking user:', err);
+      },
+    });
+  }
+
+  /**
+   * Helper function to create FormData with all required user fields.
+   * This is crucial because your backend endpoint expects all fields via Form(...).
+   * @param user The current user object.
+   * @param isBlocked The new value for is_blocked.
+   * @param blockExpiresAt The new value for block_expires_at (YYYY-MM-DDTHH:MM string or null).
+   * @returns FormData object.
+   */
+  private createFormDataForUserUpdate(
+    user: User,
+    isBlocked: boolean,
+    blockExpiresAt: string | null
+  ): FormData {
+    const formData = new FormData();
+
+    // Append ALL required fields from the existing user object
+    formData.append('first_name', user.first_name || '');
+    formData.append('last_name', user.last_name || '');
+    formData.append('username', user.username || '');
+    formData.append('email', user.email || '');
+    formData.append('phone', user.phone || '');
+    formData.append('role', user.role || '');
+
+    // Department ID: Handle nullable and UUID conversion for FormData
+    if (user.department_id) {
+      formData.append('department_id', user.department_id);
+    } else {
+      formData.append('department_id', ''); // Send empty string if null
+    }
+
+    // has_government_license: Convert boolean to string "true" or "false"
+    formData.append('has_government_license', String(user.has_government_license || false));
+
+    // license_expiry_date: Convert Date object to YYYY-MM-DD or send empty string
+    if (user.license_expiry_date) {
+      const date = new Date(user.license_expiry_date);
+      const formattedDate = date.toISOString().split('T')[0]; // YYYY-MM-DD
+      formData.append('license_expiry_date', formattedDate);
+    } else {
+      formData.append('license_expiry_date', '');
+    }
+
+    // Append the SPECIFIC fields being updated
+    formData.append('is_blocked', String(isBlocked)); // Boolean to string
+
+    if (blockExpiresAt) {
+      formData.append('block_expires_at', blockExpiresAt);
+    } else {
+      formData.append('block_expires_at', ''); // Send empty string to clear it (set to null on backend)
+    }
+
+    return formData;
+  }
+
+
+  // --- Existing Methods (keep them as they are) ---
   departmentNames: { [key: string]: string } = {
     '21fed496-72a3-4551-92d6-7d6b8d979dd6': 'Security',
     '3f67f7d5-d1a4-45c2-9ae4-8b7a3c50d3fa': 'Engineering',
@@ -193,20 +356,6 @@ export class UserDataComponent implements OnInit {
     });
   }
 
-  openBlockUserModal(user: User) {
-    this.blockedUserId = user.employee_id;
-    this.isBlockModalOpen = true;
-
-    // Patch form values after opening the modal
-    this.blockUserForm.patchValue({
-      employee_id: user.employee_id,
-      is_blocked: user.is_blocked ?? false,
-      block_expires_at: user.block_expires_at
-        ? new Date(user.block_expires_at).toISOString().slice(0, 16)
-        : '', // Format date for datetime-local input
-    });
-  }
-
   showToast(message: string, isError: boolean = false) {
     const toast = document.createElement('div');
     toast.textContent = message;
@@ -217,92 +366,5 @@ export class UserDataComponent implements OnInit {
     }, 3000);
   }
 
-  closeEditModal() {
-    this.isBlockModalOpen = false;
-    this.blockUserForm.reset();
-    this.blockedUserId = null;
-  }
 
-  updateBlockedUser() {
-    const userIdToUpdate = this.blockedUserId;
-
-    if (this.blockUserForm.valid && userIdToUpdate !== null) {
-      this.isSubmitting = true;
-
-      // Find the user object to get all its current properties
-      const userToUpdate = this.users.find((user) => user.employee_id === userIdToUpdate);
-
-      if (!userToUpdate) {
-        console.error('User not found for ID:', userIdToUpdate);
-        this.isSubmitting = false;
-        this.toastservice.show('שגיאה: משתמש לא נמצא ❌', 'error');
-        return;
-      }
-
-      const formData = new FormData();
-
-      // **Append ALL required fields from the existing user object**
-      // Even if you're not changing them, the backend expects them via Form(...)
-      formData.append('first_name', userToUpdate.first_name || '');
-      formData.append('last_name', userToUpdate.last_name || '');
-      formData.append('username', userToUpdate.username || ''); // Assuming username is also required
-      formData.append('email', userToUpdate.email || '');
-      formData.append('phone', userToUpdate.phone || '');
-      formData.append('role', userToUpdate.role || '');
-
-      // Department ID: Handle nullable and UUID conversion for FormData
-      if (userToUpdate.department_id) {
-        formData.append('department_id', userToUpdate.department_id);
-      } else {
-        // If department_id is null/undefined in the user object, and it's required for non-admin roles,
-        // you might need to send an empty string or a specific default if allowed by backend.
-        // For now, sending an empty string if null, assuming backend can handle it for non-admins if role is changed.
-        formData.append('department_id', '');
-      }
-
-      // has_government_license: Convert boolean to string "true" or "false"
-      formData.append('has_government_license', String(userToUpdate.has_government_license || false));
-
-      // license_expiry_date: Convert Date object to YYYY-MM-DD or send empty string
-      if (userToUpdate.license_expiry_date) {
-        const date = new Date(userToUpdate.license_expiry_date);
-        const formattedDate = date.toISOString().split('T')[0]; // YYYY-MM-DD
-        formData.append('license_expiry_date', formattedDate);
-      } else {
-        formData.append('license_expiry_date', '');
-      }
-
-      // **Now append the fields you are actually changing:**
-      const { is_blocked, block_expires_at } = this.blockUserForm.value;
-      formData.append('is_blocked', String(is_blocked)); // Convert boolean to string
-
-      if (block_expires_at) {
-        // FastAPI expects YYYY-MM-DDTHH:MM for datetime
-        formData.append('block_expires_at', block_expires_at);
-      } else {
-        formData.append('block_expires_at', ''); // Send empty string to clear it
-      }
-
-      // If you had a file input in this form (e.g., license_file), you'd append it here:
-      // if (this.licenseFile) { // Assuming you have a property for the selected file
-      //   formData.append('license_file', this.licenseFile, this.licenseFile.name);
-      // }
-
-
-      this.userService.updateUser(userIdToUpdate, formData).subscribe({
-        next: () => {
-          this.isSubmitting = false;
-          this.closeEditModal();
-          this.loadUsers(); // Reload users to get the updated block status
-          this.toastservice.show('המשתמש נחסם/שוחרר בהצלחה ✅', 'success');
-        },
-        error: (err) => {
-          this.isSubmitting = false;
-          this.toastservice.show('שגיאה בחסימת המשתמש ❌', 'error');
-          console.error('Error updating user:', err);
-          console.error('Full error response:', err.error); // This will show the exact missing fields
-        },
-      });
-    }
-  }
 }
