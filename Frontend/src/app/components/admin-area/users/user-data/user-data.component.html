@@ -87,7 +87,7 @@
                   <div class="modify-buttons">
                     <a class="edit-button" routerLink="/user-data-edit/{{user?.employee_id}}">
 
-  <button
+  <button title="ערוך משתמש"
     class="modify">
      ✏️
   </button>
@@ -95,8 +95,8 @@
   <!-- Delete Button -->
   
   <button onclick="event.stopPropagation()"  (click)="deleteUser(user.employee_id)"
-    class="delete"
->  🗑️
+    class="delete" title="מחק משתמש">
+  🗑️
   </button>
 
 <!-- Block/Unblock Button -->
