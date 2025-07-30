@@ -96,7 +96,7 @@
     [data]="monthlyStatsChartData"
     [options]="monthlyStatsChartOptions"
   ></p-chart>
-
+  
   <p-chart
     *ngIf="!isMonthlyView"
     type="bar"
@@ -104,6 +104,7 @@
     [options]="allTimeStatsChartOptions"
     
   ></p-chart>
+  
     <!-- Legend only relevant for Monthly View -->
     <div class="usage-legend" *ngIf="showChart">
       <div class="legend-item">
