@@ -541,7 +541,7 @@ deleteOrder(order: any): void {
     // Create proper dialog data
     const dialogData: ConfirmDialogData = {
       title: 'ביטול הזמנה',
-      message: `האם אתה בטוח שברצונך לבטל את ההזמנה?\n\nתאריך: ${order.date}\nשעה: ${order.time}\nסוג: ${order.type}`,
+      message: `?האם אתה בטוח שברצונך לבטל את ההזמנה\n\nתאריך: ${order.date}\nשעה: ${order.time}\nסוג: ${order.type}`,
       confirmText: 'בטל הזמנה',
       cancelText: 'ביטול',
       isDestructive: true

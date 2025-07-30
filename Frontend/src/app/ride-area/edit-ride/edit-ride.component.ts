@@ -224,6 +224,10 @@ this.rideForm.patchValue({
       }
     });
   }
+isCarDisabled(car: typeof this.allCars[0]): boolean {
+  // Disable if status is not 'available' or freeze_reason exists
+  return car.status !== 'available' || !!car.freeze_reason;
+}
 
   submit(): void {
     
