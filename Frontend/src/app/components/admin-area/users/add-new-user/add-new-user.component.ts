@@ -2,8 +2,8 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ToastService } from '../../../services/toast.service';
-import { NewUserPayload, UserService } from '../../../services/user_service';
+import { ToastService } from '../../../../services/toast.service';
+import { NewUserPayload, UserService } from '../../../../services/user_service';
 import { MatIconModule } from '@angular/material/icon';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -49,7 +49,7 @@ export class AddNewUserComponent implements OnInit {
       last_name: ['', Validators.required],
       username: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      phone: ['', [
+ phone: ['', [
       Validators.required, 
       Validators.pattern(/^\d{10}$/)  // Exactly 10 digits
     ]],      role: ['', Validators.required],

@@ -252,6 +252,26 @@ get endTime() {
     }
   }
 
+  get isExtendedRequest(): boolean {
+  const period = this.rideForm.get('ride_period')?.value;
+  const startDate = this.rideForm.get('ride_date')?.value;
+  const endDate = this.rideForm.get('ride_date_night_end')?.value;
+
+  if (period === 'night' && startDate && endDate) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    // Calculate the difference in days
+    const diffInMs = end.getTime() - start.getTime();
+    const diffInDays = diffInMs / (1000 * 60 * 60 * 24) + 1; // include both start and end date
+
+    return diffInDays >= 3;
+  }
+
+  return false;
+}
+
+
 setClosestQuarterHourTime() {
   const now = new Date();
   const minutes = now.getMinutes();
@@ -1025,6 +1045,8 @@ futureDateTimeValidator(): ValidatorFn {
       estimated_distance_km: Number(distance),
       actual_distance_km: Number(this.estimated_distance_with_buffer),
       four_by_four_reason: this.rideForm.get('four_by_four_reason')?.value,
+      is_extended_request: this.isExtendedRequest,
+
     };
 
     console.log('Ride data for backend:', formData);
@@ -1045,9 +1067,22 @@ futureDateTimeValidator(): ValidatorFn {
         this.router.navigate(['/']);
       },
       error: (err) => {
-        this.toastService.show('שגיאה בשליחת הבקשה', 'error');
-        console.error('Submit error:', err);
-      }
+          const errorMessage = err.error?.detail || err.message || 'שגיאה לא ידועה';
+
+          if (errorMessage.includes('currently blocked')) {
+            // Extract date/time from backend message
+            const match = errorMessage.match(/until (\d{4}-\d{2}-\d{2})/);
+            const blockUntil = match ? match[1] : '';
+
+            // Translate and show the full message in Hebrew
+            const translated = `אתה חסום עד ${blockUntil}`;
+            this.toastService.show(translated, 'error');
+          }else {
+            this.toastService.show('שגיאה בשליחת הבקשה', 'error');
+          }
+
+          console.error('Submit error:', err);
+        }
     });
   }
 
@@ -1060,6 +1095,7 @@ futureDateTimeValidator(): ValidatorFn {
       }
     });
   }
+ 
 
   private showFuelTypeMessage(): void {
     if (localStorage.getItem('role') == 'employee') {

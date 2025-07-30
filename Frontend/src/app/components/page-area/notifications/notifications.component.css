@@ -15,6 +15,16 @@
   background: transparent;
 }
 
+.extended-banner {
+  background-color: #fff3cd;
+  padding: 8px;
+  margin-bottom: 5px;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 0.9em;
+}
+
+
 .title {
   font-size: 1.5rem;
   font-weight: bold;

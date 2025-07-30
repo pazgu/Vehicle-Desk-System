@@ -8,5 +8,6 @@ export interface MyNotification {
     order_id:string;
     order_status:string;
     vehicle_id: string;
+    is_extended_request?: boolean;
   }
   

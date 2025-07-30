@@ -31,6 +31,8 @@ export interface User {
   has_government_license: boolean;  
   license_check_passed: boolean;
   license_file_url?: string | null;
-  license_expiry_date: Date | null
+  license_expiry_date: Date | null;
+  is_blocked: boolean;
+  block_expires_at?: Date | null; // Optional, if user is blocked
 
 }

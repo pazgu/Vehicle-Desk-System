@@ -28,6 +28,8 @@ class User(Base):
     has_government_license = Column(Boolean, default=False)
     license_file_url = Column(String, nullable=True)
     license_expiry_date = Column(Date, nullable=True)
+    is_blocked = Column(Boolean, default=False, nullable=False)
+    block_expires_at = Column(DateTime, nullable=True)
     
 
     no_show_events = relationship("NoShowEvent", back_populates="user")
