@@ -42,6 +42,20 @@
   <p-tabPanel header=" " [headerStyle]="{ display: 'none' }">
     <div>
           <h3 class="section-heading">פילוח סטטוס רכבים</h3>
+          <div class="filter-container" style="margin-bottom: 1rem;">
+  <label for="vehicleType" style="margin-right: 0.5rem;">Vehicle Type:</label>
+  <select
+    id="vehicleType"
+    [(ngModel)]="selectedVehicleType"
+    (change)="onVehicleTypeFilterChange()"
+    class="form-control"
+    style="display: inline-block; width: auto;"
+  >
+    <option value="">All</option>
+    <option *ngFor="let type of vehicleTypes" [value]="type">{{ type }}</option>
+  </select>
+</div>
+
 
       <p-chart
         *ngIf="vehicleChartInitialized && vehicleChartData"
