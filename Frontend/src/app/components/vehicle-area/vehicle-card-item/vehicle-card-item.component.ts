@@ -168,7 +168,7 @@ closeMileageModal(): void {
 }
 
 saveMileage(): void {
-  this.vehicleService.updateMilage(this.vehicle.id, this.newMileage).subscribe({
+  this.vehicleService.updatemileage(this.vehicle.id, this.newMileage).subscribe({
     next: () => {
       this.toastService.show(`קילומטראז' עודכן בהצלחה`, 'success');
       this.vehicle.mileage = this.newMileage;
@@ -462,8 +462,8 @@ saveMileage(): void {
     });
   }
 
-updateVehicleMilage(vehicle: any): void {
-  this.vehicleService.updateMilage(vehicle.id, vehicle.mileage).subscribe({
+updateVehiclemileage(vehicle: any): void {
+  this.vehicleService.updatemileage(vehicle.id, vehicle.mileage).subscribe({
     next: () => {
       this.toastService.show(`קילומטראז' הרכב ${vehicle.plate_number} עודכן בהצלחה`, 'success');
     },

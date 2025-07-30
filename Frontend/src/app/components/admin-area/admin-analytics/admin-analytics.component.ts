@@ -263,7 +263,7 @@ getFreezeReasonHebrew(reason: FreezeReason): string {
   
 
   private loadRideChart() {
-    this.http.get<{ status: string; count: number }[]>(`${environment.apiUrl}/analytics/ride-status-summary`)
+    this.http.get<{ status: string; count: number}[]>(`${environment.apiUrl}/analytics/ride-status-summary`)
       .subscribe({
         next: (data) => {
           console.log('🚌 Ride Status Data:', data);
@@ -389,7 +389,7 @@ labels: updatedLabels,
 
   }
 
-  private updateRideChart(data: { status: string; count: number }[]) {
+  private updateRideChart(data: { status: string; count: number}[]) {
     console.log('🔄 Updating ride chart with data:', data);
     
     
@@ -400,7 +400,7 @@ labels: updatedLabels,
     });
     const values = data.map(d => d.count);
     const total = values.reduce((sum, val) => sum + val, 0);
-const updatedLabels = labels.map((label, i) => {
+    const updatedLabels = labels.map((label, i) => {
   const count = values[i];
   const percent = ((count / total) * 100).toFixed(1);
   return `${label} – ${count} רכבים (${percent}%)`;
@@ -442,15 +442,25 @@ labels: updatedLabels,
     console.log('✅ Final rideChartData:', this.rideChartData);
   }
 
+
+
   onSortChange() {
-    const sortFunctions = {
-      countAsc: (a: { status: string; count: number }, b: { status: string; count: number }) => a.count - b.count,
-      countDesc: (a: { status: string; count: number }, b: { status: string; count: number }) => b.count - a.count,
-      alphabetical: (a: { status: string; count: number }, b: { status: string; count: number }) => a.status.localeCompare(b.status),
+    const sortFunctionsR = {
+      countAsc: (a: { status: string; count: number}, b: { status: string; count: number}) => a.count - b.count,
+      countDesc: (a: { status: string; count: number}, b: { status: string; count: number}) => b.count - a.count,
+      alphabetical: (a: { status: string; count: number}, b: { status: string; count: number}) => a.status.localeCompare(b.status),
       default: () => 0
     };
 
-    const sortFn = sortFunctions[this.selectedSortOption as keyof typeof sortFunctions];
+    const sortFunctionsV = {
+      countAsc: (a: { status: string; count: number}, b: { status: string; count: number}) => a.count - b.count,
+      countDesc: (a: { status: string; count: number}, b: { status: string; count: number}) => b.count - a.count,
+      alphabetical: (a: { status: string; count: number}, b: { status: string; count: number}) => a.status.localeCompare(b.status),
+      default: () => 0
+    };
+
+    const sortFnR = sortFunctionsR[this.selectedSortOption as keyof typeof sortFunctionsR];
+    const sortFnV = sortFunctionsV[this.selectedSortOption as keyof typeof sortFunctionsV];
 
     if (this.activeTabIndex === 0) {
       // עדכון עם פילטר הרכב
@@ -460,14 +470,14 @@ labels: updatedLabels,
       }
       this.http.get<{ status: string; count: number }[]>(url)
         .subscribe(data => {
-          const sortedData = this.selectedSortOption === 'default' ? data : [...data].sort(sortFn);
-          this.updateVehicleChart(sortedData);
+          const sortedDataV = this.selectedSortOption === 'default' ? data : [...data].sort(sortFnV);
+          this.updateVehicleChart(sortedDataV);
         });
     } else {
-      this.http.get<{ status: string; count: number }[]>(`${environment.apiUrl}/analytics/ride-status-summary`)
+      this.http.get<{ status: string; count: number}[]>(`${environment.apiUrl}/analytics/ride-status-summary`)
         .subscribe(data => {
-          const sortedData = this.selectedSortOption === 'default' ? data : [...data].sort(sortFn);
-          this.updateRideChart(sortedData);
+          const sortedDataR = this.selectedSortOption === 'default' ? data : [...data].sort(sortFnR);
+          this.updateRideChart(sortedDataR);
         });
     }
   }
@@ -974,7 +984,7 @@ private reverseHebrewLabel(hebrewLabel: string): string {
 public loadTopUsedVehiclesChart() {
   this.http.get<{
   month: number;
-  stats: { plate_number: string; vehicle_model: string; total_rides: number }[];
+  stats: { plate_number: string; vehicle_model: string; total_rides: number, total_km: number }[];
   year: number;
 }>(
     `${environment.apiUrl}/vehicles/usage-stats?range=month&year=${this.selectedYear}&month=${this.selectedMonth}`
@@ -982,7 +992,8 @@ public loadTopUsedVehiclesChart() {
     next: data => {
       console.log('data for usage-stat',data)
       const labels = data.stats.map(v => ` ${v.plate_number} – ${v.vehicle_model}`);
-const counts = data.stats.map(v => Number.isFinite(v.total_rides) ? v.total_rides : 0);
+      const counts = data.stats.map(v => Number.isFinite(v.total_rides) ? v.total_rides : 0);
+      const kilometers = data.stats.map(v => v.total_km); // array like [82.68]
 
       const backgroundColors = counts.map(count => {
         if (count > 10) return '#FF5252';
@@ -1004,7 +1015,8 @@ const counts = data.stats.map(v => Number.isFinite(v.total_rides) ? v.total_ride
           label: 'מספר נסיעות',
           data: counts,
           backgroundColor: backgroundColors,
-          hoverBackgroundColor: hoverColors
+          hoverBackgroundColor: hoverColors,
+          
         }]
       };
 
@@ -1018,8 +1030,9 @@ const counts = data.stats.map(v => Number.isFinite(v.total_rides) ? v.total_ride
                 const label = context.chart.data.labels[context.dataIndex];
                 const value = context.raw;
                 const usage = usageLevels[context.dataIndex];
-                return `${label}: ${value} נסיעות (${usage})`;
-              }
+                const km = kilometers[context.dataIndex];
+
+                return `${label}: ${value} נסיעות (${usage}) | ${km} ק"מ`;              }
             }
           },
           legend: { display: false }
@@ -1051,10 +1064,10 @@ const counts = data.stats.map(v => Number.isFinite(v.total_rides) ? v.total_ride
 
       // ✅ Assign final chart config
       this.topUsedVehiclesData = { ...cloneDeep(this.monthlyChartData) };
-this.topUsedVehiclesOptions = { ...cloneDeep(this.monthlyChartOptions) };
-this.monthlyStatsChartData= {...this.monthlyChartData};
-this.monthlyStatsChartOptions={ ...this.monthlyChartOptions };
-console.log('monthly stats data:',this.monthlyStatsChartData)
+      this.topUsedVehiclesOptions = { ...cloneDeep(this.monthlyChartOptions) };
+      this.monthlyStatsChartData= {...this.monthlyChartData};
+      this.monthlyStatsChartOptions={ ...this.monthlyChartOptions };
+      console.log('monthly stats data:',this.monthlyStatsChartData)
 
 
 
@@ -1065,24 +1078,74 @@ console.log('monthly stats data:',this.monthlyStatsChartData)
   });
 }
 
-
 private loadAllTimeTopUsedVehiclesChart() {
- this.http.get(`${environment.apiUrl}/vehicles/usage-stats?range=all`).subscribe({
-  next: (res: any) => {
-    console.log('all stats data',res)
-    const stats = res?.stats || [];
+  this.http.get(`${environment.apiUrl}/vehicles/usage-stats?range=all`).subscribe({
+    next: (res: any) => {
+      console.log('all stats data', res);
+      const stats = res?.stats || [];
 
-    if (!stats.length) {
+      if (!stats.length) {
+        this.allTimeChartData = {
+          labels: ['אין נתונים'],
+          datasets: [{ data: [1], backgroundColor: ['#E0E0E0'] }]
+        };
+        this.allTimeChartOptions = {
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              title: { display: true, text: 'כמות נסיעות' },
+              ticks: { stepSize: 1, beginAtZero: true, precision: 0 }
+            },
+            y: {
+              title: { display: true, text: 'רכב' },
+              ticks: {
+                beginAtZero: true,
+                stepSize: 1,
+                precision: 0,
+                callback: (value: any) => Number.isInteger(value) ? value : ''
+              }
+            }
+          },
+          locale: 'he-IL'
+        };
+
+        this.topUsedVehiclesData = { ...cloneDeep(this.allTimeChartData) };
+        this.topUsedVehiclesOptions = { ...cloneDeep(this.allTimeChartOptions) };
+        this.allTimeStatsChartData = { ...cloneDeep(this.allTimeChartData) };
+        this.allTimeStatsChartOptions = { ...cloneDeep(this.allTimeChartOptions) };
+        return;
+      }
+
+      const labels = stats.map((s: any) => `${s.plate_number} ${s.vehicle_model}`);
+      const data = stats.map((s: any) => s.total_rides);
+      const kilometers = stats.map((a: { total_km: number }) => a.total_km);
+
       this.allTimeChartData = {
-        labels: ['אין נתונים'],
-        datasets: [{ data: [1], backgroundColor: ['#E0E0E0'] }]
+        labels,
+        datasets: [{
+          label: 'Total Rides',
+          data,
+          backgroundColor: '#42A5F5'
+        }]
       };
+
       this.allTimeChartOptions = {
-        plugins: { legend: { display: false } },
+        indexAxis: 'y',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx: any) => {
+                const km = kilometers[ctx.dataIndex];
+                return `${ctx.parsed.x} נסיעות | ${km} ק"מ`;
+              }
+            }
+          }
+        },
         scales: {
           x: {
-            title: { display: true, text: 'כמות נסיעות' },
-            ticks: { stepSize: 1, beginAtZero: true, precision: 0 }
+            title: { display: true, text: 'כמות הנסיעות' },
+            ticks: { beginAtZero: true, stepSize: 1, precision: 0 }
           },
           y: {
             title: { display: true, text: 'רכב' },
@@ -1090,78 +1153,23 @@ private loadAllTimeTopUsedVehiclesChart() {
               beginAtZero: true,
               stepSize: 1,
               precision: 0,
-              callback: function (value: any) {
-                return Number.isInteger(value) ? value : '';
-              }
+              callback: (value: any) => Number.isInteger(value) ? value : ''
             }
           }
         },
         locale: 'he-IL'
       };
-     
-      this.topUsedVehiclesData = { ...cloneDeep(this.allTimeChartData) };
-this.topUsedVehiclesOptions = { ...cloneDeep(this.allTimeChartOptions) };
-this.allTimeStatsChartData={ ...cloneDeep(this.allTimeChartData) };
-this.allTimeStatsChartOptions={ ...cloneDeep(this.allTimeChartOptions) };
 
-      return;
+      this.topUsedVehiclesData = { ...cloneDeep(this.allTimeChartData) };
+      this.topUsedVehiclesOptions = { ...cloneDeep(this.allTimeChartOptions) };
+      this.allTimeStatsChartData = { ...cloneDeep(this.allTimeChartData) };
+      this.allTimeStatsChartOptions = { ...cloneDeep(this.allTimeChartOptions) };
+    },
+    error: (err: any) => {
+      console.error("❌ Error fetching all-time used vehicles:", err);
     }
-
-    const labels = stats.map((s: any) => `${s.plate_number} ${s.vehicle_model}`);
-    const data = stats.map((s: any) => s.total_rides);
-
-    this.allTimeChartData = {
-      labels,
-      datasets: [{
-        label: 'Total Rides',
-        data,
-        backgroundColor: '#42A5F5'
-      }]
-    };
-
-    this.allTimeChartOptions = {
-      indexAxis: 'y',
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: (ctx: any) => `${ctx.parsed.x} נסיעות`
-          }
-        }
-      },
-      scales: {
-        x: {
-          title: { display: true, text: 'כמות הנסיעות' },
-          ticks: { beginAtZero: true, stepSize: 1, precision: 0 }
-        },
-        y: {
-          title: { display: true, text: 'רכב' },
-          ticks: {
-            beginAtZero: true,
-            stepSize: 1,
-            precision: 0,
-            callback: function (value: any) {
-              return Number.isInteger(value) ? value : '';
-            }
-          }
-        }
-      },
-      locale: 'he-IL'
-    };
-
-      this.topUsedVehiclesData = { ...cloneDeep(this.allTimeChartData) };
-this.topUsedVehiclesOptions = { ...cloneDeep(this.allTimeChartOptions) };
-this.allTimeStatsChartData={ ...cloneDeep(this.allTimeChartData) };
-this.allTimeStatsChartOptions={ ...cloneDeep(this.allTimeChartOptions) };
-  },
-
-  error: (err: any) => {
-    console.error("❌ Error fetching all-time used vehicles:", err);
-  }
-});
-
-
-  }
+  });
+}
 
 }
 
