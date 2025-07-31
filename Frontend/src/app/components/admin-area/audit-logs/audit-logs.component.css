@@ -988,7 +988,8 @@ input[type="checkbox"] {
 }
 
 .collapse-btn,
-.problematic-only-label {
+.problematic-only-label,
+.exceeded-monthly-trip-quota-label {
   background: none;
   border: 1px solid #942222;
   font-size: 1rem;

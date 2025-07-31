@@ -17,6 +17,10 @@
             <input type="checkbox" [(ngModel)]="problematicOnly" (change)="fetchAuditLogs()" />
             הצג רק בדיקות עם בעיות
           </label>
+          <label class="exceeded-monthly-trip-quota-label">
+            <input type="checkbox"  [(ngModel)]="showExceededQuotaOnly" (change)="fetchAuditLogs()" />
+            הצג חריגות מהמכסה החודשית
+          </label>
         </div>
       </div>
 
