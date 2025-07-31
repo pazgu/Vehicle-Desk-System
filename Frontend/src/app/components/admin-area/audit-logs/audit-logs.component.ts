@@ -71,6 +71,7 @@ export class AuditLogsComponent implements OnInit {
     license_file_url: 'קובץ רישיון',
     license_expiry_date: 'תוקף רישיון',
     has_government_license: 'רישיון ממשלתי',
+    exceeded_monthly_trip_quota: 'חריגה מהמכסה החודשית',
   };
 
   getUserFieldLabel(key: string): string {
@@ -430,6 +431,7 @@ fetchAuditLogs(fromDate?: string, toDate?: string) {
       { label: 'רישיון ממשלתי', oldValue: oldData.has_government_license, newValue: newData.has_government_license },
       { label: 'תוקף רישיון', oldValue: oldData.license_expiry_date, newValue: newData.license_expiry_date },
       { label: 'קובץ רישיון', oldValue: oldData.license_file_url, newValue: newData.license_file_url },
+      { label: 'חריגה מהמכסה החודשית', oldValue: oldData.exceeded_monthly_trip_quota, newValue: newData.exceeded_monthly_trip_quota }
     ];
   }
 
