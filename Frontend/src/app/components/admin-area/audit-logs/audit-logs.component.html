@@ -17,6 +17,10 @@
             <input type="checkbox" [(ngModel)]="problematicOnly" (change)="fetchAuditLogs()" />
             הצג רק בדיקות עם בעיות
           </label>
+          <label class="exceeded-monthly-trip-quota-label">
+            <input type="checkbox"  [(ngModel)]="showExceededQuotaOnly" (change)="fetchAuditLogs()" />
+            הצג חריגות מהמכסה החודשית
+          </label>
         </div>
       </div>
 
@@ -91,6 +95,9 @@
           <div class="status-item">
             <span class="status-indicator cancelled-due-to-no-show"></span>  בוטל עקב אי הגעה
           </div>
+          <div class="status-item">
+            <span class="status-indicator exceeded-monthly-trip-quota"></span>  חריגה מהמכסה החודשית
+          </div>
         </div>
       </div>
 
@@ -131,6 +138,7 @@
   (log.entity_type === 'Ride' && log.action === 'UPDATE' &&
     (log.change_data?.new?.status === 'cancelled_due_to_no_show' ||
      log.change_data?.new?.status === 'cancelled-due-to-no-show')),
+     'exceeded-monthly-trip-quota-row': log.entity_type === 'User' && log.change_data?.new?.exceeded_monthly_trip_quota === true,
                 }" (click)="showDetails(log)">
               <td class="audit-td">{{ log.action }}</td>
               <td class="audit-td">{{ log.entity_type }}</td>
