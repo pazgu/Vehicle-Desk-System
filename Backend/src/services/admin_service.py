@@ -2,7 +2,16 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from uuid import UUID
 from src.models.user_model import User, UserRole
-from sqlalchemy import text
+from sqlalchemy import text , desc, func
+from typing import Optional 
+from datetime import datetime, time
+from ..models.ride_model import Ride
+from ..models.no_show_events import NoShowEvent
+from ..models.user_model import User
+from ..models.department_model import Department
+from src.schemas.statistics_schema import NoShowStatsResponse,TopNoShowUser
+from ..utils.database import get_db
+
 
 def delete_user_by_id(user_id: UUID, current_user: User, db: Session):
     # בדיקת הרשאות
@@ -104,4 +113,71 @@ def delete_user_by_id(user_id: UUID, current_user: User, db: Session):
     return {
         "message": "✅ User deleted successfully",
         "user_id": str(user_id)
+    }
+
+
+def get_no_show_statistics_data(
+    db: Session,
+    from_date: Optional[datetime] = None,
+    to_date: Optional[datetime] = None,
+    page: Optional[int] = None,
+    page_size: Optional[int] = None
+):
+    query = db.query(NoShowEvent)
+    if from_date:
+        query = query.filter(NoShowEvent.occurred_at >= from_date)
+    if to_date:
+        query = query.filter(NoShowEvent.occurred_at <= to_date)
+
+    total_no_show_events = query.count()
+    unique_no_show_users = query.with_entities(NoShowEvent.user_id).distinct().count()
+
+    completed_query = db.query(Ride).filter(Ride.status == "completed", Ride.completion_date != None)
+    if from_date:
+        completed_query = completed_query.filter(Ride.completion_date >= from_date)
+    if to_date:
+        completed_query = completed_query.filter(Ride.completion_date <= to_date)
+
+    completed_rides_count = completed_query.count()
+
+    top_users_query = (
+        db.query(
+            NoShowEvent.user_id,
+            func.concat(User.first_name, ' ', User.last_name).label("name"),
+            Department.id.label("department_id"),
+            func.count(NoShowEvent.id).label("count"),
+            User.email,
+            User.role,
+            User.employee_id,
+        )
+        .outerjoin(User, User.employee_id == NoShowEvent.user_id)
+        .outerjoin(Department, Department.id == User.department_id)
+    )
+
+    if from_date:
+        top_users_query = top_users_query.filter(NoShowEvent.occurred_at >= from_date)
+    if to_date:
+        top_users_query = top_users_query.filter(NoShowEvent.occurred_at <= to_date)
+
+    top_users_query = top_users_query.group_by(
+        NoShowEvent.user_id,
+        User.first_name,
+        User.last_name,
+        Department.id,
+        User.email,
+        User.role,
+        User.employee_id,
+    ).order_by(desc("count"))
+
+    if page and page_size:
+        offset = (page - 1) * page_size
+        top_users_query = top_users_query.offset(offset).limit(page_size)
+
+    results = top_users_query.all()
+
+    return {
+        "total_no_show_events": total_no_show_events,
+        "unique_no_show_users": unique_no_show_users,
+        "completed_rides_count": completed_rides_count,
+        "top_users": results
     }
