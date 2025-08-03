@@ -666,28 +666,73 @@ def periodic_check():
             print('Coroutine error:', e)
 
 
-def unblock_expired_users():
-    db = SessionLocal()
+
+async def check_and_unblock_expired_users():
+    """
+    Unblock users whose block has expired, then emit a socket event per user.
+    """
+    db: Session = SessionLocal()
+    users_to_notify = []  # collect AFTER commit we will emit
+
     try:
         now = datetime.now(timezone.utc)
 
+        # Find users whose block has expired
         expired_blocks = db.query(User).filter(
             User.is_blocked == True,
             User.block_expires_at.isnot(None),
             User.block_expires_at < now
         ).all()
 
+        if not expired_blocks:
+            return  # nothing to do
+
+        # Update users
         for user in expired_blocks:
             user.is_blocked = False
             user.block_expires_at = None
+            # keep only scalar data for emission to avoid detached ORM issues
+            users_to_notify.append({
+                "id": str(user.employee_id),   # or str(user.id) if that's your primary
+                "is_blocked": False,
+                "block_expires_at": None
+            })
 
         db.commit()
 
     except Exception as e:
-        print(f"❌ Error while unblocking users: {e}")
         db.rollback()
+        print(f"❌ Error while unblocking users: {e}")
+        return
     finally:
         db.close()
+
+    # Emit AFTER commit (so clients reflect DB state)
+    for payload in users_to_notify:
+        try:
+            # If you want to target a room per user (recommended), pass room=str(employee_id)
+            await sio.emit(
+                'user_block_status_updated',
+                {
+                    "id": payload["id"],
+                    "is_blocked": payload["is_blocked"],
+                    "block_expires_at": payload["block_expires_at"]
+                },
+            )
+            print(f"emitted for user {payload['id']}")
+
+        except Exception as e:
+            print(f"Failed to emit for user {payload['id']}: {e}")
+
+
+
+def periodic_check_unblock_users():
+    print('periodic_check_unblock_users was called')
+    future = asyncio.run_coroutine_threadsafe(check_and_unblock_expired_users(), main_loop)
+    try:
+        future.result(timeout=10)
+    except Exception as e:
+        print(f"❌ Failed periodic_check_unblock_users: {e}")
 
 
 def periodic_check_unstarted_rides(): 
@@ -712,9 +757,10 @@ def check_and_schedule_ride_emails():
         db.close()
 
 scheduler.add_job(check_and_schedule_ride_emails, 'interval', minutes=60)
-scheduler.add_job(unblock_expired_users, 'interval', minutes=1)
 scheduler.add_job(check_and_complete_rides, 'interval', minutes=5)
 scheduler.add_job(periodic_check_overdue_rides, 'interval', minutes=10)
+scheduler.add_job(periodic_check_unblock_users, 'interval', minutes=1)
+
 
 def notify_admins_daily():
     print("⏰ Scheduler is triggering notification function.")

@@ -792,16 +792,22 @@ def archive_last_month_endpoint(db: Session = Depends(get_db)):
 
 
 @router.get("/analytics/vehicle-status-summary")
-def vehicle_status_summary(db: Session = Depends(get_db)):
+def vehicle_status_summary(
+    db: Session = Depends(get_db),
+    type: Optional[str] = Query(None, alias="type")  # 'type' from query param
+):
     try:
-        result = (
-            db.query(Vehicle.status, func.count(Vehicle.id).label("count"))
-            .group_by(Vehicle.status)
-            .all()
-        )
-        # Format response as a list of dicts
+        query = db.query(Vehicle.status, func.count(Vehicle.id).label("count"))
+
+        if type:
+            query = query.filter(Vehicle.type == type)
+
+        result = query.group_by(Vehicle.status).all()
+
+        # Format response
         summary = [{"status": row.status.value, "count": row.count} for row in result]
         return JSONResponse(content=summary)
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching summary: {str(e)}")
 

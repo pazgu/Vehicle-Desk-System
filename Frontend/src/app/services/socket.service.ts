@@ -150,10 +150,19 @@ this.socket.on('order_deleted', (data: any) => {
       console.log('License updated event:', data);
       this.usersLicense$.next(data);
     });
-this.socket.on('user_block_status_updated', (data: any) => {      console.log('User block status updated via socket:', data);
-      this.usersBlockStatus$.next(data as { id: string, is_blocked: boolean, block_expires_at: Date | null });
-    });
+this.socket.on('user_block_status_updated', (data: any) => {
+  console.log('User block status updated via socket:', data);
 
+  const normalized = {
+    id: String(data.id),
+    is_blocked: !!data.is_blocked,
+    block_expires_at: data.block_expires_at
+      ? new Date(data.block_expires_at)     // <-- normalize here
+      : null,
+  };
+
+  this.usersBlockStatus$.next(normalized);
+});
     this.socket.on('audit_log_updated', (data: any) => {
       console.log('📝 Audit log updated via socket:', data);
       this.auditLogs$.next(data);

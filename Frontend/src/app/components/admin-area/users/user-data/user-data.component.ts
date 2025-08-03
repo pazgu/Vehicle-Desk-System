@@ -76,36 +76,48 @@ export class UserDataComponent implements OnInit {
           }
         });
 
-        // Listen for user_block_status_updated socket event
-        this.socketservice.usersBlockStatus$.subscribe((update) => {
-          const idx = this.users.findIndex((u) => u.employee_id === update.id);
-          if (idx === -1) return;
+      this.socketservice.usersBlockStatus$.subscribe(update => {
+    // Ensure you compare same types
+    const id = String(update.id);
+    const idx = this.users.findIndex(u => String(u.employee_id) === id);
+    if (idx === -1) return;
 
-          // Create a new user object to ensure immutability and trigger change detection
-          const updatedUser = { ...this.users[idx], ...update };
-          if (update.block_expires_at) {
-            updatedUser.block_expires_at = new Date(update.block_expires_at);
-          } else {
-            updatedUser.block_expires_at = null; // Ensure it's null if cleared
-          }
+    // Create new object (immutability) and assign normalized values
+    const updatedUser = {
+      ...this.users[idx],
+      is_blocked: update.is_blocked,
+      block_expires_at: update.block_expires_at, // already a Date | null from the service
+    };
 
-          // Update the user in the main array
-          this.users[idx] = updatedUser;
+    // Update the main list immutably (helps OnPush)
+    this.users = [
+      ...this.users.slice(0, idx),
+      updatedUser,
+      ...this.users.slice(idx + 1),
+    ];
 
-          // Also update in filteredLogs if applicable
-          const filteredIdx = this.filteredLogs.findIndex((u) => u.employee_id === update.id);
-          if (filteredIdx !== -1) {
-            this.filteredLogs[filteredIdx] = updatedUser;
-          }
+    // If filteredLogs is derived from users via a filter function,
+    // prefer re-running that filter instead of updating it separately:
+    // this.filteredLogs = this.applyCurrentFilters(this.users);
 
-          // If a modal is open for this user, close it after successful update
-          if (this.selectedUserForBlock?.employee_id === update.id) {
-            this.closeBlockUserModal(); // Close either block or unblock modal
-            this.closeUnblockConfirmationModal();
-          }
+    // But if you do keep a separate array, update it in sync:
+    const fIdx = this.filteredLogs.findIndex(u => String(u.employee_id) === id);
+    if (fIdx !== -1) {
+      this.filteredLogs = [
+        ...this.filteredLogs.slice(0, fIdx),
+        updatedUser,
+        ...this.filteredLogs.slice(fIdx + 1),
+      ];
+    }
 
-          this.cdr.detectChanges(); // Manually trigger change detection if needed
-        });
+    // Close modals if they target this user
+    if (this.selectedUserForBlock?.employee_id && String(this.selectedUserForBlock.employee_id) === id) {
+      this.closeBlockUserModal();
+      this.closeUnblockConfirmationModal();
+    }
+
+    this.cdr.detectChanges();
+  });
 
         // Also ensure your user_license_updated subscription correctly handles updates.
         // I'm assuming you have socketservice.usersLicense$ defined and working.
@@ -308,11 +320,17 @@ export class UserDataComponent implements OnInit {
   }
 
   deleteUser(userId: string): void {
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: '380px',
-      height: '190px',
-      data: {},
-    });
+  const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+    width: '380px',
+    height: '190px',
+    data: {
+      title: 'מחיקת משתמש',
+      message: '?האם אתה בטוח שברצונך למחוק את המשתמש',
+      confirmText: 'מחק',
+      cancelText: 'ביטול',
+      isDestructive: true
+    },
+  });
 
     dialogRef.afterClosed().subscribe((confirmed) => {
       if (!confirmed) return;
