@@ -238,22 +238,25 @@ def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_re
     return {"vehicle_id": vehicle.id, "new_status": vehicle.status, "freeze_reason": vehicle.freeze_reason}
 
 def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID) -> List[VehicleOut]:
-    ride = db.query(
-        Ride.id,
-        Ride.start_datetime,
-        Ride.end_datetime,
-        Ride.status
-    ).filter(Ride.id == ride_id).first()
+    ride = db.query(Ride).filter(Ride.id == ride_id).first()
+    
+    print("🟢 Ride pulled from DB:", ride)  # 👈 Add this
+
 
     if not ride:
         raise HTTPException(status_code=404, detail="Ride not found")
 
-    if ride.status != "approved":
+    if ride.status != RideStatus.approved:
         raise HTTPException(status_code=400, detail="Ride is not approved")
+    
+    print("🚗 Checking distance for ride", ride_id, ":", ride.estimated_distance_km)  # 👈 Add this
+
 
     start_datetime = ride.start_datetime
     end_datetime = ride.end_datetime
+    ride_distance = ride.estimated_distance_km
 
+    # Subquery: Vehicles already taken during that period
     conflicting_vehicles_subquery = (
         db.query(Ride.vehicle_id)
         .filter(
@@ -268,7 +271,8 @@ def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID) -> List[Ve
         .subquery()
     )
 
-    vehicles = (
+    # Initial vehicle candidates (available + time compatible)
+    candidate_vehicles = (
         db.query(Vehicle)
         .filter(
             Vehicle.status == "available",
@@ -276,7 +280,31 @@ def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID) -> List[Ve
         )
         .all()
     )
-    return [VehicleOut.from_orm(vehicle) for vehicle in vehicles]
+
+    # 💡 Extra Filter: Check daily distance cap
+    today_start = datetime.combine(start_datetime.date(), datetime.min.time())
+    today_end = today_start + timedelta(days=1)
+
+    available_vehicles = []
+
+    for vehicle in candidate_vehicles:
+        if vehicle.max_daily_distance_km is None:
+            available_vehicles.append(vehicle)
+            continue
+
+        # Total used distance by this vehicle today
+        used_distance = db.query(func.coalesce(func.sum(Ride.actual_distance_km), 0)).filter(
+            Ride.vehicle_id == vehicle.id,
+            Ride.start_datetime >= today_start,
+            Ride.start_datetime < today_end,
+            Ride.status.in_(["approved", "in_progress", "completed"])  # include completed if relevant
+        ).scalar()
+
+        # Check if this vehicle can handle the new ride
+        if (vehicle.max_daily_distance_km - used_distance) >= ride_distance:
+            available_vehicles.append(vehicle)
+
+    return [VehicleOut.from_orm(vehicle) for vehicle in available_vehicles]
 
 def get_vehicle_by_id(vehicle_id: str, db: Session):
     vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
