@@ -1142,3 +1142,37 @@ body {
   border-color: #42A5F5;
   box-shadow: 0 0 0 1px rgba(66, 165, 245, 0.3);
 }
+
+.export-warning {
+  color: #b71c1c;
+  background-color: #ffebee;
+  border: 1px solid #f44336;
+  border-radius: 6px;
+  padding: 0.75rem 1.25rem;
+  font-family: "Alef", sans-serif;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  width: fit-content;
+  max-width: 100%;
+  opacity: 1;
+  animation: fadeAndCollapse 4s ease-out forwards;
+}
+
+/* Makes it fade AND collapse the height */
+@keyframes fadeAndCollapse {
+  0% {
+    opacity: 1;
+    max-height: 100px;
+  }
+  80% {
+    opacity: 1;
+    max-height: 100px;
+  }
+  100% {
+    opacity: 0;
+    max-height: 0;
+    padding: 0;
+    margin: 0;
+  }
+}
