@@ -372,8 +372,8 @@
                 <div class="field-value">{{ selectedLog.change_data.name }}</div>
               </div>
               <div class="field-row">
-                <div class="field-label">מזהה מנהל מחלקה</div>
-                <div class="field-value">{{ selectedLog.change_data.supervisor_id }}</div>
+                <div class="field-label">שם מנהל מחלקה</div>
+                <div class="field-value">{{ getUserNameById(selectedLog.change_data.supervisor_id) }}</div>
               </div>
             </div>
           </div>
