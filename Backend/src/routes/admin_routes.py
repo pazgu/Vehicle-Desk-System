@@ -1373,9 +1373,9 @@ def get_supervisors(db: Session = Depends(get_db)):
     return supervisors
 
 @router.post("/departments", response_model=DepartmentOut, status_code=201)
-def create_department(dept: DepartmentCreate, db: Session = Depends(get_db)):
-    return department_service.create_department(db, dept)
+def create_department(dept: DepartmentCreate, db: Session = Depends(get_db), payload: dict = Depends(token_check)):
+    return department_service.create_department(db, dept, payload)
 
 @router.patch("/departments/{department_id}", response_model=DepartmentOut)
-def patch_department(department_id: UUID, dept: DepartmentUpdate, db: Session = Depends(get_db)):
-    return department_service.update_department(db, department_id, dept)
+def patch_department(department_id: UUID, dept: DepartmentUpdate, db: Session = Depends(get_db), payload: dict = Depends(token_check)):
+    return department_service.update_department(db, department_id, dept, payload)
