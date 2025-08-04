@@ -26,12 +26,24 @@ html, body {
   -moz-appearance: textfield;
   appearance: textfield;
 }
+
 .add-stop-btn, .delete-stop-btn {
   margin-top: 5px;
   cursor: pointer;
   background: none;
   border: none;
   color: #007bff;
+}
+.car-validation-message {
+  display: inline-block;
+  padding: 6px 10px;
+  margin-top: 4px;
+  font-size: 0.7rem;
+  border-radius: 6px;
+  background-color: #f0fdcb;
+  color: #842029;
+  box-shadow: 0 0 0 1px #f5c2c7;
+  margin-top:25px;
 }
 
 .time-select-container {
