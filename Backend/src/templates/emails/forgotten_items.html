@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>נמצאו חפצים ברכב</title>
+  <style>
+  
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      direction: rtl;
+      text-align: center;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 20px;
+      line-height: 1.6;
+  }
+
+  .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      overflow: hidden;
+      text-align: center;
+  }
+
+  .header {
+      background: linear-gradient(135deg,  #1e3a8a, #1e3a8a);
+      color: white;
+      padding: 30px;
+      text-align: center;
+  }
+
+  .header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 600;
+  }
+
+  .content {
+      padding: 30px;
+      text-align: center;
+  }
+
+  .approval-badge {
+      background-color: #e8f5e8;
+      border: 2px solid #1e3a8a;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 20px 0;
+      text-align: center;
+  }
+
+  .approval-badge .icon {
+      font-size: 30px;
+      margin-bottom: 10px;
+  }
+
+  .details-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      overflow: hidden;
+      text-align: center;
+  }
+
+  .details-table th,
+  .details-table td {
+      padding: 12px 15px;
+      text-align: center;
+      border-bottom: 1px solid #e9ecef;
+  }
+
+  .details-table th {
+      background-color: #e9ecef;
+      font-weight: 600;
+      color: #495057;
+  }
+
+  .details-table tr:last-child td {
+      border-bottom: none;
+  }
+
+  .footer {
+      background-color: #f8f9fa;
+      padding: 20px;
+      text-align: center;
+      color: #6c757d;
+      font-size: 14px;
+  }
+
+  .btn {
+      display: inline-block;
+      padding: 12px 24px;
+      background-color: #1e3a8a;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: 600;
+      margin: 10px 0;
+      text-align: center;
+  }
+
+  .greeting {
+      font-size: 18px;
+      color: #333;
+      margin-bottom: 20px;
+      text-align: center;
+  }
+
+  .message {
+      color: #555;
+      font-size: 16px;
+      line-height: 1.6;
+      text-align: center;
+  }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <span class="inspection-icon">👜</span>
+      <h1>נמצאו חפצים ברכב</h1>
+    </div>
+
+    <div class="content">
+      <div class="detail-item">
+        <div class="detail-label">:שם הנוסע</div>
+        <div class="detail-value">{{ user_name }}</div>
+      </div>
+
+      <div class="detail-item">
+        <div class="detail-label">:לוחית רישוי</div>
+        <div class="detail-value">{{ license_plate }}</div>
+      </div>
+
+      <div class="detail-item">
+        <div class="detail-label">:תאריך</div>
+        <div class="detail-value">{{ date }}</div>
+      </div>
+
+      <div class="issues-box">
+        <div class="reason-label">שכחת חפצים ברכב?</div>
+        <div class="reason-text">דווח כי נמצאו חפצים ברכב. אם שכחת משהו, נא פנה לצוות הקבלה.</div>
+      </div>
+    </div>
+
+    <div class="footer">
+      תודה,<br> צוות <span class="logo">BookIt</span> 🚗<br>
+      הודעה זו נשלחה אוטומטית ממערכת התחבורה
+    </div>
+  </div>
+</body>
+</html>

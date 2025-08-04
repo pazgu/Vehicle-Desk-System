@@ -62,7 +62,7 @@ def get_all_vehicles_route(
     for v in vehicles:
         if v.fuel_type == "electric":
             km_today = get_vehicle_km_driven_on_date(db, v.id, ride_date or date.today())
-            if distance_km + km_today <= 200:
+            if distance_km + float(km_today) <= 200:
                 electric.append(v)
         elif v.fuel_type == "hybrid":
             hybrid.append(v)
