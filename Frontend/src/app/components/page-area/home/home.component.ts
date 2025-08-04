@@ -597,25 +597,30 @@ setClosestQuarterHourTime() {
   }
 
   // Vehicle management methods
-  private updateAvailableCars(): void {
-    const selectedType = this.rideForm.get('vehicle_type')?.value;
-    if (selectedType) {
-      this.availableCars = this.allCars.filter(car => car.type === selectedType);
-    } else {
-      this.availableCars = []; // No type selected, no cars available
-    }
-    // Also reset car selection if current car is no longer available
-    const selectedCar = this.rideForm.get('car')?.value;
-    if (selectedCar && !this.availableCars.some(car => car.id === selectedCar)) {
-      this.rideForm.get('car')?.setValue(null);
-    }
+private updateAvailableCars(): void {
+  const selectedType = this.rideForm.get('vehicle_type')?.value;
+  if (selectedType) {
+    // First filter: type and can_order
+    this.availableCars = this.allCars.filter(car => 
+      car.type === selectedType &&
+      (car as any).can_order !== false
+    );
 
-    this.availableCars = this.allCars.filter(car =>
-  car.type === selectedType &&
-  (car as any).can_order !== false
-);
+    // Second filter: remove cars that are pending
+    this.availableCars = this.availableCars.filter(car => 
+      !this.pendingVehicles.some(pending => pending.vehicle_id === car.id)
+    );
 
+  } else {
+    this.availableCars = []; // No type selected, no cars available
   }
+
+  // Also reset car selection if current car is no longer available
+  const selectedCar = this.rideForm.get('car')?.value;
+  if (selectedCar && !this.availableCars.some(car => car.id === selectedCar)) {
+    this.rideForm.get('car')?.setValue(null);
+  }
+}
 
   onRideTypeChange(): void {
     this.updateAvailableCars();
