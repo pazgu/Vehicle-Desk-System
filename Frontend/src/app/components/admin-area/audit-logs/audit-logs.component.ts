@@ -48,10 +48,12 @@ export class AuditLogsComponent implements OnInit {
   customToDate: string = '';
 
   problematicOnly: boolean = false;
+  showExceededQuotaOnly: boolean = false; // <-- NEW
   filtersCollapsed = true;
 
   cityMap: { [id: string]: string } = {};
   departments: { id: string; name: string }[] = [];
+  users: { id: string; first_name: string; last_name: string }[] = [];
 
 
 
@@ -71,10 +73,21 @@ export class AuditLogsComponent implements OnInit {
     license_file_url: 'קובץ רישיון',
     license_expiry_date: 'תוקף רישיון',
     has_government_license: 'רישיון ממשלתי',
+    exceeded_monthly_trip_quota: 'חריגה מהמכסה החודשית',
   };
 
   getUserFieldLabel(key: string): string {
     return this.userFieldLabels[key] || key;
+  }
+
+  departmentFieldLabels: { [key: string]: string } = {
+    id: 'מזהה מחלקה',
+    name: 'שם מחלקה',
+    supervisior_id: 'שם מנהל מחלקה',
+  };
+
+  getDepartmentFieldLabel(key: string): string {
+    return this.departmentFieldLabels[key] || key;
   }
 
 
@@ -187,40 +200,62 @@ export class AuditLogsComponent implements OnInit {
         }));
       },
       error: (err: any) => {
-        console.error('Failed to fetch departments', err);
+        this.toastService.show('שגיאה בטעינת רשימת מחלקות', 'error');
+
         this.departments = [];
       }
     });
   }
 
   getDepartmentNameById(id: string): string {
-  const dep = this.departments.find(d => d.id === id);
-  return dep ? dep.name : 'לא משוייך למחלקה';
-}
+    const dep = this.departments.find(d => d.id === id);
+    return dep ? dep.name : 'לא משוייך למחלקה';
+  }
 
-// In AuditLogsComponent, inside fetchAuditLogs method
-fetchAuditLogs(fromDate?: string, toDate?: string) {
-  this.loading = true;
-  this.auditLogService.getAuditLogs(fromDate, toDate, this.problematicOnly).subscribe({
+  fetchUsers(): void {
+  this.http.get<any>('http://localhost:8000/api/users').subscribe({
     next: (data) => {
-      // Ensure data is an array before sorting/spreading
-      this.logs = Array.isArray(data) ? data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()) : [];
-      this.filteredLogs = [...this.logs];
-      this.currentPage = 1;
-      this.loading = false;
-      
-      console.log('Checkbox problematicOnly state:', this.problematicOnly);
-      console.log('API Response Data Received:', data); // IMPORTANT: Check this output
-      console.log('Number of logs displayed:', this.filteredLogs.length);
+      const usersArr = Array.isArray(data.users) ? data.users : [];
+      this.users = usersArr.map((user: any) => ({
+        id: user.employee_id,
+        first_name: user.first_name,
+        last_name: user.last_name
+      }));
     },
-    error: (err) => {
-      console.error('Error fetching audit logs:', err);
-      this.logs = [];
-      this.filteredLogs = [];
-      this.loading = false;
+    error: (err: any) => {
+      this.toastService.show('שגיאה בטעינת רשימת משתמשים', 'error');
+      this.users = [];
     }
   });
 }
+  getUserNameById(id: string): string {
+    if (!Array.isArray(this.users)) return id;
+    const user = this.users.find(u => u.id === id);
+    return user ? `${user.first_name} ${user.last_name}` : id;
+  }
+
+  // In AuditLogsComponent, inside fetchAuditLogs method
+  fetchAuditLogs(fromDate?: string, toDate?: string) {
+    this.loading = true;
+    this.auditLogService.getAuditLogs(fromDate, toDate, this.problematicOnly).subscribe({
+      next: (data) => {
+        // Ensure data is an array before sorting/spreading
+        this.logs = Array.isArray(data) ? data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()) : [];
+        this.loading = false;
+        this.filterLogs();
+
+        console.log('Checkbox problematicOnly state:', this.problematicOnly);
+        console.log('API Response Data Received:', data); // IMPORTANT: Check this output
+        console.log('Number of logs displayed:', this.filteredLogs.length);
+      },
+      error: (err) => {
+        console.error('Error fetching audit logs:', err);
+        this.logs = [];
+        this.filteredLogs = [];
+        this.loading = false;
+      }
+    });
+  }
 
   ngOnInit(): void {
     // Merge both blocks here!
@@ -233,7 +268,8 @@ fetchAuditLogs(fromDate?: string, toDate?: string) {
         this.onRangeChange();
       },
       error: () => {
-        console.error('שגיאה בטעינת רשימת ערים');
+        this.toastService.show('שגיאה בטעינת רשימת ערים', 'error');
+
       }
     });
 
@@ -242,6 +278,7 @@ fetchAuditLogs(fromDate?: string, toDate?: string) {
     });
 
     this.fetchDepartments();
+    this.fetchUsers();
 
 
     this.socketService.notifications$.subscribe((notif) => {
@@ -309,12 +346,26 @@ fetchAuditLogs(fromDate?: string, toDate?: string) {
 
   filterLogs() {
     const searchLower = this.searchTerm.toLowerCase();
-    this.filteredLogs = this.logs.filter(log =>
+    let tempLogs = [...this.logs];
+
+    if (this.showExceededQuotaOnly) { // <-- NEW FILTER LOGIC
+      tempLogs = tempLogs.filter(log =>
+        log.entity_type === 'User' &&
+        log.action === 'UPDATE' &&
+        log.change_data && // Ensure change_data exists
+        log.change_data.new && // Ensure new data exists
+        log.change_data.new.exceeded_monthly_trip_quota === true
+      );
+    }
+
+    this.filteredLogs = tempLogs.filter(log =>
       log.action?.toLowerCase().includes(searchLower) ||
       log.entity_type?.toLowerCase().includes(searchLower) ||
       log.entity_id?.toLowerCase().includes(searchLower) ||
       log.full_name?.toLowerCase().includes(searchLower)
     );
+
+    this.currentPage = 1;
   }
 
   showDetails(log: AuditLogs) {
@@ -423,13 +474,21 @@ fetchAuditLogs(fromDate?: string, toDate?: string) {
       { label: 'שם משפחה', oldValue: oldData.last_name, newValue: newData.last_name },
       { label: 'שם משתמש', oldValue: oldData.username, newValue: newData.username },
       { label: 'אימייל', oldValue: oldData.email, newValue: newData.email },
-      {label: 'מספר טלפון', oldValue: oldData.phone, newValue: newData.phone },
+      { label: 'מספר טלפון', oldValue: oldData.phone, newValue: newData.phone },
       { label: 'תפקיד', oldValue: this.translateUserRole(oldData.role), newValue: this.translateUserRole(newData.role) },
       { label: 'מזהה עובד', oldValue: oldData.employee_id, newValue: newData.employee_id },
       { label: 'מחלקה', oldValue: this.getDepartmentNameById(oldData.department_id), newValue: this.getDepartmentNameById(newData.department_id) },
       { label: 'רישיון ממשלתי', oldValue: oldData.has_government_license, newValue: newData.has_government_license },
       { label: 'תוקף רישיון', oldValue: oldData.license_expiry_date, newValue: newData.license_expiry_date },
       { label: 'קובץ רישיון', oldValue: oldData.license_file_url, newValue: newData.license_file_url },
+      { label: 'חריגה מהמכסה החודשית', oldValue: oldData.exceeded_monthly_trip_quota, newValue: newData.exceeded_monthly_trip_quota }
+    ];
+  }
+
+  getDepartmentAuditRows(oldData: any, newData: any): Array<{ label: string, oldValue: any, newValue: any }> {
+    return [
+      { label: 'שם מחלקה', oldValue: oldData?.name, newValue: newData?.name },
+      { label: 'שם מנהל מחלקה', oldValue: this.getUserNameById(oldData?.supervisor_id), newValue: this.getUserNameById(newData?.supervisor_id) },
     ];
   }
 
@@ -469,9 +528,9 @@ fetchAuditLogs(fromDate?: string, toDate?: string) {
       default:
         return fuelType;
     }
-  }  
+  }
 
-   translateVehicleStatus(status: string | null | undefined): string {
+  translateVehicleStatus(status: string | null | undefined): string {
     if (!status) return '';
     switch (status.toLowerCase()) {
       case 'available':

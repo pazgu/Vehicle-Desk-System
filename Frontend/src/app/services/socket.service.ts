@@ -23,10 +23,11 @@ export class SocketService {
   public rideStatusUpdated$ = new BehaviorSubject<any>(null); 
   public auditLogs$ = new BehaviorSubject<any>(null);
   public newVehicle$ = new BehaviorSubject<any>(null);
-public  feedbackNeeded$ = new ReplaySubject<any>(1);
-public vehicleExpiry$=new BehaviorSubject<any>(null);
-public odometerNotif$=new BehaviorSubject<any>(null);
-public rideSupposedToStart$=new BehaviorSubject<any>(null);
+  public feedbackNeeded$ = new ReplaySubject<any>(1);
+  public vehicleExpiry$=new BehaviorSubject<any>(null);
+  public odometerNotif$=new BehaviorSubject<any>(null);
+  public rideSupposedToStart$=new BehaviorSubject<any>(null);
+  public usersBlockStatus$ = new Subject<{ id: string, is_blocked: boolean, block_expires_at: Date | null }>();
 
   constructor(private notificationService: NotificationService) {
     this.connectToSocket(); // ✅ now always tries to connect (later you can add env check)
@@ -149,7 +150,19 @@ this.socket.on('order_deleted', (data: any) => {
       console.log('License updated event:', data);
       this.usersLicense$.next(data);
     });
+this.socket.on('user_block_status_updated', (data: any) => {
+  console.log('User block status updated via socket:', data);
 
+  const normalized = {
+    id: String(data.id),
+    is_blocked: !!data.is_blocked,
+    block_expires_at: data.block_expires_at
+      ? new Date(data.block_expires_at)     // <-- normalize here
+      : null,
+  };
+
+  this.usersBlockStatus$.next(normalized);
+});
     this.socket.on('audit_log_updated', (data: any) => {
       console.log('📝 Audit log updated via socket:', data);
       this.auditLogs$.next(data);

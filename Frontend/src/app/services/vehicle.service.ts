@@ -40,6 +40,16 @@ export class VehicleService {
 
     return this.http.get<VehicleInItem[]>(url, { params });
   }
+getAllVehiclesForNewRide(distance: number, rideDate: string, vehicleType: string): Observable<Vehicle[]> {
+  const params: any = {
+    distance_km: distance,
+    ride_date: rideDate,
+    vehicle_type: vehicleType
+  };
+
+  return this.http.get<Vehicle[]>(`${environment.apiUrl}/all-vehicles-new-ride`, { params });
+}
+
 
   getAvailableVehicles(): Observable<VehicleInItem[]> {
     const url = `${this.apiUrl}/all-vehicles/available`;
@@ -139,7 +149,7 @@ uploadMileageReport(file: File): Observable<any> {
   return this.http.post(`${this.apiUrl}/admin/vehicles/mileage/upload`, formData);
 }
 
-updateMilage(vehicleId: string, mileage: number): Observable<any> {
+updatemileage(vehicleId: string, mileage: number): Observable<any> {
   const body = { new_mileage: mileage };
   return this.http.patch(`${this.apiUrl}/vehicles/${vehicleId}/mileage`, body); 
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -32,9 +32,15 @@ interface VehicleIssue {
 export class VehicleInspectionComponent implements OnInit {
   vehicleIssues: VehicleIssue[] = [];
   issues_found: string = '';
+  searchTerm: string = '';      // ← new
+
   loading = true;
   submitting = false;
+  @ViewChild('bottom') bottomRef!: ElementRef;
 
+  scrollToBottom(): void {
+    this.bottomRef.nativeElement.scrollIntoView({ behavior: 'smooth' });
+  }
   constructor(
     private http: HttpClient,
     private router: Router,
@@ -44,6 +50,15 @@ export class VehicleInspectionComponent implements OnInit {
 
   ngOnInit(): void {
     this.fetchVehicles();
+  }
+   get filteredIssues(): VehicleIssue[] {
+    if (!this.searchTerm) {
+      return this.vehicleIssues;
+    }
+    const term = this.searchTerm.trim().toLowerCase();
+    return this.vehicleIssues.filter(issue =>
+      issue.plate.toLowerCase().includes(term)
+    );
   }
 
   fetchVehicles(): void {

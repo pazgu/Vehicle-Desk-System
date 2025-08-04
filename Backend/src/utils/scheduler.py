@@ -28,7 +28,7 @@ from apscheduler.jobstores.base import JobLookupError
 from datetime import datetime, timedelta
 from ..services.form_email import send_ride_completion_email
 from ..services.supervisor_dashboard_service import start_ride 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session,joinedload
 from ..utils.socket_manager import sio
 import os
 import uuid
@@ -393,7 +393,119 @@ async def check_and_cancel_unstarted_rides():
     finally:
         db.close()
 
-        
+async def check_and_notify_overdue_rides():
+    print('in check_and_notify_overdue_rides')
+    db: Session = SessionLocal()
+    try:
+        now = datetime.now(timezone.utc)
+        overdue_rides = db.query(Ride, Vehicle, User).join(
+            Vehicle, Ride.vehicle_id == Vehicle.id
+        ).join(
+            User, Ride.user_id == User.employee_id
+        ).filter(
+            (Ride.status == RideStatus.in_progress or Ride.status == RideStatus.cancelled_due_to_no_show) ,
+            Ride.end_datetime <= datetime.now() - timedelta(hours=2)
+        ).all()
+        print('overdue_rides:',overdue_rides)
+        for ride, vehicle, user in overdue_rides:
+            ride_end = ride.end_datetime
+            if ride_end.tzinfo is None:
+                ride_end = ride_end.replace(tzinfo=timezone.utc)
+
+            elapsed = (now - ride_end).days
+            print('ride',ride)
+            print('vehicle',vehicle)
+            print('user',user)
+
+            # -- Send to user (passenger) --
+            exists_user_notif = db.query(Notification).filter(
+                Notification.user_id == user.employee_id,
+                Notification.vehicle_id == vehicle.id,
+                Notification.title == "Vehicle Overdue"
+            ).first()
+            print('existing user?',exists_user_notif)
+
+            if not exists_user_notif:
+                print('creating notif for user')
+                user_notif = create_system_notification(
+                    user_id=user.employee_id,
+                    title="Vehicle Overdue",
+                    message=f"הרכב {vehicle.plate_number} לא הוחזר בזמן.",
+                    vehicle_id=vehicle.id
+                )
+
+                html_user = load_email_template("vehicle_overdue_user.html", {
+                    "USER_NAME": get_user_name(db, user.employee_id),
+                    "VEHICLE": vehicle.plate_number,
+                    "END_TIME": ride.end_datetime.strftime("%H:%M %d/%m/%Y"),
+                    "ELAPSED": str(elapsed).split('.')[0]
+                })
+
+                await async_send_email(
+                    to_email=user.email,
+                    subject=f"⚠️ החזרת רכב באיחור - {vehicle.plate_number}",
+                    html_content=html_user
+                )
+
+                await sio.emit("new_notification", {
+                    "id": str(user_notif.id),
+                    "user_id": str(user_notif.user_id),
+                    "title": user_notif.title,
+                    "message": user_notif.message,
+                    "notification_type": user_notif.notification_type.value,
+                    "sent_at": user_notif.sent_at.isoformat(),
+                    "vehicle_id": str(vehicle.id),
+                    "plate_number": vehicle.plate_number
+                }, room=str(user.employee_id))
+
+            # -- Send to admins --
+            admins = db.query(User).filter(User.role == "admin").all()
+            for admin in admins:
+                exists_admin = db.query(Notification).filter(
+                    Notification.user_id == admin.employee_id,
+                    Notification.vehicle_id == vehicle.id,
+                    Notification.title == "Overdue Vehicle Alert"
+                ).first()
+                print('existing admin?',exists_admin)
+
+                if not exists_admin:
+                    print('creating notif for user')
+                    admin_notif = create_system_notification(
+                        user_id=admin.employee_id,
+                        title="Overdue Vehicle Alert",
+                        message=f"הרכב {vehicle.plate_number} לא הוחזר בזמן ע\"י {user.first_name} {user.last_name}.",
+                        vehicle_id=vehicle.id
+                    )
+
+                    html_admin = load_email_template("vehicle_overdue_admin.html", {
+                        "USER_NAME": f"{user.first_name} {user.last_name}",
+                        "USER_EMAIL": user.email,
+                        "VEHICLE": vehicle.plate_number,
+                        "END_TIME": ride.end_datetime.strftime("%H:%M %d/%m/%Y"),
+                        "ELAPSED": str(elapsed).split('.')[0]
+                    })
+
+                    await async_send_email(
+                        to_email=admin.email,
+                        subject=f"🚨 רכב לא הוחזר בזמן - {vehicle.plate_number}",
+                        html_content=html_admin
+                    )
+
+                    await sio.emit("new_notification", {
+                        "id": str(admin_notif.id),
+                        "user_id": str(admin_notif.user_id),
+                        "title": admin_notif.title,
+                        "message": admin_notif.message,
+                        "notification_type": admin_notif.notification_type.value,
+                        "sent_at": admin_notif.sent_at.isoformat(),
+                        "vehicle_id": str(vehicle.id),
+                        "plate_number": vehicle.plate_number
+                    }, room=str(admin.employee_id))
+
+    finally:
+        db.close()
+
+
 async def delete_old_archived_vehicles():
     """
     Checks for vehicles that have been archived for more than three months
@@ -522,6 +634,20 @@ async def notify_ride_needs_feedback(user_id: int):
     finally:
         db.close()
 
+import asyncio
+
+def periodic_check_overdue_rides():
+    print("Running periodic check for overdue rides...")
+    future = asyncio.run_coroutine_threadsafe(
+        check_and_notify_overdue_rides(),
+        main_loop  # use your app's asyncio event loop
+    )
+    try:
+        future.result(timeout=10)
+    except Exception as e:
+        print(f"Overdue rides check failed: {e}")
+
+
 def periodic_check():
     db = SessionLocal()
     try:
@@ -538,6 +664,75 @@ def periodic_check():
             print('Coroutine result:', result)
         except Exception as e:
             print('Coroutine error:', e)
+
+
+
+async def check_and_unblock_expired_users():
+    """
+    Unblock users whose block has expired, then emit a socket event per user.
+    """
+    db: Session = SessionLocal()
+    users_to_notify = []  # collect AFTER commit we will emit
+
+    try:
+        now = datetime.now(timezone.utc)
+
+        # Find users whose block has expired
+        expired_blocks = db.query(User).filter(
+            User.is_blocked == True,
+            User.block_expires_at.isnot(None),
+            User.block_expires_at < now
+        ).all()
+
+        if not expired_blocks:
+            return  # nothing to do
+
+        # Update users
+        for user in expired_blocks:
+            user.is_blocked = False
+            user.block_expires_at = None
+            # keep only scalar data for emission to avoid detached ORM issues
+            users_to_notify.append({
+                "id": str(user.employee_id),   # or str(user.id) if that's your primary
+                "is_blocked": False,
+                "block_expires_at": None
+            })
+
+        db.commit()
+
+    except Exception as e:
+        db.rollback()
+        print(f"❌ Error while unblocking users: {e}")
+        return
+    finally:
+        db.close()
+
+    # Emit AFTER commit (so clients reflect DB state)
+    for payload in users_to_notify:
+        try:
+            # If you want to target a room per user (recommended), pass room=str(employee_id)
+            await sio.emit(
+                'user_block_status_updated',
+                {
+                    "id": payload["id"],
+                    "is_blocked": payload["is_blocked"],
+                    "block_expires_at": payload["block_expires_at"]
+                },
+            )
+            print(f"emitted for user {payload['id']}")
+
+        except Exception as e:
+            print(f"Failed to emit for user {payload['id']}: {e}")
+
+
+
+def periodic_check_unblock_users():
+    print('periodic_check_unblock_users was called')
+    future = asyncio.run_coroutine_threadsafe(check_and_unblock_expired_users(), main_loop)
+    try:
+        future.result(timeout=10)
+    except Exception as e:
+        print(f"❌ Failed periodic_check_unblock_users: {e}")
 
 
 def periodic_check_unstarted_rides(): 
@@ -563,6 +758,9 @@ def check_and_schedule_ride_emails():
 
 scheduler.add_job(check_and_schedule_ride_emails, 'interval', minutes=60)
 scheduler.add_job(check_and_complete_rides, 'interval', minutes=5)
+scheduler.add_job(periodic_check_overdue_rides, 'interval', minutes=10)
+scheduler.add_job(periodic_check_unblock_users, 'interval', minutes=1)
+
 
 def notify_admins_daily():
     print("⏰ Scheduler is triggering notification function.")

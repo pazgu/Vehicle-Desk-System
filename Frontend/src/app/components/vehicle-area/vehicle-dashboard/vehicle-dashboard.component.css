@@ -125,7 +125,7 @@ button {
 
 .status-indicators {
     text-align: right;
-    direction: rtl;
+    direction: lrt;
     border: 1px solid #ddd;
     border-radius: 12px;
     padding: 12px 16px;
@@ -133,7 +133,6 @@ button {
     background-color: rgb(249, 245, 245);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     margin-bottom: 1.5rem;
-    margin-left: auto; /* Pushes it to the left in RTL layout */
 }
 
 .status-box {
@@ -154,7 +153,6 @@ button {
 }
 
 .status-indicator {
-    display: inline-block;
     width: 16px;
     height: 16px;
     margin-inline-start: 4px;
@@ -234,14 +232,37 @@ button {
 
 
 .mileage-upload-section {
-  margin-top: 2rem;
-  padding: 1rem;
+  padding: 0.5rem;
   border-top: 1px solid #ccc;
+  position:static;
+  border: 1px solid #e0e0e0;
+  margin-right: 330px;
 }
 
 .xlsx-upload-input {
   display: block;
   margin-bottom: 1rem;
+  
+}
+
+.top-wrapper{
+    display:flex;
+    flex-direction: row;
+}
+
+input[type="file"]::file-selector-button {
+  background-color: #af4c4c; 
+  color: white; 
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer; 
+  font-size: 16px;
+  transition: background-color 0.3s ease; 
+}
+
+input[type="file"]::file-selector-button:hover {
+  background-color: #dc7474; /* Darker green on hover */
 }
 
 .submit-button {
@@ -251,7 +272,6 @@ button {
   padding: 0.3rem 0.6rem;
   border-radius: 5px;
   cursor: pointer;
-  margin-bottom: 1rem;
   font-size: 15px;
 }
 
@@ -282,6 +302,7 @@ button {
     border-radius: 8px;
     border: 1px solid #dee2e6;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: fixed;
 }
 
 .filters-container.show {
@@ -605,3 +626,75 @@ button {
     padding: 6px 12px;
   }
 }
+
+.header-actions-bar {
+    display: flex;
+    justify-content: space-between; /* Pushes content to opposite ends */
+    width: 100%; /* Take full width */
+    margin-top: 1rem; /* Space between title and buttons */
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    gap: 10px; /* Space between the two action groups */
+}
+
+.right-aligned-actions,
+.left-aligned-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between buttons/icons within each group */
+}
+
+/* Utility Sections Wrapper - contains status indicators and mileage upload */
+.utility-sections-wrapper {
+    display: flex;
+    flex-wrap: wrap; /* Allow sections to wrap on smaller screens */
+    gap: 20px; /* Space between the two utility sections */
+    margin-top: 2rem; /* Space below the main header/status message */
+    justify-content: flex-end; /* Align utility sections to the right in RTL */
+}
+
+h2{
+    font-size: 20px;
+}
+
+.mileage-upload-section {
+    /* Add specific styling for your upload section */
+    border: 1px solid #eee;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #fcfcfc;
+    text-align: right; /* Ensure text is right-aligned */
+    flex: 2; /* Allow it to grow more than status indicators */
+    min-width: 300px; /* Ensures it doesn't get too squished */
+}
+
+/* Existing styles you provided */
+@media (max-width: 700px) {
+    .page-container {
+        padding: 1rem 0.5rem;
+    }
+    .vehicles-cards {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    .vehicle-card {
+        width: 100%;
+    }
+    .top-header-section {
+        align-items: stretch; /* Stretch to full width on small screens */
+    }
+    .header-actions-bar {
+        flex-direction: column; /* Stack button groups */
+        align-items: stretch;
+    }
+    .right-aligned-actions,
+    .left-aligned-actions {
+        flex-direction: column; /* Stack buttons within groups */
+        align-items: stretch;
+        gap: 5px; /* Adjust gap for stacked items */
+    }
+    .utility-sections-wrapper {
+        flex-direction: column; /* Stack utility sections */
+        gap: 15px;
+    }
+}
+

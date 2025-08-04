@@ -139,10 +139,9 @@ quarterHours = ['00', '15', '30', '45'];
     this.initializeForm();
     this.setupFormSubscriptions();
     this.fetchCities();
-    this.loadVehicles();
     this.loadPendingVehicles();
-     this.generateTimeOptions();
-  this.setClosestQuarterHourTime();
+    this.generateTimeOptions();
+    this.setClosestQuarterHourTime();
   }
 
   private initializeForm(): void {
@@ -251,6 +250,26 @@ get endTime() {
       return null;
     }
   }
+
+  get isExtendedRequest(): boolean {
+  const period = this.rideForm.get('ride_period')?.value;
+  const startDate = this.rideForm.get('ride_date')?.value;
+  const endDate = this.rideForm.get('ride_date_night_end')?.value;
+
+  if (period === 'night' && startDate && endDate) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    // Calculate the difference in days
+    const diffInMs = end.getTime() - start.getTime();
+    const diffInDays = diffInMs / (1000 * 60 * 60 * 24) + 1; // include both start and end date
+
+    return diffInDays >= 3;
+  }
+
+  return false;
+}
+
 
 setClosestQuarterHourTime() {
   const now = new Date();
@@ -474,31 +493,32 @@ setClosestQuarterHourTime() {
     });
   }
 
-  private loadVehicles(): void {
-    this.vehicleService.getAllVehicles().subscribe({
-      next: (vehicles) => {
-        this.allCars = vehicles
-          .filter(v =>
-            v.status === 'available' &&
-            !!v.id &&
-            !!v.type &&
-            !!v.plate_number &&
-            typeof v.mileage === 'number'
-          )
-          .map(v => ({
-            ...v,
-            image_url: v.image_url || 'assets/default-car.png',
-            vehicle_model: v.vehicle_model || 'רכב ללא דגם',
-            freeze_reason: v.freeze_reason ?? null
-          }));
+private loadVehicles(distance: number, rideDate: string,vehicleType:string): void {
+  this.vehicleService.getAllVehiclesForNewRide(distance, rideDate,vehicleType).subscribe({
+    next: (vehicles) => {
+      this.allCars = vehicles
+        .filter(v =>
+          v.status === 'available' &&
+          !!v.id &&
+          !!v.type &&
+          !!v.plate_number &&
+          typeof v.mileage === 'number'
+        )
+        .map(v => ({
+          ...v,
+          image_url: v.image_url || 'assets/default-car.png',
+          vehicle_model: v.vehicle_model || 'רכב ללא דגם',
+          freeze_reason: v.freeze_reason ?? null
+        }));
 
-        this.updateAvailableCars();
-      },
-      error: () => {
-        this.toastService.show('שגיאה בטעינת רכבים זמינים', 'error');
-      }
-    });
-  }
+      this.updateAvailableCars();
+    },
+    error: () => {
+      this.toastService.show('שגיאה בטעינת רכבים זמינים', 'error');
+    }
+  });
+}
+
 
   private loadPendingVehicles(): void {
     this.vehicleService.getPendingCars().subscribe({
@@ -597,14 +617,22 @@ setClosestQuarterHourTime() {
 
   }
 
-  onRideTypeChange(): void {
-    this.updateAvailableCars();
-    this.rideForm.get('car')?.setValue(null); // Clear selected car when ride type changes
+ onRideTypeChange(): void {
+  const distance = this.rideForm.get('estimated_distance_km')?.value;
+  const rideDate = this.rideForm.get('ride_date')?.value;
+  const vehicleType = this.rideForm.get('vehicle_type')?.value;
 
-    if (this.availableCars.length === 0) {
-      this.toastService.show('אין רכבים זמינים מסוג זה', 'error');
-    }
+  // Validate required inputs before calling loadVehicles
+  if (distance && rideDate && vehicleType) {
+    const isoDate = new Date(rideDate).toISOString().split('T')[0];
+    this.loadVehicles(distance, isoDate, vehicleType);
+  } else {
+    this.toastService.show('אנא הזן מרחק, תאריך וסוג רכב לפני סינון רכבים', 'error');
+    this.availableCars = [];
+    this.rideForm.get('car')?.setValue(null);
   }
+}
+
 
   private updateVehicleTypeValidation(value: string): void {
     const vehicleTypeReason = this.rideForm.get('vehicle_type_reason');
@@ -969,7 +997,11 @@ futureDateTimeValidator(): ValidatorFn {
     const startTime = `${startHour}:${startMinute}`;
     const endTime = `${endHour}:${endMinute}`;
     const distance = this.rideForm.get('estimated_distance_km')?.value;
-
+    const vehicleType = this.rideForm.get('vehicle_type')?.value;
+    if (distance && rideDate && vehicleType) {
+  const isoDate = new Date(rideDate).toISOString().split('T')[0];
+  this.loadVehicles(distance, isoDate, vehicleType);
+}
     // Time validation
     if (ridePeriod === 'morning' && startTime && endTime && startTime >= endTime) {
       this.toastService.show('שעת הסיום חייבת להיות אחרי שעת ההתחלה', 'error');
@@ -1010,6 +1042,7 @@ futureDateTimeValidator(): ValidatorFn {
       ? `${rideDate}T${endTime}`
       : `${nightEndDate}T${endTime}`;
 
+ 
     // Prepare form data
     const formData = {
       user_id: rider_id,
@@ -1025,6 +1058,8 @@ futureDateTimeValidator(): ValidatorFn {
       estimated_distance_km: Number(distance),
       actual_distance_km: Number(this.estimated_distance_with_buffer),
       four_by_four_reason: this.rideForm.get('four_by_four_reason')?.value,
+      is_extended_request: this.isExtendedRequest,
+
     };
 
     console.log('Ride data for backend:', formData);
@@ -1045,9 +1080,22 @@ futureDateTimeValidator(): ValidatorFn {
         this.router.navigate(['/']);
       },
       error: (err) => {
-        this.toastService.show('שגיאה בשליחת הבקשה', 'error');
-        console.error('Submit error:', err);
-      }
+          const errorMessage = err.error?.detail || err.message || 'שגיאה לא ידועה';
+
+          if (errorMessage.includes('currently blocked')) {
+            // Extract date/time from backend message
+            const match = errorMessage.match(/until (\d{4}-\d{2}-\d{2})/);
+            const blockUntil = match ? match[1] : '';
+
+            // Translate and show the full message in Hebrew
+            const translated = `אתה חסום עד ${blockUntil}`;
+            this.toastService.show(translated, 'error');
+          }else {
+            this.toastService.show('שגיאה בשליחת הבקשה', 'error');
+          }
+
+          console.error('Submit error:', err);
+        }
     });
   }
 
@@ -1060,6 +1108,7 @@ futureDateTimeValidator(): ValidatorFn {
       }
     });
   }
+ 
 
   private showFuelTypeMessage(): void {
     if (localStorage.getItem('role') == 'employee') {

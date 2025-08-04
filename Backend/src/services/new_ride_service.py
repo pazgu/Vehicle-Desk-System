@@ -6,7 +6,7 @@ from ..schemas.new_ride_schema import RideCreate, RideResponse
 from ..models.ride_model import Ride, RideStatus
 from ..models.user_model import User
 from ..utils.email_utils import send_email
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from ..utils.audit_utils import log_action
 from ..models.vehicle_model import Vehicle
 from ..utils.socket_manager import sio
@@ -36,6 +36,12 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate):
         raise HTTPException(
             status_code=403,
             detail="You must have a government license to request a ride."
+        )
+    now = datetime.now(timezone.utc)
+    if user.is_blocked and user.block_expires_at and now < user.block_expires_at:
+        raise HTTPException(
+            status_code=403,
+            detail=f"You are currently blocked from booking until {user.block_expires_at.strftime('%Y-%m-%d %H:%M:%S')}."
         )
 
     if is_offroad_vehicle(vehicle.type) and not ride.four_by_four_reason:
@@ -99,7 +105,9 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate):
             "notification_type": delegated_notification.notification_type.value,
             "sent_at": delegated_notification.sent_at.isoformat(),
             "order_id": str(delegated_notification.order_id) if delegated_notification.order_id else None,
-            "order_status": new_ride.status
+            "order_status": new_ride.status,
+
+
         })
 
     admins = db.query(User).filter(User.role == "admin").all()

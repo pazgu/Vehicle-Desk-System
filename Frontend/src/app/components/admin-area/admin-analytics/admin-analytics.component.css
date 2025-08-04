@@ -812,7 +812,7 @@ body {
   background: rgba(248, 250, 252, 0.7);
 }
 
-.styled-table tbody tr:hover {
+/* .styled-table tbody tr:hover {
   background: linear-gradient(135deg, rgba(148, 34, 34, 0.08), rgba(185, 28, 28, 0.05));
   transform: translateY(-2px) scale(1.005);
   box-shadow: 
@@ -822,9 +822,9 @@ body {
   z-index: 10;
   position: relative;
   border-bottom-color: transparent;
-}
+} */
 
-.styled-table tbody tr:hover::before {
+/* .styled-table tbody tr:hover::before {
   content: '';
   position: absolute;
   right: 0;
@@ -833,7 +833,7 @@ body {
   width: 6px;
   background: linear-gradient(135deg, #942222, #b91c1c, #dc2626);
   border-radius: 4px 0 0 4px;
-}
+} */
 
 .styled-table tbody tr:active {
   transform: translateY(0) scale(1.002);
@@ -1109,4 +1109,36 @@ body {
   background-color: white !important; 
   color: #1a1a1a !important;    
   border: none !important;
+}
+
+/* Simple Vehicle Type Filter with a tiny bit of spice */
+.filter-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+
+.filter-container label {
+  font-weight: 500;
+  color: #495057;
+}
+
+.filter-container select {
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.filter-container select:hover {
+  border-color: #42A5F5;
+}
+
+.filter-container select:focus {
+  outline: none;
+  border-color: #42A5F5;
+  box-shadow: 0 0 0 1px rgba(66, 165, 245, 0.3);
 }

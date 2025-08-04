@@ -64,36 +64,62 @@
 
 
 
-<tr *ngFor="let user of pagedUsers" (click)="goToUserCard(user.employee_id)" class="clickable-row">
+<tr *ngFor="let user of pagedUsers" 
+    (click)="goToUserCard(user.employee_id)" 
+    class="clickable-row"
+    [ngClass]="{'blocked-user-row': user.is_blocked}">
               <td>
   <div class="column-name">
         <small *ngIf="licenceExpiredMap[user.employee_id]" class="expired"> ⚠️ </small>
-    <span>{{ user.first_name }} {{ user.last_name }}</span>
+        <small *ngIf="user.is_blocked" class="blocked-indicator"> 🚫 </small>
+    <span [ngClass]="{'blocked-text': user.is_blocked}">{{ user.first_name }} {{ user.last_name }}</span>
   </div>
 </td>
 
-              <td class="column-role">{{ user.role }}</td>
-              <td class="column-department">
+              <td class="column-role" [ngClass]="{'blocked-text': user.is_blocked}">{{ user.role }}</td>
+              <td class="column-department" [ngClass]="{'blocked-text': user.is_blocked}">
   {{ departmentNames[user.department_id] || user.department_id }}
 </td>
 
-              <td class="column-email">{{ user.email }}</td>
+              <td class="column-email" [ngClass]="{'blocked-text': user.is_blocked}">{{ user.email }}</td>
               <td class="column-actions">
                  <!-- Edit Button -->
                   <div class="modify-buttons">
                     <a class="edit-button" routerLink="/user-data-edit/{{user?.employee_id}}">
 
-  <button
+  <button title="ערוך משתמש"
     class="modify">
-    ✏️
+     ✏️
   </button>
                     </a>
   <!-- Delete Button -->
   
   <button onclick="event.stopPropagation()"  (click)="deleteUser(user.employee_id)"
-    class="delete">
-    🗑️
+    class="delete" title="מחק משתמש">
+  🗑️
   </button>
+
+<!-- Block/Unblock Button -->
+<button 
+  *ngIf="!user.is_blocked" 
+  class="block" 
+  onclick="event.stopPropagation()" 
+  (click)="openBlockUserModal(user)"
+  title="חסום משתמש">
+  <i class="pi pi-ban"></i>
+</button>
+
+<button 
+  *ngIf="user.is_blocked" 
+  class="unblock" 
+  onclick="event.stopPropagation()" 
+  (click)="openUnblockConfirmationModal(user)"
+  title="בטל חסימה">
+  <i class="pi pi-check-circle"></i>
+</button>
+
+
+  
   </div>
               </td>
 
@@ -111,6 +137,52 @@
         </div>
       </div>
 
+
+<div *ngIf="isBlockUserModalOpen" class="modal-overlay">
+  <div class="modal-content">
+    <h2>חסימת משתמש</h2>
+    <p>חסימת המשתמש: <strong>{{ selectedUserForBlock?.first_name }} {{ selectedUserForBlock?.last_name }}</strong></p>
+    <form [formGroup]="blockUserForm" (ngSubmit)="confirmBlockUser()">
+      <div class="form-group">
+        <label for="blockDuration">משך חסימה (ימים):</label>
+        <input
+          type="number"
+          id="blockDuration"
+          formControlName="blockDuration"
+          min="1"
+          class="form-control"
+        />
+        <div *ngIf="blockUserForm.get('blockDuration')?.invalid && blockUserForm.get('blockDuration')?.touched" class="text-danger">
+          חובה להזין מספר ימים חיובי.
+        </div>
+      </div>
+
+      <div class="modal-buttons">
+        <button type="submit" class="btn btn-primary" [disabled]="blockUserForm.invalid">
+        כן
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="closeBlockUserModal()">
+          ביטול
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div *ngIf="isUnblockConfirmationModalOpen" class="modal-overlay">
+  <div class="modal-content">
+    <h2>שחרור חסימת משתמש</h2>
+    <p>האם אתה בטוח שברצונך לשחרר את חסימת המשתמש <strong>{{ selectedUserForBlock?.first_name }} {{ selectedUserForBlock?.last_name }}</strong>?</p>
+    <div class="modal-buttons">
+      <button type="button" class="btn btn-primary" (click)="confirmUnblockUser()" >
+        כן
+      </button>
+      <button type="button" class="btn btn-secondary" (click)="closeUnblockConfirmationModal()">
+        לא
+      </button>
+    </div>
+  </div>
+</div>
 
       </div>
     </div>

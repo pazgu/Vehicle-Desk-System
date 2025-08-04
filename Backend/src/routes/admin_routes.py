@@ -268,17 +268,22 @@ async def edit_user_by_id_route(
     username: str = Form(...),
     email: str = Form(...),
     phone: str = Form(...),
-    role: str = Form(...), # This will be the string from the form
-    department_id: str = Form(...), # This will be the string from the form
+    role: str = Form(...),
+    department_id: str = Form(...),
     has_government_license: str = Form(...),
     license_file: UploadFile = File(None),
     db: Session = Depends(get_db),
-    payload: dict = Depends(token_check), # payload contains user_id and role from JWT
-    license_expiry_date: Optional[str] = Form(None)
+    payload: dict = Depends(token_check),
+    license_expiry_date: Optional[str] = Form(None),
+    # Ensure these are correctly received as parameters
+    is_blocked: Optional[bool] = Form(False), # This will capture the boolean from frontend
+    block_expires_at: Optional[str] = Form(None) # This will capture the string from frontend
 ):
     print(f"\n--- Debugging edit_user_by_id_route ---")
     print(f"User ID from URL path: {user_id} (Type: {type(user_id)})")
     print(f"Payload from token_check: {payload}")
+    print(f"Received is_blocked (from Form): {is_blocked} (Type: {type(is_blocked)})") # DEBUG
+    print(f"Received block_expires_at (from Form): {block_expires_at} (Type: {type(block_expires_at)})") # DEBUG
 
     user_id_from_token = payload.get("user_id") or payload.get("sub")
     user_role_from_token = payload.get("role")
@@ -361,7 +366,7 @@ async def edit_user_by_id_route(
     user.email = email
     user.phone = phone
 
-    # --- New Department ID Logic ---
+    # --- Department ID and Role Logic ---
     try:
         new_role = UserRole(role) # Convert incoming string 'role' to UserRole enum
     except ValueError:
@@ -370,37 +375,39 @@ async def edit_user_by_id_route(
     user.role = new_role # Assign the validated role
 
     if new_role == UserRole.admin:
-        # If the new role is 'admin', department_id MUST be NULL according to your check constraint
-        if department_id and department_id.strip(): # Check if department_id was provided in the form
+        if department_id and department_id.strip():
             print(f"DEBUG: department_id '{department_id}' provided for admin role. Setting to None.")
-            # Optionally, you might raise an HTTP 400 if you want to explicitly forbid sending department_id for admins
-            # raise HTTPException(status_code=400, detail="Admin users cannot have a department ID.")
-        user.department_id = None # Set to None to satisfy the constraint and model's nullable=True
+        user.department_id = None
     else:
-        # If the role is NOT admin, department_id MUST NOT be NULL
-        if not department_id or not department_id.strip(): # Check for empty string or whitespace
+        if not department_id or not department_id.strip():
             raise HTTPException(status_code=400, detail=f"Department ID is required for role '{new_role}'.")
         try:
             user.department_id = UUID(department_id) # Convert string to UUID
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid department ID format. Must be a valid UUID.")
-    # --- End New Department ID Logic ---
+    # --- End Department ID Logic ---
 
-    # Only set has_government_license from form if it hasn't been explicitly set by file/date upload logic
-    # and it's currently False/None in DB (assuming your default is False).
-    # Re-evaluating this part for clarity:
-    # If the file/date logic *didn't* set it (i.e., no file uploaded, no date provided)
-    # AND the existing user's has_government_license isn't already True due to a prior upload,
-    # then apply the value from the form.
-    # A simpler approach if the form value is always considered the most up-to-date:
-    user.has_government_license = has_gov_license
+    user.has_government_license = has_gov_license # Apply this if it's the final decision point
+
+    # --- ADD THESE LINES TO UPDATE IS_BLOCKED AND BLOCK_EXPIRES_AT ---
+    user.is_blocked = is_blocked # Assign the boolean value directly
+
+    if block_expires_at: # If a date string was provided (not empty string or None)
+        try:
+            # Parse the string into a datetime object
+            # Frontend sends YYYY-MM-DDTHH:MM (from toISOString().slice(0, 16))
+            user.block_expires_at = datetime.strptime(block_expires_at, "%Y-%m-%dT%H:%M")
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid date-time format for block_expires_at. Expected YYYY-MM-DDTHH:MM.")
+    else:
+        user.block_expires_at = None # Set to None if no date string was provided (to unblock or clear expiry)
+
 
     try:
         db.commit()
     except Exception as e:
         db.rollback()
         print("❌ Commit failed:", e)
-        # Log the actual exception type for better debugging if it's not a CheckViolation/NotNullViolation
         print(f"DEBUG: Exception type: {type(e).__name__}")
         raise HTTPException(status_code=500, detail="Failed to update user due to a database error.")
 
@@ -408,6 +415,17 @@ async def edit_user_by_id_route(
 
     # Emit Socket.IO event on successful license update
     # Ensure sio is imported and initialized correctly elsewhere if this causes errors
+    # (Assuming `sio` is accessible, e.g., imported from `main.py` if it's a global instance)
+    # import main as main_app # Example of how you might import sio
+    # await main_app.sio.emit(...) # Use this if sio is in main_app
+
+    # Added to ensure block status updates are also emitted
+    await sio.emit('user_block_status_updated', {
+        "id": str(user.employee_id),
+        "is_blocked": user.is_blocked,
+        "block_expires_at": user.block_expires_at.isoformat() if user.block_expires_at else None
+    })
+
     await sio.emit('user_license_updated', {
         "id": str(user.employee_id),
         "license_expiry_date": user.license_expiry_date.isoformat() if user.license_expiry_date else None,
@@ -415,10 +433,10 @@ async def edit_user_by_id_route(
         "license_file_url": user.license_file_url or ""
     })
 
+
     # Reset session audit user ID
     db.execute(text("SET session.audit.user_id = DEFAULT"))
     return user
-
 
 
 @router.get("/roles")
@@ -774,16 +792,22 @@ def archive_last_month_endpoint(db: Session = Depends(get_db)):
 
 
 @router.get("/analytics/vehicle-status-summary")
-def vehicle_status_summary(db: Session = Depends(get_db)):
+def vehicle_status_summary(
+    db: Session = Depends(get_db),
+    type: Optional[str] = Query(None, alias="type")  # 'type' from query param
+):
     try:
-        result = (
-            db.query(Vehicle.status, func.count(Vehicle.id).label("count"))
-            .group_by(Vehicle.status)
-            .all()
-        )
-        # Format response as a list of dicts
+        query = db.query(Vehicle.status, func.count(Vehicle.id).label("count"))
+
+        if type:
+            query = query.filter(Vehicle.type == type)
+
+        result = query.group_by(Vehicle.status).all()
+
+        # Format response
         summary = [{"status": row.status.value, "count": row.count} for row in result]
         return JSONResponse(content=summary)
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching summary: {str(e)}")
 
@@ -1173,32 +1197,46 @@ def get_no_show_statistics(
     # 3. Get top users with pagination
     offset = (page - 1) * page_size
     top_users_query = (
-        db.query(
-            NoShowEvent.user_id,
-            func.concat(User.first_name, ' ', User.last_name).label("name"),
-            Department.id.label("department_id"),
-            func.count(NoShowEvent.id).label("count"),
-        )
-        .outerjoin(User, User.employee_id == NoShowEvent.user_id)
-        .outerjoin(Department, Department.id == User.department_id)
-        .filter(NoShowEvent.occurred_at >= from_date if from_date else True)
-        .filter(NoShowEvent.occurred_at <= to_date if to_date else True)
-        .group_by(NoShowEvent.user_id, User.first_name, User.last_name, Department.id)
-        .order_by(desc("count"))
-        .offset(offset)
-        .limit(page_size)
-        .all()
+    db.query(
+        NoShowEvent.user_id,
+        func.concat(User.first_name, ' ', User.last_name).label("name"),
+        Department.id.label("department_id"),
+        func.count(NoShowEvent.id).label("count"),
+        User.email,
+        User.role,
+        User.employee_id,
     )
+    .outerjoin(User, User.employee_id == NoShowEvent.user_id)
+    .outerjoin(Department, Department.id == User.department_id)
+    .filter(NoShowEvent.occurred_at >= from_date if from_date else True)
+    .filter(NoShowEvent.occurred_at <= to_date if to_date else True)
+    .group_by(
+        NoShowEvent.user_id,
+        User.first_name,
+        User.last_name,
+        Department.id,
+        User.email,
+        User.role,
+        User.employee_id,
+    )
+    .order_by(desc("count"))
+    .offset(offset)
+    .limit(page_size)
+    .all()
+)
 
     top_no_show_users = [
-        TopNoShowUser(
-            user_id=row.user_id,
-            name=row.name,
-            department_id=row.department_id,
-            count=row.count
-        )
-        for row in top_users_query
-    ]
+    TopNoShowUser(
+        user_id=str(row.employee_id),
+        name=row.name,
+        department_id=row.department_id,
+        count=row.count,
+        email=row.email,
+        role=row.role,
+        employee_id=str(row.employee_id),
+    )
+    for row in top_users_query
+]
 
     return NoShowStatsResponse(
         total_no_show_events=total_no_show_events,
@@ -1329,22 +1367,15 @@ def manual_mileage_edit(
         "vehicle_id": str(vehicle.id),
         "new_mileage": request.new_mileage
     }
-
-@router.post("/departments", response_model=DepartmentOut, status_code=201)
-def create_department(dept: DepartmentCreate, db: Session = Depends(get_db)):
-    return department_service.create_department(db, dept)
-
-@router.patch("/departments/{department_id}", response_model=DepartmentOut)
-def patch_department(department_id: UUID, dept: DepartmentUpdate, db: Session = Depends(get_db)):
-    return department_service.update_department(db, department_id, dept)
-
-
-@router.get("/departments/supervisors")
+@router.get("/all/supervisors", response_model=List[UserResponse])
 def get_supervisors(db: Session = Depends(get_db)):
     supervisors = db.query(User).filter(User.role == UserRole.supervisor).all()
-    return [
-        {
-            "id": sup.employee_id,
-            "name": f"{sup.first_name} {sup.last_name}"
-        } for sup in supervisors
-    ]
+    return supervisors
+
+@router.post("/departments", response_model=DepartmentOut, status_code=201)
+def create_department(dept: DepartmentCreate, db: Session = Depends(get_db), payload: dict = Depends(token_check)):
+    return department_service.create_department(db, dept, payload)
+
+@router.patch("/departments/{department_id}", response_model=DepartmentOut)
+def patch_department(department_id: UUID, dept: DepartmentUpdate, db: Session = Depends(get_db), payload: dict = Depends(token_check)):
+    return department_service.update_department(db, department_id, dept, payload)

@@ -2,8 +2,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { User } from '../models/user.model';
-import { Observable, throwError, forkJoin } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { Observable, throwError, forkJoin, of } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs/operators';
 
 export interface NewUserPayload {
   first_name: string;
@@ -95,8 +95,34 @@ export class UserService {
 
 
  getDepartments(): Observable<{ id: string; name: string }[]> {
-  return this.http.get<{ id: string; name: string }[]>(`${this.apiUrl}/departments`);
+  return this.http.get<{ id: string; name: string, supervisor_id: string }[]>(`${this.apiUrl}/departments`);
 }
+
+
+getDepartmentsWithSupervisors(): Observable<{ id: string; name: string; supervisor_id: string; supervisorName: string }[]> {
+  return this.http.get<{ id: string; name: string; supervisor_id: string }[]>(`${this.apiUrl}/departments`).pipe(
+    switchMap(departments => {
+      const departmentsWithNames$ = departments.map(dept =>
+        this.getUserById(dept.supervisor_id).pipe(
+          map(user => ({
+            id: dept.id,
+            name: dept.name,
+            supervisor_id: dept.supervisor_id,     // keep this here
+            supervisorName: `${user.first_name} ${user.last_name}`
+          })),
+          catchError(() => of({
+            id: dept.id,
+            name: dept.name,
+            supervisor_id: dept.supervisor_id,     // keep even on error
+            supervisorName: 'לא ידוע'
+          }))
+        )
+      );
+      return forkJoin(departmentsWithNames$);
+    })
+  );
+}
+
 
   getNoShowCount(userId: string): Observable<number> {
   const headers = this.getAuthHeaders();
@@ -143,6 +169,10 @@ export class UserService {
       events: this.getRecentNoShowEvents(userId, limit)
     });
   }
+
+getSupervisors(): Observable<User[]> {
+  return this.http.get<User[]>(`${this.apiUrl}/all/supervisors`)
 }
 
 
+}
