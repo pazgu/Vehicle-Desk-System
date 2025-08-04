@@ -28,11 +28,9 @@ def create_department(db: Session, dept_data: DepartmentCreate, payload: dict):
     db.commit()
     db.refresh(new_dept)
 
-
     supervisor.department_id = new_dept.id
     db.commit()
     db.execute(text("SET session.audit.user_id = DEFAULT"))
-
     return new_dept
 
 
