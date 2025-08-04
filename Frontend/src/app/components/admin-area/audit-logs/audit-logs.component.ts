@@ -53,6 +53,7 @@ export class AuditLogsComponent implements OnInit {
 
   cityMap: { [id: string]: string } = {};
   departments: { id: string; name: string }[] = [];
+  users: { id: string; first_name: string; last_name: string }[] = [];
 
 
 
@@ -77,6 +78,16 @@ export class AuditLogsComponent implements OnInit {
 
   getUserFieldLabel(key: string): string {
     return this.userFieldLabels[key] || key;
+  }
+
+  departmentFieldLabels: { [key: string]: string } = {
+    id: 'מזהה מחלקה',
+    name: 'שם מחלקה',
+    supervisior_id: 'שם מנהל מחלקה',
+  };
+
+  getDepartmentFieldLabel(key: string): string {
+    return this.departmentFieldLabels[key] || key;
   }
 
 
@@ -189,7 +200,8 @@ export class AuditLogsComponent implements OnInit {
         }));
       },
       error: (err: any) => {
-        console.error('Failed to fetch departments', err);
+        this.toastService.show('שגיאה בטעינת רשימת מחלקות', 'error');
+
         this.departments = [];
       }
     });
@@ -198,6 +210,28 @@ export class AuditLogsComponent implements OnInit {
   getDepartmentNameById(id: string): string {
     const dep = this.departments.find(d => d.id === id);
     return dep ? dep.name : 'לא משוייך למחלקה';
+  }
+
+  fetchUsers(): void {
+  this.http.get<any>('http://localhost:8000/api/users').subscribe({
+    next: (data) => {
+      const usersArr = Array.isArray(data.users) ? data.users : [];
+      this.users = usersArr.map((user: any) => ({
+        id: user.employee_id,
+        first_name: user.first_name,
+        last_name: user.last_name
+      }));
+    },
+    error: (err: any) => {
+      this.toastService.show('שגיאה בטעינת רשימת משתמשים', 'error');
+      this.users = [];
+    }
+  });
+}
+  getUserNameById(id: string): string {
+    if (!Array.isArray(this.users)) return id;
+    const user = this.users.find(u => u.id === id);
+    return user ? `${user.first_name} ${user.last_name}` : id;
   }
 
   // In AuditLogsComponent, inside fetchAuditLogs method
@@ -234,7 +268,8 @@ export class AuditLogsComponent implements OnInit {
         this.onRangeChange();
       },
       error: () => {
-        console.error('שגיאה בטעינת רשימת ערים');
+        this.toastService.show('שגיאה בטעינת רשימת ערים', 'error');
+
       }
     });
 
@@ -243,6 +278,7 @@ export class AuditLogsComponent implements OnInit {
     });
 
     this.fetchDepartments();
+    this.fetchUsers();
 
 
     this.socketService.notifications$.subscribe((notif) => {
@@ -446,6 +482,13 @@ export class AuditLogsComponent implements OnInit {
       { label: 'תוקף רישיון', oldValue: oldData.license_expiry_date, newValue: newData.license_expiry_date },
       { label: 'קובץ רישיון', oldValue: oldData.license_file_url, newValue: newData.license_file_url },
       { label: 'חריגה מהמכסה החודשית', oldValue: oldData.exceeded_monthly_trip_quota, newValue: newData.exceeded_monthly_trip_quota }
+    ];
+  }
+
+  getDepartmentAuditRows(oldData: any, newData: any): Array<{ label: string, oldValue: any, newValue: any }> {
+    return [
+      { label: 'שם מחלקה', oldValue: oldData?.name, newValue: newData?.name },
+      { label: 'שם מנהל מחלקה', oldValue: this.getUserNameById(oldData?.supervisor_id), newValue: this.getUserNameById(newData?.supervisor_id) },
     ];
   }
 
