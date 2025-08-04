@@ -99,6 +99,8 @@ export class NewRideComponent implements OnInit {
   disableRequest: boolean = false;
 hours = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
 quarterHours = ['00', '15', '30', '45'];
+formReady = false;
+
 
 
   constructor(
@@ -113,6 +115,8 @@ quarterHours = ['00', '15', '30', '45'];
     private UserService: UserService,
     private AuthService: AuthService
   ) { }
+
+  
 
   ngOnInit(): void {
     this.initializeComponent();
@@ -131,6 +135,35 @@ quarterHours = ['00', '15', '30', '45'];
         this.disableRequest = true;
       }
     }
+  }
+
+   hasTouchedVehicleType(): boolean {
+    const value=this.rideForm.get('vehicle_type')?.value;
+    if(value){
+      return true
+    }
+    return false;
+  }
+    canChooseVehicle(): boolean {
+      const distance = this.rideForm.get('estimated_distance_km')?.value;
+      const rideDate = this.rideForm.get('ride_date')?.value;
+      const vehicleType = this.rideForm.get('vehicle_type')?.value;
+      const rideDateNight=this.rideForm.get('ride_date_night_end')?.value;
+      const period=this.rideForm.get('ride_period')?.value;
+  // Validate required inputs before calling loadVehicles
+  if(period!='morning'){
+    if (distance && rideDateNight && vehicleType) {
+      return true
+  } else {
+    return false
+  }
+  }
+  else{ if (distance && rideDate && vehicleType) {
+    return true
+  } else {
+   return false
+  }}
+    
   }
 
   private initializeComponent(): void {
@@ -207,6 +240,7 @@ quarterHours = ['00', '15', '30', '45'];
       'error'
     );
   }
+  
 });
 
 
@@ -595,35 +629,99 @@ private loadVehicles(distance: number, rideDate: string,vehicleType:string): voi
       }
     });
   }
+private updateAvailableCars(): void {
+  const selectedType = this.rideForm.get('vehicle_type')?.value;
 
-  // Vehicle management methods
-  private updateAvailableCars(): void {
-    const selectedType = this.rideForm.get('vehicle_type')?.value;
-    if (selectedType) {
-      this.availableCars = this.allCars.filter(car => car.type === selectedType);
-    } else {
-      this.availableCars = []; // No type selected, no cars available
+  this.availableCars = this.allCars.filter(car =>
+    car.type === selectedType &&
+    (car as any).can_order !== false &&
+    !this.isPendingVehicle(car.id)
+  );
+
+  const carControl = this.rideForm.get('car'); // Get control early
+
+  // Auto-select if only one car is available
+  if (this.availableCars.length === 1) {
+    const onlyCar = this.availableCars[0];
+    carControl?.setValue(onlyCar.id);
+    carControl?.markAsTouched();
+    carControl?.updateValueAndValidity();
+    // Ensure no pending error if it was previously set and is now auto-selected (and not pending)
+    if (carControl?.errors?.['pending'] && !this.isPendingVehicle(onlyCar.id)) {
+      carControl.setErrors(null);
+      carControl.updateValueAndValidity();
     }
-    // Also reset car selection if current car is no longer available
-    const selectedCar = this.rideForm.get('car')?.value;
+  } else {
+    // If no cars or multiple cars, ensure it's not auto-selected with a single pending car.
+    // Also, if the previously selected car is no longer available (e.g. filtered out)
+    const selectedCar = carControl?.value;
     if (selectedCar && !this.availableCars.some(car => car.id === selectedCar)) {
-      this.rideForm.get('car')?.setValue(null);
+      carControl?.setValue(null); // Clear selection
     }
 
-    this.availableCars = this.allCars.filter(car =>
-  car.type === selectedType &&
-  (car as any).can_order !== false
-);
-
+    // THIS IS KEY: If there are no available cars *and* a selection was previously made,
+    // or if we expect the user to make a choice, mark it for validation.
+    // Consider adding 'required' validator if not already there.
+    if (this.availableCars.length === 0) {
+        // If the car control has a value, but that car is no longer available (filtered out)
+        // or if it was previously valid and now isn't.
+        if (selectedCar !== null) { // If something was selected before but now is invalid
+            carControl?.setValue(null); // Clear it
+            carControl?.markAsTouched(); // Ensure validation shows for "required"
+            carControl?.markAsDirty();   // Ensure validation shows for "required"
+            carControl?.setErrors({ required: true }); // Explicitly set required error
+        }
+        // If carControl value is already null, but user has already "interacted" with type dropdown
+        // and we want to show immediate "required" error for car.
+        if (carControl && (carControl.touched || carControl.dirty) && !carControl.value) {
+             carControl?.setErrors({ required: true });
+        }
+    }
   }
+
+  
+
+  // Mark car as pending error if selected car is pending (this is for *already selected* cars)
+  // This logic is good as is for *selected* cars becoming pending.
+  const carId = carControl?.value;
+  if (carId && this.isPendingVehicle(carId)) {
+    carControl?.setErrors({ pending: true });
+    carControl?.markAsTouched();
+    carControl?.markAsDirty();
+  } else if (carControl?.errors?.['pending'] && !this.isPendingVehicle(carId)) {
+    // Clear pending error if the car is no longer pending or no car is selected
+    carControl.setErrors(null);
+    carControl.updateValueAndValidity();
+  }
+}
+
+shouldShowCarError(): boolean {
+  const carControl = this.rideForm.get('car');
+  if (!carControl) return false;
+
+  // An error should be shown if:
+  // 1. The control has been touched or dirty (user interaction or programmatic change).
+  // 2. AND there's an actual validation error (carControl.invalid) OR the 'pending' error is specifically set.
+  //    Note: Setting errors via setErrors() usually makes carControl.invalid true,
+  //    but being explicit about carControl.errors?.['pending'] is safer.
+  const hasValidationErrors = carControl.invalid;
+  const hasPendingError = carControl.errors?.['pending'];
+  const hasRequiredError = carControl.errors?.['required']; // Added for clarity
+
+  return (carControl.touched || carControl.dirty) && (hasValidationErrors || hasPendingError || hasRequiredError);
+}
+
+
 
  onRideTypeChange(): void {
   const distance = this.rideForm.get('estimated_distance_km')?.value;
   const rideDate = this.rideForm.get('ride_date')?.value;
   const vehicleType = this.rideForm.get('vehicle_type')?.value;
-
+  const rideDateNight=this.rideForm.get('ride_date_night_end')?.value;
+  const period=this.rideForm.get('ride_period')?.value;
   // Validate required inputs before calling loadVehicles
-  if (distance && rideDate && vehicleType) {
+  if(period!='morning'){
+    if (distance && rideDateNight && vehicleType) {
     const isoDate = new Date(rideDate).toISOString().split('T')[0];
     this.loadVehicles(distance, isoDate, vehicleType);
   } else {
@@ -631,6 +729,16 @@ private loadVehicles(distance: number, rideDate: string,vehicleType:string): voi
     this.availableCars = [];
     this.rideForm.get('car')?.setValue(null);
   }
+  }
+  else{ if (distance && rideDate && vehicleType) {
+    const isoDate = new Date(rideDate).toISOString().split('T')[0];
+    this.loadVehicles(distance, isoDate, vehicleType);
+  } else {
+    this.toastService.show('אנא הזן מרחק, תאריך וסוג רכב לפני סינון רכבים', 'error');
+    this.availableCars = [];
+    this.rideForm.get('car')?.setValue(null);
+  }}
+ 
 }
 
 

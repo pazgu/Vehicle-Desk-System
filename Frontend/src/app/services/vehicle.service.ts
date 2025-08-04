@@ -44,7 +44,7 @@ getAllVehiclesForNewRide(distance: number, rideDate: string, vehicleType: string
   const params: any = {
     distance_km: distance,
     ride_date: rideDate,
-    vehicle_type: vehicleType
+    type: vehicleType
   };
 
   return this.http.get<Vehicle[]>(`${environment.apiUrl}/all-vehicles-new-ride`, { params });

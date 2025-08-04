@@ -55,7 +55,7 @@ def get_vehicle_km_driven_on_date(db: Session, vehicle_id: int, day: date) -> fl
         Ride.start_datetime.cast(Date) == day
     ).all()
 
-    return sum(r.distance_km for r in rides)
+    return sum(r.actual_distance_km for r in rides)
 
 
 def get_vehicles_with_optional_status(
