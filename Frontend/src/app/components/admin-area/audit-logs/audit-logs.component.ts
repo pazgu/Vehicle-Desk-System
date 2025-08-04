@@ -79,6 +79,16 @@ export class AuditLogsComponent implements OnInit {
     return this.userFieldLabels[key] || key;
   }
 
+  departmentFieldLabels: { [key: string]: string } = {
+  id: 'מזהה מחלקה',
+  name: 'שם מחלקה',
+  supervisor_id: 'מזהה מנהל מחלקה',
+};
+
+getDepartmentFieldLabel(key: string): string {
+  return this.departmentFieldLabels[key] || key;
+}
+
 
   vehicleFieldLabels: { [key: string]: string } = {
     id: 'מזהה רכב',
@@ -448,6 +458,13 @@ export class AuditLogsComponent implements OnInit {
       { label: 'חריגה מהמכסה החודשית', oldValue: oldData.exceeded_monthly_trip_quota, newValue: newData.exceeded_monthly_trip_quota }
     ];
   }
+
+  getDepartmentAuditRows(oldData: any, newData: any): Array<{ label: string, oldValue: any, newValue: any }> {
+  return [
+    { label: 'שם מחלקה', oldValue: oldData?.name, newValue: newData?.name },
+    { label: 'מזהה מנהל מחלקה', oldValue: oldData?.supervisor_id, newValue: newData?.supervisor_id },
+  ];
+}
 
   getVehicleAuditRows(oldData: any, newData: any): Array<{ label: string, oldValue: any, newValue: any }> {
     return [
