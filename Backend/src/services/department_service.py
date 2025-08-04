@@ -10,29 +10,21 @@ from ..schemas.department_schema import DepartmentCreate, DepartmentUpdate
 
 def create_department(db: Session, dept_data: DepartmentCreate, payload: dict):
     user_id_from_token = payload.get("user_id") or payload.get("sub")
-
     if db.query(Department).filter_by(name=dept_data.name).first():
         raise HTTPException(status_code=409, detail="Department name already exists")
-
     supervisor = db.query(User).filter_by(employee_id=dept_data.supervisor_id).first()
     if not supervisor:
         raise HTTPException(status_code=404, detail="Supervisor not found")
     if supervisor.role != UserRole.supervisor:
         raise HTTPException(status_code=400, detail="User is not a supervisor")
-    
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id_from_token)})
-
-
     new_dept = Department(name=dept_data.name, supervisor_id=dept_data.supervisor_id)
     db.add(new_dept)
     db.commit()
     db.refresh(new_dept)
-
-
     supervisor.department_id = new_dept.id
     db.commit()
     db.execute(text("SET session.audit.user_id = DEFAULT"))
-
     return new_dept
 
 
