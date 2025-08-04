@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.types import String  # To cast to string
 from typing import Optional, List , Dict , Union
 from ..models.vehicle_model import Vehicle, VehicleStatus
-from sqlalchemy import func, cast 
+from sqlalchemy import Date, func, cast 
 from sqlalchemy import and_ , or_ , not_ , select
 from ..models.ride_model import Ride, RideStatus
 from ..models.user_model import User
@@ -48,50 +48,35 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 #     }
 
 
+
+def get_vehicle_km_driven_on_date(db: Session, vehicle_id: int, day: date) -> float:
+    rides = db.query(Ride).filter(
+        Ride.vehicle_id == vehicle_id,
+        Ride.start_datetime.cast(Date) == day
+    ).all()
+
+    return sum(r.distance_km for r in rides)
+
+
 def get_vehicles_with_optional_status(
     db: Session,
     status: Optional[VehicleStatus] = None,
-    vehicle_type: Optional[str] = None  
-) -> List[Union[VehicleOut, InUseVehicleOut]]:
-    query = (
-    db.query(
-        Vehicle.id,
-        Vehicle.plate_number,
-        Vehicle.type,
-        Vehicle.fuel_type,
-        Vehicle.status,
-        Vehicle.freeze_reason,
-        Vehicle.last_used_at,
-        Vehicle.current_location,
-        Vehicle.mileage,
-        Vehicle.vehicle_model,
-        Vehicle.image_url,
-        Vehicle.department_id, 
-        Vehicle.lease_expiry,
-        User.employee_id.label("user_id"),
-        User.first_name,
-        User.last_name,
-        Ride.start_datetime,
-        Ride.end_datetime,
-    )
-    .outerjoin(
-        Ride,
-        and_(
-            Ride.vehicle_id == Vehicle.id,
-            Ride.status == "approved",
-            Ride.start_datetime <= datetime.now(),    
-            Ride.end_datetime >= datetime.now()      
-        ) 
-    )    
-    .outerjoin(User, User.employee_id == Ride.user_id)
-    .filter(Vehicle.is_archived == False)
-)
+    type: Optional[str] = None  # Renamed from vehicle_type
+) -> List[Vehicle]:
+    query = db.query(Vehicle).filter(Vehicle.is_archived == False)
+    
     if status:
         query = query.filter(Vehicle.status == status)
-    if vehicle_type:
-        query = query.filter(func.lower(Vehicle.type) == vehicle_type.lower())
-    vehicles = query.all()
-    return vehicles
+    if type:
+        query = query.filter(func.lower(Vehicle.type) == type.lower())
+        
+
+    final_query=query.all()
+    print('final vehicles:',final_query)
+
+
+    return final_query
+
 
 
 def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_reason: str, db: Session, changed_by: UUID, notes: Optional[str] = None):

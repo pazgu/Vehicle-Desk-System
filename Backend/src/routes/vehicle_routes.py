@@ -1,7 +1,7 @@
 from src.models.department_model import Department
 from datetime import  date, time, datetime, timedelta, timezone
 from sqlalchemy import text,func, or_
-from ..services.vehicle_service import get_vehicles_with_optional_status,update_vehicle_status,get_vehicle_by_id, get_available_vehicles_for_ride_by_id, get_inactive_vehicles
+from ..services.vehicle_service import get_vehicle_km_driven_on_date, get_vehicles_with_optional_status,update_vehicle_status,get_vehicle_by_id, get_available_vehicles_for_ride_by_id, get_inactive_vehicles
 from fastapi import APIRouter, Depends, HTTPException, Request, status , Query
 from uuid import UUID
 from ..schemas.vehicle_schema import VehicleStatusUpdate, RideTimelineSchema
@@ -32,10 +32,61 @@ router = APIRouter()
 #         raise HTTPException(status_code=500, detail=str(e))
     
 
+# @router.get("/all-vehicles", response_model=List[VehicleOut])
+# def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = Depends(get_db), payload: dict = Depends(token_check)):
+#     vehicles = get_vehicles_with_optional_status(db, status)
+#     return vehicles
+
+
+
+
+@router.get("/all-vehicles-new-ride", response_model=List[VehicleOut])
+def get_all_vehicles_route(
+    distance_km: float = Query(...),
+    ride_date: Optional[date] = Query(None),
+    type: Optional[str] = Query(None),  # renamed here
+    db: Session = Depends(get_db),
+    payload: dict = Depends(token_check),
+):
+    vehicles = get_vehicles_with_optional_status(db, "available", type)
+
+
+    if type:
+        vehicles = [v for v in vehicles if v.type and v.type.lower() == type.lower()]
+
+    if not vehicles:
+        return []  # No vehicles of the requested type
+
+    electric, hybrid, fuel = [], [], []
+
+    for v in vehicles:
+        if v.fuel_type == "electric":
+            km_today = get_vehicle_km_driven_on_date(db, v.id, ride_date or date.today())
+            if distance_km + km_today <= 200:
+                electric.append(v)
+        elif v.fuel_type == "hybrid":
+            hybrid.append(v)
+        elif v.fuel_type =="gasoline":
+            fuel.append(v)
+
+    # Step 2: Apply fuel priority within selected vehicle_type
+    prioritized = []
+    if distance_km <= 200 and electric:
+        prioritized = electric
+    elif hybrid:
+        prioritized = hybrid
+    elif fuel:
+        prioritized = fuel
+    elif electric:  # fallback even if distance > 200
+        prioritized = electric
+
+    return prioritized
+
 @router.get("/all-vehicles", response_model=List[VehicleOut])
 def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = Depends(get_db), payload: dict = Depends(token_check)):
     vehicles = get_vehicles_with_optional_status(db, status)
     return vehicles
+
 
 @router.get("/vehicles/{vehicle_id}/fuel-type")
 def get_vehicle_fuel_type(vehicle_id: UUID, db: Session = Depends(get_db)):
