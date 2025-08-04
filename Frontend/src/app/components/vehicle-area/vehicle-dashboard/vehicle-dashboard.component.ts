@@ -251,10 +251,6 @@ fetchVehicleTypes() {
     }
   }
 
-  goToArchivedOrders() {
-    this.router.navigate(['/vehicles/archived']);
-  }
-
   getCardClass(status: string | null | undefined): string {
     if (!status) return '';
     switch (status) {
