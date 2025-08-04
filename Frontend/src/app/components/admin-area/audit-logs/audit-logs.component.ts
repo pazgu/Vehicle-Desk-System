@@ -82,7 +82,7 @@ export class AuditLogsComponent implements OnInit {
   departmentFieldLabels: { [key: string]: string } = {
   id: 'מזהה מחלקה',
   name: 'שם מחלקה',
-  supervisior_id: 'מזהה מנהל מחלקה',
+  supervisor_id: 'מזהה מנהל מחלקה',
 };
 
 getDepartmentFieldLabel(key: string): string {
