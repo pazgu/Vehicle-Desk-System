@@ -140,10 +140,9 @@ quarterHours = ['00', '15', '30', '45'];
     this.initializeForm();
     this.setupFormSubscriptions();
     this.fetchCities();
-    this.loadVehicles();
     this.loadPendingVehicles();
-     this.generateTimeOptions();
-  this.setClosestQuarterHourTime();
+    this.generateTimeOptions();
+    this.setClosestQuarterHourTime();
   }
 
   private initializeForm(): void {
@@ -495,31 +494,32 @@ setClosestQuarterHourTime() {
     });
   }
 
-  private loadVehicles(): void {
-    this.vehicleService.getAllVehicles().subscribe({
-      next: (vehicles) => {
-        this.allCars = vehicles
-          .filter(v =>
-            v.status === 'available' &&
-            !!v.id &&
-            !!v.type &&
-            !!v.plate_number &&
-            typeof v.mileage === 'number'
-          )
-          .map(v => ({
-            ...v,
-            image_url: v.image_url || 'assets/default-car.png',
-            vehicle_model: v.vehicle_model || 'רכב ללא דגם',
-            freeze_reason: v.freeze_reason ?? null
-          }));
+private loadVehicles(distance: number, rideDate: string,vehicleType:string): void {
+  this.vehicleService.getAllVehiclesForNewRide(distance, rideDate,vehicleType).subscribe({
+    next: (vehicles) => {
+      this.allCars = vehicles
+        .filter(v =>
+          v.status === 'available' &&
+          !!v.id &&
+          !!v.type &&
+          !!v.plate_number &&
+          typeof v.mileage === 'number'
+        )
+        .map(v => ({
+          ...v,
+          image_url: v.image_url || 'assets/default-car.png',
+          vehicle_model: v.vehicle_model || 'רכב ללא דגם',
+          freeze_reason: v.freeze_reason ?? null
+        }));
 
-        this.updateAvailableCars();
-      },
-      error: () => {
-        this.toastService.show('שגיאה בטעינת רכבים זמינים', 'error');
-      }
-    });
-  }
+      this.updateAvailableCars();
+    },
+    error: () => {
+      this.toastService.show('שגיאה בטעינת רכבים זמינים', 'error');
+    }
+  });
+}
+
 
   private loadPendingVehicles(): void {
     this.vehicleService.getPendingCars().subscribe({
@@ -647,14 +647,22 @@ private updateAvailableCars(): void {
   }
 }
 
-  onRideTypeChange(): void {
-    this.updateAvailableCars();
-    this.rideForm.get('car')?.setValue(null); // Clear selected car when ride type changes
+ onRideTypeChange(): void {
+  const distance = this.rideForm.get('estimated_distance_km')?.value;
+  const rideDate = this.rideForm.get('ride_date')?.value;
+  const vehicleType = this.rideForm.get('vehicle_type')?.value;
 
-    if (this.availableCars.length === 0) {
-      this.toastService.show('אין רכבים זמינים מסוג זה', 'error');
-    }
+  // Validate required inputs before calling loadVehicles
+  if (distance && rideDate && vehicleType) {
+    const isoDate = new Date(rideDate).toISOString().split('T')[0];
+    this.loadVehicles(distance, isoDate, vehicleType);
+  } else {
+    this.toastService.show('אנא הזן מרחק, תאריך וסוג רכב לפני סינון רכבים', 'error');
+    this.availableCars = [];
+    this.rideForm.get('car')?.setValue(null);
   }
+}
+
 
   private updateVehicleTypeValidation(value: string): void {
     const vehicleTypeReason = this.rideForm.get('vehicle_type_reason');
@@ -1019,7 +1027,11 @@ futureDateTimeValidator(): ValidatorFn {
     const startTime = `${startHour}:${startMinute}`;
     const endTime = `${endHour}:${endMinute}`;
     const distance = this.rideForm.get('estimated_distance_km')?.value;
-
+    const vehicleType = this.rideForm.get('vehicle_type')?.value;
+    if (distance && rideDate && vehicleType) {
+  const isoDate = new Date(rideDate).toISOString().split('T')[0];
+  this.loadVehicles(distance, isoDate, vehicleType);
+}
     // Time validation
     if (ridePeriod === 'morning' && startTime && endTime && startTime >= endTime) {
       this.toastService.show('שעת הסיום חייבת להיות אחרי שעת ההתחלה', 'error');
@@ -1060,6 +1072,7 @@ futureDateTimeValidator(): ValidatorFn {
       ? `${rideDate}T${endTime}`
       : `${nightEndDate}T${endTime}`;
 
+ 
     // Prepare form data
     const formData = {
       user_id: rider_id,
