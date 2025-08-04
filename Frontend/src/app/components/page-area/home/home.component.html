@@ -83,26 +83,8 @@
 
 
 <!-- Row 2: סוג רכב + שעת התחלה + שעת סיום -->
-<div class="row">
-  <div class="input-group">
-    <label>סוג רכב</label>
-    <select formControlName="vehicle_type" class="styled-select" (change)="onRideTypeChange()">
-      <option value="" disabled selected>בחר סוג</option>
-      <option *ngFor="let type of vehicleTypes" [value]="type">{{ type }}</option>
-    </select>
-  <textarea
-    formControlName="vehicle_type_reason"
-    placeholder="אנא פרט.י מדוע יש צורך בכרב 4X4"
-    class="vehicle-type-info"
-    *ngIf="f.vehicle_type.value?.toLowerCase().includes('jeep') || f.vehicle_type.value?.toLowerCase().includes('van') || f.vehicle_type.value?.toLowerCase().includes('4x4')"
-  ></textarea>
-
-  <small *ngIf="rideForm.get('vehicle_type_reason')?.touched && rideForm.get('vehicle_type_reason')?.errors?.['required']" class="distance-info">
-    חובה לפרט מדוע יש צורך ברכב זה
-  </small>
-  </div>
-
-           <div class="input-group">
+<div style="display: flex; align-items: center;">
+           <div class="input-group" style="margin-left:10px ;">
   <label>שעת התחלה</label>
      <div class="time-select-container">
     <ng-select
@@ -163,7 +145,7 @@
   </small>
 </div>
 </div>
-
+</div>
           <!-- Night ride date range -->
           <div *ngIf="rideForm.get('ride_period')?.value === 'night'" class="row">
             <div class="input-group">
@@ -176,27 +158,8 @@
             </div>
           </div>
 
-          <!-- Vehicle selection -->
-          <div class="row" *ngIf="availableCars.length > 0">
-            <div class="input-group">
-              <label>בחר רכב זמין</label>
-              <select formControlName="car" class="styled-select">
-                <option value="" disabled selected>בחר רכב</option>
-                <option *ngFor="let car of availableCars"
-                        [value]="car.id"
-                        [disabled]="isPendingVehicle(car.id)"
-                        [title]="isPendingVehicle(car.id) ? 'הרכב זה ממתין לעיבוד לתאריך/תקופה שנבחרו' : ''">
-                  {{ car.vehicle_model }}
-                </option>
-              </select>
-              <small *ngIf="f.car.touched && f.car.errors?.['required']" class="distance-info">
-                חובה לבחור רכב מהתפריט
-              </small>
-            </div>
-          </div>
+         
           <div class="column">
-          
-
         <div class="input-group">
   <div class="row ">
     <div id="first-stop-box">
@@ -235,6 +198,62 @@
   </div>
 </div>
        
+<div class="row">
+  <div class="input-group">
+    <label>סוג רכב</label>
+    <select formControlName="vehicle_type" class="styled-select" (change)="onRideTypeChange()">
+      <option value="" disabled selected>בחר סוג</option>
+      <option *ngFor="let type of vehicleTypes" [value]="type">{{ type }}</option>
+    </select>
+  <textarea
+    formControlName="vehicle_type_reason"
+    placeholder="אנא פרט.י מדוע יש צורך בכרב 4X4"
+    class="vehicle-type-info"
+    *ngIf="f.vehicle_type.value?.toLowerCase().includes('jeep') || f.vehicle_type.value?.toLowerCase().includes('van') || f.vehicle_type.value?.toLowerCase().includes('4x4')"
+  ></textarea>
+
+  <small *ngIf="rideForm.get('vehicle_type_reason')?.touched && rideForm.get('vehicle_type_reason')?.errors?.['required']" class="distance-info">
+    חובה לפרט מדוע יש צורך ברכב זה
+  </small>
+  </div>
+<!-- Vehicle selection -->
+<div class="row">
+  <div class="input-group">
+
+        <label *ngIf="!shouldShowCarError()">בחר רכב זמין</label>
+
+
+    <!-- Show dropdown only if cars available -->
+    <select *ngIf="availableCars.length > 0" formControlName="car" class="styled-select">
+      <option value="" disabled selected>בחר רכב</option>
+      <option *ngFor="let car of availableCars"
+              [value]="car.id"
+              [disabled]="isPendingVehicle(car.id)"
+              [title]="isPendingVehicle(car.id) ? 'הרכב זה ממתין לעיבוד לתאריך/תקופה שנבחרו' : ''">
+        {{ car.vehicle_model }}
+      </option>
+    </select>
+
+   
+
+<!-- UNIFIED validation message -->
+<div
+*ngIf="rideForm?.get('vehicle_type') && (availableCars.length === 0 && hasTouchedVehicleType() &&shouldShowCarError()&&canChooseVehicle())"
+  class="car-validation-message"
+>
+  <ng-container *ngIf="availableCars.length === 0 && !shouldShowCarError()" >
+    אין רכבים זמינים מסוג זה בשעות שנבחרו,
+  </ng-container>
+  <ng-container *ngIf="availableCars.length === 0 && shouldShowCarError()">
+    אין רכבים זמינים מסוג זה בשעות שנבחרו. נא לבחור סוג רכב אחר.
+  </ng-container>
+  <ng-container *ngIf="availableCars.length > 0 && shouldShowCarError()" >
+    {{ isPendingVehicle(f.car.value) ? 'רכב זה אינו זמין בשעות שנבחרו' : 'חובה לבחור רכב' }}
+  </ng-container>
+</div>
+
+  </div>
+</div>
 
 
 
