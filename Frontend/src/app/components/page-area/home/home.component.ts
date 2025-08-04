@@ -27,6 +27,7 @@ import { LayoutComponent } from '../../layout-area/layout/layout.component';
 import { AuthService } from '../../../services/auth.service';
 import {  ValidationErrors } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { formatDate } from '@angular/common';
 
 // Define the interface for pending vehicle
 interface PendingVehicle {
@@ -596,6 +597,12 @@ setClosestQuarterHourTime() {
     });
   }
 
+  private formatDateForComparison(dateStr: string): string {
+  const date = new Date(dateStr);
+  return formatDate(date, 'dd.MM.yyyy', 'en-US');
+}
+
+
   // Vehicle management methods
 private updateAvailableCars(): void {
   const selectedType = this.rideForm.get('vehicle_type')?.value;
@@ -610,6 +617,24 @@ private updateAvailableCars(): void {
     this.availableCars = this.availableCars.filter(car => 
       !this.pendingVehicles.some(pending => pending.vehicle_id === car.id)
     );
+    // Third filter: remove cars that are booked (using your existing orders data)
+    const rideDate = this.rideForm.get('ride_date')?.value;
+    const startTime = this.rideForm.get('start_time')?.value;
+    const endTime = this.rideForm.get('end_time')?.value;
+
+    if (rideDate && startTime && endTime) {
+      // Get orders from localStorage (your existing data)
+      const storedOrders = localStorage.getItem('user_orders');
+      const existingOrders = storedOrders ? JSON.parse(storedOrders) : [];
+      
+      this.availableCars = this.availableCars.filter(car => 
+        !existingOrders.some((order: any) => 
+          order.type === car.type && // Assuming 'type' matches vehicle type
+          order.date === this.formatDateForComparison(rideDate) &&
+          order.status === 'approved' // Only check approved rides
+        )
+      );
+    }
 
   } else {
     this.availableCars = []; // No type selected, no cars available
