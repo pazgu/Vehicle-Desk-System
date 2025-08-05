@@ -57,8 +57,8 @@ from src.schemas.statistics_schema import NoShowStatsResponse,TopNoShowUser
 from src.models.department_model import Department
 from src.schemas.department_schema import DepartmentCreate, DepartmentUpdate, DepartmentOut
 from src.services import department_service
-
 import pandas as pd
+from typing import Dict, Any
 
 
 router = APIRouter()
@@ -1080,7 +1080,6 @@ def get_critical_issue_details(issue_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Failed to fetch issue details: {str(e)}")
 
 
-from typing import Dict, Any
 @router.get("/critical-issues", response_model=Dict[str, List[Any]])
 def get_critical_issues(
     problem_type: Optional[str] = Query(None),
@@ -1095,7 +1094,14 @@ def get_critical_issues(
 
     if problem_type == "medium":
         inspections_query = inspections_query.filter(
-            VehicleInspection.fuel_checked == False
+            and_(
+                or_(
+                    VehicleInspection.clean == False,
+                    VehicleInspection.fuel_checked == False,
+                    VehicleInspection.no_items_left == False
+                ),
+                VehicleInspection.critical_issue_bool == False
+            )
         )
         rides_data = []
 
@@ -1153,10 +1159,6 @@ def get_critical_issues(
         "inspections": inspections_data,
         "rides": rides_data
     }
-
-
-
-
 
 
 @router.get("/statistics/no-show", response_model=NoShowStatsResponse)

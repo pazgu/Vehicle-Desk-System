@@ -28,8 +28,8 @@
           <th>תאריך</th>
           <th>בודק</th>
           <th>נקי</th>
-          <th>דלק נבדק</th>
-          <th>אין חפצים</th>
+          <th>מתודלק</th>
+          <th>יש חפצים</th>
           <th>בעיה קריטית</th>
           <th>הערות</th>
         </tr>
@@ -40,7 +40,7 @@
           <td>{{ insp.inspected_by }}</td>
           <td>{{ insp.clean ? '✔️' : '❌' }}</td>
           <td>{{ insp.fuel_checked ? '✔️' : '❌' }}</td>
-          <td>{{ insp.no_items_left ? '✔️' : '❌' }}</td>
+          <td>{{ insp.no_items_left ? '❌' : '✔️' }}</td>
           <td>{{ insp.critical_issue_bool ? 'כן' : 'לא' }}</td>
           <td>{{ insp.issues_found || '—' }}</td>
         </tr>
