@@ -7,9 +7,7 @@ from src.models.vehicle_inspection_model import VehicleInspection
 from src.services.email_service import async_send_email, render_email_template
 from src.services.user_notification import create_system_notification_with_db
 
-async def handle_inspection_alert(db: Session, inspection: VehicleInspection):
-    print("entered handle_inspection_alert")
-    
+async def handle_inspection_alert(db: Session, inspection: VehicleInspection):    
 
     date_str = inspection.inspection_date.strftime("%d/%m/%Y %H:%M")
     # בודקים אם יש רכבים עם בעיות בדיווח

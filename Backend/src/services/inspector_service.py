@@ -52,7 +52,6 @@ async def create_inspection(data: VehicleInspectionSchema, db: Session):
 
         for inspection in inspections_created:
             db.refresh(inspection)
-            print(f"✅ Inspection saved: {inspection.inspection_id}")
 
             try:
                 await sio.emit("new_inspection", {
@@ -65,13 +64,9 @@ async def create_inspection(data: VehicleInspectionSchema, db: Session):
                     "critical_issue_bool": inspection.critical_issue_bool,
                     "issues_found": inspection.issues_found,
                 })
-                print(f"📢 Emitted socket event for inspection {inspection.inspection_id}")
             except Exception as socket_error:
                 print(f"❌ Socket emission failed: {socket_error}")
-            print('before inspection critical issue')
-            print(f"inspection critical:{inspection.critical_issue_bool}")
             await handle_inspection_alert(db, inspection)
-            print('after inspection alert')
             if inspection.critical_issue_bool and inspection.issues_found:
                 inspector = db.query(User).filter(User.employee_id == inspection.inspected_by).first()
                 inspector_name = f"{inspector.first_name} {inspector.last_name}" if inspector else "לא ידוע"
@@ -81,7 +76,6 @@ async def create_inspection(data: VehicleInspectionSchema, db: Session):
                 for user in recipients:
                     email = get_user_email(user.employee_id, db)
                     if not email:
-                        print(f"⚠️ No email for user {user.username}, skipping.")
                         continue
 
                     context = {
@@ -102,9 +96,8 @@ async def create_inspection(data: VehicleInspectionSchema, db: Session):
                             subject="🚨 דווח תקלה קריטית בבדיקת רכב",
                             html_content=html_content
                         )
-                        print(f"Email sent to {user.username} ({email}) for indpection")
                     except Exception as mail_err:
-                        print(f"Failed to send email to {user.username}: {mail_err}")
+                        print(f"Failed to send email:{mail_err}")
 
                     try:
                         create_system_notification(
@@ -115,13 +108,11 @@ async def create_inspection(data: VehicleInspectionSchema, db: Session):
                             vehicle_id=inspection.critical_issue_vehicle_id,
                             relevant_user_id=inspection.inspected_by
                         )
-                        print(f"🔔 Notification created for {user.username}")
                     except Exception as notif_err:
-                        print(f"❌ Failed to create notification: {notif_err}")
+                        print(f"Failed to create notification: {notif_err}")
 
         return inspections_created
 
     except Exception as e:
-        print("❌ Failed to save inspection:", e)
         db.rollback()
         raise HTTPException(status_code=500, detail="אירעה שגיאה בעת שמירת בדיקת הרכב.")
