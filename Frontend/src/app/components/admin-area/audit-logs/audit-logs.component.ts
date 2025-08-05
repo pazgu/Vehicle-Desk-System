@@ -14,6 +14,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { ToastService } from '../../../services/toast.service';
+import * as XLSX from 'xlsx-js-style';
 
 (pdfMake as any).vfs = pdfFonts.vfs;
 (pdfMake as any).fonts = {
@@ -416,57 +417,429 @@ export class AuditLogsComponent implements OnInit {
     });
   }
 
-  exportToPDF() {
-    const weeklyLogs = this.getLogsForThisWeek();
-    const docDefinition: TDocumentDefinitions = {
-      content: [
-        { text: `Weekly report of system logs`, style: 'header', alignment: 'center' },
-        { text: '\n' },
-        {
-          table: {
-            headerRows: 1,
-            body: [
-              ['Action type', 'Full name', 'Entity type', 'Date created'],
-              ...weeklyLogs.map(log => [
-                log.action,
-                log.full_name,
-                log.entity_type,
-                new Date(log.created_at).toLocaleString('he-IL')
-              ])
+  getStatusColor(status: string): string {
+  const statusColorMap: { [key: string]: string } = {
+    'אושר': '#66BB6A', // green
+    'הסתיים': '#66BB6A',
+    'פעולה בוצעה בהצלחה': '#66BB6A',
+    'מוקפא': '#81D4FA', // light blue
+    'פעיל': '#FFD54F', // yellow
+    'בתהליך': '#FFD54F',
+    'בשימוש': '#FFD54F',
+    'בתחזוקה': '#FFF176', // light yellow
+    'נדחה': '#EF5350', // red
+    'אירוע חירום': '#FFB74D', // orange
+    'חריגה מהמחסה החודשית': '#A1887F', // brownish
+    'בוטל עקב אי הגעה': '#CE93D8', // purple-pink
+    'נמחק': '#F48FB1' // pink
+  };
+
+  return statusColorMap[status] || '#FFFFFF'; // fallback to white
+}
+getStatusLabel(status: string): string {
+  const statusLabelMap: { [key: string]: string } = {
+    'אושר': 'Approved',
+    'הסתיים': 'Completed',
+    'פעולה בוצעה בהצלחה': 'Success',
+    'מוקפא': 'Frozen',
+    'פעיל': 'Active',
+    'בתהליך': 'In Progress',
+    'בשימוש': 'In Use',
+    'בתחזוקה': 'Under Maintenance',
+    'נדחה': 'Rejected',
+    'אירוע חירום': 'Emergency',
+    'חריגה מהמחסה החודשית': 'Monthly Limit Exceeded',
+    'בוטל עקב אי הגעה': 'Canceled - No Show',
+    'נמחק': 'Deleted'
+  };
+
+  return statusLabelMap[status] || 'Unknown';
+}
+
+
+// Add this helper method to get row background color based on log status
+private getRowBackgroundColor(log: any): string {
+  // Check for specific conditions that match your CSS classes
+  
+  // Delete operations
+  if (log.action === 'DELETE') {
+    return '#f8e2e2'; // delete-row color
+  }
+  
+  // Emergency events
+  if (log.action === 'UPDATE' && log.entity_type === 'Ride' && 
+      (log.change_data?.new?.emergency_event === true || log.change_data?.new?.emergency_event === 'true')) {
+    return '#feaf66'; // emergency-row color
+  }
+  
+  // Frozen vehicles
+  if (log.entity_type === 'Vehicle' && log.change_data?.new?.status === 'frozen') {
+    return '#e2f0f8'; // frozen-vehicle-row color
+  }
+  
+  // Pending rides
+  if (log.entity_type === 'Ride' && (
+    (log.action === 'UPDATE' && log.change_data?.new?.status === 'pending') ||
+    (log.action === 'INSERT' && log.change_data?.status === 'pending')
+  )) {
+    return '#fbf3da'; // pending-row color
+  }
+  
+  // Active rides/vehicles (in progress/in use)
+  if ((log.entity_type === 'Ride' && log.change_data?.new?.status === 'in_progress') ||
+      (log.entity_type === 'Vehicle' && log.change_data?.new?.status === 'in_use')) {
+    return '#ffe5b4'; // active-row color
+  }
+  
+  // Approved/completed rides
+  if (log.entity_type === 'Ride' && 
+      (log.change_data?.new?.status === 'approved' || log.change_data?.new?.status === 'completed')) {
+    return '#60cd79'; // approved-row color
+  }
+  
+  // Rejected rides
+  if (log.entity_type === 'Ride' && log.change_data?.new?.status === 'rejected') {
+    return '#dc5b5b'; // rejected-row color
+  }
+  
+  // Cancelled due to no show
+  if (log.entity_type === 'Ride' && log.action === 'UPDATE' &&
+      (log.change_data?.new?.status === 'cancelled_due_to_no_show' ||
+       log.change_data?.new?.status === 'cancelled-due-to-no-show')) {
+    return '#e0d6e8'; // cancelled-due-to-no-show color
+  }
+  
+  // Exceeded monthly trip quota
+  if (log.entity_type === 'User' && log.change_data?.new?.exceeded_monthly_trip_quota === true) {
+    return '#cdb69b'; // exceeded-monthly-trip-quota-row color
+  }
+  
+  // Success operations (User/Department/Vehicle INSERT/UPDATE)
+  if ((log.entity_type === 'User' && (log.action === 'INSERT' || log.action === 'UPDATE')) ||
+      (log.entity_type === 'Department' && (log.action === 'INSERT' || log.action === 'UPDATE')) ||
+      (log.entity_type === 'Vehicle' && (
+        (log.action === 'UPDATE' && (log.change_data?.new?.status === 'available' || log.change_data?.new?.status === 'approved')) ||
+        log.action === 'INSERT'
+      ))) {
+    return '#dcf1e1'; // success-row color
+  }
+  
+  // Default color
+  return '#ffffff';
+}
+
+// Add this helper method to get English status labels
+private getEnglishStatusLabel(log: any): string {
+  if (log.action === 'DELETE') {
+    return 'Deleted';
+  }
+  
+  if (log.action === 'UPDATE' && log.entity_type === 'Ride' && 
+      (log.change_data?.new?.emergency_event === true || log.change_data?.new?.emergency_event === 'true')) {
+    return 'Emergency Event';
+  }
+  
+  if (log.entity_type === 'Vehicle' && log.change_data?.new?.status === 'frozen') {
+    return 'Frozen';
+  }
+  
+  if (log.entity_type === 'Ride') {
+    const status = log.change_data?.new?.status || log.change_data?.status;
+    switch (status?.toLowerCase()) {
+      case 'pending': return 'Pending';
+      case 'approved': return 'Approved';
+      case 'completed': return 'Completed';
+      case 'rejected': return 'Rejected';
+      case 'in_progress': return 'In Progress';
+      case 'cancelled_due_to_no_show':
+      case 'cancelled-due-to-no-show': return 'Cancelled - No Show';
+      default: return status || 'Unknown';
+    }
+  }
+  
+  if (log.entity_type === 'Vehicle') {
+    const status = log.change_data?.new?.status || log.change_data?.status;
+    switch (status?.toLowerCase()) {
+      case 'available': return 'Available';
+      case 'in_use': return 'In Use';
+      case 'frozen': return 'Frozen';
+      default: return status || 'Unknown';
+    }
+  }
+  
+  if (log.entity_type === 'User' && log.change_data?.new?.exceeded_monthly_trip_quota === true) {
+    return 'Monthly Limit Exceeded';
+  }
+  
+  if ((log.entity_type === 'User' || log.entity_type === 'Department') && 
+      (log.action === 'INSERT' || log.action === 'UPDATE')) {
+    return 'Success';
+  }
+  
+  return 'Unknown';
+}
+
+// Updated PDF export method
+exportToPDF() {
+  const weeklyLogs = this.getLogsForThisWeek();
+  const timestamp = new Date().toLocaleString('en-GB');
+  const safeTimestamp = timestamp.replace(/[/:]/g, '-');
+
+  const body: any[] = [
+    [
+      { text: 'Action Type', style: 'tableHeader' },
+      { text: 'Full Name', style: 'tableHeader' },
+      { text: 'Entity Type', style: 'tableHeader' },
+      { text: 'Status', style: 'tableHeader' },
+      { text: 'Date Created', style: 'tableHeader' }
+    ]
+  ];
+
+  weeklyLogs.forEach(log => {
+    const statusLabel = this.getEnglishStatusLabel(log);
+    const bgColor = this.getRowBackgroundColor(log);
+
+    body.push([
+      { text: log.action, fillColor: bgColor } as any,
+      { text: log.full_name || '—', fillColor: bgColor } as any,
+      { text: log.entity_type || '—', fillColor: bgColor } as any,
+      { text: statusLabel, fillColor: bgColor } as any,
+      { text: new Date(log.created_at).toLocaleString('en-GB'), fillColor: bgColor } as any
+    ]);
+  });
+
+  const docDefinition: TDocumentDefinitions = {
+    content: [
+      { text: `Audit Logs Report`, style: 'header', alignment: 'center' },
+      { text: `Created: ${timestamp}`, style: 'subheader', alignment: 'center' },
+      { text: `Color Legend:`, style: 'legendHeader', alignment: 'left', margin: [0, 20, 0, 10] } as any,
+      {
+        table: {
+          headerRows: 0,
+          widths: ['auto', '*'],
+          body: [
+            [
+              { text: '', fillColor: '#60cd79', margin: [0, 2] } as any,
+              { text: 'Approved / Completed', fontSize: 10 } as any
+            ],
+            [
+              { text: '', fillColor: '#dcf1e1', margin: [0, 2] } as any,
+              { text: 'Success Operation', fontSize: 10 } as any
+            ],
+            [
+              { text: '', fillColor: '#e2f0f8', margin: [0, 2] } as any,
+              { text: 'Frozen', fontSize: 10 } as any
+            ],
+            [
+              { text: '', fillColor: '#ffe5b4', margin: [0, 2] } as any,
+              { text: 'Active (In Progress/In Use)', fontSize: 10 } as any
+            ],
+            [
+              { text: '', fillColor: '#fbf3da', margin: [0, 2] } as any,
+              { text: 'Pending', fontSize: 10 } as any
+            ],
+            [
+              { text: '', fillColor: '#dc5b5b', margin: [0, 2] } as any,
+              { text: 'Rejected', fontSize: 10 } as any
+            ],
+            [
+              { text: '', fillColor: '#feaf66', margin: [0, 2] } as any,
+              { text: 'Emergency Event', fontSize: 10 } as any
+            ],
+            [
+              { text: '', fillColor: '#f8e2e2', margin: [0, 2] } as any,
+              { text: 'Deleted', fontSize: 10 } as any
+            ],
+            [
+              { text: '', fillColor: '#e0d6e8', margin: [0, 2] } as any,
+              { text: 'Cancelled - No Show', fontSize: 10 } as any
+            ],
+            [
+              { text: '', fillColor: '#cdb69b', margin: [0, 2] } as any,
+              { text: 'Monthly Limit Exceeded', fontSize: 10 } as any
             ]
-          },
-          layout: 'lightHorizontalLines'
+          ]
+        },
+        layout: 'noBorders',
+        margin: [0, 0, 0, 20]
+      } as any,
+      {
+        table: {
+          headerRows: 1,
+          widths: ['auto', '*', '*', '*', 'auto'],
+          body: body
+        },
+        layout: {
+          fillColor: (rowIndex: number) => rowIndex === 0 ? '#f2f2f2' : null
         }
-      ],
-      defaultStyle: {
-        font: 'Roboto',
-        alignment: 'right'
+      } as any
+    ],
+    defaultStyle: {
+      font: 'Roboto',
+      fontSize: 11
+    },
+    styles: {
+      header: {
+        fontSize: 18,
+        bold: true,
+        margin: [0, 0, 0, 10]
       },
-      styles: {
-        header: {
-          fontSize: 18,
-          bold: true
-        }
+      subheader: {
+        fontSize: 12,
+        margin: [0, 0, 0, 20]
+      },
+      legendHeader: {
+        fontSize: 14,
+        bold: true,
+        color: '#942222'
+      },
+      tableHeader: {
+        fontSize: 12,
+        bold: true,
+        alignment: 'center'
       }
-    };
-    pdfMake.createPdf(docDefinition).download('audit_logs_weekly.pdf');
-  }
+    }
+  };
+
+  pdfMake.createPdf(docDefinition).download(`audit_logs_${safeTimestamp}.pdf`);
+}exportToCSV() {
+  const weeklyLogs = this.getLogsForThisWeek();
+  const timestamp = new Date().toLocaleString('en-GB').replace(/[/:]/g, '-');
+
+  // Color legend section
+  const legendRows = [
+    ['# Color Legend (Row background colors used in PDF/Excel):'],
+    ['Color', 'Meaning'],
+    ['#60cd79', 'Approved / Completed'],
+    ['#dcf1e1', 'Success Operation'],
+    ['#e2f0f8', 'Frozen'],
+    ['#ffe5b4', 'Active (In Progress / In Use)'],
+    ['#fbf3da', 'Pending'],
+    ['#dc5b5b', 'Rejected'],
+    ['#feaf66', 'Emergency Event'],
+    ['#f8e2e2', 'Deleted'],
+    ['#e0d6e8', 'Cancelled - No Show'],
+    ['#cdb69b', 'Monthly Limit Exceeded'],
+    [''],
+  ];
+
+  // Main data headers
+  const headers = ['Action', 'Full Name', 'Entity Type', 'Status', 'Date Created', 'Row Color'];
+
+  // Log rows
+  const dataRows = weeklyLogs.map(log => {
+    const statusLabel = this.getEnglishStatusLabel(log);
+    const bgColor = this.getRowBackgroundColor(log);
+
+    return [
+      log.action,
+      log.full_name || '—',
+      log.entity_type || '—',
+      statusLabel,
+      new Date(log.created_at).toLocaleString('en-GB'),
+      bgColor
+    ];
+  });
+
+  // Combine legend + data
+  const csv = Papa.unparse({
+    fields: [], // optional since we give full 2D array
+    data: [...legendRows, headers, ...dataRows]
+  });
+
+  // Save the file
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  saveAs(blob, `audit_logs_colored_${timestamp}.csv`);
+}
 
 
+exportToExcel() {
+  const weeklyLogs = this.getLogsForThisWeek(); // Your real log data
+  const timestamp = new Date().toLocaleString('en-GB').replace(/[/:]/g, '-');
 
+  // Define legend rows
+  const legendRows = [
+    ['Color', 'Meaning'],
+    [' ', 'Approved / Completed'],
+    [' ', 'Success Operation'],
+    [' ', 'Frozen'],
+    [' ', 'Active (In Progress/In Use)'],
+    [' ', 'Pending'],
+    [' ', 'Rejected'],
+    [' ', 'Emergency Event'],
+    [' ', 'Deleted'],
+    [' ', 'Cancelled - No Show'],
+    [' ', 'Monthly Limit Exceeded']
+  ];
 
-  exportToCSV() {
-    const weeklyLogs = this.getLogsForThisWeek();
-    const csvData = weeklyLogs.map(log => ({
-      actionType: log.action,
-      fullName: log.full_name,
-      entityType: log.entity_type,
-      createdAt: new Date(log.created_at).toLocaleString('he-IL')
-    }));
-    const csv = Papa.unparse(csvData);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    saveAs(blob, 'audit_logs_weekly.csv');
-  }
+  const legendColors = [
+    '', '#60cd79', '#dcf1e1', '#e2f0f8', '#ffe5b4',
+    '#fbf3da', '#dc5b5b', '#feaf66', '#f8e2e2', '#e0d6e8', '#cdb69b'
+  ];
+
+  const data = [
+    ['Action', 'Full Name', 'Entity Type', 'Status', 'Date Created'],
+    ...weeklyLogs.map(log => [
+      log.action,
+      log.full_name || '—',
+      log.entity_type || '—',
+      this.getEnglishStatusLabel(log),
+      new Date(log.created_at).toLocaleString('en-GB')
+    ])
+  ];
+
+  const bgColors = weeklyLogs.map(log => {
+    const color = this.getRowBackgroundColor(log);
+    return [color, color, color, color, color];
+  });
+
+  // Combine legend + data with spacing row
+  const fullSheet: any[][] = [...legendRows, [''], ...data];
+
+  const wsData: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet(fullSheet);
+
+  // Style all rows
+  const legendLength = legendRows.length;
+  fullSheet.forEach((row, rowIndex) => {
+    row.forEach((cell, colIndex) => {
+      const cellRef = XLSX.utils.encode_cell({ r: rowIndex, c: colIndex });
+
+      if (!wsData[cellRef]) return;
+
+      // Header styling
+      if (rowIndex === legendLength) {
+        wsData[cellRef].s = {
+          font: { bold: true },
+          fill: { fgColor: { rgb: 'E0E0E0' } }
+        };
+        return;
+      }
+
+      // Legend color square
+      if (rowIndex > 0 && rowIndex < legendLength && colIndex === 0) {
+        wsData[cellRef].s = {
+          fill: { fgColor: { rgb: legendColors[rowIndex].replace('#', '') } }
+        };
+        return;
+      }
+
+      // Main table rows
+      if (rowIndex > legendLength) {
+        const colorIndex = rowIndex - legendLength - 1;
+        const bgColor = bgColors[colorIndex]?.[colIndex] || '#FFFFFF';
+        wsData[cellRef].s = {
+          fill: { fgColor: { rgb: bgColor.replace('#', '') } }
+        };
+      }
+    });
+  });
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, wsData, 'Audit Logs');
+
+  const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  saveAs(new Blob([wbout], { type: 'application/octet-stream' }), `audit_logs_${timestamp}.xlsx`);
+}
 
   getUserAuditRows(oldData: any, newData: any): Array<{ label: string, oldValue: any, newValue: any }> {
     return [
