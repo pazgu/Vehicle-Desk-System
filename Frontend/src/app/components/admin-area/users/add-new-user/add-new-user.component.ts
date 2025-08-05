@@ -100,10 +100,7 @@ export class AddNewUserComponent implements OnInit {
       formData.append('license_file', this.selectedFile);
     }
 
-    // ✅ Log the actual formData (optional)
-    for (const [key, value] of formData.entries()) {
-      console.log(`${key}:`, value);
-    }
+    
 
     // ✅ Submit
     this.userService.addNewUser(formData).subscribe({
@@ -127,7 +124,6 @@ export class AddNewUserComponent implements OnInit {
       const file = input.files[0];
       this.selectedFile = file;
       this.selectedFileName = file.name;
-      console.log('File selected:', file.name);
     } else {
       this.selectedFile = null;
       this.selectedFileName = '';

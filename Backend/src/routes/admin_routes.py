@@ -58,6 +58,17 @@ from src.models.department_model import Department
 from src.schemas.department_schema import DepartmentCreate, DepartmentUpdate, DepartmentOut
 from src.services import department_service
 import pandas as pd
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from uuid import UUID
+from typing import Optional
+from datetime import datetime
+from sqlalchemy.orm import Session
+from sqlalchemy import text # Make sure text is imported
+from src.schemas.user_response_schema import UserResponse # Assuming this path is correct
+from src.models.user_model import User, UserRole # Import User and UserRole enum
+from src.utils.database import get_db # Assuming this path is correct
+from src.utils.auth import token_check # Assuming this path is correct
+from src.utils.socket_manager import sio # Assuming this path is correct (if you have one)
 from typing import Dict, Any
 
 
@@ -117,147 +128,7 @@ def fetch_user_by_id(user_id: UUID, db: Session = Depends(get_db)):
 
 
 
-# @router.patch("/user-data-edit/{user_id}", response_model=UserResponse)
-# async def edit_user_by_id_route(
-#     user_id: UUID,
-#     first_name: str = Form(...),
-#     last_name: str = Form(...),
-#     username: str = Form(...),
-#     email: str = Form(...),
-#     phone: str = Form(...),
-#     role: str = Form(...),
-#     department_id: str = Form(...),
-#     has_government_license: str = Form(...),
-#     license_file: UploadFile = File(None),
-#     db: Session = Depends(get_db),
-#     payload: dict = Depends(token_check), # payload contains user_id and role from JWT
-#     license_expiry_date: Optional[str] = Form(None)
-# ):
-    
-#     print(f"\n--- Debugging edit_user_by_id_route ---")
-#     print(f"User ID from URL path: {user_id} (Type: {type(user_id)})")
-#     print(f"Payload from token_check: {payload}")
-    
-#     user_id_from_token = payload.get("user_id") or payload.get("sub")
-#     user_role_from_token = payload.get("role")
 
-#     print(f"User ID from token: {user_id_from_token} (Type: {type(user_id_from_token)})")
-#     print(f"User Role from token: {user_role_from_token} (Type: {type(user_role_from_token)})")
-#     print(f"Comparison: str(user_id) == user_id_from_token -> {str(user_id) == user_id_from_token}")
-#     print(f"Comparison: user_role_from_token == 'admin' -> {user_role_from_token == 'admin'}")
-#     # --- DEBUGGING LOGS END ---
-
-#     user = db.query(User).filter(User.employee_id == user_id).first()
-#     if not user:
-#         raise HTTPException(status_code=404, detail="User not found")
-
-#     if not user_id_from_token:
-#         raise HTTPException(status_code=401, detail="User ID not found in token")
-
-#     if str(user_id) != user_id_from_token and user_role_from_token != "admin": # Adjust "admin" role name if different
-#         print(f"DEBUG: Authorization FAILED. User {user_id_from_token} (Role: {user_role_from_token}) tried to edit {user_id}.")
-#         raise HTTPException(status_code=403, detail="Not authorized to edit this user's data.")
-
-#     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id_from_token)})
-#     has_gov_license = has_government_license.lower() == "true"
-
-#     if user.license_file_url is not None and has_gov_license != user.has_government_license:
-#         print(f"DEBUG: License flag change FAILED (file exists). Current: {user.has_government_license}, New: {has_gov_license}")
-#         raise HTTPException(
-#             status_code=403,
-#             detail="'Has government license' flag cannot be changed after initial upload."
-#         )
-
-#     if user.license_file_url is not None and license_file:
-#         print(f"DEBUG: License file re-upload FAILED. Existing URL: {user.license_file_url}, New file: {license_file.filename}")
-#         raise HTTPException(
-#             status_code=403,
-#             detail="Government license file cannot be re-uploaded after initial upload."
-#         )
-#     # If no file exists in the database and a new file is provided, save it.
-#     if user.license_file_url is None and license_file:
-#         try:
-#             contents = await license_file.read()
-#             # Ensure 'uploads' directory exists and is writable
-#             filename = f"uploads/{license_file.filename}"
-#             with open(filename, "wb") as f:
-#                 f.write(contents)
-#             user.license_file_url = f"/{filename}"
-#             # If a file is uploaded, set has_government_license to True if it's not already set
-#             if user.has_government_license is None:
-#                 user.has_government_license = True
-#         except Exception as e:
-#             raise HTTPException(status_code=500, detail=f"Failed to save license file: {e}")
-
-#     # If an expiry date already exists in the database AND the new date is different, forbid it.
-#     if user.license_expiry_date is not None and license_expiry_date:
-#         try:
-#             new_date = datetime.strptime(license_expiry_date, "%Y-%m-%d").date()
-#             if new_date != user.license_expiry_date:
-#                 print(f"DEBUG: License expiry date change FAILED. Current: {user.license_expiry_date}, New: {new_date}")
-#                 raise HTTPException(
-#                     status_code=403,
-#                     detail="License expiry date cannot be edited after initial upload."
-#                 )
-#         except ValueError:
-#             raise HTTPException(status_code=400, detail="Invalid date format for license_expiry_date. Expected YYYY-MM-DD.")
-#     # If no expiry date exists and a new date is provided, save it.
-#     if user.license_expiry_date is None and license_expiry_date:
-#         try:
-#             user.license_expiry_date = datetime.strptime(license_expiry_date, "%Y-%m-%d").date()
-#             # If expiry date is set, ensure has_government_license is True if not already set
-#             if user.has_government_license is None:
-#                 user.has_government_license = True
-#         except ValueError:
-#             raise HTTPException(status_code=400, detail="Invalid date format for license_expiry_date. Expected YYYY-MM-DD.")
-    
-#     # Apply updates to the other, non-restricted fields.
-#     user.first_name = first_name
-#     user.last_name = last_name
-#     user.username = username
-#     user.email = email
-#     user.phone = phone
-#     user.role = role
-#     user.department_id = department_id
-    
-#     # Only set has_government_license from form if it hasn't been set by file/date upload logic above
-#     # and it's currently None in the DB. This handles the initial setting via the checkbox.
-#     if user.has_government_license is None:
-#         user.has_government_license = has_gov_license 
-    
-#     try:
-#         db.commit()
-#     except Exception as e:
-#         db.rollback()
-#         print("❌ Commit failed:", e) # Log the actual exception for debugging
-#         raise HTTPException(status_code=500, detail="Failed to update user due to a database error.")
-
-#     db.refresh(user)
-
-#     # Emit Socket.IO event on successful license update
-#     await sio.emit('user_license_updated', {
-#         "id": str(user.employee_id),
-#         "license_expiry_date": user.license_expiry_date.isoformat() if user.license_expiry_date else None,
-#         "has_government_license": bool(user.has_government_license),
-#         "license_file_url": user.license_file_url or ""
-#     })
-
-#     # Reset session audit user ID
-#     db.execute(text("SET session.audit.user_id = DEFAULT"))
-#     return user
-
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
-from uuid import UUID
-from typing import Optional
-from datetime import datetime
-from sqlalchemy.orm import Session
-from sqlalchemy import text # Make sure text is imported
-from src.schemas.user_response_schema import UserResponse # Assuming this path is correct
-from src.models.user_model import User, UserRole # Import User and UserRole enum
-from src.utils.database import get_db # Assuming this path is correct
-from src.utils.auth import token_check # Assuming this path is correct
-from src.utils.socket_manager import sio # Assuming this path is correct (if you have one)
-import uuid # For UUID casting if needed
 
 
 @router.patch("/user-data-edit/{user_id}", response_model=UserResponse)
@@ -279,19 +150,8 @@ async def edit_user_by_id_route(
     is_blocked: Optional[bool] = Form(False), # This will capture the boolean from frontend
     block_expires_at: Optional[str] = Form(None) # This will capture the string from frontend
 ):
-    print(f"\n--- Debugging edit_user_by_id_route ---")
-    print(f"User ID from URL path: {user_id} (Type: {type(user_id)})")
-    print(f"Payload from token_check: {payload}")
-    print(f"Received is_blocked (from Form): {is_blocked} (Type: {type(is_blocked)})") # DEBUG
-    print(f"Received block_expires_at (from Form): {block_expires_at} (Type: {type(block_expires_at)})") # DEBUG
-
     user_id_from_token = payload.get("user_id") or payload.get("sub")
     user_role_from_token = payload.get("role")
-
-    print(f"User ID from token: {user_id_from_token} (Type: {type(user_id_from_token)})")
-    print(f"User Role from token: {user_role_from_token} (Type: {type(user_role_from_token)})")
-    print(f"Comparison: str(user_id) == user_id_from_token -> {str(user_id) == user_id_from_token}")
-    print(f"Comparison: user_role_from_token == 'admin' -> {user_role_from_token == 'admin'}")
     # --- DEBUGGING LOGS END ---
 
     user = db.query(User).filter(User.employee_id == user_id).first()
@@ -303,7 +163,6 @@ async def edit_user_by_id_route(
 
     # Authorization: User can edit their own data OR if they are an admin
     if str(user_id) != user_id_from_token and user_role_from_token != UserRole.admin.value:
-        print(f"DEBUG: Authorization FAILED. User {user_id_from_token} (Role: {user_role_from_token}) tried to edit {user_id}.")
         raise HTTPException(status_code=403, detail="Not authorized to edit this user's data.")
 
     # Set session audit user ID for database triggers/logging
@@ -313,14 +172,12 @@ async def edit_user_by_id_route(
 
     # --- License File and Expiry Date Logic (from your old code, unchanged for this issue) ---
     if user.license_file_url is not None and has_gov_license != user.has_government_license:
-        print(f"DEBUG: License flag change FAILED (file exists). Current: {user.has_government_license}, New: {has_gov_license}")
         raise HTTPException(
             status_code=403,
             detail="'Has government license' flag cannot be changed after initial upload."
         )
 
     if user.license_file_url is not None and license_file:
-        print(f"DEBUG: License file re-upload FAILED. Existing URL: {user.license_file_url}, New file: {license_file.filename}")
         raise HTTPException(
             status_code=403,
             detail="Government license file cannot be re-uploaded after initial upload."
@@ -342,7 +199,6 @@ async def edit_user_by_id_route(
         try:
             new_date = datetime.strptime(license_expiry_date, "%Y-%m-%d").date()
             if new_date != user.license_expiry_date:
-                print(f"DEBUG: License expiry date change FAILED. Current: {user.license_expiry_date}, New: {new_date}")
                 raise HTTPException(
                     status_code=403,
                     detail="License expiry date cannot be edited after initial upload."
@@ -359,7 +215,6 @@ async def edit_user_by_id_route(
             raise HTTPException(status_code=400, detail="Invalid date format for license_expiry_date. Expected YYYY-MM-DD.")
     # --- End License File and Expiry Date Logic ---
 
-    # Apply updates to the other, non-restricted fields.
     user.first_name = first_name
     user.last_name = last_name
     user.username = username
@@ -375,8 +230,6 @@ async def edit_user_by_id_route(
     user.role = new_role # Assign the validated role
 
     if new_role == UserRole.admin:
-        if department_id and department_id.strip():
-            print(f"DEBUG: department_id '{department_id}' provided for admin role. Setting to None.")
         user.department_id = None
     else:
         if not department_id or not department_id.strip():
@@ -407,19 +260,11 @@ async def edit_user_by_id_route(
         db.commit()
     except Exception as e:
         db.rollback()
-        print("❌ Commit failed:", e)
-        print(f"DEBUG: Exception type: {type(e).__name__}")
         raise HTTPException(status_code=500, detail="Failed to update user due to a database error.")
 
     db.refresh(user)
 
-    # Emit Socket.IO event on successful license update
-    # Ensure sio is imported and initialized correctly elsewhere if this causes errors
-    # (Assuming `sio` is accessible, e.g., imported from `main.py` if it's a global instance)
-    # import main as main_app # Example of how you might import sio
-    # await main_app.sio.emit(...) # Use this if sio is in main_app
-
-    # Added to ensure block status updates are also emitted
+    
     await sio.emit('user_block_status_updated', {
         "id": str(user.employee_id),
         "is_blocked": user.is_blocked,
@@ -565,12 +410,7 @@ async def add_user_as_admin(
 
     if current_user.role != UserRole.admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required.")
-
-    # 🔍 DEBUG: Log the received value and its type
-    print(f"🔍 DEBUG: has_government_license = {has_government_license}")
-    print(f"🔍 DEBUG: has_government_license type = {type(has_government_license)}")
-    print(f"🔍 DEBUG: has_government_license repr = {repr(has_government_license)}")
-
+  
     license_file_url = None
     if has_government_license and license_file:
         contents = await license_file.read()
@@ -592,49 +432,11 @@ async def add_user_as_admin(
         license_expiry_date= license_expiry_date
     )
 
-    # 🔍 DEBUG: Log the UserCreate object
-    print(f"🔍 DEBUG: user_data.has_government_license = {user_data.has_government_license}")
-    print(f"🔍 DEBUG: user_data.has_government_license type = {type(user_data.has_government_license)}")
-
+   
     result = create_user_by_admin(user_data, changed_by, db)
     
-    # 🔍 DEBUG: Log the result if possible
-    print(f"🔍 DEBUG: Created user result: {result}")
     
     return result
-# @router.post("/vehicle-inspection")
-# def vehicle_inspection(data: VehicleInspectionSchema, db: Session = Depends(get_db),payload: dict = Depends(token_check)):
-#     try:
-#         return vehicle_inspection_logic(data, db)
-#     except HTTPException as e:
-#         raise e
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
-    
-
-# @router.patch("/{vehicle_id}/status")
-# def patch_vehicle_status(
-#     vehicle_id: UUID,
-#     status_update: VehicleStatusUpdate,
-#     db: Session = Depends(get_db),
-#     payload: dict = Depends(token_check)
-# ):
-#     user_id = payload.get("user_id") or payload.get("sub")
-#     if not user_id:
-#         return {"error": "User ID not found in token"}, 401
-    
-#     res=update_vehicle_status(vehicle_id, status_update.new_status, status_update.freeze_reason, db, user_id)
-#     new_status=res["new_status"]
-#     sio.emit('vehicle_status_updated', {
-#             "vehicle_id": str(vehicle_id),
-#             "status": new_status,
-#             "freeze_reason": res.get("freeze_reason", "")
-#     })
-#     return res
-
-# @router.get("/vehicle/{vehicle_id}")
-# def get_vehicle_by_id_route(vehicle_id: str, db: Session = Depends(get_db)):
-#     return get_vehicle_by_id(vehicle_id, db)
 
 @router.get("/{ride_id}/available-vehicles", response_model=List[VehicleOut])
 def available_vehicles_for_ride(
@@ -666,12 +468,6 @@ def get_filtered_vehicles(
         query = query.filter(Vehicle.type.ilike(vehicle_type))  # Case-insensitive match
 
     return query.all()
-
-# @router.get("/all-vehicles", response_model=List[VehicleOut])
-# def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = Depends(get_db)
-#     ,payload: dict = Depends(token_check)):
-#     vehicles = get_vehicles_with_optional_status(db, status)
-#     return vehicles
 
 
 
@@ -825,39 +621,6 @@ def ride_status_summary(db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Error fetching ride summary: {str(e)}")
 
 
-# @router.get("/analytics/weekly-ride-trends")
-# def weekly_ride_trends(db: Session = Depends(get_db)):
-#     try:
-#         today = datetime.utcnow().date()
-#         week_ago = today - timedelta(days=6)  # last 7 days including today
-
-#         # Group by date, count rides
-#         results = (
-#             db.query(
-#                 cast(Ride.start_datetime, Date).label("ride_date"),
-#                 func.count(Ride.id).label("count")
-#             )
-#             .filter(Ride.start_datetime >= week_ago)
-#             .group_by("ride_date")
-#             .order_by("ride_date")
-#             .all()
-#         )
-
-#         # Convert to list of dicts
-#         response = [{"date": str(r.ride_date), "count": r.count} for r in results]
-
-#         return JSONResponse(content=response)
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=f"Failed to fetch weekly ride trends: {str(e)}")
-
-
-# @router.post("/update-monthly-trip-counts")
-# def monthly_trip_count_update(db: Session = Depends(get_db)):
-#     try:
-#         update_monthly_trip_counts(db)
-#         return {"message": "Monthly trip counts updated successfully"}
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/all-audit-logs", response_model=List[AuditLogsSchema])
@@ -1076,7 +839,6 @@ def get_critical_issue_details(issue_id: str, db: Session = Depends(get_db)):
     except HTTPException:
         raise
     except Exception as e:
-        print("❌ Error fetching critical issue details:", str(e))
         raise HTTPException(status_code=500, detail=f"Failed to fetch issue details: {str(e)}")
 
 
@@ -1169,11 +931,7 @@ def get_no_show_statistics(
     page_size: int = Query(10, ge=1, le=100, description="Page size for pagination"),
     db: Session = Depends(get_db),
 ):
-    print("🧪 NO-SHOW STATS ENDPOINT DEBUG:")
-    print("FROM DATE:", from_date)
-    print("TO DATE:", to_date)
-    print("TYPE FROM:", type(from_date))
-    print("TYPE TO:", type(to_date))
+    
 
     # 1. Get total no-shows
     query = db.query(NoShowEvent)

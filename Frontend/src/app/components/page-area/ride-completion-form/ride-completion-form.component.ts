@@ -62,24 +62,17 @@ export class RideCompletionFormComponent implements OnInit {
  
    
     this.rideService.getRideById(this.rideId).subscribe(ride => {
-      console.log('Fetched ride:', ride);
     this.currentRide = ride;
-    console.log('currentRide:', this.currentRide);
 
        this.rideReportService.getRidesWithLocations().subscribe(ridesWithLocations => {
-        console.log('ride with loc:',ridesWithLocations)
         const matchingRide = ridesWithLocations.find(r => r.id === this.currentRide?.ride_id);
 
-    console.log('match ride',matchingRide)
 
     if (matchingRide) {
       this.start_location_name = matchingRide.start_location_name;
       this.stop_name = matchingRide.stop_name;
       this.destination_name = matchingRide.destination_name;
-      this.extra_stops_names = matchingRide.extra_stops_names || []; // <-- assign extra stops here
-      console.log(
-    `start: ${this.start_location_name}, des: ${this.destination_name}, stop: ${this.stop_name}, extra stops: ${this.extra_stops_names?.join(', ') || 'none'}`
-  );
+      this.extra_stops_names = matchingRide.extra_stops_names || [];
 
     }
   });
@@ -88,7 +81,6 @@ export class RideCompletionFormComponent implements OnInit {
       this.showForm = false;
       return;
     }
-  console.log('rideId:', this.rideId);
 
 
     this.form = this.fb.group({
@@ -102,7 +94,6 @@ export class RideCompletionFormComponent implements OnInit {
 
     this.form.get('emergency_event')?.valueChanges.subscribe((value) => {
       const freezeDetails = this.form.get('freeze_details');
-      console.log('emergency event?',value)
       if (value === 'true') {
         freezeDetails?.setValidators([Validators.required]);
       } else {
@@ -118,7 +109,6 @@ loadFuelType(vehicleId: string) {
     this.vehicleService.getFuelTypeByVehicleId(vehicleId).subscribe({
       next: (res: FuelTypeResponse) => {
         this.VehicleFuelType = res.fuel_type;
-        console.log('Fuel Type:', this.VehicleFuelType);
       },
       error: err => console.error('Failed to load fuel type', err)
     });}
@@ -164,7 +154,6 @@ loadFuelType(vehicleId: string) {
       changed_by: localStorage.getItem('user_id') || '' // Make sure this is a string!
 
     };
-    console.log('Form Data:', formData);
 
     const token = localStorage.getItem('access_token') || '';
     this.loading = true;
