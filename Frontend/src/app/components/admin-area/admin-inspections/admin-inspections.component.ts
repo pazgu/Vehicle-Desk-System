@@ -9,6 +9,7 @@ import { FormsModule } from '@angular/forms';
 import { VehicleInspection } from '../../../models/vehicle-inspections.model';
 import { OrderCardItem } from '../../../models/order-card-item.module';
 import { Router } from '@angular/router';
+import { User } from '../../../models/user.model';
 
 @Component({
   selector: 'app-admin-inspections',
@@ -25,6 +26,8 @@ export class AdminInspectionsComponent implements OnInit {
   showMediumIssues = false;
   showCriticalIssues = false;
   filteredInspections: VehicleInspection[] = [];
+  users: { id: string; user_name: string }[] = [];
+
 
   constructor(
     private http: HttpClient,
@@ -36,15 +39,16 @@ export class AdminInspectionsComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    this.fetchUsers();
     this.loadData();
   }
 
   loadData(): void {
     this.loading = true;
+
     const url = `${environment.apiUrl}/critical-issues`;
     let params = new HttpParams();
 
-    // Add problem_type param based on selected checkboxes
     if (this.showProblematicFilters && (this.showMediumIssues || this.showCriticalIssues)) {
       if (this.showMediumIssues && !this.showCriticalIssues) {
         params = params.set('problem_type', 'medium');
@@ -54,8 +58,6 @@ export class AdminInspectionsComponent implements OnInit {
         params = params.set('problem_type', 'medium,critical');
       }
     }
-    // If showProblematicFilters is false or neither checkbox is checked,
-    // params will remain empty, and the backend will return all data.
 
     this.http.get<{ inspections: VehicleInspection[]; rides: OrderCardItem[] }>(url, { params }).subscribe({
       next: (data) => {
@@ -72,12 +74,31 @@ export class AdminInspectionsComponent implements OnInit {
     });
   }
 
-  // This method is now simplified because the backend already filters the 'inspections' array.
-  // It simply ensures that 'filteredInspections' reflects the 'inspections' array
-  // which is already correctly filtered by the API call in loadData().
   applyInspectionFilters(): void {
     this.filteredInspections = [...this.inspections];
   }
 
+  fetchUsers(): void {
+    this.http.get<any>(`${environment.apiUrl}/users`).subscribe({
+      next: (data) => {
+        const usersArr = Array.isArray(data.users) ? data.users : [];
+        this.users = usersArr.map((user: any) => ({
+          id: user.employee_id,
+          user_name: user.username,
+        }));
+      },
+      error: (err: any) => {
+        this.toastService.show('שגיאה בטעינת רשימת משתמשים', 'error');
+        this.users = [];
+      }
+    });
+  }
 
+  getUserNameById(id: string): string {
+    if (!this.users || this.users.length === 0) {
+      return id;
+    }
+    const user = this.users.find(u => u.id === id);
+    return user ? `${user.user_name}` : id;
+  }
 }
