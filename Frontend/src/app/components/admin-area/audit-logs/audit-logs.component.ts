@@ -14,6 +14,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { ToastService } from '../../../services/toast.service';
+import { VehicleService } from '../../../services/vehicle.service';
 
 (pdfMake as any).vfs = pdfFonts.vfs;
 (pdfMake as any).fonts = {
@@ -53,7 +54,9 @@ export class AuditLogsComponent implements OnInit {
 
   cityMap: { [id: string]: string } = {};
   departments: { id: string; name: string }[] = [];
-  users: { id: string; first_name: string; last_name: string }[] = [];
+  users: { id: string; first_name: string; last_name: string; user_name: string }[] = [];
+  vehicles: { id: string; vehicle_model: string; plate_number: string }[] = [];
+
 
 
 
@@ -129,9 +132,10 @@ export class AuditLogsComponent implements OnInit {
       },
       { label: 'סוג נסיעה', oldValue: this.translateRideType(oldData.ride_type), newValue: this.translateRideType(newData.ride_type) },
       { label: 'סיבת בחירה ברכב 4X4', oldValue: oldData.vehicle_type_reason, newValue: newData.vehicle_type_reason },
-      { label: 'משתמש', oldValue: oldData.user_id, newValue: newData.user_id },
-      { label: 'משתמש עוקף', oldValue: oldData.override_user_id, newValue: newData.override_user_id },
-      { label: 'רכב', oldValue: oldData.vehicle_id, newValue: newData.vehicle_id },
+      { label: 'שם משתמש', oldValue: this.getUserFullNameById(oldData.user_id), newValue: this.getUserFullNameById(newData.user_id) },
+      { label: 'שם משתמש עוקף', oldValue: this.getUserFullNameById(oldData.override_user_id), newValue: this.getUserFullNameById(newData.override_user_id) },
+      { label: 'לוחית רישוי', oldValue: this.getPlateNumber(oldData.vehicle_id), newValue: this.getPlateNumber(newData.vehicle_id) },
+      { label: 'דגם רכב', oldValue: this.getVehicleModel(oldData.vehicle_id), newValue: this.getVehicleModel(newData.vehicle_id) },
       { label: 'סטטוס', oldValue: this.translateRideStatus(oldData.status), newValue: this.translateRideStatus(newData.status) },
       { label: 'זמן התחלה מושער', oldValue: oldData.start_datetime, newValue: newData.start_datetime },
       { label: 'זמן התחלה אמיתי', oldValue: oldData.actual_pickup_time, newValue: newData.actual_pickup_time },
@@ -182,7 +186,8 @@ export class AuditLogsComponent implements OnInit {
     private toastService: ToastService,
     private cdr: ChangeDetectorRef,
     private router: Router,
-    private auditLogService: AuditLogsService
+    private auditLogService: AuditLogsService,
+    private vehicleService: VehicleService
   ) { }
 
   getCityName(id: string): string {
@@ -217,7 +222,8 @@ export class AuditLogsComponent implements OnInit {
       this.users = usersArr.map((user: any) => ({
         id: user.employee_id,
         first_name: user.first_name,
-        last_name: user.last_name
+        last_name: user.last_name,
+        user_name: user.username,
       }));
     },
     error: (err: any) => {
@@ -226,10 +232,15 @@ export class AuditLogsComponent implements OnInit {
     }
   });
 }
-  getUserNameById(id: string): string {
+  getUserFullNameById(id: string): string {
     if (!Array.isArray(this.users)) return id;
     const user = this.users.find(u => u.id === id);
     return user ? `${user.first_name} ${user.last_name}` : id;
+  }
+  getUsernameById(id: string): string {
+    if (!Array.isArray(this.users)) return id;
+    const user = this.users.find(u => u.id === id);
+    return user ? `${user.user_name}` : id;
   }
 
   // In AuditLogsComponent, inside fetchAuditLogs method
@@ -276,6 +287,7 @@ export class AuditLogsComponent implements OnInit {
 
     this.fetchDepartments();
     this.fetchUsers();
+    this.fetchVehicles();
 
 
     this.socketService.notifications$.subscribe((notif) => {
@@ -483,7 +495,7 @@ export class AuditLogsComponent implements OnInit {
   getDepartmentAuditRows(oldData: any, newData: any): Array<{ label: string, oldValue: any, newValue: any }> {
     return [
       { label: 'שם מחלקה', oldValue: oldData?.name, newValue: newData?.name },
-      { label: 'שם מנהל מחלקה', oldValue: this.getUserNameById(oldData?.supervisor_id), newValue: this.getUserNameById(newData?.supervisor_id) },
+      { label: 'שם מנהל מחלקה', oldValue: this.getUserFullNameById(oldData?.supervisor_id), newValue: this.getUserFullNameById(newData?.supervisor_id) },
     ];
   }
 
@@ -597,5 +609,30 @@ export class AuditLogsComponent implements OnInit {
       default:
         return rideType;
     }
+  }
+
+  fetchVehicles(): void {
+    this.vehicleService.getAllVehicles().subscribe(
+      (data) => {
+        this.vehicles = Array.isArray(data) ? data.map(vehicle => ({
+          ...vehicle,
+        })) : [];
+      },
+      (error) => {
+        this.toastService.show('שגיאה בטעינת רכבים', 'error');
+      }
+    );
+  }
+
+  getVehicleById(vehicleId: string): { vehicle_model: string; plate_number: string } | undefined {
+    return this.vehicles.find(vehicle => vehicle.id === vehicleId);
+  }
+  getVehicleModel(vehicleId: string): string {
+    const vehicle = this.getVehicleById(vehicleId);
+    return vehicle ? `${vehicle.vehicle_model}` : 'לא זמין';
+  }
+  getPlateNumber(vehicleId: string): string {
+    const vehicle = this.getVehicleById(vehicleId);
+    return vehicle ? `${vehicle.plate_number}` : 'לא זמין';
   }
 }
