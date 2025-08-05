@@ -133,7 +133,6 @@ export class AuditLogsComponent implements OnInit {
       { label: 'משתמש עוקף', oldValue: oldData.override_user_id, newValue: newData.override_user_id },
       { label: 'רכב', oldValue: oldData.vehicle_id, newValue: newData.vehicle_id },
       { label: 'סטטוס', oldValue: this.translateRideStatus(oldData.status), newValue: this.translateRideStatus(newData.status) },
-      // { label: 'ארכיון', oldValue: oldData.isArchive, newValue: newData.isArchive },
       { label: 'זמן התחלה מושער', oldValue: oldData.start_datetime, newValue: newData.start_datetime },
       { label: 'זמן התחלה אמיתי', oldValue: oldData.actual_pickup_time, newValue: newData.actual_pickup_time },
       { label: 'זמן סיום', oldValue: oldData.end_datetime, newValue: newData.end_datetime },
@@ -151,7 +150,6 @@ export class AuditLogsComponent implements OnInit {
     stop: 'עצירה',
     status: 'סטטוס',
     user_id: 'מזהה משתמש',
-    // isArchive: 'ארכיון',
     ride_type: 'סוג נסיעה',
     vehicle_id: 'מזהה רכב',
     destination: 'יעד',
@@ -244,21 +242,20 @@ export class AuditLogsComponent implements OnInit {
         this.loading = false;
         this.filterLogs();
 
-        console.log('Checkbox problematicOnly state:', this.problematicOnly);
-        console.log('API Response Data Received:', data); // IMPORTANT: Check this output
-        console.log('Number of logs displayed:', this.filteredLogs.length);
+        // console.log('Checkbox problematicOnly state:', this.problematicOnly);
+        // console.log('API Response Data Received:', data); // IMPORTANT: Check this output
+        // console.log('Number of logs displayed:', this.filteredLogs.length);
       },
       error: (err) => {
-        console.error('Error fetching audit logs:', err);
+        this.toastService.show('שגיאה בטעינת יומני ביקורת', 'error');
         this.logs = [];
         this.filteredLogs = [];
-        this.loading = false;
+        this.loading = false; 
       }
     });
   }
 
   ngOnInit(): void {
-    // Merge both blocks here!
     this.cityService.getCities().subscribe({
       next: (cities) => {
         this.cityMap = cities.reduce((map: { [key: string]: string }, city) => {
@@ -293,7 +290,7 @@ export class AuditLogsComponent implements OnInit {
         newInspection &&
         newInspection.inspection_id !== this.lastInspectionId
       ) {
-        console.log('🆕 Received inspection via socket:', newInspection);
+        // console.log('🆕 Received inspection via socket:', newInspection);
 
         this.lastInspectionId = newInspection.inspection_id;
         this.cdr.detectChanges();
@@ -369,8 +366,6 @@ export class AuditLogsComponent implements OnInit {
   }
 
   showDetails(log: AuditLogs) {
-    console.log('Selected log:', log);
-
     this.selectedLog = log;
   }
 
@@ -513,7 +508,6 @@ export class AuditLogsComponent implements OnInit {
   vehicleRedirect(vehicleId: string) {
     if (vehicleId) {
       this.router.navigate(['/vehicle-details', vehicleId]);
-      // Or: this.router.navigate(['/vehicles', vehicleId]);
     }
   }
   translateFuelType(fuelType: string | null | undefined): string {
