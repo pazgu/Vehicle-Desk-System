@@ -26,6 +26,8 @@ export class AdminInspectionsComponent implements OnInit {
   showMediumIssues = false;
   showCriticalIssues = false;
   filteredInspections: VehicleInspection[] = [];
+  users: { id: string; user_name: string }[] = [];
+
 
   constructor(
     private http: HttpClient,
@@ -37,6 +39,7 @@ export class AdminInspectionsComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    this.fetchUsers();
     this.loadData();
   }
 
@@ -71,10 +74,31 @@ export class AdminInspectionsComponent implements OnInit {
     });
   }
 
-  // This method is now simplified because the backend already filters the 'inspections' array.
-  // It simply ensures that 'filteredInspections' reflects the 'inspections' array
-  // which is already correctly filtered by the API call in loadData().
   applyInspectionFilters(): void {
     this.filteredInspections = [...this.inspections];
+  }
+
+  fetchUsers(): void {
+    this.http.get<any>(`${environment.apiUrl}/users`).subscribe({
+      next: (data) => {
+        const usersArr = Array.isArray(data.users) ? data.users : [];
+        this.users = usersArr.map((user: any) => ({
+          id: user.employee_id,
+          user_name: user.username,
+        }));
+      },
+      error: (err: any) => {
+        this.toastService.show('שגיאה בטעינת רשימת משתמשים', 'error');
+        this.users = [];
+      }
+    });
+  }
+
+  getUserNameById(id: string): string {
+    if (!this.users || this.users.length === 0) {
+      return id;
+    }
+    const user = this.users.find(u => u.id === id);
+    return user ? `${user.user_name}` : id;
   }
 }
