@@ -904,7 +904,6 @@ if (isNoShowTab && this.filteredNoShowUsers.length === 0) {
 
 
 
-
   const worksheet = XLSX.utils.json_to_sheet(data);
   const range = XLSX.utils.decode_range(worksheet['!ref']!);
 
