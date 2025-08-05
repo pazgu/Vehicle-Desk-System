@@ -10,6 +10,8 @@ import { Router } from '@angular/router';
   styleUrls: ['./forgot-password.component.css'],
   imports:[CommonModule,ReactiveFormsModule]
 })
+
+
 export class ForgotPasswordComponent {
   forgotForm: FormGroup;
   submitted = false;

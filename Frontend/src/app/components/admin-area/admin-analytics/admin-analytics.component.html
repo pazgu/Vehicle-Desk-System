@@ -16,6 +16,10 @@
       <button (click)="exportPDF()">📄 ייצוא PDF</button>
       <button (click)="exportExcel()">📊 ייצוא Excel</button>
 
+<div class="export-warning" *ngIf="noShowExportWarningVisible">
+  אין נתוני אי-הגעה לייצוא כרגע.
+</div>
+
     </div>
 
     <div class="tab-buttons">
