@@ -85,6 +85,7 @@ export class ArchivedVehiclesComponent implements OnInit {
       }
     );
   }
+  
 
   loadVehicleUsageData(): void {
     this.http.get<{ plate_number: string; vehicle_model: string; ride_count: number }[]>(

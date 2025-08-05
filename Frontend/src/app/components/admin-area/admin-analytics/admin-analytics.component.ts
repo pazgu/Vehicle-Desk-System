@@ -86,6 +86,8 @@ monthlyStatsChartOptions: any;
 allTimeStatsChartData: any;
 allTimeStatsChartOptions: any;
 uniqueNoShowUsers: number = 0;
+noShowExportWarningVisible: boolean = false;
+
 
  // 🆕 ADD these two properties for department caching
   private departmentsMap = new Map<string, string>(); // To store department ID -> Name
@@ -612,20 +614,39 @@ sortUsers(users: any[]) {
   const isVehicleTab = this.activeTabIndex === 0;
   const isRideTab = this.activeTabIndex === 1;
   const isTopUsedTab = this.activeTabIndex === 2;
+  const isNoShowTab = this.activeTabIndex === 3; 
 
-  const chartData = isVehicleTab
-    ? this.vehicleChartData
-    : isRideTab
-      ? this.rideChartData
-      : this.topUsedVehiclesData;
+  // this is for the warnning that shows and disappers after 4 seconds
+if (isNoShowTab && this.filteredNoShowUsers.length === 0) {
+  this.showExportWarningTemporarily();
+  return;
+}
 
- const title = isVehicleTab
-  ? 'Vehicle Status Summary'
-  : isRideTab
-    ? 'Ride Status Summary'
-    : this.isMonthlyView
-      ? 'Monthly Vehicle Usage'
-      : 'Top Used Vehicles';
+
+
+
+  // 🔄 MODIFY THIS SECTION - Add conditional logic for no-show tab
+  let chartData: any;
+  let title: string;
+  
+  if (isNoShowTab) {
+    // 🆕 ADD THIS BLOCK
+    title = 'No-Show Users Report';
+  } else {
+    chartData = isVehicleTab
+      ? this.vehicleChartData
+      : isRideTab
+        ? this.rideChartData
+        : this.topUsedVehiclesData;
+
+    title = isVehicleTab
+      ? 'Vehicle Status Summary'
+      : isRideTab
+        ? 'Ride Status Summary'
+        : this.isMonthlyView
+          ? 'Monthly Vehicle Usage'
+          : 'Top Used Vehicles';
+  }
 
 
   const timestamp = new Date().toLocaleString();
@@ -633,7 +654,46 @@ sortUsers(users: any[]) {
 
   let body: any[] = [];
 
-  if (isTopUsedTab) {
+  if (isNoShowTab) {
+    // Create no-show users table
+    body.push([
+      { text: 'User Name', style: 'tableHeader' },
+      { text: 'Email', style: 'tableHeader' },
+      { text: 'Employee ID', style: 'tableHeader' },
+      { text: 'Department', style: 'tableHeader' },
+      { text: 'Role', style: 'tableHeader' },
+      { text: 'No-Show Count', style: 'tableHeader' },
+      { text: 'Status', style: 'tableHeader' }
+    ]);
+
+    this.filteredNoShowUsers.forEach(user => {
+      const count = user.no_show_count ?? 0;
+      let status = '';
+      let bgColor = '';
+
+      if (count >= 3) {
+        status = 'Critical';
+        bgColor = '#FFCDD2'; // light red
+      } else if (count >= 1) {
+        status = 'Warning';
+        bgColor = '#FFF9C4'; // light yellow
+      } else {
+        status = 'Good';
+        bgColor = '#BBDEFB'; // light blue
+      }
+
+      body.push([
+        { text: user.name || 'Unknown', fillColor: bgColor },
+        { text: user.email || 'unknown@example.com', fillColor: bgColor },
+        { text: user.employee_id || user.user_id || 'N/A', fillColor: bgColor },
+        { text: this.resolveDepartment(user.department_id || ''), fillColor: bgColor },
+        { text: user.role || 'לא ידוע', fillColor: bgColor },
+        { text: count.toString(), fillColor: bgColor },
+        { text: status, fillColor: bgColor }
+      ]);
+    });
+
+   } else if (isTopUsedTab) {
     const labels = chartData.labels;
     const data = chartData.datasets[0].data;
 
@@ -704,6 +764,8 @@ sortUsers(users: any[]) {
     }
   }
 
+  
+
   const docDefinition: any = {
     content: [
       { text: title, style: 'header' },
@@ -711,7 +773,11 @@ sortUsers(users: any[]) {
       {
         table: {
           headerRows: 1,
-          widths: isTopUsedTab ? ['*', '*', '*'] : ['*', '*'],
+widths: isNoShowTab 
+  ? ['*', '*', '*', '*', '*', '*', '*'] 
+  : isTopUsedTab 
+    ? ['*', '*', '*'] 
+    : ['*', '*'],
           body: body
         },
         layout: {
@@ -730,6 +796,11 @@ sortUsers(users: any[]) {
         fontSize: 12,
         margin: [0, 0, 0, 20],
         alignment: 'center'
+      },
+       summaryHeader: { // 🆕 ADD THIS STYLE
+        fontSize: 14,
+        bold: true,
+        margin: [0, 10, 0, 5]
       },
       tableHeader: {
         fontSize: 12,
@@ -765,6 +836,8 @@ public exportExcel(): void {
   const isVehicleTab = this.activeTabIndex === 0;
   const isRideTab = this.activeTabIndex === 1;
   const isTopUsedTab = this.activeTabIndex === 2;
+  const isNoShowTab = this.activeTabIndex === 3;
+
 
   const chartData = isVehicleTab
     ? this.vehicleChartData
@@ -779,38 +852,84 @@ public exportExcel(): void {
       : 'Top Used Vehicles';
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+let data: any[] = [];
 
-  let data: any[] = [];
+if (isNoShowTab) {
+  data = this.filteredNoShowUsers.map(user => {
+    const count = user.no_show_count ?? 0;
+    let status = '';
+    if (count >= 3) status = 'Critical';
+    else if (count >= 1) status = 'Warning';
+    else status = 'Good';
 
-  if (isTopUsedTab) {
-    const labels = chartData.labels;
-    const counts = chartData.datasets[0].data;
+    return {
+      'User Name': user.name || 'Unknown',
+      'Email': user.email || 'unknown@example.com',
+      'Employee ID': user.employee_id || user.user_id || 'N/A',
+      'Department': this.resolveDepartment(user.department_id || ''),
+      'Role': user.role || 'לא ידוע',
+      'No-Show Count': count,
+      'Status': status
+    };
+  });
+} else if (isTopUsedTab) {
+  const labels = chartData.labels;
+  const counts = chartData.datasets[0].data;
 
-    data = labels.map((label: string, i: number) => {
-      const count = counts[i];
-      let usageLevel = '';
+  data = labels.map((label: string, i: number) => {
+    const count = counts[i];
+    let usageLevel = '';
 
-      if (count > 10) usageLevel = 'High Usage';
-      else if (count >= 5) usageLevel = 'Medium';
-      else usageLevel = 'Good';
+    if (count > 10) usageLevel = 'High Usage';
+    else if (count >= 5) usageLevel = 'Medium';
+    else usageLevel = 'Good';
 
-      return {
-        Vehicle: label,
-        'Ride Count': count,
-        'Usage Level': usageLevel
-      };
-    });
-  } else {
-    data = chartData.labels.map((label: string, i: number) => ({
-      'Formatted Status': label,
-      'Count': chartData.datasets[0].data[i]
-    }));
-  }
+    return {
+      Vehicle: label,
+      'Ride Count': count,
+      'Usage Level': usageLevel
+    };
+  });
+} else {
+  data = chartData.labels.map((label: string, i: number) => ({
+    'Formatted Status': label,
+    'Count': chartData.datasets[0].data[i]
+  }));
+}
+
+if (isNoShowTab && this.filteredNoShowUsers.length === 0) {
+  this.showExportWarningTemporarily();
+  return;
+}
+
+
+
 
   const worksheet = XLSX.utils.json_to_sheet(data);
   const range = XLSX.utils.decode_range(worksheet['!ref']!);
 
-  if (isTopUsedTab) {
+  if (isNoShowTab) {
+  for (let row = 1; row <= range.e.r; row++) {
+    const count = Number(worksheet[`F${row + 1}`]?.v);
+    let fillColor = 'FFFFFFFF';
+
+    if (count >= 3) fillColor = 'FFFFCDD2';     // Critical = red
+    else if (count >= 1) fillColor = 'FFFFFFCC'; // Warning = yellow
+    else fillColor = 'FFBBDEFB';                // Good = blue
+
+    ['A', 'B', 'C', 'D', 'E', 'F', 'G'].forEach(col => {
+      const cell = worksheet[`${col}${row + 1}`];
+      if (cell) {
+        cell.s = {
+          fill: {
+            patternType: 'solid',
+            fgColor: { rgb: fillColor }
+          }
+        };
+      }
+    });
+  }
+} else if (isTopUsedTab) {
     for (let row = 1; row <= range.e.r; row++) {
       const rideCount = Number(worksheet[`B${row + 1}`]?.v);
       let fillColor = rideCount > 10 ? 'FFFFCDD2' : rideCount >= 5 ? 'FFFFFFCC' : 'FFBBDEFB';
@@ -882,55 +1001,82 @@ public exportExcel(): void {
   const isVehicleTab = this.activeTabIndex === 0;
   const isRideTab = this.activeTabIndex === 1;
   const isTopUsedTab = this.activeTabIndex === 2;
+  const isNoShowTab = this.activeTabIndex === 3;
+
+if (isNoShowTab && this.filteredNoShowUsers.length === 0) {
+  this.showExportWarningTemporarily();
+  return;
+}
+
+
 
   
 
-  const chartData = isVehicleTab
+let chartData: any;
+if (!isNoShowTab) {
+  chartData = isVehicleTab
     ? this.vehicleChartData
     : isRideTab
       ? this.rideChartData
       : this.topUsedVehiclesData;
+}
+const title = isNoShowTab
+  ? 'טבלת נעדרים'
+  : isVehicleTab
+    ? 'סטטוס רכבים'
+    : isRideTab
+      ? 'סטטוס נסיעות'
+      : this.isMonthlyView
+        ? 'שימוש חודשי ברכבים'
+        : 'רכבים בשימוש גבוה';
 
-const title = isVehicleTab
-  ? 'סטטוס רכבים'
-  : isRideTab
-    ? 'סטטוס נסיעות'
-    : this.isMonthlyView
-      ? 'שימוש חודשי ברכבים'
-      : 'רכבים בשימוש גבוה';
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+let data: any[] = [];
 
-  let data: any[] = [];
+if (isNoShowTab) {
+  data = this.filteredNoShowUsers.map(user => {
+    const count = user.no_show_count ?? 0;
+    let status = '';
 
-  if (isTopUsedTab) {
-    const labels = chartData.labels;
-    const counts = chartData.datasets[0].data;
+    if (count >= 3) status = 'קריטי';
+    else if (count >= 1) status = 'אזהרה';
+    else status = 'תקין';
 
-    data = labels.map((label: string, i: number) => {
-      const count = counts[i];
-      let usageLevel = '';
+    return {
+      'שם': user.name || 'לא ידוע',
+      'אימייל': user.email || 'unknown@example.com',
+      'מזהה עובד': user.employee_id || user.user_id || 'N/A',
+      'מחלקה': this.resolveDepartment(user.department_id || ''),
+      'תפקיד': user.role || 'לא ידוע',
+      'כמות אי-הגעות': count,
+      'סטטוס': status
+    };
+  });
+} else if (isTopUsedTab) {
+  const labels = chartData.labels;
+  const counts = chartData.datasets[0].data;
 
-      if (count > 10) {
-        usageLevel = 'שימוש גבוה'; // 🔴
-      } else if (count >= 5) {
-        usageLevel = 'בינוני'; // 🟡
-      } else {
-        usageLevel = 'טוב'; // 🔵
-      }
+  data = labels.map((label: string, i: number) => {
+    const count = counts[i];
+    let usageLevel = '';
 
-      return {
-        'רכב': label,
-        'כמות נסיעות': count,
-        'רמת שימוש': usageLevel
-      };
-    });
-  } else {
-    data = chartData.labels.map((label: string, i: number) => ({
-      'סטטוס': label,
-      'כמות': chartData.datasets[0].data[i]
-    }));
-  }
+    if (count > 10) usageLevel = 'שימוש גבוה';
+    else if (count >= 5) usageLevel = 'בינוני';
+    else usageLevel = 'טוב';
+
+    return {
+      'רכב': label,
+      'כמות נסיעות': count,
+      'רמת שימוש': usageLevel
+    };
+  });
+} else {
+  data = chartData.labels.map((label: string, i: number) => ({
+    'סטטוס': label,
+    'כמות': chartData.datasets[0].data[i]
+  }));
+}
 
   // Add BOM for proper UTF-8 encoding (for Hebrew support)
   const csv = '\uFEFF' + Papa.unparse(data);
@@ -953,6 +1099,13 @@ const title = isVehicleTab
 
   };
   return statusMap[status] || status;
+}
+
+private showExportWarningTemporarily(): void {
+  this.noShowExportWarningVisible = true;
+  setTimeout(() => {
+    this.noShowExportWarningVisible = false;
+  }, 4000); // ⏱️ 4 seconds
 }
 
 
