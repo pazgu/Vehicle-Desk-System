@@ -100,8 +100,19 @@
   .info-value {
     flex: 1;
     color: #333;
+    margin-right: 35px;
   }
   
+   .info-value-distance {
+    flex: 1;
+    margin-right: 10px;
+    color: #333;
+  }
+  .info-value-stops {
+    flex: 1;
+    margin-right: 20px;
+    color: #333;
+  }
   .status-details {
     margin-top: 1rem;
   }
