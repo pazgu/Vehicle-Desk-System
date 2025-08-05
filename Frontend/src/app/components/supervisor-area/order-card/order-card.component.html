@@ -4,7 +4,7 @@
     <span>טוען פרטי נסיעה...</span>
   </div>
 
-  <p-card *ngIf="trip" [styleClass]="'trip-card ' + getCardClass(trip?.status)">    <ng-template pTemplate="header">
+  <p-card *ngIf="trip" [styleClass]="'trip-card ' + getCardClass(trip?.status)"> <ng-template pTemplate="header">
       <div class="card-header">
         <h2>פרטי נסיעה מלאים</h2>
         <p-tag [value]="translateStatus(trip.status)"></p-tag>
@@ -18,59 +18,64 @@
       </div>
 
       <div class="info-row">
-        <div class="info-label">מזהה עובד:</div>
-        <div class="info-value">{{ trip.userId }}</div>
+        <div class="info-label">שם עובד:</div>
+        <div class="info-value">{{ getUserNameById(trip.userId) }}</div>
       </div>
 
       <div class="info-row">
-        <div class="info-label">מזהה רכב:</div>
-        <div class="info-value">{{ trip.vehicleId }}</div>
+        <div class="info-label">לוחית רישוי:</div>
+        <div class="info-value">{{ getPlateNumber(trip.vehicleId) }}</div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">דגם רכב:</div>
+        <div class="info-value">{{ getVehicleModel(trip.vehicleId) }}</div>
       </div>
 
       <div class="info-row">
         <div class="info-label">סוג נסיעה:</div>
-        <div class="info-value">{{ trip.tripType }}</div>
+        <div class="info-value">{{ translateRideType(trip.tripType) }}</div>
       </div>
 
       <div class="info-row">
         <div class="info-label">תאריך התחלה:</div>
-        <div class="info-value">{{ formatDateTime(trip.startDateTime) }}</div>
+        <div class="info-value">{{ trip.startDateTime | date:'dd/MM/yyyy HH:mm' }}</div>
       </div>
 
       <div class="info-row">
         <div class="info-label">תאריך סיום:</div>
-        <div class="info-value">{{ formatDateTime(trip.endDateTime) }}</div>
+        <div class="info-value">{{ trip.endDateTime | date:'dd/MM/yyyy HH:mm' }}</div>
       </div>
 
       <div class="info-row">
         <div class="info-label">נקודת התחלה:</div>
-<div class="info-value">{{ getCityName(trip.startLocation) }}</div>
+        <div class="info-value">{{ 'משרד' }}</div>
       </div>
 
       <div class="info-row">
-        <div class="info-label">תחנת עצירה:</div>
-<div class="info-value">{{ getCityName(trip.stop) }}</div>
+        <div class="info-label">תחנה/ות עצירה:</div>
+        <div class="info-value-stops">{{ getFormattedStops(trip.stop, trip.extraStops) }}</div>
+      </div>
+
+
+      <div class="info-row">
+        <div class="info-label">נקודת סיום:</div>
+        <div class="info-value">{{ 'משרד' }}</div>
       </div>
 
       <div class="info-row">
-        <div class="info-label">יעד:</div>
-<div class="info-value">{{ getCityName(trip.destination) }}</div>
+        <div class="info-label">מרחק מוערך:</div>
+        <div class="info-value">{{ ceil(trip.estimatedDistanceKm) | number:'1.0-3' }} ק"מ</div>
       </div>
 
       <div class="info-row">
-        <div class="info-label" >מרחק מוערך:</div>
-        <div class="info-value">{{ trip.estimatedDistanceKm | number:'1.0-3' }} ק"מ</div>
-      </div>
-
-      <div class="info-row">
-        <div class="info-label">מרחק בפועל:</div>
-        <div class="info-value">{{ trip.actualDistanceKm | number:'1.0-3' }} ק"מ</div>
+        <div class="info-label">מרחק אחרי סטייה:</div>
+        <div class="info-value-distance">{{ ceil(trip.actualDistanceKm) | number:'1.0-3' }} ק"מ</div>
       </div>
 
       <div class="info-row" *ngIf="trip.fourByFourReason">
-  <div class="info-label">סיבת 4x4:</div>
-  <div class="info-value">{{ trip.fourByFourReason }}</div>
-</div>
+        <div class="info-label">סיבת 4x4:</div>
+        <div class="info-value">{{ trip.fourByFourReason }}</div>
+      </div>
 
 
       <div class="info-row">
@@ -82,14 +87,16 @@
 
       <div class="info-row">
         <div class="info-label">הוגש בתאריך:</div>
-        <div class="info-value">{{ formatDateTime(trip.submittedAt) }}</div>
+        <div class="info-value">{{ trip.submittedAt | date:'dd/MM/yyyy HH:mm' }}</div>
       </div>
     </div>
 
     <ng-template pTemplate="footer">
       <div class="card-actions">
-        <p-button [disabled]="hasTripPassed()" class="approve" label=" אישור נסיעה " styleClass="p-button-success" (click)="updateStatus('approved')"></p-button>
-        <p-button [disabled]="hasTripPassed()" class="reject" label="דחיית נסיעה" styleClass="p-button-danger" (click)="updateStatus('rejected')"></p-button>
+        <p-button [disabled]="hasTripPassed()" class="approve" label=" אישור נסיעה " styleClass="p-button-success"
+          (click)="updateStatus('approved')"></p-button>
+        <p-button [disabled]="hasTripPassed()" class="reject" label="דחיית נסיעה" styleClass="p-button-danger"
+          (click)="updateStatus('rejected')"></p-button>
         <p-button class="return" label="חזרה לרשימה" styleClass="p-button-secondary" (click)="goBack()"></p-button>
       </div>
     </ng-template>
