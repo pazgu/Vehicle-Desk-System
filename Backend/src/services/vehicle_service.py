@@ -55,7 +55,7 @@ def get_vehicle_km_driven_on_date(db: Session, vehicle_id: int, day: date) -> fl
         Ride.start_datetime.cast(Date) == day
     ).all()
 
-    return sum(r.distance_km for r in rides)
+    return sum(r.actual_distance_km for r in rides)
 
 
 def get_vehicles_with_optional_status(
@@ -72,7 +72,6 @@ def get_vehicles_with_optional_status(
         
 
     final_query=query.all()
-    print('final vehicles:',final_query)
 
 
     return final_query
@@ -154,10 +153,7 @@ def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_re
         recipient_emails = list(recipient_emails_set)
 
 
-        print("\n".join(log_messages))
-        print(f"Final determined email recipients: {', '.join(recipient_emails) if recipient_emails else 'None'}")
 
-        # --- Prepare Email Content ---
         context = {
             "PLATE_NUMBER": vehicle.plate_number,
             "VEHICLE_MODEL": vehicle.vehicle_model if vehicle.vehicle_model else "N/A",
@@ -182,25 +178,19 @@ def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_re
                     subject = "✅ BookIt System Update: Vehicle Unfrozen"
                     html_content = load_email_template("vehicle_unfrozen.html", context)
                 else:
-                    print("No email action defined for this specific status change. Skipping email sending.")
                     return {"vehicle_id": vehicle.id, "new_status": vehicle.status, "freeze_reason": vehicle.freeze_reason}
 
                 for email_address in recipient_emails:
                     send_email(email_address, subject, html_content)
-                    print(f"✅ Email sent successfully to {email_address}.")
 
             except Exception as e:
-                print(f"❌ Error during email sending process: {e}")
-        else:
-            print("No eligible recipients found, skipping email notification.")
+                print(f"Error during email sending process: {e}")
 
     except SQLAlchemyError as e:
         db.rollback()
-        print(f"❌ Database error in update_vehicle_status: {e}")
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
     except Exception as e:
         db.rollback()
-        print(f"❌ An unexpected error occurred in update_vehicle_status: {e}")
         raise HTTPException(status_code=500, detail=f"An internal server error occurred: {str(e)}")
 
     # log_action(
@@ -224,18 +214,11 @@ def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_re
 
 def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID) -> List[VehicleOut]:
     ride = db.query(Ride).filter(Ride.id == ride_id).first()
-    
-    print("🟢 Ride pulled from DB:", ride)  # 👈 Add this
-
-
     if not ride:
         raise HTTPException(status_code=404, detail="Ride not found")
 
     if ride.status != RideStatus.approved:
         raise HTTPException(status_code=400, detail="Ride is not approved")
-    
-    print("🚗 Checking distance for ride", ride_id, ":", ride.estimated_distance_km)  # 👈 Add this
-
 
     start_datetime = ride.start_datetime
     end_datetime = ride.end_datetime

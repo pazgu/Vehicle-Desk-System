@@ -44,7 +44,7 @@ getAllVehiclesForNewRide(distance: number, rideDate: string, vehicleType: string
   const params: any = {
     distance_km: distance,
     ride_date: rideDate,
-    vehicle_type: vehicleType
+    type: vehicleType
   };
 
   return this.http.get<Vehicle[]>(`${environment.apiUrl}/all-vehicles-new-ride`, { params });
@@ -64,7 +64,6 @@ getAllVehiclesForNewRide(distance: number, rideDate: string, vehicleType: string
   updateVehicleStatus(id: string, new_status: string, freeze_reason?: string): Observable<any> {
     const url = `${this.apiUrl}/vehicles-status/${id}`;
     const body = { new_status, freeze_reason }; // Adjust field names to match backend expectations
-    console.log('Sending payload to backend:', body); // Log the payload
     return this.http.patch<any>(url, body);
   }
 

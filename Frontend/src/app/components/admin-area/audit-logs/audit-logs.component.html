@@ -50,15 +50,11 @@
           <h3>דיווחים מהשבוע האחרון-בהתאם לסינון</h3>
           <button class="export-button" (click)="exportToPDF()">ייצוא PDF</button>
           <button class="export-button" (click)="exportToCSV()">ייצוא CSV</button>
+          <button class="export-button" (click)="exportToExcel()">ייצוא Excel</button>
+
         </div>
       </div>
 
-      <!-- <div class="problematic-only-filter" dir="rtl" *ngIf="!loading">
-        <label>
-          <input type="checkbox" [(ngModel)]="problematicOnly" (change)="onRangeChange()" />
-          הצג בדיקות עם בעיות
-        </label>
-      </div> -->
 
       <div class="admin-inspections-container" *ngIf="!loading && filteredLogs.length > 0">
       </div>
@@ -398,7 +394,7 @@
                   <td>{{ row.label }}</td>
                   <td [ngClass]="{'old-value-cell': row.oldValue !== row.newValue}">
                     <ng-container
-                      *ngIf="row.label === 'בדיקת רישיון עברה' || row.label === 'אירוע חירום'; else oldValueContent">
+                      *ngIf="row.label === 'בדיקת רישיון עברה' || row.label === 'אירוע חירום' || row.label === 'רישיון ממשלתי'; else oldValueContent">
                       {{ row.oldValue === true ? 'כן' : row.oldValue === false ? 'לא' : (row.oldValue ?? '-') }}
                     </ng-container>
                     <ng-template #oldValueContent>
@@ -418,7 +414,7 @@
                   </td>
                   <td [ngClass]="{'new-value-cell': row.oldValue !== row.newValue}">
                     <ng-container
-                      *ngIf="row.label === 'בדיקת רישיון עברה' || row.label === 'אירוע חירום'; else newValueContent">
+                      *ngIf="row.label === 'בדיקת רישיון עברה' || row.label === 'אירוע חירום' || row.label === 'רישיון ממשלתי'; else newValueContent">
                       {{ row.newValue === true ? 'כן' : row.newValue === false ? 'לא' : (row.newValue ?? '-') }}
                     </ng-container>
                     <ng-template #newValueContent>
@@ -500,10 +496,7 @@
                 <div class="field-label">מזהה רכב</div>
                 <div class="field-value">{{ selectedLog.change_data.vehicle_id }}</div>
               </div>
-              <!-- <div class="field-row">
-                  <div class="field-label">האם ארכיון</div>
-                  <div class="field-value">{{ selectedLog.change_data.isArchive ? 'כן' : 'לא' }}</div>
-                </div> -->
+
               <div class="field-row">
                 <div class="field-label">אירוע חירום</div>
                 <div class="field-value">

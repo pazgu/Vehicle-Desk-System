@@ -200,7 +200,7 @@
 }
 
 .active-row {
-  background-color: #ffe5b4 !important; /* Example: light blue for active */
+  background-color: #ffe5b4 !important; 
 }
 
 .delete-row {
@@ -219,11 +219,11 @@
 }
 
 .cancelled-due-to-no-show {
-  background: #e0d6e8 !important; /* or your desired color */
+  background: #e0d6e8 !important; 
 }
 
 .exceeded-monthly-trip-quota-row {
-  background: #cdb69b !important; /* or your desired color */
+  background: #cdb69b !important; 
 }
 
 .in-progress-row{
@@ -241,7 +241,7 @@
   flex-shrink: 0;
 }
 
-/* Log Details Card Styling - Softer and More Organized */
+/* Log Details Card Styling */
 .log-details-card {
   background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
   border-radius: 16px;
@@ -435,16 +435,6 @@
   word-break: break-all;
 }
 
-/* Boolean styling */
-.boolean-yes {
-  color: #27ae60 !important;
-  background: #d5f4e6 !important;
-}
-
-.boolean-no {
-  color: #e74c3c !important;
-  background: #fdeaea !important;
-}
 
 /* JSON formatting */
 .json-container {
@@ -555,7 +545,6 @@
   align-items: center;
   margin-bottom: 20px;
   gap: 0.2rem;
-  /* Optional: adds space between buttons and text */
 }
 
 .pagination-controls button {
@@ -591,7 +580,6 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   margin-bottom: 1.5rem;
   margin-left: auto;
-  /* Pushes it to the left in RTL layout */
 }
 
 .status-box {
@@ -623,21 +611,16 @@
 .status-indicator.approved {
   background-color: #60cd79;
   border: #329c4b 1.6px solid;
-  /* Green border */
 }
 
 .status-indicator.success {
   background-color: #dcf1e1;
-  /* Light green */
   border: #27ae60 1.6px solid;
-  /* Green border */
 }
 
 .status-indicator.pending {
   background-color: #fdf0c8;
-  /* Yellow */
   border: #c1a553 1.6px solid;
-  /* Yellow border */
 }
 
 .status-indicator.active {
@@ -647,9 +630,7 @@
 
 .status-indicator.delete {
   background-color: #f1b5b5;
-  /* Red */
   border: #c16a73 1.6px solid;
-  /* Red border */
 }
 
 .status-indicator.emergency {
@@ -659,23 +640,20 @@
 
 .status-indicator.frozen {
   background-color: #e2f0f8;
-  /* Blue */
   border: #2aacc0 1.6px solid;
-  /* Blue border */
 }
 
 .status-indicator.rejected {
   background: #dc5b5b;
-  /* Same as your .delete-row background */
   border: 1.5px solid #903d34;
 }
 .status-indicator.cancelled-due-to-no-show {
-  background-color: #e0d6e8; /* אפור־סגול רך */
-  border: #a398b3 1.6px solid; /* מסגרת סגלגלה */
+  background-color: #e0d6e8; 
+  border: #a398b3 1.6px solid; 
 }
 .status-indicator.exceeded-monthly-trip-quota {
-  background-color: #cdb69b ; /* אפור־סגול רך */
-  border: #9b876b  1.6px solid; /* מסגרת סגלגלה */
+  background-color: #cdb69b; 
+  border: #9b876b 1.6px solid; 
 }
 
 .export-button {
@@ -853,9 +831,9 @@
 input[type="checkbox"] {
   width: 13px;
   height: 13px;
-  accent-color: #942222; /* Modern browsers: change checkbox color */
+  accent-color: #942222;
   cursor: pointer;
-  margin-left: 8px; /* Space between checkbox and label (for RTL, use margin-right) */
+  margin-left: 8px; 
   vertical-align: middle;
 }
 
