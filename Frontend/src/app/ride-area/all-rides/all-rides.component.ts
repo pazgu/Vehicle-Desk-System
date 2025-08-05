@@ -562,10 +562,12 @@ deleteOrder(order: any): void {
           this.socketService.deleteRequests$.subscribe((deletedRide) => {
           if (deletedRide) {
             console.log('a ride has been deleted via socket:', deletedRide);
-            this.fetchRides();
           }
           });
           // Remove the order from local state immediately
+
+          //the try catch logic here wont work
+          this.fetchRides();
           const index = this.orders.findIndex(o => o.ride_id === order.ride_id);
           if (index !== -1) {
             this.orders = [
@@ -574,7 +576,6 @@ deleteOrder(order: any): void {
             ];
           }
           // Also refresh from server to ensure consistency
-          this.fetchRides();
         },
         error: (error) => {
           console.error('Error deleting order:', error);
