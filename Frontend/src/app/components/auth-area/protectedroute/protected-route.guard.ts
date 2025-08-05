@@ -17,11 +17,6 @@ canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean 
   const role = localStorage.getItem('role');
   const url = state.url;
 
-  console.log('🧾 Route Guard Check:');
-  console.log('🔑 Token:', token);
-  console.log('👤 Role:', role);
-  console.log('🧭 URL:', url);
-
   // ❌ No token → block and show toast
   if (!token) {
     this.toastService.show('אנא התחבר כדי לגשת לעמוד זה', 'error');
@@ -89,7 +84,6 @@ if (role === 'inspector' && (url.startsWith('/inspector/inspection') || url.star
 
 
   // ❌ All other cases → block access
-  console.log('❌ Blocked by ProtectedRouteGuard - Unknown route or role mismatch');
   this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
   this.router.navigate(['/home']);
   return false;

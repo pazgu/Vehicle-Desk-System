@@ -48,7 +48,6 @@ get f() {
     if (this.forgotForm.invalid) return;
 
     const email = this.forgotForm.value.email;
-    console.log(email)
     this.authService.requestPasswordReset(email).subscribe({
       next: res => this.message = res.message,
       error: err => this.error = err.error.detail || 'Failed to send reset email'

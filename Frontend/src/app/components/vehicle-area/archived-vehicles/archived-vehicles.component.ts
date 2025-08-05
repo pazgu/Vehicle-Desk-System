@@ -55,10 +55,8 @@ export class ArchivedVehiclesComponent implements OnInit {
         departments.forEach(dept => {
           this.departmentMap.set(dept.id, dept.name);
         });
-        console.log('Departments mapped:', this.departmentMap);
       }
     } catch (err) {
-      console.error('Failed to fetch departments for mapping', err);
       this.toastService.show('שגיאה בטעינת נתוני מחלקות', 'error');
     }
   }
@@ -66,7 +64,6 @@ export class ArchivedVehiclesComponent implements OnInit {
   getUserRole(): void {
     if (typeof localStorage !== 'undefined') {
       this.userRole = localStorage.getItem('role');
-      console.log('User role from local storage:', this.userRole);
     }
   }
 
@@ -77,7 +74,6 @@ export class ArchivedVehiclesComponent implements OnInit {
           ...vehicle,
           department: this.departmentMap.get(vehicle.department_id || '') || (vehicle.department_id ? 'מחלקה לא ידועה' : 'לא משוייך למחלקה')
         })) : [];
-        console.log('Archived vehicles loaded with department names:', this.archivedVehicles);
       },
       (error) => {
         console.error('Error loading archived vehicles:', error);
@@ -97,7 +93,6 @@ export class ArchivedVehiclesComponent implements OnInit {
         data.forEach(vehicle => {
           this.topUsedVehiclesMap[vehicle.plate_number] = vehicle.ride_count;
         });
-        console.log('Vehicle usage data loaded:', this.topUsedVehiclesMap);
       },
       error: err => {
         console.error('❌ Error fetching vehicle usage data:', err);
@@ -106,10 +101,8 @@ export class ArchivedVehiclesComponent implements OnInit {
   }
 
   fetchVehicleTypes() {
-    console.log('fetchVehicleTypes called');
     this.vehicleService.getVehicleTypes().subscribe({
       next: (types) => {
-        console.log('Fetched vehicle types:', types);
         this.vehicleTypes = types || [];
       },
       error: (err) => {

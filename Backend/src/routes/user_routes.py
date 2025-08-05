@@ -316,7 +316,6 @@ def check_started_approved_rides(db: Session = Depends(get_db)):
         Ride.start_datetime <= now,
         now <= Ride.start_datetime + text("interval '2 hours'")
     ).all()
-    print({"rides_supposed_to_start": [ride.id for ride in rides]})
 
 
     return {"rides_supposed_to_start": [ride.id for ride in rides]}
@@ -367,7 +366,6 @@ async def patch_order(
     if updated_order.extra_stops:
         order_data["extra_stops"] = [str(stop) for stop in updated_order.extra_stops]
 
-    print("Order data to emit:", json.dumps(convert_decimal(order_data), indent=2))
     await sio.emit("order_updated", convert_decimal(order_data))
     return {
         "message": "ההזמנה עודכנה בהצלחה",
@@ -485,7 +483,6 @@ def get_rides_with_locations(db: Session = Depends(get_db)):
 def read_ride(ride_id: UUID, db: Session = Depends(get_db)):
 
     ride = get_ride_by_id(db, ride_id)
-    print('ride to return:',ride)
     return ride
 
 
@@ -642,15 +639,10 @@ def check_feedback_needed(
     user_id: UUID,  # Add this parameter to capture the path variable
     db: Session = Depends(get_db)
 ):
-    print(f"Checking feedback for user: {user_id}")
     
     # Get the most recent completed ride for this user that needs feedback
     ride = get_ride_needing_feedback(db, user_id)
-    
-    print(f"Found ride: {ride}")
-    if ride:
-        print(f"Ride ID: {ride.id}, Status: {ride.status}, Feedback submitted: {getattr(ride, 'feedback_submitted', 'FIELD_NOT_EXISTS')}")
-    
+
     if not ride:
         return {"showPage": False, "message": "No rides need feedback"}
     
