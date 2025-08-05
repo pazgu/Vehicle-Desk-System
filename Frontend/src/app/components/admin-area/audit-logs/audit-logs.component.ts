@@ -242,11 +242,9 @@ export class AuditLogsComponent implements OnInit {
         this.loading = false;
         this.filterLogs();
 
-        // console.log('Checkbox problematicOnly state:', this.problematicOnly);
-        // console.log('API Response Data Received:', data); // IMPORTANT: Check this output
-        // console.log('Number of logs displayed:', this.filteredLogs.length);
+        
       },
-      error: (err) => {
+      error: () => {
         this.toastService.show('שגיאה בטעינת יומני ביקורת', 'error');
         this.logs = [];
         this.filteredLogs = [];
@@ -290,7 +288,6 @@ export class AuditLogsComponent implements OnInit {
         newInspection &&
         newInspection.inspection_id !== this.lastInspectionId
       ) {
-        // console.log('🆕 Received inspection via socket:', newInspection);
 
         this.lastInspectionId = newInspection.inspection_id;
         this.cdr.detectChanges();

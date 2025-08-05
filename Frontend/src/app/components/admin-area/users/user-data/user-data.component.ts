@@ -350,7 +350,6 @@ export class UserDataComponent implements OnInit {
   }
 
   checkLicence(users: User[]): void {
-    console.log('Checking expired licenses...');
     const now = new Date();
     users.forEach((user) => {
       if (user.license_expiry_date) {

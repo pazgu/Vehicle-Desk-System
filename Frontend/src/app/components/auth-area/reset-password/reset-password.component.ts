@@ -27,9 +27,8 @@ export class ResetPasswordComponent implements OnInit {
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       this.token = params['token'];
-      console.log('Token:', this.token); });
+       });
        
-console.log(this.token);
     this.resetForm = this.fb.group({
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', Validators.required]

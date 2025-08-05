@@ -97,21 +97,17 @@ export class AllRidesComponent implements OnInit {
     // Socket listeners (unchanged)
     this.socketService.rideRequests$.subscribe((newRide) => {
       if (newRide) {
-        console.log('🔁 New ride event received - refreshing rides...');
         this.fetchRides();
       }
     });
      this.socketService.rideSupposedToStart$.subscribe(() => {
-        console.log('🔁 a ride supposed to start - refreshing rides...');
         this.fetchRides();
       
     });
 
     this.socketService.orderUpdated$.subscribe((updatedRide) => {
-      console.log('🔔 Subscription triggered with:', updatedRide);
       if (!updatedRide) return;
       if (updatedRide) {
-        console.log('✏️ Ride update received in HomeComponent:', updatedRide);
         const index = this.orders.findIndex(o => o.ride_id === updatedRide.id);
         if (index !== -1) {
           const newDate = formatDate(updatedRide.start_datetime, 'dd.MM.yyyy', 'en-US');
@@ -134,7 +130,6 @@ export class AllRidesComponent implements OnInit {
             updatedOrder,
             ...this.orders.slice(index + 1)
           ];
-          console.log(`✅ Ride ${updatedRide.id} updated in local state`);
           const role = localStorage.getItem('role');
           if (role === 'supervisor') {
             this.toastService.show('✅ יש בקשה שעודכנה בהצלחה', 'success');
@@ -144,10 +139,8 @@ export class AllRidesComponent implements OnInit {
     });
 
     this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
-      console.log('🔔 Subscription triggered with:', updatedStatus);
       if (!updatedStatus) return;
       if (updatedStatus) {
-        console.log('✏️ Ride status update received in HomeComponent:', updatedStatus);
         const index = this.orders.findIndex(o => o.ride_id === updatedStatus.ride_id);
         if (index !== -1) {
           const newStatus = updatedStatus.new_status;
@@ -168,7 +161,6 @@ export class AllRidesComponent implements OnInit {
 
     this.socketService.deleteRequests$.subscribe((deletedRide) => {
       if (deletedRide) {
-        console.log('❌ deleteRequest$ triggered:', deletedRide);
         const index = this.orders.findIndex(o => o.ride_id === deletedRide.id);
         if (index !== -1) {
           this.orders = [
@@ -222,7 +214,6 @@ export class AllRidesComponent implements OnInit {
       queryParams: queryParams,
       queryParamsHandling: 'merge' // Still use merge, but null values now correctly clear params
     });
-    console.log('🔗 URL query params updated to:', queryParams);
   }
 
   // --- Existing Methods (Minor adjustments for URL sync) ---
@@ -265,10 +256,6 @@ export class AllRidesComponent implements OnInit {
     fetchFn.subscribe({
       next: (res) => {
         this.loading = false;
-        console.log('🧾 Raw response from backend:', res);
-        console.log('✅ fetchRides called');
-        console.log('🚦 View Mode:', this.rideViewMode);
-        console.log('📤 Filters sent to API:', filters);
 
         if (Array.isArray(res)) {
           this.orders = res.map(order => ({
@@ -283,7 +270,6 @@ export class AllRidesComponent implements OnInit {
             user_id: order.user_id
           }));
           localStorage.setItem('user_orders', JSON.stringify(this.orders));
-          console.log('Orders from backend:', this.orders);
           
         // ✅ NOW call checkStartedApprovedRides
         this.rideService.checkStartedApprovedRides().subscribe({
@@ -293,7 +279,6 @@ export class AllRidesComponent implements OnInit {
               ...order,
               hasStarted: startedRideIds.includes(order.ride_id)
             }));
-            console.log('rides that supposed tpo start:',startedRideIds)
           },
           error: (err) => {
             console.error('Error checking started rides:', err);
@@ -560,9 +545,7 @@ deleteOrder(order: any): void {
         next: () => {
           this.toastService.show('ההזמנה בוטלה בהצלחה ✅', 'success');
           this.socketService.deleteRequests$.subscribe((deletedRide) => {
-          if (deletedRide) {
-            console.log('a ride has been deleted via socket:', deletedRide);
-          }
+         
           });
           // Remove the order from local state immediately
 
@@ -617,7 +600,6 @@ deleteOrder(order: any): void {
       return orderDate >= beginningOfMonth && orderDate <= endOfMonth;
     });
 
-    console.log('🗓️ Recent orders in the current month:', recentOrders);
     return recentOrders.length >= maxRides;
   }
 

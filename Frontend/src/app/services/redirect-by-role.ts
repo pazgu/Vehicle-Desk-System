@@ -11,7 +11,6 @@ export class RedirectByRoleComponent implements OnInit {
 
   ngOnInit(): void {
     const role = localStorage.getItem('role');
-     console.log('RedirectByRoleComponent loaded. Role:', role); // 👈 Add this
     if (!role) {
       // No role found in localStorage, redirect to login page
       this.router.navigate(['/login']);
