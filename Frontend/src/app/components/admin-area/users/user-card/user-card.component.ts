@@ -52,9 +52,8 @@ export class UserCardComponent implements OnInit {
       next: (noShowData) => {
         this.NoShowsData = noShowData;
         this.NoShowsCNT = noShowData.count; // in case you want it separately
-        console.log('NoShowsData:', this.NoShowsData);
       },
-      error: (err) => console.error('Failed to load user no-shows:', err),
+      error: () => console.error('Failed to load user no-shows:'),
     });
   }
 

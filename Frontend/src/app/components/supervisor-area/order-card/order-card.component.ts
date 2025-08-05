@@ -51,7 +51,6 @@ export class OrderCardComponent implements OnInit {
       return;
     }
     this.rideId = this.route.snapshot.paramMap.get('ride_id')!;
-    console.log('Extracted ride_id:', this.rideId);
 
     // Listen for route params
     this.route.params.subscribe((params) => {
@@ -114,7 +113,6 @@ getCityName(id: string): string {
             submittedAt: response.submitted_at,
             emergencyEvent: response.emergency_event,
           };
-          console.log("Order loaded with ID:", this.trip.id);
         },
         error: (error) => {
           console.error('Error loading order:', error);
@@ -140,14 +138,12 @@ getCityName(id: string): string {
       )
       .subscribe({
         next: (response) => {
-          console.log('Order status updated successfully:', response);
           setTimeout(() => {
             this.loadOrder(this.departmentId!, this.rideId);
           }, 500);
         },
         error: (error) => {
           console.error('Error updating order status:', error);
-          alert(`Failed to update status: ${error.error?.detail || error.message}`);
         }
       });
   }

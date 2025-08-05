@@ -69,7 +69,6 @@ def create_user_by_admin(user_data: UserCreate, changed_by, db: Session):
         
     except Exception as e:
         db.rollback()
-        print(f"🔍 ERROR creating user: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to create user: {str(e)}")
 
 

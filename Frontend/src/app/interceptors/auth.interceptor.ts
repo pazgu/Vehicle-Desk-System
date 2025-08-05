@@ -29,7 +29,6 @@ export class AuthInterceptor implements HttpInterceptor {
 
     return next.handle(authReq).pipe(
       catchError((err: HttpErrorResponse) => {
-        console.log('Caught in interceptor:', err); // 👈 Add this
           if (err.status === 401 && err.error?.detail === 'Invalid token') {
           localStorage.clear();
           this.authService.setFullName('משתמש', '');

@@ -31,8 +31,7 @@ def get_ride_needing_feedback(db: Session, user_id: int) -> Optional[Ride]:
     ).order_by(
         Ride.end_datetime.desc()
     ).first()
-    if(ride):
-        print('ride needs feedback found:',ride.id)
+    
     return ride
 
 def mark_feedback_submitted(db: Session, ride_id: str):
@@ -41,21 +40,12 @@ def mark_feedback_submitted(db: Session, ride_id: str):
     """
     ride = db.query(Ride).filter_by(id=ride_id).first()
     if ride:
-        # print(f'ride before feedback is true,id:{ride_id},feedback:{ride.feedback_submitted}')
         ride.feedback_submitted = True
-        # print(f'ride after feedback is true,id:{ride_id},feedback:{ride.feedback_submitted}')
 
         db.commit()
     return ride
 
 async def process_completion_form(db: Session, user: User, form_data: CompletionFormData):
-     # print("this is the current user:",user.username)
-    # print("dep id:",user.department_id)
-    # print("user id:",user.employee_id)
-    # print("changed by received:",form_data.changed_by)
-    # print('formdata:',form_data)
-    # print('formdata is vehicle ready:',form_data.is_vehicle_ready_for_next_ride)
-    # 1. Get the ride for this user
     ride = db.query(Ride).filter_by(id=form_data.ride_id, user_id=user.employee_id).first()
     if not ride:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ride not found")
@@ -125,7 +115,6 @@ async def process_completion_form(db: Session, user: User, form_data: Completion
                         subject=f"🚨 התרעה: חריגה בסיום הנסיעה {vehicle.plate_number}",
                         html_content=html_content
                     )
-                    print(f"Sent emergency email to {supervisor_email}")
                 except Exception as email_e:
                     print(f"Failed to send emergency email: {repr(email_e)}")
     else:
@@ -161,7 +150,6 @@ async def process_completion_form(db: Session, user: User, form_data: Completion
                         subject=f"⚠️ התרעה: רכב {vehicle.plate_number} לא מוכן לנסיעה הבאה",
                         html_content=html_content
                     )
-                    print(f"Sent 'not ready' email to {supervisor_email}")
                 except Exception as email_e:
                     print(f"Failed to send 'not ready' email: {repr(email_e)}")
 

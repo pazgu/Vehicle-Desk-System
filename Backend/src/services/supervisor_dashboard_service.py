@@ -136,34 +136,6 @@ async def edit_order_status(department_id: str, order_id: str, new_status: str,u
     if new_status.lower() == "rejected":
         order.rejection_reason = rejection_reason
     db.commit()
-    print(f"\n !!!!!!!!!!!!!!!!!!!!!!!! \n")
-
-    # log_action(
-    #     db=db,
-    #     action="UPDATE",
-    #     entity_type="Ride",
-    #     entity_id=str(order.id),
-    #     change_data={
-    #         "id": str(order.id),
-    #         "stop": order.stop,
-    #         "status": order.status,
-    #         "user_id": str(order.user_id),
-    #         "is_archive": order.is_archive,
-    #         "ride_type": order.ride_type,
-    #         "vehicle_id": str(order.vehicle_id),
-    #         "destination": order.destination,
-    #         "end_datetime": order.end_datetime.isoformat(),
-    #         "submitted_at": order.submitted_at.isoformat(),
-    #         "start_datetime": order.start_datetime.isoformat(),
-    #         "start_location": order.start_location,
-    #         "emergency_event": order.emergency_event,
-    #         "override_user_id": str(order.override_user_id) if order.override_user_id is not None else None,
-    #         "actual_distance_km": float(order.actual_distance_km) if order.actual_distance_km is not None else None,
-    #         "license_check_passed": order.license_check_passed,
-    #         "estimated_distance_km": float(order.estimated_distance_km) if order.estimated_distance_km is not None else None
-    #     },
-    #     changed_by=order.override_user_id if order.override_user_id is not None else user_id
-    # )
 
     hebrew_status_map = {
         "approved": "אושרה",
@@ -231,31 +203,9 @@ async def edit_order_status(department_id: str, order_id: str, new_status: str,u
                 if new_status.lower() == "rejected":
                     body = body.replace("{{REJECTION_REASON}}", rejection_reason or "לא צוינה סיבה")
                 else:
-                    # If the status is NOT rejected, ensure the REJECTION_REASON placeholder is removed
                     body = body.replace("{{REJECTION_REASON}}", "")
 
-                # Handle APPROVER_NAME for both templates
                 body = body.replace("{{APPROVER_NAME}}", "המנהל שלך")
-
-                # --- ADD THESE DETAILED DEBUG PRINTS ---
-                print(f"\n--- DEBUG EMAIL PRE-SEND (from edit_order_status) ---")
-                print(f"Template used: {template_name}")
-                print(f"Final Subject: {email_subject}")
-                print(f"Final Recipient: {employee_email}")
-                print(f"Order ID: {order.id}")
-                print(f"Order Status: {order.status}")
-                print(f"User Full Name: {user.first_name} {user.last_name}")
-                print(f"Destination: {order.destination}")
-                print(f"Date/Time: {order.start_datetime.strftime('%Y-%m-%d %H:%M')}")
-                print(f"Vehicle Plate: {vehicle.plate_number}")
-                print(f"Distance: {order.estimated_distance_km} ק״מ")
-                if new_status.lower() == "rejected":
-                    print(f"Rejection Reason: {rejection_reason or 'לא צוינה סיבה'}")
-                print(f"\n--- Full HTML Body (first 500 chars) ---\n{body[:500]}...")
-                print(f"\n--- Full HTML Body (last 500 chars) ---\n{body[-500:]}...")
-                print(f"\n--- END DEBUG EMAIL PRE-SEND ---")
-                # --- END DETAILED DEBUG PRINTS ---
-
                 await async_send_email(
                     to_email = employee_email,
                     subject=email_subject,
@@ -307,7 +257,6 @@ def get_department_notifications(department_id: UUID, db: Session) -> List[Notif
 
 
 async def start_ride(db: Session, ride_id: UUID):
-    print('start ride was called')
     ride = db.query(Ride).filter(Ride.id == ride_id).first()
     if not ride:
         raise HTTPException(status_code=404, detail="Ride not found")
@@ -336,7 +285,6 @@ async def start_ride(db: Session, ride_id: UUID):
     # 2️⃣ Update ride status + pickup time
     ride.actual_pickup_time = datetime.now(timezone.utc)
     ride.status = RideStatus.in_progress
-    print('ride status was changed to in_progress')
 
    
 
@@ -357,7 +305,6 @@ async def start_ride(db: Session, ride_id: UUID):
         "new_status": vehicle.status.value
     })
 
-    print(f'start_ride was called for ride_id:{ride_id}')
     return ride,vehicle
 
 def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):

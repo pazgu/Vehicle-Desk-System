@@ -326,7 +326,6 @@ def get_all_critical_issues_combined(db: Session) -> List[Dict[str, Any]]:
             "vehicle_info": f"Ride ID: "
         })
 
-    print("🧪 Critical Issues Combined:", results)
 
     # ⏱️ Sort by most recent
     return sorted(results, key=lambda x: x["timestamp"], reverse=True)
@@ -401,6 +400,6 @@ def get_critical_issue_by_id(issue_id: str, db: Session) -> Optional[Dict[str, A
         }
 
     except Exception as e:
-        print(f"❌ Error parsing ride approval ID: {e}")
+        raise(f"Error parsing ride approval ID: {e}")
 
     return None
