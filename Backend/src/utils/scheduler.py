@@ -25,7 +25,7 @@ from ..models.ride_model import Ride, RideStatus
 from ..services.user_notification import create_system_notification, emit_new_notification, get_user_name
 import pytz
 from apscheduler.jobstores.base import JobLookupError
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone, date
 from ..services.form_email import send_ride_completion_email
 from ..services.supervisor_dashboard_service import start_ride 
 from sqlalchemy.orm import Session,joinedload
@@ -1117,3 +1117,183 @@ def start_scheduler():
     scheduler.add_job(notify_admins_daily, 'cron', hour=6, minute=0)
     scheduler.start()
 
+async def check_expired_government_licenses():
+    db: Session = SessionLocal()
+    today = date.today()
+
+    try:
+        # שלוף משתמשים שהרישיון שלהם פג תוקף או שאין להם תאריך תפוגה, אבל עדיין מסומנים כאילו יש להם רישיון
+        users_with_expired_license = db.query(User).filter(
+            User.has_government_license == True,
+            or_(
+                User.license_expiry_date == None,
+                User.license_expiry_date < today
+            )
+        ).all()
+
+        print(f"Users with expired license count: {len(users_with_expired_license)}")
+
+        if not users_with_expired_license:
+            print("No expired licenses found. Exiting.")
+            return
+
+        # עדכן את השדה has_government_license
+        for user in users_with_expired_license:
+            print(f"Updating user {user.employee_id} - setting has_government_license to False")
+            user.has_government_license = False
+
+        db.commit()
+        print("Committed license updates to DB")
+
+        # שלח התראות לאדמין על כל משתמש שרישיונו לא בתוקף
+        admins = db.query(User).filter(User.role == "admin").all()
+
+        for user in users_with_expired_license:
+            full_name = f"{user.first_name} {user.last_name}"
+            expiry = user.license_expiry_date.strftime("%d/%m/%Y") if user.license_expiry_date else "לא הוזן"
+
+            print(f"Processing user: {full_name} (ID: {user.employee_id})")
+            print(f"User email: {user.email}")
+            print(f"License expiry: {expiry}")
+
+            # בדיקת תקינות המייל לפני שליחה למשתמש
+            if user.email and "@" in user.email and "." in user.email:
+                try:
+                    # שלח מייל למשתמש עצמו
+                    user_html_content = f"""
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>רישיון ממשלתי פג תוקף</title>
+                    </head>
+                    <body>
+                        <div style="direction: rtl; font-family: Arial, sans-serif;">
+                            <h2>שלום {user.first_name},</h2>
+                            <p>רישיון הממשלתי שלך פג תוקף בתאריך: <strong>{expiry}</strong>.</p>
+                            <p>אנא עדכן את המידע בהקדם.</p>
+                            <br/>
+                            <p>תודה,<br/>צוות התמיכה</p>
+                        </div>
+                    </body>
+                    </html>
+                    """
+
+                    print(f"Sending email to user: {user.email}")
+                    await async_send_email(
+                        to_email=user.email,
+                        subject="רישיון ממשלתי פג תוקף",
+                        html_content=user_html_content
+                    )
+                    print(f"✅ Email sent successfully to user {user.employee_id}")
+
+                    # שלח התראה למשתמש
+                    user_notif = create_system_notification(
+                        user_id=user.employee_id,
+                        title="רישיון ממשלתי פג תוקף",
+                        message=f"הרישיון הממשלתי שלך פג תוקף (תוקף עד {expiry}). אנא חדש את הרישיון במהרה.",
+                        relevant_user_id=user.employee_id
+                    )
+
+                    await sio.emit("license_expiry_notification", {
+                        "id": str(user_notif.id),
+                        "user_id": str(user_notif.user_id),
+                        "title": user_notif.title,
+                        "message": user_notif.message,
+                        "notification_type": user_notif.notification_type.value,
+                        "sent_at": user_notif.sent_at.isoformat(),
+                        "relevant_user_id": str(user.employee_id)
+                    }, room=str(user.employee_id))
+                    
+                    print(f"✅ Socket notification sent to user {user.employee_id}")
+
+                except Exception as e:
+                    print(f"❌ Error sending email to user {user.employee_id}: {str(e)}")
+                    # המשך לאדמינים גם אם שליחה למשתמש נכשלה
+            else:
+                print(f"⚠️ Invalid email for user {user.employee_id}: {user.email}")
+
+            # שלח התראות לאדמינים
+            for admin in admins:
+                try:
+                    # בדיקה אם כבר קיימת התראה
+                    exists = db.query(Notification).filter(
+                        Notification.user_id == admin.employee_id,
+                        Notification.title == "רישיון ממשלתי לא בתוקף",
+                        Notification.relevant_user_id == user.employee_id
+                    ).first()
+                    
+
+                    if exists:
+                        print(f"Notification already exists for admin {admin.employee_id} and user {user.employee_id}")
+                        continue
+
+                    notif = create_system_notification(
+                        user_id=admin.employee_id,
+                        title="רישיון ממשלתי לא בתוקף",
+                        message=f"למשתמש {full_name} אין רישיון ממשלתי בתוקף (תוקף עד {expiry}).",
+                        relevant_user_id=user.employee_id
+                    )
+
+                    admin_email = get_user_email(admin.employee_id, db)
+                    print(f"Admin email: {admin_email}")
+                    
+                    if admin_email and "@" in admin_email and "." in admin_email:
+                        admin_html_content = f"""
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <meta charset="UTF-8">
+                            <title>רישיון ממשלתי לא בתוקף</title>
+                        </head>
+                        <body>
+                            <div style="direction: rtl; font-family: Arial, sans-serif;">
+                                <h2>שלום {get_user_name(db, admin.employee_id)},</h2>
+                                <p>למשתמש <strong>{full_name}</strong> פג תוקף הרישיון הממשלתי בתאריך: <strong>{expiry}</strong>.</p>
+                                <p>מזהה משתמש: {user.employee_id}</p>
+                                <p>אנא בדק ועקוב אחר עדכון הרישיון.</p>
+                                <br/>
+                                <p>בברכה,<br/>מערכת ניהול רישיונות</p>
+                            </div>
+                        </body>
+                        </html>
+                        """
+
+                        print(f"Sending email to admin: {admin_email}")
+                        await async_send_email(
+                            to_email=admin_email,
+                            subject=f"רישיון ממשלתי לא בתוקף - {full_name}",
+                            html_content=admin_html_content
+                        )
+                        print(f"✅ Email sent successfully to admin {admin.employee_id}")
+                    else:
+                        print(f"⚠️ Invalid admin email: {admin_email}")
+
+                    await sio.emit("license_expiry_notification", {
+                        "id": str(notif.id),
+                        "user_id": str(notif.user_id),
+                        "title": notif.title,
+                        "message": notif.message,
+                        "notification_type": notif.notification_type.value,
+                        "sent_at": notif.sent_at.isoformat(),
+                        "relevant_user_id": str(user.employee_id)
+                    }, room=str(admin.employee_id))
+                    
+                    print(f"✅ Socket notification sent to admin {admin.employee_id}")
+
+                except Exception as e:
+                    print(f"❌ Error processing admin {admin.employee_id}: {str(e)}")
+                    continue  # המשך לאדמין הבא
+
+    except Exception as e:
+        db.rollback()
+        print(f"❌ Error in check_expired_government_licenses: {e}")
+        import traceback
+        print(f"Full traceback: {traceback.format_exc()}")
+
+    finally:
+        db.close()
+
+
+if __name__ == "__main__":
+    asyncio.run(check_expired_government_licenses())
