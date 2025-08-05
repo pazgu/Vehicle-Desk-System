@@ -118,3 +118,61 @@ def get_user_email(user_id: UUID, db: Session) -> str | None:
     if user and user.email:
         return user.email
     return None
+
+async def send_license_expiry_notifications(user_id: UUID, db: Session):
+    user = db.query(User).filter(User.employee_id == user_id).first()
+    if not user or not user.email:
+        print(f"No valid user or email found for user_id {user_id}")
+        return
+
+    admin_emails = get_admin_emails(db)
+    if not admin_emails:
+        print("No admin emails found")
+        # חשוב: כדאי לא להחזיר return כאן, כי עדיין רוצים לשלוח למשתמש
+        # return
+
+    expiry_date = user.license_expiry_date.strftime("%d/%m/%Y") if user.license_expiry_date else "לא ידוע"
+    
+    # תוכן מייל למשתמש
+    user_html_content = f"""
+    <html>
+      <body>
+        <p>שלום {user.first_name},</p>
+        <p>רישיון הממשלתי שלך פג תוקף בתאריך: <strong>{expiry_date}</strong>.</p>
+        <p>אנא עדכן את המידע בהקדם.</p>
+        <br/>
+        <p>תודה,<br/>צוות התמיכה</p>
+      </body>
+    </html>
+    """
+
+    # תוכן מייל לאדמין (שונה מהמשתמש)
+    admin_html_content = f"""
+    <html>
+      <body>
+        <p>שלום,</p>
+        <p>למשתמש <strong>{user.first_name} {user.last_name}</strong> פג תוקף הרישיון הממשלתי בתאריך: <strong>{expiry_date}</strong>.</p>
+        <p>אנא בדק ועקוב אחר עדכון הרישיון.</p>
+        <p>מזהה משתמש: {user.employee_id}</p>
+        <br/>
+        <p>בברכה,<br/>מערכת ניהול רישיונות</p>
+      </body>
+    </html>
+    """
+
+    user_subject = "רישיון ממשלתי פג תוקף"
+    admin_subject = f"רישיון ממשלתי פג תוקף - {user.first_name} {user.last_name}"
+
+    try:
+        # שלח מייל למשתמש
+        await async_send_email(user.email, user_subject, user_html_content)
+        print(f"✅ Email sent to user {user.employee_id}")
+
+        # שלח מייל לכל האדמינים (כל אחד בנפרד)
+        for admin_email in admin_emails:
+            await async_send_email(admin_email, admin_subject, admin_html_content)
+            print(f"✅ Email sent to admin {admin_email}")
+
+    except Exception as e:
+        print(f"❌ Error sending emails for user {user_id}: {e}")
+        # כדאי לשקול אם
