@@ -153,18 +153,18 @@ export class AuditLogsComponent implements OnInit {
   rideFieldLabels: { [key: string]: string } = {
     id: 'מזהה נסיעה',
     stop: 'עצירה',
-    status: 'סטטוס',
+    status: 'סטטוס הזמנה',
     user_id: 'מזהה משתמש',
     ride_type: 'סוג נסיעה',
     vehicle_id: 'מזהה רכב',
     destination: 'יעד',
-    end_datetime: 'תאריך סיום',
-    submitted_at: 'תאריך שליחה',
-    start_datetime: 'תאריך התחלה',
+    start_datetime: 'תאריך התחלת נסיעה',
+    end_datetime: 'תאריך סיום נסיעה',
+    submitted_at: 'תאריך שליחת הזמנה',
     start_location: 'מיקום התחלה',
     emergency_event: 'אירוע חירום',
     override_user_id: 'מזהה משתמש עוקף',
-    actual_distance_km: 'מרחק בפועל (ק"מ)',
+    actual_distance_km: 'מרחק משוער אחרי סטייה (ק"מ)',
     license_check_passed: 'עבר בדיקת רישיון',
     estimated_distance_km: 'מרחק משוער (ק"מ)',
     vehicle_type_reason: 'סיבת בחירה ברכב מסוג 4X4',
@@ -179,6 +179,20 @@ export class AuditLogsComponent implements OnInit {
     .map(id => this.getCityName(id))
     .join(' ← ');
 }
+formatRouteFromChangeData(changeData: any): string {
+  const start = changeData.start_location;
+  const stop = changeData.stop;
+  const destination = changeData.destination;
+  const extraStops = changeData.extra_stops; // already an array or undefined
+
+  const allStops = [start, stop, ...(extraStops || []), destination];
+
+  return allStops
+    .filter(Boolean)
+    .map(id => this.getCityName(id))
+    .join(' ← ');
+}
+
 
   constructor(
     private http: HttpClient,
