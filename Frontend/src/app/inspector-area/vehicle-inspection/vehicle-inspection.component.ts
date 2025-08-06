@@ -110,7 +110,6 @@ export class VehicleInspectionComponent implements OnInit {
       items_left_vehicle_ids: itemsLeftIds,
       critical_issue_vehicle_ids: criticalIds
     };
-console.log("issues:" , payload.issues_found);
     const missingDescriptions = this.vehicleIssues.some(
   v => v.critical_issue && (!v.issues_found || !v.issues_found)
 );
@@ -124,7 +123,6 @@ this.toastService.show('שולח בדיקה... יש להמתין');
 
   this.InspectorService.postInspection(payload).subscribe({
   next: () => {
-    console.log('✅ Issues submitted successfully:', payload);
     this.toastService.show('הבדיקה נשלחה בהצלחה', 'success');
     this.submitting = false;
 

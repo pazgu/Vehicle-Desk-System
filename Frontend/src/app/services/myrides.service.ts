@@ -31,14 +31,12 @@ export class MyRidesService {
       params: this.buildParams(filters),
       headers
     });
-    // console.log('Fetching future orders for user:', userId);
     return orders;
   }
 
   deleteOrder(orderId: string): Observable<any> {
     const headers = this.getAuthHeaders().set('Content-Type', 'application/json');
     
-    // console.log('Deleting order:', orderId);
     return this.http.delete(`${this.allOrdersUrl}/${orderId}`, { headers });
   }
 
@@ -49,7 +47,6 @@ export class MyRidesService {
       params: this.buildParams(filters),
       headers
     });
-    // console.log('Fetching past orders for user:', userId);
     return orders;
   }
 
@@ -63,7 +60,6 @@ export class MyRidesService {
 
     const headers = this.getAuthHeaders();
 
-    // console.log('Fetching all orders for user:', userId, 'with filters:', filters);
     return this.http.get(`${this.allOrdersUrl}/${userId}`, {
       params: this.buildParams(filters),
       headers

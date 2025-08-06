@@ -49,25 +49,17 @@ def send_email(to_email: str, subject: str, html_content: str, text_content: str
     try:
         # --- DEBUGGING ADDITION START ---
         if not SENDGRID_API_KEY:
-            #print("DEBUG: SENDGRID_API_KEY is not loaded from .env. Check your .env file path and variable name.")
             raise ValueError("SENDGRID_API_KEY is missing.")
         else:
             masked_key = f"{SENDGRID_API_KEY[:5]}...{SENDGRID_API_KEY[-5:]}"
-        # --- DEBUGGING ADDITION END ---
         sg = SendGridAPIClient(SENDGRID_API_KEY)
         response = sg.send(message)
         return response
-    except Exception as e:
-        #print(f"❌ Error sending email: {e}")
-        # כאן ניתן להחליט האם לזרוק או לא את החריגה
+    except:
         raise
 
 
 async def async_send_email(to_email: str, subject: str, html_content: str, text_content: str = ""):
-    print('in send email sending')
-    """
-    שליחה אסינכרונית (לא חוסמת) של מייל דרך SendGrid.
-    """
     loop = asyncio.get_running_loop()
     return await loop.run_in_executor(None, send_email, to_email, subject, html_content, text_content)
 def load_email_template(template_name: str, context: dict) -> str:
@@ -77,44 +69,76 @@ def load_email_template(template_name: str, context: dict) -> str:
             content = file.read()
         for key, value in context.items():
             old_content = content
-            # Handle both formats: {{ KEY }} and {{KEY}}
             content = content.replace(f"{{{{ {key} }}}}", str(value))  # With spaces
             content = content.replace(f"{{{{{key}}}}}", str(value))    # Without spaces
-            
-            # Debug: Check if replacement happened
-            # # Debug: Check if replacement happened
-            # if old_content != content:
-            #     #print(f"DEBUG: Replaced {key} with '{value}'")
-            # else:
-            #     #print(f"WARNING: No replacement made for {key}")
-            # Debug: Check if replacement happened
-            # if old_content != content:
-            #     #print(f"DEBUG: Replaced {key} with '{value}'")
-            # else:
-            #     #print(f"WARNING: No replacement made for {key}")
-        
-        # Check if any placeholders remain
-        import re
-        remaining_placeholders = re.findall(r'\{\{[^}]+\}\}', content)
-        # if remaining_placeholders:
-            #print(f"WARNING: Unreplaced placeholders found: {remaining_placeholders}")
-        # if remaining_placeholders:
-        #     #print(f"WARNING: Unreplaced placeholders found: {remaining_placeholders}")
-        
+                    
         return content
         
     except FileNotFoundError:
-        #print(f"ERROR: Template file {template_path} not found")
         return ""
     except Exception as e:
-        #print(f"ERROR: Failed to load template {template_name}: {repr(e)}")
         return ""
 
 def get_user_email(user_id: UUID, db: Session) -> str | None:
-    """
-    מחזיר את כתובת המייל של המשתמש לפי ה-UUID שלו, או None אם לא קיים.
-    """
     user = db.query(User).filter(User.employee_id == user_id).first()
     if user and user.email:
         return user.email
     return None
+
+async def send_license_expiry_notifications(user_id: UUID, db: Session):
+    user = db.query(User).filter(User.employee_id == user_id).first()
+    if not user or not user.email:
+        print(f"No valid user or email found for user_id {user_id}")
+        return
+
+    admin_emails = get_admin_emails(db)
+    if not admin_emails:
+        print("No admin emails found")
+        # חשוב: כדאי לא להחזיר return כאן, כי עדיין רוצים לשלוח למשתמש
+        # return
+
+    expiry_date = user.license_expiry_date.strftime("%d/%m/%Y") if user.license_expiry_date else "לא ידוע"
+    
+    # תוכן מייל למשתמש
+    user_html_content = f"""
+    <html>
+      <body>
+        <p>שלום {user.first_name},</p>
+        <p>רישיון הממשלתי שלך פג תוקף בתאריך: <strong>{expiry_date}</strong>.</p>
+        <p>אנא עדכן את המידע בהקדם.</p>
+        <br/>
+        <p>תודה,<br/>צוות התמיכה</p>
+      </body>
+    </html>
+    """
+
+    # תוכן מייל לאדמין (שונה מהמשתמש)
+    admin_html_content = f"""
+    <html>
+      <body>
+        <p>שלום,</p>
+        <p>למשתמש <strong>{user.first_name} {user.last_name}</strong> פג תוקף הרישיון הממשלתי בתאריך: <strong>{expiry_date}</strong>.</p>
+        <p>אנא בדק ועקוב אחר עדכון הרישיון.</p>
+        <p>מזהה משתמש: {user.employee_id}</p>
+        <br/>
+        <p>בברכה,<br/>מערכת ניהול רישיונות</p>
+      </body>
+    </html>
+    """
+
+    user_subject = "רישיון ממשלתי פג תוקף"
+    admin_subject = f"רישיון ממשלתי פג תוקף - {user.first_name} {user.last_name}"
+
+    try:
+        # שלח מייל למשתמש
+        await async_send_email(user.email, user_subject, user_html_content)
+        print(f"✅ Email sent to user {user.employee_id}")
+
+        # שלח מייל לכל האדמינים (כל אחד בנפרד)
+        for admin_email in admin_emails:
+            await async_send_email(admin_email, admin_subject, admin_html_content)
+            print(f"✅ Email sent to admin {admin_email}")
+
+    except Exception as e:
+        print(f"❌ Error sending emails for user {user_id}: {e}")
+        # כדאי לשקול אם

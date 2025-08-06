@@ -37,7 +37,7 @@ export class DashboardAllOrdersComponent implements OnInit {
   endDate: string = '';
   showFilters: boolean = false;
   showOldOrders: boolean = false;
-  sortBy: string = 'date_and_time';
+  sortBy: string = 'submitted_at'; 
 
 
 
@@ -54,7 +54,6 @@ export class DashboardAllOrdersComponent implements OnInit {
     this.socketService.rideRequests$.subscribe((newRide) => {
       const role=localStorage.getItem('role')
     if (newRide) {
-    console.log('🆕 New ride request received on dashboard:', newRide);
     if(newRide.department_id==departmentId && role !='admin'){
       this.orders = [newRide, ...this.orders];
       if(role === 'supervisor'){this.toastService.show("התקבלה בקשה חדשה","success");}
@@ -63,17 +62,7 @@ export class DashboardAllOrdersComponent implements OnInit {
   }
 });
 this.socketService.orderUpdated$.subscribe((updatedRide) => {
-    // if (!updatedRide) return; // skip initial null emission
-
-    console.log('Supervisor Dashboard received ride update:', updatedRide);
-  console.log("Checking against supervisor orders:", this.orders.map(o => o.ride_id));
-    this.orders.forEach(o => {
-    console.log(`Comparing: order ride_id=${o.ride_id} | updatedRide.id=${updatedRide.id}`);
-    console.log('Equal?', o.ride_id === updatedRide.id);
-  });
-    // Find the order in the supervisor dashboard's local orders array:
     const index = this.orders.findIndex(o => o.ride_id === updatedRide.id);
-    console.log('index:',index);
     if (index !== -1) {
       const updatedOrder: RideDashboardItem = {
       ride_id: updatedRide.id,
@@ -94,11 +83,9 @@ this.socketService.orderUpdated$.subscribe((updatedRide) => {
         ...this.orders.slice(index + 1)
       ];
 
-      console.log(`Supervisor Dashboard updated ride ${updatedRide.id} in local state`);
     }
   });
   this.socketService.deleteRequests$.subscribe((deletedRide) => {
-  console.log('❌ deleteRequest$ triggered:', deletedRide);
 
   const index = this.orders.findIndex(o => o.ride_id === deletedRide.order_id); // <-- FIXED here
 
@@ -110,10 +97,8 @@ this.socketService.orderUpdated$.subscribe((updatedRide) => {
   } 
 });
 this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
-  console.log('🔔 Subscription triggered with:', updatedStatus); // Add this line
   if (!updatedStatus) return; // ignore the initial null emission
   if (updatedStatus) {
-    console.log('✏️ Ride  status update received in HomeComponent:', updatedStatus);
 
     const index = this.orders.findIndex(o => o.ride_id === updatedStatus.ride_id);
     if (index !== -1) {
@@ -235,7 +220,6 @@ this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
   }
 
   onRowClick(trip: RideDashboardItem) {
-    console.log('Selected trip:', trip.ride_id); // Debugging
     this.router.navigate(['/order-card', trip.ride_id]);
   }
 

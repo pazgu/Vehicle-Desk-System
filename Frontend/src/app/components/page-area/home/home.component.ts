@@ -211,7 +211,6 @@ formReady = false;
       });
     });
     this.socketService.usersLicense$.subscribe(update => {
-  console.log('🚨 Received update from socket:', update);
 
   const { id, has_government_license, license_expiry_date } = update;
 
@@ -232,7 +231,6 @@ formReady = false;
 
   if (licenseValid) {
     this.disableRequest = false;
-    console.log('✅ License is valid via socket');
   } else {
     this.disableRequest = true;
     console.warn('🚫 License is missing or expired via socket');
@@ -448,7 +446,6 @@ setClosestQuarterHourTime() {
     routeStops = routeStops.filter((id: string) => !!id && typeof id === 'string' && id.trim() !== '');
     routeStops.push(stop); // Add the main stop as the final destination.
 
-    console.log('📦 Raw stop:', stopRaw, '| extraStops:', extraStops, '| Final routeStops:', routeStops);
 
 
     this.fetchEstimatedDistance(start, routeStops);
@@ -558,7 +555,6 @@ private loadVehicles(distance: number, rideDate: string,vehicleType:string): voi
   private loadPendingVehicles(): void {
     this.vehicleService.getPendingCars().subscribe({
       next: (response: any) => {
-        console.log('Raw API response:', response);
 
         let pendingData: any[] = [];
 
@@ -581,7 +577,6 @@ private loadVehicles(distance: number, rideDate: string,vehicleType:string): voi
           }))
           .filter(item => item.vehicle_id && item.date && item.period);
 
-        console.log('Processed pending vehicles:', this.pendingVehicles);
         this.updateAvailableCars();
       },
       error: (error) => {
@@ -595,7 +590,6 @@ private loadVehicles(distance: number, rideDate: string,vehicleType:string): voi
     this.vehicleService.getFuelTypeByVehicleId(vehicleId).subscribe({
       next: (res: FuelTypeResponse) => {
         this.vehicleFuelType = res.fuel_type;
-        console.log('Fuel Type:', this.vehicleFuelType);
       },
       error: err => console.error('Failed to load fuel type', err)
     });
@@ -603,16 +597,13 @@ private loadVehicles(distance: number, rideDate: string,vehicleType:string): voi
 
   // Distance calculation methods
   private fetchEstimatedDistance(from: string, toArray: string[]): void {
-    console.log('📍 Distance Params:', { from, toArray });
 
     if (!from || !toArray || toArray.length === 0) return;
 
-    console.log(`🌍 Requesting route distance: ${from} → ${toArray.join(' → ')}`);
     this.isLoadingDistance = true;
     this.rideService.getRouteDistance(from, toArray).subscribe({
       next: (response) => {
         const realDistance = response.distance_km;
-        console.log(`📏 Distance fetched: ${realDistance} km`);
 
         this.fetchedDistance = realDistance;
         this.estimated_distance_with_buffer = +(realDistance * 1.1).toFixed(2);
@@ -620,7 +611,6 @@ private loadVehicles(distance: number, rideDate: string,vehicleType:string): voi
         this.rideForm.get('estimated_distance_km')?.setValue(realDistance, { emitEvent: false });
         this.isLoadingDistance = false;
 
-        console.log(`Distance set: ${realDistance} km, Buffer: ${this.estimated_distance_with_buffer} km`);
       },
       error: (err) => {
         console.error('❌ Failed to fetch distance:', err);
@@ -812,7 +802,6 @@ shouldShowCarError(): boolean {
       }
 
       if (!pv.start_time || !pv.end_time) {
-        console.log('Pending vehicle missing time data - blocking entire day for safety:', pv);
         return true;
       }
 
@@ -1029,7 +1018,6 @@ static timeStepValidator(control: AbstractControl): ValidationErrors | null {
   }
 
   checkGovernmentLicence(employeeId: string): void {
-    console.log('🔍 Checking government license for user ID:', employeeId);
 
     if (!employeeId) {
       console.warn('⚠️ No employeeId provided for license check. Setting disableRequest to false.');
@@ -1039,17 +1027,13 @@ static timeStepValidator(control: AbstractControl): ValidationErrors | null {
 
     this.UserService.getUserById(employeeId).subscribe({
       next: (user) => {
-        console.log('✅ User fetched from API:', user);
 
         if ('has_government_license' in user) {
           const hasLicense = user.has_government_license;
-          console.log(`📄 License status: ${hasLicense ? '✅ HAS license' : '❌ NO license'}`);
 
           if (hasLicense) {
-            console.log('🎉 User has a valid government license. Enabling request.');
             this.disableRequest = false; // User has license, enable
           } else {
-            console.warn('🚫 User does NOT have a valid government license. Disabling request.');
       this.toastService.show('לא ניתן לשלוח בקשה: למשתמש שנבחר אין רישיון ממשלתי תקף. לעדכון פרטים יש ליצור קשר עם המנהל.', 'error');
             this.disableRequest = true; // User has no license, disable
           }
@@ -1104,7 +1088,6 @@ futureDateTimeValidator(): ValidatorFn {
     if (this.rideForm.invalid) {
       this.rideForm.markAllAsTouched();
       this.toastService.show('יש להשלים את כל שדות הטופס כנדרש', 'error');
-      this.logFormErrors();
       return;
     }
 
@@ -1197,7 +1180,6 @@ futureDateTimeValidator(): ValidatorFn {
 
     };
 
-    console.log('Ride data for backend:', formData);
 
     // Submit ride request
     this.rideService.createRide(formData, user_id).subscribe({
@@ -1234,15 +1216,7 @@ futureDateTimeValidator(): ValidatorFn {
     });
   }
 
-  private logFormErrors(): void {
-    console.log('FORM IS INVALID. HERE ARE THE ERRORS:');
-    Object.keys(this.rideForm.controls).forEach(key => {
-      const control = this.rideForm.get(key);
-      if (control && control.invalid) {
-        console.log(`- Control '${key}' is invalid. Errors:`, control.errors);
-      }
-    });
-  }
+
  
 
   private showFuelTypeMessage(): void {

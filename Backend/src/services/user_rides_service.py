@@ -121,48 +121,11 @@ def update_ride_status(db: Session, ride_id: UUID, new_status: str, changed_by: 
     db.commit()
     db.refresh(ride)
 
-    # print(f"\n !!!!!!!!!!!!!!!!!!!!!!!! changed_by: {changed_by} !!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
-
-    # Log the audit entry with all ride details and the new status
-    # log_action(
-    #     db=db,
-    #     action="UPDATE",  # Correct action
-    #     entity_type="Ride",
-    #     entity_id=str(ride.id),
-    #     change_data={
-    #         "id": str(ride.id),
-    #         "stop": ride.stop,
-    #         "status": ride.status,  # Include the new status
-    #         "user_id": str(ride.user_id),
-    #         "isArchive": ride.isArchive,
-    #         "ride_type": ride.ride_type,
-    #         "vehicle_id": str(ride.vehicle_id),
-    #         "destination": ride.destination,
-    #         "end_datetime": ride.end_datetime.isoformat(),
-    #         "submitted_at": ride.submitted_at.isoformat(),
-    #         "start_datetime": ride.start_datetime.isoformat(),
-    #         "start_location": ride.start_location,
-    #         "emergency_event": ride.emergency_event,
-    #         "override_user_id": str(ride.override_user_id),
-    #         "actual_distance_km": ride.actual_distance_km,
-    #         "license_check_passed": ride.license_check_passed,
-    #         "estimated_distance_km": ride.estimated_distance_km
-    #     },
-    #     changed_by=changed_by,
-    # )
     db.execute(text("SET session.audit.user_id = DEFAULT"))
 
 
     return ride
 
-
-
-# def get_ride_by_id(db: Session, ride_id: UUID) -> Ride:
-#     ride = db.query(Ride).filter(Ride.id == ride_id).first()
-#     if not ride:
-#         raise HTTPException(status_code=404, detail="Ride not found")
-#     db.refresh(ride)  
-#     return ride
 
 
 def get_ride_by_id(db: Session, ride_id: UUID) -> RideSchema:

@@ -25,5 +25,6 @@ class OrderCardItem(BaseModel):
     extra_stops: Optional[List[UUID]] = None 
     rejection_reason: Optional[str] = None
 
+
     class Config:
         from_attributes = True
