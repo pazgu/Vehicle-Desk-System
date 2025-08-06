@@ -4,7 +4,21 @@ import { environment } from '../../environments/environment';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
+
+
 export class AuthService {
+  private apiUrl = environment.apiUrl; // e.g., 'http://localhost:8000'
+  // In auth.service.ts
+retryEmail(identifier_id: string, email_type: string): Observable<any> {
+    const body = {
+        identifier_id: identifier_id,
+        email_type: email_type
+    };
+
+    // This is the correct code.
+    // It uses the prefix from your environment variable.
+    return this.http.post(`${this.apiUrl}/emails/retry`, body);
+}
 
   private loginUrl = `${environment.loginUrl}`;
   private registerUrl = `${environment.registerUrl}`;
@@ -92,7 +106,7 @@ logout(): void {
   }
 
   resetPassword(token: string, newPassword: string) {
-  return this.http.post(environment.resertPassUrl, {
+  return this.http.post(environment.resetPassUrl, {
     token,
     new_password: newPassword
   });
