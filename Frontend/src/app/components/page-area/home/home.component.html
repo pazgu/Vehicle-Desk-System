@@ -4,11 +4,9 @@
     <hr />
 
     <form [formGroup]="rideForm">
-      
-      <!-- Step 1: Choose ride target -->
       <div *ngIf="step === 1">
         <h3 class="ride-question">האם הנסיעה עבורך או עבור עובד אחר?</h3>
-        <div class="input-group">
+        <div class="form-field-group">
           <label>
             <input type="radio" formControlName="target_type" value="self" />
             לעצמי
@@ -19,7 +17,7 @@
           </label>
         </div>
 
-        <div class="input-group" *ngIf="rideForm.get('target_type')?.value === 'other'">
+        <div class="form-field-group" *ngIf="rideForm.get('target_type')?.value === 'other'">
           <label>בחר עובד</label>
           <select formControlName="target_employee_id">
             <option value="">בחר עובד</option>
@@ -30,31 +28,21 @@
         </div>
         <div class="button-container">
           <button class="submit-btn" (click)="handleStep1Next()">הבא</button>
-      
-
           <small *ngIf="showStep1Error" class="error-text">יש לבחור עובד מהמחלקה כדי להמשיך</small>
         </div>
       </div>
 
-      <!-- Step 2: Ride details form -->
-       
       <div *ngIf="step === 2">
-        
-          <!-- Backdrop -->
-<div class="request-backdrop" *ngIf="step === 2 && disableRequest"></div>
+        <div class="request-backdrop" *ngIf="step === 2 && disableRequest"></div>
 
-<!-- Modal -->
-<div class="disable-request" *ngIf="disableRequest">
-  <p>העובד אינו מחזיק ברישיון ממשלתי תקף ולא ניתן להזמין עבורו נסיעה</p>
-  <small>לעדכון פרטי רישיון יש ליצור קשר עם המנהל</small>
-</div>
-
-
+        <div class="disable-request" *ngIf="disableRequest">
+          <p>העובד אינו מחזיק ברישיון ממשלתי תקף ולא ניתן להזמין עבורו נסיעה</p>
+          <small>לעדכון פרטי רישיון יש ליצור קשר עם המנהל</small>
+        </div>
 
         <div class="form-content">
-          <!-- Row 1: ride_period + ride_date + ride_type -->
-          <div class="row">
-            <div class="input-group">
+          <div class="form-row">
+            <div class="form-field-group">
               <label>זמן נסיעה (בוקר / לילה)</label>
               <select formControlName="ride_period">
                 <option value="morning">נסיעת בוקר</option>
@@ -62,265 +50,164 @@
               </select>
             </div>
 
-            <div class="input-group" *ngIf="rideForm.get('ride_period')?.value === 'morning'">
+            <div class="form-field-group" *ngIf="rideForm.get('ride_period')?.value === 'morning'">
               <label>תאריך הנסיעה</label>
               <input type="date" formControlName="ride_date" [min]="minDate" />
-              <small *ngIf="f.ride_date.touched && f.ride_date.errors?.['required']" class="distance-info">חובה למלא את שדה זה</small>
-              <small *ngIf="f.ride_date.errors?.['tooSoon']" class="distance-info">יש להזמין נסיעה לפחות יומיים מראש</small>
-              <small *ngIf="f.ride_date.errors?.['invalidYear']" class="distance-info">השנה צריכה להיות בין 2025 ל-2099</small>
+              <small *ngIf="f.ride_date.touched && f.ride_date.errors?.['required']" class="error-text">חובה למלא את
+                שדה זה</small>
+              <small *ngIf="f.ride_date.errors?.['tooSoon']" class="error-text">יש להזמין נסיעה לפחות יומיים
+                מראש</small>
+              <small *ngIf="f.ride_date.errors?.['invalidYear']" class="error-text">השנה צריכה להיות בין 2025
+                ל-2099</small>
             </div>
 
-            <div class="input-group">
+            <div class="form-field-group">
               <label>סוג נסיעה</label>
               <select formControlName="ride_type" class="styled-select">
                 <option value="" disabled>בחר סוג</option>
                 <option value="administrative">מנהלתית</option>
                 <option value="operational">מבצעית</option>
               </select>
-              <small *ngIf="f.ride_type.touched && f.ride_type.errors?.['required']" class="distance-info">חובה לבחור סוג נסיעה</small>
+              <small *ngIf="f.ride_type.touched && f.ride_type.errors?.['required']" class="error-text">חובה לבחור
+                סוג נסיעה</small>
             </div>
           </div>
 
+          <div class="form-row">
+            <div class="form-field-group">
+              <label>שעת התחלה</label>
+              <div class="time-select-container">
+                <ng-select [items]="hours" bindLabel="" formControlName="start_hour" placeholder="שעה"
+                  class="time-select custom-hour-dropdown" [searchable]="false" [clearable]="false">
+                </ng-select>
+                <ng-select [items]="quarterHours" bindLabel="" formControlName="start_minute" placeholder="דקות"
+                  class="time-select custom-hour-dropdown" [searchable]="false" [clearable]="false">
+                </ng-select>
+              </div>
+              <small
+                *ngIf="rideForm.get('ride_period')?.value === 'morning' && f.start_time.touched && f.start_time.errors?.['required']"
+                class="error-text">
+                חובה למלא את שדה זה
+              </small>
+              <small *ngIf="f.start_time.touched && f.start_time.errors?.['invalidTimeStep']" class="error-text">
+                נא לבחור זמן במרווחים של 15 דקות בלבד
+              </small>
+            </div>
 
-<!-- Row 2: סוג רכב + שעת התחלה + שעת סיום -->
-<div style="display: flex; align-items: center;">
-           <div class="input-group" style="margin-left:10px ;">
-  <label>שעת התחלה</label>
-     <div class="time-select-container">
-    <ng-select
-      [items]="hours"
-      bindLabel=""
-      formControlName="start_hour"
-      placeholder="שעה"
-      class="time-select custom-hour-dropdown"
-      
-      [searchable]="false"
-      [clearable]="false">
-    </ng-select>
-    <ng-select
-      [items]="quarterHours"
-      bindLabel=""
-      formControlName="start_minute"
-      placeholder="דקות"
-      class="time-select custom-hour-dropdown"
-      [searchable]="false"
-      [clearable]="false">
-    </ng-select>
-  </div>
-  <small *ngIf="rideForm.get('ride_period')?.value === 'morning' && f.start_time.touched && f.start_time.errors?.['required']" class="distance-info">
-    חובה למלא את שדה זה
-  </small>
-  <small *ngIf="f.start_time.touched && f.start_time.errors?.['invalidTimeStep']" class="distance-info">
-    נא לבחור זמן במרווחים של 15 דקות בלבד
-  </small>
-</div>
+            <div class="form-field-group">
+              <label>שעת סיום</label>
+              <div class="time-select-container">
+                <ng-select [items]="hours" bindLabel="" formControlName="end_hour" placeholder="שעה"
+                  class="time-select custom-hour-dropdown" [searchable]="false" [clearable]="false">
+                </ng-select>
+                <ng-select [items]="quarterHours" bindLabel="" formControlName="end_minute" placeholder="דקות"
+                  class="time-select custom-hour-dropdown" [searchable]="false" [clearable]="false">
+                </ng-select>
+              </div>
+              <small
+                *ngIf="rideForm.get('ride_period')?.value === 'morning' && f.end_time.touched && f.end_time.errors?.['required']"
+                class="error-text">
+                חובה למלא את שדה זה
+              </small>
+              <small *ngIf="f.end_time.touched && f.end_time.errors?.['invalidTimeStep']" class="error-text">
+                נא לבחור זמן במרווחים של 15 דקות בלבד
+              </small>
+            </div>
+          </div>
 
-<div class="input-group">
-  <label>שעת סיום</label>
- <div class="time-select-container">
-    <ng-select
-      [items]="hours"
-      bindLabel=""
-      formControlName="end_hour"
-      placeholder="שעה"
-      class="time-select custom-hour-dropdown"
-      [searchable]="false"
-      [clearable]="false">
-    </ng-select>
-    <ng-select
-      [items]="quarterHours"
-      bindLabel=""
-      formControlName="end_minute"
-      placeholder="דקות"
-      class="time-select custom-hour-dropdown"
-      [searchable]="false"
-      [clearable]="false">
-    </ng-select>
-    </div>
-  <small *ngIf="rideForm.get('ride_period')?.value === 'morning' && f.end_time.touched && f.end_time.errors?.['required']" class="distance-info">
-    חובה למלא את שדה זה
-  </small>
-  <small *ngIf="f.end_time.touched && f.end_time.errors?.['invalidTimeStep']" class="distance-info">
-    נא לבחור זמן במרווחים של 15 דקות בלבד
-  </small>
-</div>
-</div>
-</div>
-          <!-- Night ride date range -->
-          <div *ngIf="rideForm.get('ride_period')?.value === 'night'" class="row">
-            <div class="input-group">
+          <div *ngIf="rideForm.get('ride_period')?.value === 'night'" class="form-row">
+            <div class="form-field-group">
               <label>תאריך התחלה</label>
               <input type="date" formControlName="ride_date" [min]="minDate" />
             </div>
-            <div class="input-group">
+            <div class="form-field-group">
               <label>תאריך סיום</label>
               <input type="date" formControlName="ride_date_night_end" [min]="minDate" />
             </div>
           </div>
 
-         
-          <div class="column">
-        <div class="input-group">
-  <div class="row ">
-    <div id="first-stop-box">
-  <label>תחנה</label>
-  <select formControlName="stop">
-    <option value="">בחר עיר</option>
-    <option *ngFor="let city of cities" [value]="city.id">{{ city.name }}</option>
-  </select>    <small>*נסיעתך תתחיל ותסתיים בבסיס הארגון: תל אביב</small>
-
-  </div>
-</div>
-
-
-  <!-- ✅ Dynamic extra stops -->
-  <div id="extrastops" formArrayName="extraStops">
-    <div *ngFor="let control of extraStops?.controls; let i = index" class="input-group">
-      <label>תחנה נוספת {{ i + 1 }}</label>
-      <div id="extra-stop">
-      <button type="button" (click)="removeExtraStop(i)" class="removeBtn">❌</button>
-      <select id="extra-stop-box" [formControlName]="i">
-        <option value="">בחר עיר</option>
-        <option *ngFor="let city of cities" [value]="city.id">{{ city.name }}</option>
-      </select>
-   
-      </div>
-    </div>
-
-
-
-
- <div *ngIf="extraStops">
-    <button type="button" (click)="addExtraStop()" [disabled]="extraStops.length >= 2" class="addBtn">
-      ➕ הוסף תחנה נוספת (אופצונאלי)
-    </button>
-    </div>
-  </div>
-</div>
-       
-<div class="row">
-  <div class="input-group">
-    <label>סוג רכב</label>
-    <select formControlName="vehicle_type" class="styled-select" (change)="onRideTypeChange()">
-      <option value="" disabled selected>בחר סוג</option>
-      <option *ngFor="let type of vehicleTypes" [value]="type">{{ type }}</option>
-    </select>
-  <textarea
-    formControlName="vehicle_type_reason"
-    placeholder="אנא פרט.י מדוע יש צורך בכרב 4X4"
-    class="vehicle-type-info"
-    *ngIf="f.vehicle_type.value?.toLowerCase().includes('jeep') || f.vehicle_type.value?.toLowerCase().includes('van') || f.vehicle_type.value?.toLowerCase().includes('4x4')"
-  ></textarea>
-
-  <small *ngIf="rideForm.get('vehicle_type_reason')?.touched && rideForm.get('vehicle_type_reason')?.errors?.['required']" class="distance-info">
-    חובה לפרט מדוע יש צורך ברכב זה
-  </small>
-  </div>
-<!-- Vehicle selection -->
-<div class="row">
-  <div class="input-group">
-
-        <label *ngIf="!shouldShowCarError()">בחר רכב זמין</label>
-
-
-    <!-- Show dropdown only if cars available -->
-    <select *ngIf="availableCars.length > 0" formControlName="car" class="styled-select">
-      <option value="" disabled selected>בחר רכב</option>
-      <option *ngFor="let car of availableCars"
-              [value]="car.id"
-              [disabled]="isPendingVehicle(car.id)"
-              [title]="isPendingVehicle(car.id) ? 'הרכב זה ממתין לעיבוד לתאריך/תקופה שנבחרו' : ''">
-        {{ car.vehicle_model }}
-      </option>
-    </select>
-
-   
-
-<!-- UNIFIED validation message -->
-<div
-*ngIf="rideForm?.get('vehicle_type') && (availableCars.length === 0 && hasTouchedVehicleType() &&shouldShowCarError()&&canChooseVehicle())"
-  class="car-validation-message"
->
-  <ng-container *ngIf="availableCars.length === 0 && !shouldShowCarError()" >
-    אין רכבים זמינים מסוג זה בשעות שנבחרו,
-  </ng-container>
-  <ng-container *ngIf="availableCars.length === 0 && shouldShowCarError()">
-    אין רכבים זמינים מסוג זה בשעות שנבחרו. נא לבחור סוג רכב אחר.
-  </ng-container>
-  <ng-container *ngIf="availableCars.length > 0 && shouldShowCarError()" >
-    {{ isPendingVehicle(f.car.value) ? 'רכב זה אינו זמין בשעות שנבחרו' : 'חובה לבחור רכב' }}
-  </ng-container>
-</div>
-
-  </div>
-</div>
-
-
-
-
-          
+          <div class="form-field-group">
+            <label>תחנה</label>
+            <select formControlName="stop">
+              <option value="">בחר עיר</option>
+              <option *ngFor="let city of cities" [value]="city.id">{{ city.name }}</option>
+            </select>
+            <small *ngIf="f.ride_date.touched && f.ride_date.errors?.['required']" class="error-text">חובה למלא את
+              שדה זה</small>
+            <small class="distance-info">*נסיעתך תתחיל ותסתיים בבסיס הארגון: תל אביב</small>
           </div>
-        </div>
-      
-        <!-- Submit button -->
-        <div class="button-container">
-          <button type="submit" class="submit-btn" (click)="submit()">שלח</button>
-        </div>
-        </div>
-    </form>
-  </div>
 
-  <!-- Optional: modal for warnings -->
-  <div class="inspector-overlay" *ngIf="showInspectorWarningModal">
-    <div class="inspector-modal">
-      <span class="close-icon" (click)="showInspectorWarningModal = false">&times;</span>
-      <h2>שים לב</h2>
-      <p style="font-size: 1.1rem;">
-        שולחן הפקח סגור בין השעות <strong>11:15–12:15</strong>.<br />
-        אנא קבע את שעת ההתחלה לפני או אחרי זמן זה.
-      </p>
-      <div class="modal-buttons">
-        <button class="continue-btn" (click)="confirmInspectorWarning()">הבנתי, המשך</button>
-        <button class="cancel-btn" (click)="showInspectorWarningModal = false">בטל</button>
-      </div>
-    </div>
-  </div>
-</div>
- 
-<div *ngIf="step === 2" class="full-trip-display">
-  <h4>מסלול הנסיעה שלך:</h4>
-  <hr>
-  <a>תל אביב</a>
-  <p>↓</p>
-  <a>{{ getSelectedStopName() }}</a>
-  <ng-container *ngFor="let extra of getExtraStopNames()">
-    <p>↓</p>
-    <a>{{ extra }}</a>
-  </ng-container>
-  <p>↓</p>
-  <a>תל אביב</a>
-  
-<div class="input-group">
-  <label id="distance-title">הערכת מרחק (ק"מ)</label>
+          <div id="extrastops" formArrayName="extraStops">
+            <div *ngFor="let control of extraStops?.controls; let i = index" class="extra-stop-item">
+              <button type="button" (click)="removeExtraStop(i)" class="removeBtn">❌</button>
+              <div class="extra-stop-fields">
+                <label>תחנה נוספת {{ i + 1 }}</label>
+                <select [formControlName]="i">
+                  <option value="">בחר עיר</option>
+                  <option *ngFor="let city of cities" [value]="city.id">{{ city.name }}</option>
+                </select>
+              </div>
+            </div>
 
-  <small *ngIf="f.estimated_distance_km.touched && f.estimated_distance_km.errors?.['required']"
-         class="distance-info">
+            <button type="button" (click)="addExtraStop()" [disabled]="extraStops.length >= 2" class="addBtn"
+              *ngIf="extraStops">
+              ➕ הוסף תחנה נוספת (אופציונלי)
+            </button>
+          </div>
+
+          <div class="form-row">
+<div class="form-field-group">
+  <label>סוג רכב</label>
+  <select formControlName="vehicle_type" class="styled-select" (change)="onRideTypeChange()">
+    <option value="" disabled selected>בחר סוג</option>
+    <option *ngFor="let type of vehicleTypes" [value]="type">{{ type }}</option>
+  </select>
+
+  <small *ngIf="f.vehicle_type.touched && f.vehicle_type.errors?.['required']" class="error-text">
     חובה למלא את שדה זה
   </small>
 
-  <small *ngIf="f.estimated_distance_km.errors?.['min']"
-         class="distance-info">
-    המרחק חייב להיות לפחות 1 ק״מ
+  <textarea formControlName="vehicle_type_reason" placeholder="אנא פרט.י מדוע יש צורך בכרב 4X4"
+    class="vehicle-type-info"
+    *ngIf="f.vehicle_type.value?.toLowerCase().includes('jeep') || f.vehicle_type.value?.toLowerCase().includes('van') || f.vehicle_type.value?.toLowerCase().includes('4x4')"></textarea>
+
+  <small *ngIf="(f.vehicle_type.value?.toLowerCase().includes('jeep') || f.vehicle_type.value?.toLowerCase().includes('van') || f.vehicle_type.value?.toLowerCase().includes('4x4')) && rideForm.get('vehicle_type_reason')?.touched && rideForm.get('vehicle_type_reason')?.errors?.['required']"
+    class="error-text">
+    חובה לפרט מדוע יש צורך ברכב זה
   </small>
-
-  <small class="distance-info" *ngIf="estimated_distance_with_buffer">
-  המרחק לאחר תוספת סטייה: {{ estimated_distance_with_buffer }} ק"מ
-</small>
-
 </div>
 
+            <div class="form-field-group">
+              <label *ngIf="!shouldShowCarError()">בחר רכב זמין</label>
+              <select *ngIf="availableCars.length > 0" formControlName="car" class="styled-select">
+                <option value="" disabled selected>בחר רכב</option>
+                <option *ngFor="let car of availableCars" [value]="car.id" [disabled]="isPendingVehicle(car.id)"
+                  [title]="isPendingVehicle(car.id) ? 'הרכב זה ממתין לעיבוד לתאריך/תקופה שנבחרו' : ''">
+                  {{ car.vehicle_model }}
+                </option>
+              </select>
 
+              <div
+                *ngIf="rideForm?.get('vehicle_type') && (availableCars.length === 0 && hasTouchedVehicleType() &&shouldShowCarError()&&canChooseVehicle())"
+                class="car-validation-message">
+                <ng-container *ngIf="availableCars.length === 0 && !shouldShowCarError()">
+                  אין רכבים זמינים מסוג זה בשעות שנבחרו,
+                </ng-container>
+                <ng-container *ngIf="availableCars.length === 0 && shouldShowCarError()">
+                  אין רכבים זמינים מסוג זה בשעות שנבחרו. נא לבחור סוג רכב אחר.
+                </ng-container>
+                <ng-container *ngIf="availableCars.length > 0 && shouldShowCarError()">
+                  {{ isPendingVehicle(f.car.value) ? 'רכב זה אינו זמין בשעות שנבחרו' : 'חובה לבחור רכב' }}
+                </ng-container>
+              </div>
+            </div>
+          </div>
+        </div>
 
+        <div class="button-container">
+          <button type="submit" class="submit-btn" (click)="submit()">שלח</button>
+        </div>
+      </div>
+    </form>
+  </div>
 </div>
-
-<router-outlet></router-outlet>

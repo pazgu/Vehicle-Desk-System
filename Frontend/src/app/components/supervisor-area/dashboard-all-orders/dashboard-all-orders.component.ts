@@ -37,7 +37,7 @@ export class DashboardAllOrdersComponent implements OnInit {
   endDate: string = '';
   showFilters: boolean = false;
   showOldOrders: boolean = false;
-  sortBy: string = 'date_and_time';
+  sortBy: string = 'submitted_at'; 
 
 
 
