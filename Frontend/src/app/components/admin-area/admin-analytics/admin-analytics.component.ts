@@ -136,19 +136,16 @@ years = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - i).toStr
     this.loadTopUsedVehiclesChart();
     this.loadAllTimeTopUsedVehiclesChart();
     this.socketService.rideStatusUpdated$.subscribe(() => {
-      console.log('🔔 rideStatusUpdated$ triggered');
       this.loadRideChart();
 
     });
 
     this.socketService.vehicleStatusUpdated$.subscribe(() => {
-      console.log('🔔 vehicleStatusUpdated$ triggered');
       this.loadVehicleChart();
       this.loadFrozenVehicles();
     });
 
     this.socketService.deleteRequests$.subscribe(() => {
-      console.log('🔔 deleteRequest$ triggered');
       this.loadRideChart();
       this.loadVehicleChart();
      this.loadFrozenVehicles();
@@ -161,10 +158,8 @@ years = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - i).toStr
     this.http.get<{ vehicle_types: string[] }>(`${environment.apiUrl}/vehicles/types`).subscribe({
       next: (res) => {
         this.vehicleTypes = res.vehicle_types;
-        console.log('✅ Vehicle types loaded:', this.vehicleTypes);
       },
       error: (err) => {
-        console.error('❌ Error loading vehicle types:', err);
         this.toastService.show('אירעה שגיאה בטעינת סוגי רכבים', 'error');
       }
     });
@@ -172,7 +167,6 @@ years = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - i).toStr
 
   // 🆕 פונקציה חדשה לטיפול בשינוי הפילטר
   onVehicleTypeFilterChange() {
-    console.log('🔄 Vehicle type filter changed to:', this.selectedVehicleType);
     this.loadVehicleChart(); // טען מחדש את הגרף עם הפילטר החדש
   }
 
@@ -193,13 +187,10 @@ years = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - i).toStr
 
 toggleUsageView() {
   this.isMonthlyView = !this.isMonthlyView;
-  console.log('isMonthlyView:', this.isMonthlyView);
   if (this.isMonthlyView) {
-    console.log('Loading monthly chart');
     this.loadTopUsedVehiclesChart();
     this.reloadChart();
   } else {
-    console.log('Loading all-time chart');
     this.loadAllTimeTopUsedVehiclesChart();
     this.reloadChart();
   }
@@ -250,13 +241,10 @@ getFreezeReasonHebrew(reason: FreezeReason): string {
     this.http.get<{ status: string; count: number }[]>(url)
       .subscribe({
         next: (data) => {
-          console.log('🚗 Vehicle Status Data:', data);
-          console.log('🔍 Applied filter:', this.selectedVehicleType || 'All types');
           this.updateVehicleChart(data);
           this.vehicleChartInitialized = true;
         },
         error: (error) => {
-          console.error('❌ Error loading vehicle data:', error);
           this.toastService.show('אירעה שגיאה בטעינת נתוני רכבים', 'error');
           this.vehicleChartInitialized = true;
         }
@@ -268,12 +256,8 @@ getFreezeReasonHebrew(reason: FreezeReason): string {
     this.http.get<{ status: string; count: number}[]>(`${environment.apiUrl}/analytics/ride-status-summary`)
       .subscribe({
         next: (data) => {
-          console.log('🚌 Ride Status Data:', data);
-          console.log('🚌 Data length:', data?.length);
-          console.log('🚌 Data structure:', JSON.stringify(data, null, 2));
           
           if (!data || data.length === 0) {
-            console.warn('⚠️ No ride data received');
             this.rideChartData = {
               labels: ['אין נתונים'],
               datasets: [{
@@ -392,12 +376,10 @@ labels: updatedLabels,
   }
 
   private updateRideChart(data: { status: string; count: number}[]) {
-    console.log('🔄 Updating ride chart with data:', data);
     
     
     const labels = data.map(d => {
       const hebrewLabel = this.getRideStatusHebrew(d.status);
-      console.log(`Status: ${d.status} -> Hebrew: ${hebrewLabel}`);
       return hebrewLabel;
     });
     const values = data.map(d => d.count);
@@ -407,10 +389,6 @@ labels: updatedLabels,
   const percent = ((count / total) * 100).toFixed(1);
   return `${label} – ${count} רכבים (${percent}%)`;
 });
-
-    
-    console.log('📊 Chart labels:', labels);
-    console.log('📊 Chart values:', values);
 
     const newrideChartData = {
 labels: updatedLabels,
@@ -441,7 +419,6 @@ labels: updatedLabels,
       locale: 'he-IL' // Hebrew locale
     };
     
-    console.log('✅ Final rideChartData:', this.rideChartData);
   }
 
 
@@ -511,7 +488,6 @@ this.topNoShowUsers = mappedUsers;
 
 this.allNoShowUsers = mappedUsers;
       this.applyNoShowFilter(); // Apply default filter/sort
-      console.log("👀 Top No-Show Users:", this.topNoShowUsers);
 
     },
     error: (err) => {
@@ -553,12 +529,10 @@ this.allNoShowUsers = mappedUsers;
       next: (departments) => {
         departments.forEach(dep => this.departmentsMap.set(dep.id, dep.name));
         this.departmentsLoaded = true; // Mark departments as loaded
-        console.log('AdminAnalyticsComponent: Departments loaded and cached.');
         // Call loadNoShowStatistics ONLY after departments are successfully loaded
         this.loadNoShowStatistics();
       },
-      error: (err) => {
-        console.error('❌ Failed to load departments from UserService:', err);
+      error: () => {
         this.toastService.show('אירעה שגיאה בטעינת נתוני מחלקות.', 'error');
         this.departmentsLoaded = false; // Mark as failed to load
         // If departments fail to load, still try to load no-show stats
@@ -904,7 +878,6 @@ if (isNoShowTab && this.filteredNoShowUsers.length === 0) {
 
 
 
-
   const worksheet = XLSX.utils.json_to_sheet(data);
   const range = XLSX.utils.decode_range(worksheet['!ref']!);
 
@@ -1143,7 +1116,6 @@ public loadTopUsedVehiclesChart() {
     `${environment.apiUrl}/vehicles/usage-stats?range=month&year=${this.selectedYear}&month=${this.selectedMonth}`
   ).subscribe({
     next: data => {
-      console.log('data for usage-stat',data)
       const labels = data.stats.map(v => ` ${v.plate_number} – ${v.vehicle_model}`);
       const counts = data.stats.map(v => Number.isFinite(v.total_rides) ? v.total_rides : 0);
       const kilometers = data.stats.map(v => v.total_km); // array like [82.68]
@@ -1220,10 +1192,6 @@ public loadTopUsedVehiclesChart() {
       this.topUsedVehiclesOptions = { ...cloneDeep(this.monthlyChartOptions) };
       this.monthlyStatsChartData= {...this.monthlyChartData};
       this.monthlyStatsChartOptions={ ...this.monthlyChartOptions };
-      console.log('monthly stats data:',this.monthlyStatsChartData)
-
-
-
     },
     error: err => {
       console.error('❌ Error fetching top used vehicles:', err);
@@ -1234,7 +1202,6 @@ public loadTopUsedVehiclesChart() {
 private loadAllTimeTopUsedVehiclesChart() {
   this.http.get(`${environment.apiUrl}/vehicles/usage-stats?range=all`).subscribe({
     next: (res: any) => {
-      console.log('all stats data', res);
       const stats = res?.stats || [];
 
       if (!stats.length) {

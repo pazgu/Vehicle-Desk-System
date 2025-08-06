@@ -52,7 +52,6 @@ export class RideDetailsComponent implements OnInit {
   this.rideService.getRideById(this.rideId).subscribe({
     next: (res) => {
       this.ride = res;
-      console.log('📄 Ride details:', res);
     },
     error: () => {
       this.toastService.show('שגיאה בטעינת פרטי הנסיעה', 'error');

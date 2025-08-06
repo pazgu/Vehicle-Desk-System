@@ -74,7 +74,6 @@ uploadSummary: { vehiclesUpdated: number; warnings: string[] } | null = null;
 
     this.socketService.newVehicle$.subscribe((vehicleData) => {
       if (vehicleData && vehicleData.id) {
-        console.log('🆕 Vehicle received via socket:', vehicleData);
         const alreadyExists = this.vehicles.some(v => v.id === vehicleData.id);
         if (!alreadyExists) {
           const departmentName = this.departmentMap.get(vehicleData.department_id || '');
@@ -95,7 +94,6 @@ uploadSummary: { vehiclesUpdated: number; warnings: string[] } | null = null;
         departments.forEach(dept => {
           this.departmentMap.set(dept.id, dept.name);
         });
-        console.log('Departments mapped:', this.departmentMap);
       }
     } catch (err) {
       console.error('Failed to fetch departments for mapping', err);
@@ -106,7 +104,6 @@ uploadSummary: { vehiclesUpdated: number; warnings: string[] } | null = null;
   getUserRole(): void {
     if (typeof localStorage !== 'undefined') {
       this.userRole = localStorage.getItem('role');
-      console.log('User role from local storage:', this.userRole);
     }
   }
 
@@ -126,7 +123,6 @@ uploadSummary: { vehiclesUpdated: number; warnings: string[] } | null = null;
           department: this.departmentMap.get(vehicle.department_id || '') || (vehicle.department_id ? 'מחלקה לא ידועה' : 'לא משוייך למחלקה')
         })) : [];
         this.showingMostUsed = false;
-        console.log('Vehicles loaded with department names:', this.vehicles);
       },
       (error) => {
         console.error('Error loading vehicles:', error);
@@ -144,7 +140,6 @@ uploadSummary: { vehiclesUpdated: number; warnings: string[] } | null = null;
         data.forEach(vehicle => {
           this.topUsedVehiclesMap[vehicle.plate_number] = vehicle.ride_count;
         });
-        console.log('Vehicle usage data loaded:', this.topUsedVehiclesMap);
       },
       error: err => {
         console.error('❌ Error fetching vehicle usage data:', err);
@@ -153,10 +148,8 @@ uploadSummary: { vehiclesUpdated: number; warnings: string[] } | null = null;
   }
 
 fetchVehicleTypes() {
-  console.log('fetchVehicleTypes called');
   this.vehicleService.getVehicleTypes().subscribe({
     next: (types) => {
-      console.log('Fetched vehicle types:', types);
       this.vehicleTypes = (types || []).map(type => ({
         original: type,
         translated: this.vehicleTypeTranslations[type] || type // fallback to original if not found
@@ -214,7 +207,6 @@ fetchVehicleTypes() {
 
         this.vehicleService.getMostUsedVehiclesThisMonth(year, month).subscribe({
           next: (response) => {
-            console.log('✅ Most used vehicles:', response);
 
             const enrichedStats = response.stats
               .map((stat: any) => {
