@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-type ToastType = 'success' | 'error' | 'neutral' ;// Add your custom types here
+type ToastType = 'success' | 'error' | 'neutral' | 'warning' | 'info' ;// Add your custom types here
 
 @Injectable({ providedIn: 'root' })
 export class ToastService {
