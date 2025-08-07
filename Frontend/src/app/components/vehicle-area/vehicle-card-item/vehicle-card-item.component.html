@@ -50,13 +50,20 @@
           </p>
 
 <!-- Mileage Display with Edit Button (shown only to admins) -->
-<p>
-  <strong>קילומטראז':</strong> {{ vehicle.mileage | number }} ק"מ
-  <button class="btn btn-sm btn-link" (click)="openMileageModal()">
-    ✏️ ערוך
+<p style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+  <strong style="color: #842020;">קילומטראז':</strong>
+  {{ vehicle.mileage | number }} ק"מ
+  <button class="modern-edit-btn" (click)="openMileageModal()">
+    <mat-icon>edit</mat-icon> ערוך
   </button>
 </p>
-<p><strong>עודכן לאחרונה:</strong> {{ vehicle.mileage_last_updated | date:'dd/MM/yyyy' }}</p>
+
+<!-- <p><strong>עודכן לאחרונה:</strong> {{ vehicle.mileage_last_updated | date:'dd/MM/yyyy' }}</p> -->
+  <p *ngIf="vehicle.mileage_last_updated" class="last-updated-info">
+              <strong>עודכן לאחרונה:</strong> {{ vehicle.mileage_last_updated | date:'dd/MM/yyyy' }}
+            </p>
+
+
 
 <!-- Edit Mileage Modal -->
 <div class="modal" [class.show]="showMileageModal" tabindex="-1" style="display: block;" *ngIf="showMileageModal">
