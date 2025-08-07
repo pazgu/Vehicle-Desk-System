@@ -971,4 +971,9 @@ export class NewRideComponent implements OnInit {
     close(): void {
         this.router.navigate(['/home']);
     }
+
+    goBackToStep1(): void {
+        this.step = 1;
+        this.showStep1Error = false;
+    }
 }

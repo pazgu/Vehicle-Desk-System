@@ -48,4 +48,5 @@ export interface RideInsertChangeData {
   license_check_passed: boolean;
   estimated_distance_km: number;
   override_user_id?: string; // Optional for Ride updates
+  extra_stops?: string[]; // Optional for Ride updates
 }
