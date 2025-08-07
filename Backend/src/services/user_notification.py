@@ -60,7 +60,6 @@ async def send_notification_async(
     }
 
     await sio.emit("new_notification", notif_data, room=str(user_id))
-    print(f"📢 Emitted new_notification to room {user_id}")
 
     return new_notification
 
@@ -127,9 +126,7 @@ def create_system_notification_with_db(db: Session, user_id, title, message, ord
 async def send_admin_odometer_notification(vehicle_id: UUID, mileage: float):
     db = SessionLocal()
     try:
-        print(f"send_admin_odometer_notification called with vehicle_id={vehicle_id}, mileage={mileage}")
         admins = db.query(User).filter(User.role == 'admin').all()
-        print(f"Admins: {admins}, Odo: {mileage}")
         if not admins or mileage < 10000:
             return None
 
@@ -163,16 +160,12 @@ async def send_admin_odometer_notification(vehicle_id: UUID, mileage: float):
         db.commit()
 
         if notifications:
-            print('before emit')
             for notif in notifications:
                 await sio.emit(
                     "new_odometer_notification",
                     {"updated_notifications": [notif.to_dict()]},
                     room=str(notif.user_id)
                 )
-            print('✅ just emitted updated_notifications to each admin room')
-        else:
-            print('❌ No new notifications to emit')
 
         return notifications
     except Exception as e:

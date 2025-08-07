@@ -10,6 +10,8 @@ import { Router } from '@angular/router';
   styleUrls: ['./forgot-password.component.css'],
   imports:[CommonModule,ReactiveFormsModule]
 })
+
+
 export class ForgotPasswordComponent {
   forgotForm: FormGroup;
   submitted = false;
@@ -46,7 +48,6 @@ get f() {
     if (this.forgotForm.invalid) return;
 
     const email = this.forgotForm.value.email;
-    console.log(email)
     this.authService.requestPasswordReset(email).subscribe({
       next: res => this.message = res.message,
       error: err => this.error = err.error.detail || 'Failed to send reset email'

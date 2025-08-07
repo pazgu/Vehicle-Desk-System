@@ -27,6 +27,7 @@ import { LayoutComponent } from '../../layout-area/layout/layout.component';
 import { AuthService } from '../../../services/auth.service';
 import {  ValidationErrors } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { formatDate } from '@angular/common';
 
 // Define the interface for pending vehicle
 interface PendingVehicle {
@@ -99,6 +100,8 @@ export class NewRideComponent implements OnInit {
   disableRequest: boolean = false;
 hours = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
 quarterHours = ['00', '15', '30', '45'];
+formReady = false;
+
 
 
   constructor(
@@ -113,6 +116,8 @@ quarterHours = ['00', '15', '30', '45'];
     private UserService: UserService,
     private AuthService: AuthService
   ) { }
+
+  
 
   ngOnInit(): void {
     this.initializeComponent();
@@ -133,16 +138,44 @@ quarterHours = ['00', '15', '30', '45'];
     }
   }
 
+   hasTouchedVehicleType(): boolean {
+    const value=this.rideForm.get('vehicle_type')?.value;
+    if(value){
+      return true
+    }
+    return false;
+  }
+    canChooseVehicle(): boolean {
+      const distance = this.rideForm.get('estimated_distance_km')?.value;
+      const rideDate = this.rideForm.get('ride_date')?.value;
+      const vehicleType = this.rideForm.get('vehicle_type')?.value;
+      const rideDateNight=this.rideForm.get('ride_date_night_end')?.value;
+      const period=this.rideForm.get('ride_period')?.value;
+  // Validate required inputs before calling loadVehicles
+  if(period!='morning'){
+    if (distance && rideDateNight && vehicleType) {
+      return true
+  } else {
+    return false
+  }
+  }
+  else{ if (distance && rideDate && vehicleType) {
+    return true
+  } else {
+   return false
+  }}
+    
+  }
+
   private initializeComponent(): void {
     this.fetchVehicleTypes();
     this.minDate = this.calculateMinDate();
     this.initializeForm();
     this.setupFormSubscriptions();
     this.fetchCities();
-    this.loadVehicles();
     this.loadPendingVehicles();
-     this.generateTimeOptions();
-  this.setClosestQuarterHourTime();
+    this.generateTimeOptions();
+    this.setClosestQuarterHourTime();
   }
 
   private initializeForm(): void {
@@ -178,7 +211,6 @@ quarterHours = ['00', '15', '30', '45'];
       });
     });
     this.socketService.usersLicense$.subscribe(update => {
-  console.log('🚨 Received update from socket:', update);
 
   const { id, has_government_license, license_expiry_date } = update;
 
@@ -199,7 +231,6 @@ quarterHours = ['00', '15', '30', '45'];
 
   if (licenseValid) {
     this.disableRequest = false;
-    console.log('✅ License is valid via socket');
   } else {
     this.disableRequest = true;
     console.warn('🚫 License is missing or expired via socket');
@@ -208,6 +239,7 @@ quarterHours = ['00', '15', '30', '45'];
       'error'
     );
   }
+  
 });
 
 
@@ -414,7 +446,6 @@ setClosestQuarterHourTime() {
     routeStops = routeStops.filter((id: string) => !!id && typeof id === 'string' && id.trim() !== '');
     routeStops.push(stop); // Add the main stop as the final destination.
 
-    console.log('📦 Raw stop:', stopRaw, '| extraStops:', extraStops, '| Final routeStops:', routeStops);
 
 
     this.fetchEstimatedDistance(start, routeStops);
@@ -494,36 +525,36 @@ setClosestQuarterHourTime() {
     });
   }
 
-  private loadVehicles(): void {
-    this.vehicleService.getAllVehicles().subscribe({
-      next: (vehicles) => {
-        this.allCars = vehicles
-          .filter(v =>
-            v.status === 'available' &&
-            !!v.id &&
-            !!v.type &&
-            !!v.plate_number &&
-            typeof v.mileage === 'number'
-          )
-          .map(v => ({
-            ...v,
-            image_url: v.image_url || 'assets/default-car.png',
-            vehicle_model: v.vehicle_model || 'רכב ללא דגם',
-            freeze_reason: v.freeze_reason ?? null
-          }));
+private loadVehicles(distance: number, rideDate: string,vehicleType:string): void {
+  this.vehicleService.getAllVehiclesForNewRide(distance, rideDate,vehicleType).subscribe({
+    next: (vehicles) => {
+      this.allCars = vehicles
+        .filter(v =>
+          v.status === 'available' &&
+          !!v.id &&
+          !!v.type &&
+          !!v.plate_number &&
+          typeof v.mileage === 'number'
+        )
+        .map(v => ({
+          ...v,
+          image_url: v.image_url || 'assets/default-car.png',
+          vehicle_model: v.vehicle_model || 'רכב ללא דגם',
+          freeze_reason: v.freeze_reason ?? null
+        }));
 
-        this.updateAvailableCars();
-      },
-      error: () => {
-        this.toastService.show('שגיאה בטעינת רכבים זמינים', 'error');
-      }
-    });
-  }
+      this.updateAvailableCars();
+    },
+    error: () => {
+      this.toastService.show('שגיאה בטעינת רכבים זמינים', 'error');
+    }
+  });
+}
+
 
   private loadPendingVehicles(): void {
     this.vehicleService.getPendingCars().subscribe({
       next: (response: any) => {
-        console.log('Raw API response:', response);
 
         let pendingData: any[] = [];
 
@@ -546,7 +577,6 @@ setClosestQuarterHourTime() {
           }))
           .filter(item => item.vehicle_id && item.date && item.period);
 
-        console.log('Processed pending vehicles:', this.pendingVehicles);
         this.updateAvailableCars();
       },
       error: (error) => {
@@ -560,7 +590,6 @@ setClosestQuarterHourTime() {
     this.vehicleService.getFuelTypeByVehicleId(vehicleId).subscribe({
       next: (res: FuelTypeResponse) => {
         this.vehicleFuelType = res.fuel_type;
-        console.log('Fuel Type:', this.vehicleFuelType);
       },
       error: err => console.error('Failed to load fuel type', err)
     });
@@ -568,16 +597,13 @@ setClosestQuarterHourTime() {
 
   // Distance calculation methods
   private fetchEstimatedDistance(from: string, toArray: string[]): void {
-    console.log('📍 Distance Params:', { from, toArray });
 
     if (!from || !toArray || toArray.length === 0) return;
 
-    console.log(`🌍 Requesting route distance: ${from} → ${toArray.join(' → ')}`);
     this.isLoadingDistance = true;
     this.rideService.getRouteDistance(from, toArray).subscribe({
       next: (response) => {
         const realDistance = response.distance_km;
-        console.log(`📏 Distance fetched: ${realDistance} km`);
 
         this.fetchedDistance = realDistance;
         this.estimated_distance_with_buffer = +(realDistance * 1.1).toFixed(2);
@@ -585,7 +611,6 @@ setClosestQuarterHourTime() {
         this.rideForm.get('estimated_distance_km')?.setValue(realDistance, { emitEvent: false });
         this.isLoadingDistance = false;
 
-        console.log(`Distance set: ${realDistance} km, Buffer: ${this.estimated_distance_with_buffer} km`);
       },
       error: (err) => {
         console.error('❌ Failed to fetch distance:', err);
@@ -595,36 +620,144 @@ setClosestQuarterHourTime() {
       }
     });
   }
+    private formatDateForComparison(dateStr: string): string {
+  const date = new Date(dateStr);
+  return formatDate(date, 'dd.MM.yyyy', 'en-US');
+}
 
-  // Vehicle management methods
-  private updateAvailableCars(): void {
-    const selectedType = this.rideForm.get('vehicle_type')?.value;
-    if (selectedType) {
-      this.availableCars = this.allCars.filter(car => car.type === selectedType);
-    } else {
-      this.availableCars = []; // No type selected, no cars available
+private updateAvailableCars(): void {
+  const selectedType = this.rideForm.get('vehicle_type')?.value;
+
+  this.availableCars = this.allCars.filter(car =>
+    car.type === selectedType &&
+    (car as any).can_order !== false &&
+    !this.isPendingVehicle(car.id)
+  );
+    const rideDate = this.rideForm.get('ride_date')?.value;
+    const startTime = this.rideForm.get('start_time')?.value;
+    const endTime = this.rideForm.get('end_time')?.value;
+
+    if (rideDate && startTime && endTime) {
+      // Get orders from localStorage (your existing data)
+      const storedOrders = localStorage.getItem('user_orders');
+      const existingOrders = storedOrders ? JSON.parse(storedOrders) : [];
+      
+      this.availableCars = this.availableCars.filter(car => 
+        !existingOrders.some((order: any) => 
+          order.type === car.type && // Assuming 'type' matches vehicle type
+          order.date === this.formatDateForComparison(rideDate) &&
+          order.status === 'approved' // Only check approved rides
+        )
+      );
     }
-    // Also reset car selection if current car is no longer available
-    const selectedCar = this.rideForm.get('car')?.value;
+   else {
+    this.availableCars = []; // No type selected, no cars available
+  }
+
+
+  const carControl = this.rideForm.get('car'); // Get control early
+
+  // Auto-select if only one car is available
+  if (this.availableCars.length === 1) {
+    const onlyCar = this.availableCars[0];
+    carControl?.setValue(onlyCar.id);
+    carControl?.markAsTouched();
+    carControl?.updateValueAndValidity();
+    // Ensure no pending error if it was previously set and is now auto-selected (and not pending)
+    if (carControl?.errors?.['pending'] && !this.isPendingVehicle(onlyCar.id)) {
+      carControl.setErrors(null);
+      carControl.updateValueAndValidity();
+    }
+  } else {
+    // If no cars or multiple cars, ensure it's not auto-selected with a single pending car.
+    // Also, if the previously selected car is no longer available (e.g. filtered out)
+    const selectedCar = carControl?.value;
     if (selectedCar && !this.availableCars.some(car => car.id === selectedCar)) {
-      this.rideForm.get('car')?.setValue(null);
+      carControl?.setValue(null); // Clear selection
     }
 
-    this.availableCars = this.allCars.filter(car =>
-  car.type === selectedType &&
-  (car as any).can_order !== false
-);
-
-  }
-
-  onRideTypeChange(): void {
-    this.updateAvailableCars();
-    this.rideForm.get('car')?.setValue(null); // Clear selected car when ride type changes
-
+    // THIS IS KEY: If there are no available cars *and* a selection was previously made,
+    // or if we expect the user to make a choice, mark it for validation.
+    // Consider adding 'required' validator if not already there.
     if (this.availableCars.length === 0) {
-      this.toastService.show('אין רכבים זמינים מסוג זה', 'error');
+        // If the car control has a value, but that car is no longer available (filtered out)
+        // or if it was previously valid and now isn't.
+        if (selectedCar !== null) { // If something was selected before but now is invalid
+            carControl?.setValue(null); // Clear it
+            carControl?.markAsTouched(); // Ensure validation shows for "required"
+            carControl?.markAsDirty();   // Ensure validation shows for "required"
+            carControl?.setErrors({ required: true }); // Explicitly set required error
+        }
+        // If carControl value is already null, but user has already "interacted" with type dropdown
+        // and we want to show immediate "required" error for car.
+        if (carControl && (carControl.touched || carControl.dirty) && !carControl.value) {
+             carControl?.setErrors({ required: true });
+        }
     }
   }
+
+  
+
+  // Mark car as pending error if selected car is pending (this is for *already selected* cars)
+  // This logic is good as is for *selected* cars becoming pending.
+  const carId = carControl?.value;
+  if (carId && this.isPendingVehicle(carId)) {
+    carControl?.setErrors({ pending: true });
+    carControl?.markAsTouched();
+    carControl?.markAsDirty();
+  } else if (carControl?.errors?.['pending'] && !this.isPendingVehicle(carId)) {
+    // Clear pending error if the car is no longer pending or no car is selected
+    carControl.setErrors(null);
+    carControl.updateValueAndValidity();
+  }
+}
+
+shouldShowCarError(): boolean {
+  const carControl = this.rideForm.get('car');
+  if (!carControl) return false;
+
+  // An error should be shown if:
+  // 1. The control has been touched or dirty (user interaction or programmatic change).
+  // 2. AND there's an actual validation error (carControl.invalid) OR the 'pending' error is specifically set.
+  //    Note: Setting errors via setErrors() usually makes carControl.invalid true,
+  //    but being explicit about carControl.errors?.['pending'] is safer.
+  const hasValidationErrors = carControl.invalid;
+  const hasPendingError = carControl.errors?.['pending'];
+  const hasRequiredError = carControl.errors?.['required']; // Added for clarity
+
+  return (carControl.touched || carControl.dirty) && (hasValidationErrors || hasPendingError || hasRequiredError);
+}
+
+
+
+ onRideTypeChange(): void {
+  const distance = this.rideForm.get('estimated_distance_km')?.value;
+  const rideDate = this.rideForm.get('ride_date')?.value;
+  const vehicleType = this.rideForm.get('vehicle_type')?.value;
+  const rideDateNight=this.rideForm.get('ride_date_night_end')?.value;
+  const period=this.rideForm.get('ride_period')?.value;
+  // Validate required inputs before calling loadVehicles
+  if(period!='morning'){
+    if (distance && rideDateNight && vehicleType) {
+    const isoDate = new Date(rideDate).toISOString().split('T')[0];
+    this.loadVehicles(distance, isoDate, vehicleType);
+  } else {
+    this.toastService.show('אנא הזן מרחק, תאריך וסוג רכב לפני סינון רכבים', 'error');
+    this.availableCars = [];
+    this.rideForm.get('car')?.setValue(null);
+  }
+  }
+  else{ if (distance && rideDate && vehicleType) {
+    const isoDate = new Date(rideDate).toISOString().split('T')[0];
+    this.loadVehicles(distance, isoDate, vehicleType);
+  } else {
+    this.toastService.show('אנא הזן מרחק, תאריך וסוג רכב לפני סינון רכבים', 'error');
+    this.availableCars = [];
+    this.rideForm.get('car')?.setValue(null);
+  }}
+ 
+}
+
 
   private updateVehicleTypeValidation(value: string): void {
     const vehicleTypeReason = this.rideForm.get('vehicle_type_reason');
@@ -669,7 +802,6 @@ setClosestQuarterHourTime() {
       }
 
       if (!pv.start_time || !pv.end_time) {
-        console.log('Pending vehicle missing time data - blocking entire day for safety:', pv);
         return true;
       }
 
@@ -886,7 +1018,6 @@ static timeStepValidator(control: AbstractControl): ValidationErrors | null {
   }
 
   checkGovernmentLicence(employeeId: string): void {
-    console.log('🔍 Checking government license for user ID:', employeeId);
 
     if (!employeeId) {
       console.warn('⚠️ No employeeId provided for license check. Setting disableRequest to false.');
@@ -896,17 +1027,13 @@ static timeStepValidator(control: AbstractControl): ValidationErrors | null {
 
     this.UserService.getUserById(employeeId).subscribe({
       next: (user) => {
-        console.log('✅ User fetched from API:', user);
 
         if ('has_government_license' in user) {
           const hasLicense = user.has_government_license;
-          console.log(`📄 License status: ${hasLicense ? '✅ HAS license' : '❌ NO license'}`);
 
           if (hasLicense) {
-            console.log('🎉 User has a valid government license. Enabling request.');
             this.disableRequest = false; // User has license, enable
           } else {
-            console.warn('🚫 User does NOT have a valid government license. Disabling request.');
       this.toastService.show('לא ניתן לשלוח בקשה: למשתמש שנבחר אין רישיון ממשלתי תקף. לעדכון פרטים יש ליצור קשר עם המנהל.', 'error');
             this.disableRequest = true; // User has no license, disable
           }
@@ -961,7 +1088,6 @@ futureDateTimeValidator(): ValidatorFn {
     if (this.rideForm.invalid) {
       this.rideForm.markAllAsTouched();
       this.toastService.show('יש להשלים את כל שדות הטופס כנדרש', 'error');
-      this.logFormErrors();
       return;
     }
 
@@ -989,7 +1115,11 @@ futureDateTimeValidator(): ValidatorFn {
     const startTime = `${startHour}:${startMinute}`;
     const endTime = `${endHour}:${endMinute}`;
     const distance = this.rideForm.get('estimated_distance_km')?.value;
-
+    const vehicleType = this.rideForm.get('vehicle_type')?.value;
+    if (distance && rideDate && vehicleType) {
+  const isoDate = new Date(rideDate).toISOString().split('T')[0];
+  this.loadVehicles(distance, isoDate, vehicleType);
+}
     // Time validation
     if (ridePeriod === 'morning' && startTime && endTime && startTime >= endTime) {
       this.toastService.show('שעת הסיום חייבת להיות אחרי שעת ההתחלה', 'error');
@@ -1030,6 +1160,7 @@ futureDateTimeValidator(): ValidatorFn {
       ? `${rideDate}T${endTime}`
       : `${nightEndDate}T${endTime}`;
 
+ 
     // Prepare form data
     const formData = {
       user_id: rider_id,
@@ -1049,7 +1180,6 @@ futureDateTimeValidator(): ValidatorFn {
 
     };
 
-    console.log('Ride data for backend:', formData);
 
     // Submit ride request
     this.rideService.createRide(formData, user_id).subscribe({
@@ -1086,15 +1216,7 @@ futureDateTimeValidator(): ValidatorFn {
     });
   }
 
-  private logFormErrors(): void {
-    console.log('FORM IS INVALID. HERE ARE THE ERRORS:');
-    Object.keys(this.rideForm.controls).forEach(key => {
-      const control = this.rideForm.get(key);
-      if (control && control.invalid) {
-        console.log(`- Control '${key}' is invalid. Errors:`, control.errors);
-      }
-    });
-  }
+
  
 
   private showFuelTypeMessage(): void {

@@ -1,4 +1,3 @@
-
 <div *ngIf="loading" class="loading">טוען...</div>
 
 <div *ngIf="!loading" class="admin-inspections-container">
@@ -28,8 +27,8 @@
           <th>תאריך</th>
           <th>בודק</th>
           <th>נקי</th>
-          <th>דלק נבדק</th>
-          <th>אין חפצים</th>
+          <th>מתודלק</th>
+          <th>יש חפצים</th>
           <th>בעיה קריטית</th>
           <th>הערות</th>
         </tr>
@@ -37,10 +36,10 @@
       <tbody>
         <tr *ngFor="let insp of filteredInspections">
           <td>{{ insp.inspection_date | date: 'short' }}</td>
-          <td>{{ insp.inspected_by }}</td>
+          <td>{{ getUserNameById(insp.inspected_by) }}</td>
           <td>{{ insp.clean ? '✔️' : '❌' }}</td>
           <td>{{ insp.fuel_checked ? '✔️' : '❌' }}</td>
-          <td>{{ insp.no_items_left ? '✔️' : '❌' }}</td>
+          <td>{{ insp.no_items_left ? '❌' : '✔️' }}</td>
           <td>{{ insp.critical_issue_bool ? 'כן' : 'לא' }}</td>
           <td>{{ insp.issues_found || '—' }}</td>
         </tr>
@@ -75,6 +74,6 @@
     </table>
   </ng-container>
 
-  <div *ngIf="filteredInspections.length === 0 && rides.length === 0" style="text-align: right; margin-top: 2rem;">אין נתונים להצגה</div>
+  <div *ngIf="filteredInspections.length === 0 && rides.length === 0" style="text-align: right; margin-top: 2rem;">אין
+    נתונים להצגה</div>
 </div>
-
