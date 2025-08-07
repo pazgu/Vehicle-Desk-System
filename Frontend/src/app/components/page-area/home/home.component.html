@@ -41,7 +41,16 @@
         </div>
 
         <div class="form-content">
-          <div class="form-row">
+
+          <div class="step-header">
+            <button type="button" class="back-btn" (click)="goBackToStep1()">
+              ← חזור 
+            </button>
+            <h2 class="page-title">פרטי נסיעה</h2>
+          </div>
+
+          <!-- Row 1: ride_period + ride_date + ride_type -->
+         <div class="form-row">
             <div class="form-field-group">
               <label>זמן נסיעה (בוקר / לילה)</label>
               <select formControlName="ride_period">
