@@ -13,12 +13,13 @@ import { AuthService } from '../../../services/auth.service';
 // --- ADD THESE IMPORTS ---
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators'; // takeUntil comes from 'rxjs/operators'
+import { LoadingSpinnerComponent } from '../../loading-spinner/loading-spinner/loading-spinner.component';
 // -------------------------
 
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [HeaderComponent, RouterModule, CommonModule],
+  imports: [HeaderComponent, RouterModule, CommonModule,LoadingSpinnerComponent],
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.css',
 })

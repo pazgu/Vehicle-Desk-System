@@ -119,7 +119,7 @@ if (missingDescriptions) {
   return;
 }
 
-this.toastService.show('שולח בדיקה... יש להמתין');
+
 
   this.InspectorService.postInspection(payload).subscribe({
   next: () => {

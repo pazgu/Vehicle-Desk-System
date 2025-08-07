@@ -607,3 +607,49 @@ hr {
   direction: rtl;
   font-family: 'Alef', sans-serif;
 }
+
+.step-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 20px;
+  padding: 10px 0;
+  direction: ltr; 
+}
+
+.back-btn {
+  color: #942222;
+  font-family: var(--font-family-alef);
+  font-size: 16px;
+  font-weight: bold;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+  background: none;
+  margin: 0;
+}
+.back-btn:hover {
+  transform: scale(1.03);
+  background-color: rgba(148, 34, 34, 0.1);
+}
+
+.page-title {
+  color: #942222;
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0;
+}
+
+h2 {
+    color: #942222;
+    text-align: right;
+    margin-bottom: 10px;
+    display: inline-block;
+}
+
+.back-btn-container {
+  display: none;
+}
