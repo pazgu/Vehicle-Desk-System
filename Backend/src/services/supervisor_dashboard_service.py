@@ -100,6 +100,7 @@ def get_department_specific_order(department_id: str, order_id: str, db: Session
         ride_type=order.ride_type.name if order.ride_type else None,  # Enum to string
         start_location=order.start_location,
         stop=order.stop or "",
+        extra_stops=order.extra_stops or [],
         destination=order.destination,
         estimated_distance_km=float(order.estimated_distance_km),
         actual_distance_km=float(order.actual_distance_km) if order.actual_distance_km else None,

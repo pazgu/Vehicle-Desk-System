@@ -65,7 +65,6 @@
 
 
 
-    <a *ngIf="(role$ | async) === 'supervisor'" [routerLink]="['/vehicle-dashboard']" class="nav-link" href="#">רכבים | </a>
     <a *ngIf="(role$ | async) === 'supervisor'" [routerLink]="['/supervisor-dashboard']" class="nav-link" href="#">הזמנות מחלקה   </a>
 
       <a *ngIf="(role$ | async) === 'employee'" [routerLink]="['/all-rides']" class="nav-link" href="#">ההזמנות שלי </a>
