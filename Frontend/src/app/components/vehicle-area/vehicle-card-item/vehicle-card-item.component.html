@@ -39,7 +39,7 @@
             {{ formatLastUsedAt(vehicle.last_used_at) }}
           </p>
           <p><strong>מיקום נוכחי:</strong> {{ vehicle.current_location }}</p>
-          <!-- <p><strong>מחלקה:</strong> {{ departmentName || 'לא משוייך למחלקה' }}</p> -->
+          <p><strong>מחלקה:</strong> {{ departmentName || 'לא משוייך למחלקה' }}</p>
 
           <p *ngIf="vehicle.reason_for_4x4">
             <strong>סיבת 4x4:</strong> {{ vehicle.reason_for_4x4 }}
