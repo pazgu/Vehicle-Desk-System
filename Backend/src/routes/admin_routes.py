@@ -37,7 +37,7 @@ from fastapi.responses import JSONResponse
 from src.models.ride_model import Ride
 from src.utils.stats import generate_monthly_vehicle_usage
 from ..schemas.register_schema import UserCreate
-from src.services.admin_service import delete_user_by_id , get_no_show_statistics_data
+from src.services import admin_service
 from ..schemas.audit_schema import AuditLogsSchema
 from src.services.audit_service import get_all_audit_logs
 from ..utils.socket_manager import sio
@@ -57,14 +57,6 @@ from src.schemas.statistics_schema import NoShowStatsResponse,TopNoShowUser
 from src.models.department_model import Department
 from src.schemas.department_schema import DepartmentCreate, DepartmentUpdate, DepartmentOut
 from src.services import department_service
-from fastapi.responses import StreamingResponse
-import io
-from datetime import datetime as dt
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
-from reportlab.lib.pagesizes import letter
-from reportlab.lib import colors
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
 
 import pandas as pd
 
@@ -1169,122 +1161,89 @@ def get_critical_issues(
 
 @router.get("/statistics/no-show", response_model=NoShowStatsResponse)
 def get_no_show_statistics(
-    from_date: Optional[datetime] = Query(None),
-    to_date: Optional[datetime] = Query(None),
-    page: int = Query(1, ge=1),
-    page_size: int = Query(10, ge=1, le=100),
+    from_date: Optional[datetime] = Query(None, description="Start date for filtering (inclusive)"),
+    to_date: Optional[datetime] = Query(None, description="End date for filtering (inclusive)"),
+    page: int = Query(1, ge=1, description="Page number for pagination"),
+    page_size: int = Query(10, ge=1, le=100, description="Page size for pagination"),
     db: Session = Depends(get_db),
 ):
-    data = get_no_show_statistics_data(db, from_date, to_date, page, page_size)
+    print("🧪 NO-SHOW STATS ENDPOINT DEBUG:")
+    print("FROM DATE:", from_date)
+    print("TO DATE:", to_date)
+    print("TYPE FROM:", type(from_date))
+    print("TYPE TO:", type(to_date))
+
+    # 1. Get total no-shows
+    query = db.query(NoShowEvent)
+    if from_date:
+        query = query.filter(NoShowEvent.occurred_at >= from_date)
+    if to_date:
+        query = query.filter(NoShowEvent.occurred_at <= to_date)
+
+    total_no_show_events = query.count()
+    unique_no_show_users = query.with_entities(NoShowEvent.user_id).distinct().count()
+
+    # 2. Get completed rides in same range
+    completed_query = db.query(Ride).filter(
+        Ride.status == "completed",
+        Ride.completion_date != None)
+    if from_date:
+        completed_query = completed_query.filter(Ride.completion_date >= from_date)
+    if to_date:
+        completed_query = completed_query.filter(Ride.completion_date <= to_date)
+
+    completed_rides_count = completed_query.count()
+
+    # 3. Get top users with pagination
+    offset = (page - 1) * page_size
+    top_users_query = (
+    db.query(
+        NoShowEvent.user_id,
+        func.concat(User.first_name, ' ', User.last_name).label("name"),
+        Department.id.label("department_id"),
+        func.count(NoShowEvent.id).label("count"),
+        User.email,
+        User.role,
+        User.employee_id,
+    )
+    .outerjoin(User, User.employee_id == NoShowEvent.user_id)
+    .outerjoin(Department, Department.id == User.department_id)
+    .filter(NoShowEvent.occurred_at >= from_date if from_date else True)
+    .filter(NoShowEvent.occurred_at <= to_date if to_date else True)
+    .group_by(
+        NoShowEvent.user_id,
+        User.first_name,
+        User.last_name,
+        Department.id,
+        User.email,
+        User.role,
+        User.employee_id,
+    )
+    .order_by(desc("count"))
+    .offset(offset)
+    .limit(page_size)
+    .all()
+)
 
     top_no_show_users = [
-        TopNoShowUser(
-            user_id=str(row.employee_id),
-            name=row.name,
-            department_id=row.department_id,
-            count=row.count,
-            email=row.email,
-            role=row.role,
-            employee_id=str(row.employee_id),
-        )
-        for row in data["top_users"]
-    ]
+    TopNoShowUser(
+        user_id=str(row.employee_id),
+        name=row.name,
+        department_id=row.department_id,
+        count=row.count,
+        email=row.email,
+        role=row.role,
+        employee_id=str(row.employee_id),
+    )
+    for row in top_users_query
+]
 
     return NoShowStatsResponse(
-        total_no_show_events=data["total_no_show_events"],
-        unique_no_show_users=data["unique_no_show_users"],
-        completed_rides_count=data["completed_rides_count"],
-        top_no_show_users=top_no_show_users,
+        total_no_show_events=total_no_show_events,
+        unique_no_show_users=unique_no_show_users,
+        completed_rides_count=completed_rides_count,
+        top_no_show_users=top_no_show_users
     )
-
-@router.get("/statistics/no-show/export")
-def export_no_show_statistics(
-    format: str = Query("csv"),
-    from_date: Optional[datetime] = Query(None),
-    to_date: Optional[datetime] = Query(None),
-    db: Session = Depends(get_db),
-):
-    data = get_no_show_statistics_data(db, from_date, to_date)
-    top_users = data["top_users"]
-
-    df = pd.DataFrame([{
-        "שם": r.name,
-        "מספר עובד": r.employee_id,
-        "מספר מחלקה": r.department_id,
-        "אימייל": r.email,
-        "תפקיד": r.role.value if hasattr(r.role, 'value') else str(r.role),  # המרה למחרוזת פשוטה
-        "מספר היעדרויות": r.count
-    } for r in data["top_users"]])
-
-
-    # Build a descriptive timestamp / range for filename
-    def fmt_date(d):
-        return d.strftime("%Y-%m-%d")
-    range_part = ""
-    if from_date or to_date:
-        parts = []
-        if from_date:
-            parts.append(f"from_{fmt_date(from_date)}")
-        if to_date:
-            parts.append(f"to_{fmt_date(to_date)}")
-        range_part = "_" + "_".join(parts)
-    timestamp = dt.utcnow().strftime("%Y%m%dT%H%M%SZ")
-
-    if format.lower() == "csv":
-        output = io.StringIO()
-        df.to_csv(output, index=False)
-        csv_content = output.getvalue()
-        bom_prefixed = '\ufeff' + csv_content  # BOM for Excel Hebrew
-        filename = f"no_show_users{range_part}_{timestamp}.csv"
-        return StreamingResponse(
-            io.StringIO(bom_prefixed),
-            media_type="text/csv; charset=utf-8",
-            headers={
-                "Content-Disposition": f"attachment; filename={filename}"
-            }
-        )
-
-    elif format.lower() == "excel":
-        output = io.BytesIO()
-        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            df.to_excel(writer, index=False, sheet_name="No-Show Users")
-            # (אפשר להוסיף עיצוב פה אם רוצים)
-        output.seek(0)
-        filename = f"no_show_users{range_part}_{timestamp}.xlsx"
-        return StreamingResponse(
-            output,
-            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            headers={
-                "Content-Disposition": f"attachment; filename={filename}"
-            }
-        )
-
-    elif format.lower() == "pdf":
-        output = io.BytesIO()
-        doc = SimpleDocTemplate(output, pagesize=letter)
-        table_data = [df.columns.tolist()] + df.values.tolist()
-        table = Table(table_data)
-        table.setStyle(TableStyle([
-            ('BACKGROUND', (0,0), (-1,0), colors.grey),
-            ('TEXTCOLOR',(0,0),(-1,0),colors.whitesmoke),
-            ('ALIGN',(0,0),(-1,-1),'CENTER'),
-            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
-            ('BOTTOMPADDING', (0,0), (-1,0), 12),
-            ('BACKGROUND',(0,1),(-1,-1),colors.beige),
-        ]))
-        doc.build([table])
-        output.seek(0)
-        filename = f"no_show_users{range_part}_{timestamp}.pdf"
-        return StreamingResponse(
-            output,
-            media_type="application/pdf",
-            headers={
-                "Content-Disposition": f"attachment; filename={filename}"
-            }
-        )
-
-    else:
-        raise HTTPException(status_code=400, detail=f"Unsupported format: {format}")
 
 
 
@@ -1414,9 +1373,9 @@ def get_supervisors(db: Session = Depends(get_db)):
     return supervisors
 
 @router.post("/departments", response_model=DepartmentOut, status_code=201)
-def create_department(dept: DepartmentCreate, db: Session = Depends(get_db)):
-    return department_service.create_department(db, dept)
+def create_department(dept: DepartmentCreate, db: Session = Depends(get_db), payload: dict = Depends(token_check)):
+    return department_service.create_department(db, dept, payload)
 
 @router.patch("/departments/{department_id}", response_model=DepartmentOut)
-def patch_department(department_id: UUID, dept: DepartmentUpdate, db: Session = Depends(get_db)):
-    return department_service.update_department(db, department_id, dept)
+def patch_department(department_id: UUID, dept: DepartmentUpdate, db: Session = Depends(get_db), payload: dict = Depends(token_check)):
+    return department_service.update_department(db, department_id, dept, payload)
