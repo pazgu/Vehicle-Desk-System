@@ -239,18 +239,18 @@ this.socketService.odometerNotif$.subscribe(
   }
   
   translateMessage(message: string): string {
-    const lower = message.toLowerCase();
+  const lower = message.toLowerCase();
 
-    if (lower.includes('נשלחה בהצלחה')) {
-      return '.ההזמנה שלך נשלחה בהצלחה. תקבל/י התראה לאחר הבדיקה והאישור';
-    } else if (lower.includes('אושרה')) {
-      return '.ההזמנה שלך אושרה';
-    } else if (lower.includes('נדחתה')) {
-      return '.ההזמנה שלך נדחתה';
-    } else {
-      return message;
-    }
+  if (lower.includes('נשלחה בהצלחה')) {
+    return 'ההזמנה שלך נשלחה בהצלחה. תקבל/י התראה לאחר הבדיקה והאישור.';
+  } else if (lower.includes('אושרה')) {
+    return 'ההזמנה שלך אושרה.';
+  } else if (lower.includes('נדחתה')) {
+    return 'ההזמנה שלך נדחתה.';
+  } else {
+    return message;
   }
+}
   getStatusClass(status?: string): string {
   if (!status) {
     return 'neutral';  // fallback class

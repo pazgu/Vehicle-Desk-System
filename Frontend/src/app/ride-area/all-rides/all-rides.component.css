@@ -173,7 +173,7 @@ button {
   }
   
   .status-green {
-    background-color: #9fc7ab7c; /* soft green */
+    background-color: #e8f5e8 ; /* soft green */
   }
   
   .status-yellow {
@@ -181,8 +181,9 @@ button {
   }
   
   .status-red {
-    background-color: #ffe1e184; /* soft red */
+    background-color: #f8d7da; /* soft red */
   }
+
   .status_in_progress {
   background: linear-gradient(
     -45deg,
