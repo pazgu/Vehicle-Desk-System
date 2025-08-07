@@ -241,6 +241,7 @@ export class NewRideComponent implements OnInit {
     }
     setClosestQuarterHourTime() {
         const now = new Date();
+        now.setHours(now.getHours() + 2);
         const minutes = now.getMinutes();
         const remainder = minutes % 15;
         const addMinutes = remainder === 0 ? 15 : 15 - remainder;
