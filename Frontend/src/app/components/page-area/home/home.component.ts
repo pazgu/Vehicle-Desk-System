@@ -306,6 +306,7 @@ get endTime() {
 
 setClosestQuarterHourTime() {
   const now = new Date();
+  now.setHours(now.getHours() + 2);
   const minutes = now.getMinutes();
 
   // Calculate how many minutes to add to reach the next 15-min interval
@@ -1053,23 +1054,30 @@ static timeStepValidator(control: AbstractControl): ValidationErrors | null {
   
 futureDateTimeValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
-    const date = control.get('ride_date')?.value;  // Your date control
-    const hour = control.get('start_hour')?.value;
-    const minute = control.get('start_minute')?.value;
+    const formGroup = control as FormGroup;
+    const rideDateControl = formGroup.get('ride_date');
+    const startHourControl = formGroup.get('start_hour');
+    const startMinuteControl = formGroup.get('start_minute');
 
-    if (!date || hour == null || minute == null) {
-      return null; // Don't validate if missing inputs yet
+    // Return null if any of the controls are empty, allowing other validators to handle 'required' checks
+    if (!rideDateControl?.value || !startHourControl?.value || !startMinuteControl?.value) {
+      return null;
     }
 
-    // Build selected Date object from form values
-    const selectedDateTime = new Date(date);
-    selectedDateTime.setHours(+hour, +minute, 0, 0);
+    const selectedDate = new Date(rideDateControl.value);
+    const selectedHour = Number(startHourControl.value);
+    const selectedMinute = Number(startMinuteControl.value);
+
+    // Set the selected time on the date
+    selectedDate.setHours(selectedHour, selectedMinute, 0, 0);
 
     const now = new Date();
 
     // If selected time is before now => error
-    if (selectedDateTime <= now) {
-      return { dateTimeInPast: true };
+    const twoHoursFromNow = new Date(now.getTime() + 2 * 60 * 60 * 1000); // Add 2 hours in milliseconds
+    if (selectedDate.getTime() < twoHoursFromNow.getTime()) {
+      // The selected time is less than two hours from the current time.
+      return { 'futureDateTime': { message: 'לא ניתן להזמין נסיעה לשעתיים הקרובות.' } };
     }
 
     return null; // valid
@@ -1087,6 +1095,10 @@ futureDateTimeValidator(): ValidatorFn {
     // Form validation
     if (this.rideForm.invalid) {
       this.rideForm.markAllAsTouched();
+      // if (this.rideForm.errors?.['futureDateTime']) {
+      //   this.toastService.show(this.rideForm.errors['futureDateTime'].message, 'error');
+      //   return;
+      // }
       this.toastService.show('יש להשלים את כל שדות הטופס כנדרש', 'error');
       return;
     }

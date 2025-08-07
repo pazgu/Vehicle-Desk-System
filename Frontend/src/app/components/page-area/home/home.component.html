@@ -1,7 +1,14 @@
 <div class="overlay">
   <div class="modal">
-    <h2>הזמנה חדשה</h2>
-    <hr />
+    <div class="header-row" >
+            <h2 class="page-title">הזמנה חדשה</h2>
+            <div  *ngIf="step === 2" class="step-header">
+              <button   type="button" class="back-btn" (click)="goBackToStep1()">
+                ← חזור 
+              </button>
+            </div>
+          </div>
+      <hr />
 
     <form [formGroup]="rideForm">
       <div *ngIf="step === 1">
@@ -42,12 +49,6 @@
 
         <div class="form-content">
 
-          <div class="step-header">
-            <button type="button" class="back-btn" (click)="goBackToStep1()">
-              ← חזור 
-            </button>
-            <h2 class="page-title">פרטי נסיעה</h2>
-          </div>
 
           <!-- Row 1: ride_period + ride_date + ride_type -->
          <div class="form-row">
@@ -93,6 +94,9 @@
                   class="time-select custom-hour-dropdown" [searchable]="false" [clearable]="false">
                 </ng-select>
               </div>
+              <small *ngIf="rideForm.errors?.['futureDateTime']" class="error-text">
+                  {{ rideForm.errors?.['futureDateTime']?.['message'] }}
+              </small>
               <small
                 *ngIf="rideForm.get('ride_period')?.value === 'morning' && f.start_time.touched && f.start_time.errors?.['required']"
                 class="error-text">
