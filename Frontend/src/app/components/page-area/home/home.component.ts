@@ -1135,6 +1135,11 @@ futureDateTimeValidator(): ValidatorFn {
     };
   }
 
+  goBackToStep1(): void {
+  this.step = 1;
+  this.showStep1Error = false;
+}
+
   // Navigation methods
   goBack(): void {
     this.location.back();
