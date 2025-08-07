@@ -695,39 +695,51 @@
 }
 
 .range-select {
-  padding: 0.4rem 1rem;
-  border-radius: 6px;
-  border: 1px solid #942222;
-  color: #942222;
+  /* Box model */
+  padding: 0.5rem 1rem; /* Reduced padding for a more compact look */
+  padding-left: 2rem; /* Add specific padding on the left for the arrow */
+  border-radius: 8px; 
+  border: 0.5px solid #942222;
+  
+  /* Typography */
+  font-family: inherit;
   font-size: 1rem;
-  background: #fff;
-  min-width: 160px;
-  transition: border-color 0.2s;
+  color: #942222;
+  font-weight: 500;
+  
+  /* Background & cursor */
+  background-color: #f5f5f5;
   cursor: pointer;
-  font-weight: 600;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  
+  /* Appearance and transitions */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  /* small arrow image */
+  background-image: url('data:image/svg+xml;utf8,<svg fill="%23942222" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: left 0.75rem center; /* Position the arrow closer to the edge */
+  background-size: 1em; /* Reduced the arrow size to 1em */
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  
+  /* Right-to-left support */
+  direction: rtl; /* This is essential for Hebrew text */
 }
 
+/* State-based styling */
 .range-select:hover {
-  background-color: #942222;
-  color: #ffffff;
-  transform: translateY(-2px);
+  border-color: #942222;
+  box-shadow: 0 0 0 3px rgba(148, 34, 34, 0.2); /* Box shadow on hover */
 }
 
 .range-select:focus {
   outline: none;
-  border-color: #b83c3c;
+  border-color: #942222; /* Keep the border color change on focus for accessibility */
 }
 
-.custom-range-fields {
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-  margin-bottom: 25px;
-  background: #f5f5f5;
-  border-radius: 8px;
-  padding: 0.7rem 1.2rem;
-  border: 1px solid #e0e0e0;
+/* Styling for the options */
+.range-select option {
+  direction: rtl;
 }
 
 .date-input {
@@ -745,13 +757,25 @@
   border-color: #b83c3c;
 }
 
+.custom-range-fields {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  flex-wrap: wrap;
+  background: #f8f8f8;
+  border-radius: 8px;
+  padding: 0.7rem 1.2rem;
+  border: 1px solid #e0e0e0;
+}
+
 .filter-apply-btn {
   padding: 0.35rem 1.2rem;
   border-radius: 6px;
   border: 1px solid #942222;
-  background: #fff;
+  background: #942222;
   font-size: 1rem;
-  color: #942222;
+  color: #fff;
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
   margin-right: 0.5rem;
@@ -759,7 +783,7 @@
 }
 
 .filter-apply-btn:hover {
-  background: #942222;
+  background: #881c1c;
   color: white;
   transform: translateY(-2px);
 }
@@ -938,13 +962,6 @@ input[type="checkbox"] {
   gap: 0.5rem;
 }
 
-.custom-range-fields {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 1rem 0;
-  flex-wrap: wrap;
-}
 
 .export-buttons {
   margin: 1rem 0;

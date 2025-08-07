@@ -143,7 +143,7 @@ export class AuditLogsComponent implements OnInit {
       { label: 'זמן סיום', oldValue: oldData.end_datetime, newValue: newData.end_datetime },
       { label: 'תאריך שליחה', oldValue: oldData.submitted_at, newValue: newData.submitted_at },
       { label: 'מרחק מוערך (ק"מ)', oldValue: oldData.estimated_distance_km, newValue: newData.estimated_distance_km },
-      { label: 'מרחק בפועל (ק"מ)', oldValue: oldData.actual_distance_km, newValue: newData.actual_distance_km },
+      { label: 'מרחק משוער אחרי סטייה (ק"מ)', oldValue: oldData.actual_distance_km, newValue: newData.actual_distance_km },
       { label: 'בדיקת רישיון עברה', oldValue: oldData.license_check_passed, newValue: newData.license_check_passed },
       { label: 'אירוע חירום', oldValue: oldData.emergency_event, newValue: newData.emergency_event },
 
@@ -326,13 +326,32 @@ formatRouteFromChangeData(changeData: any): string {
     });
   }
 
-
+  resetFilters() {
+    this.selectedRange = '';
+    this.customFromDate = '';
+    this.customToDate = '';
+    this.fetchAuditLogs();
+  }
 
   onRangeChange() {
     let fromDate: string | undefined;
     let toDate: string | undefined;
     const today = new Date();
 
+    // if (this.selectedRange === '7days') {
+    //   fromDate = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    //   toDate = today.toISOString();
+    // } else if (this.selectedRange === 'thisMonth') {
+    //   const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    //   fromDate = firstDay.toISOString();
+    //   toDate = today.toISOString();
+    // } else if (this.selectedRange === '30days') {
+    //   fromDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    //   toDate = today.toISOString();
+    // } else if (this.selectedRange === 'custom') {
+    //   fromDate = this.customFromDate ? new Date(this.customFromDate + 'T00:00:00').toISOString() : undefined;
+    //   toDate = this.customToDate ? new Date(this.customToDate + 'T23:59:59').toISOString() : undefined;
+    // }
     if (this.selectedRange === '7days') {
       fromDate = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
       toDate = today.toISOString();
@@ -344,22 +363,14 @@ formatRouteFromChangeData(changeData: any): string {
       fromDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
       toDate = today.toISOString();
     } else if (this.selectedRange === 'custom') {
-      fromDate = this.customFromDate ? new Date(this.customFromDate + 'T00:00:00').toISOString() : undefined;
-      toDate = this.customToDate ? new Date(this.customToDate + 'T23:59:59').toISOString() : undefined;
-    }
-    if (this.selectedRange === '7days') {
-      fromDate = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
-      toDate = today.toISOString();
-    } else if (this.selectedRange === 'thisMonth') {
-      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-      fromDate = firstDay.toISOString();
-      toDate = today.toISOString();
-    } else if (this.selectedRange === '30days') {
-      fromDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
-      toDate = today.toISOString();
-    } else if (this.selectedRange === 'custom') {
-      fromDate = this.customFromDate ? new Date(this.customFromDate + 'T00:00:00').toISOString() : undefined;
-      toDate = this.customToDate ? new Date(this.customToDate + 'T23:59:59').toISOString() : undefined;
+      // fromDate = this.customFromDate ? new Date(this.customFromDate + 'T00:00:00').toISOString() : undefined;
+      // toDate = this.customToDate ? new Date(this.customToDate + 'T23:59:59').toISOString() : undefined;
+      const fromDate = new Date(this.customFromDate + 'T00:00:00');
+      const toDate = new Date(this.customToDate + 'T23:59:59');
+      if (fromDate > toDate) {
+        this.toastService.show('תאריך ההתחלה לא יכול להיות אחרי תאריך הסיום.', 'error'); // Start date cannot be after end date.
+        return; // Stop the function from proceeding
+      }
     }
 
     this.fetchAuditLogs(fromDate, toDate);
