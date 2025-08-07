@@ -1,0 +1,23 @@
+<div *ngIf="isLoading$ | async" class="loading-overlay">
+  <div class="loading-spinner">
+    <div class="spinner"></div>
+    <p>שולח מייל...</p>
+  </div>
+</div>
+
+<div *ngIf="retryToast$ | async as toast" class="retry-toast">
+  <div class="toast-content">
+    <div class="toast-message">
+      <span class="error-icon">⚠️</span>
+      <span>{{ toast.message }}</span>
+    </div>
+    <div class="toast-actions">
+      <button (click)="onRetry(toast)" class="retry-button">
+        נסה שוב
+      </button>
+      <button (click)="onClose()" class="close-button">
+        ✕
+      </button>
+    </div>
+  </div>
+</div>
