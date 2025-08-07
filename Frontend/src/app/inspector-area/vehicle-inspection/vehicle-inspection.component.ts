@@ -51,15 +51,15 @@ export class VehicleInspectionComponent implements OnInit {
   ngOnInit(): void {
     this.fetchVehicles();
   }
-   get filteredIssues(): VehicleIssue[] {
-    if (!this.searchTerm) {
-      return this.vehicleIssues;
-    }
-    const term = this.searchTerm.trim().toLowerCase();
-    return this.vehicleIssues.filter(issue =>
-      issue.plate.toLowerCase().includes(term)
-    );
-  }
+  //  get filteredIssues(): VehicleIssue[] {
+  //   if (!this.searchTerm) {
+  //     return this.vehicleIssues;
+  //   }
+  //   const term = this.searchTerm.trim().toLowerCase();
+  //   return this.vehicleIssues.filter(issue =>
+  //     issue.plate.toLowerCase().includes(term)
+  //   );
+  // }
 
   fetchVehicles(): void {
     this.http.get<Vehicle[]>(`${environment.apiUrl}/all-vehicles`).subscribe({
@@ -80,6 +80,9 @@ export class VehicleInspectionComponent implements OnInit {
       }
     });
   }
+logFuelChange(value: boolean) {
+  console.log('Fuel checked changed to:', value);
+}
 
   submitIssues(): void {
     this.submitting = true;
@@ -88,16 +91,16 @@ export class VehicleInspectionComponent implements OnInit {
     const itemsLeftIds = this.vehicleIssues.filter(v => v.items_left).map(v => v.vehicle_id);
     const criticalIds = this.vehicleIssues.filter(v => v.critical_issue).map(v => v.vehicle_id);
 
-    const fuelCheckedAll = this.vehicleIssues.every(v => v.fuel_checked);
+    const unfueledVehicleIds = this.vehicleIssues
+  .filter(v => v.fuel_checked)
+  .map(v => v.vehicle_id);
+
     const cleanAll = this.vehicleIssues.every(v => !v.dirty);
     const itemsLeftNone = this.vehicleIssues.every(v => !v.items_left);
     const hasCritical = criticalIds.length > 0;
 
     const payload = {
-      clean: cleanAll,
-      fuel_checked: fuelCheckedAll,
-      no_items_left: itemsLeftNone,
-      critical_issue_bool: hasCritical,
+      unfueled_vehicle_ids: unfueledVehicleIds,
       issues_found: this.vehicleIssues
         .filter(v => v.critical_issue && v.issues_found?.trim())
         .map(v => ({
@@ -110,6 +113,7 @@ export class VehicleInspectionComponent implements OnInit {
       items_left_vehicle_ids: itemsLeftIds,
       critical_issue_vehicle_ids: criticalIds
     };
+console.log('inspection data in front:', JSON.stringify(payload, null, 2));
     const missingDescriptions = this.vehicleIssues.some(
   v => v.critical_issue && (!v.issues_found || !v.issues_found)
 );
