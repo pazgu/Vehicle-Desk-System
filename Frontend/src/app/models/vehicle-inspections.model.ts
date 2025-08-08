@@ -1,11 +1,11 @@
 export interface VehicleInspection {
-  inspection_id: string;
-  inspection_date: string;
-  inspected_by: string;
+  inspection_id: string | null;
+  inspection_date: string | null;
+  inspected_by: string | null;
+  inspected_by_name: string | null; // ✅ added
   clean: boolean;
   fuel_checked: boolean;
   no_items_left: boolean;
   critical_issue_bool: boolean;
   issues_found: string | null;
-  vehicle_id: string;
 }
