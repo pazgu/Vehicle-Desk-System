@@ -22,7 +22,15 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  }
+  
+  /* background image here */
+  background-image: url('/assets/images/all_rides.jpg');
+  background-color: #fbe6c9;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center center;
+  width: 100%;
+}
 .table-header {
   background-color: #811313; /* navy blue */
   color: white;
