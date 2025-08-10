@@ -621,15 +621,19 @@ hr {
 .back-btn {
   color: #942222;
   font-family: var(--font-family-alef);
-  font-size: 16px;
+  font-size: 20px;
   font-weight: bold;
-  padding: 8px 16px;
+  padding: 6px 16px; 
   border: none;
   border-radius: 20px;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.15s ease;
   background: none;
+  transition: background-color 0.2s ease, transform 0.15s ease;
   margin: 0;
+  align-self: center; 
+  margin-top: 16px;
+  white-space: nowrap; 
+  line-height: 1; 
 }
 .back-btn:hover {
   transform: scale(1.03);
@@ -638,9 +642,11 @@ hr {
 
 .page-title {
   color: #942222;
-  font-size: 24px;
+  font-size: 25px;
   font-weight: bold;
   margin: 0;
+  white-space: nowrap; 
+  line-height: 1; 
 }
 
 h2 {
@@ -652,4 +658,18 @@ h2 {
 
 .back-btn-container {
   display: none;
+}
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; 
+  direction: rtl;
+  width: 100%;
+  margin-bottom: 10px; 
+  padding: 0;
+}
+
+hr {
+  border: 1px solid #ccc;
+  margin: 0 0 20px 0; 
 }

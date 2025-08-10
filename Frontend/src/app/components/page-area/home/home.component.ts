@@ -241,6 +241,7 @@ export class NewRideComponent implements OnInit {
     }
     setClosestQuarterHourTime() {
         const now = new Date();
+        now.setHours(now.getHours() + 2);
         const minutes = now.getMinutes();
         const remainder = minutes % 15;
         const addMinutes = remainder === 0 ? 15 : 15 - remainder;
@@ -802,23 +803,37 @@ export class NewRideComponent implements OnInit {
             }
         });
     }
-    futureDateTimeValidator(): ValidatorFn {
-        return (control: AbstractControl): ValidationErrors | null => {
-            const date = control.get('ride_date')?.value;
-            const hour = control.get('start_hour')?.value;
-            const minute = control.get('start_minute')?.value;
-            if (!date || hour == null || minute == null) {
-                return null;
-            }
-            const selectedDateTime = new Date(date);
-            selectedDateTime.setHours(+hour, +minute, 0, 0);
-            const now = new Date();
-            if (selectedDateTime <= now) {
-                return { dateTimeInPast: true };
-            }
-            return null;
-        };
+futureDateTimeValidator(): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const formGroup = control as FormGroup;
+    const rideDateControl = formGroup.get('ride_date');
+    const startHourControl = formGroup.get('start_hour');
+    const startMinuteControl = formGroup.get('start_minute');
+
+    // Return null if any of the controls are empty, allowing other validators to handle 'required' checks
+    if (!rideDateControl?.value || !startHourControl?.value || !startMinuteControl?.value) {
+      return null;
     }
+
+    const selectedDate = new Date(rideDateControl.value);
+    const selectedHour = Number(startHourControl.value);
+    const selectedMinute = Number(startMinuteControl.value);
+
+    // Set the selected time on the date
+    selectedDate.setHours(selectedHour, selectedMinute, 0, 0);
+
+    const now = new Date();
+
+    // If selected time is before now => error
+    const twoHoursFromNow = new Date(now.getTime() + 2 * 60 * 60 * 1000); // Add 2 hours in milliseconds
+    if (selectedDate.getTime() < twoHoursFromNow.getTime()) {
+      // The selected time is less than two hours from the current time.
+      return { 'futureDateTime': { message: 'לא ניתן להזמין נסיעה לשעתיים הקרובות.' } };
+    }
+
+    return null; // valid
+  };
+}
     submit(confirmedWarning = false): void {
         if (this.disableRequest) {
             this.toastService.show('לא ניתן לשלוח בקשה: למשתמש שנבחר אין רישיון ממשלתי תקףץ לעדכון פרטים יש ליצור קשר עם המנהל.', 'error');
