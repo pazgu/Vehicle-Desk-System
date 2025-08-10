@@ -17,21 +17,17 @@ class TripCompletionIssueSchema(BaseModel):
         
 
 class RawCriticalIssueSchema(BaseModel):
-    id: str
-    inspection_id: Optional[UUID]
-    ride_id: Optional[UUID]
-    approved_by: UUID
-    submitted_by: Optional[UUID]
-    role: str
-    type: Optional[str]
-    status: str
-    severity: Optional[str]
-    issue_description: Optional[str]
-    issue_text: Optional[str]
-    timestamp: datetime
-    vehicle_info: Optional[str]
-    inspection_details: Optional[Dict[str, Any]] = None
+    inspection_id: UUID
+    inspection_date: datetime
+
+    inspected_by: Optional[UUID]
+    inspector_name: Optional[str]  # new field from users table
+
+    critical_issue_vehicle_id: Optional[UUID]
+    critical_issue_bool: bool
+    issues_found: Optional[str]
 
     class Config:
         orm_mode = True
-        
+
+
