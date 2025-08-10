@@ -24,7 +24,6 @@ export class TabMonitorService implements OnDestroy {
 
     if (!last || now - parseInt(last) > 3000) {
       // If the last heartbeat is old, assume a tab was closed and none were active
-      console.log('Stale heartbeat — clearing localStorage');
       localStorage.clear();
     }
   }

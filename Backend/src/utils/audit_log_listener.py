@@ -17,7 +17,6 @@ def listen_for_audit_logs():
     conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
     cur = conn.cursor()
     cur.execute("LISTEN audit_log_channel;")
-    print("Listening for audit log notifications...")
 
     # Create and set a new event loop for this thread
     loop = asyncio.new_event_loop()

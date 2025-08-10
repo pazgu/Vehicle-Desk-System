@@ -64,7 +64,6 @@ export class UserService {
       return new Observable();
     }
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    console.log('Sending request with headers:', { Authorization: `Bearer ${token}` });
 
     return this.http.patch(`${this.apiUrl}/user-data-edit/${userId}`, updateData, { headers });
   }
@@ -75,10 +74,7 @@ export class UserService {
     const headers = {
       Authorization: `Bearer ${token}`,
     };
-    console.log('User data sent from frontend:');
-    for (const [key, value] of userData.entries()) {
-      console.log(`${key}:`, value);
-    }
+   
     return this.http.post(`${this.apiUrl}/add-user`, userData, { headers });
   }
 

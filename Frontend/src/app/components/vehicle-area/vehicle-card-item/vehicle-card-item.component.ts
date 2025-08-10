@@ -49,7 +49,6 @@ currentDate = new Date();
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.vehicleService.getVehicleById(id).subscribe(vehicleData => {
-        console.log('Vehicle from API:', vehicleData);
         this.vehicle = vehicleData;
         this.vehicle.displayStatus = this.translateStatus(vehicleData.status);
         // ✅ IMPORTANT: Check if vehicle is archived and update the display accordingly
@@ -105,7 +104,6 @@ currentDate = new Date();
         data.forEach(vehicle => {
           this.topUsedVehiclesMap[vehicle.plate_number] = vehicle.ride_count;
         });
-        console.log('Vehicle usage data loaded:', this.topUsedVehiclesMap);
       },
       error: err => {
         console.error('❌ Error fetching vehicle usage data:', err);
@@ -200,7 +198,6 @@ saveMileage(): void {
 
     this.vehicleService.updateVehicleStatus(this.vehicle.id, newStatus, reason).subscribe({
       next: (response) => {
-        console.log(`Vehicle status updated to '${newStatus}':`, response);
         this.vehicle.status = newStatus;
         this.vehicle.freeze_reason = newStatus === 'frozen' ? reason : null;
 
@@ -273,7 +270,6 @@ saveMileage(): void {
             rideDate.getFullYear() === currentDate.getFullYear();
         }).length;
 
-        console.log(`Vehicle ${vehicleId} appears in ${count} rides`);
 
         // Store the count in the component property
         this.currentVehicleRideCount = count;

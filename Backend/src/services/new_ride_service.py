@@ -80,13 +80,11 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate):
     db.refresh(new_ride)
     db.refresh(vehicle)
 
-    print('extra stops in back:',new_ride.extra_stops)
     await sio.emit("ride_status_updated", {
         "ride_id": str(new_ride.id),
         "new_status": new_ride.status.value
     })
     await send_admin_odometer_notification(vehicle.id, vehicle.mileage)
-    print(f"send_admin_odometer_notification called with vehicle_id={vehicle.id}, mileage={vehicle.mileage}")
 
 
     # Notification for delegated ride

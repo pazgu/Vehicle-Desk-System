@@ -51,9 +51,7 @@ def root():
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
-    print(f"➡️ Request: {request.method} {request.url}")
     response = await call_next(request)
-    print(f"⬅️ Response: {response.status_code}")
     return response
 
 @sio.on("join")
@@ -61,17 +59,11 @@ async def handle_join(sid, data):
     user_id = data.get("user_id")
     if user_id:
         await sio.enter_room(sid, user_id)
-        print(f"✅ User {user_id} joined room (SID: {sid})")
-    else:
-        print("⚠️ No user_id provided in join event.")
 
 
-# app = FastAPI() is the base app used for routers and middleware
-# sio_app wraps app with Socket.IO support — use this in uvicorn if you want sockets
-# Run with: uvicorn src.main:sio_app --reload
+
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
-# sio_app = ASGIApp(sio, other_asgi_app=app)
 sio_app = socketio.ASGIApp(sio, other_asgi_app=app)
 
 
