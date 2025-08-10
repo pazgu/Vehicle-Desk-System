@@ -85,6 +85,18 @@ logFuelChange(value: boolean) {
 }
 
   submitIssues(): void {
+      const nothingSelected = this.vehicleIssues.every(v =>
+    !v.dirty &&
+    !v.fuel_checked &&
+    !v.items_left &&
+    !v.critical_issue
+  );
+
+  if (nothingSelected) {
+    this.toastService.show('לא נבחרה אף בעיה לרכב. יש לבחור לפחות שדה אחד לפני השליחה.','error');
+    return; // Stop submission
+  }
+
     this.submitting = true;
 
     const dirtyIds = this.vehicleIssues.filter(v => v.dirty).map(v => v.vehicle_id);
