@@ -25,33 +25,41 @@
           </div>
         </div>
 
-        <!-- Row 2: שעת התחלה + סיום -->
-        <div class="row">
-          <div class="input-group">
-            <label>שעת התחלה</label>
-            <input type="time" formControlName="start_time" />
-          </div>
+       <div class="row">
+  <div class="input-group">
+    <label>שעת התחלה</label>
+    <select formControlName="start_time">
+      <option *ngFor="let time of timeOptions" [value]="time">
+        {{ time }}
+      </option>
+    </select>
+  </div>
 
-          <div class="input-group">
-            <label>שעת סיום</label>
-            <input type="time" formControlName="end_time" />
-          </div>
-        </div>
+  <div class="input-group">
+    <label>שעת סיום</label>
+    <select formControlName="end_time">
+      <option *ngFor="let time of timeOptions" [value]="time">
+        {{ time }}
+      </option>
+    </select>
+  </div>
+</div>
+
 
         <!-- Row 3: סוג רכב + בחר רכב -->
         <div class="row">
           <div class="input-group">
             <label>סוג רכב</label>
             <select formControlName="vehicle_type" class="styled-select">
-              <option value="small">קטן</option>
-              <option value="large">גדול</option>
-              <option value="van">טנדר</option>
+              <option >בחר סוג רכב</option>
+            <option *ngFor="let type of vehicleTypes" [value]="type">{{ type }}</option>
             </select>
           </div>
 
           <div class="input-group">
             <label>בחר רכב</label>
             <select formControlName="car" class="styled-select">
+              <option>בחר רכב</option>
 <option *ngFor="let car of availableCars" [value]="car.id">{{ car.vehicle_model }}</option>
             </select>
           </div>

@@ -20,13 +20,14 @@ export class EditRideComponent implements OnInit {
   status: string = 'pending';
   licenseCheckPassed: boolean = true;
   submittedAt: string = new Date().toISOString();
-
   rideForm!: FormGroup;
   rideId!: string;
   minDate: string = '';
   estimated_distance_with_buffer: number = 0;
   rideRequestSub!: Subscription; 
- allCars: {
+  vehicleTypes: string[] = [];
+
+  allCars: {
   id: string;
   plate_number: string;
   type: string;
@@ -58,13 +59,13 @@ availableCars: typeof this.allCars = [];
     date.setDate(date.getDate() + daysAhead);
     return date.toISOString().split('T')[0];
   }
-
+timeOptions: string[] = [];
   ngOnInit(): void {
+    this.generateTimeOptions();
     this.rideId = this.route.snapshot.paramMap.get('id') || '';
     this.minDate = this.calculateMinDate(2);
     this.buildForm();
-
-    // ✅ Socket listener moved outside vehicle block
+    this.fetchVehicleTypes();
     this.rideRequestSub = this.socketService.rideRequests$.subscribe((rideData) => {
       if (rideData) {
         this.toastService.show('🚗 התקבלה הזמנת נסיעה חדשה', 'success');
@@ -221,7 +222,26 @@ isCarDisabled(car: typeof this.allCars[0]): boolean {
   // Disable if status is not 'available' or freeze_reason exists
   return car.status !== 'available' || !!car.freeze_reason;
 }
-
+ private fetchVehicleTypes(): void {
+        this.vehicleService.getVehicleTypes().subscribe(types => {
+            this.vehicleTypes = types;
+        });
+    }
+    
+generateTimeOptions(): void {
+  const times: string[] = [];
+  for (let h = 0; h < 24; h++) {
+    for (let m = 0; m < 60; m += 15) {
+      const hour = h.toString().padStart(2, '0');
+      const minute = m.toString().padStart(2, '0');
+      times.push(`${hour}:${minute}`);
+    }
+  }
+  this.timeOptions = times;
+}
+  getVehicleTypes(): string[] {
+        return [...new Set(this.allCars.map(car => car.type))];
+    }
   submit(): void {
     
     if (this.rideForm.invalid) {
