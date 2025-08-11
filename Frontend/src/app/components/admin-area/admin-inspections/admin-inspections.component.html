@@ -7,7 +7,7 @@
       {{ showProblematicFilters ? 'הסתר אפשרויות סינון' : 'הצג בדיקות עם בעיות' }}
     </button>
     <div *ngIf="showProblematicFilters">
-      <label style="cursor:pointer; block; margin-bottom: 0.5em;">
+      <label style="cursor:pointer; margin-bottom: 0.5em;">
         <input type="checkbox" [(ngModel)]="showMediumIssues" (change)="loadData()" />
         הצג בעיות - דרגה בינונית
       </label>
@@ -28,7 +28,7 @@
           <th>בודק</th>
           <th>נקי</th>
           <th>מתודלק</th>
-          <th>יש חפצים</th>
+          <th>אין חפצים</th>
           <th>בעיה קריטית</th>
           <th>הערות</th>
         </tr>
@@ -36,10 +36,10 @@
       <tbody>
         <tr *ngFor="let insp of filteredInspections">
           <td>{{ insp.inspection_date | date: 'short' }}</td>
-          <td>{{ getUserNameById(insp.inspected_by) }}</td>
+          <td>{{ insp.inspected_by_name || '—' }}</td>
           <td>{{ insp.clean ? '✔️' : '❌' }}</td>
-          <td>{{ insp.fuel_checked ? '✔️' : '❌' }}</td>
-          <td>{{ insp.no_items_left ? '❌' : '✔️' }}</td>
+          <td>{{ insp.fuel_checked ? '❌' : '✔️' }}</td>
+          <td>{{ insp.no_items_left ? '✔️' : '❌' }}</td>
           <td>{{ insp.critical_issue_bool ? 'כן' : 'לא' }}</td>
           <td>{{ insp.issues_found || '—' }}</td>
         </tr>

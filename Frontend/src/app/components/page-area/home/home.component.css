@@ -229,33 +229,37 @@ form .removeBtn:hover {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  background-image: url('/assets/images/left-hand-car.png');
+  background-color: #fbe6c9;
+  background-repeat: no-repeat;
+  background-size: 100% auto;
+  background-position: center center;
+  backdrop-filter: blur(2px);
   font-family: 'Alef', sans-serif;
   direction: rtl;
-  padding: 0;
-  margin: 0;
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
-  min-height: 100vh;
+  height: 100vh;
   z-index: 10;
+  overflow: hidden;
 }
 
 .modal {
   background-color: white;
   padding: 20px 28px;
   border-radius: 10px;
-  width: 750px;
-  min-height: 0;
-  max-height: 90vh;
+  width: min(750px, 90vw);
+  max-height: 85vh;
   overflow-y: auto;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-  position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: space-between;
+  z-index: 15;
   margin-top: 60px;
+  position: relative;
 }
 
 .close-btn {
@@ -602,4 +606,70 @@ hr {
   transform: translate(-50%, -25%);
   direction: rtl;
   font-family: 'Alef', sans-serif;
+}
+
+.step-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 20px;
+  padding: 10px 0;
+  direction: ltr; 
+}
+
+.back-btn {
+  color: #942222;
+  font-family: var(--font-family-alef);
+  font-size: 20px;
+  font-weight: bold;
+  padding: 6px 16px; 
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  background: none;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+  margin: 0;
+  align-self: center; 
+  margin-top: 16px;
+  white-space: nowrap; 
+  line-height: 1; 
+}
+.back-btn:hover {
+  transform: scale(1.03);
+  background-color: rgba(148, 34, 34, 0.1);
+}
+
+.page-title {
+  color: #942222;
+  font-size: 25px;
+  font-weight: bold;
+  margin: 0;
+  white-space: nowrap; 
+  line-height: 1; 
+}
+
+h2 {
+    color: #942222;
+    text-align: right;
+    margin-bottom: 10px;
+    display: inline-block;
+}
+
+.back-btn-container {
+  display: none;
+}
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; 
+  direction: rtl;
+  width: 100%;
+  margin-bottom: 10px; 
+  padding: 0;
+}
+
+hr {
+  border: 1px solid #ccc;
+  margin: 0 0 20px 0; 
 }
