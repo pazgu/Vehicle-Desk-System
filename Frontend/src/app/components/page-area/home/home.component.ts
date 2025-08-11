@@ -187,7 +187,7 @@ export class NewRideComponent implements OnInit {
             } else {
                 this.disableRequest = true;
                 console.warn('🚫 License is missing or expired via socket');
-                this.toastService.show(
+                this.toastService.showPersistent(
                     'לא ניתן לשלוח בקשה: למשתמש שנבחר אין רישיון ממשלתי תקף. לעדכון פרטים יש ליצור קשר עם המנהל.',
                     'error'
                 );
@@ -354,7 +354,7 @@ export class NewRideComponent implements OnInit {
             return;
         }
         if (this.disableRequest) {
-            this.toastService.show('לא ניתן לשלוח בקשה: למשתמש שנבחר אין רישיון ממשלתי תקף. לעדכון פרטים יש ליצור קשר עם המנהל.', 'error');
+            this.toastService.showPersistent('לא ניתן לשלוח בקשה: למשתמש שנבחר אין רישיון ממשלתי תקף. לעדכון פרטים יש ליצור קשר עם המנהל.', 'error');
             return;
         }
         this.showStep1Error = false;
@@ -787,7 +787,7 @@ export class NewRideComponent implements OnInit {
                     if (hasLicense) {
                         this.disableRequest = false;
                     } else {
-                        this.toastService.show('לא ניתן לשלוח בקשה: למשתמש שנבחר אין רישיון ממשלתי תקף. לעדכון פרטים יש ליצור קשר עם המנהל.', 'error');
+                        this.toastService.showPersistent('לא ניתן לשלוח בקשה: למשתמש שנבחר אין רישיון ממשלתי תקף. לעדכון פרטים יש ליצור קשר עם המנהל.', 'error');
                         this.disableRequest = true;
                     }
                 } else {
