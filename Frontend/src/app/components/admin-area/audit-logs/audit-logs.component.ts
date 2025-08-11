@@ -338,20 +338,6 @@ formatRouteFromChangeData(changeData: any): string {
     let toDate: string | undefined;
     const today = new Date();
 
-    // if (this.selectedRange === '7days') {
-    //   fromDate = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    //   toDate = today.toISOString();
-    // } else if (this.selectedRange === 'thisMonth') {
-    //   const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-    //   fromDate = firstDay.toISOString();
-    //   toDate = today.toISOString();
-    // } else if (this.selectedRange === '30days') {
-    //   fromDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
-    //   toDate = today.toISOString();
-    // } else if (this.selectedRange === 'custom') {
-    //   fromDate = this.customFromDate ? new Date(this.customFromDate + 'T00:00:00').toISOString() : undefined;
-    //   toDate = this.customToDate ? new Date(this.customToDate + 'T23:59:59').toISOString() : undefined;
-    // }
     if (this.selectedRange === '7days') {
       fromDate = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
       toDate = today.toISOString();
@@ -363,14 +349,16 @@ formatRouteFromChangeData(changeData: any): string {
       fromDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
       toDate = today.toISOString();
     } else if (this.selectedRange === 'custom') {
-      // fromDate = this.customFromDate ? new Date(this.customFromDate + 'T00:00:00').toISOString() : undefined;
-      // toDate = this.customToDate ? new Date(this.customToDate + 'T23:59:59').toISOString() : undefined;
-      const fromDate = new Date(this.customFromDate + 'T00:00:00');
-      const toDate = new Date(this.customToDate + 'T23:59:59');
-      if (fromDate > toDate) {
-        this.toastService.show('תאריך ההתחלה לא יכול להיות אחרי תאריך הסיום.', 'error'); // Start date cannot be after end date.
-        return; // Stop the function from proceeding
+      const from = this.customFromDate ? new Date(this.customFromDate + 'T00:00:00') : undefined;
+      const to = this.customToDate ? new Date(this.customToDate + 'T23:59:59') : undefined;
+
+      if (from && to && from > to) {
+        this.toastService.show('תאריך ההתחלה לא יכול להיות אחרי תאריך הסיום.', 'error');
+        return; 
       }
+
+      fromDate = from?.toISOString();
+      toDate = to?.toISOString();
     }
 
     this.fetchAuditLogs(fromDate, toDate);
