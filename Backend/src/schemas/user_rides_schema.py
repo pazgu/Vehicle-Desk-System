@@ -2,9 +2,8 @@ from pydantic import BaseModel
 from enum import Enum
 from datetime import datetime
 from uuid import UUID
-from typing import Optional
+from typing import Optional, List
 
-# from ..schemas.new_ride_schema import RideStatus
 
 class RideStatus(str, Enum):
     pending = "pending"
@@ -25,6 +24,7 @@ class RideSchema(BaseModel):
     ride_type: Optional[str]
     start_location: Optional[str]
     stop: Optional[str]
+    extra_stops: Optional[List[UUID]]
     destination: Optional[str]
     start_datetime: datetime
     end_datetime: datetime
