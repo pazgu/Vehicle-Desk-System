@@ -4,7 +4,7 @@ from ..models.ride_model import Ride , RideStatus
 from ..schemas.user_rides_schema import RideSchema
 from uuid import UUID
 from ..models.vehicle_model import Vehicle
-from sqlalchemy import String, text
+from sqlalchemy import String, func, text
 from datetime import datetime, timezone
 from fastapi import HTTPException
 from src.schemas.ride_status_enum import RideStatusEnum
@@ -37,7 +37,9 @@ def get_future_rides(user_id: UUID, db: Session, status=None, from_date=None, to
         Ride.destination,
         Ride.start_datetime,
         Ride.end_datetime,
-        Ride.estimated_distance_km.cast(String).label("estimated_distance"),
+       func.ceil(Ride.estimated_distance_km) \
+            .cast(String) \
+            .label("estimated_distance"),
         Ride.status,
         Ride.submitted_at,
         Ride.user_id,
@@ -70,7 +72,9 @@ def get_past_rides(user_id: UUID, db: Session, status=None, from_date=None, to_d
         Ride.destination,
         Ride.start_datetime,
         Ride.end_datetime,
-        Ride.estimated_distance_km.cast(String).label("estimated_distance"),
+        func.ceil(Ride.estimated_distance_km) \
+            .cast(String) \
+            .label("estimated_distance"),
         Ride.status,
         Ride.submitted_at,
         Ride.user_id,
@@ -95,7 +99,9 @@ def get_all_rides(user_id: UUID, db: Session, status=None, from_date=None, to_da
        Ride.destination,
        Ride.start_datetime,
        Ride.end_datetime,
-       Ride.estimated_distance_km.cast(String).label("estimated_distance"),
+       func.ceil(Ride.estimated_distance_km) \
+            .cast(String) \
+            .label("estimated_distance"),
        Ride.status,
        Ride.submitted_at,
        Ride.user_id,

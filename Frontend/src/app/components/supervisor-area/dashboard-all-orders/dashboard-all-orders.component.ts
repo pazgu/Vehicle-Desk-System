@@ -39,6 +39,9 @@ export class DashboardAllOrdersComponent implements OnInit {
   showOldOrders: boolean = false;
   sortBy: string = 'submitted_at';
 
+  // 🆕 פלג לשגיאה בתאריכים
+  dateError: boolean = false;
+
 
 
   constructor(private router: Router, private orderService: OrderService, private toastService: ToastService, private socketService: SocketService) { }
@@ -132,6 +135,17 @@ export class DashboardAllOrdersComponent implements OnInit {
   onFilterChange(): void {
     this.currentPage = 1;
   }
+  
+   validateDates(): void {
+  if (this.startDate && this.endDate) {
+    const start = new Date(this.startDate);
+    const end = new Date(this.endDate);
+    this.dateError = start > end;
+  } else {
+    this.dateError = false;
+  }
+}
+
 
   loadOrders(departmentId: string | null): void {
     if (departmentId) {
@@ -284,6 +298,7 @@ export class DashboardAllOrdersComponent implements OnInit {
     this.showOldOrders = false;
     this.sortBy = 'date_and_time';
     this.currentPage = 1;
+     this.dateError = false; // 🆕 מאפס גם את השגיאה
   }
 
   onPageChange(event: any) {
