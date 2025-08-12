@@ -526,14 +526,15 @@ deleteOrder(order: any): void {
     // Create proper dialog data
     const dialogData: ConfirmDialogData = {
       title: 'ביטול הזמנה',
-      message: `האם אתה בטוח שברצונך לבטל את ההזמנה?\n\nתאריך: ${order.date}\nשעה: ${order.time}\nסוג: ${order.type}`,
+      message: `? האם אתה בטוח שברצונך לבטל את ההזמנה`,
       confirmText: 'בטל הזמנה',
-      cancelText: 'ביטול',
+      cancelText: 'חזור',
+      noRestoreText: 'שימ/י לב שלא ניתן לשחזר את הנסיעה',
       isDestructive: true
     };
 
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: '400px',
+      width: '420px',
       height: 'auto',
       data: dialogData
     });
