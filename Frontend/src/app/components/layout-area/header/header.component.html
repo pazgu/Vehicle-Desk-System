@@ -35,7 +35,7 @@
    | הוסף משתמש חדש 
   </a>
 
-      <a *ngIf="(role$ | async) === 'employee'" [routerLink]="['/home']" title="להזמין נסיעה">
+      <a *ngIf="(role$ | async) === 'employee'||'supervisor'" [routerLink]="['/home']" title="להזמין נסיעה">
   <img src="/assets/images/add-car.png" alt="Car" class="add-car" />
 </a>
 
