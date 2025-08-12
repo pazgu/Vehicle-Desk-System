@@ -78,7 +78,9 @@ def get_past_rides(user_id: UUID, db: Session, status=None, from_date=None, to_d
         Ride.status,
         Ride.submitted_at,
         Ride.user_id,
+        Ride.extra_stops,
         Vehicle.fuel_type.label("vehicle")
+
     ).join(Vehicle, Ride.vehicle_id == Vehicle.id).filter(Ride.user_id == user_id, Ride.start_datetime <= now)
 
     query = filter_rides(query, status, from_date, to_date)
