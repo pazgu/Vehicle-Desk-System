@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -8,6 +8,9 @@ import { ToastService } from '../../services/toast.service';
 import { VehicleService } from '../../services/vehicle.service';
 import { SocketService } from '../../services/socket.service';
 import { Subscription } from 'rxjs';
+import { CityService } from '../../services/city.service';
+
+interface City { id: string; name: string; }
 
 @Component({
   selector: 'app-edit-ride',
@@ -17,6 +20,8 @@ import { Subscription } from 'rxjs';
   styleUrl: './edit-ride.component.css'
 })
 export class EditRideComponent implements OnInit {
+  cities: City[] = [];
+  stopName: string = 'תחנה 0 לא ידועה'; // class property
   status: string = 'pending';
   licenseCheckPassed: boolean = true;
   submittedAt: string = new Date().toISOString();
@@ -26,7 +31,6 @@ export class EditRideComponent implements OnInit {
   estimated_distance_with_buffer: number = 0;
   rideRequestSub!: Subscription; 
   vehicleTypes: string[] = [];
-
   allCars: {
   id: string;
   plate_number: string;
@@ -39,7 +43,8 @@ export class EditRideComponent implements OnInit {
   mileage: number;
   image_url: string;
   vehicle_model: string;
-  
+  extra_stop1?: string | null;
+  extra_stop2?: string | null;
 }[] = [];
 
 availableCars: typeof this.allCars = [];
@@ -51,7 +56,8 @@ availableCars: typeof this.allCars = [];
     private rideService: RideService,
     private toastService: ToastService,
     private vehicleService: VehicleService,
-    private socketService: SocketService 
+    private socketService: SocketService,
+    private cityService: CityService
   ) {}
 
     calculateMinDate(daysAhead: number): string {
@@ -61,6 +67,7 @@ availableCars: typeof this.allCars = [];
   }
 timeOptions: string[] = [];
   ngOnInit(): void {
+    this.fetchCities();
     this.generateTimeOptions();
     this.rideId = this.route.snapshot.paramMap.get('id') || '';
     this.minDate = this.calculateMinDate(2);
@@ -84,9 +91,7 @@ this.vehicleService.getAllVehicles().subscribe({
       typeof v.mileage === 'number'
     );
 
-    // 🔑 Only call loadRide after cars are loaded
     this.loadRide();
-    // ✅ Socket listener for new ride requests
 this.socketService.rideRequests$.subscribe((rideData) => {
   if (rideData) {
     this.toastService.show('🚗 התקבלה הזמנת נסיעה חדשה', 'success');
@@ -117,7 +122,8 @@ this.socketService.rideRequests$.subscribe((rideData) => {
       car: [''],
       start_location: ['', Validators.required],
       stop: ['', Validators.required],
-      destination: ['', Validators.required]
+      destination: ['', Validators.required],
+      extraStops: this.fb.array([]) 
     });
 
     this.rideForm.get('estimated_distance_km')?.valueChanges.subscribe(() => {
@@ -141,22 +147,11 @@ this.socketService.rideRequests$.subscribe((rideData) => {
 
     this.rideService.getRideById(this.rideId).subscribe({
       next: (ride) => {
-
-     
+      console.log(' fetched, stop:', ride.stop);
       this.status = ride.status || 'pending';
       this.submittedAt = ride.submitted_at || new Date().toISOString();
       this.licenseCheckPassed = ride.license_check_passed ?? true;
-
-
-
-      // const isPending = ride.status?.toLowerCase?.() === 'pending';
       const isPending = ride.status && ride.status.toLowerCase() === 'pending';
-
-
-      
-
-// const isOwner = String(ride.user_id) === localStorage.getItem('employee_id');
-const isOwner = String(ride.user_id) === localStorage.getItem('employee_id');
 
 
 if (!isPending) {
@@ -185,8 +180,10 @@ if (!isPending) {
       this.availableCars = this.allCars.filter(car =>
         car.status === 'available' && car.type === selectedVehicle.type
       );
-
+console.log(ride)
 if (selectedVehicle) {
+  
+console.log('Selected Vehicle:', selectedVehicle);// First patch all the synchronous fields
 this.rideForm.patchValue({
   ride_period: 'morning',
   ride_date: startDate.toISOString().split('T')[0],
@@ -197,19 +194,64 @@ this.rideForm.patchValue({
   vehicle_type: selectedVehicle.type,
   car: selectedVehicle.id,
   start_location: ride.start_location ?? 'מיקום התחלה לא ידוע',
-  stop: ride.stop ?? 'תחנה לא ידועה',
   destination: ride.destination ?? 'יעד לא ידוע'
 });
 
+console.log('fetching city for stop:', ride.stop);
 
+if (ride.stop) {
+  console.log('Fetching city for stop:', ride.stop);
+  
+  this.cityService.getCityNameById(ride.stop).subscribe({
+    next: city => {
+      const cityName = city?.name ?? 'תחנה לא ידועה';
+      console.log('Fetched city for stop:', cityName);
+      
+      // ✅ Set form control to city ID - Angular will auto-select the matching option
+      this.stopName = cityName; // Keep for display elsewhere if needed
+      this.rideForm.get('stop')?.setValue(ride.stop); // This is the city ID!
+      
+      console.log("Stop name after fetch:", cityName);
+      console.log("Form stop value (ID):", ride.stop);
+    },
+    error: (err) => {
+      console.log('Error fetching city for stop:', ride.stop, err);
+      this.stopName = 'תחנה לא ידועה';
+      this.rideForm.get('stop')?.setValue('');
+    }
+  });
+} else {
+  console.log('No stop ID provided');
+  this.stopName = 'תחנה לא ידועה';
+  this.rideForm.get('stop')?.setValue('');
+}
+if (ride.extra_stops && ride.extra_stops.length > 0) {
+    console.log('Loading extra stops:', ride.extra_stops);
+    
+    // Clear existing extra stops first
+    while (this.extraStops.length > 0) {
+      this.extraStops.removeAt(0);
+    }
+    
+    // Add each extra stop
+    ride.extra_stops.forEach((stopId: string, index: number) => {
+      console.log(`Adding extra stop ${index}: ${stopId}`);
+      
+      // Add the form group
+      this.extraStops.push(
+        this.fb.group({
+          stop: [stopId, Validators.required] // Set the city ID directly
+        })
+      );
+    });
+  }
 
+ 
 
   this.estimated_distance_with_buffer = +(parseFloat(ride.estimated_distance) * 1.1).toFixed(2);
 } else {
   this.toastService.show('הרכב שבוצעה בו ההזמנה אינו זמין יותר', 'error');
 }
-
-
 
       },
       error: (err) => {
@@ -217,6 +259,7 @@ this.rideForm.patchValue({
         this.router.navigate(['/home']);
       }
     });
+   
   }
 isCarDisabled(car: typeof this.allCars[0]): boolean {
   // Disable if status is not 'available' or freeze_reason exists
@@ -228,6 +271,8 @@ isCarDisabled(car: typeof this.allCars[0]): boolean {
         });
     }
     
+
+
 generateTimeOptions(): void {
   const times: string[] = [];
   for (let h = 0; h < 24; h++) {
@@ -239,9 +284,39 @@ generateTimeOptions(): void {
   }
   this.timeOptions = times;
 }
+ private fetchCities(): void {
+        this.cityService.getCities().subscribe({
+            next: (cities) => {
+                this.cities = cities.map(city => ({
+                    id: city.id,
+                    name: city.name
+                }));
+            },
+            error: (err) => {
+                console.error('Failed to fetch cities', err);
+                this.toastService.show('שגיאה בטעינת ערים', 'error');
+                this.cities = [];
+            }
+        });
+    }
   getVehicleTypes(): string[] {
         return [...new Set(this.allCars.map(car => car.type))];
     }
+    get extraStops(): FormArray {
+  return this.rideForm.get('extraStops') as FormArray;
+}
+
+addExtraStop(): void {
+  this.extraStops.push(
+    this.fb.group({
+      stop: ['', Validators.required]
+    })
+  );
+}
+
+removeExtraStop(index: number): void {
+  this.extraStops.removeAt(index);
+}
   submit(): void {
     
     if (this.rideForm.invalid) {
@@ -257,6 +332,12 @@ generateTimeOptions(): void {
     const start_datetime = `${rideDate}T${startTime}`;
     const end_datetime = `${rideDate}T${endTime}`;
 
+     // ✅ Extract extra stops as array of city IDs
+  const extraStopsIds = this.extraStops.controls
+    .map(control => control.get('stop')?.value)
+    .filter(stopId => stopId && stopId.trim() !== ''); // Filter out empty values
+
+  console.log('Extra stops being submitted:', extraStopsIds);
 const payload = {
   id: this.rideId,
   user_id: localStorage.getItem('employee_id'),
@@ -267,14 +348,12 @@ const payload = {
   estimated_distance_km: this.rideForm.get('estimated_distance_km')?.value,
   start_location: this.rideForm.get('start_location')?.value,
   stop: this.rideForm.get('stop')?.value,
+   extra_stops: extraStopsIds,
   destination: this.rideForm.get('destination')?.value,
   status: this.status,
   // license_check_passed: this.licenseCheckPassed,
   submitted_at: this.submittedAt
 };
-
-
-
 
 
     this.rideService.updateRide(this.rideId, payload).subscribe({
@@ -284,6 +363,7 @@ const payload = {
       },
       error: () => {
         this.toastService.show('שגיאה בעדכון ההזמנה', 'error');
+        console.log(payload)
       }
     });
   }

@@ -134,6 +134,7 @@ def get_ride_by_id(db: Session, ride_id: UUID) -> RideSchema:
         Ride.ride_type,
         Ride.start_location,
         Ride.stop,
+        Ride.extra_stops,
         Ride.destination,
         Ride.start_datetime,
         Ride.end_datetime,

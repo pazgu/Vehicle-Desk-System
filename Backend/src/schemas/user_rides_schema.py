@@ -25,6 +25,7 @@ class RideSchema(BaseModel):
     ride_type: Optional[str]
     start_location: Optional[str]
     stop: Optional[str]
+    extra_stops: Optional[list] = None
     destination: Optional[str]
     start_datetime: datetime
     end_datetime: datetime

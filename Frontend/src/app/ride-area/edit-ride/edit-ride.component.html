@@ -75,24 +75,52 @@
             </small>
           </div>
         </div>
+<div class="form-field-group">
+  <label>תחנה</label>
+ 
 
-        <!-- Row 5: מיקום התחלה + תחנה + יעד -->
-        <div class="row">
-          <div class="input-group">
-            <label>מיקום התחלה</label>
-            <input type="text" formControlName="start_location" />
-          </div>
-          <div class="input-group">
-            <label>תחנה</label>
-            <input type="text" formControlName="stop" />
-          </div>
-          <div class="input-group">
-            <label>יעד</label>
-            <input type="text" formControlName="destination" />
-          </div>
-        </div>
+<select formControlName="stop" class="styled-select" required>
+  <!-- All available cities - Angular will automatically select the one matching form value -->
+  <option *ngFor="let city of cities" [value]="city.id">
+    {{ city.name }}
+  </option>
+</select>
+  <small *ngIf="rideForm.get('stop')?.touched && rideForm.get('stop')?.errors?.['required']" class="error-text">
+    חובה למלא את שדה זה
+  </small>
+  <small class="distance-info">*נסיעתך תתחיל ותסתיים בבסיס הארגון: תל אביב</small>
+</div>
+
+
+
+  <!-- Extra stops FormArray -->
+  <div id="extrastops" formArrayName="extraStops">
+    <div *ngFor="let control of extraStops.controls; let i = index" [formGroupName]="i" class="extra-stop-item">
+      <button type="button" (click)="removeExtraStop(i)" class="removeBtn">❌</button>
+      <div class="form-field-group">
+        <label>תחנה נוספת {{ i + 1 }}</label>
+        <select formControlName="stop">
+          <option value="">בחר עיר</option>
+          <option *ngFor="let city of cities" [value]="city.id">{{ city.name }}</option>
+        </select>
+        <small *ngIf="control.get('stop')?.touched && control.get('stop')?.errors?.['required']" class="error-text">
+          חובה למלא את שדה זה
+        </small>
       </div>
+    </div>
 
+    <button type="button" (click)="addExtraStop()" [disabled]="extraStops.length >= 2" class="addBtn">
+      ➕ הוסף תחנה נוספת (אופציונלי)
+    </button>
+
+    <small *ngIf="extraStops.errors?.['sameStopAsDestination']" class="error-text">
+      תחנה נוספת לא יכולה להיות זהה לתחנה אחרת.
+    </small>
+    <small *ngIf="extraStops.errors?.['duplicateExtraStops']" class="error-text">
+      תחנות נוספות לא יכולות להיות כפולות.
+    </small>
+  </div>
+</div>
       <button class="submit-btn" type="submit">עדכן</button>
     </form>
   </div>

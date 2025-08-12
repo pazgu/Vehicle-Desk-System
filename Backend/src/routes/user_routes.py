@@ -634,6 +634,17 @@ def get_city_route(name:str,db: Session = Depends(get_db)):
     city = get_city(name,db)
     return {"id": str(city.id), "name": city.name} 
 
+def get_city_by_id(id: str, db: Session):
+    return db.query(City).filter(City.id == id).first()
+
+@router.get("/api/cityname")
+def get_city_name(id: str, db: Session = Depends(get_db)):
+    city = get_city_by_id(id, db)
+    if city is None:
+        raise HTTPException(status_code=404, detail=f"City with id {id} not found")
+    return {"id": str(city.id), "name": city.name}
+
+
 @router.get("/api/rides/feedback/check/{user_id}")
 def check_feedback_needed(
     user_id: UUID,  # Add this parameter to capture the path variable

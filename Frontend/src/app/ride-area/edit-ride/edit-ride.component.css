@@ -206,3 +206,14 @@ select.styled-select {
 .back-btn:hover {
   transform: scale(1.03);
 }
+
+.addBtn{
+background: none;
+border: none;
+}
+
+
+.removeBtn{
+background: none;
+border: none;
+}
