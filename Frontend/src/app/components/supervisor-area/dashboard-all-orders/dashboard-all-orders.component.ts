@@ -39,6 +39,9 @@ export class DashboardAllOrdersComponent implements OnInit {
   showOldOrders: boolean = false;
   sortBy: string = 'submitted_at'; 
 
+  // 🆕 פלג לשגיאה בתאריכים
+  dateError: boolean = false;
+
 
 
   constructor(private router: Router, private orderService: OrderService,private toastService:ToastService,  private socketService: SocketService ) {}
@@ -127,6 +130,17 @@ this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
   ngOnDestroy(): void {
    document.body.style.overflow = '';
   }
+  
+   validateDates(): void {
+  if (this.startDate && this.endDate) {
+    const start = new Date(this.startDate);
+    const end = new Date(this.endDate);
+    this.dateError = start > end;
+  } else {
+    this.dateError = false;
+  }
+}
+
 
   loadOrders(departmentId: string | null): void {
     if (departmentId) {
@@ -279,6 +293,7 @@ this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
     this.showOldOrders = false;
     this.sortBy = 'date_and_time';
     this.currentPage = 1;
+     this.dateError = false; // 🆕 מאפס גם את השגיאה
   }
 
   onPageChange(event: any) {

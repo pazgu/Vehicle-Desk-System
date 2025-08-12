@@ -34,17 +34,31 @@
             <option value="בוצע">בוצע</option>
           </select>
         </div>
+       
 
         <div style="display: flex; gap: 1rem;">
           <div>
             <label for="startDate">מתאריך:</label>
-            <input id="startDate" type="date" [(ngModel)]="startDate">
-          </div>
-          <div>
-            <label for="endDate">עד תאריך:</label>
-            <input id="endDate" type="date" [(ngModel)]="endDate">
+            <input 
+              id="startDate" 
+              type="date" 
+              [(ngModel)]="startDate" 
+              (ngModelChange)="validateDates()" 
+              [max]="endDate || null">
+
+            <input 
+              id="endDate" 
+              type="date" 
+              [(ngModel)]="endDate" 
+              (ngModelChange)="validateDates()" 
+              [min]="startDate || null">
           </div>
         </div>
+
+        <div *ngIf="dateError" style="color:red; margin-top:5px;">
+          תאריך ההתחלה לא יכול להיות אחרי תאריך הסיום
+        </div>
+
       </div>
 
 
