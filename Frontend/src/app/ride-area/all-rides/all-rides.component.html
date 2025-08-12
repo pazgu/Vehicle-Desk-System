@@ -56,7 +56,9 @@
           <option value="">הצג הכל</option>
           <option value="approved">מאושר</option>
           <option value="pending">ממתין</option>
-          <option value="rejected">בוטל</option>
+          <option value="cancelled_due_to_no_show">בוטלה-נסיעה לא יצאה</option>
+          <option value="rejected">נדחה</option>
+
         </select>
       </div>
 
@@ -178,10 +180,10 @@
       </div>
     </div>
 
-    <div *ngIf="!loading && filteredOrders.length === 0 && (rideViewMode !== 'all' || statusFilter || startDate || endDate || showOldOrders)" class="no-orders-message">
+    <!-- <div *ngIf="!loading && filteredOrders.length === 0 && (rideViewMode !== 'all' || statusFilter || startDate || endDate || showOldOrders)" class="no-orders-message">
         לא נמצאו הזמנות התואמות את המסננים שבחרת.
     </div>
-
+ -->
 
     <div class="pagination-controls">
       <button (click)="prevPage()" [disabled]="currentPage === 1">
