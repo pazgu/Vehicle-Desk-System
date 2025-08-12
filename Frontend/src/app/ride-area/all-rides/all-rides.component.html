@@ -178,10 +178,10 @@
       </div>
     </div>
 
-    <div *ngIf="!loading && filteredOrders.length === 0 && (rideViewMode !== 'all' || statusFilter || startDate || endDate || showOldOrders)" class="no-orders-message">
+    <!-- <div *ngIf="!loading && filteredOrders.length === 0 && (rideViewMode !== 'all' || statusFilter || startDate || endDate || showOldOrders)" class="no-orders-message">
         לא נמצאו הזמנות התואמות את המסננים שבחרת.
     </div>
-
+ -->
 
     <div class="pagination-controls">
       <button (click)="prevPage()" [disabled]="currentPage === 1">
