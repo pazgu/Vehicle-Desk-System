@@ -58,10 +58,20 @@ export class AllRidesComponent implements OnInit {
   orders: any[] = [];
   rideViewMode: 'all' | 'future' | 'past' = 'all';
   highlightedOrderId: string | null = null;
+warningVisible = false;
 
   ngOnInit(): void {
     const userId = localStorage.getItem('employee_id');
+ if (this.exceededMaxRides()) {
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const lastShownDate = localStorage.getItem('exceededWarningDate');
 
+    if (lastShownDate !== today) {
+      // Show warning only if it wasn't shown today
+      this.warningVisible = true;
+      localStorage.setItem('exceededWarningDate', today);
+    }
+  }
     this.route.queryParams.subscribe(params => {
       // Restore component state from URL params
       this.rideViewMode = (params['mode'] as 'all' | 'future' | 'past') || 'all';
@@ -151,10 +161,6 @@ export class AllRidesComponent implements OnInit {
           };
           this.orders = updatedOrders;
           this.orders = [...this.orders];
-          const role = localStorage.getItem('role');
-          if (role === 'supervisor' || role === 'employee') {
-            this.toastService.show(' יש בקשה שעברה סטטוס', 'success');
-          }
         }
       }
     });
@@ -581,7 +587,6 @@ deleteOrder(order: any): void {
     this.router.navigate(['/archived-orders']);
   }
 
-  warningVisible = true;
   exceededMaxRides(): boolean {
     const maxRides = 6;
     const userOrders = JSON.parse(localStorage.getItem('user_orders') || '[]');
