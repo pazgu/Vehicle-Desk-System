@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { DropdownModule } from 'primeng/dropdown';
 import { PaginatorModule } from 'primeng/paginator';
@@ -39,9 +39,12 @@ export class DashboardAllOrdersComponent implements OnInit {
   showOldOrders: boolean = false;
   sortBy: string = 'submitted_at'; 
 
+  // 🆕 פלג לשגיאה בתאריכים
+  dateError: boolean = false;
 
 
-  constructor(private router: Router, private orderService: OrderService,private toastService:ToastService,  private socketService: SocketService ) {}
+
+  constructor(private router: Router,private route:ActivatedRoute, private orderService: OrderService,private toastService:ToastService,  private socketService: SocketService ) {}
 
   ngOnInit(): void {
     const departmentId = localStorage.getItem('department_id');
@@ -50,6 +53,12 @@ export class DashboardAllOrdersComponent implements OnInit {
     } else {
       console.error('Department ID not found in localStorage.');
     }
+this.route.queryParams.subscribe(params => {
+      if (params['sortBy']) this.sortBy = params['sortBy'];
+      if (params['status']) this.statusFilter = params['status'];
+      if (params['startDate']) this.startDate = params['startDate'];
+      if (params['endDate']) this.endDate = params['endDate'];
+    });
 
     this.socketService.rideRequests$.subscribe((newRide) => {
       const role=localStorage.getItem('role')
@@ -114,10 +123,7 @@ this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
     this.orders = updatedOrders;
     this.orders = [...this.orders]
       
-      const role=localStorage.getItem('role');
-      if(role==='supervisor' || role ==='employee' && updatedStatus!='approved'){
-      this.toastService.show(' יש בקשה שעברה סטטוס','success')
-      }
+      
     }
   }
 });
@@ -127,6 +133,28 @@ this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
   ngOnDestroy(): void {
    document.body.style.overflow = '';
   }
+updateQueryParams() {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        sortBy: this.sortBy || null,
+        status: this.statusFilter || null,
+        startDate: this.startDate || null,
+        endDate: this.endDate || null
+      },
+      queryParamsHandling: 'merge'
+    });
+  }  
+   validateDates(): void {
+  if (this.startDate && this.endDate) {
+    const start = new Date(this.startDate);
+    const end = new Date(this.endDate);
+    this.dateError = start > end;
+  } else {
+    this.dateError = false;
+  }
+}
+
 
   loadOrders(departmentId: string | null): void {
     if (departmentId) {
@@ -279,6 +307,7 @@ this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
     this.showOldOrders = false;
     this.sortBy = 'date_and_time';
     this.currentPage = 1;
+     this.dateError = false; // 🆕 מאפס גם את השגיאה
   }
 
   onPageChange(event: any) {

@@ -13,6 +13,7 @@ export interface LoginResponse {
     username: string;
     email: string;
     password: string;
+    phone: string;
     department_id: string; // selected from dropdown
     // No need to include `employee_id` or `role`, those are handled by the backend
   }  
