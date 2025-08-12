@@ -21,6 +21,7 @@ interface City { id: string; name: string; }
 })
 export class EditRideComponent implements OnInit {
   cities: City[] = [];
+  filteredEndTimes: string[] = [];
   stopName: string = 'תחנה 0 לא ידועה'; // class property
   status: string = 'pending';
   licenseCheckPassed: boolean = true;
@@ -43,8 +44,7 @@ export class EditRideComponent implements OnInit {
   mileage: number;
   image_url: string;
   vehicle_model: string;
-  extra_stop1?: string | null;
-  extra_stop2?: string | null;
+
 }[] = [];
 
 availableCars: typeof this.allCars = [];
@@ -81,7 +81,15 @@ timeOptions: string[] = [];
       }
     });
 
+    this.rideForm.get('start_time')?.valueChanges.subscribe(start => {
+      this.filteredEndTimes = this.timeOptions.filter(time => time > start);
 
+      // Reset end_time if it’s no longer valid
+      if (!this.filteredEndTimes.includes(this.rideForm.get('end_time')?.value)) {
+        this.rideForm.get('end_time')?.reset('');
+      }
+    });
+  
 this.vehicleService.getAllVehicles().subscribe({
   next: (vehicles) => {
     this.allCars = vehicles.filter(v =>
@@ -106,6 +114,7 @@ this.socketService.rideRequests$.subscribe((rideData) => {
     this.toastService.show('שגיאה בטעינת רכבים זמינים', 'error');
   }
 });
+
   }
 
   

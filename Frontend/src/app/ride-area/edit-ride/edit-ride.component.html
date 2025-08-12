@@ -25,10 +25,11 @@
           </div>
         </div>
 
-       <div class="row">
+       <div class="row" [formGroup]="rideForm">
   <div class="input-group">
     <label>שעת התחלה</label>
     <select formControlName="start_time">
+      <option value="" disabled selected>בחר שעה</option>
       <option *ngFor="let time of timeOptions" [value]="time">
         {{ time }}
       </option>
@@ -38,13 +39,13 @@
   <div class="input-group">
     <label>שעת סיום</label>
     <select formControlName="end_time">
-      <option *ngFor="let time of timeOptions" [value]="time">
+      <option value="" disabled selected>בחר שעה</option>
+      <option *ngFor="let time of filteredEndTimes" [value]="time">
         {{ time }}
       </option>
     </select>
   </div>
 </div>
-
 
         <!-- Row 3: סוג רכב + בחר רכב -->
         <div class="row">
