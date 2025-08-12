@@ -47,8 +47,6 @@ getRideById(rideId: string): Observable<any> {
   const headers = new HttpHeaders({
     Authorization: `Bearer ${token}`
   });
-  
-
   return this.http.get(`http://localhost:8000/api/rides/${rideId}`, { headers });
 }
 

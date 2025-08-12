@@ -339,7 +339,7 @@ async def patch_order(
     current_user: User = Depends(get_current_user)
 ):
     # Update the order
-    updated_order = patch_order_in_db(order_id, patch_data, db, changed_by=str(current_user.employee_id))
+    updated_order = await patch_order_in_db(order_id, patch_data, db, changed_by=str(current_user.employee_id))
     user = db.query(User).filter(User.employee_id == updated_order.user_id).first()
     vehicle = db.query(Vehicle).filter(Vehicle.id == updated_order.vehicle_id).first()
 
@@ -622,6 +622,17 @@ def get_cities_route(db: Session = Depends(get_db)):
 def get_city_route(name:str,db: Session = Depends(get_db)):
     city = get_city(name,db)
     return {"id": str(city.id), "name": city.name} 
+
+def get_city_by_id(id: str, db: Session):
+    return db.query(City).filter(City.id == id).first()
+
+@router.get("/api/cityname")
+def get_city_name(id: str, db: Session = Depends(get_db)):
+    city = get_city_by_id(id, db)
+    if city is None:
+        raise HTTPException(status_code=404, detail=f"City with id {id} not found")
+    return {"id": str(city.id), "name": city.name}
+
 
 @router.get("/api/rides/feedback/check/{user_id}")
 def check_feedback_needed(
