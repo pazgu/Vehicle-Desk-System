@@ -66,11 +66,6 @@ export const routes: Routes = [
   loadComponent: () => import('./ride-area/ride-details/ride-details.component').then(m => m.RideDetailsComponent)
 },
 {
-  path: 'archived-orders',
-  loadComponent: () =>
-    import('./ride-area/archived-orders/archived-orders.component').then(m => m.ArchivedOrdersComponent)
-},
-{
   path: 'inspector/inspection',
   loadComponent: () =>
     import('./inspector-area/vehicle-inspection/vehicle-inspection.component').then(m => m.VehicleInspectionComponent)
