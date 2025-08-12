@@ -495,17 +495,6 @@ async def submit_completion_form(
     return await process_completion_form(db, user, form_data)
 
 
-@router.get("/api/archived-orders/{user_id}", response_model=List[RideSchema])
-def get_archived_orders_route(
-    user_id: UUID,
-    db: Session = Depends(get_db),
-    token: str = Depends(oauth2_scheme)
-):
-    role_check(["employee", "admin"], token)
-    identity_check(str(user_id), token)
-
-    return get_archived_rides(user_id, db)
-
 @router.get("/api/orders/pending-cars", response_model=List[PendingRideSchema])
 def get_pending_car_orders(db: Session = Depends(get_db)):
     pending_rides = (

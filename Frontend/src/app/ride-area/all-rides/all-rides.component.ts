@@ -584,9 +584,6 @@ deleteOrder(order: any): void {
     this.router.navigate(['/ride/details', order.ride_id]);
   }
 
-  goToArchivedOrders() {
-    this.router.navigate(['/archived-orders']);
-  }
 
   exceededMaxRides(): boolean {
     const maxRides = 6;
