@@ -42,6 +42,7 @@ def get_future_rides(user_id: UUID, db: Session, status=None, from_date=None, to
             .label("estimated_distance"),
         Ride.status,
         Ride.submitted_at,
+        Ride.extra_stops,
         Ride.user_id,
         Vehicle.fuel_type.label("vehicle")
     ).join(Vehicle, Ride.vehicle_id == Vehicle.id).filter(

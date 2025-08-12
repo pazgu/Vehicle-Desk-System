@@ -36,11 +36,11 @@ canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean 
     return true;
   }
 
-   if (role === 'supervisor'&&url.includes('/all-rides')) {
-      this.toastService.show('אין לך הזמנות אישיות', 'error');
-      this.router.navigate(['/supervisor-dashboard']);
-      return false;
-    }
+  //  if (role === 'supervisor'&&url.includes('/all-rides')) {
+  //     this.toastService.show('אין לך הזמנות אישיות', 'error');
+  //     this.router.navigate(['/supervisor-dashboard']);
+  //     return false;
+  //   }
   // ❌ Block supervisors and inspectors from /all-rides and /home
   if (url.includes('/home')) {
     if (role === 'inspector') {

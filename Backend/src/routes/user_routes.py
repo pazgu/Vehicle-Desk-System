@@ -121,7 +121,7 @@ def get_future_orders(user_id: UUID, status: Optional[RideStatus] = Query(None),
                       ):
 
     try:
-        role_check(allowed_roles=["employee", "admin"], token=token)
+        role_check(allowed_roles=["employee", "admin","supervisor"], token=token)
         identity_check(user_id=str(user_id), token=token)
 
         rides = get_future_rides(user_id, db, status, from_date, to_date)
@@ -135,7 +135,7 @@ def get_future_orders(user_id: UUID, status: Optional[RideStatus] = Query(None),
     except HTTPException as e:
         raise e
     except Exception as e:
-        raise HTTPException(status_code=500, detail="An unexpected error occurred.")
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred :{e}.")
 
 
 @router.get("/api/past-orders/{user_id}", response_model=List[RideSchema])
@@ -145,7 +145,7 @@ def get_past_orders(user_id: UUID, status: Optional[RideStatus] = Query(None),
                     db: Session = Depends(get_db),
                     token: str = Depends(oauth2_scheme)):
 
-    role_check(["employee", "admin"], token)
+    role_check(["employee", "admin","supervisor"], token)
     identity_check(str(user_id), token)
 
     rides = get_past_rides(user_id, db, status, from_date, to_date)
@@ -166,17 +166,12 @@ def get_all_orders(user_id: UUID, status: Optional[RideStatus] = Query(None),
                    db: Session = Depends(get_db),
                    token: str = Depends(oauth2_scheme)):
 
-    role_check(["employee", "admin"], token)
+    role_check(["employee", "admin","supervisor"], token)
     identity_check(str(user_id), token)
 
     rides = get_all_rides(user_id, db, status, from_date, to_date)
     return rides
 
-    
-@router.get("/api/user-orders/{user_id}/{order_id}")
-def get_user_2specific_order():
-    # Implementation pending
-    return {"message": "Not implemented yet"}
 
 @router.post("/api/orders/{user_id}", status_code=fastapi_status.HTTP_201_CREATED)
 async def create_order(
