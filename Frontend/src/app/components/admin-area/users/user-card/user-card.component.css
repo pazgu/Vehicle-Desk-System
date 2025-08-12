@@ -11,6 +11,7 @@
   position: absolute;
   left: 50%;
   top: 50%;
+  margin-top: 30px;
   transform: translate(-50%, -50%);
   max-width: 600px;
   background-color: #fff;
@@ -169,12 +170,21 @@
   direction: rtl;
 
 }
-
-.detail-row {
+.detail-row{
   display: flex;
   justify-content: space-between;
   font-size: 16px;
   border-bottom: 1px solid #eaeaea;
+  padding-bottom: 8px;
+  align-items: center;
+  direction: rtl;
+
+}
+.no-show-count {
+  display: flex;
+  justify-content: space-between;
+  font-size: 16px;
+  /* border-bottom: 1px solid #eaeaea; */
   padding-bottom: 8px;
   align-items: center;
   direction: rtl;
