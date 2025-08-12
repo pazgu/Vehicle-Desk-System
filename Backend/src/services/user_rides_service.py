@@ -99,6 +99,7 @@ def get_all_rides(user_id: UUID, db: Session, status=None, from_date=None, to_da
        Ride.status,
        Ride.submitted_at,
        Ride.user_id,
+       Ride.extra_stops,
        Vehicle.fuel_type.label("vehicle")
     ).join(Vehicle, Ride.vehicle_id == Vehicle.id).filter(Ride.user_id == user_id)
 
