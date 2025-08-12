@@ -76,6 +76,20 @@ register(): void {
 
   if (this.registerForm.invalid) {
     this.registerForm.markAllAsTouched();
+    // Check for phone pattern error specifically
+    const phoneControl = this.registerForm.get('phone');
+    if (phoneControl?.errors?.['pattern']) {
+      this.toastService.show('מספר הטלפון שהוזן אינו תקין. אנא בדוק ונסה שוב', 'error');
+      return;
+    }
+    
+    // Check for email format error
+    const emailControl = this.registerForm.get('email');
+    if (emailControl?.errors?.['email']) {
+      this.toastService.show('כתובת האימייל שגויה. אנא הזן כתובת תקינה (למשל name@example.com)', 'error');
+      return;
+    }
+    
     console.log('About to show toast');
     this.toastService.show('יש למלא את כל השדות כנדרש ולוודא תקינות', 'error');
     return;
