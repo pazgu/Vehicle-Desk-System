@@ -39,20 +39,19 @@ export class NotificationsComponent implements OnInit {
   const userId = localStorage.getItem('employee_id'); // make sure this key matches your localStorage
    this.notificationService.unreadCount$.next(0);   // 👈 clears badge
 
-  console.log('👤 Joining socket room for user:', userId);
 
 
   const role = localStorage.getItem('role');
 
   if (role === 'admin') {
-    this.notificationService.getAdminNotifications().subscribe({
-      next: (data) => {
-        console.log('🛠 Admin notification raw data:', data);
-  },
-  error: (err) => {
-    console.error('Failed to fetch admin notifications:', err);
-  }
-});
+//     this.notificationService.getAdminNotifications().subscribe({
+//       next: (data) => {
+//         console.log('🛠 Admin notification raw data:', data);
+//   },
+//   error: (err) => {
+//     console.error('Failed to fetch admin notifications:', err);
+//   }
+// });
  this.notificationService.getNotifications().subscribe({
         next: (data) => {
         
@@ -74,7 +73,6 @@ export class NotificationsComponent implements OnInit {
    this.socketService.vehicleExpiry$.subscribe((newNotif) => {
 
   if (newNotif) {
-    console.log("new notif for admin from socket in component",newNotif)
     const notifWithTimeAgo = {
       ...newNotif,
       timeAgo: formatDistanceToNow(new Date(newNotif.sent_at), {
@@ -104,8 +102,6 @@ export class NotificationsComponent implements OnInit {
     }
     
 
-    // Optional: log or show toast
-    console.log('🟢 Live notification added:', notifWithTimeAgo);
   }}
 });
 this.socketService.odometerNotif$.subscribe(
@@ -142,7 +138,6 @@ this.socketService.odometerNotif$.subscribe(
           this.toastService.show(newNotif.message, 'success');
         }
 
-        console.log('🟢 Live notification added:', notifWithTimeAgo);
       }
     });
 
@@ -155,7 +150,6 @@ this.socketService.odometerNotif$.subscribe(
   next: (data) => {
     this.notifications = data.map(note => {
       const extended = note.is_extended_request;
-      console.log(`Notification ID: ${note.id}, is_extended_request:`, extended);      
       return {
         ...note,
         timeAgo: formatDistanceToNow(new Date(note.sent_at), {
@@ -173,7 +167,6 @@ this.socketService.odometerNotif$.subscribe(
     }
     this.socketService.notifications$.subscribe((newNotif) => {
   if (newNotif && newNotif.user_id == userId) {
-    console.log("new notif from socket in component",newNotif)
     const notifWithTimeAgo = {
       ...newNotif,
       timeAgo: formatDistanceToNow(new Date(newNotif.sent_at), {
@@ -202,8 +195,6 @@ this.socketService.odometerNotif$.subscribe(
     }
     
 
-    // Optional: log or show toast
-    console.log('🟢 Live notification added:', notifWithTimeAgo);
   }}
 });
 
@@ -248,18 +239,18 @@ this.socketService.odometerNotif$.subscribe(
   }
   
   translateMessage(message: string): string {
-    const lower = message.toLowerCase();
+  const lower = message.toLowerCase();
 
-    if (lower.includes('נשלחה בהצלחה')) {
-      return '.ההזמנה שלך נשלחה בהצלחה. תקבל/י התראה לאחר הבדיקה והאישור';
-    } else if (lower.includes('אושרה')) {
-      return '.ההזמנה שלך אושרה';
-    } else if (lower.includes('נדחתה')) {
-      return '.ההזמנה שלך נדחתה';
-    } else {
-      return message;
-    }
+  if (lower.includes('נשלחה בהצלחה')) {
+    return 'ההזמנה שלך נשלחה בהצלחה. תקבל/י התראה לאחר הבדיקה והאישור.';
+  } else if (lower.includes('אושרה')) {
+    return 'ההזמנה שלך אושרה.';
+  } else if (lower.includes('נדחתה')) {
+    return 'ההזמנה שלך נדחתה.';
+  } else {
+    return message;
   }
+}
   getStatusClass(status?: string): string {
   if (!status) {
     return 'neutral';  // fallback class
@@ -300,10 +291,7 @@ getStatusIcon(status?: string): string {
   } else if (notif.vehicle_id){
     this.goToVehicle(notif.vehicle_id);
   }
-  else {
-    console.log(notif)
-    console.log('ℹ️ Notification has no specific route.');
-  }
+
 }
 
 getLeaseAlerts(title: string): string {

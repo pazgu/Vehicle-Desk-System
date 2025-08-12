@@ -60,10 +60,9 @@ export class DepartmentDataComponent implements OnInit {
   loadDepartments() {
     this.userService.getDepartmentsWithSupervisors().subscribe({
       next: (departmentsdata) => {
-      console.log('Departments loaded:', departmentsdata);
       this.departments = departmentsdata;
     },
-      error: (err) => console.error('Error fetching departments:', err),
+      error: () => console.error('Error fetching departments:'),
     });
   }
 

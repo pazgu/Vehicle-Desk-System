@@ -13,12 +13,13 @@ import { AuthService } from '../../../services/auth.service';
 // --- ADD THESE IMPORTS ---
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators'; // takeUntil comes from 'rxjs/operators'
+import { LoadingSpinnerComponent } from '../../loading-spinner/loading-spinner/loading-spinner.component';
 // -------------------------
 
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [HeaderComponent, RouterModule, CommonModule],
+  imports: [HeaderComponent, RouterModule, CommonModule,LoadingSpinnerComponent],
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.css',
 })
@@ -43,12 +44,10 @@ export class LayoutComponent implements OnInit,OnDestroy {
   
 
   ngOnInit() {
-    console.log('[ON INIT] LayoutComponent initialized.');
 
     this.authService.isLoggedIn$
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((isLoggedIn: boolean) => { // Explicitly type 'isLoggedIn' for clarity and type safety
-        console.log('[AUTH STATUS CHANGE] Logged in status received:', isLoggedIn);
         this.loggedIn = isLoggedIn;
         this.checkFeedbackNeeded();
       });
@@ -63,11 +62,9 @@ export class LayoutComponent implements OnInit,OnDestroy {
 
     const storedRideId = localStorage.getItem('pending_feedback_ride');
     if (storedRideId) {
-      console.log('[ON INIT] Found stored ride ID:', storedRideId);
       this.pendingRideId = storedRideId;
     }
       this.socketService.feedbackNeeded$.subscribe((data) => {
-  console.log('ride that needs feedback from header component:', data);
   if (data) {
     this.checkFeedbackNeeded();
     
@@ -80,7 +77,6 @@ export class LayoutComponent implements OnInit,OnDestroy {
   ngOnDestroy(): void {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
-    console.log('[ON DESTROY] LayoutComponent destroyed. Subscriptions unsubscribed.');
     this.subscription.unsubscribe();
       if (this.routerSubscription) {
       this.routerSubscription.unsubscribe();
@@ -88,7 +84,6 @@ export class LayoutComponent implements OnInit,OnDestroy {
 
   }
     hideFeedbackButton(): void {
-    console.log('[HIDE FEEDBACK BUTTON] Hiding feedback button and clearing state.');
     this.feedbackCheckComplete = true; // Set to true to allow *ngIf to evaluate
     this.pendingRideId = null; // This will hide the button
     localStorage.removeItem('pending_feedback_ride'); // Clear stored ID
@@ -99,31 +94,24 @@ export class LayoutComponent implements OnInit,OnDestroy {
     const userId = this.getUserIdFromAuthService();
 
  if (!userId) {
-      console.log('[CHECK FEEDBACK] No user ID found or user logged out. Calling hideFeedbackButton().');
       this.hideFeedbackButton(); // Call the new function here
       return;
     }
 
-    console.log('[CHECK FEEDBACK] User ID found:', userId);
-    console.log('[CHECK FEEDBACK] Checking feedback for user:', userId);
+
 
     this.http.get<any>(`${environment.apiUrl}/rides/feedback/check/${userId}`).subscribe(
       (res) => {
-        console.log('[CHECK FEEDBACK] Server response:', JSON.stringify(res));
         if (res?.showPage && res?.ride_id) {
-          console.log('[CHECK FEEDBACK] Feedback required. Setting pendingRideId to:', res.ride_id);
           localStorage.setItem('pending_feedback_ride', res.ride_id);
           this.pendingRideId = res.ride_id;
         } else {
-          console.log('[CHECK FEEDBACK] No feedback required. Clearing localStorage and state.');
           localStorage.removeItem('pending_feedback_ride');
           this.pendingRideId = null;
         }
         this.feedbackCheckComplete = true;
-        console.log('[CHECK FEEDBACK] feedbackCheckComplete set to true.');
       },
       (error) => {
-        console.error('[CHECK FEEDBACK] Error during feedback check:', error);
         if (!this.pendingRideId) {
           this.feedbackCheckComplete = true;
         }
@@ -147,13 +135,11 @@ export class LayoutComponent implements OnInit,OnDestroy {
   }
 
   onFormCompleted(): void {
-    console.log('[FORM COMPLETED] User completed feedback form. Clearing feedback state.');
     localStorage.removeItem('pending_feedback_ride');
     this.pendingRideId = null;
   }
 
   onFeedbackButtonClick(): void {
-    console.log('Feedback button clicked! Navigating to form...');
         this.pendingRideId = null;
 
   }

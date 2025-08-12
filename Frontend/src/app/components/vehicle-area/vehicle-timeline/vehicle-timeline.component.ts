@@ -57,7 +57,6 @@ export class VehicleTimelineComponent implements OnInit {
     if (fromParam && this.isValidDateString(fromParam)) {
       // If 'from' param exists and is valid, use it as the starting point
       initialDesiredDate = new Date(fromParam + 'T00:00:00'); // Parse as start of that day in local time
-      console.log('✅ Initializing based on URL query param "from":', fromParam);
     } else {
       // If no valid 'from' param, default to current logic for today's view
       // This is the core logic that determines *which* week's Sunday you want to show
@@ -67,11 +66,9 @@ export class VehicleTimelineComponent implements OnInit {
       if (today.getDay() === 6) { // Saturday
         initialDesiredDate = new Date(today);
         initialDesiredDate.setDate(today.getDate() + 1); // Advance to Sunday
-        console.log('Detected Saturday, setting initial desired date to next Sunday:', this.formatDateToYYYYMMDD(initialDesiredDate));
       } else {
         // Sunday (0) to Friday (5) - use today's date to find its Sunday
         initialDesiredDate = new Date(today);
-        console.log('Detected Sunday-Friday, setting initial desired date to today:', this.formatDateToYYYYMMDD(initialDesiredDate));
         window.scrollTo({ top: 0});
       }
     }
@@ -125,9 +122,7 @@ navigateBack(): void {
       .set('from', from)
       .set('to', to);
 
-    console.log('🚀 Requesting timeline with API params (from, to):', from, to);
-    console.log('📡 Full URL for API call:', `${environment.apiUrl}/vehicles/${this.vehicleId}/timeline?${params}`);
-
+   
     this.http.get<any[]>(`${environment.apiUrl}/vehicles/${this.vehicleId}/timeline`, { params })
       .subscribe({
         next: data => {
@@ -232,7 +227,6 @@ navigateBack(): void {
     const day = d.getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
     d.setDate(d.getDate() - day); // Backtrack to Sunday of the week
 
-    console.log('🧮 Calculated week start (Sunday):', this.formatDateToYYYYMMDD(d));
     return d;
   }
 
@@ -240,7 +234,6 @@ navigateBack(): void {
     const end = new Date(startOfWeek);
     end.setDate(end.getDate() + 6); // Advance 6 days from Sunday to Saturday
     end.setHours(23, 59, 59, 999); // Set to very end of Saturday
-    console.log('🧮 Calculated week end (Saturday):', this.formatDateToYYYYMMDD(end));
     return end;
   }
 
@@ -252,9 +245,7 @@ navigateBack(): void {
     this.currentWeekStart = this.getStartOfWeek(newDate);
     this.weekEnd = this.getWeekEnd(this.currentWeekStart);
 
-    console.log('🧭 Navigating to new week start:', this.formatDateToYYYYMMDD(this.currentWeekStart));
-    console.log('📅 Navigating to new week end:', this.formatDateToYYYYMMDD(this.weekEnd));
-
+  
     this.loadVehicleTimeline(this.currentWeekStart);
     this.updateUrlQueryParams();
   }
@@ -271,6 +262,5 @@ navigateBack(): void {
       },
       queryParamsHandling: 'merge',
     });
-    console.log('🔗 URL query params updated to:', fromDateString, 'to', toDateString);
   }
 }

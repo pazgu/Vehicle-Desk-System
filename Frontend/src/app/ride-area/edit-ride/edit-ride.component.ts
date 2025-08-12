@@ -132,7 +132,6 @@ this.socketService.rideRequests$.subscribe((rideData) => {
 
   loadRide(): void {
      const user_id = localStorage.getItem('employee_id');
-  console.log('employee_id from localStorage:', user_id);
   if (!user_id) {
     this.toastService.show('שגיאת זיהוי משתמש - התחבר מחדש', 'error');
     this.router.navigate(['/login']); // Or fallback to /home
@@ -142,12 +141,7 @@ this.socketService.rideRequests$.subscribe((rideData) => {
     this.rideService.getRideById(this.rideId).subscribe({
       next: (ride) => {
 
-       console.log('👀 Ride status:', ride.status);
-
-       console.log('🚗 ride.vehicle_id:', ride.vehicle_id); // ✅ Add this
-
-       console.log('🚚 Full ride object:', ride); // 👈 ADD THIS
-
+     
       this.status = ride.status || 'pending';
       this.submittedAt = ride.submitted_at || new Date().toISOString();
       this.licenseCheckPassed = ride.license_check_passed ?? true;
@@ -157,7 +151,6 @@ this.socketService.rideRequests$.subscribe((rideData) => {
       // const isPending = ride.status?.toLowerCase?.() === 'pending';
       const isPending = ride.status && ride.status.toLowerCase() === 'pending';
 
-        console.log('🟡 isPending:', isPending);
 
       
 
@@ -258,7 +251,6 @@ const payload = {
 
 
 
-    console.log("📤 PATCH Payload:", payload);
 
 
     this.rideService.updateRide(this.rideId, payload).subscribe({

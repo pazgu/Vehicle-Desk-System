@@ -55,7 +55,6 @@ def check_expired_licenses(db: Session):
     for user in expired_users:
         user.has_government_license = False
         # אפשר לשלוח socket event כאן
-        print(f"🔻 Marked {user.username} as expired")
     
     db.commit()
     return {"message": f"{len(expired_users)} users' license marked as expired"}

@@ -1,4 +1,3 @@
-
 <div *ngIf="loading" class="loading">טוען...</div>
 
 <div *ngIf="!loading" class="admin-inspections-container">
@@ -8,7 +7,7 @@
       {{ showProblematicFilters ? 'הסתר אפשרויות סינון' : 'הצג בדיקות עם בעיות' }}
     </button>
     <div *ngIf="showProblematicFilters">
-      <label style="cursor:pointer; block; margin-bottom: 0.5em;">
+      <label style="cursor:pointer; margin-bottom: 0.5em;">
         <input type="checkbox" [(ngModel)]="showMediumIssues" (change)="loadData()" />
         הצג בעיות - דרגה בינונית
       </label>
@@ -28,7 +27,7 @@
           <th>תאריך</th>
           <th>בודק</th>
           <th>נקי</th>
-          <th>דלק נבדק</th>
+          <th>מתודלק</th>
           <th>אין חפצים</th>
           <th>בעיה קריטית</th>
           <th>הערות</th>
@@ -37,9 +36,9 @@
       <tbody>
         <tr *ngFor="let insp of filteredInspections">
           <td>{{ insp.inspection_date | date: 'short' }}</td>
-          <td>{{ insp.inspected_by }}</td>
+          <td>{{ insp.inspected_by_name || '—' }}</td>
           <td>{{ insp.clean ? '✔️' : '❌' }}</td>
-          <td>{{ insp.fuel_checked ? '✔️' : '❌' }}</td>
+          <td>{{ insp.fuel_checked ? '❌' : '✔️' }}</td>
           <td>{{ insp.no_items_left ? '✔️' : '❌' }}</td>
           <td>{{ insp.critical_issue_bool ? 'כן' : 'לא' }}</td>
           <td>{{ insp.issues_found || '—' }}</td>
@@ -75,6 +74,6 @@
     </table>
   </ng-container>
 
-  <div *ngIf="filteredInspections.length === 0 && rides.length === 0" style="text-align: right; margin-top: 2rem;">אין נתונים להצגה</div>
+  <div *ngIf="filteredInspections.length === 0 && rides.length === 0" style="text-align: right; margin-top: 2rem;">אין
+    נתונים להצגה</div>
 </div>
-

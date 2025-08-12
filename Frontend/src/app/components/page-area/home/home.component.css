@@ -1,39 +1,144 @@
 /* General reset */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   font-family: 'Assistant', sans-serif;
   direction: rtl;
   height: 100vh;
-  overflow: hidden;      /* ✅ blocks vertical scroll */
-  overscroll-behavior: none; /* ✅ prevent bounce on mobile */
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
-.no-spinner::-webkit-outer-spin-button,
-.no-spinner::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-.extra-stop{
-  display:flex;
-  flex-direction: row;
-}
-.no-spinner {
-  -moz-appearance: textfield;
-  appearance: textfield;
+/* New, unified CSS rules for consistent spacing */
+.form-content {
+  display: flex;
+  flex-direction: column;
+  /* זה המרווח הגדול שרוצים להתגבר עליו */
+  gap: 1.5rem;
+  overflow-y: visible;
+  max-height: none;
+  padding-right: 4px;
 }
 
-.add-stop-btn, .delete-stop-btn {
-  margin-top: 5px;
-  cursor: pointer;
-  background: none;
+.form-row {
+  display: flex;
+  /* מרווח אחיד בין קבוצות שדות בתוך השורה */
+  gap: 1rem;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.form-field-group {
+  display: flex;
+  flex-direction: column;
+  /* מרווח אחיד בין התווית לשדה */
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.form-field-group label {
+  font-weight: bold;
+}
+
+/* General styling for inputs and selects */
+input[type="time"],
+input[type="number"],
+input[type="text"],
+input[type="date"],
+select,
+.styled-select {
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #d3b1b1;
+  background-color: #e7c1c1;
+  font-family: 'Assistant', sans-serif;
+  font-size: 16px;
+  width: 100%;
+}
+
+/* Remove old conflicting rules */
+form .row,
+form .column,
+.input-group {
+    margin: 0;
+    padding: 0;
+    flex-direction: unset;
+}
+
+/* ---------------------------------------------------- */
+/* CSS for "add another stop" button */
+/* ---------------------------------------------------- */
+form .addBtn,
+form .removeBtn {
   border: none;
-  color: #007bff;
+  background: transparent;
+  cursor: pointer;
+  padding: 2px 4px;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #0079fb;
 }
+
+form .addBtn:disabled {
+  color: #6c757d;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+form .addBtn:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+form .removeBtn {
+  color: #dc3545;
+  font-size: 0.75rem;
+}
+
+form .removeBtn:hover {
+  text-decoration: underline;
+}
+
+/* ---------------------------------------------------- */
+/* Styles for the extra stops section - UPDATED */
+/* ---------------------------------------------------- */
+#extrastops {
+  display: flex;
+  flex-direction: column;
+  /* מרווח אחיד של 0.5rem בין כל האלמנטים בתוך המיכל */
+  gap: 0.5rem;
+  /* הגדרה זו מתגברת על המרווח הגדול של .form-content */
+  margin-top: -1rem; 
+}
+
+.extra-stop-item {
+  display: flex;
+  align-items: center;
+  /* מרווח נשלט כעת ע"י מיכל האב, לכן אין צורך במרווח פנימי */
+  margin: 0;
+  gap: 0.5rem;
+}
+
+.extra-stop-fields {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex: 1;
+}
+
+.extra-stop-fields label {
+  margin-left: 0.5rem;
+  white-space: nowrap;
+}
+
+/* The rest of your original CSS code remains unchanged below */
+/* ... */
 .car-validation-message {
   display: inline-block;
   padding: 6px 10px;
@@ -43,7 +148,7 @@ html, body {
   background-color: #f0fdcb;
   color: #842029;
   box-shadow: 0 0 0 1px #f5c2c7;
-  margin-top:25px;
+  margin-top: 25px;
 }
 
 .time-select-container {
@@ -64,7 +169,6 @@ html, body {
 }
 
 ::ng-deep .ng-select .ng-select-container {
-  border: 1px solid #ccc;
   min-height: 36px;
   padding: 0 6px;
 }
@@ -74,59 +178,48 @@ html, body {
 }
 
 .custom-hour-dropdown {
-  max-height: 150px !important; /* Limit the dropdown height */
-  background-color: #e7c1c1;/* Change background color */
-  color: #333; /* Text color */
-  border: 1px solid #ccc;
+  max-height: 150px !important;
+  background-color: #e7c1c1;
+  color: #333;
+  border: 1px solid #d3b1b1;
   border-radius: 4px;
 }
-/* Target the panel where options appear */
+
 ::ng-deep .custom-hour-dropdown .ng-dropdown-panel {
-  max-height: 150px; /* Controls how tall the dropdown is */
+  max-height: 150px;
   overflow-y: auto;
   overflow-x: hidden;
-  background-color: #fff0f0; /* Light red background */
   border: 1px solid #333;
 }
+
 ::ng-deep .custom-hour-dropdown .ng-dropdown-panel .ng-dropdown-panel-items {
   max-height: unset !important;
   overflow: visible !important;
 }
 
-/* Style individual options */
 ::ng-deep .custom-hour-dropdown .ng-option {
-  background-color: #f8d7da;
   color: #333;
   padding: 8px;
 }
 
-/* Hover effect */
 ::ng-deep .custom-hour-dropdown .ng-option:hover {
   background-color: #0268d4;
   color: white;
 }
 
-/* Selected option */
 ::ng-deep .custom-hour-dropdown .ng-option-selected {
   background-color: #0268d4;
   color: white;
 }
-
-
 
 #extra-stop {
   display: flex;
   gap: 3px;
   flex-direction: row;
 }
-#extrastops{
+
+#first-stop-box {
   display: flex;
-  flex-direction: column;
-  gap: 15px;
-  margin-top: 10px;
-}
-#first-stop-box{
-  display:flex;
   flex-direction: column;
   margin-left: 30px;
 }
@@ -135,110 +228,66 @@ html, body {
 .overlay {
   display: flex;
   justify-content: center;
-  align-items: center; /* 👈 use center instead of flex-start */
-  min-height: 100vh;
+  align-items: center;
+  background-image: url('/assets/images/left-hand-car.png');
+  background-color: #fbe6c9;
+  background-repeat: no-repeat;
+  background-size: 100% auto;
+  background-position: center center;
+  backdrop-filter: blur(2px);
   font-family: 'Alef', sans-serif;
   direction: rtl;
-  padding: 0;
-  margin: 0;
-  position: fixed; /* or relative, depending on context */
+  position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
-  min-height: 100vh;
+  height: 100vh;
+  z-index: 10;
+  overflow: hidden;
+}
+
+.modal {
+  background-color: white;
+  padding: 20px 28px;
+  border-radius: 10px;
+  width: min(750px, 90vw);
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  z-index: 15;
+  margin-top: 60px;
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  top: 15px;
+  left: 10px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
   z-index: 10;
 }
 
-
-
-.modal {
-    background-color: white;
-    padding: 20px 28px;
-    border-radius: 10px;
-    width: 750px;
-    min-height: 0;
-    max-height: 90vh;         /* Prevents modal from overflowing viewport */
-    overflow-y: auto;         /* Enables scroll inside modal if needed */
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    margin-top: 60px;
-}
-
-
-.close-btn {
-    position: absolute;
-    top: 15px;
-    left: 10px;
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    z-index: 10; /* Ensure it's clickable */
-  }
-  
-
 h2 {
-    color: #942222;
-    text-align: right;
-    margin-bottom: 10px;
+  color: #942222;
+  text-align: right;
+  margin-bottom: 10px;
 }
 
 hr {
-    border: 1px solid #ccc;
-    margin-bottom: 20px;
-}
-
-form .row {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 8px;
-
-}
-form .column {
-    display: flex;
-    gap: 2px;
-    margin-bottom: 2px;
-    flex-direction: column;
-}
-form .addBtn, 
-form .removeBtn {
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    padding: 2px 4px;
-    font-size: 0.9rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    color: #0079fb; /* Default active color */
-}
-
-form .addBtn:disabled {
-    color: #6c757d; /* Disabled color (gray) */
-    cursor: not-allowed;
-    text-decoration: none;
-}
-
-form .addBtn:hover:not(:disabled) {
-    text-decoration: underline;
-}
-
-form .removeBtn {
-    color: #dc3545; /* red for remove */
-    font-size: 0.75rem;
-}
-
-form .removeBtn:hover {
-    text-decoration: underline;
+  border: 1px solid #ccc;
+  margin-bottom: 20px;
 }
 
 .full-trip-display {
   display: flex;
   flex-direction: column;
-  align-items: flex-start; /* For RTL, use flex-end if needed */
+  align-items: flex-start;
   direction: rtl;
   margin-top: 60px;
   padding: 1rem;
@@ -246,7 +295,7 @@ form .removeBtn:hover {
   border-radius: 8px;
   margin-left: 930px;
   background-color: #9422221f;
-  width:300px
+  width: 300px;
 }
 
 .full-trip-display a,
@@ -255,29 +304,27 @@ form .removeBtn:hover {
   font-size: 1.1rem;
 }
 
-
-#distance-title{
+#distance-title {
   padding-top: 20px;
 }
 
 .input-group {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .input-group label {
-    margin-bottom: 5px;
-    font-size: 14px;
-    font-weight: bold;
+  margin-bottom: 5px;
+  font-size: 14px;
+  font-weight: bold;
 }
 
-
 .input-group input {
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #d3b1b1;
-    background-color: #e7c1c1;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #d3b1b1;
+  background-color: #e7c1c1;
 }
 
 .submit-btn {
@@ -293,51 +340,65 @@ form .removeBtn:hover {
   margin-bottom: 0;
 }
 
-
-
 .submit-btn:hover {
-    background-color: #7a1c1c;
+  background-color: #7a1c1c;
 }
 
-/* Style select to match inputs */
 .styled-select {
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #d3b1b1;
-    background-color: #e7c1c1;
-}
-
-/* Fix the time pickers to look same as inputs */
-input[type="time"], input[type="number"], input[type="text"], select {
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #d3b1b1;
-    background-color: #e7c1c1;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #d3b1b1;
+  background-color: #e7c1c1;
 }
 
 .input-group select {
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #d3b1b1;
-    background-color: #e7c1c1;
-    font-family: 'Assistant', sans-serif; /* Match the other inputs */
-    font-size: 16px;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #d3b1b1;
+  background-color: #e7c1c1;
+  font-family: 'Assistant', sans-serif;
+  font-size: 16px;
+}
+.error-text {
+  color: red;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
 }
 
+/* Original style for informational text (can remain or be removed if not used) */
 .distance-info {
-  min-height: 18px; /* prevents shifting */
+  color: #888;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.form-field-group small {
+  display: block;
+  text-align: right;
+  margin-top: 4px;
+}
+
+/* More specific styles for inputs in an invalid state */
+.form-field-group .ng-invalid.ng-touched {
+  border-color: red;
+}
+.form-field-group input.ng-invalid.ng-touched,
+.form-field-group select.ng-invalid.ng-touched {
+  border-color: red;
+}
+/* .distance-info {
+  min-height: 18px;
   font-size: 12px;
   margin-top: 3px;
   color: #333;
-}
+} */
 
-/* Ensure proper spacing between two date inputs in same row */
 .row .input-group {
-    min-width: 0;
+  min-width: 0;
 }
 
 .row .input-group input[type="date"] {
-    width: 100%;
+  width: 100%;
 }
 
 .ride-form {
@@ -346,23 +407,12 @@ input[type="time"], input[type="number"], input[type="text"], select {
   flex-direction: column;
 }
 
-
-.form-content {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  overflow-y: visible;
-  max-height: none;
-  padding-right: 4px;
-}
-
-
 @media (max-width: 600px) {
   .modal {
     margin-top: 60px;
   }
 }
+
 .back-btn {
   width: 100px;
   color: #942222;
@@ -375,18 +425,21 @@ input[type="time"], input[type="number"], input[type="text"], select {
   cursor: pointer;
   transition: background-color 0.2s ease, transform 0.15s ease;
   margin-top: 24px;
-  margin-left:0px;
-  margin-right:600px;
-  background:none;
+  margin-left: 0px;
+  margin-right: 600px;
+  background: none;
 }
+
 .back-btn:hover {
   transform: scale(1.03);
 }
+
 .back-btn-container {
   display: flex;
-  justify-content: flex-end; /* מזיז לימין */
+  justify-content: flex-end;
   padding: 1rem;
 }
+
 .inspector-overlay {
   position: fixed;
   top: 0;
@@ -471,28 +524,25 @@ input[type="time"], input[type="number"], input[type="text"], select {
   cursor: pointer;
 }
 
-
 .button-container {
   display: flex;
-  justify-content: flex-end; /* Aligns button to the left */
+  justify-content: flex-end;
   margin-top: 1.5rem;
 }
-
 
 .ride-question {
   font-size: 1.2rem;
   font-weight: bold;
   color: #333;
-  margin-bottom: 16px; /* 👈 add more space below the question */
+  margin-bottom: 16px;
 }
 
-.error-text {
+/* .error-text {
   color: red;
   font-size: 13px;
   margin-top: 6px;
   margin-right: 6px;
-}
-/* Add these CSS styles to your component's CSS file: */
+} */
 
 .estimated-distance-display {
   margin: 15px 0;
@@ -532,20 +582,21 @@ input[type="time"], input[type="number"], input[type="text"], select {
 .distance-info.success strong {
   font-weight: 600;
 }
+
 .request-backdrop {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(66, 74, 81, 0.3); /* Same as #424a5154 */
-  z-index: 100; /* Below the modal */
+  background-color: rgba(66, 74, 81, 0.3);
+  z-index: 100;
 }
 
 .disable-request {
   display: flex;
   flex-direction: column;
-  z-index: 200; /* On top of backdrop */
+  z-index: 200;
   position: fixed;
   background-color: rgb(255, 248, 243);
   padding: 16px;
@@ -555,4 +606,70 @@ input[type="time"], input[type="number"], input[type="text"], select {
   transform: translate(-50%, -25%);
   direction: rtl;
   font-family: 'Alef', sans-serif;
+}
+
+.step-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 20px;
+  padding: 10px 0;
+  direction: ltr; 
+}
+
+.back-btn {
+  color: #942222;
+  font-family: var(--font-family-alef);
+  font-size: 20px;
+  font-weight: bold;
+  padding: 6px 16px; 
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  background: none;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+  margin: 0;
+  align-self: center; 
+  margin-top: 16px;
+  white-space: nowrap; 
+  line-height: 1; 
+}
+.back-btn:hover {
+  transform: scale(1.03);
+  background-color: rgba(148, 34, 34, 0.1);
+}
+
+.page-title {
+  color: #942222;
+  font-size: 25px;
+  font-weight: bold;
+  margin: 0;
+  white-space: nowrap; 
+  line-height: 1; 
+}
+
+h2 {
+    color: #942222;
+    text-align: right;
+    margin-bottom: 10px;
+    display: inline-block;
+}
+
+.back-btn-container {
+  display: none;
+}
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; 
+  direction: rtl;
+  width: 100%;
+  margin-bottom: 10px; 
+  padding: 0;
+}
+
+hr {
+  border: 1px solid #ccc;
+  margin: 0 0 20px 0; 
 }

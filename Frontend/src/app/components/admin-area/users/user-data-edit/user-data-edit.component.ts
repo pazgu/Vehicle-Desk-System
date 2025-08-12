@@ -155,12 +155,10 @@ export class UserDataEditComponent implements OnInit {
 
   loadUserData(): void {
     this.userId = this.route.snapshot.paramMap.get('user_id');
-    console.log('Extracted user_id:', this.userId);
 
     if (this.userId) {
       this.userService.getUserById(this.userId).subscribe({
         next: (user) => {
-          console.log('User data:', user);
           this.user = user;
           this.hasExistingLicenseFile = !!user.license_file_url;
           this.hasExistingExpiryDate = !!user.license_expiry_date;
@@ -179,9 +177,8 @@ export class UserDataEditComponent implements OnInit {
               : ''
           });
         },
-        error: (err) => {
-          console.error('Failed to load user:', err);
-          this.toastService.show('שגיאה בטעינת פרטי המשתמש', 'error');
+        error: () => {
+          this.toastService.show('שגיאה בטעינת פרטי המשתמש');
 
         }
       });
@@ -244,14 +241,13 @@ export class UserDataEditComponent implements OnInit {
 
       this.userService.updateUser(this.userId, formData).subscribe({
         next: (updatedUser) => {
-          console.log('User updated successfully:', updatedUser);
           this.toastService.show('המשתמש עודכן בהצלחה', 'success');
           setTimeout(() => {
             this.router.navigate(['/user-data']);
           }, 500);
         },
         error: (err: HttpErrorResponse) => {
-          console.error('Failed to update user:', err);
+          console.error('Failed to update user');
           // Extract specific error detail from backend if available, otherwise use a generic message
           const errorMessage = err.error && err.error.detail ? err.error.detail : 'שגיאה בעדכון המשתמש';
           this.toastService.show(errorMessage, 'error');
