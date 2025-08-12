@@ -25,7 +25,7 @@
         style="margin-bottom: 1.5rem; background: #f7f7f7; padding: 1rem; border-radius: 8px; direction: rtl;">
         <div style="margin-bottom: 1rem;">
           <label for="statusFilter">סטטוס:</label>
-          <select id="statusFilter" [(ngModel)]="statusFilter">
+          <select id="statusFilter" [(ngModel)]="statusFilter" (ngModelChange)="onFilterChange()">
             <option value="">הצג הכל</option>
             <option value="מאושר">מאושר</option>
             <option value="בהמתנה">בהמתנה</option>
@@ -113,7 +113,6 @@
     </div>
 
 
-    <!-- Pagination Controls -->
     <!-- Pagination Controls -->
     <div class="pagination-controls" dir="rtl" style="text-align: center; margin-top: 1.5rem;">
       <button (click)="prevPage()" [disabled]="currentPage === 1">▶</button>

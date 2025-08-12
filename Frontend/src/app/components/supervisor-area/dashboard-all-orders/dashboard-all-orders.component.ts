@@ -37,95 +37,100 @@ export class DashboardAllOrdersComponent implements OnInit {
   endDate: string = '';
   showFilters: boolean = false;
   showOldOrders: boolean = false;
-  sortBy: string = 'submitted_at'; 
+  sortBy: string = 'submitted_at';
 
 
 
-  constructor(private router: Router, private orderService: OrderService,private toastService:ToastService,  private socketService: SocketService ) {}
+  constructor(private router: Router, private orderService: OrderService, private toastService: ToastService, private socketService: SocketService) { }
 
   ngOnInit(): void {
     const departmentId = localStorage.getItem('department_id');
     if (departmentId) {
-      this.loadOrders(departmentId); 
+      this.loadOrders(departmentId);
     } else {
       console.error('Department ID not found in localStorage.');
     }
 
     this.socketService.rideRequests$.subscribe((newRide) => {
-      const role=localStorage.getItem('role')
-    if (newRide) {
-    if(newRide.department_id==departmentId && role !='admin'){
-      this.orders = [newRide, ...this.orders];
-      if(role === 'supervisor'){this.toastService.show("התקבלה בקשה חדשה","success");}
-    
-    }
-  }
-});
-this.socketService.orderUpdated$.subscribe((updatedRide) => {
-    const index = this.orders.findIndex(o => o.ride_id === updatedRide.id);
-    if (index !== -1) {
-      const updatedOrder: RideDashboardItem = {
-      ride_id: updatedRide.id,
-      employee_name: updatedRide.employee_name, // make sure this is in your updatedRide
-      requested_vehicle_plate: updatedRide.requested_vehicle_plate || '', // or map from vehicle_id if needed
-      date_and_time: updatedRide.start_datetime,
-      distance: updatedRide.estimated_distance_km,
-      status: updatedRide.status.toLowerCase(),
-      destination: updatedRide.destination || '', // adjust based on your data
-      submitted_at: updatedRide.submitted_at || new Date().toISOString() // use actual value here!
+      const role = localStorage.getItem('role')
+      if (newRide) {
+        if (newRide.department_id == departmentId && role != 'admin') {
+          this.orders = [newRide, ...this.orders];
+          if (role === 'supervisor') { this.toastService.show("התקבלה בקשה חדשה", "success"); }
 
-      };
-
-      // Replace with a new array to trigger change detection:
-      this.orders = [
-        ...this.orders.slice(0, index),
-        updatedOrder,
-        ...this.orders.slice(index + 1)
-      ];
-
-    }
-  });
-  this.socketService.deleteRequests$.subscribe((deletedRide) => {
-
-  const index = this.orders.findIndex(o => o.ride_id === deletedRide.order_id); // <-- FIXED here
-
-  if (index !== -1) {
-    this.orders = [
-      ...this.orders.slice(0, index),
-      ...this.orders.slice(index + 1)
-    ];
-  } 
-});
-this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
-  if (!updatedStatus) return; // ignore the initial null emission
-  if (updatedStatus) {
-
-    const index = this.orders.findIndex(o => o.ride_id === updatedStatus.ride_id);
-    if (index !== -1) {
-      const newStatus=updatedStatus.new_status
-
-         const updatedOrders = [...this.orders];
-    updatedOrders[index] = {
-      ...updatedOrders[index],
-      status: newStatus  
-    };
-
-    // ✅ Replace the array
-    this.orders = updatedOrders;
-    this.orders = [...this.orders]
-      
-      const role=localStorage.getItem('role');
-      if(role==='supervisor' || role ==='employee' && updatedStatus!='approved'){
-      this.toastService.show(' יש בקשה שעברה סטטוס','success')
+        }
       }
-    }
-  }
-});
+    });
+    this.socketService.orderUpdated$.subscribe((updatedRide) => {
+      const index = this.orders.findIndex(o => o.ride_id === updatedRide.id);
+      if (index !== -1) {
+        const updatedOrder: RideDashboardItem = {
+          ride_id: updatedRide.id,
+          employee_name: updatedRide.employee_name, // make sure this is in your updatedRide
+          requested_vehicle_plate: updatedRide.requested_vehicle_plate || '', // or map from vehicle_id if needed
+          date_and_time: updatedRide.start_datetime,
+          distance: updatedRide.estimated_distance_km,
+          status: updatedRide.status.toLowerCase(),
+          destination: updatedRide.destination || '', // adjust based on your data
+          submitted_at: updatedRide.submitted_at || new Date().toISOString() // use actual value here!
+
+        };
+
+        // Replace with a new array to trigger change detection:
+        this.orders = [
+          ...this.orders.slice(0, index),
+          updatedOrder,
+          ...this.orders.slice(index + 1)
+        ];
+
+      }
+    });
+    this.socketService.deleteRequests$.subscribe((deletedRide) => {
+
+      const index = this.orders.findIndex(o => o.ride_id === deletedRide.order_id); // <-- FIXED here
+
+      if (index !== -1) {
+        this.orders = [
+          ...this.orders.slice(0, index),
+          ...this.orders.slice(index + 1)
+        ];
+      }
+    });
+    this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
+      if (!updatedStatus) return; // ignore the initial null emission
+      if (updatedStatus) {
+
+        const index = this.orders.findIndex(o => o.ride_id === updatedStatus.ride_id);
+        if (index !== -1) {
+          const newStatus = updatedStatus.new_status
+
+          const updatedOrders = [...this.orders];
+          updatedOrders[index] = {
+            ...updatedOrders[index],
+            status: newStatus
+          };
+
+          // ✅ Replace the array
+          this.orders = updatedOrders;
+          this.orders = [...this.orders]
+
+
+          const role = localStorage.getItem('role');
+          if (role === 'supervisor' || role === 'employee' && updatedStatus != 'approved') {
+            this.toastService.show(' יש בקשה שעברה סטטוס', 'success')
+          }
+        }
+      }
+    });
 
   }
 
   ngOnDestroy(): void {
-   document.body.style.overflow = '';
+    document.body.style.overflow = '';
+  }
+
+  onFilterChange(): void {
+    this.currentPage = 1;
   }
 
   loadOrders(departmentId: string | null): void {
@@ -163,9 +168,9 @@ this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
         case 'בתהליך':
           filtered = filtered.filter(order => order.status === 'in_progress');
           break;
-        case 'בוטלה-נסיעה לא יצאה':
+        case 'בוטל':
           filtered = filtered.filter(order => order.status === 'cancelled_due_to_no_show');
-          break;  
+          break;
         default:
           break;
       }
@@ -187,10 +192,10 @@ this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
         return [...filtered].sort((a, b) => a.status.localeCompare(b.status));
       case 'date_and_time':
         return [...filtered].sort((a, b) => new Date(a.date_and_time).getTime() - new Date(b.date_and_time).getTime());
-       case 'submitted_at':
+      case 'submitted_at':
         return [...filtered].sort((a, b) => new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime());
       default:
-            return filtered;
+        return filtered;
 
     }
   }
@@ -213,7 +218,7 @@ this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
       case 'in_progress':
         return 'row-in-progress';
       case 'cancelled_due_to_no_show':
-        return 'row-cancelled-no-show';  
+        return 'row-cancelled-no-show';
       default:
         return '';
     }
@@ -225,7 +230,7 @@ this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
 
   translateStatus(status: string | null | undefined): string {
     if (!status) return '';
-    
+
     switch (status.toLowerCase()) {
       case 'approved':
         return 'מאושר';
@@ -238,7 +243,7 @@ this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
       case 'in_progress':
         return 'בתהליך';
       case 'cancelled_due_to_no_show':
-        return 'בוטלה-נסיעה לא יצאה';  
+        return 'בוטלה-נסיעה לא יצאה';
       default:
         return status;
     }
@@ -257,7 +262,7 @@ this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
       case 'in_progress':
         return 'status-in-progress';
       case 'cancelled_due_to_no_show':
-        return 'status-cancelled-no-show';  
+        return 'status-cancelled-no-show';
       default:
         return '';
     }
@@ -301,16 +306,17 @@ this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
   get totalPages() {
     return this.filteredOrders.length > 0 ? Math.ceil(this.filteredOrders.length / this.rows) : 1;
   }
-copiedRideId: string | null = null;
+  copiedRideId: string | null = null;
 
-copyToClipboard(rideId: string) {
-  navigator.clipboard.writeText(rideId);
-  this.copiedRideId = rideId;
- setTimeout(() => {
-    if (this.copiedRideId === rideId) {
-      this.copiedRideId = null;
-    }
-  }, 2000);}
+  copyToClipboard(rideId: string) {
+    navigator.clipboard.writeText(rideId);
+    this.copiedRideId = rideId;
+    setTimeout(() => {
+      if (this.copiedRideId === rideId) {
+        this.copiedRideId = null;
+      }
+    }, 2000);
+  }
 
 
 }
