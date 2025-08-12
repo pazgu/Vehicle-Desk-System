@@ -64,16 +64,7 @@ availableCars: typeof this.allCars = [];
     this.minDate = this.calculateMinDate(2);
     this.buildForm();
 
-    // ✅ Socket listener moved outside vehicle block
-    this.rideRequestSub = this.socketService.rideRequests$.subscribe((rideData) => {
-      if (rideData) {
-        this.toastService.show('🚗 התקבלה הזמנת נסיעה חדשה', 'success');
-        const audio = new Audio('assets/sounds/notif.mp3');
-        audio.play();
-      }
-    });
-
-
+ 
 this.vehicleService.getAllVehicles().subscribe({
   next: (vehicles) => {
     this.allCars = vehicles.filter(v =>
@@ -86,14 +77,6 @@ this.vehicleService.getAllVehicles().subscribe({
     // 🔑 Only call loadRide after cars are loaded
     this.loadRide();
     // ✅ Socket listener for new ride requests
-this.socketService.rideRequests$.subscribe((rideData) => {
-  if (rideData) {
-    this.toastService.show('🚗 התקבלה הזמנת נסיעה חדשה', 'success');
-
-    const audio = new Audio('assets/sounds/notif.mp3');
-    audio.play();
-  }
-});
 
   },
   error: () => {
