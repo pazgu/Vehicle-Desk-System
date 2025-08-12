@@ -8,6 +8,7 @@ export interface ConfirmDialogData {
   message: string;
   confirmText: string;
   cancelText: string;
+  noRestoreText: string; // Text to show for irreversible action
   isDestructive?: boolean; // For styling dangerous actions differently
 }
 
