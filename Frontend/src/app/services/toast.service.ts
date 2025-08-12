@@ -17,6 +17,7 @@ export class ToastService {
 
   show(message: string, type: ToastType = 'success') {
     const container = this.getContainer();
+
     const toast = document.createElement('div');
     toast.className = `custom-toast ${type}`;
     toast.innerText = message;
