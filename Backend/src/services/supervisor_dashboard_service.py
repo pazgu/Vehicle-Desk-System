@@ -1,3 +1,4 @@
+import math
 from typing import List
 from datetime import datetime,timezone
 from ..schemas.ride_dashboard_item import RideDashboardItem
@@ -65,7 +66,7 @@ def get_department_orders(department_id: str, db: Session) -> List[RideDashboard
             requested_vehicle_plate=vehicle_plate,
             date_and_time=order.start_datetime,
             destination=order.destination,
-            distance=order.estimated_distance_km,
+            distance = math.ceil(order.estimated_distance_km),
             status=order.status.value,  # Access the string value of the enum
             submitted_at=order.submitted_at 
         )
@@ -102,7 +103,7 @@ def get_department_specific_order(department_id: str, order_id: str, db: Session
         stop=order.stop or "",
         extra_stops=order.extra_stops or [],
         destination=order.destination,
-        estimated_distance_km=float(order.estimated_distance_km),
+        estimated_distance_km = float(math.ceil(order.estimated_distance_km)),
         actual_distance_km=float(order.actual_distance_km) if order.actual_distance_km else None,
         status=order.status,  # Pass as RideStatusEnum
         license_check_passed=order.license_check_passed,

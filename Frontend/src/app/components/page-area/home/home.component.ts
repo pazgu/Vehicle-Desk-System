@@ -187,7 +187,7 @@ export class NewRideComponent implements OnInit {
             } else {
                 this.disableRequest = true;
                 console.warn('🚫 License is missing or expired via socket');
-                this.toastService.show(
+                this.toastService.showPersistent(
                     'לא ניתן לשלוח בקשה: למשתמש שנבחר אין רישיון ממשלתי תקף. לעדכון פרטים יש ליצור קשר עם המנהל.',
                     'error'
                 );
@@ -354,7 +354,7 @@ export class NewRideComponent implements OnInit {
             return;
         }
         if (this.disableRequest) {
-            this.toastService.show('לא ניתן לשלוח בקשה: למשתמש שנבחר אין רישיון ממשלתי תקף. לעדכון פרטים יש ליצור קשר עם המנהל.', 'error');
+            this.toastService.showPersistent('לא ניתן לשלוח בקשה: למשתמש שנבחר אין רישיון ממשלתי תקף. לעדכון פרטים יש ליצור קשר עם המנהל.', 'error');
             return;
         }
         this.showStep1Error = false;
@@ -780,28 +780,59 @@ export class NewRideComponent implements OnInit {
             this.disableRequest = false;
             return;
         }
-        this.UserService.getUserById(employeeId).subscribe({
-            next: (user) => {
-                if ('has_government_license' in user) {
-                    const hasLicense = user.has_government_license;
-                    if (hasLicense) {
-                        this.disableRequest = false;
-                    } else {
-                        this.toastService.show('לא ניתן לשלוח בקשה: למשתמש שנבחר אין רישיון ממשלתי תקף. לעדכון פרטים יש ליצור קשר עם המנהל.', 'error');
-                        this.disableRequest = true;
+       this.UserService.getUserById(employeeId).subscribe({
+    next: (user) => {
+        if ('has_government_license' in user) {
+            const hasLicense = user.has_government_license;
+            const expiryDateStr = user.license_expiry_date; // Assuming it's a string like "2025-07-01"
+
+            if (hasLicense) {
+                let isExpired = false;
+
+                if (expiryDateStr) {
+                    const expiryDate = new Date(expiryDateStr);
+                    const today = new Date();
+
+                    // Remove time for accurate day comparison
+                    expiryDate.setHours(0, 0, 0, 0);
+                    today.setHours(0, 0, 0, 0);
+
+                    if (expiryDate < today) {
+                        isExpired = true;
                     }
-                } else {
-                    console.error('🚨 user object missing has_government_license property:', user);
-                    this.toastService.show('שגיאה: פרטי רישיון ממשלתי לא נמצאו.', 'error');
-                    this.disableRequest = true;
                 }
-            },
-            error: (err) => {
-                console.error('❌ Failed to fetch user data from API:', err);
-                this.toastService.show('שגיאה בבדיקת רישיון ממשלתי', 'error');
+
+                if (isExpired) {
+                    this.toastService.showPersistent(
+                        'לא ניתן לשלוח בקשה: למשתמש שנבחר רישיון ממשלתי פג תוקף. לעדכון פרטים יש ליצור קשר עם המנהל.',
+                        'error'
+                    );
+                    this.disableRequest = true;
+                } else {
+                    this.disableRequest = false; // ✅ License valid
+                }
+
+            } else {
+                this.toastService.showPersistent(
+                    'לא ניתן לשלוח בקשה: למשתמש שנבחר אין רישיון ממשלתי תקף. לעדכון פרטים יש ליצור קשר עם המנהל.',
+                    'error'
+                );
                 this.disableRequest = true;
             }
-        });
+
+        } else {
+            console.error('🚨 user object missing has_government_license property:', user);
+            this.toastService.show('שגיאה: פרטי רישיון ממשלתי לא נמצאו.', 'error');
+            this.disableRequest = true;
+        }
+    },
+    error: (err) => {
+        console.error('❌ Failed to fetch user data from API:', err);
+        this.toastService.show('שגיאה בבדיקת רישיון ממשלתי', 'error');
+        this.disableRequest = true;
+    }
+});
+
     }
 futureDateTimeValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {

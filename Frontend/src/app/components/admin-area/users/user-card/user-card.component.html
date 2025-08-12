@@ -3,7 +3,7 @@
     <div class="content">
       <!-- כפתור חזרה -->
 <a class="edit-button" routerLink="/user-data-edit/{{user?.employee_id}}">
-  ✏️ עריכת משתמש
+  עריכת משתמש
 </a>
 <!-- <a class="delete-button" (click)="deleteUser(user?.employee_id)">
   מחיקת משתמש 🗑️
@@ -53,7 +53,7 @@
 
 <!-- Recent No-Show Events Table -->
 <!-- No-Show Count -->
-<div class="detail-row no-show-count" *ngIf="NoShowsData">
+<div class="no-show-count" *ngIf="NoShowsData">
   <span class="label"> אירועי היעדרות מנסיעות שהוזמנו:</span>
  
 </div>
@@ -72,7 +72,7 @@
       <tr *ngFor="let event of NoShowsData.events">
         <td>{{ event.occurred_at | date:'yyyy-MM-dd' }}</td>
         <td>{{ event.plate_number }}</td> <!-- Replace with vehicle name if you get it -->
-        <td>לא הגיע</td> <!-- fixed reason text -->
+        <td>לא הגיע/ה</td> <!-- fixed reason text -->
       </tr>
     </tbody>
   </table>

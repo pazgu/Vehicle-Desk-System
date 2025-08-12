@@ -90,6 +90,8 @@ timeOptions: string[] = [];
       }
     });
   
+
+ 
 this.vehicleService.getAllVehicles().subscribe({
   next: (vehicles) => {
     this.allCars = vehicles.filter(v =>
@@ -108,6 +110,7 @@ this.socketService.rideRequests$.subscribe((rideData) => {
     audio.play();
   }
 });
+    // ✅ Socket listener for new ride requests
 
   },
   error: () => {

@@ -7,12 +7,29 @@
   font-family: 'Alef', sans-serif;
 }
 
-.custom-toast.persistent {
-  position: fixed !important;
+
+/* Single toast container at bottom right */
+.toast-container {
+  position: fixed;
+  right: 20px;
+  top: 70px;
+  display: flex;
+  flex-direction: column-reverse; /* Newest toast at bottom */
+  align-items: flex-end; /* Aligns them neatly to the right */
+  gap: 10px;
+  z-index: 99999;
+}
+
+/* Remove positioning from toasts themselves */
+
+.toast.persistent {
+  /* position: fixed !important;
   bottom: 20px !important;
   right: 20px !important;
-  top: auto !important; /* Explicitly reset top */
-  left: auto !important; /* Explicitly reset left */
+  top: auto !important;
+  left: auto !important; */
+    position: relative; /* Not fixed */
+
   padding: 16px 20px;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -20,10 +37,18 @@
   display: flex;
   align-items: center;
   gap: 16px;
+
   width: fit-content;
   max-width: 400px;
-  height: 50px;
+
+  /* 🔹 Remove fixed height so it can grow with text */
+  height: auto;  
+
+  /* 🔹 Wrap long text */
+  white-space: normal;
+  overflow-wrap: break-word;
 }
+
 
 .toast-ok-btn {
   background: rgba(255, 255, 255, 0.2);
@@ -50,13 +75,12 @@
 }
 
 
-
-
-
 .custom-toast {
-  position: fixed;
+  /* position: fixed;
   top: 80px;
-  right: 20px;
+  right: 20px; */
+    position: relative; /* Not fixed */
+
   padding: 1rem 1.5rem;
   border-radius: 8px;
   color: #fff;
@@ -64,24 +88,36 @@
   font-size: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   z-index: 99999;
-  animation: slideIn 0.3s ease, fadeOut 0.5s ease 2.5s;
+  animation: slideIn 0.3s ease forwards, fadeOut 0.5s ease 2.5s forwards;
   max-width: 300px;
-  opacity: 1;
+  opacity: 0; /* Start hidden until slideIn runs */
   direction: rtl;
   text-align: right;
 }
 
 .custom-toast.success {
-  background-color: #38a169;
+  background-color: #64d398;
+}
+.toast.success {
+  background-color: #64d398;
 }
 
 .custom-toast.error {
-  background-color: #e53e3e;
+  background-color: #ed6868;
 }
+.toast.error {
+  background-color: #ed6868;
+}
+
 .custom-toast.neutral {
   background-color: #afbff3;
-  color:black;
+  color: black;
 }
+.toast.neutral {
+  background-color: #afbff3;
+  color: black;
+}
+
 
 @keyframes slideIn {
   from {
@@ -102,6 +138,7 @@
     opacity: 0;
   }
 }
+
 
 html, body {
   height: 100%;

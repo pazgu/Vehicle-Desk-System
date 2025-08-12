@@ -7,6 +7,7 @@ class VehicleInspectionOut(BaseModel):
     inspection_id: Optional[UUID]
     inspection_date: Optional[datetime]
     inspected_by: Optional[UUID]
+    inspected_by_name: Optional[str] = None
     clean: bool
     fuel_checked: bool
     no_items_left: bool
