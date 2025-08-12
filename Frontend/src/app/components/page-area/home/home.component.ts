@@ -954,7 +954,9 @@ futureDateTimeValidator(): ValidatorFn {
             four_by_four_reason: this.rideForm.get('four_by_four_reason')?.value,
             is_extended_request: this.isExtendedRequest,
         };
-        this.rideService.createRide(formData, user_id).subscribe({
+        const role = localStorage.getItem('role');
+        if(role=='employee'){
+            this.rideService.createRide(formData, user_id).subscribe({
             next: (createdRide) => {
                 this.toastService.show('הבקשה נשלחה בהצלחה! ✅', 'success');
                 this.loadFuelType(formData.vehicle_id);
@@ -977,7 +979,33 @@ futureDateTimeValidator(): ValidatorFn {
                 }
                 console.error('Submit error:', err);
             }
-        });
+        });  
+        }
+        else{
+            if(role=='supervisor'){
+                     this.rideService.createSupervisorRide(formData, user_id).subscribe({
+            next: () => {
+                this.toastService.show('הבקשה נשלחה בהצלחה! ✅', 'success');
+                this.loadFuelType(formData.vehicle_id);
+                this.showFuelTypeMessage();
+                this.router.navigate(['/']);
+            },
+            error: (err) => {
+                const errorMessage = err.error?.detail || err.message || 'שגיאה לא ידועה';
+                if (errorMessage.includes('currently blocked')) {
+                    const match = errorMessage.match(/until (\d{4}-\d{2}-\d{2})/);
+                    const blockUntil = match ? match[1] : '';
+                    const translated = `אתה חסום עד ${blockUntil}`;
+                    this.toastService.show(translated, 'error');
+                } else {
+                    this.toastService.show('שגיאה בשליחת הבקשה', 'error');
+                }
+                console.error('Submit error:', err);
+            }
+        });  
+            }
+        }
+      
     }
     private showFuelTypeMessage(): void {
         if (localStorage.getItem('role') == 'employee') {
