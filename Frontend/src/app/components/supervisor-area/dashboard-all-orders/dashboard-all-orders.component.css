@@ -88,8 +88,8 @@ button {
 }
 
 :host ::ng-deep .row-cancelled-no-show {
-  background-color: #ffe1e184;
-  color: #2c2e30;
+  background-color: #f6c0c084;
+  color: #02010a84;
 }
 
 /* Status chip */
@@ -293,8 +293,8 @@ button:disabled {
   border: #c16a73 1.6px solid; /* Red border */
 }
 .status-indicator.cancelled {
-  background-color: #bfb9b9; /* Gray */
-  border: #6c757d 1.6px solid; /* Gray border */
+  background-color: #f6c0c084; /* Gray */
+  border: #c87676 1.6px solid; /* Gray border */
 }
 .status-indicator.completed {
   background-color: #b7dbf3; /* Blue */

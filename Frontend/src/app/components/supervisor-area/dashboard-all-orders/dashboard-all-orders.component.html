@@ -8,11 +8,11 @@
       <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; direction: rtl;">
         <div>
           <label for="sort">מיין לפי: </label>
-          <select id="sort" [(ngModel)]="sortBy">
-            <option value="submitted_at">נסיעות נוספו לאחרונה</option>
-            <option value="date_and_time">תאריך תחילת נסיעה</option>
-            <option value="status">סטטוס</option>
-          </select>
+          <select id="sort" [(ngModel)]="sortBy" (change)="updateQueryParams()">
+              <option value="submitted_at">נסיעות נוספו לאחרונה</option>
+              <option value="date_and_time">תאריך תחילת נסיעה</option>
+              <option value="status">סטטוס</option>
+            </select>
         </div>
 
         <button class="filter" (click)="showFilters = !showFilters">
@@ -25,24 +25,24 @@
         style="margin-bottom: 1.5rem; background: #f7f7f7; padding: 1rem; border-radius: 8px; direction: rtl;">
         <div style="margin-bottom: 1rem;">
           <label for="statusFilter">סטטוס:</label>
-          <select id="statusFilter" [(ngModel)]="statusFilter">
-            <option value="">הצג הכל</option>
-            <option value="מאושר">מאושר</option>
-            <option value="בהמתנה">בהמתנה</option>
-            <option value="נדחה">נדחה</option>
-            <option value="בוטל">בוטל</option>
-            <option value="בוצע">בוצע</option>
-          </select>
+        <select id="statusFilter" [(ngModel)]="statusFilter" (change)="updateQueryParams()">
+          <option value="">הצג הכל</option>
+          <option value="מאושר">מאושר</option>
+          <option value="בהמתנה">בהמתנה</option>
+          <option value="נדחה">נדחה</option>
+          <option value="בוטלה-נסיעה לא יצאה">בוטלה-נסיעה לא יצאה</option>
+          <option value="בוצע">בוצע</option>
+        </select>
         </div>
 
         <div style="display: flex; gap: 1rem;">
           <div>
             <label for="startDate">מתאריך:</label>
-            <input id="startDate" type="date" [(ngModel)]="startDate">
+            <input id="startDate" type="date" [(ngModel)]="startDate" (change)="updateQueryParams()">
           </div>
           <div>
             <label for="endDate">עד תאריך:</label>
-            <input id="endDate" type="date" [(ngModel)]="endDate">
+            <input id="endDate" type="date" [(ngModel)]="endDate" (change)="updateQueryParams()">
           </div>
         </div>
       </div>
@@ -66,7 +66,7 @@
             <span class="status-indicator rejected"></span> נדחה
           </div>
           <div class="status-item">
-            <span class="status-indicator cancelled"></span> בוטל
+            <span class="status-indicator cancelled"></span>בוטלה-נסיעה לא יצאה
           </div>
 
         </div>
