@@ -195,18 +195,7 @@ async def edit_user_by_id_route(
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Failed to save license file: {e}")
 
-    if user.license_expiry_date is not None and license_expiry_date:
-        try:
-            new_date = datetime.strptime(license_expiry_date, "%Y-%m-%d").date()
-            if new_date != user.license_expiry_date:
-                raise HTTPException(
-                    status_code=403,
-                    detail="License expiry date cannot be edited after initial upload."
-                )
-        except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid date format for license_expiry_date. Expected YYYY-MM-DD.")
-
-    if user.license_expiry_date is None and license_expiry_date:
+    if license_expiry_date:
         try:
             user.license_expiry_date = datetime.strptime(license_expiry_date, "%Y-%m-%d").date()
             if user.has_government_license is None: # Same note as above.

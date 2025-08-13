@@ -1,6 +1,11 @@
 .page-wrapper {
     min-height: 100vh;
     padding: 2rem 0;
+    background-image: url('/assets/images/vehicle-dashboard-bg.png'); /* your new file name */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed; /* optional, makes it stay fixed on scroll */
 }
 
 .page-container {

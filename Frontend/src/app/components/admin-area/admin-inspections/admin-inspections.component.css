@@ -4,6 +4,11 @@
   padding: 25px;
   direction: rtl;
   font-family: sans-serif;
+  background-image: url('/assets/images/vehicle-dashboard-bg.png'); /* same path, different file if needed */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed; /* optional for fixed-on-scroll effect */
 }
 
 .admin-inspections-container {
@@ -13,6 +18,7 @@
   max-width: 1050px;
   margin: 0 auto;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  
 }
 
 /* Section Title */
