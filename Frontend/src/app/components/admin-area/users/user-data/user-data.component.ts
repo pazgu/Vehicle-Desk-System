@@ -321,13 +321,14 @@ export class UserDataComponent implements OnInit {
 
   deleteUser(userId: string): void {
   const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-    width: '380px',
-    height: '190px',
+    width: '420px',
+    height: 'auto',
     data: {
       title: 'מחיקת משתמש',
       message: '?האם אתה בטוח שברצונך למחוק את המשתמש',
-      confirmText: 'מחק',
-      cancelText: 'ביטול',
+      confirmText: 'מחק משתמש',
+      cancelText: 'חזור',
+      noRestoreText: 'שימ/י לב שלא ניתן לשחזר את המשתמש',
       isDestructive: true
     },
   });

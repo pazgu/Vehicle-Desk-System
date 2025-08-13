@@ -230,15 +230,20 @@ export class UserDataEditComponent implements OnInit {
         formData.append('license_file', this.selectedFile);
       }
 
-      // Logic for license_expiry_date: Only send if it's being set for the first time (no existing date) AND a value is provided.
-      // If an expiry date already exists, we must send its original value to avoid backend errors.
-      if (!this.hasExistingExpiryDate && formValues.license_expiry_date) {
-        formData.append('license_expiry_date', formValues.license_expiry_date);
-      } else if (this.hasExistingExpiryDate && this.user.license_expiry_date) {
-        // If the date exists, send its original value to avoid backend perceiving a change to null/empty string.
-        formData.append('license_expiry_date', new Date(this.user.license_expiry_date).toISOString().substring(0, 10));
-      }
+      const newExpiryDate = formValues.license_expiry_date;
+      const oldExpiryDate = this.user?.license_expiry_date;
 
+      if (newExpiryDate && newExpiryDate !== oldExpiryDate) {
+        // User entered a new expiry date, send that
+        formData.append('license_expiry_date', newExpiryDate);
+      } else if (oldExpiryDate) {
+        // No change, send the original value
+        formData.append('license_expiry_date', new Date(oldExpiryDate).toISOString().substring(0, 10));
+      }
+console.log('FormData contents:');
+formData.forEach((value, key) => {
+  console.log(key, value);
+});
       this.userService.updateUser(this.userId, formData).subscribe({
         next: (updatedUser) => {
           this.toastService.show('המשתמש עודכן בהצלחה', 'success');

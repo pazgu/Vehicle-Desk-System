@@ -3,7 +3,7 @@ from uuid import UUID
 from fastapi.staticfiles import StaticFiles
 from typing import Optional , List
 from datetime import datetime, time
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session,aliased
 from ..models.no_show_events import NoShowEvent
 from src.schemas.vehicle_inspection_schema import VehicleInspectionOut
 from src.schemas.user_response_schema import UserResponse
@@ -195,18 +195,7 @@ async def edit_user_by_id_route(
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Failed to save license file: {e}")
 
-    if user.license_expiry_date is not None and license_expiry_date:
-        try:
-            new_date = datetime.strptime(license_expiry_date, "%Y-%m-%d").date()
-            if new_date != user.license_expiry_date:
-                raise HTTPException(
-                    status_code=403,
-                    detail="License expiry date cannot be edited after initial upload."
-                )
-        except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid date format for license_expiry_date. Expected YYYY-MM-DD.")
-
-    if user.license_expiry_date is None and license_expiry_date:
+    if license_expiry_date:
         try:
             user.license_expiry_date = datetime.strptime(license_expiry_date, "%Y-%m-%d").date()
             if user.has_government_license is None: # Same note as above.
@@ -842,15 +831,22 @@ def get_critical_issue_details(issue_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Failed to fetch issue details: {str(e)}")
 
 
+from sqlalchemy import and_, or_
+
 @router.get("/critical-issues", response_model=Dict[str, List[Any]])
 def get_critical_issues(
     problem_type: Optional[str] = Query(None),
     db: Session = Depends(get_db)
 ):
-    # Initialize the query for VehicleInspections
-    inspections_query = db.query(VehicleInspection)
+    UserAlias = aliased(User)
 
-    # Initialize rides_data by fetching ALL rides with emergency_event == "true" by default.
+    inspections_query = db.query(
+        VehicleInspection,
+        UserAlias.username.label("inspected_by_name")  # ✅ get inspector name
+    ).outerjoin(
+        UserAlias, VehicleInspection.inspected_by == UserAlias.employee_id
+    )
+
     rides = db.query(Ride).filter(Ride.emergency_event == "true").all()
     rides_data = [OrderCardItem.from_orm(r) for r in rides]
 
@@ -859,7 +855,7 @@ def get_critical_issues(
             and_(
                 or_(
                     VehicleInspection.clean == False,
-                    VehicleInspection.fuel_checked == False,
+                    VehicleInspection.unfueled_vehicle_id != None,
                     VehicleInspection.no_items_left == False
                 ),
                 VehicleInspection.critical_issue_bool == False
@@ -883,7 +879,7 @@ def get_critical_issues(
             or_(
                 and_(
                     or_(
-                        VehicleInspection.fuel_checked == False,
+                        VehicleInspection.unfueled_vehicle_id != None,
                     ),
                     VehicleInspection.critical_issue_bool == False
                 ),
@@ -897,10 +893,13 @@ def get_critical_issues(
             )
         )
 
-    else: # problem_type is None
+    else:
         inspections_query = inspections_query.filter(
             or_(
-                VehicleInspection.fuel_checked == False,
+                 VehicleInspection.clean == False,                     # dirty vehicle
+                    VehicleInspection.no_items_left == False,             # items left
+                    VehicleInspection.fuel_checked==True,        # unfueled vehicle
+                    VehicleInspection.critical_issue_bool == True,
                 and_(
                     VehicleInspection.critical_issue_bool == True,
                     and_(
@@ -911,17 +910,23 @@ def get_critical_issues(
             )
         )
 
-    # Execute the VehicleInspection query
-    inspections = inspections_query.order_by(VehicleInspection.inspection_date.desc()).all()
-    
-    # Use VehicleInspectionOut with from_orm
-    inspections_data = [VehicleInspectionOut.from_orm(i) for i in inspections]
+    inspections_query = inspections_query.order_by(VehicleInspection.inspection_date.desc())
+
+    inspections = inspections_query.all()
+
+    # ✅ build schema manually from tuples (VehicleInspection, inspected_by_name)
+    inspections_data = []
+    for inspection, inspected_by_name in inspections:
+        data = VehicleInspectionOut.model_validate(inspection, from_attributes=True).model_dump()
+        # Remove inspected_by_name if it exists to avoid duplication
+        data.pop("inspected_by_name", None)
+        out = VehicleInspectionOut(**data, inspected_by_name=inspected_by_name)
+        inspections_data.append(out)
 
     return {
         "inspections": inspections_data,
         "rides": rides_data
     }
-
 
 @router.get("/statistics/no-show", response_model=NoShowStatsResponse)
 def get_no_show_statistics(

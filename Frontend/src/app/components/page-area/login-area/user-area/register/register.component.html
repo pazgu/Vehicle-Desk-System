@@ -71,7 +71,7 @@
         <small *ngIf="f['department_id'].touched && f['department_id'].errors?.['required']" style="color:red;">יש לבחור מחלקה</small>
       </div>
 
-      <button type="submit" [disabled]="registerForm.invalid">צור משתמש</button>
+      <button type="submit">צור משתמש</button>
       <p *ngIf="errorMessage" style="color:red;">{{ errorMessage }}</p>
     </form>
   </div>

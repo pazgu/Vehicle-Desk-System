@@ -36,13 +36,13 @@ canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean 
     return true;
   }
 
+  //  if (role === 'supervisor'&&url.includes('/all-rides')) {
+  //     this.toastService.show('אין לך הזמנות אישיות', 'error');
+  //     this.router.navigate(['/supervisor-dashboard']);
+  //     return false;
+  //   }
   // ❌ Block supervisors and inspectors from /all-rides and /home
-  if (url.includes('/all-rides') || url.includes('/home')) {
-    if (role === 'supervisor') {
-      this.toastService.show('אין לך הרשאה להזמין נסיעה', 'error');
-      this.router.navigate(['/supervisor-dashboard']);
-      return false;
-    }
+  if (url.includes('/home')) {
     if (role === 'inspector') {
       this.toastService.show('בודק רכב אינו יכול להזמין נסיעה', 'error');
       this.router.navigate(['/inspector/inspection']);
@@ -54,11 +54,6 @@ canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean 
   // ❌ Block supervisors and inspectors from /home
   if ((url.includes('/home')) || (url.includes('/all-rides')))
     {
-    if (role === 'supervisor') {
-      this.toastService.show('אין לך הזמנות אישיות', 'error');
-      this.router.navigate(['/supervisor-dashboard']);
-      return false;
-    }
     if (role === 'inspector') {
       this.toastService.show('עמוד זה אינו רלוונטי לבודק רכב', 'error');
       this.router.navigate(['/inspector/vehicles']);
