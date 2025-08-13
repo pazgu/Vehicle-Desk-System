@@ -22,16 +22,6 @@
       <button [ngClass]="{ 'active': rideViewMode === 'future' }" (click)="rideViewMode = 'future'; applyFiltersAndSort()">הצג נסיעות עתידיות</button>
       <button [ngClass]="{ 'active': rideViewMode === 'past' }" (click)="rideViewMode = 'past'; applyFiltersAndSort()">הצג נסיעות קודמות</button>
       <button [ngClass]="{ 'active': rideViewMode === 'all' }" (click)="rideViewMode = 'all'; applyFiltersAndSort()">הצג הכל</button>
-
-      <img
-        src="assets/images/trash_icon.png"
-        alt="הזמנות בארכיון"
-        width="40"
-        height="40"
-        title="הזמנות בארכיון"
-        style="cursor: pointer; margin-right: 4px;"
-        (click)="goToArchivedOrders()"
-      />
     </div>
 
     <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; direction: rtl;">

@@ -7,7 +7,7 @@
 
 html, body {
   font-family: 'Assistant', sans-serif;
-  background-color: #eae4eb;
+  
   direction: rtl;
   height: 100vh;
   overflow: hidden;
@@ -205,4 +205,15 @@ select.styled-select {
 }
 .back-btn:hover {
   transform: scale(1.03);
+}
+
+.addBtn{
+background: none;
+border: none;
+}
+
+
+.removeBtn{
+background: none;
+border: none;
 }

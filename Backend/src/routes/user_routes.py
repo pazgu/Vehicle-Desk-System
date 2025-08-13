@@ -212,7 +212,7 @@ async def create_order(
             supervisor_notification = create_system_notification(
                 user_id=supervisor_id,
                 title="בקשת נסיעה חדשה",
-                message=f"שלח בקשה חדשה {employee_name} העובד",
+                message=f"העובד/ת {employee_name} שלח/ה בקשה חדשה",
                 order_id=new_ride.id
             )
 
@@ -334,7 +334,7 @@ async def patch_order(
     current_user: User = Depends(get_current_user)
 ):
     # Update the order
-    updated_order = patch_order_in_db(order_id, patch_data, db, changed_by=str(current_user.employee_id))
+    updated_order = await patch_order_in_db(order_id, patch_data, db, changed_by=str(current_user.employee_id))
     user = db.query(User).filter(User.employee_id == updated_order.user_id).first()
     vehicle = db.query(Vehicle).filter(Vehicle.id == updated_order.vehicle_id).first()
 
@@ -490,17 +490,6 @@ async def submit_completion_form(
     return await process_completion_form(db, user, form_data)
 
 
-@router.get("/api/archived-orders/{user_id}", response_model=List[RideSchema])
-def get_archived_orders_route(
-    user_id: UUID,
-    db: Session = Depends(get_db),
-    token: str = Depends(oauth2_scheme)
-):
-    role_check(["employee", "admin"], token)
-    identity_check(str(user_id), token)
-
-    return get_archived_rides(user_id, db)
-
 @router.get("/api/orders/pending-cars", response_model=List[PendingRideSchema])
 def get_pending_car_orders(db: Session = Depends(get_db)):
     pending_rides = (
@@ -628,6 +617,17 @@ def get_cities_route(db: Session = Depends(get_db)):
 def get_city_route(name:str,db: Session = Depends(get_db)):
     city = get_city(name,db)
     return {"id": str(city.id), "name": city.name} 
+
+def get_city_by_id(id: str, db: Session):
+    return db.query(City).filter(City.id == id).first()
+
+@router.get("/api/cityname")
+def get_city_name(id: str, db: Session = Depends(get_db)):
+    city = get_city_by_id(id, db)
+    if city is None:
+        raise HTTPException(status_code=404, detail=f"City with id {id} not found")
+    return {"id": str(city.id), "name": city.name}
+
 
 @router.get("/api/rides/feedback/check/{user_id}")
 def check_feedback_needed(

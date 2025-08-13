@@ -532,7 +532,7 @@ deleteOrder(order: any): void {
     // Create proper dialog data
     const dialogData: ConfirmDialogData = {
       title: 'ביטול הזמנה',
-      message: `? האם אתה בטוח שברצונך לבטל את ההזמנה`,
+      message: `?האם אתה בטוח שברצונך לבטל את ההזמנה\n\nתאריך: ${order.date}\nשעה: ${order.time}\nסוג: ${order.type}`,
       confirmText: 'בטל הזמנה',
       cancelText: 'חזור',
       noRestoreText: 'שימ/י לב שלא ניתן לשחזר את הנסיעה',
@@ -584,9 +584,6 @@ deleteOrder(order: any): void {
     this.router.navigate(['/ride/details', order.ride_id]);
   }
 
-  goToArchivedOrders() {
-    this.router.navigate(['/archived-orders']);
-  }
 
   exceededMaxRides(): boolean {
     const maxRides = 6;

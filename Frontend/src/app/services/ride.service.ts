@@ -47,8 +47,6 @@ getRideById(rideId: string): Observable<any> {
   const headers = new HttpHeaders({
     Authorization: `Bearer ${token}`
   });
-  
-
   return this.http.get(`http://localhost:8000/api/rides/${rideId}`, { headers });
 }
 
@@ -71,19 +69,6 @@ startRide(rideId: string): Observable<any> {
 }
 
 
-getArchivedOrders(userId: string): Observable<any[]> {
-  const token = localStorage.getItem('access_token');
-
-  if (!token) {
-    throw new Error('Access token not found in localStorage.');
-  }
-
-  const headers = new HttpHeaders({
-    Authorization: `Bearer ${token}`
-  });
-
-  return this.http.get<any[]>(`http://localhost:8000/api/archived-orders/${userId}`, { headers });
-}
 
 // ✅ NEW: Fetch estimated distance from backend
 // getDistance(from: string, to: string): Observable<{ distance_km: number }> {
