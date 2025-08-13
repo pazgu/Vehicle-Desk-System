@@ -1,12 +1,10 @@
-
-/* Base Styles */ 
-
 .page-container {
   min-height: calc(100vh - 55px);
   padding: 25px;
   direction: rtl;
   padding-top: 200px;
 }
+
 .user-data-container {
   direction: rtl;
   width: 70%;
@@ -14,9 +12,7 @@
   border-radius: 12px;
   overflow: hidden;
   font-family: 'Alef', sans-serif;
-  
   position: absolute;
-  
   left: 50%;
   transform: translate(-50%, -50%);
   max-width: 800px;
@@ -24,7 +20,6 @@
   margin-top: 250px;
 }  
 
-/* Close button */
 .close-button {
   position: absolute;
   top: 15px;
@@ -35,7 +30,6 @@
   color: #666;
 }
 
-/* Content Styles */ 
 .content {
   padding: 25px 20px;
   position: relative;
@@ -57,7 +51,6 @@
   margin-bottom: 15px;
 }  
 
-/* Form Styles */ 
 .user-form {
   display: flex;
   flex-direction: column;
@@ -95,7 +88,6 @@ label {
   font-size: 14px;
 }  
 
-/* Select Styles */ 
 .select-wrapper {
   position: relative;
   width: 100%;

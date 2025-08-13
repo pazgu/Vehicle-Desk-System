@@ -18,17 +18,13 @@
     note.is_extended_request ? 'extended-alert' : ''
   ]">
 
-
-    
-
       <div class="content">
        <span *ngIf="note.is_extended_request" title="שים לב-נסיעה ארוכה!">
         🚨 
        </span>
-        <div class="time">{{ note.timeAgo }}</div>
-        <span class="text">{{ translateMessage(note.message) }}</span>
         <img src="/assets/images/message.png" alt="Message Icon" class="message-icon" />
-         
+         <span class="text">{{ translateMessage(note.message) }}</span>
+        <div class="time">{{ note.timeAgo }}</div>  
       </div>
     </div>
 
