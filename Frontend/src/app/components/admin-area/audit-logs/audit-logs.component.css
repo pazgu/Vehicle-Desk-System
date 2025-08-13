@@ -2,6 +2,11 @@
   min-height: 100vh;
   background: #ded7d7;
   padding: 2rem 0;
+  background-image: url('/assets/images/vehicle-dashboard-bg.png'); /* your new file name */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed; /* optional, makes it stay fixed on scroll */
 
 }
 

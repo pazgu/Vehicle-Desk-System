@@ -7,10 +7,12 @@
   direction: rtl;
   font-family: 'Alef', sans-serif;
 
-    min-height: calc(100vh - 55px); /* subtract any fixed nav height if needed */
-    margin-top: 0;
-    padding-top: 10px;
+  min-height: calc(100vh - 55px); /* subtract any fixed nav height if needed */
+  margin-top: 0;
+  padding-top: 10px;
   box-sizing: border-box; /* Includes padding in total height */
+  background-image: url('/assets/images/login.png');
+  background-size: cover;
 }
 
 

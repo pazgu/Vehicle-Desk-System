@@ -4,6 +4,12 @@
   padding: 25px;
   direction: rtl;
   font-family: sans-serif;
+
+   background-image: url('/assets/images/vehicle-dashboard-bg.png');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center center;
+  overflow: hidden; /* so overlay stays contained */
 }
 
 /* Page Wrapper */

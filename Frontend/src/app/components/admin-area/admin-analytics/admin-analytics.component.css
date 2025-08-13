@@ -2,14 +2,20 @@
 * {
   border: none;
   box-sizing: border-box;
+  background: white;
+
 }
 
-body {
-  font-family: 'Alef', sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+:host {
+  display: block;
   min-height: 100vh;
-  margin: 0;
-  padding: 0;
+
+  /* ✅ Background image */
+  background-image: url('/assets/images/vehicle-dashboard-bg.png'); /* or your desired path */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed; /* optional for parallax effect */
 }
 
 /* Main Container - Very Compact */
@@ -18,11 +24,23 @@ body {
   margin: 0 auto;
   padding: 0.5rem;
   min-height: 100vh;
+  /* Remove any background that might be covering the body background */
+  background: rgba(255,250,245,255);
+  position: relative;
+  /* Ensure it doesn't create a new stacking context that hides the background */
+  z-index: 1;
+}
+body {
+  font-family: 'Alef', sans-serif;
+  background: white;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
 }
 
 /* Chart Card - Much Smaller, Ultra Compact */
 .chart-card {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 1);
   backdrop-filter: blur(20px);
   border-radius: 12px;
   padding: 0.75rem 1rem;
