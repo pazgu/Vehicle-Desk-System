@@ -17,7 +17,13 @@ export class ToastService {
 
   show(message: string, type: ToastType = 'success') {
     const container = this.getContainer();
+const existing = Array.from(container.querySelectorAll('.custom-toast'))
+    .find(toast => toast.textContent?.trim() === 'הסתיים תוקף ההתחברות שלך. התחבר מחדש');
 
+  if (existing) {
+    console.warn('Duplicate toast blocked:', message);
+    return; // Don't create another one
+  }
     const toast = document.createElement('div');
     toast.className = `custom-toast ${type}`;
     toast.innerText = message;
