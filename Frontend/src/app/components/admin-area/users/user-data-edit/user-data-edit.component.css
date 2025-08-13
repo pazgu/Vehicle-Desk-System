@@ -6,6 +6,12 @@
   padding: 25px;
   direction: rtl;
   padding-top: 200px;
+  background-image: url('/assets/images/vehicle-dashboard-bg.png');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center center;
+
+  overflow: hidden; /* keep overlay contained */
 }
 .user-data-container {
   direction: rtl;

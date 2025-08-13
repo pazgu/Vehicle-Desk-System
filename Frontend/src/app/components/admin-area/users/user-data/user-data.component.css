@@ -19,7 +19,7 @@ body {
   background-position: center center;
   width: 100%;
   padding: 25px;
-  direction: rtl;
+  direction: rtl; 
 }
 
 .pagination-controls {

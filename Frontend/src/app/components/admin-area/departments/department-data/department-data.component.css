@@ -6,6 +6,7 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     background-color: rgba(255, 255, 255, 0.89);
     
+    
 }
 
 .departments-list {
@@ -21,6 +22,11 @@
     margin: 0 auto;
     padding: 2rem;
     position: relative;
+    background-image: url('/assets/images/vehicle-dashboard-bg.png'); /* change name if needed */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed; /* optional for a fixed effect */
 }
 
 .departments-container h2 {
