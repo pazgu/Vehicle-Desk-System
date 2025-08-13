@@ -97,10 +97,10 @@
 
 .time {
   font-weight: bold;
- 
   color: #c62828;  
   flex-shrink: 0;
   white-space: nowrap;
+  justify-content: flex-end;
 }
 
 .content {
@@ -114,14 +114,18 @@
 .status-icon {
   height: 1.3rem;
   width: 1.3rem;
+  justify-content: flex-start;
 }
 
 .text {
   flex: 1;
   font-size: 1.1rem;
   color: #000;
+  justify-content: center; 
   text-align: center;
 }
+
+
 
 .message-icon {
   width: 30px;
