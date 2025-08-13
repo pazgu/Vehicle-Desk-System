@@ -199,7 +199,7 @@ async def create_order(
             "end_datetime": str(new_ride.end_datetime),
             "date_and_time": str(new_ride.start_datetime),
             "vehicle_id": str(new_ride.vehicle_id),
-            "requested_vehicle_plate": new_ride.plate_number,
+            "requested_vehicle_model": new_ride.vehicle_model,
             "department_id": str(department_id),
             "distance": new_ride.estimated_distance_km,
         })
@@ -344,7 +344,7 @@ async def patch_order(
     "user_id": str(updated_order.user_id),
     "employee_name":f"{user.first_name} {user.last_name}",
     "vehicle_id": str(updated_order.vehicle_id) if updated_order.vehicle_id else None,
-    "requested_vehicle_plate":vehicle.plate_number,
+    "requested_vehicle_model":vehicle.vehicle_model,
     "ride_type": updated_order.ride_type,
     "start_datetime": updated_order.start_datetime,
     "end_datetime": updated_order.end_datetime,
