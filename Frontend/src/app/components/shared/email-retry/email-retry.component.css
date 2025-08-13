@@ -1,39 +1,39 @@
-/* src/app/components/shared/email-retry/email-retry.component.css */
-
-/* Loading Overlay */
-.loading-overlay {
+/* email-retry.component.css
+.email-retry-container {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(2px);
+  top: 20px;
+  right: 20px;
   z-index: 9999;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  max-width: 400px;
 }
 
-.loading-spinner {
-  text-align: center;
-  color: #c62828;
+.debug-info {
+  background: yellow;
+  padding: 5px;
+  margin: 5px;
+  font-size: 12px;
+  border-radius: 4px;
+  direction: rtl;
+}
+
+.loading-message {
+  background: #f0f9ff;
+  border: 1px solid #0ea5e9;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  direction: rtl;
 }
 
 .spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #c62828;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e5e7eb;
+  border-top: 2px solid #0ea5e9;
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin: 0 auto 1rem;
-}
-
-.loading-spinner p {
-  font-size: 1.1rem;
-  font-weight: 500;
-  margin: 0;
 }
 
 @keyframes spin {
@@ -41,23 +41,26 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Retry Toast */
-.retry-toast {
-  position: fixed;
-  top: 80px;
-  right: 20px;
-  background-color: #fff;
-  border: 1px solid #e0e0e0;
-  border-left: 4px solid #c62828;
+.success-message {
+  background: #f0fdf4;
+  border: 1px solid #22c55e;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
-  min-width: 350px;
-  max-width: 500px;
-  animation: slideInRight 0.3s ease-out;
+  padding: 16px;
+  color: #15803d;
+  direction: rtl;
 }
 
-@keyframes slideInRight {
+.retry-toast {
+  background: #fef2f2;
+  border: 1px solid #ef4444;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  animation: slideIn 0.3s ease-out;
+  direction: rtl;
+}
+
+@keyframes slideIn {
   from {
     opacity: 0;
     transform: translateX(100%);
@@ -68,97 +71,159 @@
   }
 }
 
+.retry-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.retry-message {
+  color: #dc2626;
+  font-weight: 500;
+}
+
+.retry-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.retry-btn {
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.retry-btn:hover:not(.disabled) {
+  background: #b91c1c;
+}
+
+.retry-btn.disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.dismiss-btn {
+  background: #6b7280;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.dismiss-btn:hover {
+  background: #4b5563;
+} */
+
+
+/* Full-screen loading overlay */
+.loading-overlay {
+  position: fixed;
+  inset: 0;        /* full screen */
+  z-index: 99999;  /* above your page wrapper */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e0e0e0;
+  border-top: 4px solid #c62828;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Error Toast Notification */
+.retry-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  background: white;
+  border-radius: 8px;
+  border-left: 5px solid #c62828;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  min-width: 350px;
+  max-width: 450px;
+  animation: slideIn 0.3s ease-out;
+  direction: rtl;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(50px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
 .toast-content {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.25rem;
-}
-
-.toast-message {
-  display: flex;
-  align-items: center;
-  flex: 1;
-  color: #333;
-  font-size: 0.95rem;
-  line-height: 1.4;
+  gap: 1rem;
+  flex-grow: 1;
 }
 
 .error-icon {
-  font-size: 1.2rem;
-  margin-left: 0.75rem;
-  flex-shrink: 0;
+  font-size: 1.8rem;
+  color: #c62828;
+}
+
+.message-text {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #333;
 }
 
 .toast-actions {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-right: 1rem;
+}
+
+.retry-button, .close-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  border-radius: 5px;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  transition: background-color 0.2s;
 }
 
 .retry-button {
-  background: linear-gradient(90deg, #c62828, #b71c1c);
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-  width: auto;
-  margin: 0;
+  background-color: #f1f1f1;
+  border: 1px solid #ddd;
 }
-
 .retry-button:hover {
-  background: linear-gradient(90deg, #d32f2f, #c62828);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(198, 40, 40, 0.3);
+  background-color: #e7e7e7;
 }
 
 .close-button {
-  background: none;
-  border: none;
-  color: #666;
-  font-size: 1.2rem;
-  cursor: pointer;
-  padding: 0.25rem;
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: #888;
+  padding: 0.2rem 0.6rem;
 }
-
 .close-button:hover {
-  background-color: #f5f5f5;
   color: #333;
-  transform: none;
-  box-shadow: none;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .retry-toast {
-    right: 10px;
-    left: 10px;
-    min-width: auto;
-    max-width: none;
-  }
-  
-  .toast-content {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.75rem;
-  }
-  
-  .toast-actions {
-    justify-content: flex-end;
-    margin-right: 0;
-  }
+  background-color: #f1f1f1;
 }

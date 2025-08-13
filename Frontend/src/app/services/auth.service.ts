@@ -1,35 +1,27 @@
+// src/app/services/auth.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
-
-
 export class AuthService {
-  private apiUrl = environment.apiUrl; // e.g., 'http://localhost:8000'
-  // In auth.service.ts
-retryEmail(identifier_id: string, email_type: string): Observable<any> {
-    const body = {
-        identifier_id: identifier_id,
-        email_type: email_type
-    };
-
-    // This is the correct code.
-    // It uses the prefix from your environment variable.
-    return this.http.post(`${this.apiUrl}/emails/retry`, body);
-}
-
+  private apiUrl = environment.apiUrl;
   private loginUrl = `${environment.loginUrl}`;
   private registerUrl = `${environment.registerUrl}`;
 
   private fullNameSubject = new BehaviorSubject<string>(
     `${localStorage.getItem('first_name') || ''} ${localStorage.getItem('last_name') || ''}`.trim() || 'משתמש'
   );
-  fullName$ = this.fullNameSubject.asObservable(); // For header display
+  fullName$ = this.fullNameSubject.asObservable();
 
   private loggedInSubject = new BehaviorSubject<boolean>(!!localStorage.getItem('access_token'));
-  isLoggedIn$ = this.loggedInSubject.asObservable(); // For showing/hiding nav items
+  isLoggedIn$ = this.loggedInSubject.asObservable();
+
+  private roleSubject = new BehaviorSubject<string>(
+    localStorage.getItem('role') || ''
+  );
+  role$ = this.roleSubject.asObservable();
 
   constructor(private http: HttpClient) {}
 
@@ -39,7 +31,7 @@ retryEmail(identifier_id: string, email_type: string): Observable<any> {
   }
 
   // 👤 Register
-  register(registerData: { 
+  register(registerData: {
     first_name: string;
     last_name: string;
     username: string;
@@ -49,15 +41,12 @@ retryEmail(identifier_id: string, email_type: string): Observable<any> {
     role: string;
     employee_id?: string;
   }): Observable<any> {
-    return this.http.post<any>(this.registerUrl, registerData);
+    // Add the custom header here
+    const headers = new HttpHeaders().set('X-Email-Operation', 'true');
+    return this.http.post<any>(this.registerUrl, registerData, { headers });
   }
-    private roleSubject = new BehaviorSubject<string>(
-    localStorage.getItem('role') || ''
-  );
-  role$ = this.roleSubject.asObservable();
 
-
-  // 🧠 Update full name across the app
+  // 🔄 Update full name across the app
   setFullName(firstName: string, lastName: string): void {
     localStorage.setItem('first_name', firstName);
     localStorage.setItem('last_name', lastName);
@@ -75,42 +64,50 @@ retryEmail(identifier_id: string, email_type: string): Observable<any> {
   }
 
   // 🚪 Logout
-logout(): void {
-  // Remove user-related data from localStorage
-  localStorage.removeItem('access_token');
-  localStorage.removeItem('username');
-  localStorage.removeItem('first_name');
-  localStorage.removeItem('last_name');
-  localStorage.removeItem('employee_id');
-  localStorage.removeItem('role');
-  localStorage.removeItem('pending_feedback_ride');
+  logout(): void {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('username');
+    localStorage.removeItem('first_name');
+    localStorage.removeItem('last_name');
+    localStorage.removeItem('employee_id');
+    localStorage.removeItem('role');
+    localStorage.removeItem('pending_feedback_ride');
+    this.fullNameSubject.next('משתמש');
+    this.roleSubject.next('');
+    this.setLoginState(false);
+  }
 
-
-  // Update BehaviorSubject values
-  this.fullNameSubject.next('משתמש');
-  this.roleSubject.next(''); // Clear role on logout
-
-  // Update login state
-  this.setLoginState(false);
-}
-
-    getRole(): string {
+  getRole(): string {
     return this.roleSubject.value;
   }
+  
   setRole(role: string): void {
-  localStorage.setItem('role', role);
-  this.roleSubject.next(role);
-}
- requestPasswordReset(email: string): Observable<any> {
-    return this.http.post(environment.forgotPassUrl, { email });
+    localStorage.setItem('role', role);
+    this.roleSubject.next(role);
+  }
+
+  // 📧 Send password reset email
+  requestPasswordReset(email: string): Observable<any> {
+    // Add the custom header here
+    const headers = new HttpHeaders().set('X-Email-Operation', 'true');
+    return this.http.post(environment.forgotPassUrl, { email }, { headers });
+  }
+
+  // 📧 Retry email sending
+  retryEmail(identifier: string, emailAction: string): Observable<any> {
+    const body = {
+      identifier_id: identifier,
+      email_type: emailAction
+    };
+    // Add the custom header here
+    const headers = new HttpHeaders().set('X-Email-Operation', 'true');
+    return this.http.post(`${this.apiUrl}/emails/retry`, body, { headers });
   }
 
   resetPassword(token: string, newPassword: string) {
-  return this.http.post(environment.resetPassUrl, {
-    token,
-    new_password: newPassword
-  });
-}
-
-
+    return this.http.post(environment.resetPassUrl, {
+      token,
+      new_password: newPassword
+    });
+  }
 }
