@@ -212,7 +212,7 @@ async def create_order(
             supervisor_notification = create_system_notification(
                 user_id=supervisor_id,
                 title="בקשת נסיעה חדשה",
-                message=f"שלח בקשה חדשה {employee_name} העובד",
+                message=f"העובד/ת {employee_name} שלח/ה בקשה חדשה",
                 order_id=new_ride.id
             )
 
