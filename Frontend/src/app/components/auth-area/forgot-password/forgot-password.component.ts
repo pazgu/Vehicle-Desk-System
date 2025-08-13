@@ -1,51 +1,307 @@
-import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { AuthService } from '../../../services/auth.service';
+// // forgot-password.component.ts
+// import { Component } from '@angular/core';
+// import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+// import { AuthService } from '../../../services/auth.service';
+// import { CommonModule } from '@angular/common';
+// import { Router } from '@angular/router';
+// import { EmailHandlerService } from '../../../services/email-handler.service';
+
+// @Component({
+//   selector: 'app-forgot-password',
+//   templateUrl: './forgot-password.component.html',
+//   styleUrls: ['./forgot-password.component.css'],
+//   imports: [CommonModule, ReactiveFormsModule]
+// })
+// export class ForgotPasswordComponent {
+//   forgotForm: FormGroup;
+//   submitted = false;
+  
+//   floatingChars: { char: string; left: number; delay: number; duration: number }[] = [];
+  
+//   constructor(
+//     private fb: FormBuilder,
+//     private authService: AuthService,
+//     private router: Router,
+//     private emailHandlerService: EmailHandlerService
+//   ) {
+//     this.forgotForm = this.fb.group({
+//       email: ['', [Validators.required, Validators.email]]
+//     });
+    
+//     const symbols = ['*', '#', '•', '@', '$', '%', '&'];
+//     for (let i = 0; i < 50; i++) {
+//       this.floatingChars.push({
+//         char: symbols[Math.floor(Math.random() * symbols.length)],
+//         left: Math.random() * 100,
+//         delay: Math.random() * 5,
+//         duration: 5 + Math.random() * 5
+//       });
+//     }
+//   }
+
+//   get f() {
+//     return this.forgotForm.controls;
+//   }
+
+//   onSubmit() {
+//     this.submitted = true;
+
+//     if (this.forgotForm.invalid) return;
+
+//     const email = this.forgotForm.value.email;
+
+//     // Create retry callback that calls this method again
+//     const retryCallback = () => {
+//       this.sendForgotPasswordEmail();
+//     };
+
+//     // Use the centralized service to handle the API call and all UI feedback
+//     this.emailHandlerService.handleEmailOperation(
+//       this.authService.requestPasswordReset(email),
+//       retryCallback,
+//       email, // This will be used as retry identifier
+//       (identifier: string) => this.authService.retryEmail(identifier, 'forgot_password'),
+//       'forgot_password' // Specify the email action type
+//     ).subscribe();
+//   }
+
+//   // Separate method for sending email (used in retry)
+//   private sendForgotPasswordEmail() {
+//     if (this.forgotForm.invalid) return;
+
+//     const email = this.forgotForm.value.email;
+    
+//     const retryCallback = () => {
+//       this.sendForgotPasswordEmail();
+//     };
+
+//     this.emailHandlerService.handleEmailOperation(
+//       this.authService.requestPasswordReset(email),
+//       retryCallback,
+//       email,
+//       (identifier: string) => this.authService.retryEmail(identifier, 'forgot_password'),
+//       'forgot_password'
+//     ).subscribe();
+//   }
+
+//   navigateBack() {
+//     // Clean up the email handler state when navigating away
+//     this.emailHandlerService.reset();
+//     this.router.navigate(['/login']);
+//   }
+// }
+
+
+
+
+
+
+
+
+
+
+// // forgot-password.component.ts
+// import { Component } from '@angular/core';
+// import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+// import { AuthService } from '../../../services/auth.service';
+// import { CommonModule } from '@angular/common';
+// import { Router } from '@angular/router';
+// import { EmailHandlerService } from '../../../services/email-handler.service';
+
+// @Component({
+//   selector: 'app-forgot-password',
+//   templateUrl: './forgot-password.component.html',
+//   styleUrls: ['./forgot-password.component.css'],
+//   imports: [CommonModule, ReactiveFormsModule]
+// })
+// export class ForgotPasswordComponent {
+//   forgotForm: FormGroup;
+//   submitted = false;
+
+//   floatingChars: { char: string; left: number; delay: number; duration: number }[] = [];
+
+//   constructor(
+//     private fb: FormBuilder,
+//     private authService: AuthService,
+//     private router: Router,
+//     private emailHandlerService: EmailHandlerService
+//   ) {
+//     this.forgotForm = this.fb.group({
+//       email: ['', [Validators.required, Validators.email]]
+//     });
+
+//     const symbols = ['*', '#', '•', '@', '$', '%', '&'];
+//     for (let i = 0; i < 50; i++) {
+//       this.floatingChars.push({
+//         char: symbols[Math.floor(Math.random() * symbols.length)],
+//         left: Math.random() * 100,
+//         delay: Math.random() * 5,
+//         duration: 5 + Math.random() * 5
+//       });
+//     }
+//   }
+
+//   get f() {
+//     return this.forgotForm.controls;
+//   }
+
+//   onSubmit() {
+//     console.log('🚀 Form submitted, valid:', this.forgotForm.valid);
+//     this.submitted = true;
+
+//     if (this.forgotForm.invalid) {
+//       console.log('❌ Form invalid, stopping');
+//       return;
+//     }
+
+//     const email = this.forgotForm.value.email;
+//     console.log('📧 Sending email to:', email);
+
+//     // Create retry callback that calls this method again
+//     const retryCallback = () => {
+//       console.log('🔄 Retry callback executed');
+//       this.sendForgotPasswordEmail();
+//     };
+
+//     // Use the centralized service to handle the API call and all UI feedback
+//     this.emailHandlerService.handleEmailOperation(
+//       this.authService.requestPasswordReset(email),
+//       retryCallback,
+//       email, // This will be used as retry identifier
+//       (identifier: string) => this.authService.retryEmail(identifier, 'forgot_password'),
+//       'forgot_password' // Specify the email action type
+//     ).subscribe({
+//       next: (result) => {
+//         console.log('📧 Email operation completed:', result);
+//         // Clear the form on success (result will be the API response on success, null on error)
+//         if (result !== null) {
+//           console.log('✅ Success - clearing form');
+//           this.forgotForm.reset();
+//           this.submitted = false;
+//         }
+//       },
+//       error: (error) => {
+//         console.error('📧 Email operation error:', error);
+//       }
+//     });
+//   }
+
+//   // Separate method for sending email (used in retry)
+//   private sendForgotPasswordEmail() {
+//     console.log('🔄 Sending forgot password email (retry)');
+    
+//     if (this.forgotForm.invalid) {
+//       console.log('❌ Form invalid in retry, stopping');
+//       return;
+//     }
+
+//     const email = this.forgotForm.value.email;
+
+//     const retryCallback = () => {
+//       console.log('🔄 Nested retry callback executed');
+//       this.sendForgotPasswordEmail();
+//     };
+
+//     this.emailHandlerService.handleEmailOperation(
+//       this.authService.requestPasswordReset(email),
+//       retryCallback,
+//       email,
+//       (identifier: string) => this.authService.retryEmail(identifier, 'forgot_password'),
+//       'forgot_password'
+//     ).subscribe({
+//       next: (result) => {
+//         console.log('📧 Retry email operation completed:', result);
+//         // Clear the form on success
+//         if (result !== null) {
+//           console.log('✅ Retry success - clearing form');
+//           this.forgotForm.reset();
+//           this.submitted = false;
+//         }
+//       },
+//       error: (error) => {
+//         console.error('📧 Retry email operation error:', error);
+//       }
+//     });
+//   }
+
+//   navigateBack() {
+//     console.log('🔙 Navigating back');
+//     // Clean up the email handler state when navigating away
+//     this.emailHandlerService.reset();
+//     this.router.navigate(['/login']);
+//   }
+// }
+
+
+import { Component, OnDestroy } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
+import { AuthService } from '../../../services/auth.service';
+import { EmailHandlerService } from '../../../services/email-handler.service';
+import { EmailRetryComponent } from '../../shared/email-retry/email-retry.component'; // 👈 import the popup
+
 @Component({
   selector: 'app-forgot-password',
+  standalone: true,
   templateUrl: './forgot-password.component.html',
   styleUrls: ['./forgot-password.component.css'],
-  imports: [CommonModule, ReactiveFormsModule]
+  imports: [CommonModule, ReactiveFormsModule, EmailRetryComponent] // 👈 include the popup here
 })
-export class ForgotPasswordComponent {
+export class ForgotPasswordComponent implements OnDestroy {
   forgotForm: FormGroup;
   submitted = false;
-  message = '';
-  
-  // New state management for better UX
-  showRetryToast = false;
-  isLoading = false;
-  toastMessage = '';
-  retryIdentifier: string | null = null;
-  
-  floatingChars: { char: string; left: number; delay: number; duration: number }[] = [];
-  
-  // User-friendly error messages mapping for forgot password context
-  private userFriendlyErrors: { [key: string]: string } = {
-    'Email utility reported failure': 'אירעה בעיה בשליחת המייל. אנא בדקו את הכתובת או נסו שוב.',
-    'Invalid token': 'אירעה שגיאה טכנית. אנא נסו שוב או צרו קשר עם התמיכה.',
-    'User not found': 'כתובת המייל לא נמצאה במערכת. אנא בדקו את הכתובת.',
-    'Email not found': 'כתובת המייל לא נמצאה במערכת. אנא בדקו את הכתובת.',
-    'Missing or Invalid token': 'אירעה שגיאה טכנית. אנא נסו שוב.',
-    'Network error': 'אירעה בעיית רשת. אנא בדקו את החיבור לאינטרנט ונסו שוב.',
-    'Server error': 'אירעה שגיאת שרת. אנא נסו שוב מאוחר יותר.',
-    'Rate limit exceeded': 'נשלחו יותר מדי בקשות. אנא המתינו כמה דקות לפני שתנסו שוב.',
-    'Invalid email format': 'כתובת המייל אינה תקינה. אנא בדקו את הפורמט.',
-    'Service temporarily unavailable': 'שירות שליחת המיילים אינו זמין כרגע. אנא נסו שוב מאוחר יותר.',
-    'Email delivery failed': 'שליחת המייל נכשלה. אנא בדקו את כתובת המייל ונסו שוב.',
-    'SMTP error': 'אירעה בעיה בשליחת המייל. אנא נסו שוב או צרו קשר עם התמיכה.',
-    'Invalid email address': 'כתובת המייל אינה חוקית. אנא בדקו את הכתובת.',
-    'Account not found': 'לא נמצא חשבון עם כתובת מייל זו במערכת.'
-  };
+  floatingChars: any[] = [];
 
-  constructor(private fb: FormBuilder, private authService: AuthService, private router: Router) {
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router,
+    private emailHandlerService: EmailHandlerService
+  ) {
     this.forgotForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]]
     });
-    
+    this.initializeFloatingChars();
+  }
+
+  get f() { return this.forgotForm.controls; }
+
+  onSubmit() {
+    this.submitted = true;
+    if (this.forgotForm.invalid) return;
+
+    const email = this.forgotForm.value.email as string;
+
+    // Factory for the original request (adds X-Email-Operation header in AuthService)
+    const opFactory = () => this.authService.requestPasswordReset(email);
+    // Optional: dedicated retry endpoint
+    const retryFactory = () => this.authService.retryEmail(email, 'forgot_password');
+
+    // IMPORTANT: subscribe so the handler can catch the 422 and open the popup
+    this.emailHandlerService.handle(opFactory, retryFactory).subscribe({
+      next: () => {
+        // On success (for 422 we complete with EMPTY so next won't run)
+        this.forgotForm.reset();
+        this.submitted = false;
+      },
+      error: () => {
+        // Non-422 (401/403/500) will land here after AuthInterceptor shows a toast
+      }
+    });
+  }
+
+  navigateBack() {
+    this.emailHandlerService.reset();
+    this.router.navigate(['/login']);
+  }
+
+  ngOnDestroy() {
+    this.emailHandlerService.reset();
+  }
+
+  private initializeFloatingChars(): void {
     const symbols = ['*', '#', '•', '@', '$', '%', '&'];
     for (let i = 0; i < 50; i++) {
       this.floatingChars.push({
@@ -55,125 +311,5 @@ export class ForgotPasswordComponent {
         duration: 5 + Math.random() * 5
       });
     }
-  }
-
-  get f() {
-    return this.forgotForm.controls;
-  }
-
-  onSubmit() {
-    this.submitted = true;
-    this.message = '';
-    this.hideRetryToast();
-
-    if (this.forgotForm.invalid) return;
-
-    this.isLoading = true;
-    const email = this.forgotForm.value.email;
-    
-    this.authService.requestPasswordReset(email).subscribe({
-      next: res => {
-        this.isLoading = false;
-        this.message = res.message;
-      },
-      error: err => {
-        this.isLoading = false;
-        this.handleError(err);
-      }
-    });
-  }
-
-  private handleError(err: any) {
-    // Handle retryable errors
-    if (err.status === 422 && err.error.retry_info) {
-      this.toastMessage = this.getFriendlyErrorMessage(err.error.detail);
-      this.showRetryToast = true;
-      this.retryIdentifier = err.error.retry_info.identifier_id;
-    } else {
-      // Handle non-retryable errors with toast
-      this.toastMessage = this.getFriendlyErrorMessage(err.error?.detail || err.message || 'Unknown error');
-      this.showRetryToast = true;
-      this.retryIdentifier = null; // No retry available
-    }
-  }
-
-  private getFriendlyErrorMessage(errorMessage: string): string {
-    // First, let's handle specific forgot password scenarios
-    if (errorMessage.toLowerCase().includes('user not found') || 
-        errorMessage.toLowerCase().includes('email not found') ||
-        errorMessage.toLowerCase().includes('account not found')) {
-      return 'כתובת המייל לא נמצאה במערכת. אנא בדקו את הכתובת.';
-    }
-    
-    if (errorMessage.toLowerCase().includes('email') && 
-        errorMessage.toLowerCase().includes('failed')) {
-      return 'שליחת המייל נכשלה. אנא בדקו את כתובת המייל ונסו שוב.';
-    }
-    
-    if (errorMessage.toLowerCase().includes('invalid email')) {
-      return 'כתובת המייל אינה חוקית. אנא בדקו את הכתובת.';
-    }
-    
-    if (errorMessage.toLowerCase().includes('rate limit') || 
-        errorMessage.toLowerCase().includes('too many')) {
-      return 'נשלחו יותר מדי בקשות. אנא המתינו כמה דקות לפני שתנסו שוב.';
-    }
-    
-    // Check our error mappings
-    for (const [key, value] of Object.entries(this.userFriendlyErrors)) {
-      if (errorMessage.toLowerCase().includes(key.toLowerCase())) {
-        return value;
-      }
-    }
-    
-    // Check for common HTTP status patterns
-    if (errorMessage.includes('404')) {
-      return 'כתובת המייל לא נמצאה במערכת.';
-    }
-    if (errorMessage.includes('500')) {
-      return 'אירעה שגיאת שרת פנימית. אנא נסו שוב מאוחר יותר.';
-    }
-    if (errorMessage.includes('timeout')) {
-      return 'הבקשה לא הושלמה בזמן. אנא נסו שוב.';
-    }
-    if (errorMessage.includes('network') || errorMessage.includes('connection')) {
-      return 'אירעה בעיית רשת. אנא בדקו את החיבור לאינטרנט ונסו שוב.';
-    }
-    
-    // Fallback for unexpected errors - more generic and appropriate for forgot password
-    return 'אירעה שגיאה בעת שליחת בקשת איפוס הסיסמה. אנא נסו שוב.';
-  }
-
-  onRetry() {
-    // If we have a retryIdentifier, use the backend retry endpoint
-    if (this.retryIdentifier) {
-      this.isLoading = true;
-      this.hideRetryToast();
-
-      this.authService.retryEmail(this.retryIdentifier, 'forgot_password').subscribe({
-        next: res => {
-          this.isLoading = false;
-          this.message = res.message;
-        },
-        error: err => {
-          this.isLoading = false;
-          this.handleError(err);
-        }
-      });
-    } else {
-      // For non-retryable errors, just resubmit the form
-      this.hideRetryToast();
-      this.onSubmit();
-    }
-  }
-
-  hideRetryToast() {
-    this.showRetryToast = false;
-    this.toastMessage = '';
-    this.retryIdentifier = null;
-  }
-
-  navigateBack() {
-    this.router.navigate(['/login']);
   }
 }
