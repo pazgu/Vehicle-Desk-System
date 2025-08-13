@@ -190,6 +190,8 @@ form .removeBtn:hover {
   overflow-y: auto;
   overflow-x: hidden;
   border: 1px solid #333;
+  background-color: #e7c1c1;
+
 }
 
 ::ng-deep .custom-hour-dropdown .ng-dropdown-panel .ng-dropdown-panel-items {
