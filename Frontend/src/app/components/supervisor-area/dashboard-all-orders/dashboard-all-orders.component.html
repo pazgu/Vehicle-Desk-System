@@ -119,7 +119,7 @@
               {{ trip.ride_id.slice(0, 4) }}...
             </td>
             <td>{{ trip.employee_name }}</td>
-            <td>{{ trip.requested_vehicle_plate }}</td>
+            <td>{{ trip.requested_vehicle_model }}</td>
             <td>{{ trip.date_and_time | date:'dd/MM/yyyy HH:mm' }}</td>
             <td>{{ trip.distance }}</td>
             <td [ngClass]="getStatusClass(trip.status)">{{ translateStatus(trip.status) }}</td>
