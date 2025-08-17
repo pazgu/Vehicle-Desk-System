@@ -97,10 +97,10 @@
 
 .time {
   font-weight: bold;
- 
   color: #c62828;  
   flex-shrink: 0;
   white-space: nowrap;
+  justify-content: flex-end;
 }
 
 .content {
@@ -114,14 +114,18 @@
 .status-icon {
   height: 1.3rem;
   width: 1.3rem;
+  justify-content: flex-start;
 }
 
 .text {
   flex: 1;
   font-size: 1.1rem;
   color: #000;
+  justify-content: center; 
   text-align: center;
 }
+
+
 
 .message-icon {
   width: 30px;
@@ -208,11 +212,11 @@ body {
   margin: 0;
   padding: 0;
   font-family: 'Alef', sans-serif;
-  background-image: url('/assets/images/notifications-bg.png');
+  /* background-image: url('/assets/images/notifications-bg.png');
   background-size: 300px auto;
   background-repeat: repeat;
   background-position: top center;
-  background-attachment: fixed;
+  background-attachment: fixed; */
 }
 
 

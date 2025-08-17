@@ -9,7 +9,7 @@ from uuid import UUID
 class RideDashboardItem(BaseModel):
     ride_id: UUID
     employee_name: str
-    requested_vehicle_plate: str
+    requested_vehicle_model: str
     vehicle_id: UUID
     date_and_time: datetime
     distance: float

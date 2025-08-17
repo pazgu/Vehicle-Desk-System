@@ -42,8 +42,6 @@ export class DashboardAllOrdersComponent implements OnInit {
   // 🆕 פלג לשגיאה בתאריכים
   dateError: boolean = false;
 
-
-
   constructor(private router: Router,private route:ActivatedRoute, private orderService: OrderService,private toastService:ToastService,  private socketService: SocketService ) {}
 
   ngOnInit(): void {
@@ -75,7 +73,7 @@ this.route.queryParams.subscribe(params => {
         const updatedOrder: RideDashboardItem = {
           ride_id: updatedRide.id,
           employee_name: updatedRide.employee_name, // make sure this is in your updatedRide
-          requested_vehicle_plate: updatedRide.requested_vehicle_plate || '', // or map from vehicle_id if needed
+          requested_vehicle_model: updatedRide.requested_vehicle_model || '', // or map from vehicle_id if needed
           date_and_time: updatedRide.start_datetime,
           distance: updatedRide.estimated_distance_km,
           status: updatedRide.status.toLowerCase(),

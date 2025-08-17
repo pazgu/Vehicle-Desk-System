@@ -81,7 +81,7 @@ async def create_order(
             "end_datetime": str(new_ride.end_datetime),
             "date_and_time": str(new_ride.start_datetime),
             "vehicle_id": str(new_ride.vehicle_id),
-            "requested_vehicle_plate": new_ride.plate_number,
+            "requested_vehicle_model": new_ride.vehicle_model,
             "department_id": str(department_id),
             "distance": new_ride.estimated_distance_km,
         })

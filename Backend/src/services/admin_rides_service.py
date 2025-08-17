@@ -41,8 +41,8 @@ def build_dashboard_item(
     return RideDashboardItem(
         ride_id=ride_id,
         employee_name=f"{user_first_name} {user_last_name}",
-requested_vehicle_plate = f"Plate-{str(vehicle_id)[:8]}",
-vehicle_id=vehicle_id,
+        requested_vehicle_model = f"Plate-{str(vehicle_id)[:8]}",
+        vehicle_id=vehicle_id,
         date_and_time=start_datetime,
         distance=str(estimated_distance_km),
         status=status,
