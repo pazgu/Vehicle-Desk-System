@@ -974,6 +974,8 @@ futureDateTimeValidator(): ValidatorFn {
                     const blockUntil = match ? match[1] : '';
                     const translated = `אתה חסום עד ${blockUntil}`;
                     this.toastService.show(translated, 'error');
+                } else if (errorMessage.includes('valid license')) {
+                    this.toastService.show('אין לך רישיון בתוקף ', 'error');
                 } else {
                     this.toastService.show('שגיאה בשליחת הבקשה', 'error');
                 }
