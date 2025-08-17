@@ -916,7 +916,6 @@ futureDateTimeValidator(): ValidatorFn {
         }
         if (!confirmedWarning && ridePeriod === 'morning' && this.isDuringInspectorClosure(startTime)) {
             this.showInspectorWarningModal = true;
-            return;
         }
         const user_id = this.getUserIdFromAuthService();
         if (!user_id) {
