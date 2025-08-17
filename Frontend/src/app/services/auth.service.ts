@@ -94,15 +94,12 @@ export class AuthService {
   }
 
   // 📧 Retry email sending
-  retryEmail(identifier: string, emailAction: string): Observable<any> {
-    const body = {
-      identifier_id: identifier,
-      email_type: emailAction
-    };
-    // Add the custom header here
+  retryEmail(identifier: string, emailAction: string) {
+    const body = { identifier_id: identifier, email_type: emailAction };
     const headers = new HttpHeaders().set('X-Email-Operation', 'true');
     return this.http.post(`${this.apiUrl}/emails/retry`, body, { headers });
   }
+
 
   resetPassword(token: string, newPassword: string) {
     return this.http.post(environment.resetPassUrl, {

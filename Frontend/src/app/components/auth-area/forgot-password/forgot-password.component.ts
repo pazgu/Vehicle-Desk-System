@@ -269,28 +269,23 @@ export class ForgotPasswordComponent implements OnDestroy {
   get f() { return this.forgotForm.controls; }
 
   onSubmit() {
-    this.submitted = true;
-    if (this.forgotForm.invalid) return;
+  this.submitted = true;
+  if (this.forgotForm.invalid) return;
 
-    const email = this.forgotForm.value.email as string;
+  const email = this.forgotForm.value.email as string;
 
-    // Factory for the original request (adds X-Email-Operation header in AuthService)
-    const opFactory = () => this.authService.requestPasswordReset(email);
-    // Optional: dedicated retry endpoint
-    const retryFactory = () => this.authService.retryEmail(email, 'forgot_password');
+  this.emailHandlerService.handleEmailOperation(
+    this.authService.requestPasswordReset(email),
+    undefined,                                  // no retryCallback (we'll use the endpoint)
+    null,                                       // DO NOT pass identifier; use the server's one
+    (id: string) => this.authService.retryEmail(id, 'forgot_password'),
+    'forgot_password'
+  ).subscribe({
+    next: () => { this.forgotForm.reset(); this.submitted = false; },
+    error: () => {} // non-422 errors will be toasted by AuthInterceptor
+  });
+}
 
-    // IMPORTANT: subscribe so the handler can catch the 422 and open the popup
-    this.emailHandlerService.handle(opFactory, retryFactory).subscribe({
-      next: () => {
-        // On success (for 422 we complete with EMPTY so next won't run)
-        this.forgotForm.reset();
-        this.submitted = false;
-      },
-      error: () => {
-        // Non-422 (401/403/500) will land here after AuthInterceptor shows a toast
-      }
-    });
-  }
 
   navigateBack() {
     this.emailHandlerService.reset();

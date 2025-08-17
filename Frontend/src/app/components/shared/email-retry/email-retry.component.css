@@ -124,11 +124,11 @@
 } */
 
 
-/* Full-screen loading overlay */
+/* Full-screen loading overlay
 .loading-overlay {
   position: fixed;
-  inset: 0;        /* full screen */
-  z-index: 99999;  /* above your page wrapper */
+  inset: 0;        
+  z-index: 99999;  
   display: flex;
   align-items: center;
   justify-content: center;
@@ -149,7 +149,6 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Error Toast Notification */
 .retry-toast {
   position: fixed;
   top: 20px;
@@ -226,4 +225,331 @@
 .close-button:hover {
   color: #333;
   background-color: #f1f1f1;
+}
+
+.retry-toast {
+  position: fixed;     
+  inset: 0;             
+  z-index: 2147483647;   
+  display: grid;
+  place-items: center;
+  pointer-events: auto;
+}
+
+:host {
+  position: initial !important;
+  isolation: isolate;
+}
+
+.retry-toast::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.25);
+  z-index: -1;
+}
+
+.retry-card {
+  width: min(92vw, 520px);
+  background: #fff;
+  color: #111827;
+  border-radius: 16px;
+  padding: 20px 22px;
+  border: 1px solid rgba(0,0,0,.06);
+  box-shadow: 0 22px 60px rgba(0,0,0,.24);
+  direction: rtl;  
+
+.retry-card .title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  font-size: 1.1rem;
+  margin: 0 0 6px;
+}
+
+.retry-card .subtitle {
+  margin: 0 0 14px;
+  color: #4b5563;
+  font-size: .96rem;
+}
+
+.retry-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start;
+  margin-top: 8px;
+}
+
+.retry-btn {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.retry-btn.primary {
+  background: linear-gradient(90deg, #c62828, #b71c1c);
+  color: #fff;
+}
+
+.retry-btn.secondary {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.retry-btn:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+} */
+
+
+/* ---- FULL-SCREEN OVERLAY (always above header) ---- */
+/* .retry-toast {
+  position: fixed;
+  inset: 0;                
+  z-index: 2147483647;    
+  place-items: center;
+  pointer-events: auto;
+  padding: 24px;            
+  overflow: auto;         
+
+:host {
+  isolation: isolate;
+}
+
+.retry-toast::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+  z-index: -1;              
+
+.retry-card {
+  width: min(92vw, 520px);
+  background: #ffffff;
+  color: #111827;
+  border-radius: 16px;
+  padding: 20px 22px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.24);
+  direction: rtl;           
+  animation: pop 160ms ease-out;
+}
+
+@keyframes pop {
+  from { opacity: 0; transform: translateY(4px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+
+.retry-card .title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  font-size: 1.1rem;
+  margin: 0 0 6px;
+}
+
+.retry-card .subtitle {
+  margin: 0 0 14px;
+  color: #4b5563;
+  font-size: 0.96rem;
+}
+
+.retry-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start;
+  margin-top: 8px;
+}
+
+.retry-btn {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.retry-btn.primary {
+  background: linear-gradient(90deg, #c62828, #b71c1c);
+  color: #fff;
+}
+
+.retry-btn.secondary {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.retry-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+} */
+
+
+
+
+
+/* ================================
+   Base Component Container
+   ================================ */
+
+.email-retry-container {
+  /* Full-screen overlay to block user interaction */
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647; /* Ensure it's on top of everything */
+  display: grid;
+  place-items: center; /* Center the content both horizontally and vertically */
+  background: rgba(0, 0, 0, 0.5); /* Semi-transparent backdrop */
+  direction: rtl;
+  pointer-events: auto;
+}
+
+/* ================================
+   Modal Card
+   ================================ */
+
+.retry-card {
+  --primary-color: #c62828;
+  --secondary-color: #f3f4f6;
+  --text-color: #111827;
+  --subtle-text-color: #4b5563;
+
+  width: min(92vw, 520px);
+  background: #fff;
+  color: var(--text-color);
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.24);
+  animation: fadeInScale 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.retry-card .title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 800;
+  font-size: 1.25rem;
+  margin: 0 0 8px;
+}
+
+.retry-card .subtitle {
+  margin: 0 0 16px;
+  color: var(--subtle-text-color);
+  font-size: 1rem;
+}
+
+/* ================================
+   Actions and Buttons
+   ================================ */
+
+.retry-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start;
+  margin-top: 16px;
+}
+
+.retry-btn {
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: background-color 0.2s, opacity 0.2s;
+}
+
+.retry-btn.primary {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+.retry-btn.primary:hover:not(:disabled) {
+  background: #b71c1c;
+}
+
+.retry-btn.secondary {
+  background: var(--secondary-color);
+  color: var(--text-color);
+}
+
+.retry-btn.secondary:hover:not(:disabled) {
+  background: #e5e7eb;
+}
+
+.retry-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ================================
+   Loading Spinner
+   ================================ */
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid #e0e0e0;
+  border-top: 3px solid var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* ================================
+   Success/Loading/Error Toasts
+   (For a simpler, toast-like design if needed)
+   ================================ */
+
+.toast-message {
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1rem;
+  font-weight: 500;
+  direction: rtl;
+}
+
+.toast-message.success {
+  background: #f0fdf4;
+  border: 1px solid #22c55e;
+  color: #15803d;
+}
+
+.toast-message.error {
+  background: #fef2f2;
+  border: 1px solid #ef4444;
+  color: #dc2626;
+}
+
+.toast-message.loading {
+  background: #f0f9ff;
+  border: 1px solid #0ea5e9;
+  color: #0c4a6e;
 }

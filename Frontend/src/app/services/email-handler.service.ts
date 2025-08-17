@@ -587,18 +587,204 @@
 // }
 
 
-// src/app/services/email-handler.service.ts
+
+
+
+// // src/app/services/email-handler.service.ts
+// import { Injectable } from '@angular/core';
+// import { BehaviorSubject, Observable, EMPTY, defer } from 'rxjs';
+// import { HttpErrorResponse } from '@angular/common/http';
+// import { catchError, tap } from 'rxjs/operators';
+
+// /**
+//  * Back-compat state (old fields) + new fields.
+//  * Keep old names so existing templates/components don't break.
+//  */
+// export interface EmailHandlerState {
+//   // OLD fields (kept for compatibility)
+//   isLoading: boolean;
+//   message: string | null;
+//   showRetry: boolean;
+//   retryIdentifier: string | null;
+//   retryCallback: (() => void) | null;
+//   retryEmailFn: ((identifier: string) => Observable<any>) | null;
+//   emailAction: 'forgot_password' | 'general' | null;
+//   isCooldownActive: boolean; // no-op now
+//   cooldownSeconds: number;   // no-op now
+
+//   // NEW fields (recommended)
+//   visible: boolean;
+//   loading: boolean;
+//   success: boolean;
+//   errorMessage?: string;
+//   lastOpFactory?: () => Observable<unknown>;
+// }
+
+// @Injectable({ providedIn: 'root' })
+// export class EmailHandlerService {
+//   private readonly _state = new BehaviorSubject<EmailHandlerState>({
+//     // old
+//     isLoading: false,
+//     message: null,
+//     showRetry: false,
+//     retryIdentifier: null,
+//     retryCallback: null,
+//     retryEmailFn: null,
+//     emailAction: null,
+//     isCooldownActive: false,
+//     cooldownSeconds: 0,
+//     // new
+//     visible: false,
+//     loading: false,
+//     success: false,
+//     errorMessage: undefined,
+//     lastOpFactory: undefined
+//   });
+
+//   /** Stream for templates/components */
+//   readonly state$ = this._state.asObservable();
+
+//   /** NO-OP cooldown stream (kept only so old subscribers don't break) */
+//   private _retryCooldown = new BehaviorSubject<number>(0);
+//   readonly retryCooldown$ = this._retryCooldown.asObservable();
+
+//   // =========================
+//   // NEW, preferred API
+//   // =========================
+
+//   /**
+//    * Preferred usage:
+//    *   emailHandler.handle(() => http.post(...)).subscribe(...)
+//    * Optional retryFactory lets you switch to a dedicated /emails/retry endpoint on 422.
+//    */
+//   handle<T>(
+//     opFactory: () => Observable<T>,
+//     retryFactory?: () => Observable<unknown>
+//   ): Observable<T> {
+//     this.patch({
+//       loading: true, isLoading: true,
+//       visible: false, showRetry: false,
+//       success: false,
+//       errorMessage: undefined, message: null,
+//       lastOpFactory: undefined,
+//       // clear legacy retry info
+//       retryIdentifier: null,
+//       retryCallback: null,
+//       retryEmailFn: null
+//     });
+
+//     return defer(opFactory).pipe(
+//       tap(() => {
+//         this.patch({
+//           loading: false, isLoading: false,
+//           visible: false, showRetry: false,
+//           success: true,
+//           errorMessage: undefined, message: null
+//         });
+//       }),
+//       catchError((err: HttpErrorResponse) => {
+//         if (err.status === 422) {
+//           const msg = err.error?.message || err.error?.detail || 'שליחת המייל נכשלה זמנית. תרצה לנסות שוב?';
+//           this.patch({
+//             loading: false, isLoading: false,
+//             visible: true,  showRetry: true,
+//             success: false,
+//             errorMessage: msg, message: msg,
+//             lastOpFactory: retryFactory ?? opFactory
+//           });
+//           return EMPTY;
+//         }
+//         // Non-422 → close popup; let AuthInterceptor toast if needed
+//         this.patch({
+//           loading: false, isLoading: false,
+//           visible: false, showRetry: false,
+//           success: false
+//         });
+//         return defer(() => { throw err; });
+//       })
+//     );
+//   }
+
+//   /** Re-run last failed op (if any). */
+//   retry(): void {
+//     const f = this._state.value.lastOpFactory;
+//     if (!f) return;
+//     this.handle(f).subscribe({ next: () => {}, error: () => {} });
+//   }
+
+//   /** Hide popup / clear error. */
+//   reset(): void {
+//     this.patch({
+//       visible: false, showRetry: false,
+//       errorMessage: undefined, message: null,
+//       lastOpFactory: undefined,
+//       loading: false, isLoading: false
+//     });
+//   }
+
+//   // =========================
+//   // BACK-COMPAT API (kept)
+//   // =========================
+
+//   /**
+//    * Old signature (still supported):
+//    * handleEmailOperation(apiCall$, retryCallback?, retryIdentifier?, retryEmailFn?, emailAction?)
+//    * - If retryEmailFn+identifier are provided, we'll prefer them for the retry.
+//    * - Otherwise we retry the same operation.
+//    */
+//   handleEmailOperation<T>(
+//     apiCall$: Observable<T>,
+//     retryCallback?: () => void,
+//     retryIdentifier?: string | null,
+//     retryEmailFn?: (identifier: string) => Observable<any>,
+//     emailAction: 'forgot_password' | 'general' = 'general'
+//   ): Observable<T> {
+//     // build factories so retries create fresh requests
+//     const opFactory = () => apiCall$;
+//     const retryFactory = (retryEmailFn && retryIdentifier)
+//       ? () => retryEmailFn(retryIdentifier)
+//       : opFactory;
+
+//     // store some legacy metadata for any component that reads it
+//     this.patch({ emailAction, retryIdentifier: retryIdentifier ?? null, retryCallback: retryCallback ?? null, retryEmailFn: retryEmailFn ?? null });
+
+//     // run through the new engine
+//     const result$ = this.handle(opFactory, retryFactory);
+
+//     // If someone relies on retryCallback instead of our internal retry,
+//     // keep it available via state.retryCallback (we still recommend calling service.retry()).
+//     return result$;
+//   }
+
+//   /** Old alias kept so existing code compiles */
+//   closeRetryToast(): void { this.reset(); }
+
+//   /** Old getters (kept) */
+//   getState(): Observable<EmailHandlerState> { return this.state$; }
+//   getCurrentState(): EmailHandlerState { return this._state.value; }
+
+//   // =========================
+//   // internals
+//   // =========================
+//   private patch(p: Partial<EmailHandlerState>) {
+//     this._state.next({ ...this._state.value, ...p });
+//   }
+// }
+
+
+
+
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, EMPTY, defer } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
+import { BehaviorSubject, Observable, EMPTY, defer } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 
 /**
  * Back-compat state (old fields) + new fields.
- * Keep old names so existing templates/components don't break.
+ * Kept to avoid breaking existing components/templates.
  */
 export interface EmailHandlerState {
-  // OLD fields (kept for compatibility)
+  // OLD fields (compat)
   isLoading: boolean;
   message: string | null;
   showRetry: boolean;
@@ -606,10 +792,10 @@ export interface EmailHandlerState {
   retryCallback: (() => void) | null;
   retryEmailFn: ((identifier: string) => Observable<any>) | null;
   emailAction: 'forgot_password' | 'general' | null;
-  isCooldownActive: boolean; // no-op now
-  cooldownSeconds: number;   // no-op now
+  isCooldownActive: boolean; // no-op (kept for compat)
+  cooldownSeconds: number;   // no-op (kept for compat)
 
-  // NEW fields (recommended)
+  // NEW fields (preferred)
   visible: boolean;
   loading: boolean;
   success: boolean;
@@ -638,10 +824,10 @@ export class EmailHandlerService {
     lastOpFactory: undefined
   });
 
-  /** Stream for templates/components */
+  /** Public state stream */
   readonly state$ = this._state.asObservable();
 
-  /** NO-OP cooldown stream (kept only so old subscribers don't break) */
+  /** NO-OP cooldown stream (kept so old subscribers don’t break) */
   private _retryCooldown = new BehaviorSubject<number>(0);
   readonly retryCooldown$ = this._retryCooldown.asObservable();
 
@@ -650,16 +836,17 @@ export class EmailHandlerService {
   // =========================
 
   /**
-   * Preferred usage:
+   * Wrap any email op so 422 opens the retry UI.
+   * Usage:
    *   emailHandler.handle(() => http.post(...)).subscribe(...)
-   * Optional retryFactory lets you switch to a dedicated /emails/retry endpoint on 422.
+   * Optionally pass a retryFactory to call a dedicated /emails/retry endpoint.
    */
   handle<T>(
     opFactory: () => Observable<T>,
     retryFactory?: () => Observable<unknown>
   ): Observable<T> {
     this.patch({
-      loading: true, isLoading: true,
+      loading: true,  isLoading: true,
       visible: false, showRetry: false,
       success: false,
       errorMessage: undefined, message: null,
@@ -680,34 +867,65 @@ export class EmailHandlerService {
         });
       }),
       catchError((err: HttpErrorResponse) => {
-        if (err.status === 422) {
+        const isRetryable422 = err.status === 422;
+        if (isRetryable422) {
+          const serverId = err.error?.retry_info?.identifier_id ?? null;
           const msg = err.error?.message || err.error?.detail || 'שליחת המייל נכשלה זמנית. תרצה לנסות שוב?';
+
           this.patch({
             loading: false, isLoading: false,
             visible: true,  showRetry: true,
             success: false,
             errorMessage: msg, message: msg,
-            lastOpFactory: retryFactory ?? opFactory
+
+            // store the server-provided identifier for retry
+            retryIdentifier: serverId,
+
+            // keep any provided retry function so we can call it with the server id
+            // (handleEmailOperation stores retryEmailFn on the state before calling handle())
+            // @ts-ignore - this._state value has retryEmailFn (compat)
+            retryEmailFn: this._state.value.retryEmailFn ?? null,
+
+            // Fallback for retry: if we have serverId+retryEmailFn use that,
+            // else retry the original opFactory (or a provided retryFactory)
+            lastOpFactory:
+              serverId && this._state.value.retryEmailFn
+                ? () => this._state.value.retryEmailFn!(serverId)
+                : (retryFactory ?? opFactory)
           });
+
+          // Complete quietly so components don't need special error handling
           return EMPTY;
         }
+
         // Non-422 → close popup; let AuthInterceptor toast if needed
         this.patch({
           loading: false, isLoading: false,
           visible: false, showRetry: false,
           success: false
         });
-        return defer(() => { throw err; });
+        throw err;
       })
     );
   }
 
-  /** Re-run last failed op (if any). */
+  /** Re-run the last failed op (if any). */
   retry(): void {
-    const f = this._state.value.lastOpFactory;
-    if (!f) return;
-    this.handle(f).subscribe({ next: () => {}, error: () => {} });
+    const s = this._state.value;
+
+    if (s.retryIdentifier && s.retryEmailFn) {
+      // Call the backend /emails/retry endpoint with the server-provided id
+      s.retryEmailFn(s.retryIdentifier).subscribe({
+        next: () => this.reset(),
+        error: () => this.patch({ visible: true, showRetry: true }) // keep popup open on failure
+      });
+      return;
+    }
+
+    const f = s.lastOpFactory;
+    if (f) this.handle(f).subscribe({ next: () => {}, error: () => {} });
   }
+
 
   /** Hide popup / clear error. */
   reset(): void {
@@ -736,21 +954,20 @@ export class EmailHandlerService {
     retryEmailFn?: (identifier: string) => Observable<any>,
     emailAction: 'forgot_password' | 'general' = 'general'
   ): Observable<T> {
-    // build factories so retries create fresh requests
     const opFactory = () => apiCall$;
     const retryFactory = (retryEmailFn && retryIdentifier)
       ? () => retryEmailFn(retryIdentifier)
       : opFactory;
 
-    // store some legacy metadata for any component that reads it
-    this.patch({ emailAction, retryIdentifier: retryIdentifier ?? null, retryCallback: retryCallback ?? null, retryEmailFn: retryEmailFn ?? null });
+    // store legacy metadata for any code that reads it
+    this.patch({
+      emailAction,
+      retryIdentifier: retryIdentifier ?? null,
+      retryCallback: retryCallback ?? null,
+      retryEmailFn: retryEmailFn ?? null
+    });
 
-    // run through the new engine
-    const result$ = this.handle(opFactory, retryFactory);
-
-    // If someone relies on retryCallback instead of our internal retry,
-    // keep it available via state.retryCallback (we still recommend calling service.retry()).
-    return result$;
+    return this.handle(opFactory, retryFactory);
   }
 
   /** Old alias kept so existing code compiles */
