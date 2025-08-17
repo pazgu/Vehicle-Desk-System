@@ -3,13 +3,14 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { CommonModule } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-reset-password',
   templateUrl: './reset-password.component.html',
   styleUrls: ['./reset-password.component.css'],
 
-  imports:[CommonModule,ReactiveFormsModule]
+  imports:[CommonModule,ReactiveFormsModule,MatIconModule]
 })
 export class ResetPasswordComponent implements OnInit {
   resetForm!: FormGroup;
@@ -17,7 +18,8 @@ export class ResetPasswordComponent implements OnInit {
   message = '';
   error = '';
   token: string = '';
-
+  showPassword = false;
+  showConfirmPassword= false;
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
@@ -38,7 +40,12 @@ export class ResetPasswordComponent implements OnInit {
   get f() {
     return this.resetForm.controls;
   }
-
+ togglePassword() {
+    this.showPassword = !this.showPassword;
+  }
+   toggleConfirmPassword() {
+    this.showConfirmPassword = !this.showConfirmPassword;
+  }
   passwordsMatch(form: FormGroup) {
     return form.get('password')?.value === form.get('confirmPassword')?.value
       ? null : { mismatch: true };
