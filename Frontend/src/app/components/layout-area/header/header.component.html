@@ -10,9 +10,17 @@
   <div class="navbar">
     <div class="nav-left">
       <div class="user-menu-container">
-          <a routerLink="/login" routerLinkActive="active">
-            <img src="/assets/images/user-icon.png" alt="User Icon" />
-          </a>
+          <div class="user-icon-container">
+    
+    <a *ngIf="!isLoggedIn" routerLink="/login" routerLinkActive="active">
+      <img src="/assets/images/user-icon.png" alt="User Icon" />
+    </a>
+    
+   
+    <div *ngIf="isLoggedIn" class="user-icon-logged-in">
+      <img src="/assets/images/user-icon.png" alt="User Icon" />
+    </div>
+  </div>
               <ul class="user-dropdown">
 
                   <!-- If not logged in -->
