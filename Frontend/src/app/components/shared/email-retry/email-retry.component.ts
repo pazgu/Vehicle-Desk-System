@@ -1,8 +1,6 @@
-// // src/app/components/email-retry/email-retry.component.ts
-// import { Component } from '@angular/core';
+// import { Component, HostListener } from '@angular/core';
 // import { CommonModule } from '@angular/common';
-// import { Observable } from 'rxjs';
-// import { EmailHandlerService, EmailHandlerState } from '../../../services/email-handler.service';
+// import { EmailHandlerService } from '../../../services/email-handler.service';
 
 // @Component({
 //   selector: 'app-email-retry',
@@ -12,88 +10,22 @@
 //   styleUrls: ['./email-retry.component.css']
 // })
 // export class EmailRetryComponent {
-//   public state$: Observable<EmailHandlerState>;
-//   public retryCooldown$: Observable<number>;
+//   constructor(private emailHandlerService: EmailHandlerService) {}
+//   get state$() { return this.emailHandlerService.state$; }
+//   onRetry() { this.emailHandlerService.retry(); }
+//   onClose() { this.emailHandlerService.reset(); }
 
-//   constructor(private emailHandlerService: EmailHandlerService) {
-//     this.state$ = this.emailHandlerService.state$;
-//     this.retryCooldown$ = this.emailHandlerService.retryCooldown$;
-//   }
-
-//   onRetry(): void {
-//     this.emailHandlerService.retry();
-//   }
-
-//   onClose(): void {
-//     this.emailHandlerService.closeRetryToast();
+//   @HostListener('document:keydown', ['$event'])
+//   onKeydown(e: KeyboardEvent) {
+//     if (e.key === 'Escape') this.onClose();
+//     if (e.key === 'Enter') this.onRetry();
 //   }
 // }
-
-
-
-
-
-// // src/app/components/email-retry/email-retry.component.ts
-// import { Component, OnInit, OnDestroy } from '@angular/core';
-// import { CommonModule } from '@angular/common';
-// import { Observable, Subscription } from 'rxjs';
-// import { EmailHandlerService, EmailHandlerState } from '../../../services/email-handler.service';
-
-// @Component({
-//   selector: 'app-email-retry',
-//   standalone: true,
-//   imports: [CommonModule],
-//   templateUrl: './email-retry.component.html',
-//   styleUrls: ['./email-retry.component.css']
-// })
-// export class EmailRetryComponent implements OnInit, OnDestroy {
-//   public state$: Observable<EmailHandlerState>;
-//   public retryCooldown$: Observable<number>;
-//   private subscription?: Subscription;
-
-//   constructor(private emailHandlerService: EmailHandlerService) {
-//     this.state$ = this.emailHandlerService.getState();
-//     this.retryCooldown$ = this.emailHandlerService.retryCooldown$;
-//   }
-
-//   ngOnInit() {
-//     console.log('🔄 Email Retry Component - INITIALIZED');
-    
-//     // Debug subscription to see state changes
-//     this.subscription = this.state$.subscribe(state => {
-//       console.log('🔄 Email Retry Component - State changed:', {
-//         showRetry: state.showRetry,
-//         message: state.message,
-//         isLoading: state.isLoading,
-//         isCooldownActive: state.isCooldownActive,
-//         cooldownSeconds: state.cooldownSeconds
-//       });
-//     });
-//   }
-
-//   ngOnDestroy() {
-//     console.log('🔄 Email Retry Component - DESTROYED');
-//     this.subscription?.unsubscribe();
-//   }
-
-//   onRetry(): void {
-//     console.log('🔄 Retry button clicked');
-//     this.emailHandlerService.retry();
-//   }
-
-//   onClose(): void {
-//     console.log('🔄 Close button clicked');
-//     this.emailHandlerService.closeRetryToast();
-//   }
-// }
-
-
-
-
 
 import { Component, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { EmailHandlerService } from '../../../services/email-handler.service';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-email-retry',
@@ -103,14 +35,83 @@ import { EmailHandlerService } from '../../../services/email-handler.service';
   styleUrls: ['./email-retry.component.css']
 })
 export class EmailRetryComponent {
-  constructor(private emailHandlerService: EmailHandlerService) {}
-  get state$() { return this.emailHandlerService.state$; }
-  onRetry() { this.emailHandlerService.retry(); }
-  onClose() { this.emailHandlerService.reset(); }
+  constructor(
+    private emailHandlerService: EmailHandlerService,
+    private toastService: ToastService
+  ) {}
+
+  get state$() { 
+    return this.emailHandlerService.state$; 
+  }
+
+  onRetry() { 
+    this.emailHandlerService.retry(); 
+  }
+
+  onClose() { 
+    this.emailHandlerService.reset(); 
+  }
+
+  // Map error messages to more specific Hebrew messages
+  getErrorMessage(message: string | null | undefined): string {
+    if (!message) {
+      return 'אירעה תקלה זמנית. תרצה לנסות שוב?';
+    }
+
+    const lowerMessage = message.toLowerCase();
+    
+    // Check for specific error patterns in English
+    if (lowerMessage.includes('could not send the password reset email') ||
+        lowerMessage.includes('password reset email')) {
+      return 'לא ניתן לשלוח מייל איפוס סיסמה, נסה שנית מאוחר יותר';
+    }
+    
+    if (lowerMessage.includes('user not found') || 
+        lowerMessage.includes('email not found') || 
+        lowerMessage.includes('not exist') ||
+        lowerMessage.includes('לא נמצא')) {
+      return 'כתובת האימייל לא קיימת במערכת. אנא בדוק את הכתובת ונסה שוב.';
+    }
+    
+    if (lowerMessage.includes('invalid email') || 
+        lowerMessage.includes('email format') ||
+        lowerMessage.includes('לא תקין')) {
+      return 'כתובת האימייל לא תקינה. אנא בדוק את הכתובת ונסה שוב.';
+    }
+    
+    if (lowerMessage.includes('rate limit') || 
+        lowerMessage.includes('too many') ||
+        lowerMessage.includes('יותר מדי')) {
+      return 'נשלחו יותר מדי בקשות. אנא המתן מספר דקות ונסה שוב.';
+    }
+    
+    if (lowerMessage.includes('server error') || 
+        lowerMessage.includes('internal error') ||
+        lowerMessage.includes('שרת')) {
+      return 'אירעה שגיאת שרת זמנית. אנא נסה שוב בעוד מספר דקות.';
+    }
+    
+    if (lowerMessage.includes('network') || 
+        lowerMessage.includes('connection') ||
+        lowerMessage.includes('רשת')) {
+      return 'בעיית חיבור לאינטרנט. אנא בדוק את החיבור ונסה שוב.';
+    }
+
+    // If no specific pattern matches, return the original message or a default
+    return message || 'אירעה תקלה זמנית. תרצה לנסות שוב?';
+  }
 
   @HostListener('document:keydown', ['$event'])
   onKeydown(e: KeyboardEvent) {
-    if (e.key === 'Escape') this.onClose();
-    if (e.key === 'Enter') this.onRetry();
+    const state = this.emailHandlerService.getCurrentState();
+    if (state.visible || state.showRetry) {
+      if (e.key === 'Escape') {
+        this.onClose();
+      }
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        this.onRetry();
+      }
+    }
   }
 }

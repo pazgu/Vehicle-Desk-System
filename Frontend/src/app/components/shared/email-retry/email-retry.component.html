@@ -1,89 +1,4 @@
-<!-- email-retry.component.html
-<div *ngIf="state$ | async as state" class="email-retry-container">
-  <div class="debug-info" *ngIf="true">
-    🐛 DEBUG - showRetry: {{state.showRetry}}, message: {{state.message}}
-  </div>
-  
-  <div *ngIf="state.isLoading" class="loading-message">
-    <div class="spinner"></div>
-    <span>שולח...</span>
-  </div>
-
-  <div *ngIf="state.message && !state.showRetry && !state.isLoading" 
-       class="success-message">
-    {{state.message}}
-  </div>
-
-  <div *ngIf="state.showRetry" class="retry-toast">
-    <div class="retry-content">
-      <div class="retry-message">
-        {{state.message || 'שגיאה בשליחת האימייל. נסה שוב.'}}
-      </div>
-      
-      <div class="retry-actions">
-        <button 
-          *ngIf="!state.isCooldownActive"
-          (click)="onRetry()" 
-          class="retry-btn">
-          נסה שוב
-        </button>
-        
-        <button 
-          *ngIf="state.isCooldownActive"
-          disabled
-          class="retry-btn disabled">
-          המתן שניות...
-        </button>
-        
-        <button (click)="onDismiss()" class="dismiss-btn">
-          סגור
-        </button>
-      </div>
-    </div>
-  </div>
-</div> -->
-
-
-
-
-<!-- <ng-container *ngIf="state$ | async as s">
-
-  <div class="loading-overlay" *ngIf="s.loading || s.isLoading">
-    <div class="spinner"></div>
-    <p>שולח בקשה...</p>
-  </div>
-
-  <div
-    class="retry-toast"
-    *ngIf="(s.visible || s.showRetry) && !(s.loading || s.isLoading)"
-    role="alertdialog"
-    aria-live="assertive"
-    aria-labelledby="emailRetryTitle"
-    aria-describedby="emailRetryMsg"
-  >
-    <div class="toast-content">
-      <span class="error-icon" aria-hidden="true">⚠️</span>
-      <div>
-        <h3 id="emailRetryTitle">שליחת המייל נכשלה</h3>
-        <p id="emailRetryMsg" class="message-text">
-          {{ s.errorMessage || s.message || 'אירעה תקלה זמנית. תרצה לנסות שוב?' }}
-        </p>
-      </div>
-    </div>
-
-    <div class="toast-actions">
-      <button class="retry-button" (click)="onRetry()" [disabled]="!s.lastOpFactory">נסה שוב</button>
-      <button class="close-button" (click)="onClose()" aria-label="סגור">×</button>
-    </div>
-  </div>
-
-
-</ng-container>
-
- -->
-
-
- <ng-container *ngIf="state$ | async as s">
+ <!-- <ng-container *ngIf="state$ | async as s">
   <div
     class="retry-toast"
     *ngIf="(s.visible || s.showRetry)"
@@ -117,6 +32,48 @@
           aria-label="סגור"
         >
           סגור
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-container> -->
+
+
+
+<ng-container *ngIf="state$ | async as s">
+  <div
+    class="retry-toast-overlay"
+    *ngIf="(s.visible || s.showRetry)"
+    role="alertdialog"
+    aria-live="assertive"
+    aria-labelledby="emailRetryTitle"
+    aria-describedby="emailRetryMsg"
+  >
+    <div class="retry-toast-card" role="document">
+      <button
+        class="close-btn"
+        (click)="onClose()"
+        aria-label="סגור"
+      >
+        ✕
+      </button>
+
+      <div class="toast-header">
+        <span class="error-icon" aria-hidden="true">⚠️</span>
+        <span class="toast-title" id="emailRetryTitle">שליחת המייל נכשלה</span>
+      </div>
+
+      <p class="toast-message" id="emailRetryMsg">
+        {{ getErrorMessage(s.errorMessage || s.message) }}
+      </p>
+
+      <div class="toast-actions">
+        <button
+          class="retry-btn"
+          (click)="onRetry()"
+          [disabled]="!s.lastOpFactory && !s.retryEmailFn"
+        >
+          נסה שוב
         </button>
       </div>
     </div>
