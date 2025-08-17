@@ -57,7 +57,7 @@ class RideResponse(BaseModel):
     plate_number: str
     extra_stops: Optional[List[UUID]] = None 
     is_extended_request: Optional[bool] = False
-
+    vehicle_model:Optional[str]= None
 
 class RideWithWarningResponse(RideResponse):
     inspector_warning: bool
