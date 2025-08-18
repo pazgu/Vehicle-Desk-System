@@ -49,7 +49,6 @@ export class AuditLogsComponent implements OnInit {
   customFromDate: string = '';
   customToDate: string = '';
 
-  problematicOnly: boolean = false;
   showExceededQuotaOnly: boolean = false; // <-- NEW
   filtersCollapsed = true;
 
@@ -262,7 +261,7 @@ formatRouteFromChangeData(changeData: any): string {
   // In AuditLogsComponent, inside fetchAuditLogs method
   fetchAuditLogs(fromDate?: string, toDate?: string) {
     this.loading = true;
-    this.auditLogService.getAuditLogs(fromDate, toDate, this.problematicOnly).subscribe({
+    this.auditLogService.getAuditLogs(fromDate, toDate).subscribe({
       next: (data) => {
         // Ensure data is an array before sorting/spreading
         this.logs = Array.isArray(data) ? data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()) : [];
