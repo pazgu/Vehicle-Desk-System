@@ -345,11 +345,11 @@
                   </div>
                 </ng-container>
 
-                <ng-container *ngIf="'vehicle_type_reason' in selectedLog.change_data">
+                <ng-container *ngIf="'four_by_four_reasonn' in selectedLog.change_data">
                   <div class="field-row">
-                    <div class="field-label">{{ getRideFieldLabel('vehicle_type_reason') }}</div>
+                    <div class="field-label">{{ getRideFieldLabel('four_by_four_reasonn') }}</div>
                     <div class="field-value">
-                      {{ selectedLog.change_data.vehicle_type_reason || '-' }}
+                      {{ selectedLog.change_data.four_by_four_reasonn || '-' }}
                     </div>
                   </div>
                 </ng-container>
@@ -384,7 +384,7 @@
                 <ng-container *ngFor="let key of objectKeys(selectedLog.change_data)">
                   <ng-container *ngIf="
       !['id', 'start_location', 'stop', 'destination', 'extra_stops', 'user_id', 'vehicle_id', 'override_user_id',
-      'actual_pickup_time', 'feedback_submitted', 'rejection_reason', 'completion_date', 'isArchive', 'emergency_event', 'vehicle_type_reason',
+      'actual_pickup_time', 'feedback_submitted', 'rejection_reason', 'completion_date', 'isArchive', 'emergency_event', 'four_by_four_reasonn',
       'start_datetime', 'end_datetime', 'submitted_at'].includes(key) && selectedLog.change_data[key]
     ">
                     <div class="field-row">
