@@ -13,10 +13,6 @@
           <button class="collapse-btn" (click)="filtersCollapsed = !filtersCollapsed">
             {{ filtersCollapsed ? 'הצג אפשרויות סינון וייצוא' : 'הסתר אפשרויות סינון וייצוא' }}
           </button>
-          <label class="problematic-only-label">
-            <input type="checkbox" [(ngModel)]="problematicOnly" (change)="fetchAuditLogs()" />
-            הצג רק בדיקות עם בעיות
-          </label>
           <label class="exceeded-monthly-trip-quota-label">
             <input type="checkbox" [(ngModel)]="showExceededQuotaOnly" (change)="fetchAuditLogs()" />
             הצג חריגות מהמכסה החודשית
@@ -25,7 +21,7 @@
       </div>
 
       <div *ngIf="showFilters" class="search-container">
-        <input type="text" class="audit-search-input" placeholder="חיפוש לפי סוג פעולה, סוג ישות, מבצע הפעולה"
+        <input type="text" class="audit-search-input" placeholder="חיפוש לפי סוג פעולה, סוג ישות, שם מבצע הפעולה"
           [(ngModel)]="searchTerm" (input)="filterLogs()" />
       </div>
 
