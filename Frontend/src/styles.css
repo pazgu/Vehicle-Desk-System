@@ -5,6 +5,7 @@
   padding: 0;
   box-sizing: border-box;
   font-family: 'Alef', sans-serif;
+  
 }
 
 
@@ -150,7 +151,6 @@ html, body {
 
 body {
   direction: rtl;
-  background-image: url('/assets/images/notifications-bg.png');
   background-size: cover;
   background-repeat: repeat;
   background-attachment: fixed;
@@ -158,14 +158,4 @@ body {
   font-family: 'Alef', sans-serif;
 }
 
-/* Background for Add User page */
-app-add-new-user {
-  display: block;
-  min-height: 100vh;
-  background-image: url('/assets/images/add-user.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-}
 
