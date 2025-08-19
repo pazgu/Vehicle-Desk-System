@@ -91,9 +91,9 @@
     <a *ngIf="(role$ | async) === 'employee'" [routerLink]="['/home']" class="nav-link" href="#">הזמנה חדשה</a>
 </li>
  
-<li>
+<!-- <li>
     <a *ngIf="(role$ | async) === 'inspector'" [routerLink]="['/inspector/vehicles']" class="nav-link">סטטוס רכבים </a>
-  </li>
+  </li> -->
   <li>
     <a *ngIf="(role$ | async) === 'inspector'" [routerLink]="['/inspector/inspection']" class="nav-link">בדיקת רכבים <br> יומית </a>
     </li>
@@ -130,7 +130,7 @@
     <a *ngIf="(role$ | async) === 'employee'" [routerLink]="['/all-rides']" class="nav-link" href="#">ההזמנות שלי</a>
 
     <!-- inspector routes -->
-    <a *ngIf="(role$ | async) === 'inspector'" [routerLink]="['/inspector/vehicles']" class="nav-link">סטטוס רכבים |</a>
+    <!-- <a *ngIf="(role$ | async) === 'inspector'" [routerLink]="['/inspector/vehicles']" class="nav-link">סטטוס רכבים |</a> -->
     <a *ngIf="(role$ | async) === 'inspector'" [routerLink]="['/inspector/inspection']" class="nav-link">בדיקת רכבים יומית |</a>
     <a *ngIf="(role$ | async) === 'inspector'" [routerLink]="['/vehicle-dashboard']" class="nav-link"> רשימת רכבים </a>
 

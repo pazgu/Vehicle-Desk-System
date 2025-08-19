@@ -1,15 +1,7 @@
 <div class="analytics-container">
   <div class="chart-card">
     <!-- SORT DROPDOWN -->
-    <div class="sort-container inside-card">
-      <label for="sortSelect">מיין לפי:</label>
-      <select id="sortSelect" [(ngModel)]="selectedSortOption" (change)="onSortChange()">
-        <option value="default">ברירת מחדל</option>
-        <option value="countAsc">כמות - עולה</option>
-        <option value="countDesc">כמות - יורד</option>
-        <option value="alphabetical">א-ת</option>
-      </select>
-    </div>
+    
 
     <div class="export-buttons">
       <button (click)="exportCSV()">📁 ייצוא CSV</button>
@@ -32,17 +24,24 @@
    <button [class.active]="activeTabIndex === 2" (click)="activeTabIndex = 2">
   שימוש חודשי ברכבים
 </button>
-  <button [class.active]="activeTabIndex === 3" (click)="activeTabIndex = 3">
-    טבלת משתמשים נעדרים
-  </button>
+ 
   <button [class.active]="activeTabIndex === 4" (click)="activeTabIndex = 4">
-  ספירת נעדרים לפי משתמש
+  ספירת נעדרים 
 </button>
 
 
 </div>
 
 <p-tabView [(activeIndex)]="activeTabIndex">
+  <div class="sort-container" *ngIf="activeTabIndex==0 || activeTabIndex==1">
+      <label for="sortSelect">מיין לפי: </label>
+      <select id="sortSelect" [(ngModel)]="selectedSortOption" (change)="onSortChange()">
+        <option value="default">ברירת מחדל</option>
+        <option value="countAsc">כמות - עולה</option>
+        <option value="countDesc">כמות - יורד</option>
+        <option value="alphabetical">א-ת</option>
+      </select>
+    </div>
   <p-tabPanel header=" " [headerStyle]="{ display: 'none' }">
     <div>
           <h3 class="section-heading">פילוח סטטוס רכבים</h3>
@@ -140,35 +139,12 @@
   <!-- No‑Show Analytics Tab -->
   <p-tabPanel header=" " [headerStyle]="{ display: 'none' }">
     <div>
-      <h3 class="section-heading">סטטיסטיקות אי-הגעה</h3>
 
-      <!-- Date Range Filter -->
-      <div class="date-filter-container">
-        <label>מתאריך:</label>
-        <input type="date" [(ngModel)]="noShowFromDate" (change)="loadNoShowStatistics()">
-        <label>עד תאריך:</label>
-        <input type="date" [(ngModel)]="noShowToDate" (change)="loadNoShowStatistics()">
-      </div>
+  
 <!-- Enhanced Summary Cards -->
-<div class="summary-cards">
-  <div class="card">
-    <div class="card-icon">📊</div>
-    <div class="card-content">
-      <div class="card-number">{{ totalNoShows }}</div>
-      <div class="card-label">סה"כ אי-הגעות</div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-icon">👥</div>
-    <div class="card-content">
-      <div class="card-number">{{ uniqueNoShowUsers }}</div>
-      <div class="card-label">משתמשים שונים</div>
-    </div>
-  </div>
-</div>
 
 <!-- Enhanced Table with Container -->
-<div class="table-container" *ngIf="topNoShowUsers && topNoShowUsers.length > 0; else noDataTemplate">
+<!-- <div class="table-container" *ngIf="topNoShowUsers && topNoShowUsers.length > 0; else noDataTemplate">
   <table class="styled-table">
     <thead>
       <tr>
@@ -190,7 +166,7 @@
       </tr>
     </tbody>
   </table>
-</div>
+</div> -->
 
 <!-- No Data Template -->
 <ng-template #noDataTemplate>
@@ -210,6 +186,7 @@
 
     <!-- FILTERS -->
     <div class="filter-controls">
+      <div style="display: flex; flex-direction: column; gap:5px;">
       <label>
         <input type="checkbox" [(ngModel)]="filterOnePlus" (change)="applyNoShowFilter()" />
         הצג משתמשים עם 1-2 נעדרים
@@ -218,18 +195,39 @@
         <input type="checkbox" [(ngModel)]="filterCritical" (change)="applyNoShowFilter()" />
         הצג משתמשים עם 3+ נעדרים (קריטי)
       </label>
-    </div>
+      </div>
+         <div class="sort-container">
+      <label>מיין לפי: </label>
 
-    <!-- SORTING -->
-    <div class="sort-container">
-      <label>מיין לפי:</label>
-    <select [(ngModel)]="selectedSortOption" (change)="applyNoShowFilter()">
+    <select [(ngModel)]="noShowSortOption" (change)="applyNoShowFilter()">
+
         <option value="countAsc">כמות נעדרים ↑</option>
         <option value="countDesc">כמות נעדרים ↓</option>
         <option value="nameAsc">שם ↑</option>
         <option value="nameDesc">שם ↓</option>
+
       </select>
     </div>
+    </div>
+
+    <!-- SORTING -->
+ 
+<div class="summary-cards">
+  <div class="card">
+    <div class="card-icon">📊</div>
+    <div class="card-content">
+      <div class="card-number">{{ totalNoShows }}</div>
+      <div class="card-label">סה"כ אי-הגעות</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-icon">👥</div>
+    <div class="card-content">
+      <div class="card-number">{{ uniqueNoShowUsers }}</div>
+      <div class="card-label">סה"כ משתמשים שלא הגיעו </div>
+    </div>
+  </div>
+</div>
 
     <!-- TABLE -->
     <div class="table-container">
