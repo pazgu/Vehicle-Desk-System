@@ -988,7 +988,6 @@ input[type="checkbox"] {
 }
 
 .collapse-btn,
-.problematic-only-label,
 .exceeded-monthly-trip-quota-label {
   background: none;
   border: 1px solid #942222;
@@ -1004,18 +1003,8 @@ input[type="checkbox"] {
   height: 40px;
 }
 
-.collapse-btn:hover,
-.problematic-only-label:hover {
+.collapse-btn:hover:hover {
   background: #942222;
   color: white;
   transform: translateY(-2px);
-}
-
-.problematic-only-label input[type="checkbox"] {
-  accent-color: #942222;
-  margin-left: 8px;
-  margin-right: 0;
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
 }
