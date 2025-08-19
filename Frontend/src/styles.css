@@ -5,6 +5,7 @@
   padding: 0;
   box-sizing: border-box;
   font-family: 'Alef', sans-serif;
+  
 }
 
 
@@ -157,8 +158,4 @@ body {
   font-family: 'Alef', sans-serif;
 }
 
-/* app-add-new-user {
-  min-height: 100vh;
-  background-size: cover;
-} */
 

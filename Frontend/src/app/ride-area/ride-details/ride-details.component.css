@@ -1,9 +1,22 @@
+.all-ride-details{
+  /* background-image: url('../../../../public/assets/images/ride_details.png'); */
+  background-image: url('/assets/images/ride_details.png');
+  background-color: #d22525e6;
+  background-size: cover;
+  background-position: center top;
+  height: auto;
+  padding-top: 40px;
+  margin: 0;
+
+}
+
 .ride-card {
   direction: rtl;
-  background-color: rgba(255, 251, 251, 1);
+  position: relative;
+  background-color: rgba(255, 255, 255, 0.9);
   border-radius: 16px;
   padding: 32px;
-  margin: 40px auto;
+  margin: 0 auto 40px; 
   max-width: 650px;
   font-family: var(--font-family-alef);
   color: var(--text-rgb-107-26-26);
