@@ -19,61 +19,44 @@
   </div>
 
   <!-- Inspections Table -->
-  <ng-container *ngIf="filteredInspections.length > 0">
-    <h2 style="text-align: right; color: #942222; margin-top: 2rem; margin-bottom: 1rem;">בדיקות רכבים</h2>
-    <table class="inspection-table">
-      <thead>
-        <tr>
-          <th>תאריך</th>
-          <th>בודק</th>
-          <th>נקי</th>
-          <th>מתודלק</th>
-          <th>אין חפצים</th>
-          <th>בעיה קריטית</th>
-          <th>הערות</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let insp of filteredInspections">
-          <td>{{ insp.inspection_date | date: 'short' }}</td>
-          <td>{{ insp.inspected_by_name || '—' }}</td>
-          <td>{{ insp.clean ? '✔️' : '❌' }}</td>
-          <td>{{ insp.fuel_checked ? '❌' : '✔️' }}</td>
-          <td>{{ insp.no_items_left ? '✔️' : '❌' }}</td>
-          <td>{{ insp.critical_issue_bool ? 'כן' : 'לא' }}</td>
-          <td>{{ insp.issues_found || '—' }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </ng-container>
+  <div class="table"></div>
+  <h2 style="text-align: right; color: #942222; margin-top: 0.5rem; margin-bottom: 1rem;">בדיקות רכבים</h2>
+  <table class="inspection-table">
+    <thead>
+      <tr>
+        <th>תאריך</th>
+        <th>בודק</th>
+        <th>נקי</th>
+        <th>מתודלק</th>
+        <th>אין חפצים</th>
+        <th>בעיה קריטית</th>
+        <th>הערות</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let insp of pagedInspections">
+        <td>{{ insp.inspection_date | date: 'short' }}</td>
+        <td>{{ insp.inspected_by_name || '—' }}</td>
+        <td>{{ insp.clean ? '✔️' : '❌' }}</td>
+        <td>{{ insp.fuel_checked ? '❌' : '✔️' }}</td>
+        <td>{{ insp.no_items_left ? '✔️' : '❌' }}</td>
+        <td>{{ insp.critical_issue_bool ? 'כן' : 'לא' }}</td>
+        <td>{{ insp.issues_found || '—' }}</td>
+      </tr>
+      <tr *ngIf="filteredInspections.length === 0 && !loading">
+        <td colspan="7" class="empty-state">לא נמצאו בדיקות רכב</td>
+      </tr>
+    </tbody>
+  </table>
 
-  <!-- Rides Table -->
-  <ng-container *ngIf="rides.length > 0">
-    <h2 style="text-align: right; color: #942222; margin-top: 2rem; margin-bottom: 1rem;">נסיעות עם אירוע חירום</h2>
-    <table class="inspection-table">
-      <thead>
-        <tr>
-          <th>מזהה נסיעה</th>
-          <th>תאריך התחלה</th>
-          <th>נהג</th>
-          <th>סטטוס</th>
-          <th>מרחק בפועל (ק"מ)</th>
-          <th>אירוע חירום</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let ride of rides">
-          <td>{{ ride.id }}</td>
-          <td>{{ ride.start_datetime | date: 'short' }}</td>
-          <td>{{ ride.user_id }}</td>
-          <td>{{ ride.status }}</td>
-          <td>{{ ride.actual_distance_km }}</td>
-          <td>{{ ride.emergency_event === 'true' ? 'כן' : 'לא' }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </ng-container>
 
-  <div *ngIf="filteredInspections.length === 0 && rides.length === 0" style="text-align: right; margin-top: 2rem;">אין
-    נתונים להצגה</div>
+  <div class="pagination-controls">
+    <button (click)="prevPage()" [disabled]="currentPage === 1">
+      ▶
+    </button>
+    <span>עמוד {{ currentPage }} מתוך {{ totalPages }}</span>
+    <button (click)="nextPage()" [disabled]="currentPage === totalPages">
+      ◀
+    </button>
+  </div>
 </div>

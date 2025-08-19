@@ -76,35 +76,15 @@ body {
   100% { background-position: 200% 0; }
 }
 
-.chart-card:hover {
+/* .chart-card:hover {
   transform: translateY(-3px);
   box-shadow: 
     0 12px 30px rgba(0, 0, 0, 0.12),
     0 1px 0px rgba(255, 255, 255, 0.3) inset;
-}
+} */
 
 /* Sort Container - Much Smaller */
-.sort-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.75rem;
-  gap: 0.75rem;
-  font-family: 'Alef', sans-serif;
-  font-size: 0.9rem;
-  font-weight: 600;
-  direction: rtl;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.8), rgba(248, 250, 252, 0.8));
-  border-radius: 12px;
-  box-shadow: 
-    0 3px 10px rgba(0, 0, 0, 0.05),
-    0 1px 0 rgba(255, 255, 255, 0.5) inset;
-  margin-bottom: 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  max-width: 75%;
-  margin-left: auto;
-  margin-right: auto;
-}
+
 
 .sort-container label {
   color: #4a5568;
@@ -116,31 +96,24 @@ body {
   padding: 0.75rem 1.2rem;
   border-radius: 12px;
   border: 2px solid rgba(102, 126, 234, 0.2);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-family: 'Alef', sans-serif;
   font-weight: 600;
   background: linear-gradient(145deg, #ffffff, #f8fafc);
   box-shadow: 
     0 4px 12px rgba(0, 0, 0, 0.06),
     0 1px 0 rgba(255, 255, 255, 0.9) inset;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   min-width: 160px;
   cursor: pointer;
 }
 
-.sort-container select:focus {
-  outline: none;
-  border-color: #667eea;
-  box-shadow: 
-    0 0 0 3px rgba(102, 126, 234, 0.15),
-    0 6px 20px rgba(102, 126, 234, 0.15);
-  transform: translateY(-1px);
+.sort-container{
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
-.sort-container select:hover {
-  border-color: #667eea;
-  transform: translateY(-1px);
-}
+
+
 
 /* Export Buttons - Smaller */
 .export-buttons {
@@ -612,7 +585,7 @@ body {
   .date-filter-container select {
     min-width: 100%;
   }
-  
+
   .chart-container {
     height: 160px;
     padding: 0.1rem;
@@ -683,18 +656,14 @@ body {
 
 .summary-cards .card {
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.95));
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 10px;
   padding: 1rem; 
   text-align: center;
   box-shadow: 
     0 10px 30px rgba(148, 34, 34, 0.08),
     0 1px 0 rgba(255, 255, 255, 0.6) inset;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
-  border-right: 5px solid #942222;
 }
 
 .summary-cards .card::before {
@@ -706,22 +675,14 @@ body {
   height: 3px;
   background: linear-gradient(90deg, #942222, #b91c1c, #dc2626);
   background-size: 200% 100%;
-  animation: shimmer 3s infinite;
 }
 
-.summary-cards .card:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 
-    0 20px 50px rgba(148, 34, 34, 0.15),
-    0 1px 0 rgba(255, 255, 255, 0.8) inset;
-  border-right-color: #b91c1c;
-}
+
 
 .summary-cards .card-icon {
   font-size: 2.5rem;
   margin-bottom: 1rem;
   display: block;
-  filter: drop-shadow(0 4px 8px rgba(148, 34, 34, 0.2));
 }
 
 .summary-cards .card-content {
@@ -744,28 +705,19 @@ body {
   letter-spacing: 1px;
 }
 
-@keyframes shimmer {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
+
 
 /* No-Show Users Table - Enhanced Red Theme */
 .styled-table {
   width: 100%;
-  border-collapse: collapse;
   margin: 2rem 0;
   font-family: 'Alef', sans-serif;
-  border-radius: 20px;
+  border-radius: 10px;
   overflow: hidden;
-  box-shadow: 
-    0 15px 40px rgba(148, 34, 34, 0.12),
-    0 1px 0 rgba(255, 255, 255, 0.6) inset;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.98));
-  backdrop-filter: blur(25px);
   border: 1px solid rgba(148, 34, 34, 0.1);
   direction: rtl;
   position: relative;
+  color:black
 }
 
 /* Table Header Styling - Red Theme */
@@ -774,88 +726,27 @@ body {
   position: relative;
 }
 
-.styled-table thead::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.15) 75%);
-  background-size: 30px 30px;
-  animation: tableHeaderAnimation 25s linear infinite;
-  pointer-events: none;
-}
 
-@keyframes tableHeaderAnimation {
-  0% { background-position: 0 0; }
-  100% { background-position: 120px 120px; }
-}
+
+
+
 
 .styled-table th {
   padding: 1.5rem 2rem;
   text-align: center;
   font-weight: 800;
   font-size: 1.1rem;
-  color: #ffffff;
+  color: black;
   text-transform: uppercase;
   letter-spacing: 1.5px;
   position: relative;
   background: transparent;
   border: none;
-  text-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+  border-bottom: solid #942222 ;
+
 }
 
-.styled-table th::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 15%;
-  right: 15%;
-  height: 3px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
-  border-radius: 2px;
-}
 
-/* Table Body Styling - Enhanced */
-.styled-table tbody tr {
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-  position: relative;
-  background: rgba(255, 255, 255, 0.7);
-  border-bottom: 2px solid rgba(148, 34, 34, 0.08);
-}
-
-.styled-table tbody tr:nth-child(even) {
-  background: rgba(248, 250, 252, 0.7);
-}
-
-/* .styled-table tbody tr:hover {
-  background: linear-gradient(135deg, rgba(148, 34, 34, 0.08), rgba(185, 28, 28, 0.05));
-  transform: translateY(-2px) scale(1.005);
-  box-shadow: 
-    0 12px 35px rgba(148, 34, 34, 0.15),
-    0 1px 0 rgba(255, 255, 255, 0.9) inset;
-  border-radius: 12px;
-  z-index: 10;
-  position: relative;
-  border-bottom-color: transparent;
-} */
-
-/* .styled-table tbody tr:hover::before {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  width: 6px;
-  background: linear-gradient(135deg, #942222, #b91c1c, #dc2626);
-  border-radius: 4px 0 0 4px;
-} */
-
-.styled-table tbody tr:active {
-  transform: translateY(0) scale(1.002);
-}
 
 /* Table Data Styling - Enhanced */
 .styled-table td {
@@ -866,10 +757,9 @@ body {
   font-weight: 600;
   color: #2d3748;
   position: relative;
-  transition: all 0.3s ease;
 }
 
-/* Special styling for different columns */
+/* Special styling for different columns
 .styled-table .user-id {
   font-weight: 800;
   color: #942222;
@@ -900,73 +790,20 @@ body {
   background: linear-gradient(135deg, rgba(74, 85, 104, 0.05), rgba(74, 85, 104, 0.02));
   border-radius: 6px;
   padding: 0.5rem;
-}
+} */
 
-.styled-table .no-show-count {
-  font-weight: 900;
-  font-size: 1.2rem;
-  color: #ffffff;
-  background: linear-gradient(135deg, #942222, #b91c1c);
-  border-radius: 12px;
-  position: relative;
-  box-shadow: 
-    0 4px 12px rgba(148, 34, 34, 0.3),
-    0 1px 0 rgba(255, 255, 255, 0.2) inset;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
 
-.styled-table .no-show-count::before {
-  content: '⚠️';
-  margin-left: 0.6rem;
-  font-size: 1rem;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-}
 
 /* Enhanced hover effects for individual cells */
-.styled-table tbody tr:hover .user-id {
-  color: #7c1d1d;
-  transform: scale(1.05);
-  background: linear-gradient(135deg, rgba(148, 34, 34, 0.12), rgba(148, 34, 34, 0.05));
-}
 
-.styled-table tbody tr:hover .user-name {
-  color: #0d1117;
-  transform: translateX(3px);
-}
-
-.styled-table tbody tr:hover .user-department {
-  background: linear-gradient(135deg, rgba(74, 85, 104, 0.12), rgba(74, 85, 104, 0.05));
-  transform: scale(1.02);
-}
-
-.styled-table tbody tr:hover .no-show-count {
-  background: linear-gradient(135deg, #7c1d1d, #991b1b);
-  box-shadow: 
-    0 8px 20px rgba(148, 34, 34, 0.4),
-    0 1px 0 rgba(255, 255, 255, 0.3) inset;
-  transform: scale(1.08);
-}
 
 /* Table container for better presentation */
 .table-container {
   overflow-x: auto;
-  margin: 2rem 0;
   border-radius: 20px;
-  box-shadow: 0 15px 40px rgba(148, 34, 34, 0.1);
   position: relative;
 }
 
-.table-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(45deg, rgba(148, 34, 34, 0.02), rgba(185, 28, 28, 0.01));
-  pointer-events: none;
-  border-radius: 20px;
-}
 
 /* No Data State Styling */
 .no-data-state {
@@ -1098,9 +935,9 @@ body {
   border-radius: 12px;
 }
 
-.styled-table tbody tr:hover::after {
+/* .styled-table tbody tr:hover::after {
   opacity: 1;
-}
+} */
 
 .critical-row {
   background-color: #ffe0e0;
@@ -1112,10 +949,15 @@ body {
   background-color: #fff3cd;
 }
 .filter-controls {
+  display: flex;
+  flex-direction: row;
   border: none !important;
   background: transparent !important;
   padding: 0;
   box-shadow: none;
+  justify-content: space-around;
+  margin-bottom: 20px;
+  margin-top: 20px;
 }
 ::ng-deep .p-tabview-nav {
   background-color: white !important;

@@ -53,10 +53,10 @@
           <!-- Row 1: ride_period + ride_date + ride_type -->
          <div class="form-row">
             <div class="form-field-group">
-              <label>זמן נסיעה (בוקר / לילה)</label>
+              <label>מספר ימי נסיעה (יום / יומיים)</label>
               <select formControlName="ride_period">
-                <option value="morning">נסיעת בוקר</option>
-                <option value="night">נסיעת לילה</option>
+                <option value="morning">נסיעה יומית</option>
+                <option value="night">נסיעה מעבר ליום</option>
               </select>
             </div>
 
@@ -190,12 +190,12 @@
                 חובה למלא את שדה זה
               </small>
 
-              <textarea formControlName="vehicle_type_reason" placeholder="אנא פרט.י מדוע יש צורך בכרב 4X4"
+              <textarea formControlName="four_by_four_reason" placeholder="אנא פרט.י מדוע יש צורך בכרב 4X4"
                 class="vehicle-type-info"
                 *ngIf="f.vehicle_type.value?.toLowerCase().includes('jeep') || f.vehicle_type.value?.toLowerCase().includes('van') || f.vehicle_type.value?.toLowerCase().includes('4x4')"></textarea>
 
               <small
-                *ngIf="(f.vehicle_type.value?.toLowerCase().includes('jeep') || f.vehicle_type.value?.toLowerCase().includes('van') || f.vehicle_type.value?.toLowerCase().includes('4x4')) && rideForm.get('vehicle_type_reason')?.touched && rideForm.get('vehicle_type_reason')?.errors?.['required']"
+                *ngIf="(f.vehicle_type.value?.toLowerCase().includes('jeep') || f.vehicle_type.value?.toLowerCase().includes('van') || f.vehicle_type.value?.toLowerCase().includes('4x4')) && rideForm.get('four_by_four_reason')?.touched && rideForm.get('four_by_four_reason')?.errors?.['required']"
                 class="error-text">
                 חובה לפרט מדוע יש צורך ברכב זה
               </small>
