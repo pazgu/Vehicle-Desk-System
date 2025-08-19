@@ -1,10 +1,18 @@
-body {
-  font-family: 'Alef', sans-serif;
-  background-image: url('/assets/images/add-user.png'); /* Replace with your actual image path */
-  background-size: cover;
-  background-position: center;
+:host {
+  margin: 0;
+  padding: 0;
+  display: block;
+  min-height: 100vh;
+  background-image: url('/assets/images/add-user.png');
   background-repeat: no-repeat;
   background-attachment: fixed;
+  background-size: cover;
+  background-position: center -40px;
+}
+
+
+body {
+  font-family: 'Alef', sans-serif;
   min-height: 100vh;
   margin: 0;
   padding: 0;
