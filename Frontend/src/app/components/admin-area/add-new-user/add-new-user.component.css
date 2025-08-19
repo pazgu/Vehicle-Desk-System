@@ -1,17 +1,19 @@
-/* Form Container */
-.form-container {
-  background-color: white;
-  padding: 20px 28px;
-  border-radius: 10px;
-  width: 100%;
-  max-width: 750px;
-  margin: 0 auto;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-  font-family: 'Alef', sans-serif;
-  direction: rtl;
-  min-height: 0;
-}
 
+:host {
+  display: block;
+  min-height: calc(100vh - 55px);
+  padding: 25px;
+  font-family: sans-serif;
+  /* background-image: url('../../../../../public/assets/images/add-user.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed; */
+  background-color: #0ea70b;
+}
+.form-container{
+  opacity: 100%;
+}
 /* Header */
 .form-container h2 {
   color: #942222;
