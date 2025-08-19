@@ -311,7 +311,6 @@ warningVisible = false;
 
   }
 
-  // --- Other existing methods (no changes needed) ---
 
   get pagedOrders() {
     const start = (this.currentPage - 1) * this.ordersPerPage;
