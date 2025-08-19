@@ -22,6 +22,7 @@
   padding: 2rem 2rem;
 }
 .wrapper {
+    background-image: url('/assets/images/notifications-bg.png');
   height: 100vh;
   overflow: hidden;
   padding-top: 40px;
