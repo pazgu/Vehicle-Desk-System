@@ -29,7 +29,7 @@
   right: 20px !important;
   top: auto !important;
   left: auto !important; */
-    position: relative; /* Not fixed */
+  position: relative; /* Not fixed */
 
   padding: 16px 20px;
   border-radius: 8px;
