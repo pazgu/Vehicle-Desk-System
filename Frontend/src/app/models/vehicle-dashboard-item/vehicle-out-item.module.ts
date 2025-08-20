@@ -6,7 +6,6 @@ export interface VehicleOutItem{
   status: string; // VehicleStatus as string
   freeze_reason?: string | null; // Optional, can be null
   last_used_at?: string | null; // ISO date string or null
-  current_location: string;
   mileage: number;
   vehicle_model: string;
   image_url: string;
