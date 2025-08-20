@@ -14,7 +14,6 @@ class VehicleCreate(BaseModel):
     freeze_reason: Optional[FreezeReason] = None
     freeze_details: Optional[str] = None
     last_used_at: Optional[datetime] = None
-    current_location: str
     mileage: int
     vehicle_model: str
     image_url: Optional[str] = None
