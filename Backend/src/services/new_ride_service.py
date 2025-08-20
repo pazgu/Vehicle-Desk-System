@@ -5,7 +5,6 @@ from uuid import uuid4, UUID
 from ..schemas.new_ride_schema import RideCreate, RideResponse
 from ..models.ride_model import Ride, RideStatus
 from ..models.user_model import User
-from ..utils.email_utils import send_email
 from datetime import datetime, timezone
 from ..utils.audit_utils import log_action
 from ..models.vehicle_model import Vehicle
@@ -102,27 +101,27 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate):
             "order_status": new_ride.status
         })
 
-    admins = db.query(User).filter(User.role == "admin").all()
-    admin_emails = [admin.email for admin in admins]
+#     admins = db.query(User).filter(User.role == "admin").all()
+#     admin_emails = [admin.email for admin in admins]
 
-    subject = "New Ride Request Submitted"
-    body = f"""Hello,
+#     subject = "New Ride Request Submitted"
+#     body = f"""Hello,
 
-A new ride has been submitted by {user.first_name} {user.last_name} ({user.email}).
+# A new ride has been submitted by {user.first_name} {user.last_name} ({user.email}).
 
-Ride Details:
-- From: {ride.start_location}
-- To: {ride.destination}
-- Start: {ride.start_datetime}
-- End: {ride.end_datetime}
-- Status: Pending
+# Ride Details:
+# - From: {ride.start_location}
+# - To: {ride.destination}
+# - Start: {ride.start_datetime}
+# - End: {ride.end_datetime}
+# - Status: Pending
 
-Thank you,
-Ride Management System
-"""
+# Thank you,
+# Ride Management System
+# """
 
-    recipients = [user.email] + admin_emails
-    send_email(subject, body, recipients)
+#     recipients = [user.email] + admin_emails
+#     send_email(subject, body, recipients)
 
     db.execute(text("SET session.audit.user_id = DEFAULT"))
 

@@ -66,7 +66,7 @@ def _send_email_sync_sendgrid(subject: str, html_content: str, to_emails: List[s
 
 async def _async_send_email_sendgrid(subject: str, body: str, recipients: List[str]) -> bool:
     """Asynchronous SendGrid email sender."""
-    return False #TEMP: will make the email sending fail every time
+    # return False #TEMP: will make the email sending fail every time
 
     loop = asyncio.get_running_loop()
     return await loop.run_in_executor(
@@ -249,15 +249,14 @@ class EmailService:
         )
     # --- END MODIFIED ---
 
-    # --- MODIFIED: send_ride_creation_email (Accepts use_retries, defaults to False for initial send) ---
     async def send_ride_creation_email(
         self,
         ride_id: UUID,
         recipient_id: UUID,
         db: Session,
         ride_details: Dict[str, Any],
-        email_type: str = "ride_creation",
-        use_retries: bool = False # NEW PARAMETER - Default to False for initial Group 1 calls
+        email_type: str = "new_ride_request_to_supervisor",
+        use_retries: bool = False
     ) -> bool:
         logger.info(f"Attempting to send {email_type} email for ride {ride_id} to recipient {recipient_id} (Retries: {use_retries})")
         recipient_email = await self._get_user_email(recipient_id, db)
@@ -268,19 +267,21 @@ class EmailService:
             await self._emit_email_status(recipient_id, email_type, EmailStatusEnum.FAILED, error_msg, ride_id)
             return False
 
-        subject = "Your Ride Request Has Been Confirmed!"
-        template_name = "ride_creation_confirmation.html"
+        # The subject and template are specific to the supervisor email
+        subject = "📄 בקשת נסיעה חדשה מחכה לאישורך"
+        template_name = "new_ride_request.html"
 
+        # Corrected context dictionary to match template variables
+        # The keys here MUST match the {{...}} placeholders in your HTML file
         context = {
-            "username": ride_details.get("username", "Rider"),
-            "ride_id": str(ride_details.get("id")),
-            "start_location": ride_details.get("start_location", "N/A"),
-            "destination": ride_details.get("destination", "N/A"),
-            "start_datetime": ride_details.get("start_datetime", datetime.now()).strftime("%Y-%m-%d %H:%M"),
-            "end_datetime": ride_details.get("end_datetime", datetime.now() + timedelta(hours=1)).strftime("%Y-%m-%d %H:%M"),
-            "plate_number": ride_details.get("plate_number", "N/A"),
-            "ride_type": ride_details.get("ride_type", "N/A"),
-            "is_retry": email_type == "ride_creation_retry"
+            "SUPERVISOR_NAME": ride_details.get("supervisor_name", "מנהל"),
+            "EMPLOYEE_NAME": ride_details.get("username", "העובד"),
+            "DESTINATION": ride_details.get("destination", "לא צוין"),
+            "DATE_TIME": ride_details.get("start_datetime", datetime.now()).strftime("%Y-%m-%d %H:%M"),
+            "PLATE_NUMBER": ride_details.get("plate_number", "לא נבחר"),
+            "DISTANCE": ride_details.get("estimated_distance_km", "לא חושב"),
+            "STATUS": ride_details.get("status", "pending"),
+            "LINK_TO_ORDER": f"http://localhost:4200/order-card/{ride_details.get('ride_id')}"
         }
 
         try:
@@ -293,7 +294,7 @@ class EmailService:
                 user_id=recipient_id,
                 email_type=email_type,
                 identifier_id=ride_id,
-                use_retries=use_retries # Pass the new parameter
+                use_retries=use_retries
             )
             return email_sent_successfully
 
@@ -302,6 +303,7 @@ class EmailService:
             logger.error(error_msg, exc_info=True)
             await self._emit_email_status(recipient_id, email_type, EmailStatusEnum.FAILED, "Email preparation failed.", ride_id)
             return False
+        
 
     # --- ADD/MODIFY send_ride_completion_email (accept use_retries, default False) ---
     async def send_ride_completion_email(self, ride_id: UUID, recipient_id: UUID, db: Session, ride_details: Dict[str, Any], use_retries: bool = False) -> bool:

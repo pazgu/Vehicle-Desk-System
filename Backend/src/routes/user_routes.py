@@ -1,10 +1,11 @@
+import asyncio
 import json
 import traceback
-from fastapi import APIRouter, HTTPException, Depends , Query, status
+from fastapi import APIRouter, HTTPException, Depends , Query, Response, status
 from sqlalchemy.orm import Session,aliased
 from ..schemas.register_schema import UserCreate
 from ..schemas.login_schema import UserLogin
-from ..schemas.new_ride_schema import RideCreate, RideResponse, EmailStatusEnum
+from ..schemas.new_ride_schema import RideCreate
 from ..services import register_service
 from ..services import login_service
 from uuid import UUID
@@ -201,23 +202,16 @@ async def create_order(
     identity_check(user_id=str(user_id), token=token)
 
     try:
-        # Instantiate EmailService for this request
-        email_service = EmailService(sio_server=sio)
-
-        email_status_output = {
-            "email_status": EmailStatusEnum.PENDING,
-            "email_message": "Email processing started",
-            "email_timestamp": datetime.now(timezone.utc).isoformat()
-        }
-
+        # Create the ride first - this is the critical, core action.
         new_ride = await create_ride(db, user_id, ride_request)
+        
+        # Schedule other tasks
         schedule_ride_start(new_ride.id, new_ride.start_datetime)
         schedule_ride_reminder_email(new_ride.id, new_ride.start_datetime)
         warning_flag = is_time_in_blocked_window(new_ride.start_datetime)
         department_id = get_user_department(user_id=user_id, db=db)
 
-        # email_sent_successfully = True | now managed by email_service
-
+        # Emit the new ride request via Socket.IO immediately after creation.
         await sio.emit("new_ride_request", {
             "ride_id": str(new_ride.id),
             "user_id": str(user_id),
@@ -231,28 +225,54 @@ async def create_order(
             "department_id": str(department_id),
             "distance": new_ride.estimated_distance_km,
         })
-
+        
+        # Launch the email task in the background using a fire-and-forget pattern.
+        # Do NOT await this call.
         supervisor_id = get_supervisor_id(user_id, db)
         if supervisor_id:
             employee_name = get_user_name(db, new_ride.user_id)
+            supervisor_name = get_user_name(db, supervisor_id)
             
-            # Create and send socket notification to supervisor
+            # Instantiate EmailService for this request
+            email_service = EmailService(sio_server=sio)
+            
+            destination_city = db.query(City).filter(City.id == new_ride.stop).first()
+            destination_name = destination_city.name if destination_city else str(new_ride.stop)
+            
+            ride_details_for_email = {
+                "username": employee_name,
+                "ride_id": str(new_ride.id),
+                "supervisor_name": supervisor_name,
+                "start_location": new_ride.start_location,
+                "destination": destination_name,
+                "start_datetime": new_ride.start_datetime,
+                "end_datetime": new_ride.end_datetime,
+                "plate_number": new_ride.plate_number,
+                "ride_type": new_ride.ride_type,
+                "estimated_distance_km": new_ride.estimated_distance_km,
+                "status": new_ride.status
+            }
+
+            # Use asyncio.create_task to send the email in the background.
+            # The function will return immediately. The email sending and retries will happen in the background.
+            asyncio.create_task(
+                email_service.send_ride_creation_email(
+                    ride_id=new_ride.id,
+                    recipient_id=supervisor_id,
+                    db=db,
+                    ride_details=ride_details_for_email,
+                    email_type="new_ride_request_to_supervisor",
+                    use_retries=True # Use retries for this critical background task
+                )
+            )
+            
+            # The supervisor notification logic can stay here as it is not blocking
             supervisor_notification = create_system_notification(
                 user_id=supervisor_id,
                 title="בקשת נסיעה חדשה",
                 message=f"שלח בקשה חדשה {employee_name} העובד",
                 order_id=new_ride.id
             )
-            # employee_name = get_user_name(db, new_ride.user_id)
-
-        # if supervisor_id:
-        #     supervisor_notification = create_system_notification(
-        #         user_id=supervisor_id,
-        #         title="בקשת נסיעה חדשה",
-        #         message=f"שלח בקשה חדשה {employee_name} העובד",
-        #         order_id=new_ride.id
-        #     )
-
             await sio.emit("new_notification", {
                 "id": str(supervisor_notification.id),
                 "user_id": str(supervisor_notification.user_id),
@@ -263,98 +283,17 @@ async def create_order(
                 "order_id": str(supervisor_notification.order_id) if supervisor_notification.order_id else None,
                 "order_status": new_ride.status
             })
-
-            # # שליחת מייל למנהל - כאן הקוראים ל-async_send_email
-            # supervisor_email = get_user_email(supervisor_id, db)
-            # if supervisor_email:
-            #     # Get the city name from the city ID
-            #     destination_city = db.query(City).filter(City.id == new_ride.stop).first()
-            #     destination_name = destination_city.name if destination_city else str(new_ride.stop)
-
-            #     html_content = load_email_template("new_ride_request.html", {
-            #         "SUPERVISOR_NAME": get_user_name(db, supervisor_id) or "מנהל",
-            #         "EMPLOYEE_NAME": employee_name,
-            #         "DESTINATION": destination_name,  # Now shows the city name
-            #         "DATE_TIME": str(new_ride.start_datetime),
-            #         "PLATE_NUMBER": new_ride.plate_number or "לא נבחר",
-            #         "DISTANCE": str(new_ride.estimated_distance_km),
-            #         "STATUS": new_ride.status,
-            #         # "LINK_TO_ORDER": f"{BOOKIT_URL}/home?order_id={new_ride.id}"
-            #     })
-                
-            #     email_sent_successfully = await async_send_email(
-            #         to_email=supervisor_email,
-            #         subject="📄 בקשת נסיעה חדשה מחכה לאישורך",
-            #         html_content=html_content
-            #     )
-
-            #     # await async_send_email(
-            #     #     to_email=supervisor_email,
-            #     #     subject="📄 בקשת נסיעה חדשה מחכה לאישורך",
-            #     #     html_content=html_content
-            #     # )
-            # else:
-            #     logger.warning(f"No supervisor email found for supervisor ID {supervisor_id} — skipping email.")
-
-            supervisor_email_address = await email_service._get_user_email(supervisor_id, db) # Use email_service instance
-            if supervisor_email_address:
-                # Get the city name from the city ID (assuming new_ride.stop is a UUID for City)
-                destination_city = db.query(City).filter(City.id == new_ride.stop).first()
-                destination_name = destination_city.name if destination_city else str(new_ride.stop)
-                ride_details_for_email = {
-                    "username": employee_name, # The rider's name
-                    "ride_id": str(new_ride.id),
-                    "start_location": new_ride.start_location,
-                    "destination": destination_name,
-                    "start_datetime": new_ride.start_datetime,
-                    "end_datetime": new_ride.end_datetime,
-                    "plate_number": new_ride.plate_number,
-                    "ride_type": new_ride.ride_type,
-                    "estimated_distance_km": new_ride.estimated_distance_km,
-                    "status": new_ride.status # Added status for new_ride_request template
-                }
-                try:
-                    await email_service.send_ride_creation_email(
-                        ride_id=new_ride.id,
-                        recipient_id=supervisor_id, # Target supervisor
-                        db=db, # Pass db session
-                        ride_details=ride_details_for_email,
-                        email_type="new_ride_request_to_supervisor" # Specific type for supervisor email
-                    )
-                    email_status_output["email_status"] = EmailStatusEnum.SENT # MODIFIED: Set to SENT
-                    email_status_output["email_message"] = "Supervisor email sent successfully." # MODIFIED: Set message
-                    email_status_output["email_timestamp"] = datetime.now().isoformat() # MODIFIED: Set timestamp
-
-                except Exception as e:
-                    logger.error(f"Failed to send email to supervisor {supervisor_email_address} for ride {new_ride.id}: {e}", exc_info=True)
-                    email_status_output["email_status"] = EmailStatusEnum.FAILED # MODIFIED: Set to FAILED
-                    email_status_output["email_message"] = f"Failed to send email to supervisor: {e}" # MODIFIED: Set message
-                    email_status_output["email_timestamp"] = datetime.now().isoformat() # MODIFIED: Set timestamp
-                    # --- RETRY LOGIC TRIGGER POINT ---
-                    # This is where you'd queue the email for retry if you had a more advanced system.
-                    # For now, it's logged and the front-end will receive the "FAILED" status.
-                    logger.warning(f"Email to supervisor failed for ride {new_ride.id}. This should be added to a retry queue.")
-            else:
-                logger.warning(f"No supervisor email found for supervisor ID {supervisor_id} — skipping email.")
-                email_status_output["email_status"] = EmailStatusEnum.NOT_SENT # MODIFIED: Set to NOT_SENT
-                email_status_output["email_message"] = f"No email address for supervisor {supervisor_id}." # MODIFIED: Set message
-                email_status_output["email_timestamp"] = datetime.now().isoformat() # MODIFIED: Set timestamp
-
+            
         else:
             logger.warning(f"No supervisor found for user ID {user_id} — skipping supervisor notification and email.")
-            # ADDED: If no supervisor, explicitly set email status to NOT_SENT for the response
-            email_status_output["email_status"] = EmailStatusEnum.NOT_SENT
-            email_status_output["email_message"] = f"No supervisor found for user {user_id}."
-            email_status_output["email_timestamp"] = datetime.now().isoformat()
-
-
+            
+        # Create and send confirmation notification to the user
         confirmation = create_system_notification(
             user_id=new_ride.user_id,
             title="שליחת בקשה",
             message="בקשתך נשלחה בהצלחה",
             order_id=new_ride.id
         )
-
         await sio.emit("new_notification", {
             "id": str(confirmation.id),
             "user_id": str(confirmation.user_id),
@@ -366,13 +305,11 @@ async def create_order(
             "order_status": new_ride.status
         })
 
+        # Return the response immediately after creating the ride.
+        # The email status is no longer needed in the response.
         return {
             **RideResponse.model_validate(new_ride).dict(),
             "inspector_warning": warning_flag,
-            # MODIFIED: Use the detailed email_status_output
-            "email_status": email_status_output["email_status"],
-            "email_message": email_status_output["email_message"],
-            "email_timestamp": email_status_output["email_timestamp"]
         }
 
     except Exception as e:
@@ -381,6 +318,196 @@ async def create_order(
             status_code=fastapi_status.HTTP_400_BAD_REQUEST,
             detail=f"Failed to create order: {str(e)}"
         )
+# async def create_order(
+#     user_id: UUID,
+#     ride_request: RideCreate,
+#     db: Session = Depends(get_db),
+#     token: str = Depends(oauth2_scheme)
+# ):
+#     role_check(allowed_roles=["employee", "admin"], token=token)
+#     identity_check(user_id=str(user_id), token=token)
+
+#     try:
+#         # Instantiate EmailService for this request
+#         email_service = EmailService(sio_server=sio)
+
+#         email_status_output = {
+#             "email_status": EmailStatusEnum.PENDING,
+#             "email_message": "Email processing started",
+#             "email_timestamp": datetime.now(timezone.utc).isoformat()
+#         }
+
+#         new_ride = await create_ride(db, user_id, ride_request)
+#         schedule_ride_start(new_ride.id, new_ride.start_datetime)
+#         schedule_ride_reminder_email(new_ride.id, new_ride.start_datetime)
+#         warning_flag = is_time_in_blocked_window(new_ride.start_datetime)
+#         department_id = get_user_department(user_id=user_id, db=db)
+
+#         # email_sent_successfully = True | now managed by email_service
+
+#         await sio.emit("new_ride_request", {
+#             "ride_id": str(new_ride.id),
+#             "user_id": str(user_id),
+#             "employee_name": new_ride.username,
+#             "status": new_ride.status,
+#             "destination": new_ride.stop,
+#             "end_datetime": str(new_ride.end_datetime),
+#             "date_and_time": str(new_ride.start_datetime),
+#             "vehicle_id": str(new_ride.vehicle_id),
+#             "requested_vehicle_plate": new_ride.plate_number,
+#             "department_id": str(department_id),
+#             "distance": new_ride.estimated_distance_km,
+#         })
+
+#         supervisor_id = get_supervisor_id(user_id, db)
+#         if supervisor_id:
+#             employee_name = get_user_name(db, new_ride.user_id)
+            
+#             # Create and send socket notification to supervisor
+#             supervisor_notification = create_system_notification(
+#                 user_id=supervisor_id,
+#                 title="בקשת נסיעה חדשה",
+#                 message=f"שלח בקשה חדשה {employee_name} העובד",
+#                 order_id=new_ride.id
+#             )
+#             # employee_name = get_user_name(db, new_ride.user_id)
+
+#         # if supervisor_id:
+#         #     supervisor_notification = create_system_notification(
+#         #         user_id=supervisor_id,
+#         #         title="בקשת נסיעה חדשה",
+#         #         message=f"שלח בקשה חדשה {employee_name} העובד",
+#         #         order_id=new_ride.id
+#         #     )
+
+#             await sio.emit("new_notification", {
+#                 "id": str(supervisor_notification.id),
+#                 "user_id": str(supervisor_notification.user_id),
+#                 "title": supervisor_notification.title,
+#                 "message": supervisor_notification.message,
+#                 "notification_type": supervisor_notification.notification_type.value,
+#                 "sent_at": supervisor_notification.sent_at.isoformat(),
+#                 "order_id": str(supervisor_notification.order_id) if supervisor_notification.order_id else None,
+#                 "order_status": new_ride.status
+#             })
+
+#             # # שליחת מייל למנהל - כאן הקוראים ל-async_send_email
+#             # supervisor_email = get_user_email(supervisor_id, db)
+#             # if supervisor_email:
+#             #     # Get the city name from the city ID
+#             #     destination_city = db.query(City).filter(City.id == new_ride.stop).first()
+#             #     destination_name = destination_city.name if destination_city else str(new_ride.stop)
+
+#             #     html_content = load_email_template("new_ride_request.html", {
+#             #         "SUPERVISOR_NAME": get_user_name(db, supervisor_id) or "מנהל",
+#             #         "EMPLOYEE_NAME": employee_name,
+#             #         "DESTINATION": destination_name,  # Now shows the city name
+#             #         "DATE_TIME": str(new_ride.start_datetime),
+#             #         "PLATE_NUMBER": new_ride.plate_number or "לא נבחר",
+#             #         "DISTANCE": str(new_ride.estimated_distance_km),
+#             #         "STATUS": new_ride.status,
+#             #         # "LINK_TO_ORDER": f"{BOOKIT_URL}/home?order_id={new_ride.id}"
+#             #     })
+                
+#             #     email_sent_successfully = await async_send_email(
+#             #         to_email=supervisor_email,
+#             #         subject="📄 בקשת נסיעה חדשה מחכה לאישורך",
+#             #         html_content=html_content
+#             #     )
+
+#             #     # await async_send_email(
+#             #     #     to_email=supervisor_email,
+#             #     #     subject="📄 בקשת נסיעה חדשה מחכה לאישורך",
+#             #     #     html_content=html_content
+#             #     # )
+#             # else:
+#             #     logger.warning(f"No supervisor email found for supervisor ID {supervisor_id} — skipping email.")
+
+#             supervisor_email_address = await email_service._get_user_email(supervisor_id, db) # Use email_service instance
+#             if supervisor_email_address:
+#                 # Get the city name from the city ID (assuming new_ride.stop is a UUID for City)
+#                 destination_city = db.query(City).filter(City.id == new_ride.stop).first()
+#                 destination_name = destination_city.name if destination_city else str(new_ride.stop)
+#                 ride_details_for_email = {
+#                     "username": employee_name, # The rider's name
+#                     "ride_id": str(new_ride.id),
+#                     "start_location": new_ride.start_location,
+#                     "destination": destination_name,
+#                     "start_datetime": new_ride.start_datetime,
+#                     "end_datetime": new_ride.end_datetime,
+#                     "plate_number": new_ride.plate_number,
+#                     "ride_type": new_ride.ride_type,
+#                     "estimated_distance_km": new_ride.estimated_distance_km,
+#                     "status": new_ride.status # Added status for new_ride_request template
+#                 }
+#                 try:
+#                     await email_service.send_ride_creation_email(
+#                         ride_id=new_ride.id,
+#                         recipient_id=supervisor_id, # Target supervisor
+#                         db=db, # Pass db session
+#                         ride_details=ride_details_for_email,
+#                         email_type="new_ride_request_to_supervisor" # Specific type for supervisor email
+#                     )
+#                     email_status_output["email_status"] = EmailStatusEnum.SENT # MODIFIED: Set to SENT
+#                     email_status_output["email_message"] = "Supervisor email sent successfully." # MODIFIED: Set message
+#                     email_status_output["email_timestamp"] = datetime.now().isoformat() # MODIFIED: Set timestamp
+
+#                 except Exception as e:
+#                     logger.error(f"Failed to send email to supervisor {supervisor_email_address} for ride {new_ride.id}: {e}", exc_info=True)
+#                     email_status_output["email_status"] = EmailStatusEnum.FAILED # MODIFIED: Set to FAILED
+#                     email_status_output["email_message"] = f"Failed to send email to supervisor: {e}" # MODIFIED: Set message
+#                     email_status_output["email_timestamp"] = datetime.now().isoformat() # MODIFIED: Set timestamp
+#                     # --- RETRY LOGIC TRIGGER POINT ---
+#                     # This is where you'd queue the email for retry if you had a more advanced system.
+#                     # For now, it's logged and the front-end will receive the "FAILED" status.
+#                     logger.warning(f"Email to supervisor failed for ride {new_ride.id}. This should be added to a retry queue.")
+#             else:
+#                 logger.warning(f"No supervisor email found for supervisor ID {supervisor_id} — skipping email.")
+#                 email_status_output["email_status"] = EmailStatusEnum.NOT_SENT # MODIFIED: Set to NOT_SENT
+#                 email_status_output["email_message"] = f"No email address for supervisor {supervisor_id}." # MODIFIED: Set message
+#                 email_status_output["email_timestamp"] = datetime.now().isoformat() # MODIFIED: Set timestamp
+
+#         else:
+#             logger.warning(f"No supervisor found for user ID {user_id} — skipping supervisor notification and email.")
+#             # ADDED: If no supervisor, explicitly set email status to NOT_SENT for the response
+#             email_status_output["email_status"] = EmailStatusEnum.NOT_SENT
+#             email_status_output["email_message"] = f"No supervisor found for user {user_id}."
+#             email_status_output["email_timestamp"] = datetime.now().isoformat()
+
+
+#         confirmation = create_system_notification(
+#             user_id=new_ride.user_id,
+#             title="שליחת בקשה",
+#             message="בקשתך נשלחה בהצלחה",
+#             order_id=new_ride.id
+#         )
+
+#         await sio.emit("new_notification", {
+#             "id": str(confirmation.id),
+#             "user_id": str(confirmation.user_id),
+#             "title": confirmation.title,
+#             "message": confirmation.message,
+#             "notification_type": confirmation.notification_type.value,
+#             "sent_at": confirmation.sent_at.isoformat(),
+#             "order_id": str(confirmation.order_id) if confirmation.order_id else None,
+#             "order_status": new_ride.status
+#         })
+
+#         return {
+#             **RideResponse.model_validate(new_ride).dict(),
+#             "inspector_warning": warning_flag,
+#             # MODIFIED: Use the detailed email_status_output
+#             "email_status": email_status_output["email_status"],
+#             "email_message": email_status_output["email_message"],
+#             "email_timestamp": email_status_output["email_timestamp"]
+#         }
+
+#     except Exception as e:
+#         logger.error(f"Order creation failed: {str(e)}")
+#         raise HTTPException(
+#             status_code=fastapi_status.HTTP_400_BAD_REQUEST,
+#             detail=f"Failed to create order: {str(e)}"
+#         )
 
 
 @router.get("/api/rides_supposed-to-start")
@@ -618,69 +745,58 @@ def get_vehicle_types(db: Session = Depends(get_db)):
 
 
 
-@router.post("/api/forgot-password")
+@router.post("/api/forgot-password", status_code=fastapi_status.HTTP_200_OK)
 async def forgot_password(
     request: ForgotPasswordRequest,
-    email_service: EmailService = Depends(get_email_service),  # Use the dependency to get EmailService
+    response: Response, # Add the Response object to modify the status code on failure
+    email_service: EmailService = Depends(get_email_service),
     db: Session = Depends(get_db)
 ):
     email = request.email
     user = db.query(User).filter(User.email == email).first()
     if not user:
-        raise HTTPException(status_code=fastapi_status.HTTP_404_NOT_FOUND, detail="User not found") # Corrected status usage
+        raise HTTPException(status_code=fastapi_status.HTTP_404_NOT_FOUND, detail="User not found")
 
     token = create_reset_token(str(user.employee_id))
 
-    # Construct the reset link
-    frontend_url = "http://localhost:4200" 
-    reset_link = f"{frontend_url}/reset-password/{token}"
+    frontend_url = os.getenv("BOOKIT_FRONTEND_URL", "http://localhost:4200")
+    reset_link = f"{frontend_url}/reset-password/{token}" # Using the correct path param format
 
     subject = "🚗 Reset Your Password - Vehicle Desk System"
-    # This 'body' variable will now be passed as 'html_content'
-    context = {
-        "username": user.first_name, # Use user's first name for personalization
-        "reset_link": reset_link
-    }
-    
+    context = { "username": user.first_name, "reset_link": reset_link }
+
     try:
         email_html_content = email_service._render_email_template("password_reset_email.html", context)
-
     except Exception as e:
-        logger.error(f"Failed to render password reset email template for {user.email}: {e}", exc_info=True)
+        logger.error(f"Failed to render password reset email template: {e}", exc_info=True)
         raise HTTPException(
             status_code=fastapi_status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to generate reset email content due to a template error."
+            detail="Failed to generate reset email content."
         )
 
-    try:
-        # --- CORRECTED CALL TO send_email_direct ---
-        email_sent_successfully = await email_service.send_email_direct(
-            to_email=user.email,         # Pass the single email string to 'to_email'
-            subject=subject,
-            html_content=email_html_content # Pass the HTML content to 'html_content'
-            # Remove db=db and user_id=user.employee_id, as send_email_direct doesn't accept them.
-            # It's designed for direct sending, not requiring these additional parameters at this level.
-        )
-        # -------------------------------------------
+    # Call the service with use_retries=False for the initial attempt
+    email_sent_successfully = await email_service.send_email_direct(
+        to_email=user.email,
+        subject=subject,
+        html_content=email_html_content,
+        user_id=user.employee_id,   
+        email_type="forgot_password",
+        use_retries=False # Correct for an initial, real-time request
+    )
 
-        if email_sent_successfully:
-            logger.info(f"Password reset email sent successfully to {user.email}")
-            return {"message": "Reset email sent"}
-        else:
-            # If send_email_direct returns False, it means the utility internally failed to send.
-            logger.error(f"EmailService.send_email_direct reported failure for {user.email}.")
-            raise HTTPException(
-                status_code=fastapi_status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to send reset email due to an internal email service error."
-            )
-
-    except Exception as e:
-        logger.error(f"Failed to send password reset email to {user.email}: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=fastapi_status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to send reset email due to an internal server error."
-        )
-
+    if email_sent_successfully:
+        return {"message": "Reset link has been sent"}
+    else:
+        # --- CHANGE: Return a specific error with the ID needed for retry ---
+        logger.error(f"Initial password reset email failed for {user.email}.")
+        response.status_code = fastapi_status.HTTP_422_UNPROCESSABLE_ENTITY
+        return {
+            "detail": "Could not send the password reset email.",
+            "retry_info": {
+                "identifier_id": str(user.employee_id),
+                "email_type": "forgot_password"
+            }
+        }
 
 
 @router.post("/api/reset-password")
