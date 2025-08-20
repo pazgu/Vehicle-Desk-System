@@ -25,7 +25,6 @@ export class VehicleDashboardComponent implements OnInit {
   showingMostUsed: boolean = false;
 
   inactiveVehicles: Vehicle[] = []; // vehicles not used in 7+ days
-  InactiveFilter: boolean = false; // checkbox state
   showInactive: boolean = false;
 
   selectedType: string = '';
@@ -35,13 +34,15 @@ export class VehicleDashboardComponent implements OnInit {
   sortBy: string = 'date_and_time';
   vehicleTypes: { original: string; translated: string }[] = [];
   vehicleTypeTranslations: { [key: string]: string } = {
-  'Private': 'פרטי',
-  'Small Commercial': 'מסחרי קטן',
-  'Large Commercial': 'מסחרי גדול',
-  '4x4 Pickup': '4x4 טנדר',
-  '4x4 SUV': '4x4 ג’יפ',
-  '8-Seater': 'מושבים 8'
-};
+    'Private': 'פרטי',
+    'Small Commercial': 'מסחרי קטן',
+    'Large Commercial': 'מסחרי גדול',
+    '4x4 Pickup': '4x4 טנדר',
+    '4x4 SUV': '4x4 ג’יפ',
+    '8-Seater': 'מושבים 8'
+  };
+  showMileageUpload: boolean = false;
+
 
 
   topUsedVehiclesMap: Record<string, number> = {};
@@ -51,10 +52,10 @@ export class VehicleDashboardComponent implements OnInit {
 
   departmentMap: Map<string, string> = new Map();
   selectedFile: File | null = null;
-isLoading = false;
-uploadSuccess = false;
-uploadError: string | null = null;
-uploadSummary: { vehiclesUpdated: number; warnings: string[] } | null = null;
+  isLoading = false;
+  uploadSuccess = false;
+  uploadError: string | null = null;
+  uploadSummary: { vehiclesUpdated: number; warnings: string[] } | null = null;
 
   constructor(
     private vehicleService: VehicleService,
@@ -107,6 +108,8 @@ uploadSummary: { vehiclesUpdated: number; warnings: string[] } | null = null;
     }
   }
 
+
+
   navigateToNewVehicle() {
     this.router.navigate(['vehicle-dashboard/new-vehicle']);
   }
@@ -122,6 +125,7 @@ uploadSummary: { vehiclesUpdated: number; warnings: string[] } | null = null;
           ...vehicle,
           department: this.departmentMap.get(vehicle.department_id || '') || (vehicle.department_id ? 'מחלקה לא ידועה' : 'לא משוייך למחלקה')
         })) : [];
+        this.mostUsedVehicles = []; // Clear most used when loading all
         this.showingMostUsed = false;
       },
       (error) => {
@@ -147,20 +151,20 @@ uploadSummary: { vehiclesUpdated: number; warnings: string[] } | null = null;
     });
   }
 
-fetchVehicleTypes() {
-  this.vehicleService.getVehicleTypes().subscribe({
-    next: (types) => {
-      this.vehicleTypes = (types || []).map(type => ({
-        original: type,
-        translated: this.vehicleTypeTranslations[type] || type // fallback to original if not found
-      }));
-    },
-    error: (err) => {
-      console.error('Error fetching vehicle types:', err);
-      this.vehicleTypes = [];
-    }
-  });
-}
+  fetchVehicleTypes() {
+    this.vehicleService.getVehicleTypes().subscribe({
+      next: (types) => {
+        this.vehicleTypes = (types || []).map(type => ({
+          original: type,
+          translated: this.vehicleTypeTranslations[type] || type // fallback to original if not found
+        }));
+      },
+      error: (err) => {
+        console.error('Error fetching vehicle types:', err);
+        this.vehicleTypes = [];
+      }
+    });
+  }
 
 
   getVehicleUsageCount(plateNumber: string): number {
@@ -192,54 +196,53 @@ fetchVehicleTypes() {
     return Math.min((count / maxRides) * 100, 100);
   }
 
-  loadMostUsedVehicles(): void {
-    const currentDate = new Date();
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth() + 1;
-
-    this.vehicleService.getAllVehicles().subscribe(
-      (allVehicles) => {
-        const vehiclesWithNames = Array.isArray(allVehicles) ? allVehicles.map(vehicle => ({
-          ...vehicle,
-          department: this.departmentMap.get(vehicle.department_id || '') || (vehicle.department_id ? 'מחלקה לא ידועה' : 'ללא מחלקה')
-        })) : [];
-        this.vehicles = vehiclesWithNames;
-
-        this.vehicleService.getMostUsedVehiclesThisMonth(year, month).subscribe({
-          next: (response) => {
-
-            const enrichedStats = response.stats
-              .map((stat: any) => {
-                const match = vehiclesWithNames.find(v => v.id === stat.vehicle_id);
-                if (match) {
-                  return {
-                    ...match,
-                    ride_count: stat.total_rides
-                  };
-                }
-                return null;
-              })
-              .filter((v) => v !== null) as VehicleInItem[];
-
-            this.mostUsedVehicles = enrichedStats;
-            this.showingMostUsed = true;
-          },
-          error: (err) => {
-            console.error('❌ Error loading most used vehicles:', err);
-          }
-        });
-      },
-      (error) => {
-        console.error('❌ Error loading all vehicles:', error);
-      }
-    );
-  }
-
-  toggleVehicleMode(): void {
+  onMostUsedChange(): void {
     if (this.showingMostUsed) {
-      this.loadVehicles();
+      this.showInactive = false;
+      this.onInactiveFilterChange();
+    }
+
+    if (this.showingMostUsed) {
+      const currentDate = new Date();
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth() + 1;
+
+      this.vehicleService.getAllVehicles().subscribe(
+        (allVehicles) => {
+          const vehiclesWithNames = Array.isArray(allVehicles) ? allVehicles.map(vehicle => ({
+            ...vehicle,
+            department: this.departmentMap.get(vehicle.department_id || '') || (vehicle.department_id ? 'מחלקה לא ידועה' : 'ללא מחלקה')
+          })) : [];
+          this.vehicles = vehiclesWithNames;
+
+          this.vehicleService.getMostUsedVehiclesThisMonth(year, month).subscribe({
+            next: (response) => {
+              const enrichedStats = response.stats
+                .map((stat: any) => {
+                  const match = vehiclesWithNames.find(v => v.id === stat.vehicle_id);
+                  if (match) {
+                    return {
+                      ...match,
+                      ride_count: stat.total_rides
+                    };
+                  }
+                  return null;
+                })
+                .filter((v) => v !== null) as VehicleInItem[];
+
+              this.mostUsedVehicles = enrichedStats;
+            },
+            error: (err) => {
+              console.error('❌ Error loading most used vehicles:', err);
+            }
+          });
+        },
+        (error) => {
+          console.error('❌ Error loading all vehicles:', error);
+        }
+      );
     } else {
-      this.loadMostUsedVehicles();
+      this.loadVehicles();
     }
   }
 
@@ -260,8 +263,14 @@ fetchVehicleTypes() {
   getInactiveVehicles(): Observable<Vehicle[]> {
     return this.http.get<Vehicle[]>(`${environment.apiUrl}/vehicles/inactive`);
   }
+
   onInactiveFilterChange(): void {
-    if (this.InactiveFilter) {
+    if (this.showInactive) {
+      this.showingMostUsed = false;
+      this.onMostUsedChange();
+    }
+
+    if (this.showInactive) {
       this.getInactiveVehicles().subscribe({
         next: (data) => {
           this.inactiveVehicles = data;
@@ -274,7 +283,7 @@ fetchVehicleTypes() {
       this.inactiveVehicles = [];
     }
   }
-  // New method to check if a vehicle is inactive
+
   isInactive(lastUsedAt: string | null | undefined): boolean {
     if (!lastUsedAt) {
       return true; // Consider vehicles with no last_used_at as inactive
@@ -283,10 +292,8 @@ fetchVehicleTypes() {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     return lastUsedDate < sevenDaysAgo;
-
   }
 
-  
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
@@ -362,12 +369,8 @@ fetchVehicleTypes() {
     if (this.typeFilter) {
       filtered = filtered.filter(vehicle => vehicle.type === this.typeFilter);
     }
-    if (this.InactiveFilter && this.inactiveVehicles.length > 0) {
-      const inactiveIds = new Set(this.inactiveVehicles.map((v) => v.id));
-      filtered = filtered.filter((v) => inactiveIds.has(v.id));
-    }
 
-
+    // Only apply this filter if the checkbox is checked
     if (this.showInactive) {
       const oneWeekAgo = new Date();
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
@@ -384,6 +387,7 @@ fetchVehicleTypes() {
       return filtered;
     }
   }
+
   navigateToArchivedVehicles(): void {
     this.router.navigate(['/archived-vehicles']);
   }
