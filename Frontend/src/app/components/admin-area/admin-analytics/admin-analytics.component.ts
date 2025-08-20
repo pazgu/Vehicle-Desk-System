@@ -827,10 +827,12 @@ public exportExcel(): void {
       : this.topUsedVehiclesData;
 
   const title = isVehicleTab
-    ? 'סטטוס רכבים' + (this.selectedVehicleType !== '' ? ` לרכבים מסוג ${this.selectedVehicleType}` : ' - כל הרכבים')
-    : isRideTab
-      ? 'Ride Status Summary'
-      : 'Top Used Vehicles';
+  ? this.selectedVehicleType !== '' 
+    ? `סטטוס רכבים (${this.selectedVehicleType})`
+    : 'סטטוס רכבים (כל הסוגים)'
+  : isRideTab
+    ? 'Ride Status Summary'
+    : 'Top Used Vehicles';
 
 const timestamp = new Date().toISOString().substring(0, 10);
 let data: any[] = [];
@@ -971,7 +973,7 @@ if (isNoShowTab && this.filteredNoShowUsers.length === 0) {
     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8'
   });
 
-  saveAs(blob, `${title}-${timestamp}.xlsx`);
+  saveAs(blob, `${title}__${timestamp}.xlsx`);
 }
 
 
@@ -999,9 +1001,11 @@ if (!isNoShowTab) {
 const title = isNoShowTab
   ? 'טבלת נעדרים'
   : isVehicleTab
-    ? 'סטטוס רכבים' + (this.selectedVehicleType !== '' ? ` לרכבים מסוג ${this.selectedVehicleType}` : ' - כל הרכבים')
-    : isRideTab
-      ? 'סטטוס נסיעות'
+   ? this.selectedVehicleType !== '' 
+  ? `סטטוס רכבים (${this.selectedVehicleType})`
+  : 'סטטוס רכבים (כל הסוגים)'
+: isRideTab
+  ? 'סטטוס נסיעות'
       : this.isMonthlyView
         ? 'שימוש חודשי ברכבים'
         : 'רכבים בשימוש גבוה';
