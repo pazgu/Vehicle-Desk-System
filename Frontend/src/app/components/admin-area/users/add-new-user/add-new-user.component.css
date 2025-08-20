@@ -1,13 +1,25 @@
-body {
-  font-family: 'Alef', sans-serif;
-  background-image: url('/assets/images/add-user.png'); /* Replace with your actual image path */
-  background-size: cover;
-  background-position: center;
+:host {
+  margin: 0;
+  padding: 0;
+  display: block;
+  min-height: 100vh;
+  background-image: url('/assets/images/add-user.png');
   background-repeat: no-repeat;
   background-attachment: fixed;
+  background-size: cover;
+  background-position: center ;
+}
+
+
+body {
+  margin-top: 30px;
+  font-family: 'Alef', sans-serif;
   min-height: 100vh;
   margin: 0;
   padding: 0;
+}
+.wrapper{
+  height: 120%;
 }
 
 /* Form Container */
@@ -18,6 +30,7 @@ body {
   width: 100%;
   max-width: 750px;
   margin: 30px auto;
+  margin-top: 0px;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
   font-family: 'Alef', sans-serif;
   direction: rtl;
@@ -35,6 +48,7 @@ body {
 
 /* Form Styling */
 .form-container form {
+  margin: 30px;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -49,7 +63,6 @@ body {
 
 .form-group.center {
   align-items: center;
-  margin-top: 20px;
 }
 
 /* Labels */
@@ -180,7 +193,6 @@ body {
 /* Responsive Design */
 @media (max-width: 768px) {
   .form-container {
-    padding: 16px 20px;
     margin: 10px;
     width: calc(100% - 20px);
   }

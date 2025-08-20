@@ -35,7 +35,6 @@ export class AddVehicleComponent implements OnInit {
       plate_number: ['', Validators.required],
       type: ['', Validators.required],
       fuel_type: ['', Validators.required],
-      current_location: ['', Validators.required],
       mileage: [0, [Validators.required, Validators.min(0)]],
       vehicle_model: ['', Validators.required],
       // Initialize department_id with `null`.

@@ -36,7 +36,6 @@ class Vehicle(Base):
     freeze_reason = Column(Enum(FreezeReason), nullable=True)
     freeze_details = Column(Text, nullable=True) 
     last_used_at = Column(DateTime, nullable=True)
-    current_location = Column(Text, nullable=False)
     mileage = Column(Integer, nullable=False, default=0)
     mileage_last_updated = Column(DateTime, nullable=True)
     vehicle_model = Column(Text, nullable=False)
