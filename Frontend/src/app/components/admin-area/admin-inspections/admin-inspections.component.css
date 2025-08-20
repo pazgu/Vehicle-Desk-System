@@ -2,23 +2,56 @@
   display: block;
   min-height: calc(100vh - 55px);
   padding: 25px;
-  direction: rtl;
   font-family: sans-serif;
-  background-image: url('/assets/images/vehicle-dashboard-bg.png'); /* same path, different file if needed */
+  background-image: url('/assets/images/vehicle-dashboard-bg.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-attachment: fixed; /* optional for fixed-on-scroll effect */
+  background-attachment: fixed;
 }
 
+
+
 .admin-inspections-container {
-  background-color: rgba(245, 241, 241, 0.582);
+  background-color: rgba(255, 255, 255);
   padding: 10px;
   border-radius: 12px;
   max-width: 1050px;
   margin: 0 auto;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 0;
+}
+
+button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  margin: 0 1rem;
+  cursor: pointer;
+  color: #811313;
+}
+
+.filter {
+  font-size: 16px;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 /* Section Title */
@@ -53,7 +86,7 @@
   background-color: #7a1c1c;
 }
 
-.problematic-only-filter div { /* for the filter checkboxes container */
+.problematic-only-filter div {
   background: #f7f7f7;
   padding: 1rem;
   border-radius: 8px;
@@ -70,36 +103,47 @@
   font-size: 0.95rem;
 }
 
-/* Table styling */
 .inspection-table {
-  width: 90%;
-  margin: 0 auto; /* Centering the table */
-  border-radius: 15px;
-  border: 5px solid #942222;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  text-align: center; /* Centering table content */
-  font-size: 14px;
-  direction: rtl;
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem auto; /* This centers the entire table */
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  border-radius: 12px;
+  overflow: hidden;
 }
 
-.inspection-table thead tr th {
-  background-color: #942222;
-  color: white;
-  padding: 10px;
-  font-weight: bold;
-  text-align: center; /* Centering header text */
+.inspection-table th,
+.inspection-table td {
+  /* This is the key change for the "gap" effect */
+  border: 1px solid #e5e7eb; 
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
 }
 
-.inspection-table tbody tr td {
-  padding: 10px;
-  text-align: center; /* Centering body text */
-  border-bottom: 1px solid #e9ecef;
+.inspection-table th {
+  background: #942222;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.05rem;
+  /* The Audit Ride table had a slight border on the right for the header */
+  border: 1px solid rgba(255, 255, 255, 0.2); 
+  text-align: center;
 }
 
-.inspection-table tbody tr:hover {
-  background-color: #f0f0f0;
-  color: #942222;
+.inspection-table td {
+  background: #fafbfc;
+  transition: background 0.2s;
+  vertical-align: middle;
 }
+
+.inspection-table tr:last-child td {
+  border-bottom: none;
+}
+
+
+/* --- End of modified table styling --- */
+
 
 /* Section headers within the table body */
 .inspection-table .table-section-header {
@@ -112,52 +156,11 @@
 }
 
 .inspection-table .table-separator {
-  height: 10px; /* Space between sections */
+  height: 10px;
   background-color: #f5f1f1;
   border-bottom: none;
 }
 
-/* Modal Styling */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background-color: white;
-  padding: 25px;
-  border-radius: 10px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  position: relative;
-  max-width: 500px;
-  width: 90%;
-  text-align: right;
-}
-
-.modal-content h3 {
-  color: #942222;
-  margin-bottom: 1rem;
-  border-bottom: 2px solid #eee;
-  padding-bottom: 0.5rem;
-}
-
-.modal-content p {
-  margin-bottom: 0.75rem;
-  line-height: 1.5;
-  color: #333;
-}
-
-.modal-content strong {
-  color: #555;
-}
 
 .close-btn {
   position: absolute;
@@ -182,6 +185,49 @@ button:disabled {
 
 /* Highlight for selected row (if applicable) */
 .highlight {
-  background-color: #e0f2f7 !important; /* A light blue for highlighting */
+  background-color: #e0f2f7 !important;
 }
 
+.no-data-table-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2rem;
+  width: 100%;
+}
+
+.no-data-table {
+  width: 90%;
+  border-collapse: collapse;
+  border-radius: 15px;
+  border: 5px solid #942222;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.no-data-table td {
+  text-align: center;
+  padding: 20px;
+  font-size: 1.2rem;
+  color: #555;
+  background-color: #f9f9f9;
+}
+
+/* New CSS from the provided example */
+.boolean-yes {
+  color: #388e3c;
+  font-weight: bold;
+}
+
+.boolean-no {
+  color: #d32f2f;
+  font-weight: bold;
+}
+
+.empty-state {
+  color: #9d9d9d;
+  font-size: 1.2rem;
+  margin-top: 2rem;
+  text-align: center;
+  flex-shrink: 0;
+}

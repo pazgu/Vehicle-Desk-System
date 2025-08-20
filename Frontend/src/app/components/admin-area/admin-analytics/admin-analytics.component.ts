@@ -20,7 +20,7 @@ import { ToastService } from '../../../services/toast.service';
 import { TopNoShowUser } from '../../../models/no-show-stats.model';
 import { StatisticsService } from '../../../services/statistics.service';
 import { UserService } from '../../../services/user_service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 
 pdfMake.vfs = pdfFonts.vfs;
@@ -46,6 +46,7 @@ export class AdminAnalyticsComponent implements OnInit {
   rideChartData: any;
   rideChartOptions: any; 
   selectedSortOption = 'countDesc';
+  noShowSortOption = 'countDesc'
   activeTabIndex = 0;
   frozenVehicles=<VehicleOutItem[]>[];
   selectedVehicleType: string = '';
@@ -114,7 +115,7 @@ years = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - i).toStr
 
  
   constructor(private http: HttpClient, private socketService: SocketService,private vehicleService:VehicleService,  private toastService: ToastService
-   ,private statisticsService: StatisticsService, private userService: UserService, private router: Router) {}
+   ,private statisticsService: StatisticsService, private userService: UserService, private router: Router,private route: ActivatedRoute) {}
 
   ngOnInit() {
   this.loadVehicleChart();
@@ -139,6 +140,11 @@ years = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - i).toStr
       this.loadRideChart();
 
     });
+     this.route.queryParams.subscribe(params => {
+    // Read query params if they exist, else keep defaults
+    this.noShowSortOption = params['noShowSort'] || 'countAsc';
+    this.selectedSortOption = params['selectedSort'] || 'countAsc';
+  });
 
     this.socketService.vehicleStatusUpdated$.subscribe(() => {
       this.loadVehicleChart();
@@ -459,7 +465,16 @@ labels: updatedLabels,
           this.updateRideChart(sortedDataR);
         });
     }
+      this.updateQueryParams({ selectedSort: this.selectedSortOption });
+
   }
+updateQueryParams(params: any) {
+  this.router.navigate([], {
+    relativeTo: this.route,
+    queryParams: params,
+    queryParamsHandling: 'merge', // keeps the other params
+  });
+}
 
   onTabChange(index: number) {
     this.activeTabIndex = index;
@@ -562,13 +577,19 @@ goToUserDetails(userId: string) {
   if (this.filterCritical) {
     filtered = filtered.filter(u => (u.no_show_count ?? 0) >= 3);
   }
+  if (!['countAsc', 'countDesc', 'nameAsc', 'nameDesc'].includes(this.noShowSortOption)) {
+  this.noShowSortOption = 'countAsc'; // or any default you want
+
+}
+  this.updateQueryParams({ noShowSort: this.noShowSortOption });
+
 
   this.filteredNoShowUsers = this.sortUsers(filtered);
 }
 
 // ✅ Sort function based on selected dropdown option
 sortUsers(users: any[]) {
-  switch (this.selectedSortOption) {
+  switch (this.noShowSortOption) {
     case 'countAsc':
       return users.sort((a, b) => a.no_show_count - b.no_show_count);
     case 'countDesc':

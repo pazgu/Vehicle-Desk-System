@@ -217,3 +217,33 @@ border: none;
 background: none;
 border: none;
 }
+
+.ride-type-indicator {
+  margin-bottom: 20px;
+}
+
+.alert {
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.alert .icon {
+  margin-left: 10px;
+  font-size: 20px;
+}
+
+.alert-info {
+  background-color: #e0f7fa; 
+  border: 1px solid #00acc1; 
+  color: #00838f; 
+}
+
+.alert-warning {
+  background-color: #fff3e0; 
+  border: 1px solid #ffb300; 
+  color: #e65100;
+}

@@ -49,7 +49,6 @@ export class AuditLogsComponent implements OnInit {
   customFromDate: string = '';
   customToDate: string = '';
 
-  problematicOnly: boolean = false;
   showExceededQuotaOnly: boolean = false; // <-- NEW
   filtersCollapsed = true;
 
@@ -132,7 +131,7 @@ export class AuditLogsComponent implements OnInit {
         newValue: this.formatRoute(newData.start_location, newData.stop, newData.extra_stops, newData.destination)
       },
       { label: 'סוג נסיעה', oldValue: this.translateRideType(oldData.ride_type), newValue: this.translateRideType(newData.ride_type) },
-      { label: 'סיבת בחירה ברכב 4X4', oldValue: oldData.vehicle_type_reason, newValue: newData.vehicle_type_reason },
+      { label: 'סיבת בחירה ברכב 4X4', oldValue: oldData.four_by_four_reasonn, newValue: newData.four_by_four_reasonn },
       { label: 'שם משתמש', oldValue: this.getUserFullNameById(oldData.user_id), newValue: this.getUserFullNameById(newData.user_id) },
       { label: 'שם משתמש עוקף', oldValue: this.getUserFullNameById(oldData.override_user_id), newValue: this.getUserFullNameById(newData.override_user_id) },
       { label: 'לוחית רישוי', oldValue: this.getPlateNumber(oldData.vehicle_id), newValue: this.getPlateNumber(newData.vehicle_id) },
@@ -167,7 +166,7 @@ export class AuditLogsComponent implements OnInit {
     actual_distance_km: 'מרחק משוער אחרי סטייה (ק"מ)',
     license_check_passed: 'עבר בדיקת רישיון',
     estimated_distance_km: 'מרחק משוער (ק"מ)',
-    vehicle_type_reason: 'סיבת בחירה ברכב מסוג 4X4',
+    four_by_four_reasonn: 'סיבת בחירה ברכב מסוג 4X4',
     extra_stops: 'עצירות נוספות',
   };
   
@@ -262,7 +261,7 @@ formatRouteFromChangeData(changeData: any): string {
   // In AuditLogsComponent, inside fetchAuditLogs method
   fetchAuditLogs(fromDate?: string, toDate?: string) {
     this.loading = true;
-    this.auditLogService.getAuditLogs(fromDate, toDate, this.problematicOnly).subscribe({
+    this.auditLogService.getAuditLogs(fromDate, toDate).subscribe({
       next: (data) => {
         // Ensure data is an array before sorting/spreading
         this.logs = Array.isArray(data) ? data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()) : [];

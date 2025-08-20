@@ -1,3 +1,16 @@
+:host {
+  display: block;
+  min-height: 100vh;
+
+  /* your background */
+  background-image: url('/assets/images/notifications-bg.png'); /* note: no leading slash */
+  background-repeat: repeat;
+  background-size: cover;       
+  background-repeat: no-repeat; 
+  background-position: center;   
+  background-attachment: fixed; 
+}
+
 
 .notification-page {
   background: white;
@@ -9,6 +22,7 @@
   padding: 2rem 2rem;
 }
 .wrapper {
+    background-image: url('/assets/images/notifications-bg.png');
   height: 100vh;
   overflow: hidden;
   padding-top: 40px;
@@ -212,11 +226,11 @@ body {
   margin: 0;
   padding: 0;
   font-family: 'Alef', sans-serif;
-  /* background-image: url('/assets/images/notifications-bg.png');
+  /* background-image: url('/assets/images/notifications-bg.png'); */
   background-size: 300px auto;
   background-repeat: repeat;
   background-position: top center;
-  background-attachment: fixed; */
+  background-attachment: fixed;
 }
 
 

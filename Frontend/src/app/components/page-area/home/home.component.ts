@@ -159,7 +159,6 @@ export class NewRideComponent implements OnInit {
             stop: ['', Validators.required],
             extraStops: this.fb.array([], this.sameStopAndDestinationValidator()),
             destination: [null],
-            vehicle_type_reason: ['', Validators.required],
             four_by_four_reason: ['']
         }, { validators: this.futureDateTimeValidator() });
         this.cityService.getCity('תל אביב').subscribe((city) => {
@@ -577,7 +576,7 @@ export class NewRideComponent implements OnInit {
         }
     }
     private updateVehicleTypeValidation(value: string): void {
-        const vehicleTypeReason = this.rideForm.get('vehicle_type_reason');
+        const vehicleTypeReason = this.rideForm.get('four_by_four_reason');
         if (value?.toLowerCase().includes('jeep') ||
             value?.toLowerCase().includes('van') ||
             value?.toLowerCase().includes('4x4')) {
@@ -585,11 +584,11 @@ export class NewRideComponent implements OnInit {
         } else {
             vehicleTypeReason?.clearValidators();
         }
-        vehicleTypeReason?.updateValueAndValidity();
-        const fourByFourReason = this.rideForm.get('four_by_four_reason');
-        if (!value?.toLowerCase().includes('4x4')) {
-            fourByFourReason?.setValue('');
-        }
+        // vehicleTypeReason?.updateValueAndValidity();
+        // const fourByFourReason = this.rideForm.get('four_by_four_reason');
+        // if (!value?.toLowerCase().includes('4x4')) {
+        //     fourByFourReason?.setValue('');
+        // }
     }
     isPendingVehicle(vehicle_id: string): boolean {
         const rideDate = this.rideForm.get('ride_date')?.value;

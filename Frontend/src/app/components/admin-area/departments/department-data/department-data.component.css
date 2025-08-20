@@ -1,3 +1,26 @@
+:host {
+  display: block;
+  min-height: 100vh;
+
+  /* full-bleed background */
+  background-image: url('/assets/images/vehicle-dashboard-bg.png'); /* no leading slash */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  /* background-attachment: fixed; */ /* optional; comment out if it jitters on mobile */
+}
+
+/* optional: soft overlay for readability */
+:host::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.6); /* tweak opacity if you want */
+  pointer-events: none;
+}
+
+
+
 .department-info{
     border: black 1px solid;
     border-radius: 8px;
@@ -22,11 +45,7 @@
     margin: 0 auto;
     padding: 2rem;
     position: relative;
-    background-image: url('/assets/images/vehicle-dashboard-bg.png'); /* change name if needed */
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed; /* optional for a fixed effect */
+ 
 }
 
 .departments-container h2 {
