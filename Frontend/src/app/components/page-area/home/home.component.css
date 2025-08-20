@@ -61,7 +61,6 @@ select,
   width: 100%;
 }
 
-/* Remove old conflicting rules */
 form .row,
 form .column,
 .input-group {
@@ -70,9 +69,7 @@ form .column,
     flex-direction: unset;
 }
 
-/* ---------------------------------------------------- */
-/* CSS for "add another stop" button */
-/* ---------------------------------------------------- */
+
 form .addBtn,
 form .removeBtn {
   border: none;
@@ -288,6 +285,7 @@ hr {
 
 .full-trip-display {
   display: flex;
+  position:absolute;
   flex-direction: column;
   align-items: flex-start;
   direction: rtl;
@@ -295,7 +293,7 @@ hr {
   padding: 1rem;
   border: 1px solid #ccc;
   border-radius: 8px;
-  margin-left: 930px;
+  margin-right: 1090px;
   background-color: #9422221f;
   width: 300px;
 }
