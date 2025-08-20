@@ -5,29 +5,26 @@
   background: white;
 
 }
-
+.export-disclaimer {
+  margin-right: 35%;
+}
 :host {
   display: block;
   min-height: 100vh;
-
-  /* ✅ Background image */
-  background-image: url('/assets/images/vehicle-dashboard-bg.png'); /* or your desired path */
+  background-image: url('/assets/images/vehicle-dashboard-bg.png'); 
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-attachment: fixed; /* optional for parallax effect */
+  background-attachment: fixed; 
 }
 
-/* Main Container - Very Compact */
 .analytics-container {
   max-width: 800px;
   margin: 0 auto;
   padding: 0.5rem;
   min-height: 100vh;
-  /* Remove any background that might be covering the body background */
   background: rgba(255,250,245,255);
   position: relative;
-  /* Ensure it doesn't create a new stacking context that hides the background */
   z-index: 1;
 }
 body {
@@ -38,7 +35,6 @@ body {
   padding: 0;
 }
 
-/* Chart Card - Much Smaller, Ultra Compact */
 .chart-card {
   background: rgba(255, 255, 255, 1);
   backdrop-filter: blur(20px);
@@ -66,9 +62,8 @@ body {
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+  background: linear-gradient(90deg, #ea6666, #a24b4b, #fb9393);
   background-size: 200% 100%;
-  animation: shimmer 3s infinite;
 }
 
 @keyframes shimmer {
@@ -76,14 +71,6 @@ body {
   100% { background-position: 200% 0; }
 }
 
-/* .chart-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 
-    0 12px 30px rgba(0, 0, 0, 0.12),
-    0 1px 0px rgba(255, 255, 255, 0.3) inset;
-} */
-
-/* Sort Container - Much Smaller */
 
 
 .sort-container label {
@@ -115,7 +102,6 @@ body {
 
 
 
-/* Export Buttons - Smaller */
 .export-buttons {
   display: flex;
   justify-content: center;

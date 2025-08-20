@@ -21,6 +21,7 @@ import { TopNoShowUser } from '../../../models/no-show-stats.model';
 import { StatisticsService } from '../../../services/statistics.service';
 import { UserService } from '../../../services/user_service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { style } from '@angular/animations';
 
 
 pdfMake.vfs = pdfFonts.vfs;
@@ -127,12 +128,7 @@ years = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - i).toStr
 
 
 
-  // 👇 Only load monthly chart at start (do NOT override with all-time yet)
-  // if (this.isMonthlyView) {
-  //   this.loadTopUsedVehiclesChart();
-  // } else {
-  //   this.loadAllTimeTopUsedVehiclesChart();
-  // }
+
 
     this.loadTopUsedVehiclesChart();
     this.loadAllTimeTopUsedVehiclesChart();
@@ -364,7 +360,7 @@ labels: updatedLabels,
       }
     },
     legend: {
-      position: 'top',
+      position: 'right',
       labels: { color: '#495057',
         font: {
           size: 14,    
@@ -410,6 +406,7 @@ labels: updatedLabels,
     this.rideChartOptions = {
       plugins: {
         legend: { 
+          position: 'right',
           labels: { 
             color: '#495057',
             font: {
@@ -538,20 +535,16 @@ this.allNoShowUsers = mappedUsers;
     return statusMap[status] || status;
   }
 
-  // 🆕 ADD this new method to load departments
   private loadDepartments(): void {
     this.userService.getDepartments().subscribe({
       next: (departments) => {
         departments.forEach(dep => this.departmentsMap.set(dep.id, dep.name));
-        this.departmentsLoaded = true; // Mark departments as loaded
-        // Call loadNoShowStatistics ONLY after departments are successfully loaded
+        this.departmentsLoaded = true; 
         this.loadNoShowStatistics();
       },
       error: () => {
         this.toastService.show('אירעה שגיאה בטעינת נתוני מחלקות.', 'error');
-        this.departmentsLoaded = false; // Mark as failed to load
-        // If departments fail to load, still try to load no-show stats
-        // Department names in the table will then default to "מחלקה לא ידועה"
+        this.departmentsLoaded = false; 
         this.loadNoShowStatistics();
       }
     });
@@ -561,7 +554,6 @@ this.allNoShowUsers = mappedUsers;
 goToUserDetails(userId: string) {
   this.router.navigate(['/user-card', userId]);
 }
- // 🆕 MODIFY: Use the component's internal departmentsMap
   resolveDepartment(departmentId: string): string {
     return this.departmentsMap.get(departmentId) || 'מחלקה לא ידועה';
   }
@@ -578,7 +570,7 @@ goToUserDetails(userId: string) {
     filtered = filtered.filter(u => (u.no_show_count ?? 0) >= 3);
   }
   if (!['countAsc', 'countDesc', 'nameAsc', 'nameDesc'].includes(this.noShowSortOption)) {
-  this.noShowSortOption = 'countAsc'; // or any default you want
+  this.noShowSortOption = 'countAsc'; 
 
 }
   this.updateQueryParams({ noShowSort: this.noShowSortOption });
@@ -587,7 +579,6 @@ goToUserDetails(userId: string) {
   this.filteredNoShowUsers = this.sortUsers(filtered);
 }
 
-// ✅ Sort function based on selected dropdown option
 sortUsers(users: any[]) {
   switch (this.noShowSortOption) {
     case 'countAsc':
@@ -611,21 +602,15 @@ sortUsers(users: any[]) {
   const isTopUsedTab = this.activeTabIndex === 2;
   const isNoShowTab = this.activeTabIndex === 3; 
 
-  // this is for the warnning that shows and disappers after 4 seconds
 if (isNoShowTab && this.filteredNoShowUsers.length === 0) {
   this.showExportWarningTemporarily();
   return;
 }
 
-
-
-
-  // 🔄 MODIFY THIS SECTION - Add conditional logic for no-show tab
   let chartData: any;
   let title: string;
   
   if (isNoShowTab) {
-    // 🆕 ADD THIS BLOCK
     title = 'No-Show Users Report';
   } else {
     chartData = isVehicleTab
@@ -641,6 +626,7 @@ if (isNoShowTab && this.filteredNoShowUsers.length === 0) {
         : this.isMonthlyView
           ? 'Monthly Vehicle Usage'
           : 'Top Used Vehicles';
+
   }
 
 
@@ -762,9 +748,11 @@ if (isNoShowTab && this.filteredNoShowUsers.length === 0) {
   
 
   const docDefinition: any = {
+ 
     content: [
       { text: title, style: 'header' },
       { text: `Created: ${timestamp}`, style: 'subheader' },
+    ...(isVehicleTab ? [{ text: `Vehicle Types: ${this.selectedVehicleType == '' ? 'All' : this.selectedVehicleType}`, style: 'summaryHeader'}] : []),
       {
         table: {
           headerRows: 1,
@@ -776,6 +764,7 @@ widths: isNoShowTab
           body: body
         },
         layout: {
+
           fillColor: (rowIndex: number) => rowIndex === 0 ? '#f2f2f2' : null
         }
       }
@@ -811,15 +800,12 @@ widths: isNoShowTab
   pdfMake.createPdf(docDefinition).download(`${title}-${safeTimestamp}.pdf`);
 }
 
-// Add this method to your component for better performance with *ngFor
 trackByUserId(index: number, user: any): any {
   return user.user_id;
 }
 
-// Optional: Add loading state for better UX
 isTableLoading = false;
 
-// Optional: Add method to handle keyboard navigation
 onTableKeydown(event: KeyboardEvent, user: any): void {
   if (event.key === 'Enter' || event.key === ' ') {
     event.preventDefault();
@@ -841,12 +827,12 @@ public exportExcel(): void {
       : this.topUsedVehiclesData;
 
   const title = isVehicleTab
-    ? 'Vehicle Status Summary'
+    ? 'סטטוס רכבים' + (this.selectedVehicleType !== '' ? ` לרכבים מסוג ${this.selectedVehicleType}` : ' - כל הרכבים')
     : isRideTab
       ? 'Ride Status Summary'
       : 'Top Used Vehicles';
 
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+const timestamp = new Date().toISOString().substring(0, 10);
 let data: any[] = [];
 
 if (isNoShowTab) {
@@ -1002,10 +988,6 @@ if (isNoShowTab && this.filteredNoShowUsers.length === 0) {
   return;
 }
 
-
-
-  
-
 let chartData: any;
 if (!isNoShowTab) {
   chartData = isVehicleTab
@@ -1017,15 +999,14 @@ if (!isNoShowTab) {
 const title = isNoShowTab
   ? 'טבלת נעדרים'
   : isVehicleTab
-    ? 'סטטוס רכבים'
+    ? 'סטטוס רכבים' + (this.selectedVehicleType !== '' ? ` לרכבים מסוג ${this.selectedVehicleType}` : ' - כל הרכבים')
     : isRideTab
       ? 'סטטוס נסיעות'
       : this.isMonthlyView
         ? 'שימוש חודשי ברכבים'
         : 'רכבים בשימוש גבוה';
 
-
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+const timestamp = new Date().toISOString().substring(0, 10);
 let data: any[] = [];
 
 if (isNoShowTab) {
