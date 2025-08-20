@@ -17,7 +17,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { formatDate } from '@angular/common';
 
 interface PendingVehicle { vehicle_id: string; date: string; period: string; start_time?: string; end_time?: string; }
-interface Vehicle { id: string; plate_number: string; type: string; fuel_type: string; status: string; freeze_reason?: string | null; last_used_at?: string; current_location?: string; mileage: number; image_url: string; vehicle_model: string; }
+interface Vehicle { id: string; plate_number: string; type: string; fuel_type: string; status: string; freeze_reason?: string | null; last_used_at?: string; mileage: number; image_url: string; vehicle_model: string; }
 interface City { id: string; name: string; }
 interface Employee { id: string; full_name: string; }
 

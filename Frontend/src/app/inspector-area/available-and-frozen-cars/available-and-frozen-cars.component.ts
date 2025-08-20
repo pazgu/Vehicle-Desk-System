@@ -21,7 +21,7 @@ export class AvailableAndFrozenCarsComponent implements OnInit {
     this.vehicleService.getAllVehicles().subscribe({
       next: (vehicles) => {
         this.availableNotParkedCars = vehicles.filter(v =>
-v.status === 'available' && (v.current_location?.toLowerCase() || '') !== 'parking'
+v.status === 'available'
         );
         this.frozenCars = vehicles.filter(v => v.status === 'frozen');
         this.loading = false;

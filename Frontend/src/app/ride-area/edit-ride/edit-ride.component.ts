@@ -45,7 +45,6 @@ export class EditRideComponent implements OnInit {
     status: string;
     freeze_reason?: string | null;
     last_used_at?: string;
-    current_location?: string;
     mileage: number;
     image_url: string;
     vehicle_model: string;
