@@ -121,12 +121,7 @@
         חובה להזין מספר ק"מ חוקי
       </div>
 
-      <label>מיקום נוכחי</label>
-      <input formControlName="current_location" type="text" />
-      <div class="error"
-        *ngIf="vehicleForm.get('current_location')?.touched && vehicleForm.get('current_location')?.invalid">
-        מיקום נדרש
-      </div>
+      
 
       <label>תמונה (URL)</label>
       <input formControlName="image_url" type="text" />

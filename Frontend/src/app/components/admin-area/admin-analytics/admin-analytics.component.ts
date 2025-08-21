@@ -21,6 +21,7 @@ import { TopNoShowUser } from '../../../models/no-show-stats.model';
 import { StatisticsService } from '../../../services/statistics.service';
 import { UserService } from '../../../services/user_service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { style } from '@angular/animations';
 
 
 pdfMake.vfs = pdfFonts.vfs;
@@ -127,12 +128,7 @@ export class AdminAnalyticsComponent implements OnInit {
 
 
 
-    // 👇 Only load monthly chart at start (do NOT override with all-time yet)
-    // if (this.isMonthlyView) {
-    //   this.loadTopUsedVehiclesChart();
-    // } else {
-    //   this.loadAllTimeTopUsedVehiclesChart();
-    // }
+
 
     this.loadTopUsedVehiclesChart();
     this.loadAllTimeTopUsedVehiclesChart();
@@ -359,26 +355,25 @@ export class AdminAnalyticsComponent implements OnInit {
                 return `${label}:\nסיבות הקפאה: ${reasonsText}`;
               }
 
-              return `${label}:`;
-            }
-          }
-        },
-        legend: {
-          position: 'top',
-          labels: {
-            color: '#495057',
-            font: {
-              size: 14,
-              family: 'Arial, sans-serif'
-            },
-            usePointStyle: true
-          }
+          return `${label}:`;
         }
-      },
-      responsive: true,
-      maintainAspectRatio: false,
-      locale: 'he-IL'
-    };
+      }
+    },
+    legend: {
+      position: 'right',
+      labels: { color: '#495057',
+        font: {
+          size: 14,    
+          family: 'Arial, sans-serif'
+        },
+        usePointStyle: true  
+       }
+    }
+  },
+  responsive: true,
+  maintainAspectRatio: false,
+  locale: 'he-IL'
+};
 
   }
 
@@ -410,8 +405,9 @@ export class AdminAnalyticsComponent implements OnInit {
 
     this.rideChartOptions = {
       plugins: {
-        legend: {
-          labels: {
+        legend: { 
+          position: 'right',
+          labels: { 
             color: '#495057',
             font: {
               size: 14,
@@ -539,30 +535,25 @@ export class AdminAnalyticsComponent implements OnInit {
     return statusMap[status] || status;
   }
 
-  // 🆕 ADD this new method to load departments
   private loadDepartments(): void {
     this.userService.getDepartments().subscribe({
       next: (departments) => {
         departments.forEach(dep => this.departmentsMap.set(dep.id, dep.name));
-        this.departmentsLoaded = true; // Mark departments as loaded
-        // Call loadNoShowStatistics ONLY after departments are successfully loaded
+        this.departmentsLoaded = true; 
         this.loadNoShowStatistics();
       },
       error: () => {
         this.toastService.show('אירעה שגיאה בטעינת נתוני מחלקות.', 'error');
-        this.departmentsLoaded = false; // Mark as failed to load
-        // If departments fail to load, still try to load no-show stats
-        // Department names in the table will then default to "מחלקה לא ידועה"
+        this.departmentsLoaded = false; 
         this.loadNoShowStatistics();
       }
     });
   }
 
 
-  goToUserDetails(userId: string) {
-    this.router.navigate(['/user-card', userId]);
-  }
-  // 🆕 MODIFY: Use the component's internal departmentsMap
+goToUserDetails(userId: string) {
+  this.router.navigate(['/user-card', userId]);
+}
   resolveDepartment(departmentId: string): string {
     return this.departmentsMap.get(departmentId) || 'מחלקה לא ידועה';
   }
@@ -575,11 +566,11 @@ export class AdminAnalyticsComponent implements OnInit {
       filtered = filtered.filter(u => (u.no_show_count ?? 0) >= 1 && (u.no_show_count ?? 0) <= 2);
     }
 
-    if (this.filterCritical) {
-      filtered = filtered.filter(u => (u.no_show_count ?? 0) >= 3);
-    }
-    if (!['countAsc', 'countDesc', 'nameAsc', 'nameDesc'].includes(this.noShowSortOption)) {
-      this.noShowSortOption = 'countAsc'; // or any default you want
+  if (this.filterCritical) {
+    filtered = filtered.filter(u => (u.no_show_count ?? 0) >= 3);
+  }
+  if (!['countAsc', 'countDesc', 'nameAsc', 'nameDesc'].includes(this.noShowSortOption)) {
+  this.noShowSortOption = 'countAsc'; 
 
     }
     this.updateQueryParams({ noShowSort: this.noShowSortOption });
@@ -588,21 +579,20 @@ export class AdminAnalyticsComponent implements OnInit {
     this.filteredNoShowUsers = this.sortUsers(filtered);
   }
 
-  // ✅ Sort function based on selected dropdown option
-  sortUsers(users: any[]) {
-    switch (this.noShowSortOption) {
-      case 'countAsc':
-        return users.sort((a, b) => a.no_show_count - b.no_show_count);
-      case 'countDesc':
-        return users.sort((a, b) => b.no_show_count - a.no_show_count);
-      case 'nameAsc':
-        return users.sort((a, b) => a.name.localeCompare(b.name));
-      case 'nameDesc':
-        return users.sort((a, b) => b.name.localeCompare(a.name));
-      default:
-        return users;
-    }
+sortUsers(users: any[]) {
+  switch (this.noShowSortOption) {
+    case 'countAsc':
+      return users.sort((a, b) => a.no_show_count - b.no_show_count);
+    case 'countDesc':
+      return users.sort((a, b) => b.no_show_count - a.no_show_count);
+    case 'nameAsc':
+      return users.sort((a, b) => a.name.localeCompare(b.name));
+    case 'nameDesc':
+      return users.sort((a, b) => b.name.localeCompare(a.name));
+    default:
+      return users;
   }
+}
 
 
 
@@ -612,37 +602,32 @@ export class AdminAnalyticsComponent implements OnInit {
     const isTopUsedTab = this.activeTabIndex === 2;
     const isNoShowTab = this.activeTabIndex === 3;
 
-    // this is for the warnning that shows and disappers after 4 seconds
-    if (isNoShowTab && this.filteredNoShowUsers.length === 0) {
-      this.showExportWarningTemporarily();
-      return;
-    }
+if (isNoShowTab && this.filteredNoShowUsers.length === 0) {
+  this.showExportWarningTemporarily();
+  return;
+}
 
+  let chartData: any;
+  let title: string;
+  
+  if (isNoShowTab) {
+    title = 'No-Show Users Report';
+  } else {
+    chartData = isVehicleTab
+      ? this.vehicleChartData
+      : isRideTab
+        ? this.rideChartData
+        : this.topUsedVehiclesData;
 
+    title = isVehicleTab
+      ? 'Vehicle Status Summary'
+      : isRideTab
+        ? 'Ride Status Summary'
+        : this.isMonthlyView
+          ? 'Monthly Vehicle Usage'
+          : 'Top Used Vehicles';
 
-
-    // 🔄 MODIFY THIS SECTION - Add conditional logic for no-show tab
-    let chartData: any;
-    let title: string;
-
-    if (isNoShowTab) {
-      // 🆕 ADD THIS BLOCK
-      title = 'No-Show Users Report';
-    } else {
-      chartData = isVehicleTab
-        ? this.vehicleChartData
-        : isRideTab
-          ? this.rideChartData
-          : this.topUsedVehiclesData;
-
-      title = isVehicleTab
-        ? 'Vehicle Status Summary'
-        : isRideTab
-          ? 'Ride Status Summary'
-          : this.isMonthlyView
-            ? 'Monthly Vehicle Usage'
-            : 'Top Used Vehicles';
-    }
+  }
 
 
     const timestamp = new Date().toLocaleString();
@@ -762,71 +747,71 @@ export class AdminAnalyticsComponent implements OnInit {
 
 
 
-    const docDefinition: any = {
-      content: [
-        { text: title, style: 'header' },
-        { text: `Created: ${timestamp}`, style: 'subheader' },
-        {
-          table: {
-            headerRows: 1,
-            widths: isNoShowTab
-              ? ['*', '*', '*', '*', '*', '*', '*']
-              : isTopUsedTab
-                ? ['*', '*', '*']
-                : ['*', '*'],
-            body: body
-          },
-          layout: {
-            fillColor: (rowIndex: number) => rowIndex === 0 ? '#f2f2f2' : null
-          }
+  const docDefinition: any = {
+ 
+    content: [
+      { text: title, style: 'header' },
+      { text: `Created: ${timestamp}`, style: 'subheader' },
+    ...(isVehicleTab ? [{ text: `Vehicle Types: ${this.selectedVehicleType == '' ? 'All' : this.selectedVehicleType}`, style: 'summaryHeader'}] : []),
+      {
+        table: {
+          headerRows: 1,
+widths: isNoShowTab 
+  ? ['*', '*', '*', '*', '*', '*', '*'] 
+  : isTopUsedTab 
+    ? ['*', '*', '*'] 
+    : ['*', '*'],
+          body: body
+        },
+        layout: {
+
+          fillColor: (rowIndex: number) => rowIndex === 0 ? '#f2f2f2' : null
         }
-      ],
-      styles: {
-        header: {
-          fontSize: 18,
-          bold: true,
-          margin: [0, 0, 0, 10],
-          alignment: 'center'
-        },
-        subheader: {
-          fontSize: 12,
-          margin: [0, 0, 0, 20],
-          alignment: 'center'
-        },
-        summaryHeader: { // 🆕 ADD THIS STYLE
-          fontSize: 14,
-          bold: true,
-          margin: [0, 10, 0, 5]
-        },
-        tableHeader: {
-          fontSize: 12,
-          bold: true,
-          alignment: 'center'
-        }
-      },
-      defaultStyle: {
-        fontSize: 11
       }
-    };
+    ],
+    styles: {
+      header: {
+        fontSize: 18,
+        bold: true,
+        margin: [0, 0, 0, 10],
+        alignment: 'center'
+      },
+      subheader: {
+        fontSize: 12,
+        margin: [0, 0, 0, 20],
+        alignment: 'center'
+      },
+       summaryHeader: { // 🆕 ADD THIS STYLE
+        fontSize: 14,
+        bold: true,
+        margin: [0, 10, 0, 5]
+      },
+      tableHeader: {
+        fontSize: 12,
+        bold: true,
+        alignment: 'center'
+      }
+    },
+    defaultStyle: {
+      fontSize: 11
+    }
+  };
 
     pdfMake.createPdf(docDefinition).download(`${title}-${safeTimestamp}.pdf`);
   }
 
-  // Add this method to your component for better performance with *ngFor
-  trackByUserId(index: number, user: any): any {
-    return user.user_id;
-  }
+trackByUserId(index: number, user: any): any {
+  return user.user_id;
+}
 
-  // Optional: Add loading state for better UX
-  isTableLoading = false;
+isTableLoading = false;
 
-  // Optional: Add method to handle keyboard navigation
-  onTableKeydown(event: KeyboardEvent, user: any): void {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      this.goToUserDetails(user.user_id);
-    }
+onTableKeydown(event: KeyboardEvent, user: any): void {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    this.goToUserDetails(user.user_id);
   }
+}
 
   public exportExcel(): void {
     const isVehicleTab = this.activeTabIndex === 0;
@@ -841,14 +826,16 @@ export class AdminAnalyticsComponent implements OnInit {
         ? this.rideChartData
         : this.topUsedVehiclesData;
 
-    const title = isVehicleTab
-      ? 'Vehicle Status Summary'
-      : isRideTab
-        ? 'Ride Status Summary'
-        : 'Top Used Vehicles';
+  const title = isVehicleTab
+  ? this.selectedVehicleType !== '' 
+    ? `סטטוס רכבים (${this.selectedVehicleType})`
+    : 'סטטוס רכבים (כל הסוגים)'
+  : isRideTab
+    ? 'Ride Status Summary'
+    : 'Top Used Vehicles';
 
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    let data: any[] = [];
+const timestamp = new Date().toISOString().substring(0, 10);
+let data: any[] = [];
 
     if (isNoShowTab) {
       data = this.filteredNoShowUsers.map(user => {
@@ -986,8 +973,8 @@ export class AdminAnalyticsComponent implements OnInit {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8'
     });
 
-    saveAs(blob, `${title}-${timestamp}.xlsx`);
-  }
+  saveAs(blob, `${title}__${timestamp}.xlsx`);
+}
 
 
 
@@ -1003,31 +990,28 @@ export class AdminAnalyticsComponent implements OnInit {
       return;
     }
 
+let chartData: any;
+if (!isNoShowTab) {
+  chartData = isVehicleTab
+    ? this.vehicleChartData
+    : isRideTab
+      ? this.rideChartData
+      : this.topUsedVehiclesData;
+}
+const title = isNoShowTab
+  ? 'טבלת נעדרים'
+  : isVehicleTab
+   ? this.selectedVehicleType !== '' 
+  ? `סטטוס רכבים (${this.selectedVehicleType})`
+  : 'סטטוס רכבים (כל הסוגים)'
+: isRideTab
+  ? 'סטטוס נסיעות'
+      : this.isMonthlyView
+        ? 'שימוש חודשי ברכבים'
+        : 'רכבים בשימוש גבוה';
 
-
-
-
-    let chartData: any;
-    if (!isNoShowTab) {
-      chartData = isVehicleTab
-        ? this.vehicleChartData
-        : isRideTab
-          ? this.rideChartData
-          : this.topUsedVehiclesData;
-    }
-    const title = isNoShowTab
-      ? 'טבלת נעדרים'
-      : isVehicleTab
-        ? 'סטטוס רכבים'
-        : isRideTab
-          ? 'סטטוס נסיעות'
-          : this.isMonthlyView
-            ? 'שימוש חודשי ברכבים'
-            : 'רכבים בשימוש גבוה';
-
-
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    let data: any[] = [];
+const timestamp = new Date().toISOString().substring(0, 10);
+let data: any[] = [];
 
     if (isNoShowTab) {
       data = this.filteredNoShowUsers.map(user => {

@@ -7,14 +7,32 @@
       <button (click)="exportCSV()">📁 ייצוא CSV</button>
       <button (click)="exportPDF()">📄 ייצוא PDF</button>
       <button (click)="exportExcel()">📊 ייצוא Excel</button>
+      
+<div class="export-warning" *ngIf="noShowExportWarningVisible">
+  אין נתוני אי-הגעה לייצוא כרגע.
+</div>
 
       <div class="export-warning" *ngIf="noShowExportWarningVisible">
         אין נתוני אי-הגעה לייצוא כרגע.
       </div>
 
     </div>
+    <small class="export-disclaimer">*הייצוא מתבצע בהתאם לסינונים</small>
+
 
     <div class="tab-buttons">
+  <button [class.active]="activeTabIndex === 0" (click)="activeTabIndex = 0">
+    סטטוס רכבים
+  </button>
+  <button [class.active]="activeTabIndex === 1" (click)="activeTabIndex = 1">
+    סטטוס נסיעות
+  </button>
+   <button [class.active]="activeTabIndex === 2" (click)="activeTabIndex = 2">
+  שימוש חודשי ברכבים
+</button>
+ 
+  <button [class.active]="activeTabIndex === 4" (click)="activeTabIndex = 4">
+אי-הגעות</button>
       <button [class.active]="activeTabIndex === 0" (click)="activeTabIndex = 0">
         סטטוס רכבים
       </button>
@@ -32,6 +50,10 @@
 
     </div>
 
+<p-tabView [(activeIndex)]="activeTabIndex">
+ 
+  <p-tabPanel header=" " [headerStyle]="{ display: 'none' }">
+    <div>
     <p-tabView [(activeIndex)]="activeTabIndex">
       <div class="sort-container" *ngIf="activeTabIndex==0 || activeTabIndex==1">
         <label for="sortSelect">מיין לפי: </label>

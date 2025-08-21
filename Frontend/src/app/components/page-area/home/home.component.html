@@ -228,10 +228,56 @@
           </div>
         </div>
 
+
+
+
+        
         <div class="button-container">
           <button type="submit" class="submit-btn" (click)="submit()">שלח</button>
         </div>
       </div>
     </form>
+
+    
+
+ 
+
+
+
   </div>
+  
+
+<div *ngIf="step === 2" class="full-trip-display">
+  <h4>מסלול הנסיעה שלך:</h4>
+  <hr>
+  <a>תל אביב</a>
+  <p>↓</p>
+  <a>{{ getSelectedStopName() }}</a>
+  <ng-container *ngFor="let extra of getExtraStopNames()">
+    <p>↓</p>
+    <a>{{ extra }}</a>
+  </ng-container>
+  <p>↓</p>
+  <a>תל אביב</a>
+  
+<div class="input-group">
+  <label id="distance-title">הערכת מרחק (ק"מ)</label>
+
+  <small *ngIf="f.estimated_distance_km.touched && f.estimated_distance_km.errors?.['required']"
+         class="distance-info">
+    חובה למלא את שדה זה
+  </small>
+
+  <small *ngIf="f.estimated_distance_km.errors?.['min']"
+         class="distance-info">
+    המרחק חייב להיות לפחות 1 ק״מ
+  </small>
+
+  <small class="distance-info" *ngIf="estimated_distance_with_buffer">
+  המרחק לאחר תוספת סטייה: {{ estimated_distance_with_buffer }} ק"מ
+</small>
+
+</div>
+</div>
+
 </div>
