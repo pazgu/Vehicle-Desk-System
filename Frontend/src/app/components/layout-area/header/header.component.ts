@@ -58,9 +58,9 @@ this.socketService.feedbackNeeded$.subscribe((data) => {
 
 
     const role = localStorage.getItem('role');
-    if (role === 'employee') {
-      this.toastService.show('יש למלא טופס חווית נסיעה', 'neutral');
-    }
+    // if (role === 'employee') {
+    //   this.toastService.show('יש למלא טופס חווית נסיעה', 'neutral');
+    // }
   }
 });
 
@@ -97,7 +97,10 @@ checkFeedbackNeeded(): void {
         this.showFeedbackModal = true;
 
          const role=localStorage.getItem('role');
-  if(role==='employee'){this.toastService.show('יש למלא טופס חווית נסיעה','neutral')}
+  // if(role==='employee'){
+  //   this.toastService.show('יש למלא טופס חווית נסיעה','neutral')
+    
+  // }
   
       }
     },
