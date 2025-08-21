@@ -7,12 +7,14 @@
       <button (click)="exportCSV()">📁 ייצוא CSV</button>
       <button (click)="exportPDF()">📄 ייצוא PDF</button>
       <button (click)="exportExcel()">📊 ייצוא Excel</button>
-
+      
 <div class="export-warning" *ngIf="noShowExportWarningVisible">
   אין נתוני אי-הגעה לייצוא כרגע.
 </div>
 
     </div>
+    <small class="export-disclaimer">*הייצוא מתבצע בהתאם לסינונים</small>
+
 
     <div class="tab-buttons">
   <button [class.active]="activeTabIndex === 0" (click)="activeTabIndex = 0">
@@ -26,22 +28,13 @@
 </button>
  
   <button [class.active]="activeTabIndex === 4" (click)="activeTabIndex = 4">
-  ספירת נעדרים 
-</button>
+אי-הגעות</button>
 
 
 </div>
 
 <p-tabView [(activeIndex)]="activeTabIndex">
-  <div class="sort-container" *ngIf="activeTabIndex==0 || activeTabIndex==1">
-      <label for="sortSelect">מיין לפי: </label>
-      <select id="sortSelect" [(ngModel)]="selectedSortOption" (change)="onSortChange()">
-        <option value="default">ברירת מחדל</option>
-        <option value="countAsc">כמות - עולה</option>
-        <option value="countDesc">כמות - יורד</option>
-        <option value="alphabetical">א-ת</option>
-      </select>
-    </div>
+ 
   <p-tabPanel header=" " [headerStyle]="{ display: 'none' }">
     <div>
           <h3 class="section-heading">פילוח סטטוס רכבים</h3>

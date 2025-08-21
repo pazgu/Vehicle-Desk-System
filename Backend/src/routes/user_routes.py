@@ -9,7 +9,7 @@ from ..services import register_service
 from ..services import login_service
 from uuid import UUID
 from sqlalchemy import text
-from ..services.new_ride_service import create_ride 
+from ..services.new_ride_service import check_license_validity, create_ride 
 from fastapi.responses import JSONResponse
 from typing import List, Optional, Union
 from datetime import datetime, timedelta, timezone
@@ -182,6 +182,9 @@ async def create_order(
 ):
     role_check(allowed_roles=["employee", "admin"], token=token)
     identity_check(user_id=str(user_id), token=token)
+
+    check_license_validity(db, user_id, ride_request.start_datetime)
+
 
     try:
         new_ride = await create_ride(db, user_id, ride_request)
