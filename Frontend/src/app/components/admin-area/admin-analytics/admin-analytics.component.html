@@ -48,7 +48,7 @@
     style="display: inline-block; width: auto;"
   >
     <option value="">All</option>
-    <option *ngFor="let type of vehicleTypes" [value]="type">{{ type }}</option>
+    <option *ngFor="let status of rideStatuses" [value]="status">{{ status }}</option>
   </select>
 </div>
 
@@ -65,6 +65,19 @@
   <p-tabPanel header=" " [headerStyle]="{ display: 'none' }">
     <div>
           <h3 class="section-heading">פילוח סטטוס נסיעות</h3>
+                    <div class="filter-container" style="margin-bottom: 1rem;">
+  <label for="rideStatus" style="margin-right: 0.5rem;">סטטוס נסיעה :</label>
+  <select
+    id="rideStatus"
+    [(ngModel)]="selectedRideStatus"
+    (change)="onVehicleTypeFilterChange()"
+    class="form-control"
+    style="display: inline-block; width: auto;"
+  >
+    <option value="">All</option>
+    <option *ngFor="let type of vehicleTypes" [value]="type">{{ type }}</option>
+  </select>
+</div>
 
       <p-chart
         *ngIf="rideChartInitialized && rideChartData"
