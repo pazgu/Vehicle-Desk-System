@@ -27,7 +27,7 @@ canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean 
 
   // ✅ Admin-only routes
   if ((url.includes('/vehicle-dashboard') || url.includes('/audit-logs')||url.includes('/critical-issues')
-    ||url.includes('/user-data')||url.includes('/department-data')||url.includes('/add-new-user')) && role !== 'admin') {
+    ||url.includes('/user-data')||url.includes('/department-data')||url.includes('/add-new-user')||url.includes('admin/analytics')) && role !== 'admin') {
     this.toastService.show('העמוד מיועד למנהלים בלבד', 'error');
     this.router.navigate(['/home']);
     return false;
@@ -64,7 +64,7 @@ canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean 
     return true; // allow employee
   }
 
- 
+  
 
   // ❌  and inspectors from /home
   if ((url.includes('/home')) || (url.includes('/all-rides')))
@@ -81,6 +81,22 @@ canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean 
      this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
       this.router.navigate(['/admin/critical-issues']);
       return false;
+  }
+   if(url.includes('/inspector/inspection') && role != 'inspector'){
+     this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
+     if(role=='employee'){
+      this.router.navigate(['/home']);
+            return false;
+     }
+      if(role=='supervisor'){
+      this.router.navigate(['/supervisor-dashboard']);
+            return false;
+     }
+      if(role=='admin'){
+      this.router.navigate(['/admin/critical-issues']);
+            return false;
+     }
+
   }
 
   // ✅ Allow employees to edit their rides

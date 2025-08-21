@@ -68,7 +68,8 @@ export const routes: Routes = [
 {
   path: 'inspector/inspection',
   loadComponent: () =>
-    import('./inspector-area/vehicle-inspection/vehicle-inspection.component').then(m => m.VehicleInspectionComponent)
+    import('./inspector-area/vehicle-inspection/vehicle-inspection.component').then(m => m.VehicleInspectionComponent),
+  canActivate: [ProtectedRouteGuard]
 },
 
 {
