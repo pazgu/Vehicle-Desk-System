@@ -597,13 +597,12 @@ def vehicle_status_summary(
         raise HTTPException(status_code=500, detail=f"Error fetching summary: {str(e)}")
 
 @router.get("/analytics/ride-status-summary")
-def ride_status_summary(db: Session = Depends(get_db)):
+def ride_status_summary(status: str = None, db: Session = Depends(get_db)):
     try:
-        result = (
-            db.query(Ride.status, func.count(Ride.id).label("count"))
-            .group_by(Ride.status)
-            .all()
-        )
+        query = db.query(Ride.status, func.count(Ride.id).label("count"))
+        if status:
+            query = query.filter(Ride.status == status)
+        result = query.group_by(Ride.status).all()
         summary = [{"status": row.status.value, "count": row.count} for row in result]
         return JSONResponse(content=summary)
     except Exception as e:

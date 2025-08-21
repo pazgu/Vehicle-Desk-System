@@ -171,7 +171,7 @@ export class AdminAnalyticsComponent implements OnInit {
   }
 
   loadRideStatuses() {
-    this.http.get<{ ride_statuses: string[] }>(`${environment.apiUrl}/vehicles/types`).subscribe({
+    this.http.get<{ ride_statuses: string[] }>(`${environment.apiUrl}/ride/statuses`).subscribe({
       next: (res) => {
         this.rideStatuses = res.ride_statuses;
       },
@@ -186,7 +186,8 @@ export class AdminAnalyticsComponent implements OnInit {
     this.loadVehicleChart(); // טען מחדש את הגרף עם הפילטר החדש
   }
 
-  onRideStatusFiterChange() {
+
+  onRideStatusFilterChange() {
     this.loadRideChart();
   }
 
@@ -271,40 +272,42 @@ export class AdminAnalyticsComponent implements OnInit {
       });
   }
 
+private loadRideChart() {
+  const url = this.selectedRideStatus
+    ? `${environment.apiUrl}/analytics/ride-status-summary?status=${encodeURIComponent(this.selectedRideStatus)}`
+    : `${environment.apiUrl}/analytics/ride-status-summary`;
 
-  private loadRideChart() {
-    this.http.get<{ status: string; count: number }[]>(`${environment.apiUrl}/analytics/ride-status-summary`)
-      .subscribe({
-        next: (data) => {
-
-          if (!data || data.length === 0) {
-            this.rideChartData = {
-              labels: ['אין נתונים'],
-              datasets: [{
-                data: [1],
-                backgroundColor: ['#E0E0E0'],
-                hoverBackgroundColor: ['#F0F0F0']
-              }]
-            };
-          } else {
-            this.updateRideChart(data);
-          }
-          this.rideChartInitialized = true;
-        },
-        error: (error) => {
-          console.error('❌ Error loading ride data:', error);
-          this.rideChartInitialized = true;
+  this.http.get<{ status: string; count: number }[]>(url)
+    .subscribe({
+      next: (data) => {
+        if (!data || data.length === 0) {
           this.rideChartData = {
-            labels: ['שגיאה בטעינת נתונים'],
+            labels: ['אין נתונים'],
             datasets: [{
               data: [1],
-              backgroundColor: ['#FF5252'],
-              hoverBackgroundColor: ['#FF7777']
+              backgroundColor: ['#E0E0E0'],
+              hoverBackgroundColor: ['#F0F0F0']
             }]
           };
+        } else {
+          this.updateRideChart(data);
         }
-      });
-  }
+        this.rideChartInitialized = true;
+      },
+      error: (error) => {
+        console.error('❌ Error loading ride data:', error);
+        this.rideChartInitialized = true;
+        this.rideChartData = {
+          labels: ['שגיאה בטעינת נתונים'],
+          datasets: [{
+            data: [1],
+            backgroundColor: ['#FF5252'],
+            hoverBackgroundColor: ['#FF7777']
+          }]
+        };
+      }
+    });
+}
 
 
   private updateVehicleChart(data: { status: string; count: number }[]) {
@@ -474,16 +477,20 @@ export class AdminAnalyticsComponent implements OnInit {
           const sortedDataV = this.selectedSortOption === 'default' ? data : [...data].sort(sortFnV);
           this.updateVehicleChart(sortedDataV);
         });
-    } else {
-      this.http.get<{ status: string; count: number }[]>(`${environment.apiUrl}/analytics/ride-status-summary`)
+    } else if (this.activeTabIndex === 1) {
+      let url = `${environment.apiUrl}/analytics/ride-status-summary`;
+      if (this.selectedRideStatus && this.selectedRideStatus.trim() !== '') {
+        url += `?status=${encodeURIComponent(this.selectedRideStatus)}`;
+      }
+      this.http.get<{ status: string; count: number }[]>(url)
         .subscribe(data => {
           const sortedDataR = this.selectedSortOption === 'default' ? data : [...data].sort(sortFnR);
           this.updateRideChart(sortedDataR);
         });
     }
     this.updateQueryParams({ selectedSort: this.selectedSortOption });
-
   }
+
   updateQueryParams(params: any) {
     this.router.navigate([], {
       relativeTo: this.route,
