@@ -31,16 +31,17 @@
   
 </div>
 
-<div style="display:flex; align-items:center; justify-content: center;"><a style="text-align: center; color: gray; text-decoration: none; cursor: pointer;"
-     routerLink="/forgot-password">
-    שכחת סיסמה?</a>
-</div>
 
 
 
 <small *ngIf="f['password'].invalid && (f['password'].dirty || formSubmitted)" style="color:red;">
   יש להזין סיסמה
 </small>
+<div style="display:flex; align-items:center; justify-content: center;"><a style="text-align: center; color: gray; text-decoration: none; cursor: pointer;"
+     routerLink="/forgot-password">
+    שכחת סיסמה?</a>
+</div>
+
 <button type="submit">התחבר</button>
 
       <a routerLink="/register" routerLinkActive="active" style="text-decoration: none;">
