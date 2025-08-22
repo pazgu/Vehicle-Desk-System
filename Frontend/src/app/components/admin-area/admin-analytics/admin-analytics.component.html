@@ -47,8 +47,10 @@
                   </select>
                 </div>
 
-
-                <p-chart *ngIf="vehicleChartInitialized && vehicleChartData" type="pie" [data]="vehicleChartData"
+ <div *ngIf="isVehicleNoData;" class="no-data-message">
+                  אין נתונים להצגה
+                </div>
+                <p-chart *ngIf="vehicleChartInitialized && vehicleChartData&&!isVehicleNoData" type="pie" [data]="vehicleChartData"
                   [options]="vehicleChartOptions"></p-chart>
               </div>
             </p-tabPanel>
@@ -56,25 +58,26 @@
             <p-tabPanel header=" " [headerStyle]="{ display: 'none' }">
               <div>
                 <h3 class="section-heading">פילוח סטטוס נסיעות</h3>
-
-                <p-chart *ngIf="rideChartInitialized && rideChartData" type="pie" [data]="rideChartData"
-                  [options]="rideChartOptions"></p-chart>
+                <div *ngIf="isNoData;" class="no-data-message">
+                  אין נתונים להצגה
+                </div>
+                <p-chart *ngIf="rideChartInitialized && rideChartData && !isNoData" type="pie" [data]="rideChartData"
+                  [options]="rideChartOptions" ></p-chart>
               </div>
             </p-tabPanel>
             <!-- Vehicle Usage Chart Tab -->
             <p-tabPanel header=" " [headerStyle]="{ display: 'none' }">
               <div class="date-filter-container" *ngIf="isMonthlyView">
-                <label for="monthSelect">חודש:</label>
-                <select id="monthSelect" [(ngModel)]="selectedMonth">
-                  <option *ngFor="let month of months" [value]="month.value">{{ month.label }}</option>
-                </select>
+               <label for="monthSelect">חודש:</label>
+               <select id="monthSelect" [(ngModel)]="selectedMonth" (change)="onMonthOrYearChange()">
+                <option *ngFor="let month of months" [value]="month.value">{{ month.label }}</option>
+              </select>
 
                 <label for="yearSelect">שנה:</label>
-                <select id="yearSelect" [(ngModel)]="selectedYear">
-                  <option *ngFor="let year of years" [value]="year">{{ year }}</option>
-                </select>
-
-                <button class="filter-button" (click)="loadTopUsedVehiclesChart()">סנן</button>
+               <select id="yearSelect" [(ngModel)]="selectedYear" (change)="onMonthOrYearChange()">
+                <option *ngFor="let year of years" [value]="year">{{ year }}</option>
+              </select>
+                <button class="filter-button" (click)="loadTopUsedVehiclesChart();onMonthOrYearChange()">סנן</button>
               </div>
 
               <div *ngIf="showChart">
@@ -86,11 +89,16 @@
                 <button (click)="toggleUsageView()" class="toggle-view-button">
                   {{ isMonthlyView ? 'הצג לפי כל הזמנים' : 'הצג לפי חודש' }}
                 </button>
-
-                <p-chart *ngIf="isMonthlyView" type="bar" [data]="monthlyStatsChartData"
+              <div *ngIf="isMonthlyNoData && isMonthlyView" class="no-data-message">
+                  אין נתונים להצגה
+                </div>
+                <p-chart *ngIf="isMonthlyView && !isMonthlyNoData" type="bar" [data]="monthlyStatsChartData"
                   [options]="monthlyStatsChartOptions"></p-chart>
 
-                <p-chart *ngIf="!isMonthlyView" type="bar" [data]="allTimeStatsChartData"
+                <div *ngIf="isAllTimeNoData&&!isMonthlyView" class="no-data-message">
+                  אין נתונים להצגה
+                </div>
+                <p-chart *ngIf="!isMonthlyView&&!isAllTimeNoData" type="bar" [data]="allTimeStatsChartData"
                   [options]="allTimeStatsChartOptions"></p-chart>
 
                 <!-- Legend only relevant for Monthly View -->
