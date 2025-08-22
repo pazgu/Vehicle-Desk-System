@@ -7,6 +7,7 @@ import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { ToastService } from '../../services/toast.service';
 import { InspectionService } from '../../services/inspection.service';
+import { VehicleService } from '../../services/vehicle.service';
 interface Vehicle {
   id: string;
   plate_number: string;
@@ -45,7 +46,9 @@ export class VehicleInspectionComponent implements OnInit {
     private http: HttpClient,
     private router: Router,
     private toastService: ToastService,
-    private InspectorService: InspectionService
+    private InspectorService: InspectionService,
+    private vehicleService:VehicleService
+
   ) {}
 
   ngOnInit(): void {
@@ -141,6 +144,18 @@ if (missingDescriptions) {
   next: () => {
     this.toastService.show('הבדיקה נשלחה בהצלחה', 'success');
     this.submitting = false;
+    const criticalVehicles = this.vehicleIssues.filter(v => v.critical_issue);
+
+    criticalVehicles.forEach(vehicle => {
+      this.vehicleService.updateVehicleStatus(
+        vehicle.vehicle_id,
+        'frozen',
+        'maintenance'
+      ).subscribe({
+        next: () => console.log(`Vehicle frozen`),
+        error: err => console.error(`Failed to freeze vehicle `, err)
+      });
+    });
 
   },
   error: (err) => {
