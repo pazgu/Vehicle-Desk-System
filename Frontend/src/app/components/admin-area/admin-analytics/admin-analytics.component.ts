@@ -273,6 +273,9 @@ get isNoData(): boolean {
 get isVehicleNoData(): boolean {
   return this.vehicleChartData?.labels?.length === 1 && this.vehicleChartData.labels[0] === 'אין נתונים';
 }
+get isEmptyNoShowData(): boolean {
+  return this.filteredNoShowUsers.length === 0 
+}
 get isMonthlyNoData(): boolean {
   return !this.monthlyStatsChartData || 
          !this.monthlyStatsChartData.labels || 

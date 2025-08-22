@@ -180,8 +180,11 @@
                   </div>
                 </div>
 
+                 <div *ngIf="isEmptyNoShowData" class="no-data-message">
+                  אין נתונים להצגה
+                </div>
                 <!-- No show table -->
-                <div class="table-container">
+                <div class="table-container" *ngIf="!isEmptyNoShowData">
                   <table class="styled-table">
                     <thead>
                       <tr>
