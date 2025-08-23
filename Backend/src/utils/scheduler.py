@@ -26,7 +26,7 @@ from ..services.user_notification import create_system_notification, emit_new_no
 import pytz
 from apscheduler.jobstores.base import JobLookupError
 from datetime import datetime, timedelta
-from ..services.form_email import send_ride_completion_email
+from ..services.email_clean_service import send_ride_completion_email
 from ..services.supervisor_dashboard_service import start_ride 
 from sqlalchemy.orm import Session
 from ..utils.socket_manager import sio

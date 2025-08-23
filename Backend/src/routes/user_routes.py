@@ -39,7 +39,6 @@ from ..services.user_form import process_completion_form
 from ..schemas.form_schema import CompletionFormData
 from ..utils.socket_manager import sio  # ✅ import this
 from ..utils.socket_utils import convert_decimal
-# from ..utils.email_utils import send_email
 from ..services.auth_service import create_reset_token,verify_reset_token
 from ..schemas.reset_password import ResetPasswordInput,ForgotPasswordRequest
 from ..services.user_data import get_user_department
