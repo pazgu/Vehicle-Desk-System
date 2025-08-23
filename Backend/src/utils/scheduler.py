@@ -25,10 +25,10 @@ from ..models.ride_model import Ride, RideStatus
 from ..services.user_notification import create_system_notification, emit_new_notification, get_user_name
 import pytz
 from apscheduler.jobstores.base import JobLookupError
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone, date
 from ..services.email_clean_service import send_ride_completion_email
 from ..services.supervisor_dashboard_service import start_ride 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session,joinedload
 from ..utils.socket_manager import sio
 import os
 import uuid
@@ -46,7 +46,6 @@ from sqlalchemy import and_, cast, func, or_, text
 
 
 def schedule_ride_start(ride_id: str, start_datetime: datetime):
-    print('start ride was scheduled')
     run_time = start_datetime
     job_id = f"ride-start-{ride_id}"
 
@@ -67,7 +66,6 @@ def schedule_ride_start(ride_id: str, start_datetime: datetime):
     
 
 async def start_ride_with_new_session(ride_id: str):
-    print('start ride with new session was called')
     db = SessionLocal()
     try:
         ride = db.query(Ride).filter(Ride.id == ride_id).first()
@@ -75,7 +73,6 @@ async def start_ride_with_new_session(ride_id: str):
             raise HTTPException(status_code=404, detail="Ride not found")
         
         if ride.status==RideStatus.cancelled_due_to_no_show:
-            print(f"Ride {ride.id} is already cancelled due to no-show. Skipping start.")
             return
 
         if ride.status != RideStatus.approved:
@@ -100,6 +97,30 @@ async def start_ride_with_new_session(ride_id: str):
         db.close()
 
 
+
+async def send_notif_to_inspector():
+    db = SessionLocal()
+    try:
+       inspectors=db.query(User).filter(User.role == "inspector").all()
+       for inspector in inspectors:
+            notif = create_system_notification(
+                            user_id=inspector.employee_id,
+                            title="Inspector daily check",
+                            message=f"נא לבצע הבדיקה היומית של הרכבים"
+                        )
+            await sio.emit("new_notification", {
+                    "id": str(notif.id),
+                    "user_id": str(notif.user_id),
+                    "title": notif.title,
+                    "message": notif.message,
+                    "notification_type": notif.notification_type.value,
+                    "sent_at": notif.sent_at.isoformat(),
+        })
+    finally:
+        db.close()
+
+
+
 def check_and_complete_rides():
     db = SessionLocal()
     try:
@@ -111,12 +132,10 @@ def check_and_complete_rides():
 
         for ride in rides_to_complete:
             ride.status = "completed"
-            print(f"✅ Ride {ride.id} marked as completed")
 
         db.commit()
     except Exception as e:
         db.rollback()
-        print(f"❌ Error while updating completed rides: {e}")
     finally:
         db.close()
 
@@ -214,20 +233,11 @@ async def check_vehicle_lease_expiry():
             Vehicle.lease_expiry <= three_months_later,
             Vehicle.lease_expiry >= now
         ).with_entities(Vehicle, Department).all()
-        print('b4: expiring vehicles were found',vehicles_expiring)
-        print('before if')
 
         if not vehicles_expiring:
             return
         
-        #print('expiring vehicles were found',vehicles_expiring)
-        # Get all admins once
         admins = db.query(User).filter(User.role == "admin").all()
-        #print("admins found:", admins)
-
-        # Print usernames
-        admin_usernames = [admin.username for admin in admins]
-        #print("admin usernames:", admin_usernames)
 
         for vehicle, department in vehicles_expiring:
             supervisor_id = department.supervisor_id
@@ -285,7 +295,6 @@ async def check_vehicle_lease_expiry():
                     Notification.title == "Vehicle Lease Expiry"
                 ).first()
                 if not exists_admin:
-                    #print('admin sent to:',admin.username)
                     admin_notif = create_system_notification(
                         user_id=admin.employee_id,
                         title="Vehicle Lease Expiry",
@@ -388,12 +397,114 @@ async def check_and_cancel_unstarted_rides():
             await notify_ride_cancelled_due_to_no_show(ride.id)
 
     except Exception as e:
-        print(f'Error in check_and_cancel_unstarted_rides: {e}')
         db.rollback()
     finally:
         db.close()
 
-        
+async def check_and_notify_overdue_rides():
+    db: Session = SessionLocal()
+    try:
+        now = datetime.now(timezone.utc)
+        overdue_rides = db.query(Ride, Vehicle, User).join(
+            Vehicle, Ride.vehicle_id == Vehicle.id
+        ).join(
+            User, Ride.user_id == User.employee_id
+        ).filter(
+            (Ride.status == RideStatus.in_progress or Ride.status == RideStatus.cancelled_due_to_no_show) ,
+            Ride.end_datetime <= datetime.now() - timedelta(hours=2)
+        ).all()
+        for ride, vehicle, user in overdue_rides:
+            ride_end = ride.end_datetime
+            if ride_end.tzinfo is None:
+                ride_end = ride_end.replace(tzinfo=timezone.utc)
+
+            elapsed = (now - ride_end).days
+
+            # -- Send to user (passenger) --
+            exists_user_notif = db.query(Notification).filter(
+                Notification.user_id == user.employee_id,
+                Notification.vehicle_id == vehicle.id,
+                Notification.title == "Vehicle Overdue"
+            ).first()
+
+            if not exists_user_notif:
+                user_notif = create_system_notification(
+                    user_id=user.employee_id,
+                    title="Vehicle Overdue",
+                    message=f"הרכב {vehicle.plate_number} לא הוחזר בזמן.",
+                    vehicle_id=vehicle.id
+                )
+
+                html_user = load_email_template("vehicle_overdue_user.html", {
+                    "USER_NAME": get_user_name(db, user.employee_id),
+                    "VEHICLE": vehicle.plate_number,
+                    "END_TIME": ride.end_datetime.strftime("%H:%M %d/%m/%Y"),
+                    "ELAPSED": str(elapsed).split('.')[0]
+                })
+
+                await async_send_email(
+                    to_email=user.email,
+                    subject=f"⚠️ החזרת רכב באיחור - {vehicle.plate_number}",
+                    html_content=html_user
+                )
+
+                await sio.emit("new_notification", {
+                    "id": str(user_notif.id),
+                    "user_id": str(user_notif.user_id),
+                    "title": user_notif.title,
+                    "message": user_notif.message,
+                    "notification_type": user_notif.notification_type.value,
+                    "sent_at": user_notif.sent_at.isoformat(),
+                    "vehicle_id": str(vehicle.id),
+                    "plate_number": vehicle.plate_number
+                }, room=str(user.employee_id))
+
+            # -- Send to admins --
+            admins = db.query(User).filter(User.role == "admin").all()
+            for admin in admins:
+                exists_admin = db.query(Notification).filter(
+                    Notification.user_id == admin.employee_id,
+                    Notification.vehicle_id == vehicle.id,
+                    Notification.title == "Overdue Vehicle Alert"
+                ).first()
+
+                if not exists_admin:
+                    admin_notif = create_system_notification(
+                        user_id=admin.employee_id,
+                        title="Overdue Vehicle Alert",
+                        message=f"הרכב {vehicle.plate_number} לא הוחזר בזמן ע\"י {user.first_name} {user.last_name}.",
+                        vehicle_id=vehicle.id
+                    )
+
+                    html_admin = load_email_template("vehicle_overdue_admin.html", {
+                        "USER_NAME": f"{user.first_name} {user.last_name}",
+                        "USER_EMAIL": user.email,
+                        "VEHICLE": vehicle.plate_number,
+                        "END_TIME": ride.end_datetime.strftime("%H:%M %d/%m/%Y"),
+                        "ELAPSED": str(elapsed).split('.')[0]
+                    })
+
+                    await async_send_email(
+                        to_email=admin.email,
+                        subject=f"🚨 רכב לא הוחזר בזמן - {vehicle.plate_number}",
+                        html_content=html_admin
+                    )
+
+                    await sio.emit("new_notification", {
+                        "id": str(admin_notif.id),
+                        "user_id": str(admin_notif.user_id),
+                        "title": admin_notif.title,
+                        "message": admin_notif.message,
+                        "notification_type": admin_notif.notification_type.value,
+                        "sent_at": admin_notif.sent_at.isoformat(),
+                        "vehicle_id": str(vehicle.id),
+                        "plate_number": vehicle.plate_number
+                    }, room=str(admin.employee_id))
+
+    finally:
+        db.close()
+
+
 async def delete_old_archived_vehicles():
     """
     Checks for vehicles that have been archived for more than three months
@@ -413,49 +524,35 @@ async def delete_old_archived_vehicles():
         ).all()
 
         if not vehicles_to_delete:
-            print("No old archived vehicles found for deletion.")
             return
 
-        print(f"Found {len(vehicles_to_delete)} archived vehicles older than 3 months to delete.")
 
         for vehicle in vehicles_to_delete:
-           # print(f"\nProcessing vehicle ID: {vehicle.id}, Plate Number: {vehicle.plate_number}, Archived At: {vehicle.archived_at}")
-
-            # --- Delete related records in specific order (children first) ---
-
-            # Delete related Notifications (tbl: notifications, col: vehicle_id)
+           
             notifications_to_delete = db.query(Notification).filter(
                 Notification.vehicle_id == vehicle.id
             ).all()
             if notifications_to_delete:
-                #print(f"  Deleting {len(notifications_to_delete)} notifications for vehicle ID {vehicle.id}...")
                 for notification in notifications_to_delete:
                     db.delete(notification)
-            else:
-                print(f"  No notifications found for vehicle ID {vehicle.id}.")
+          
 
-            # Delete related Rides (tbl: rides, col: vehicle_id)
             rides_to_delete = db.query(Ride).filter(
                 Ride.vehicle_id == vehicle.id
             ).all()
             if rides_to_delete:
-                print(f"  Deleting {len(rides_to_delete)} rides for vehicle ID {vehicle.id}...")
                 for ride in rides_to_delete:
                     db.delete(ride)
-            else:
-                print(f"  No rides found for vehicle ID {vehicle.id}.")
+           
 
-            # Delete related Monthly Vehicle Usage (tbl: monthly_vehicle_usage, col: vehicle_id)
-            # Assuming 'vehicle_id' is the correct column name, not 'vehivle_id'
+            
             monthly_usage_to_delete = db.query(MonthlyVehicleUsage).filter(
                 MonthlyVehicleUsage.vehicle_id == vehicle.id
             ).all()
             if monthly_usage_to_delete:
-                print(f"  Deleting {len(monthly_usage_to_delete)} monthly vehicle usage records for vehicle ID {vehicle.id}...")
                 for usage in monthly_usage_to_delete:
                     db.delete(usage)
-            else:
-                print(f"  No monthly vehicle usage records found for vehicle ID {vehicle.id}.")
+          
 
             # Delete related Audit Logs (tbl: audit_logs, col: entity_id)
             audit_logs_to_delete = db.query(AuditLog).filter(
@@ -466,50 +563,28 @@ async def delete_old_archived_vehicles():
                 )
             ).all()
             if audit_logs_to_delete:
-                #print(f"  Deleting {len(audit_logs_to_delete)} audit log entries for vehicle ID {vehicle.id}...")
                 for log in audit_logs_to_delete:
                     db.delete(log)
-            else:
-                print(f"  No audit log entries found for vehicle ID {vehicle.id}.")
+            
 
-            # Delete related Archived Audit Logs (tbl: audit_logs_archive, col: entity_id)
-            # audit_logs_archive_to_delete = db.query(AuditLogArchive).filter(
-            #     AuditLogArchive.entity_id == vehicle.id
-            #     # IMPORTANT: Same as above, if AuditLogArchive has an 'entity_type' column, add a filter:
-            #     # and_(AuditLogArchive.entity_id == vehicle.id, AuditLogArchive.entity_type == 'Vehicle')
-            # ).all()
-            # if audit_logs_archive_to_delete:
-            #     print(f"  Deleting {len(audit_logs_archive_to_delete)} archived audit log entries for vehicle ID {vehicle.id}...")
-            #     for log in audit_logs_archive_to_delete:
-            #         db.delete(log)
-            # else:
-            #     print(f"  No archived audit log entries found for vehicle ID {vehicle.id}.")
-
-            # 2. Finally, delete the Vehicle itself
-            print(f"  Deleting vehicle ID: {vehicle.id}")
+           
             db.delete(vehicle)
 
         db.commit()
-        print("\nSuccessfully deleted old archived vehicles and all their associated records.")
 
     except Exception as e:
         db.rollback()
-        print(f"An error occurred during deletion of old archived vehicles and their related data: {e}")
-        # Log this error properly in a real application
     finally:
         db.close()
         
             
 async def notify_ride_needs_feedback(user_id: int):
-    print(f'Notifying feedback needed for user {user_id}')
     db = SessionLocal()
     try:
         ride = get_ride_needing_feedback(db, user_id)
         if ride is None:
-            print("No ride needs feedback")
             return {"needs_feedback": False}
 
-        print(f"About to emit ride_feedback_needed for ride {ride.id}")
 
         await sio.emit("feedback_needed", {
             "showPage": True,
@@ -517,10 +592,21 @@ async def notify_ride_needs_feedback(user_id: int):
             "message": "הנסיעה הסתיימה, נא למלא את הטופס"
         })
 
-        print(f"Emit done for ride {ride.id}")
-
     finally:
         db.close()
+
+import asyncio
+
+def periodic_check_overdue_rides():
+    future = asyncio.run_coroutine_threadsafe(
+        check_and_notify_overdue_rides(),
+        main_loop  # use your app's asyncio event loop
+    )
+    try:
+        future.result(timeout=10)
+    except Exception as e:
+        print(f"Overdue rides check failed: {e}")
+
 
 def periodic_check():
     db = SessionLocal()
@@ -535,13 +621,77 @@ def periodic_check():
         )
         try:
             result = future.result(timeout=5)
-            print('Coroutine result:', result)
         except Exception as e:
             print('Coroutine error:', e)
 
 
+
+async def check_and_unblock_expired_users():
+    """
+    Unblock users whose block has expired, then emit a socket event per user.
+    """
+    db: Session = SessionLocal()
+    users_to_notify = []  # collect AFTER commit we will emit
+
+    try:
+        now = datetime.now(timezone.utc)
+
+        # Find users whose block has expired
+        expired_blocks = db.query(User).filter(
+            User.is_blocked == True,
+            User.block_expires_at.isnot(None),
+            User.block_expires_at < now
+        ).all()
+
+        if not expired_blocks:
+            return  # nothing to do
+
+        # Update users
+        for user in expired_blocks:
+            user.is_blocked = False
+            user.block_expires_at = None
+            # keep only scalar data for emission to avoid detached ORM issues
+            users_to_notify.append({
+                "id": str(user.employee_id),   # or str(user.id) if that's your primary
+                "is_blocked": False,
+                "block_expires_at": None
+            })
+
+        db.commit()
+
+    except Exception as e:
+        db.rollback()
+        return
+    finally:
+        db.close()
+
+    # Emit AFTER commit (so clients reflect DB state)
+    for payload in users_to_notify:
+        try:
+            # If you want to target a room per user (recommended), pass room=str(employee_id)
+            await sio.emit(
+                'user_block_status_updated',
+                {
+                    "id": payload["id"],
+                    "is_blocked": payload["is_blocked"],
+                    "block_expires_at": payload["block_expires_at"]
+                },
+            )
+
+        except Exception as e:
+            print(f"Failed to emit for user:{e}")
+
+
+
+def periodic_check_unblock_users():
+    future = asyncio.run_coroutine_threadsafe(check_and_unblock_expired_users(), main_loop)
+    try:
+        future.result(timeout=10)
+    except Exception as e:
+        print(f"❌ Failed periodic_check_unblock_users: {e}")
+
+
 def periodic_check_unstarted_rides(): 
-    print('periodic_check_unstarted_rides was called')
     future = asyncio.run_coroutine_threadsafe(check_and_cancel_unstarted_rides(), main_loop)
     future.result(timeout=5)            
 
@@ -557,15 +707,16 @@ def check_and_schedule_ride_emails():
 
         for ride in rides:
             send_ride_completion_email(ride.id)
-            print(f"📨 Email sent for ride {ride.id}")
     finally:
         db.close()
 
 scheduler.add_job(check_and_schedule_ride_emails, 'interval', minutes=60)
 scheduler.add_job(check_and_complete_rides, 'interval', minutes=5)
+scheduler.add_job(periodic_check_overdue_rides, 'interval', minutes=10)
+scheduler.add_job(periodic_check_unblock_users, 'interval', minutes=1)
+
 
 def notify_admins_daily():
-    print("⏰ Scheduler is triggering notification function.")
 
     db = SessionLocal()
     try:
@@ -576,7 +727,6 @@ def notify_admins_daily():
                 title="📋 תזכורת יומית",
                 message="אנא בדוק את כל בדיקות הרכב שבוצעו היום."
             )
-        print(f"[{datetime.now()}] ✅ Sent daily admin inspection reminder.")
     finally:
         db.close()
 
@@ -603,15 +753,12 @@ async def check_ride_status_and_notify_user():
         ).all()
 
         if not rides_to_notify:
-            print("No pending or rejected rides ending soon found to notify.")
             return
 
-        print(f"Found {len(rides_to_notify)} pending/rejected rides ending soon to process.")
 
         for ride in rides_to_notify:
             user = db.query(User).filter(User.employee_id == ride.user_id).first()
             if not user:
-                print(f"User not found for ride ID {ride.id}. Skipping notification.")
                 continue
 
             user_email = user.email
@@ -657,13 +804,11 @@ async def check_ride_status_and_notify_user():
                     message=notif_message,
                     order_id=ride.id
                 )
-                print(f"Created system notification for user {user.employee_id}, ride {ride.id}, status {status_hebrew}")
 
                 await emit_new_notification(
                     notification=notification,
                     room=str(user.employee_id),
                 )
-                print(f"Emitted system notification via SIO for user {user.employee_id}")
 
                 if user_email:
                     html_content = load_email_template("ride_status_update.html", {
@@ -683,22 +828,16 @@ async def check_ride_status_and_notify_user():
                             subject=subject,
                             html_content=html_content
                         )
-                        print(f"Sent email notification to {user_email} for ride {ride.id} status {status_hebrew}")
                     except Exception as email_e:
-                        print(f"Error sending email to {user_email} for ride {ride.id}: {repr(email_e)}")
-                else:
-                    print(f"No email found for user {user.employee_id} for ride {ride.id}. Skipping email notification.")
-            else:
-                print(f"Notification already sent for ride {ride.id} with status {status_hebrew}. Skipping.")
-
+                        print(f"Error sending email:{repr(email_e)}")
+               
     except Exception as e:
-        print(f"An error occurred in check_ride_status_and_notify_user: {repr(e)}")
+        print(f"An error occurred: {repr(e)}")
     finally:
         db.close()
 
 
 async def notify_ride_cancelled_due_to_no_show(ride_id: uuid.UUID):
-    print("INFO: periodic_check_unstarted_rides was called") # Ensure this is seen
 
     """
     Notifies user and admin that a ride was cancelled due to no-show.
@@ -706,15 +845,12 @@ async def notify_ride_cancelled_due_to_no_show(ride_id: uuid.UUID):
     db: Session = SessionLocal()
     try:
         
-        print(f"DEBUG: notify_ride_cancelled_due_to_no_show called for ride_id: {ride_id}") # New debug
         ride = db.query(Ride).filter(Ride.id == ride_id).first()
         if not ride:
-            print(f"Ride ID {ride_id} not found.")
             return
 
         user = db.query(User).filter(User.employee_id == ride.user_id).first()
         if not user:
-            print(f"User not found for ride ID {ride_id}.")
             return
 
         user_email = user.email
@@ -732,11 +868,7 @@ async def notify_ride_cancelled_due_to_no_show(ride_id: uuid.UUID):
             if vehicle:
                 plate_number = vehicle.plate_number
                 
-        print(f"DEBUG: User email: {user_email}, User name: {user_name}, Destination: {destination_name}") # New debug
-        print(f"DEBUG: Ride start_datetime: {ride.start_datetime}") # New debug
 
-
-        # 🟢 1. Send notification to user
         notif_message = f"הנסיעה שלך ליעד {destination_name} בוטלה עקב אי התייצבות."
         notification = create_system_notification(
             user_id=user.employee_id,
@@ -747,7 +879,6 @@ async def notify_ride_cancelled_due_to_no_show(ride_id: uuid.UUID):
         await emit_new_notification(
             notification=notification
         )
-        print(f"Sent no-show cancellation notification to user {user.employee_id}")
 
         supervisor_id=get_supervisor_id(user_id=user.employee_id,db=db)
         if supervisor_id:
@@ -770,7 +901,6 @@ async def notify_ride_cancelled_due_to_no_show(ride_id: uuid.UUID):
         for admin in admins:
             admin_id = admin.employee_id
             if not admin_id:
-                print(f"Admin ID not found for user {ride.user_id}. Skipping admin notification.")
                 continue
             admin_notification = create_system_notification(
                 user_id=admin_id,
@@ -781,9 +911,7 @@ async def notify_ride_cancelled_due_to_no_show(ride_id: uuid.UUID):
             await emit_new_notification(
                 notification=admin_notification
             )
-            print(f"Sent no-show cancellation notification to admin {admin_id}")
 
-        # 🟢 3. Send email to user
         if user_email:
             html_content_user = load_email_template("ride_cancelled_no_show.html", {
                 "USER_NAME": user_name,
@@ -792,20 +920,15 @@ async def notify_ride_cancelled_due_to_no_show(ride_id: uuid.UUID):
                 "PLATE_NUMBER": plate_number,
                 "LINK_TO_RIDE": f"{BOOKIT_URL}/ride/details/{ride.id}"
             })
-            print(f"DEBUG: User email HTML content loaded. Length: {len(html_content_user)}") # Debug after load template
 
             await async_send_email(
                 to_email=user_email,
                 subject=f"❌ עדכון: הנסיעה שלך בוטלה עקב אי התייצבות",
                 html_content=html_content_user
             )
-            print(f"Sent no-show cancellation email to {user_email}")
-        else:
-            print(f"DEBUG: User {user.employee_id} has no email configured. Skipping user email notification.")
+       
 
-
-        # 🟢 4. Send email to admin
-        # Query for all users with 'admin' role
+        
         admin_users = db.query(User).filter(User.role == "admin").all()
 
         if admin_users:
@@ -814,7 +937,6 @@ async def notify_ride_cancelled_due_to_no_show(ride_id: uuid.UUID):
                 supervisor_name = get_user_name(db, admin_user.employee_id) or "מפקח יקר" 
 
                 if admin_email: # Check if the admin user actually has an email
-                    print(f"DEBUG: Attempting to send admin email to {admin_email}")
                     try:
                         html_content_admin = load_email_template("ride_cancelled_no_show_admin.html", {
                             "SUPERVISOR_NAME": supervisor_name, 
@@ -824,19 +946,13 @@ async def notify_ride_cancelled_due_to_no_show(ride_id: uuid.UUID):
                             "PLATE_NUMBER": plate_number,
                             "LINK_TO_RIDE": f"{BOOKIT_URL}/ride/details/{ride.id}"
                         })
-                        print(f"DEBUG: Admin email HTML content loaded. Length: {len(html_content_admin)}")
                         await async_send_email(
                             to_email=admin_email,
                             subject=f"🚨 הודעה: הנסיעה של {user_name} בוטלה עקב אי התייצבות",
                             html_content=html_content_admin
                         )
-                        print(f"Sent no-show cancellation email to admin: {admin_email}")
                     except Exception as email_err:
-                        print(f"ERROR: Failed to send admin email to {admin_email} for ride {ride.id}: {repr(email_err)}")
-                else:
-                    print(f"WARNING: Admin user {admin_user.employee_id} has no email configured. Skipping email notification.")
-        else:
-            print("WARNING: No users with 'admin' role found in the database. Cannot send admin cancellation email.")
+                        print(f"ERROR: Failed to send admin email:{repr(email_err)}")
         try:
             if supervisor_id:
                 supervisor = db.query(User).filter(User.employee_id == supervisor_id).first()
@@ -861,9 +977,9 @@ async def notify_ride_cancelled_due_to_no_show(ride_id: uuid.UUID):
                     )
 
         except Exception as e:
-            print(f"ERROR: Failed to send supervisor email: {repr(e)}")    
+            print(f"ERROR: Failed to send email: {repr(e)}")    
     except Exception as e:
-        print(f"Error notifying ride cancellation due to no-show: {repr(e)}")
+        print(f"Error notifying: {repr(e)}")
       
     finally:
         db.commit()
@@ -871,12 +987,10 @@ async def notify_ride_cancelled_due_to_no_show(ride_id: uuid.UUID):
 
 
 async def check_and_notify_admin_about_no_shows():
-    print('check_and_notify_admin_about_no_shows was called')
     db: Session = SessionLocal()
     try:
         data = get_no_show_events_count_per_user(db)
         for user_info in data["users"]:
-            print(f'no show count {user_info["no_show_count"]}')
             if user_info["no_show_count"] >= 3:
                 title = f"המשתמש {user_info['name']} פספס {user_info['no_show_count']} נסיעות"
 
@@ -891,7 +1005,6 @@ async def check_and_notify_admin_about_no_shows():
                     for admin in admins:
                         admin_id = admin.employee_id
                         if not admin_id:
-                            print(f"Admin ID not found for user {user_info['name']}. Skipping admin notification.")
                             continue
 
                         notif = create_system_notification(
@@ -901,9 +1014,7 @@ async def check_and_notify_admin_about_no_shows():
                             relevant_user_id=user_info["employee_id"]
                         )
                         await emit_new_notification(notification=notif)
-                        print('sent notification for admin')
 
-                    # Now send email to all admins
                     for admin in admins:
                         admin_email = admin.email
                         supervisor_name = get_user_name(db, admin.employee_id) or "מפקח יקר"
@@ -919,14 +1030,13 @@ async def check_and_notify_admin_about_no_shows():
                                     subject=f"🚨 משתמש עם 3 או יותר אי התייצבויות: {user_info['name']}",
                                     html_content=html_content_admin
                                 )
-                                print(f"Sent 3+ no-show email to admin: {admin_email}")
                             except Exception as email_err:
                                 print(f"ERROR: Failed to send 3+ no-show email")
                         
                     db.commit()
 
     except Exception as e:
-        print(f"Error in check_and_notify_admin_about_no_shows: {e}")
+        print(f"Error: {e}")
         db.rollback()
     finally:
         db.close()
@@ -959,7 +1069,6 @@ def schedule_ride_completion_email(ride_id: str, end_datetime: datetime):
 
 @scheduler.scheduled_job('interval', minutes=1)  # every 1 minute
 def periodic_check():
-    print("Periodic feedback check running...")
     db = SessionLocal()
     try:
         # Query all users who might need feedback
@@ -979,14 +1088,11 @@ def periodic_check():
 
 
 def periodic_check_vehicle():
-    print('periodic_check_vehicle was called')
     future = asyncio.run_coroutine_threadsafe(check_inactive_vehicles(), main_loop)
     future = asyncio.run_coroutine_threadsafe(check_vehicle_lease_expiry(), main_loop)
     future.result(timeout=5)
 
 def periodic_check_ride_status():
-    print('periodic_check_ride_status was called')
-    # Run the ride status check
     future_ride_status = asyncio.run_coroutine_threadsafe(check_ride_status_and_notify_user(), main_loop)
     try:
         future_ride_status.result(timeout=5)
@@ -995,7 +1101,6 @@ def periodic_check_ride_status():
 
 
 def periodic_check_no_show_users():
-    print("periodic_check_no_show_users was called")
     future = asyncio.run_coroutine_threadsafe(check_and_notify_admin_about_no_shows(), main_loop)
     try:
         future.result(timeout=30)
@@ -1003,20 +1108,33 @@ def periodic_check_no_show_users():
         print(f"Error running periodic_check_no_show_users: {e}")
 
  
+def periodic_check_inspector_notif():
+    future = asyncio.run_coroutine_threadsafe(send_notif_to_inspector(), main_loop)
+    try:
+        future.result(timeout=30)
+    except Exception as e:
+        print(f"Error running periodic_check_no_show_users: {e}")
+
+  
 
 def periodic_delete_archived_vehicles():
-    print('periodic_delete_archived_vehicles was called')
     future = asyncio.run_coroutine_threadsafe(delete_old_archived_vehicles(), main_loop)
     try:
         future.result(timeout=60) # Increased timeout to 60 seconds
-    except asyncio.TimeoutError:
-        print("Timeout: delete_old_archived_vehicles took too long to complete.")
     except Exception as e:
         print(f"Error running delete_old_archived_vehicles: {e}")       
 
 
 
 scheduler.add_job(periodic_check_vehicle, 'interval', days=1)
+
+scheduler.add_job(
+    periodic_check_inspector_notif,
+    trigger='cron',
+    hour=6,
+    minute=0
+)
+
 scheduler.add_job(periodic_check_no_show_users, 'interval', minutes=15)
 scheduler.add_job(periodic_check_ride_status, 'interval', minutes=15)
 scheduler.add_job(periodic_delete_archived_vehicles, 'interval',  days=30)
@@ -1024,8 +1142,198 @@ scheduler.add_job(periodic_check_unstarted_rides, 'interval', minutes=1)
 
 
 scheduler.start()
+
+
+
+def start_scheduler():
+    scheduler.add_job(notify_admins_daily, 'cron', hour=6, minute=0)
+    scheduler.start()
+
+
+
         
 def start_scheduler():
     scheduler = BackgroundScheduler(timezone=pytz.timezone("Asia/Jerusalem"))
     scheduler.add_job(notify_admins_daily, 'cron', hour=6, minute=0)
     scheduler.start()
+
+async def check_expired_government_licenses():
+    db: Session = SessionLocal()
+    today = date.today()
+
+    try:
+        # שלוף משתמשים שהרישיון שלהם פג תוקף או שאין להם תאריך תפוגה, אבל עדיין מסומנים כאילו יש להם רישיון
+        users_with_expired_license = db.query(User).filter(
+            User.has_government_license == True,
+            or_(
+                User.license_expiry_date == None,
+                User.license_expiry_date < today
+            )
+        ).all()
+
+        print(f"Users with expired license count: {len(users_with_expired_license)}")
+
+        if not users_with_expired_license:
+            print("No expired licenses found. Exiting.")
+            return
+
+        # עדכן את השדה has_government_license
+        for user in users_with_expired_license:
+            print(f"Updating user {user.employee_id} - setting has_government_license to False")
+            user.has_government_license = False
+
+        db.commit()
+        print("Committed license updates to DB")
+
+        # שלח התראות לאדמין על כל משתמש שרישיונו לא בתוקף
+        admins = db.query(User).filter(User.role == "admin").all()
+
+        for user in users_with_expired_license:
+            full_name = f"{user.first_name} {user.last_name}"
+            expiry = user.license_expiry_date.strftime("%d/%m/%Y") if user.license_expiry_date else "לא הוזן"
+
+            print(f"Processing user: {full_name} (ID: {user.employee_id})")
+            print(f"User email: {user.email}")
+            print(f"License expiry: {expiry}")
+
+            # בדיקת תקינות המייל לפני שליחה למשתמש
+            if user.email and "@" in user.email and "." in user.email:
+                try:
+                    # שלח מייל למשתמש עצמו
+                    user_html_content = f"""
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>רישיון ממשלתי פג תוקף</title>
+                    </head>
+                    <body>
+                        <div style="direction: rtl; font-family: Arial, sans-serif;">
+                            <h2>שלום {user.first_name},</h2>
+                            <p>רישיון הממשלתי שלך פג תוקף בתאריך: <strong>{expiry}</strong>.</p>
+                            <p>אנא עדכן את המידע בהקדם.</p>
+                            <br/>
+                            <p>תודה,<br/>צוות התמיכה</p>
+                        </div>
+                    </body>
+                    </html>
+                    """
+
+                    print(f"Sending email to user: {user.email}")
+                    await async_send_email(
+                        to_email=user.email,
+                        subject="רישיון ממשלתי פג תוקף",
+                        html_content=user_html_content
+                    )
+                    print(f"✅ Email sent successfully to user {user.employee_id}")
+
+                    # שלח התראה למשתמש
+                    user_notif = create_system_notification(
+                        user_id=user.employee_id,
+                        title="רישיון ממשלתי פג תוקף",
+                        message=f"הרישיון הממשלתי שלך פג תוקף (תוקף עד {expiry}). אנא חדש את הרישיון במהרה.",
+                        relevant_user_id=user.employee_id
+                    )
+
+                    await sio.emit("license_expiry_notification", {
+                        "id": str(user_notif.id),
+                        "user_id": str(user_notif.user_id),
+                        "title": user_notif.title,
+                        "message": user_notif.message,
+                        "notification_type": user_notif.notification_type.value,
+                        "sent_at": user_notif.sent_at.isoformat(),
+                        "relevant_user_id": str(user.employee_id)
+                    }, room=str(user.employee_id))
+                    
+                    print(f"✅ Socket notification sent to user {user.employee_id}")
+
+                except Exception as e:
+                    print(f"❌ Error sending email to user {user.employee_id}: {str(e)}")
+                    # המשך לאדמינים גם אם שליחה למשתמש נכשלה
+            else:
+                print(f"⚠️ Invalid email for user {user.employee_id}: {user.email}")
+
+            # שלח התראות לאדמינים
+            for admin in admins:
+                try:
+                    # בדיקה אם כבר קיימת התראה
+                    exists = db.query(Notification).filter(
+                        Notification.user_id == admin.employee_id,
+                        Notification.title == "רישיון ממשלתי לא בתוקף",
+                        Notification.relevant_user_id == user.employee_id
+                    ).first()
+                    
+
+                    if exists:
+                        print(f"Notification already exists for admin {admin.employee_id} and user {user.employee_id}")
+                        continue
+
+                    notif = create_system_notification(
+                        user_id=admin.employee_id,
+                        title="רישיון ממשלתי לא בתוקף",
+                        message=f"למשתמש {full_name} אין רישיון ממשלתי בתוקף (תוקף עד {expiry}).",
+                        relevant_user_id=user.employee_id
+                    )
+
+                    admin_email = get_user_email(admin.employee_id, db)
+                    print(f"Admin email: {admin_email}")
+                    
+                    if admin_email and "@" in admin_email and "." in admin_email:
+                        admin_html_content = f"""
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <meta charset="UTF-8">
+                            <title>רישיון ממשלתי לא בתוקף</title>
+                        </head>
+                        <body>
+                            <div style="direction: rtl; font-family: Arial, sans-serif;">
+                                <h2>שלום {get_user_name(db, admin.employee_id)},</h2>
+                                <p>למשתמש <strong>{full_name}</strong> פג תוקף הרישיון הממשלתי בתאריך: <strong>{expiry}</strong>.</p>
+                                <p>מזהה משתמש: {user.employee_id}</p>
+                                <p>אנא בדק ועקוב אחר עדכון הרישיון.</p>
+                                <br/>
+                                <p>בברכה,<br/>מערכת ניהול רישיונות</p>
+                            </div>
+                        </body>
+                        </html>
+                        """
+
+                        print(f"Sending email to admin: {admin_email}")
+                        await async_send_email(
+                            to_email=admin_email,
+                            subject=f"רישיון ממשלתי לא בתוקף - {full_name}",
+                            html_content=admin_html_content
+                        )
+                        print(f"✅ Email sent successfully to admin {admin.employee_id}")
+                    else:
+                        print(f"⚠️ Invalid admin email: {admin_email}")
+
+                    await sio.emit("license_expiry_notification", {
+                        "id": str(notif.id),
+                        "user_id": str(notif.user_id),
+                        "title": notif.title,
+                        "message": notif.message,
+                        "notification_type": notif.notification_type.value,
+                        "sent_at": notif.sent_at.isoformat(),
+                        "relevant_user_id": str(user.employee_id)
+                    }, room=str(admin.employee_id))
+                    
+                    print(f"✅ Socket notification sent to admin {admin.employee_id}")
+
+                except Exception as e:
+                    print(f"❌ Error processing admin {admin.employee_id}: {str(e)}")
+                    continue  # המשך לאדמין הבא
+
+    except Exception as e:
+        db.rollback()
+        print(f"❌ Error in check_expired_government_licenses: {e}")
+        import traceback
+        print(f"Full traceback: {traceback.format_exc()}")
+
+    finally:
+        db.close()
+
+
+if __name__ == "__main__":
+    asyncio.run(check_expired_government_licenses())

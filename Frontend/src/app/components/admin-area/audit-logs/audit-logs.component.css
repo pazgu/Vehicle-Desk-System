@@ -2,6 +2,11 @@
   min-height: 100vh;
   background: #ded7d7;
   padding: 2rem 0;
+  background-image: url('/assets/images/vehicle-dashboard-bg.png'); /* your new file name */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed; /* optional, makes it stay fixed on scroll */
 
 }
 
@@ -29,7 +34,7 @@
 .page-container {
   max-width: 1100px;
   margin: 0 auto;
-  background-color: rgb(245, 241, 241);
+  background-color: rgb(255, 255, 255);
   border-radius: 14px;
   box-shadow: 0 2px 16px rgba(44, 62, 80, 0.07);
   padding: 2rem 2.5rem;
@@ -200,7 +205,7 @@
 }
 
 .active-row {
-  background-color: #ffe5b4 !important; /* Example: light blue for active */
+  background-color: #ffe5b4 !important; 
 }
 
 .delete-row {
@@ -218,8 +223,12 @@
   background: #dc5b5b !important;
 }
 
-.cancelled-due-to-no-show-row {
-  background-color: #e0d6e8 !important;
+.cancelled-due-to-no-show {
+  background: #e0d6e8 !important; 
+}
+
+.exceeded-monthly-trip-quota-row {
+  background: #cdb69b !important; 
 }
 
 .in-progress-row{
@@ -230,14 +239,14 @@
 
 
 .empty-state {
-  color: #fafcfd;
+  color: #9d9d9d;
   font-size: 1.2rem;
   margin-top: 2rem;
   text-align: center;
   flex-shrink: 0;
 }
 
-/* Log Details Card Styling - Softer and More Organized */
+/* Log Details Card Styling */
 .log-details-card {
   background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
   border-radius: 16px;
@@ -431,16 +440,6 @@
   word-break: break-all;
 }
 
-/* Boolean styling */
-.boolean-yes {
-  color: #27ae60 !important;
-  background: #d5f4e6 !important;
-}
-
-.boolean-no {
-  color: #e74c3c !important;
-  background: #fdeaea !important;
-}
 
 /* JSON formatting */
 .json-container {
@@ -551,7 +550,6 @@
   align-items: center;
   margin-bottom: 20px;
   gap: 0.2rem;
-  /* Optional: adds space between buttons and text */
 }
 
 .pagination-controls button {
@@ -583,11 +581,10 @@
   border-radius: 12px;
   padding: 12px 16px;
   max-width: fit-content;
-  background-color: rgb(249, 245, 245);
+  background-color: rgb(252, 252, 252);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   margin-bottom: 1.5rem;
   margin-left: auto;
-  /* Pushes it to the left in RTL layout */
 }
 
 .status-box {
@@ -619,21 +616,16 @@
 .status-indicator.approved {
   background-color: #60cd79;
   border: #329c4b 1.6px solid;
-  /* Green border */
 }
 
 .status-indicator.success {
   background-color: #dcf1e1;
-  /* Light green */
   border: #27ae60 1.6px solid;
-  /* Green border */
 }
 
 .status-indicator.pending {
   background-color: #fdf0c8;
-  /* Yellow */
   border: #c1a553 1.6px solid;
-  /* Yellow border */
 }
 
 .status-indicator.active {
@@ -643,9 +635,7 @@
 
 .status-indicator.delete {
   background-color: #f1b5b5;
-  /* Red */
   border: #c16a73 1.6px solid;
-  /* Red border */
 }
 
 .status-indicator.emergency {
@@ -655,30 +645,21 @@
 
 .status-indicator.frozen {
   background-color: #e2f0f8;
-  /* Blue */
   border: #2aacc0 1.6px solid;
-  /* Blue border */
 }
 
 .status-indicator.rejected {
   background: #dc5b5b;
-  /* Same as your .delete-row background */
   border: 1.5px solid #903d34;
 }
 .status-indicator.cancelled-due-to-no-show {
-  background-color: #e0d6e8; /* אפור־סגול רך */
-  border: #a398b3 1.6px solid; /* מסגרת סגלגלה */
+  background-color: #e0d6e8; 
+  border: #a398b3 1.6px solid; 
 }
-
-
-
-
-
-
-
-
-
-
+.status-indicator.exceeded-monthly-trip-quota {
+  background-color: #cdb69b; 
+  border: #9b876b 1.6px solid; 
+}
 
 .export-button {
   background-color: #f5f5f5;
@@ -719,39 +700,51 @@
 }
 
 .range-select {
-  padding: 0.4rem 1rem;
-  border-radius: 6px;
-  border: 1px solid #942222;
-  color: #942222;
+  /* Box model */
+  padding: 0.5rem 1rem; /* Reduced padding for a more compact look */
+  padding-left: 2rem; /* Add specific padding on the left for the arrow */
+  border-radius: 8px; 
+  border: 0.5px solid #942222;
+  
+  /* Typography */
+  font-family: inherit;
   font-size: 1rem;
-  background: #fff;
-  min-width: 160px;
-  transition: border-color 0.2s;
+  color: #942222;
+  font-weight: 500;
+  
+  /* Background & cursor */
+  background-color: #f5f5f5;
   cursor: pointer;
-  font-weight: 600;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  
+  /* Appearance and transitions */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  /* small arrow image */
+  background-image: url('data:image/svg+xml;utf8,<svg fill="%23942222" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: left 0.75rem center; /* Position the arrow closer to the edge */
+  background-size: 1em; /* Reduced the arrow size to 1em */
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  
+  /* Right-to-left support */
+  direction: rtl; /* This is essential for Hebrew text */
 }
 
+/* State-based styling */
 .range-select:hover {
-  background-color: #942222;
-  color: #ffffff;
-  transform: translateY(-2px);
+  border-color: #942222;
+  box-shadow: 0 0 0 3px rgba(148, 34, 34, 0.2); /* Box shadow on hover */
 }
 
 .range-select:focus {
   outline: none;
-  border-color: #b83c3c;
+  border-color: #942222; /* Keep the border color change on focus for accessibility */
 }
 
-.custom-range-fields {
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-  margin-bottom: 25px;
-  background: #f5f5f5;
-  border-radius: 8px;
-  padding: 0.7rem 1.2rem;
-  border: 1px solid #e0e0e0;
+/* Styling for the options */
+.range-select option {
+  direction: rtl;
 }
 
 .date-input {
@@ -769,13 +762,25 @@
   border-color: #b83c3c;
 }
 
+.custom-range-fields {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  flex-wrap: wrap;
+  background: #f8f8f8;
+  border-radius: 8px;
+  padding: 0.7rem 1.2rem;
+  border: 1px solid #e0e0e0;
+}
+
 .filter-apply-btn {
   padding: 0.35rem 1.2rem;
   border-radius: 6px;
   border: 1px solid #942222;
-  background: #fff;
+  background: #942222;
   font-size: 1rem;
-  color: #942222;
+  color: #fff;
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
   margin-right: 0.5rem;
@@ -783,7 +788,7 @@
 }
 
 .filter-apply-btn:hover {
-  background: #942222;
+  background: #881c1c;
   color: white;
   transform: translateY(-2px);
 }
@@ -855,9 +860,9 @@
 input[type="checkbox"] {
   width: 13px;
   height: 13px;
-  accent-color: #942222; /* Modern browsers: change checkbox color */
+  accent-color: #942222;
   cursor: pointer;
-  margin-left: 8px; /* Space between checkbox and label (for RTL, use margin-right) */
+  margin-left: 8px; 
   vertical-align: middle;
 }
 
@@ -962,13 +967,6 @@ input[type="checkbox"] {
   gap: 0.5rem;
 }
 
-.custom-range-fields {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 1rem 0;
-  flex-wrap: wrap;
-}
 
 .export-buttons {
   margin: 1rem 0;
@@ -990,7 +988,7 @@ input[type="checkbox"] {
 }
 
 .collapse-btn,
-.problematic-only-label {
+.exceeded-monthly-trip-quota-label {
   background: none;
   border: 1px solid #942222;
   font-size: 1rem;
@@ -1005,18 +1003,8 @@ input[type="checkbox"] {
   height: 40px;
 }
 
-.collapse-btn:hover,
-.problematic-only-label:hover {
+.collapse-btn:hover:hover {
   background: #942222;
   color: white;
   transform: translateY(-2px);
-}
-
-.problematic-only-label input[type="checkbox"] {
-  accent-color: #942222;
-  margin-left: 8px;
-  margin-right: 0;
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
 }

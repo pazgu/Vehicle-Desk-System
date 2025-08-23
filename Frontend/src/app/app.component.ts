@@ -17,7 +17,6 @@ export class AppComponent implements OnInit {
   constructor(private tabMonitorService: TabMonitorService ,private socketService: SocketService 
 ) {}
  ngOnInit(): void {
-    console.log('🧠 AppComponent initialized — SocketService eagerly loaded');
   }
 }
 

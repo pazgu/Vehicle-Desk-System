@@ -3,7 +3,7 @@ from uuid import UUID
 from fastapi.staticfiles import StaticFiles
 from typing import Optional , List
 from datetime import datetime, time
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session,aliased
 from ..models.no_show_events import NoShowEvent
 from src.schemas.vehicle_inspection_schema import VehicleInspectionOut
 from src.schemas.user_response_schema import UserResponse
@@ -55,8 +55,21 @@ from src.services.admin_rides_service import get_critical_issue_by_id
 from src.schemas.order_card_item import OrderCardItem
 from src.schemas.statistics_schema import NoShowStatsResponse,TopNoShowUser
 from src.models.department_model import Department
-
+from src.schemas.department_schema import DepartmentCreate, DepartmentUpdate, DepartmentOut
+from src.services import department_service
 import pandas as pd
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from uuid import UUID
+from typing import Optional
+from datetime import datetime
+from sqlalchemy.orm import Session
+from sqlalchemy import text # Make sure text is imported
+from src.schemas.user_response_schema import UserResponse # Assuming this path is correct
+from src.models.user_model import User, UserRole # Import User and UserRole enum
+from src.utils.database import get_db # Assuming this path is correct
+from src.utils.auth import token_check # Assuming this path is correct
+from src.utils.socket_manager import sio # Assuming this path is correct (if you have one)
+from typing import Dict, Any
 
 
 router = APIRouter()
@@ -115,147 +128,7 @@ def fetch_user_by_id(user_id: UUID, db: Session = Depends(get_db)):
 
 
 
-# @router.patch("/user-data-edit/{user_id}", response_model=UserResponse)
-# async def edit_user_by_id_route(
-#     user_id: UUID,
-#     first_name: str = Form(...),
-#     last_name: str = Form(...),
-#     username: str = Form(...),
-#     email: str = Form(...),
-#     phone: str = Form(...),
-#     role: str = Form(...),
-#     department_id: str = Form(...),
-#     has_government_license: str = Form(...),
-#     license_file: UploadFile = File(None),
-#     db: Session = Depends(get_db),
-#     payload: dict = Depends(token_check), # payload contains user_id and role from JWT
-#     license_expiry_date: Optional[str] = Form(None)
-# ):
-    
-#     print(f"\n--- Debugging edit_user_by_id_route ---")
-#     print(f"User ID from URL path: {user_id} (Type: {type(user_id)})")
-#     print(f"Payload from token_check: {payload}")
-    
-#     user_id_from_token = payload.get("user_id") or payload.get("sub")
-#     user_role_from_token = payload.get("role")
 
-#     print(f"User ID from token: {user_id_from_token} (Type: {type(user_id_from_token)})")
-#     print(f"User Role from token: {user_role_from_token} (Type: {type(user_role_from_token)})")
-#     print(f"Comparison: str(user_id) == user_id_from_token -> {str(user_id) == user_id_from_token}")
-#     print(f"Comparison: user_role_from_token == 'admin' -> {user_role_from_token == 'admin'}")
-#     # --- DEBUGGING LOGS END ---
-
-#     user = db.query(User).filter(User.employee_id == user_id).first()
-#     if not user:
-#         raise HTTPException(status_code=404, detail="User not found")
-
-#     if not user_id_from_token:
-#         raise HTTPException(status_code=401, detail="User ID not found in token")
-
-#     if str(user_id) != user_id_from_token and user_role_from_token != "admin": # Adjust "admin" role name if different
-#         print(f"DEBUG: Authorization FAILED. User {user_id_from_token} (Role: {user_role_from_token}) tried to edit {user_id}.")
-#         raise HTTPException(status_code=403, detail="Not authorized to edit this user's data.")
-
-#     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id_from_token)})
-#     has_gov_license = has_government_license.lower() == "true"
-
-#     if user.license_file_url is not None and has_gov_license != user.has_government_license:
-#         print(f"DEBUG: License flag change FAILED (file exists). Current: {user.has_government_license}, New: {has_gov_license}")
-#         raise HTTPException(
-#             status_code=403,
-#             detail="'Has government license' flag cannot be changed after initial upload."
-#         )
-
-#     if user.license_file_url is not None and license_file:
-#         print(f"DEBUG: License file re-upload FAILED. Existing URL: {user.license_file_url}, New file: {license_file.filename}")
-#         raise HTTPException(
-#             status_code=403,
-#             detail="Government license file cannot be re-uploaded after initial upload."
-#         )
-#     # If no file exists in the database and a new file is provided, save it.
-#     if user.license_file_url is None and license_file:
-#         try:
-#             contents = await license_file.read()
-#             # Ensure 'uploads' directory exists and is writable
-#             filename = f"uploads/{license_file.filename}"
-#             with open(filename, "wb") as f:
-#                 f.write(contents)
-#             user.license_file_url = f"/{filename}"
-#             # If a file is uploaded, set has_government_license to True if it's not already set
-#             if user.has_government_license is None:
-#                 user.has_government_license = True
-#         except Exception as e:
-#             raise HTTPException(status_code=500, detail=f"Failed to save license file: {e}")
-
-#     # If an expiry date already exists in the database AND the new date is different, forbid it.
-#     if user.license_expiry_date is not None and license_expiry_date:
-#         try:
-#             new_date = datetime.strptime(license_expiry_date, "%Y-%m-%d").date()
-#             if new_date != user.license_expiry_date:
-#                 print(f"DEBUG: License expiry date change FAILED. Current: {user.license_expiry_date}, New: {new_date}")
-#                 raise HTTPException(
-#                     status_code=403,
-#                     detail="License expiry date cannot be edited after initial upload."
-#                 )
-#         except ValueError:
-#             raise HTTPException(status_code=400, detail="Invalid date format for license_expiry_date. Expected YYYY-MM-DD.")
-#     # If no expiry date exists and a new date is provided, save it.
-#     if user.license_expiry_date is None and license_expiry_date:
-#         try:
-#             user.license_expiry_date = datetime.strptime(license_expiry_date, "%Y-%m-%d").date()
-#             # If expiry date is set, ensure has_government_license is True if not already set
-#             if user.has_government_license is None:
-#                 user.has_government_license = True
-#         except ValueError:
-#             raise HTTPException(status_code=400, detail="Invalid date format for license_expiry_date. Expected YYYY-MM-DD.")
-    
-#     # Apply updates to the other, non-restricted fields.
-#     user.first_name = first_name
-#     user.last_name = last_name
-#     user.username = username
-#     user.email = email
-#     user.phone = phone
-#     user.role = role
-#     user.department_id = department_id
-    
-#     # Only set has_government_license from form if it hasn't been set by file/date upload logic above
-#     # and it's currently None in the DB. This handles the initial setting via the checkbox.
-#     if user.has_government_license is None:
-#         user.has_government_license = has_gov_license 
-    
-#     try:
-#         db.commit()
-#     except Exception as e:
-#         db.rollback()
-#         print("❌ Commit failed:", e) # Log the actual exception for debugging
-#         raise HTTPException(status_code=500, detail="Failed to update user due to a database error.")
-
-#     db.refresh(user)
-
-#     # Emit Socket.IO event on successful license update
-#     await sio.emit('user_license_updated', {
-#         "id": str(user.employee_id),
-#         "license_expiry_date": user.license_expiry_date.isoformat() if user.license_expiry_date else None,
-#         "has_government_license": bool(user.has_government_license),
-#         "license_file_url": user.license_file_url or ""
-#     })
-
-#     # Reset session audit user ID
-#     db.execute(text("SET session.audit.user_id = DEFAULT"))
-#     return user
-
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
-from uuid import UUID
-from typing import Optional
-from datetime import datetime
-from sqlalchemy.orm import Session
-from sqlalchemy import text # Make sure text is imported
-from src.schemas.user_response_schema import UserResponse # Assuming this path is correct
-from src.models.user_model import User, UserRole # Import User and UserRole enum
-from src.utils.database import get_db # Assuming this path is correct
-from src.utils.auth import token_check # Assuming this path is correct
-from src.utils.socket_manager import sio # Assuming this path is correct (if you have one)
-import uuid # For UUID casting if needed
 
 
 @router.patch("/user-data-edit/{user_id}", response_model=UserResponse)
@@ -266,25 +139,19 @@ async def edit_user_by_id_route(
     username: str = Form(...),
     email: str = Form(...),
     phone: str = Form(...),
-    role: str = Form(...), # This will be the string from the form
-    department_id: str = Form(...), # This will be the string from the form
+    role: str = Form(...),
+    department_id: str = Form(...),
     has_government_license: str = Form(...),
     license_file: UploadFile = File(None),
     db: Session = Depends(get_db),
-    payload: dict = Depends(token_check), # payload contains user_id and role from JWT
-    license_expiry_date: Optional[str] = Form(None)
+    payload: dict = Depends(token_check),
+    license_expiry_date: Optional[str] = Form(None),
+    # Ensure these are correctly received as parameters
+    is_blocked: Optional[bool] = Form(False), # This will capture the boolean from frontend
+    block_expires_at: Optional[str] = Form(None) # This will capture the string from frontend
 ):
-    print(f"\n--- Debugging edit_user_by_id_route ---")
-    print(f"User ID from URL path: {user_id} (Type: {type(user_id)})")
-    print(f"Payload from token_check: {payload}")
-
     user_id_from_token = payload.get("user_id") or payload.get("sub")
     user_role_from_token = payload.get("role")
-
-    print(f"User ID from token: {user_id_from_token} (Type: {type(user_id_from_token)})")
-    print(f"User Role from token: {user_role_from_token} (Type: {type(user_role_from_token)})")
-    print(f"Comparison: str(user_id) == user_id_from_token -> {str(user_id) == user_id_from_token}")
-    print(f"Comparison: user_role_from_token == 'admin' -> {user_role_from_token == 'admin'}")
     # --- DEBUGGING LOGS END ---
 
     user = db.query(User).filter(User.employee_id == user_id).first()
@@ -296,7 +163,6 @@ async def edit_user_by_id_route(
 
     # Authorization: User can edit their own data OR if they are an admin
     if str(user_id) != user_id_from_token and user_role_from_token != UserRole.admin.value:
-        print(f"DEBUG: Authorization FAILED. User {user_id_from_token} (Role: {user_role_from_token}) tried to edit {user_id}.")
         raise HTTPException(status_code=403, detail="Not authorized to edit this user's data.")
 
     # Set session audit user ID for database triggers/logging
@@ -306,14 +172,12 @@ async def edit_user_by_id_route(
 
     # --- License File and Expiry Date Logic (from your old code, unchanged for this issue) ---
     if user.license_file_url is not None and has_gov_license != user.has_government_license:
-        print(f"DEBUG: License flag change FAILED (file exists). Current: {user.has_government_license}, New: {has_gov_license}")
         raise HTTPException(
             status_code=403,
             detail="'Has government license' flag cannot be changed after initial upload."
         )
 
     if user.license_file_url is not None and license_file:
-        print(f"DEBUG: License file re-upload FAILED. Existing URL: {user.license_file_url}, New file: {license_file.filename}")
         raise HTTPException(
             status_code=403,
             detail="Government license file cannot be re-uploaded after initial upload."
@@ -331,19 +195,7 @@ async def edit_user_by_id_route(
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Failed to save license file: {e}")
 
-    if user.license_expiry_date is not None and license_expiry_date:
-        try:
-            new_date = datetime.strptime(license_expiry_date, "%Y-%m-%d").date()
-            if new_date != user.license_expiry_date:
-                print(f"DEBUG: License expiry date change FAILED. Current: {user.license_expiry_date}, New: {new_date}")
-                raise HTTPException(
-                    status_code=403,
-                    detail="License expiry date cannot be edited after initial upload."
-                )
-        except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid date format for license_expiry_date. Expected YYYY-MM-DD.")
-
-    if user.license_expiry_date is None and license_expiry_date:
+    if license_expiry_date:
         try:
             user.license_expiry_date = datetime.strptime(license_expiry_date, "%Y-%m-%d").date()
             if user.has_government_license is None: # Same note as above.
@@ -352,14 +204,13 @@ async def edit_user_by_id_route(
             raise HTTPException(status_code=400, detail="Invalid date format for license_expiry_date. Expected YYYY-MM-DD.")
     # --- End License File and Expiry Date Logic ---
 
-    # Apply updates to the other, non-restricted fields.
     user.first_name = first_name
     user.last_name = last_name
     user.username = username
     user.email = email
     user.phone = phone
 
-    # --- New Department ID Logic ---
+    # --- Department ID and Role Logic ---
     try:
         new_role = UserRole(role) # Convert incoming string 'role' to UserRole enum
     except ValueError:
@@ -368,44 +219,47 @@ async def edit_user_by_id_route(
     user.role = new_role # Assign the validated role
 
     if new_role == UserRole.admin:
-        # If the new role is 'admin', department_id MUST be NULL according to your check constraint
-        if department_id and department_id.strip(): # Check if department_id was provided in the form
-            print(f"DEBUG: department_id '{department_id}' provided for admin role. Setting to None.")
-            # Optionally, you might raise an HTTP 400 if you want to explicitly forbid sending department_id for admins
-            # raise HTTPException(status_code=400, detail="Admin users cannot have a department ID.")
-        user.department_id = None # Set to None to satisfy the constraint and model's nullable=True
+        user.department_id = None
     else:
-        # If the role is NOT admin, department_id MUST NOT be NULL
-        if not department_id or not department_id.strip(): # Check for empty string or whitespace
+        if not department_id or not department_id.strip():
             raise HTTPException(status_code=400, detail=f"Department ID is required for role '{new_role}'.")
         try:
             user.department_id = UUID(department_id) # Convert string to UUID
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid department ID format. Must be a valid UUID.")
-    # --- End New Department ID Logic ---
+    # --- End Department ID Logic ---
 
-    # Only set has_government_license from form if it hasn't been explicitly set by file/date upload logic
-    # and it's currently False/None in DB (assuming your default is False).
-    # Re-evaluating this part for clarity:
-    # If the file/date logic *didn't* set it (i.e., no file uploaded, no date provided)
-    # AND the existing user's has_government_license isn't already True due to a prior upload,
-    # then apply the value from the form.
-    # A simpler approach if the form value is always considered the most up-to-date:
-    user.has_government_license = has_gov_license
+    user.has_government_license = has_gov_license # Apply this if it's the final decision point
+
+    # --- ADD THESE LINES TO UPDATE IS_BLOCKED AND BLOCK_EXPIRES_AT ---
+    user.is_blocked = is_blocked # Assign the boolean value directly
+
+    if block_expires_at: # If a date string was provided (not empty string or None)
+        try:
+            # Parse the string into a datetime object
+            # Frontend sends YYYY-MM-DDTHH:MM (from toISOString().slice(0, 16))
+            user.block_expires_at = datetime.strptime(block_expires_at, "%Y-%m-%dT%H:%M")
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid date-time format for block_expires_at. Expected YYYY-MM-DDTHH:MM.")
+    else:
+        user.block_expires_at = None # Set to None if no date string was provided (to unblock or clear expiry)
+
 
     try:
         db.commit()
     except Exception as e:
         db.rollback()
-        print("❌ Commit failed:", e)
-        # Log the actual exception type for better debugging if it's not a CheckViolation/NotNullViolation
-        print(f"DEBUG: Exception type: {type(e).__name__}")
         raise HTTPException(status_code=500, detail="Failed to update user due to a database error.")
 
     db.refresh(user)
 
-    # Emit Socket.IO event on successful license update
-    # Ensure sio is imported and initialized correctly elsewhere if this causes errors
+    
+    await sio.emit('user_block_status_updated', {
+        "id": str(user.employee_id),
+        "is_blocked": user.is_blocked,
+        "block_expires_at": user.block_expires_at.isoformat() if user.block_expires_at else None
+    })
+
     await sio.emit('user_license_updated', {
         "id": str(user.employee_id),
         "license_expiry_date": user.license_expiry_date.isoformat() if user.license_expiry_date else None,
@@ -413,10 +267,10 @@ async def edit_user_by_id_route(
         "license_file_url": user.license_file_url or ""
     })
 
+
     # Reset session audit user ID
     db.execute(text("SET session.audit.user_id = DEFAULT"))
     return user
-
 
 
 @router.get("/roles")
@@ -425,35 +279,47 @@ def get_roles():
 
 @router.get("/no-show-events/count")
 def get_no_show_events_count_per_user(db: Session = Depends(get_db)):
+    # Step 1: Query user + vehicle data
     results = (
         db.query(
             User.employee_id,
             User.username,
             User.email,
             User.role,
-            func.count(NoShowEvent.id).label("no_show_count"),
             Vehicle.plate_number
         )
         .join(NoShowEvent, User.employee_id == NoShowEvent.user_id)
         .join(Ride, Ride.id == NoShowEvent.ride_id)
         .join(Vehicle, Vehicle.id == Ride.vehicle_id)
-        .group_by(User.employee_id, Vehicle.plate_number)
         .all()
     )
 
-    return {
-        "users": [
-            {
-                "employee_id": row.employee_id,
+    # Step 2: Aggregate by user
+    user_data = {}
+
+    for row in results:
+        emp_id = row.employee_id
+        if emp_id not in user_data:
+            user_data[emp_id] = {
+                "employee_id": emp_id,
                 "name": row.username,
                 "email": row.email,
                 "role": row.role,
-                "no_show_count": row.no_show_count,
-                "plate_number": row.plate_number
+                "no_show_count": 0,
+                "plate_numbers": set()
             }
-            for row in results
-        ]
-    }
+
+        user_data[emp_id]["no_show_count"] += 1
+        user_data[emp_id]["plate_numbers"].add(row.plate_number)
+
+    # Step 3: Convert sets to lists
+    formatted_users = []
+    for data in user_data.values():
+        data["plate_numbers"] = list(data["plate_numbers"])
+        formatted_users.append(data)
+
+    return {"users": formatted_users}
+
 
 @router.get("/no-show-events/recent")
 def get_recent_no_show_events_per_user(
@@ -533,12 +399,7 @@ async def add_user_as_admin(
 
     if current_user.role != UserRole.admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required.")
-
-    # 🔍 DEBUG: Log the received value and its type
-    print(f"🔍 DEBUG: has_government_license = {has_government_license}")
-    print(f"🔍 DEBUG: has_government_license type = {type(has_government_license)}")
-    print(f"🔍 DEBUG: has_government_license repr = {repr(has_government_license)}")
-
+  
     license_file_url = None
     if has_government_license and license_file:
         contents = await license_file.read()
@@ -560,49 +421,11 @@ async def add_user_as_admin(
         license_expiry_date= license_expiry_date
     )
 
-    # 🔍 DEBUG: Log the UserCreate object
-    print(f"🔍 DEBUG: user_data.has_government_license = {user_data.has_government_license}")
-    print(f"🔍 DEBUG: user_data.has_government_license type = {type(user_data.has_government_license)}")
-
+   
     result = create_user_by_admin(user_data, changed_by, db)
     
-    # 🔍 DEBUG: Log the result if possible
-    print(f"🔍 DEBUG: Created user result: {result}")
     
     return result
-# @router.post("/vehicle-inspection")
-# def vehicle_inspection(data: VehicleInspectionSchema, db: Session = Depends(get_db),payload: dict = Depends(token_check)):
-#     try:
-#         return vehicle_inspection_logic(data, db)
-#     except HTTPException as e:
-#         raise e
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
-    
-
-# @router.patch("/{vehicle_id}/status")
-# def patch_vehicle_status(
-#     vehicle_id: UUID,
-#     status_update: VehicleStatusUpdate,
-#     db: Session = Depends(get_db),
-#     payload: dict = Depends(token_check)
-# ):
-#     user_id = payload.get("user_id") or payload.get("sub")
-#     if not user_id:
-#         return {"error": "User ID not found in token"}, 401
-    
-#     res=update_vehicle_status(vehicle_id, status_update.new_status, status_update.freeze_reason, db, user_id)
-#     new_status=res["new_status"]
-#     sio.emit('vehicle_status_updated', {
-#             "vehicle_id": str(vehicle_id),
-#             "status": new_status,
-#             "freeze_reason": res.get("freeze_reason", "")
-#     })
-#     return res
-
-# @router.get("/vehicle/{vehicle_id}")
-# def get_vehicle_by_id_route(vehicle_id: str, db: Session = Depends(get_db)):
-#     return get_vehicle_by_id(vehicle_id, db)
 
 @router.get("/{ride_id}/available-vehicles", response_model=List[VehicleOut])
 def available_vehicles_for_ride(
@@ -634,12 +457,6 @@ def get_filtered_vehicles(
         query = query.filter(Vehicle.type.ilike(vehicle_type))  # Case-insensitive match
 
     return query.all()
-
-# @router.get("/all-vehicles", response_model=List[VehicleOut])
-# def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = Depends(get_db)
-#     ,payload: dict = Depends(token_check)):
-#     vehicles = get_vehicles_with_optional_status(db, status)
-#     return vehicles
 
 
 
@@ -760,16 +577,22 @@ def archive_last_month_endpoint(db: Session = Depends(get_db)):
 
 
 @router.get("/analytics/vehicle-status-summary")
-def vehicle_status_summary(db: Session = Depends(get_db)):
+def vehicle_status_summary(
+    db: Session = Depends(get_db),
+    type: Optional[str] = Query(None, alias="type")  # 'type' from query param
+):
     try:
-        result = (
-            db.query(Vehicle.status, func.count(Vehicle.id).label("count"))
-            .group_by(Vehicle.status)
-            .all()
-        )
-        # Format response as a list of dicts
+        query = db.query(Vehicle.status, func.count(Vehicle.id).label("count"))
+
+        if type:
+            query = query.filter(Vehicle.type == type)
+
+        result = query.group_by(Vehicle.status).all()
+
+        # Format response
         summary = [{"status": row.status.value, "count": row.count} for row in result]
         return JSONResponse(content=summary)
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching summary: {str(e)}")
 
@@ -787,39 +610,6 @@ def ride_status_summary(db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Error fetching ride summary: {str(e)}")
 
 
-# @router.get("/analytics/weekly-ride-trends")
-# def weekly_ride_trends(db: Session = Depends(get_db)):
-#     try:
-#         today = datetime.utcnow().date()
-#         week_ago = today - timedelta(days=6)  # last 7 days including today
-
-#         # Group by date, count rides
-#         results = (
-#             db.query(
-#                 cast(Ride.start_datetime, Date).label("ride_date"),
-#                 func.count(Ride.id).label("count")
-#             )
-#             .filter(Ride.start_datetime >= week_ago)
-#             .group_by("ride_date")
-#             .order_by("ride_date")
-#             .all()
-#         )
-
-#         # Convert to list of dicts
-#         response = [{"date": str(r.ride_date), "count": r.count} for r in results]
-
-#         return JSONResponse(content=response)
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=f"Failed to fetch weekly ride trends: {str(e)}")
-
-
-# @router.post("/update-monthly-trip-counts")
-# def monthly_trip_count_update(db: Session = Depends(get_db)):
-#     try:
-#         update_monthly_trip_counts(db)
-#         return {"message": "Monthly trip counts updated successfully"}
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/all-audit-logs", response_model=List[AuditLogsSchema])
@@ -1038,26 +828,38 @@ def get_critical_issue_details(issue_id: str, db: Session = Depends(get_db)):
     except HTTPException:
         raise
     except Exception as e:
-        print("❌ Error fetching critical issue details:", str(e))
         raise HTTPException(status_code=500, detail=f"Failed to fetch issue details: {str(e)}")
 
 
-from typing import Dict, Any
+from sqlalchemy import and_, or_
+
 @router.get("/critical-issues", response_model=Dict[str, List[Any]])
 def get_critical_issues(
     problem_type: Optional[str] = Query(None),
     db: Session = Depends(get_db)
 ):
-    # Initialize the query for VehicleInspections
-    inspections_query = db.query(VehicleInspection)
+    UserAlias = aliased(User)
 
-    # Initialize rides_data by fetching ALL rides with emergency_event == "true" by default.
+    inspections_query = db.query(
+        VehicleInspection,
+        UserAlias.username.label("inspected_by_name")  # ✅ get inspector name
+    ).outerjoin(
+        UserAlias, VehicleInspection.inspected_by == UserAlias.employee_id
+    )
+
     rides = db.query(Ride).filter(Ride.emergency_event == "true").all()
     rides_data = [OrderCardItem.from_orm(r) for r in rides]
 
     if problem_type == "medium":
         inspections_query = inspections_query.filter(
-            VehicleInspection.fuel_checked == False
+            and_(
+                or_(
+                    VehicleInspection.clean == False,
+                    VehicleInspection.unfueled_vehicle_id != None,
+                    VehicleInspection.no_items_left == False
+                ),
+                VehicleInspection.critical_issue_bool == False
+            )
         )
         rides_data = []
 
@@ -1077,7 +879,7 @@ def get_critical_issues(
             or_(
                 and_(
                     or_(
-                        VehicleInspection.fuel_checked == False,
+                        VehicleInspection.unfueled_vehicle_id != None,
                     ),
                     VehicleInspection.critical_issue_bool == False
                 ),
@@ -1091,10 +893,13 @@ def get_critical_issues(
             )
         )
 
-    else: # problem_type is None
+    else:
         inspections_query = inspections_query.filter(
             or_(
-                VehicleInspection.fuel_checked == False,
+                 VehicleInspection.clean == False,                     # dirty vehicle
+                    VehicleInspection.no_items_left == False,             # items left
+                    VehicleInspection.fuel_checked==True,        # unfueled vehicle
+                    VehicleInspection.critical_issue_bool == True,
                 and_(
                     VehicleInspection.critical_issue_bool == True,
                     and_(
@@ -1105,11 +910,18 @@ def get_critical_issues(
             )
         )
 
-    # Execute the VehicleInspection query
-    inspections = inspections_query.order_by(VehicleInspection.inspection_date.desc()).all()
-    
-    # Use VehicleInspectionOut with from_orm
-    inspections_data = [VehicleInspectionOut.from_orm(i) for i in inspections]
+    inspections_query = inspections_query.order_by(VehicleInspection.inspection_date.desc())
+
+    inspections = inspections_query.all()
+
+    # ✅ build schema manually from tuples (VehicleInspection, inspected_by_name)
+    inspections_data = []
+    for inspection, inspected_by_name in inspections:
+        data = VehicleInspectionOut.model_validate(inspection, from_attributes=True).model_dump()
+        # Remove inspected_by_name if it exists to avoid duplication
+        data.pop("inspected_by_name", None)
+        out = VehicleInspectionOut(**data, inspected_by_name=inspected_by_name)
+        inspections_data.append(out)
 
     return {
         "inspections": inspections_data,
@@ -1125,63 +937,95 @@ def get_no_show_statistics(
     db: Session = Depends(get_db),
 ):
     
+
+    # 1. Get total no-shows
     query = db.query(NoShowEvent)
     if from_date:
         query = query.filter(NoShowEvent.occurred_at >= from_date)
     if to_date:
         query = query.filter(NoShowEvent.occurred_at <= to_date)
-    
-    total_no_show_events = query.count()
 
-    
+    total_no_show_events = query.count()
     unique_no_show_users = query.with_entities(NoShowEvent.user_id).distinct().count()
 
-    
-    offset = (page - 1) * page_size
+    # 2. Get completed rides in same range
+    completed_query = db.query(Ride).filter(
+        Ride.status == "completed",
+        Ride.completion_date != None)
+    if from_date:
+        completed_query = completed_query.filter(Ride.completion_date >= from_date)
+    if to_date:
+        completed_query = completed_query.filter(Ride.completion_date <= to_date)
 
+    completed_rides_count = completed_query.count()
+
+    # 3. Get top users with pagination
+    offset = (page - 1) * page_size
     top_users_query = (
-        db.query(
-            NoShowEvent.user_id,
-            func.concat(User.first_name, ' ', User.last_name).label("name"),
-            Department.name.label("department"),
-            func.count(NoShowEvent.id).label("count"),
-        )
-        .join(User, User.employee_id == NoShowEvent.user_id)
-        .join(Department, Department.id == User.department_id)
-        .filter(NoShowEvent.occurred_at >= from_date if from_date else True)
-        .filter(NoShowEvent.occurred_at <= to_date if to_date else True)
-        .group_by(NoShowEvent.user_id, User.first_name, User.last_name, Department.name)
-        .order_by(desc("count"))
-        .offset(offset)
-        .limit(page_size)
-        .all()
+    db.query(
+        NoShowEvent.user_id,
+        func.concat(User.first_name, ' ', User.last_name).label("name"),
+        Department.id.label("department_id"),
+        func.count(NoShowEvent.id).label("count"),
+        User.email,
+        User.role,
+        User.employee_id,
     )
+    .outerjoin(User, User.employee_id == NoShowEvent.user_id)
+    .outerjoin(Department, Department.id == User.department_id)
+    .filter(NoShowEvent.occurred_at >= from_date if from_date else True)
+    .filter(NoShowEvent.occurred_at <= to_date if to_date else True)
+    .group_by(
+        NoShowEvent.user_id,
+        User.first_name,
+        User.last_name,
+        Department.id,
+        User.email,
+        User.role,
+        User.employee_id,
+    )
+    .order_by(desc("count"))
+    .offset(offset)
+    .limit(page_size)
+    .all()
+)
 
     top_no_show_users = [
-        TopNoShowUser(
-            user_id=row.user_id,
-            name=row.name,
-            department=row.department or "",
-            count=row.count
-        )
-        for row in top_users_query
-    ]
+    TopNoShowUser(
+        user_id=str(row.employee_id),
+        name=row.name,
+        department_id=row.department_id,
+        count=row.count,
+        email=row.email,
+        role=row.role,
+        employee_id=str(row.employee_id),
+    )
+    for row in top_users_query
+]
 
     return NoShowStatsResponse(
         total_no_show_events=total_no_show_events,
         unique_no_show_users=unique_no_show_users,
+        completed_rides_count=completed_rides_count,
         top_no_show_users=top_no_show_users
     )
+
+
 
 
 @router.post("/admin/vehicles/mileage/upload")
 async def upload_mileage_excel(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    token: str = Depends(oauth2_scheme)
+    token: str = Depends(oauth2_scheme),
+    payload: dict = Depends(token_check)
 ):
+    user_id_from_token = payload.get("user_id") or payload.get("sub")
+
     # בדיקת הרשאה – רק admin
     role_check(["admin"], token)
+    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id_from_token)})
+
 
     # בדיקה שהקובץ הוא מסוג xlsx
     if not file.filename.endswith(".xlsx"):
@@ -1247,6 +1091,7 @@ async def upload_mileage_excel(
         })
 
     db.commit()
+    db.execute(text("SET session.audit.user_id = DEFAULT"))
 
     return {
         "updated": success,
@@ -1265,6 +1110,9 @@ def manual_mileage_edit(
     if not vehicle:
         raise HTTPException(status_code=404, detail="Vehicle not found")
 
+    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(current_user.employee_id)})
+
+
     if request.new_mileage < vehicle.mileage:
         raise HTTPException(
             status_code=400,
@@ -1276,8 +1124,23 @@ def manual_mileage_edit(
 
     db.commit()
 
+    db.execute(text("SET session.audit.user_id = DEFAULT"))
+
+
     return {
         "message": "Mileage updated successfully",
         "vehicle_id": str(vehicle.id),
         "new_mileage": request.new_mileage
     }
+@router.get("/all/supervisors", response_model=List[UserResponse])
+def get_supervisors(db: Session = Depends(get_db)):
+    supervisors = db.query(User).filter(User.role == UserRole.supervisor).all()
+    return supervisors
+
+@router.post("/departments", response_model=DepartmentOut, status_code=201)
+def create_department(dept: DepartmentCreate, db: Session = Depends(get_db), payload: dict = Depends(token_check)):
+    return department_service.create_department(db, dept, payload)
+
+@router.patch("/departments/{department_id}", response_model=DepartmentOut)
+def patch_department(department_id: UUID, dept: DepartmentUpdate, db: Session = Depends(get_db), payload: dict = Depends(token_check)):
+    return department_service.update_department(db, department_id, dept, payload)

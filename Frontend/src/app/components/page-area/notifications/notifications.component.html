@@ -9,22 +9,22 @@
 <div 
   class="notification" 
   *ngFor="let note of pagedNotifications" 
-  (click)="handleNotificationClick(note)" 
-  [class]="note.order_status ? getStatusClass(note.order_status) : 
-           note.notification_type ? getLeaseAlerts(note.notification_type) || getInactiveAlerts(note.notification_type) : 'neutral'" 
-  [class.lease-alert]="note.title === 'Vehicle Lease Expiry'"
-  [class.inactive-alert]="note.title === 'Inactive Vehicle'">
-
+  (click)="handleNotificationClick(note)"
+  [ngClass]="[
+    note.order_status ? getStatusClass(note.order_status) : 
+    note.notification_type ? getLeaseAlerts(note.notification_type) || getInactiveAlerts(note.notification_type) : 'neutral',
+    note.title === 'Vehicle Lease Expiry' ? 'lease-alert' : '',
+    note.title === 'Inactive Vehicle' ? 'inactive-alert' : '',
+    note.is_extended_request ? 'extended-alert' : ''
+  ]">
 
       <div class="content">
-        <!-- <img
-          [src]="note.order_status ? getStatusIcon(note.order_status) : '/assets/images/message.png'"
-          class="status-icon"
-          alt="Status Icon"
-        /> -->
-        <div class="time">{{ note.timeAgo }}</div>
-        <span class="text">{{ translateMessage(note.message) }}</span>
+       <span *ngIf="note.is_extended_request" title="שים לב-נסיעה ארוכה!">
+        🚨 
+       </span>
         <img src="/assets/images/message.png" alt="Message Icon" class="message-icon" />
+         <span class="text">{{ translateMessage(note.message) }}</span>
+        <div class="time">{{ note.timeAgo }}</div>  
       </div>
     </div>
 

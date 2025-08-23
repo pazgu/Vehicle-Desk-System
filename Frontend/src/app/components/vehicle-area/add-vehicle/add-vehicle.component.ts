@@ -35,7 +35,6 @@ export class AddVehicleComponent implements OnInit {
       plate_number: ['', Validators.required],
       type: ['', Validators.required],
       fuel_type: ['', Validators.required],
-      current_location: ['', Validators.required],
       mileage: [0, [Validators.required, Validators.min(0)]],
       vehicle_model: ['', Validators.required],
       // Initialize department_id with `null`.
@@ -83,23 +82,18 @@ export class AddVehicleComponent implements OnInit {
     if (this.vehicleForm.valid) {
       const vehicleData = this.vehicleForm.value;
 
-      // This guard ensures that if department_id somehow ends up as an empty string or undefined
-      // (which should be rare with [ngValue]="null" and proper initialization),
-      // it is converted to null, which the backend's Optional[UUID] can handle.
+      
       if (vehicleData.department_id === undefined || vehicleData.department_id === '') {
         vehicleData.department_id = null;
       }
 
-      console.log('Payload to send:', vehicleData);
 
       this.http.post('http://localhost:8000/api/add-vehicle', vehicleData).subscribe({
         next: (response) => {
-          console.log('Vehicle added successfully!', response);
           this.toastService.show('הרכב נוסף בהצלחה ✅', 'success');
           this.router.navigate(['/vehicle-dashboard']);
         },
         error: (error) => {
-          console.error('Error adding vehicle:', error);
           let errorMessage = 'שגיאה בהוספת רכב ❌';
           // Attempt to extract more specific error messages from the backend response
           if (error.status === 422 && error.error && error.error.detail && Array.isArray(error.error.detail) && error.error.detail.length > 0) {
@@ -115,7 +109,6 @@ export class AddVehicleComponent implements OnInit {
     else {
       // If the form is invalid, show a generic error message
       this.toastService.show('נא למלא את כל השדות הנדרשים ❗', 'error');
-      console.log('Form is invalid', this.vehicleForm.errors);
     }
   }
 

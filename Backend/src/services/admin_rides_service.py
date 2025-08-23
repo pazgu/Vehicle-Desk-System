@@ -41,8 +41,8 @@ def build_dashboard_item(
     return RideDashboardItem(
         ride_id=ride_id,
         employee_name=f"{user_first_name} {user_last_name}",
-requested_vehicle_plate = f"Plate-{str(vehicle_id)[:8]}",
-vehicle_id=vehicle_id,
+        requested_vehicle_model = f"Plate-{str(vehicle_id)[:8]}",
+        vehicle_id=vehicle_id,
         date_and_time=start_datetime,
         distance=str(estimated_distance_km),
         status=status,
@@ -326,7 +326,6 @@ def get_all_critical_issues_combined(db: Session) -> List[Dict[str, Any]]:
             "vehicle_info": f"Ride ID: "
         })
 
-    print("🧪 Critical Issues Combined:", results)
 
     # ⏱️ Sort by most recent
     return sorted(results, key=lambda x: x["timestamp"], reverse=True)
@@ -401,6 +400,6 @@ def get_critical_issue_by_id(issue_id: str, db: Session) -> Optional[Dict[str, A
         }
 
     except Exception as e:
-        print(f"❌ Error parsing ride approval ID: {e}")
+        raise(f"Error parsing ride approval ID: {e}")
 
     return None

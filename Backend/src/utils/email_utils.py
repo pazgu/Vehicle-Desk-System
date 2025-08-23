@@ -31,16 +31,14 @@ def send_email(subject: str, body: str, recipients: List[str]):
 
     msg.attach(MIMEText(body, 'html'))
 
-    print(f"📧 Sending email to {recipients}")
 
     try:
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
             server.starttls()
             server.login(SMTP_USERNAME, SMTP_PASSWORD)
             server.sendmail(EMAIL_FROM, recipients, msg.as_string())
-        print(f"✅ Email successfully sent to {recipients}")
     except Exception as e:
-        print(f"❌ Failed to send email to {recipients}: {e}")
+        print(f"❌ Failed to send email: {e}")
 
 
 # def load_email_template(template_name: str) -> str:

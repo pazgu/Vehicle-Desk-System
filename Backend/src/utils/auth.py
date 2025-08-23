@@ -29,16 +29,13 @@ def hash_password(password: str) -> str:
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     try:
         is_valid = pwd_context.verify(plain_password, hashed_password)
-        print("✅ Password match result:", is_valid)
         return is_valid
     except Exception as e:
-        print("❌ bcrypt verify error:", str(e))
         return False
 
 
 
 def token_check(request: Request):
-    print("token_check called")
     auth_header = request.headers.get("Authorization")
     if not auth_header or not auth_header.startswith("Bearer "):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing or Invalid token")
@@ -106,9 +103,6 @@ def identity_check(user_id: str, token: str):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         token_user_id = payload.get("sub")
-
-        print("🔎 Token user_id:", token_user_id)
-        print("🔐 Path user_id:", user_id)
 
         if not token_user_id:
             raise HTTPException(status_code=401, detail="Invalid token: Missing user_id")

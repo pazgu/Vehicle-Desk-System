@@ -29,6 +29,9 @@ export class VehicleCardItemComponent implements OnInit {
   currentVehicleRideCount: number = 0;
   departmentName: string = '';
 
+  showMileageModal = false;
+newMileage: number = 0;
+currentDate = new Date();
   constructor(
     private navigateRouter: Router,
     private route: ActivatedRoute,
@@ -46,7 +49,6 @@ export class VehicleCardItemComponent implements OnInit {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.vehicleService.getVehicleById(id).subscribe(vehicleData => {
-        console.log('Vehicle from API:', vehicleData);
         this.vehicle = vehicleData;
         this.vehicle.displayStatus = this.translateStatus(vehicleData.status);
         // ✅ IMPORTANT: Check if vehicle is archived and update the display accordingly
@@ -102,7 +104,6 @@ export class VehicleCardItemComponent implements OnInit {
         data.forEach(vehicle => {
           this.topUsedVehiclesMap[vehicle.plate_number] = vehicle.ride_count;
         });
-        console.log('Vehicle usage data loaded:', this.topUsedVehiclesMap);
       },
       error: err => {
         console.error('❌ Error fetching vehicle usage data:', err);
@@ -154,7 +155,29 @@ translateType(type: string | undefined): string {
         return fuelType;
     }
   }
+openMileageModal(): void {
+  this.newMileage = this.vehicle.mileage;
+  this.showMileageModal = true;
+  this.currentDate = new Date();
+}
 
+closeMileageModal(): void {
+  this.showMileageModal = false;
+}
+
+saveMileage(): void {
+  this.vehicleService.updatemileage(this.vehicle.id, this.newMileage).subscribe({
+    next: () => {
+      this.toastService.show(`קילומטראז' עודכן בהצלחה`, 'success');
+      this.vehicle.mileage = this.newMileage;
+      this.vehicle.mileage_last_updated = new Date();
+      this.closeMileageModal();
+    },
+    error: (err) => {
+      this.toastService.show(err.error?.detail || 'שגיאה בעדכון הקילומטראז׳', 'error');
+    }
+  });
+}
   translateFreezeReason(freezeReason: string | null | undefined): string {
     if (!freezeReason) return '';
     switch (freezeReason.toLowerCase()) {
@@ -175,7 +198,6 @@ translateType(type: string | undefined): string {
 
     this.vehicleService.updateVehicleStatus(this.vehicle.id, newStatus, reason).subscribe({
       next: (response) => {
-        console.log(`Vehicle status updated to '${newStatus}':`, response);
         this.vehicle.status = newStatus;
         this.vehicle.freeze_reason = newStatus === 'frozen' ? reason : null;
 
@@ -248,7 +270,6 @@ translateType(type: string | undefined): string {
             rideDate.getFullYear() === currentDate.getFullYear();
         }).length;
 
-        console.log(`Vehicle ${vehicleId} appears in ${count} rides`);
 
         // Store the count in the component property
         this.currentVehicleRideCount = count;
@@ -436,6 +457,18 @@ translateType(type: string | undefined): string {
       });
     });
   }
+
+updateVehiclemileage(vehicle: any): void {
+  this.vehicleService.updatemileage(vehicle.id, vehicle.mileage).subscribe({
+    next: () => {
+      this.toastService.show(`קילומטראז' הרכב ${vehicle.plate_number} עודכן בהצלחה`, 'success');
+    },
+    error: (err) => {
+      this.toastService.show(err.error?.detail || 'אירעה שגיאה בעת עדכון הקילומטראז׳', 'error');
+    }
+  });
+}
+
 
   // UPDATED: Method to permanently delete vehicle
   permanentlyDeleteVehicle(vehicle: any): void {

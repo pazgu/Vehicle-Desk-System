@@ -3,7 +3,7 @@ from uuid import UUID
 
 from ..models.vehicle_model import Vehicle
 from ..models.notification_model import Notification, NotificationType
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from ..models.notification_model import Notification, NotificationType
 from ..utils.database import SessionLocal
 from ..models.user_model import User  # adjust import if needed
@@ -17,20 +17,27 @@ from ..models.ride_model import RideStatus
 
 def get_user_notifications(db: Session, user_id: UUID):
     results = (
-    db.query(Notification, Ride.status)
-    .outerjoin(Ride, Ride.id == Notification.order_id)
-    .filter(Notification.user_id == user_id)
-    .order_by(Notification.sent_at.desc())  # 👈 Sort by sent_at descending
-    .all()
-)
+        db.query(Notification, Ride.status, Ride.start_datetime, Ride.end_datetime)
+        .outerjoin(Ride, Ride.id == Notification.order_id)
+        .filter(Notification.user_id == user_id)
+        .order_by(Notification.sent_at.desc())
+        .all()
+    )
 
-
-    # Combine Notification and status into a dict per result
     notifications = []
-    for notification, status in results:
+    for notification, status, start_dt, end_dt in results:
         notif_dict = notification.__dict__.copy()
-        notif_dict["order_status"] = status.value if status else None  # convert Enum to string
+        notif_dict["order_status"] = status.value if status else None
+        
+        # Detect long ride (>2 days) for ride-related notifications
+        is_extended = False
+        if start_dt and end_dt:
+            is_extended = (end_dt - start_dt) > timedelta(days=2)
+        
+        notif_dict["is_extended_request"] = is_extended  # ✅ add flag
+        
         notifications.append(notif_dict)
+      
 
     return notifications
 
@@ -53,7 +60,6 @@ async def send_notification_async(
     }
 
     await sio.emit("new_notification", notif_data, room=str(user_id))
-    print(f"📢 Emitted new_notification to room {user_id}")
 
     return new_notification
 
@@ -120,9 +126,7 @@ def create_system_notification_with_db(db: Session, user_id, title, message, ord
 async def send_admin_odometer_notification(vehicle_id: UUID, mileage: float):
     db = SessionLocal()
     try:
-        print(f"send_admin_odometer_notification called with vehicle_id={vehicle_id}, mileage={mileage}")
         admins = db.query(User).filter(User.role == 'admin').all()
-        print(f"Admins: {admins}, Odo: {mileage}")
         if not admins or mileage < 10000:
             return None
 
@@ -156,16 +160,12 @@ async def send_admin_odometer_notification(vehicle_id: UUID, mileage: float):
         db.commit()
 
         if notifications:
-            print('before emit')
             for notif in notifications:
                 await sio.emit(
                     "new_odometer_notification",
                     {"updated_notifications": [notif.to_dict()]},
                     room=str(notif.user_id)
                 )
-            print('✅ just emitted updated_notifications to each admin room')
-        else:
-            print('❌ No new notifications to emit')
 
         return notifications
     except Exception as e:

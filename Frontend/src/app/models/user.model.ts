@@ -13,11 +13,11 @@ export interface LoginResponse {
     username: string;
     email: string;
     password: string;
+    phone: string;
     department_id: string; // selected from dropdown
     // No need to include `employee_id` or `role`, those are handled by the backend
   }  
   
-  // user.model.ts
 export interface User {
  
   first_name: string;
@@ -31,6 +31,8 @@ export interface User {
   has_government_license: boolean;  
   license_check_passed: boolean;
   license_file_url?: string | null;
-  license_expiry_date: Date | null
+  license_expiry_date: Date | null;
+  is_blocked: boolean;
+  block_expires_at?: Date | null; // Optional, if user is blocked
 
 }

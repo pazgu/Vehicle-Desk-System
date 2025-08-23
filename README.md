@@ -81,7 +81,7 @@ cd Backend
 pip install -r requirements.txt
 ```
 - Start the FastAPI development server:
-``` uvicorn main:app --reload ```
+``` uvicorn src.main:sio_app --reload  ```
 
 ### 4. ⚙️ Set Up the Frontend Environment
 - Open a new terminal tab and switch to PowerShell.

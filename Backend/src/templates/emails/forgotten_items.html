@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>נמצאו חפצים ברכב</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      direction: rtl;
+      background: linear-gradient(135deg, #74b9ff 0%, #0984e3 50%, #6c5ce7 100%);
+      min-height: 100vh;
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    .email-wrapper {
+      max-width: 600px;
+      margin: 30px auto;
+      background: white;
+      border-radius: 25px;
+      overflow: hidden;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      position: relative;
+    }
+
+    .email-wrapper::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, #74b9ff, #0984e3, #6c5ce7, #74b9ff);
+      animation: gradientShift 4s ease-in-out infinite;
+    }
+
+    .header-section {
+      background: linear-gradient(135deg, #74b9ff, #0984e3);
+      color: white;
+      padding: 40px 30px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header-section::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+      background-size: 20px 20px;
+      animation: float 20s ease-in-out infinite;
+    }
+
+    .header-icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+      display: block;
+      animation: bounce 3s ease-in-out infinite;
+      position: relative;
+      z-index: 2;
+    }
+
+    .header-section h1 {
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 15px;
+      position: relative;
+      z-index: 2;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+
+    .header-section .subtitle {
+      font-size: 16px;
+      opacity: 0.9;
+      font-weight: 400;
+      position: relative;
+      z-index: 2;
+    }
+
+    .content-area {
+      padding: 40px 30px;
+      background: white;
+    }
+
+    .info-grid {
+      display: grid;
+      gap: 20px;
+      margin: 30px 0;
+    }
+
+    .info-item {
+      background: linear-gradient(135deg, #f8f9ff, #e8eaff);
+      padding: 25px;
+      border-radius: 15px;
+      border-right: 5px solid #74b9ff;
+      position: relative;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .info-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(116, 185, 255, 0.2);
+    }
+
+    .info-item::before {
+      content: attr(data-icon);
+      position: absolute;
+      top: 15px;
+      left: 20px;
+      font-size: 24px;
+      opacity: 0.7;
+    }
+
+    .info-label {
+      font-weight: 700;
+      color: #2d3436;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      opacity: 0.8;
+    }
+
+    .info-value {
+      font-size: 20px;
+      font-weight: 600;
+      color: #0984e3;
+    }
+
+    .license-plate {
+      background: white !important;
+      border: 3px solid #0984e3 !important;
+      padding: 15px 20px !important;
+      border-radius: 12px !important;
+      font-size: 28px !important;
+      font-weight: 800 !important;
+      text-align: center !important;
+      color: #2d3436 !important;
+      box-shadow: 0 5px 20px rgba(9, 132, 227, 0.3) !important;
+      display: inline-block;
+      min-width: 150px;
+    }
+
+    .highlight-card {
+      background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+      padding: 30px;
+      border-radius: 20px;
+      margin: 30px 0;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      border: 3px solid #e17055;
+    }
+
+    .highlight-card::before {
+      content: '✨';
+      position: absolute;
+      top: 15px;
+      left: 20px;
+      font-size: 32px;
+      animation: twinkle 2s ease-in-out infinite;
+    }
+
+    .highlight-card .main-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: #2d3436;
+      margin-bottom: 15px;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .highlight-card .description {
+      font-size: 16px;
+      color: #636e72;
+      line-height: 1.7;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 20px;
+      border-radius: 12px;
+      backdrop-filter: blur(5px);
+    }
+
+   
+
+    .action-btn {
+      background: linear-gradient(135deg, #00b894, #00cec9);
+      color: white;
+      padding: 15px 30px;
+      border-radius: 25px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      box-shadow: 0 5px 20px rgba(0, 184, 148, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .action-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transition: left 0.6s ease;
+    }
+
+    .action-btn:hover::before {
+      left: 100%;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0, 184, 148, 0.4);
+    }
+
+    .footer-area {
+      background: linear-gradient(135deg, #2d3436, #636e72);
+      color: white;
+      padding: 35px 30px;
+      text-align: center;
+    }
+
+    .footer-area .signature {
+      font-size: 18px;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .footer-area .company-logo {
+      font-size: 28px;
+      font-weight: 800;
+      color: #74b9ff;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .footer-area .tagline {
+      font-size: 14px;
+      opacity: 0.8;
+      font-style: italic;
+      margin-bottom: 15px;
+    }
+
+    .footer-area .disclaimer {
+      font-size: 12px;
+      opacity: 0.6;
+      border-top: 1px solid rgba(255,255,255,0.2);
+      padding-top: 15px;
+      margin-top: 15px;
+    }
+
+    .floating-elements {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .floating-elements::before,
+    .floating-elements::after {
+      content: '💼';
+      position: absolute;
+      font-size: 20px;
+      opacity: 0.1;
+      animation: floatAround 15s ease-in-out infinite;
+    }
+
+    .floating-elements::before {
+      top: 20%;
+      right: 10%;
+      animation-delay: -2s;
+    }
+
+    .floating-elements::after {
+      bottom: 20%;
+      left: 10%;
+      animation-delay: -8s;
+    }
+
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+      }
+      40% {
+        transform: translateY(-15px);
+      }
+      60% {
+        transform: translateY(-7px);
+      }
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(1.1); }
+    }
+
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-10px) rotate(180deg); }
+    }
+
+    @keyframes floatAround {
+      0%, 100% { transform: translateY(0px) translateX(0px); }
+      25% { transform: translateY(-20px) translateX(10px); }
+      50% { transform: translateY(-10px) translateX(-10px); }
+      75% { transform: translateY(-15px) translateX(5px); }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+      
+      .email-wrapper {
+        margin: 15px auto;
+      }
+      
+      .header-section {
+        padding: 30px 20px;
+      }
+      
+      .header-section h1 {
+        font-size: 26px;
+      }
+      
+      .content-area {
+        padding: 30px 20px;
+      }
+      
+      .license-plate {
+        font-size: 24px !important;
+        min-width: 120px !important;
+      }
+      
+      
+      
+      .action-btn {
+        width: 100%;
+        max-width: 250px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="email-wrapper">
+    <div class="floating-elements"></div>
+    
+    <div class="header-section">
+      <span class="header-icon">👜</span>
+      <h1>נמצאו חפצים ברכב</h1>
+      <div class="subtitle">הודעה מצוות השירות שלנו</div>
+    </div>
+
+    <div class="content-area">
+      <div class="info-grid">
+        <div class="info-item" data-icon="👤">
+          <div class="info-label">שם הנוסע</div>
+          <div class="info-value">{{ user_name }}</div>
+        </div>
+
+        <div class="info-item" data-icon="🚗">
+          <div class="info-label">לוחית רישוי</div>
+          <div class="info-value license-plate">{{ license_plate }}</div>
+        </div>
+
+        <div class="info-item" data-icon="📅">
+          <div class="info-label">תאריך הבדיקה</div>
+          <div class="info-value">{{ date }}</div>
+        </div>
+      </div>
+
+      <div class="highlight-card">
+        <div class="main-title">שכחת חפצים ברכב? 🎒</div>
+        <div class="description">
+          במהלך בדיקת הרכב נמצאו חפצים אישיים. אם שכחת משהו חשוב, 
+          אנא פנה לצוות הקבלה שלנו בהקדם האפשרי. 
+          אנחנו נשמח לעזור לך לאתר ולהחזיר את החפצים שלך!
+        </div>
+      </div>
+
+     
+    </div>
+
+    <div class="footer-area">
+      <div class="signature">
+        תודה רבה,<br>
+        צוות <span class="company-logo">BookIt</span>
+      </div>
+      <div class="disclaimer">
+        הודעה זו נשלחה אוטומטית ממערכת התחבורה<br>
+        לשאלות נוספות אנא פנו אלינו בטלפון או באימייל
+      </div>
+    </div>
+  </div>
+</body>
+</html>

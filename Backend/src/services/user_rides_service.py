@@ -4,7 +4,7 @@ from ..models.ride_model import Ride , RideStatus
 from ..schemas.user_rides_schema import RideSchema
 from uuid import UUID
 from ..models.vehicle_model import Vehicle
-from sqlalchemy import String, text
+from sqlalchemy import String, func, text
 from datetime import datetime, timezone
 from fastapi import HTTPException
 from src.schemas.ride_status_enum import RideStatusEnum
@@ -37,9 +37,12 @@ def get_future_rides(user_id: UUID, db: Session, status=None, from_date=None, to
         Ride.destination,
         Ride.start_datetime,
         Ride.end_datetime,
-        Ride.estimated_distance_km.cast(String).label("estimated_distance"),
+       func.ceil(Ride.estimated_distance_km) \
+            .cast(String) \
+            .label("estimated_distance"),
         Ride.status,
         Ride.submitted_at,
+        Ride.extra_stops,
         Ride.user_id,
         Vehicle.fuel_type.label("vehicle")
     ).join(Vehicle, Ride.vehicle_id == Vehicle.id).filter(
@@ -70,11 +73,15 @@ def get_past_rides(user_id: UUID, db: Session, status=None, from_date=None, to_d
         Ride.destination,
         Ride.start_datetime,
         Ride.end_datetime,
-        Ride.estimated_distance_km.cast(String).label("estimated_distance"),
+        func.ceil(Ride.estimated_distance_km) \
+            .cast(String) \
+            .label("estimated_distance"),
         Ride.status,
         Ride.submitted_at,
         Ride.user_id,
+        Ride.extra_stops,
         Vehicle.fuel_type.label("vehicle")
+
     ).join(Vehicle, Ride.vehicle_id == Vehicle.id).filter(Ride.user_id == user_id, Ride.start_datetime <= now)
 
     query = filter_rides(query, status, from_date, to_date)
@@ -95,10 +102,13 @@ def get_all_rides(user_id: UUID, db: Session, status=None, from_date=None, to_da
        Ride.destination,
        Ride.start_datetime,
        Ride.end_datetime,
-       Ride.estimated_distance_km.cast(String).label("estimated_distance"),
+       func.ceil(Ride.estimated_distance_km) \
+            .cast(String) \
+            .label("estimated_distance"),
        Ride.status,
        Ride.submitted_at,
        Ride.user_id,
+       Ride.extra_stops,
        Vehicle.fuel_type.label("vehicle")
     ).join(Vehicle, Ride.vehicle_id == Vehicle.id).filter(Ride.user_id == user_id)
 
@@ -121,48 +131,11 @@ def update_ride_status(db: Session, ride_id: UUID, new_status: str, changed_by: 
     db.commit()
     db.refresh(ride)
 
-    # print(f"\n !!!!!!!!!!!!!!!!!!!!!!!! changed_by: {changed_by} !!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
-
-    # Log the audit entry with all ride details and the new status
-    # log_action(
-    #     db=db,
-    #     action="UPDATE",  # Correct action
-    #     entity_type="Ride",
-    #     entity_id=str(ride.id),
-    #     change_data={
-    #         "id": str(ride.id),
-    #         "stop": ride.stop,
-    #         "status": ride.status,  # Include the new status
-    #         "user_id": str(ride.user_id),
-    #         "isArchive": ride.isArchive,
-    #         "ride_type": ride.ride_type,
-    #         "vehicle_id": str(ride.vehicle_id),
-    #         "destination": ride.destination,
-    #         "end_datetime": ride.end_datetime.isoformat(),
-    #         "submitted_at": ride.submitted_at.isoformat(),
-    #         "start_datetime": ride.start_datetime.isoformat(),
-    #         "start_location": ride.start_location,
-    #         "emergency_event": ride.emergency_event,
-    #         "override_user_id": str(ride.override_user_id),
-    #         "actual_distance_km": ride.actual_distance_km,
-    #         "license_check_passed": ride.license_check_passed,
-    #         "estimated_distance_km": ride.estimated_distance_km
-    #     },
-    #     changed_by=changed_by,
-    # )
     db.execute(text("SET session.audit.user_id = DEFAULT"))
 
 
     return ride
 
-
-
-# def get_ride_by_id(db: Session, ride_id: UUID) -> Ride:
-#     ride = db.query(Ride).filter(Ride.id == ride_id).first()
-#     if not ride:
-#         raise HTTPException(status_code=404, detail="Ride not found")
-#     db.refresh(ride)  
-#     return ride
 
 
 def get_ride_by_id(db: Session, ride_id: UUID) -> RideSchema:
@@ -171,6 +144,7 @@ def get_ride_by_id(db: Session, ride_id: UUID) -> RideSchema:
         Ride.ride_type,
         Ride.start_location,
         Ride.stop,
+        Ride.extra_stops,
         Ride.destination,
         Ride.start_datetime,
         Ride.end_datetime,
@@ -178,6 +152,7 @@ def get_ride_by_id(db: Session, ride_id: UUID) -> RideSchema:
         Ride.status,
         Ride.submitted_at,
         Ride.user_id,
+        Ride.extra_stops,
         Vehicle.fuel_type.label("vehicle"), 
         Ride.actual_pickup_time,
     ).join(Vehicle, Ride.vehicle_id == Vehicle.id).filter(Ride.id == ride_id).first()

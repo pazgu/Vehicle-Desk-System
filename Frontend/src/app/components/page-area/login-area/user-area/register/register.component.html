@@ -1,6 +1,6 @@
 <div class="page-container">
   <div class="login-box">
-    <a routerLink="/home" routerLinkActive="active"><div class="close-btn">✕</div></a>
+    <a routerLink="/login" routerLinkActive="active"><div class="close-btn">✕</div></a>
     <h2>יצירת משתמש חדש</h2>
 
     <form [formGroup]="registerForm" (ngSubmit)="register()" class="form-grid">
@@ -71,7 +71,7 @@
         <small *ngIf="f['department_id'].touched && f['department_id'].errors?.['required']" style="color:red;">יש לבחור מחלקה</small>
       </div>
 
-      <button type="submit" [disabled]="registerForm.invalid">צור משתמש</button>
+      <button type="submit">צור משתמש</button>
       <p *ngIf="errorMessage" style="color:red;">{{ errorMessage }}</p>
     </form>
   </div>

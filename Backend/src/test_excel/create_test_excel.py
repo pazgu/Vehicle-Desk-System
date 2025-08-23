@@ -14,4 +14,3 @@ data = {
 df = pd.DataFrame(data)
 file_path = os.path.join("test_excel", "example_mileage_upload.xlsx")
 df.to_excel(file_path, index=False)
-print("Excel file created: example_mileage_upload.xlsx")

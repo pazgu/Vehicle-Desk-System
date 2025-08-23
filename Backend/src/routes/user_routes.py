@@ -10,7 +10,7 @@ from ..services import register_service
 from ..services import login_service
 from uuid import UUID
 from sqlalchemy import text
-from ..services.new_ride_service import create_ride 
+from ..services.new_ride_service import check_license_validity, create_ride 
 from fastapi.responses import JSONResponse
 from typing import List, Optional, Annotated
 from datetime import datetime, timedelta, timezone
@@ -133,7 +133,7 @@ def get_future_orders(user_id: UUID, status: Optional[RideStatus] = Query(None),
                       ):
 
     try:
-        role_check(allowed_roles=["employee", "admin"], token=token)
+        role_check(allowed_roles=["employee", "admin","supervisor"], token=token)
         identity_check(user_id=str(user_id), token=token)
 
         rides = get_future_rides(user_id, db, status, from_date, to_date)
@@ -147,7 +147,7 @@ def get_future_orders(user_id: UUID, status: Optional[RideStatus] = Query(None),
     except HTTPException as e:
         raise e
     except Exception as e:
-        raise HTTPException(status_code=500, detail="An unexpected error occurred.")
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred :{e}.")
 
 
 @router.get("/api/past-orders/{user_id}", response_model=List[RideSchema])
@@ -157,7 +157,7 @@ def get_past_orders(user_id: UUID, status: Optional[RideStatus] = Query(None),
                     db: Session = Depends(get_db),
                     token: str = Depends(oauth2_scheme)):
 
-    role_check(["employee", "admin"], token)
+    role_check(["employee", "admin","supervisor"], token)
     identity_check(str(user_id), token)
 
     rides = get_past_rides(user_id, db, status, from_date, to_date)
@@ -178,17 +178,12 @@ def get_all_orders(user_id: UUID, status: Optional[RideStatus] = Query(None),
                    db: Session = Depends(get_db),
                    token: str = Depends(oauth2_scheme)):
 
-    role_check(["employee", "admin"], token)
+    role_check(["employee", "admin","supervisor"], token)
     identity_check(str(user_id), token)
 
     rides = get_all_rides(user_id, db, status, from_date, to_date)
     return rides
 
-    
-@router.get("/api/user-orders/{user_id}/{order_id}")
-def get_user_2specific_order():
-    # Implementation pending
-    return {"message": "Not implemented yet"}
 
 @router.post("/api/orders/{user_id}", status_code=fastapi_status.HTTP_201_CREATED)
 async def create_order(
@@ -199,6 +194,9 @@ async def create_order(
 ):
     role_check(allowed_roles=["employee", "admin"], token=token)
     identity_check(user_id=str(user_id), token=token)
+
+    check_license_validity(db, user_id, ride_request.start_datetime)
+
 
     try:
         # Create the ride first - this is the critical, core action.
@@ -220,7 +218,7 @@ async def create_order(
             "end_datetime": str(new_ride.end_datetime),
             "date_and_time": str(new_ride.start_datetime),
             "vehicle_id": str(new_ride.vehicle_id),
-            "requested_vehicle_plate": new_ride.plate_number,
+            "requested_vehicle_model": new_ride.vehicle_model,
             "department_id": str(department_id),
             "distance": new_ride.estimated_distance_km,
         })
@@ -228,6 +226,9 @@ async def create_order(
         # Launch the email task in the background using a fire-and-forget pattern.
         # Do NOT await this call.
         supervisor_id = get_supervisor_id(user_id, db)
+        employee_name = get_user_name(db, new_ride.user_id)
+        is_extended = (new_ride.end_datetime - new_ride.start_datetime) > timedelta(days=2)
+
         if supervisor_id:
             employee_name = get_user_name(db, new_ride.user_id)
             supervisor_name = get_user_name(db, supervisor_id)
@@ -269,7 +270,7 @@ async def create_order(
             supervisor_notification = create_system_notification(
                 user_id=supervisor_id,
                 title="בקשת נסיעה חדשה",
-                message=f"שלח בקשה חדשה {employee_name} העובד",
+                message=f"העובד/ת {employee_name} שלח/ה בקשה חדשה",
                 order_id=new_ride.id
             )
             await sio.emit("new_notification", {
@@ -280,9 +281,48 @@ async def create_order(
                 "notification_type": supervisor_notification.notification_type.value,
                 "sent_at": supervisor_notification.sent_at.isoformat(),
                 "order_id": str(supervisor_notification.order_id) if supervisor_notification.order_id else None,
-                "order_status": new_ride.status
+                "order_status": new_ride.status,
+                "is_extended_request": is_extended 
+
+
             })
-            
+
+            # שליחת מייל למנהל - כאן הקוראים ל-async_send_email
+            supervisor_email = get_user_email(supervisor_id, db)
+            if supervisor_email:
+                # Get the city name from the city ID
+                destination_city = db.query(City).filter(City.id == new_ride.stop).first()
+                destination_name = destination_city.name if destination_city else str(new_ride.stop)
+                duration_days = (new_ride.end_datetime - new_ride.start_datetime).days + 1
+               
+                extended_banner = ""
+                if ride_request.is_extended_request:
+                    extended_banner = f"""
+                    <div style="background-color: #fff3cd; color: #856404; padding: 15px; border-radius: 8px; border: 1px solid #ffeeba; margin-bottom: 20px; text-align: center;">
+                    ⚠️ <strong>בקשה זו כוללת נסיעה ארוכה של {duration_days} ימים ודורשת את תשומת לבך המיידית</strong>
+                    </div>
+                    """
+                
+                html_content = load_email_template("new_ride_request.html", {
+                    "SUPERVISOR_NAME": get_user_name(db, supervisor_id) or "מנהל",
+                    "EMPLOYEE_NAME": employee_name,
+                    "DESTINATION": destination_name,  # Now shows the city name
+                    "DATE_TIME": str(new_ride.start_datetime),
+                    "PLATE_NUMBER": new_ride.plate_number or "לא נבחר",
+                    "DISTANCE": str(new_ride.estimated_distance_km),
+                    "STATUS": new_ride.status,
+                    "EXTENDED_BANNER": extended_banner
+
+                    # "LINK_TO_ORDER": f"{BOOKIT_URL}/home?order_id={new_ride.id}"
+                    })
+                await async_send_email(
+                    to_email=supervisor_email,
+                    subject="📄 בקשת נסיעה חדשה מחכה לאישורך",
+                    html_content=html_content
+                )
+            else:
+                logger.warning("No supervisor email found — skipping email.")
+
         else:
             logger.warning(f"No supervisor found for user ID {user_id} — skipping supervisor notification and email.")
             
@@ -521,7 +561,6 @@ def check_started_approved_rides(db: Session = Depends(get_db)):
         Ride.start_datetime <= now,
         now <= Ride.start_datetime + text("interval '2 hours'")
     ).all()
-    print({"rides_supposed_to_start": [ride.id for ride in rides]})
 
 
     return {"rides_supposed_to_start": [ride.id for ride in rides]}
@@ -545,7 +584,7 @@ async def patch_order(
     current_user: User = Depends(get_current_user)
 ):
     # Update the order
-    updated_order = patch_order_in_db(order_id, patch_data, db, changed_by=str(current_user.employee_id))
+    updated_order = await patch_order_in_db(order_id, patch_data, db, changed_by=str(current_user.employee_id))
     user = db.query(User).filter(User.employee_id == updated_order.user_id).first()
     vehicle = db.query(Vehicle).filter(Vehicle.id == updated_order.vehicle_id).first()
 
@@ -555,7 +594,7 @@ async def patch_order(
     "user_id": str(updated_order.user_id),
     "employee_name":f"{user.first_name} {user.last_name}",
     "vehicle_id": str(updated_order.vehicle_id) if updated_order.vehicle_id else None,
-    "requested_vehicle_plate":vehicle.plate_number,
+    "requested_vehicle_model":vehicle.vehicle_model,
     "ride_type": updated_order.ride_type,
     "start_datetime": updated_order.start_datetime,
     "end_datetime": updated_order.end_datetime,
@@ -572,7 +611,6 @@ async def patch_order(
     if updated_order.extra_stops:
         order_data["extra_stops"] = [str(stop) for stop in updated_order.extra_stops]
 
-    print("Order data to emit:", json.dumps(convert_decimal(order_data), indent=2))
     await sio.emit("order_updated", convert_decimal(order_data))
     return {
         "message": "ההזמנה עודכנה בהצלחה",
@@ -690,7 +728,6 @@ def get_rides_with_locations(db: Session = Depends(get_db)):
 def read_ride(ride_id: UUID, db: Session = Depends(get_db)):
 
     ride = get_ride_by_id(db, ride_id)
-    print('ride to return:',ride)
     return ride
 
 
@@ -702,17 +739,6 @@ async def submit_completion_form(
 ):
     return await process_completion_form(db, user, form_data)
 
-
-@router.get("/api/archived-orders/{user_id}", response_model=List[RideSchema])
-def get_archived_orders_route(
-    user_id: UUID,
-    db: Session = Depends(get_db),
-    token: str = Depends(oauth2_scheme)
-):
-    role_check(["employee", "admin"], token)
-    identity_check(str(user_id), token)
-
-    return get_archived_rides(user_id, db)
 
 @router.get("/api/orders/pending-cars", response_model=List[PendingRideSchema])
 def get_pending_car_orders(db: Session = Depends(get_db)):
@@ -866,20 +892,26 @@ def get_city_route(name:str,db: Session = Depends(get_db)):
     city = get_city(name,db)
     return {"id": str(city.id), "name": city.name} 
 
+def get_city_by_id(id: str, db: Session):
+    return db.query(City).filter(City.id == id).first()
+
+@router.get("/api/cityname")
+def get_city_name(id: str, db: Session = Depends(get_db)):
+    city = get_city_by_id(id, db)
+    if city is None:
+        raise HTTPException(status_code=404, detail=f"City with id {id} not found")
+    return {"id": str(city.id), "name": city.name}
+
+
 @router.get("/api/rides/feedback/check/{user_id}")
 def check_feedback_needed(
     user_id: UUID,  # Add this parameter to capture the path variable
     db: Session = Depends(get_db)
 ):
-    print(f"Checking feedback for user: {user_id}")
     
     # Get the most recent completed ride for this user that needs feedback
     ride = get_ride_needing_feedback(db, user_id)
-    
-    print(f"Found ride: {ride}")
-    if ride:
-        print(f"Ride ID: {ride.id}, Status: {ride.status}, Feedback submitted: {getattr(ride, 'feedback_submitted', 'FIELD_NOT_EXISTS')}")
-    
+
     if not ride:
         return {"showPage": False, "message": "No rides need feedback"}
     

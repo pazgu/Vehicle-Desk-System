@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Text, Enum, DateTime, Boolean
+from sqlalchemy import Column, String, Integer, Text, Enum, DateTime, Boolean, Numeric
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from src.models.base import Base
@@ -36,7 +36,6 @@ class Vehicle(Base):
     freeze_reason = Column(Enum(FreezeReason), nullable=True)
     freeze_details = Column(Text, nullable=True) 
     last_used_at = Column(DateTime, nullable=True)
-    current_location = Column(Text, nullable=False)
     mileage = Column(Integer, nullable=False, default=0)
     mileage_last_updated = Column(DateTime, nullable=True)
     vehicle_model = Column(Text, nullable=False)
@@ -45,5 +44,8 @@ class Vehicle(Base):
     department_id = Column(UUID(as_uuid=True), nullable=True)
     is_archived = Column(Boolean, default=False, nullable=False)
     archived_at = Column(DateTime, nullable=True)
+    last_user_id = Column(UUID(as_uuid=True),  nullable=True)
+    max_daily_distance_km = Column(Numeric, nullable=True)  # ✅ Add this line
+
 
    

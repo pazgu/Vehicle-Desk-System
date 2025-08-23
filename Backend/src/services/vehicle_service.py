@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.types import String  # To cast to string
 from typing import Optional, List , Dict , Union
 from ..models.vehicle_model import Vehicle, VehicleStatus
-from sqlalchemy import func, cast 
+from sqlalchemy import Date, func, cast 
 from sqlalchemy import and_ , or_ , not_ , select
 from ..models.ride_model import Ride, RideStatus
 from ..models.user_model import User
@@ -48,50 +48,34 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 #     }
 
 
+
+def get_vehicle_km_driven_on_date(db: Session, vehicle_id: int, day: date) -> float:
+    rides = db.query(Ride).filter(
+        Ride.vehicle_id == vehicle_id,
+        Ride.start_datetime.cast(Date) == day
+    ).all()
+
+    return sum(r.actual_distance_km for r in rides)
+
+
 def get_vehicles_with_optional_status(
     db: Session,
     status: Optional[VehicleStatus] = None,
-    vehicle_type: Optional[str] = None  
-) -> List[Union[VehicleOut, InUseVehicleOut]]:
-    query = (
-    db.query(
-        Vehicle.id,
-        Vehicle.plate_number,
-        Vehicle.type,
-        Vehicle.fuel_type,
-        Vehicle.status,
-        Vehicle.freeze_reason,
-        Vehicle.last_used_at,
-        Vehicle.current_location,
-        Vehicle.mileage,
-        Vehicle.vehicle_model,
-        Vehicle.image_url,
-        Vehicle.department_id, 
-        Vehicle.lease_expiry,
-        User.employee_id.label("user_id"),
-        User.first_name,
-        User.last_name,
-        Ride.start_datetime,
-        Ride.end_datetime,
-    )
-    .outerjoin(
-        Ride,
-        and_(
-            Ride.vehicle_id == Vehicle.id,
-            Ride.status == "approved",
-            Ride.start_datetime <= datetime.now(),    
-            Ride.end_datetime >= datetime.now()      
-        ) 
-    )    
-    .outerjoin(User, User.employee_id == Ride.user_id)
-    .filter(Vehicle.is_archived == False)
-)
+    type: Optional[str] = None  # Renamed from vehicle_type
+) -> List[Vehicle]:
+    query = db.query(Vehicle).filter(Vehicle.is_archived == False)
+    
     if status:
         query = query.filter(Vehicle.status == status)
-    if vehicle_type:
-        query = query.filter(func.lower(Vehicle.type) == vehicle_type.lower())
-    vehicles = query.all()
-    return vehicles
+    if type:
+        query = query.filter(func.lower(Vehicle.type) == type.lower())
+        
+
+    final_query=query.all()
+
+
+    return final_query
+
 
 
 def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_reason: str, db: Session, changed_by: UUID, notes: Optional[str] = None):
@@ -169,10 +153,7 @@ def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_re
         recipient_emails = list(recipient_emails_set)
 
 
-        print("\n".join(log_messages))
-        print(f"Final determined email recipients: {', '.join(recipient_emails) if recipient_emails else 'None'}")
 
-        # --- Prepare Email Content ---
         context = {
             "PLATE_NUMBER": vehicle.plate_number,
             "VEHICLE_MODEL": vehicle.vehicle_model if vehicle.vehicle_model else "N/A",
@@ -197,25 +178,19 @@ def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_re
                     subject = "✅ BookIt System Update: Vehicle Unfrozen"
                     html_content = load_email_template("vehicle_unfrozen.html", context)
                 else:
-                    print("No email action defined for this specific status change. Skipping email sending.")
                     return {"vehicle_id": vehicle.id, "new_status": vehicle.status, "freeze_reason": vehicle.freeze_reason}
 
                 for email_address in recipient_emails:
                     send_email(email_address, subject, html_content)
-                    print(f"✅ Email sent successfully to {email_address}.")
 
             except Exception as e:
-                print(f"❌ Error during email sending process: {e}")
-        else:
-            print("No eligible recipients found, skipping email notification.")
+                print(f"Error during email sending process: {e}")
 
     except SQLAlchemyError as e:
         db.rollback()
-        print(f"❌ Database error in update_vehicle_status: {e}")
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
     except Exception as e:
         db.rollback()
-        print(f"❌ An unexpected error occurred in update_vehicle_status: {e}")
         raise HTTPException(status_code=500, detail=f"An internal server error occurred: {str(e)}")
 
     # log_action(
@@ -238,22 +213,18 @@ def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_re
     return {"vehicle_id": vehicle.id, "new_status": vehicle.status, "freeze_reason": vehicle.freeze_reason}
 
 def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID) -> List[VehicleOut]:
-    ride = db.query(
-        Ride.id,
-        Ride.start_datetime,
-        Ride.end_datetime,
-        Ride.status
-    ).filter(Ride.id == ride_id).first()
-
+    ride = db.query(Ride).filter(Ride.id == ride_id).first()
     if not ride:
         raise HTTPException(status_code=404, detail="Ride not found")
 
-    if ride.status != "approved":
+    if ride.status != RideStatus.approved:
         raise HTTPException(status_code=400, detail="Ride is not approved")
 
     start_datetime = ride.start_datetime
     end_datetime = ride.end_datetime
+    ride_distance = ride.estimated_distance_km
 
+    # Subquery: Vehicles already taken during that period
     conflicting_vehicles_subquery = (
         db.query(Ride.vehicle_id)
         .filter(
@@ -268,7 +239,8 @@ def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID) -> List[Ve
         .subquery()
     )
 
-    vehicles = (
+    # Initial vehicle candidates (available + time compatible)
+    candidate_vehicles = (
         db.query(Vehicle)
         .filter(
             Vehicle.status == "available",
@@ -276,7 +248,31 @@ def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID) -> List[Ve
         )
         .all()
     )
-    return [VehicleOut.from_orm(vehicle) for vehicle in vehicles]
+
+    # 💡 Extra Filter: Check daily distance cap
+    today_start = datetime.combine(start_datetime.date(), datetime.min.time())
+    today_end = today_start + timedelta(days=1)
+
+    available_vehicles = []
+
+    for vehicle in candidate_vehicles:
+        if vehicle.max_daily_distance_km is None:
+            available_vehicles.append(vehicle)
+            continue
+
+        # Total used distance by this vehicle today
+        used_distance = db.query(func.coalesce(func.sum(Ride.actual_distance_km), 0)).filter(
+            Ride.vehicle_id == vehicle.id,
+            Ride.start_datetime >= today_start,
+            Ride.start_datetime < today_end,
+            Ride.status.in_(["approved", "in_progress", "completed"])  # include completed if relevant
+        ).scalar()
+
+        # Check if this vehicle can handle the new ride
+        if (vehicle.max_daily_distance_km - used_distance) >= ride_distance:
+            available_vehicles.append(vehicle)
+
+    return [VehicleOut.from_orm(vehicle) for vehicle in available_vehicles]
 
 def get_vehicle_by_id(vehicle_id: str, db: Session):
     vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
@@ -295,7 +291,6 @@ def get_vehicle_by_id(vehicle_id: str, db: Session):
         "status": vehicle.status,
         "freeze_reason": vehicle.freeze_reason,
         "last_used_at": vehicle.last_used_at,
-        "current_location": vehicle.current_location,
         "mileage": vehicle.mileage,
         "vehicle_model": vehicle.vehicle_model,
         "image_url": vehicle.image_url,
@@ -303,7 +298,8 @@ def get_vehicle_by_id(vehicle_id: str, db: Session):
         "department_id": vehicle.department_id,
         "canDelete": can_delete,
         "is_archived": vehicle.is_archived, 
-        "archived_at": vehicle.archived_at   
+        "archived_at": vehicle.archived_at,
+        "mileage_last_updated": vehicle.mileage_last_updated
     }
 
 def freeze_vehicle_service(db: Session, vehicle_id: UUID, reason: str, changed_by: UUID):

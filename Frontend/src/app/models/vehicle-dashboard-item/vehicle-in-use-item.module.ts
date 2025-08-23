@@ -6,7 +6,6 @@ export interface VehicleInItem {
   status: string;
   freeze_reason?: string | null;
   last_used_at?: string;
-  current_location?: string;
   mileage: number;
   vehicle_model: string;
   image_url: string;

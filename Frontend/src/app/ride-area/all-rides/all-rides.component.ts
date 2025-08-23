@@ -7,7 +7,7 @@ import { ToastService } from '../../services/toast.service';
 import { SocketService } from '../../services/socket.service';
 import { Location } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
-import { ConfirmDialogComponent } from '../../components/page-area/confirm-dialog/confirm-dialog.component';
+import { ConfirmDialogComponent, ConfirmDialogData } from '../../components/page-area/confirm-dialog/confirm-dialog.component';
 import { HttpErrorResponse } from '@angular/common/http';
 import { StartedRide, StartedRidesResponse } from '../../models/ride.model';
 
@@ -58,10 +58,20 @@ export class AllRidesComponent implements OnInit {
   orders: any[] = [];
   rideViewMode: 'all' | 'future' | 'past' = 'all';
   highlightedOrderId: string | null = null;
+warningVisible = false;
 
   ngOnInit(): void {
     const userId = localStorage.getItem('employee_id');
+ if (this.exceededMaxRides()) {
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const lastShownDate = localStorage.getItem('exceededWarningDate');
 
+    if (lastShownDate !== today) {
+      // Show warning only if it wasn't shown today
+      this.warningVisible = true;
+      localStorage.setItem('exceededWarningDate', today);
+    }
+  }
     this.route.queryParams.subscribe(params => {
       // Restore component state from URL params
       this.rideViewMode = (params['mode'] as 'all' | 'future' | 'past') || 'all';
@@ -97,21 +107,17 @@ export class AllRidesComponent implements OnInit {
     // Socket listeners (unchanged)
     this.socketService.rideRequests$.subscribe((newRide) => {
       if (newRide) {
-        console.log('🔁 New ride event received - refreshing rides...');
         this.fetchRides();
       }
     });
      this.socketService.rideSupposedToStart$.subscribe(() => {
-        console.log('🔁 a ride supposed to start - refreshing rides...');
         this.fetchRides();
       
     });
 
     this.socketService.orderUpdated$.subscribe((updatedRide) => {
-      console.log('🔔 Subscription triggered with:', updatedRide);
       if (!updatedRide) return;
       if (updatedRide) {
-        console.log('✏️ Ride update received in HomeComponent:', updatedRide);
         const index = this.orders.findIndex(o => o.ride_id === updatedRide.id);
         if (index !== -1) {
           const newDate = formatDate(updatedRide.start_datetime, 'dd.MM.yyyy', 'en-US');
@@ -134,7 +140,6 @@ export class AllRidesComponent implements OnInit {
             updatedOrder,
             ...this.orders.slice(index + 1)
           ];
-          console.log(`✅ Ride ${updatedRide.id} updated in local state`);
           const role = localStorage.getItem('role');
           if (role === 'supervisor') {
             this.toastService.show('✅ יש בקשה שעודכנה בהצלחה', 'success');
@@ -144,10 +149,8 @@ export class AllRidesComponent implements OnInit {
     });
 
     this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
-      console.log('🔔 Subscription triggered with:', updatedStatus);
       if (!updatedStatus) return;
       if (updatedStatus) {
-        console.log('✏️ Ride status update received in HomeComponent:', updatedStatus);
         const index = this.orders.findIndex(o => o.ride_id === updatedStatus.ride_id);
         if (index !== -1) {
           const newStatus = updatedStatus.new_status;
@@ -158,17 +161,12 @@ export class AllRidesComponent implements OnInit {
           };
           this.orders = updatedOrders;
           this.orders = [...this.orders];
-          const role = localStorage.getItem('role');
-          if (role === 'supervisor' || role === 'employee') {
-            this.toastService.show(' יש בקשה שעברה סטטוס', 'success');
-          }
         }
       }
     });
 
     this.socketService.deleteRequests$.subscribe((deletedRide) => {
       if (deletedRide) {
-        console.log('❌ deleteRequest$ triggered:', deletedRide);
         const index = this.orders.findIndex(o => o.ride_id === deletedRide.id);
         if (index !== -1) {
           this.orders = [
@@ -222,7 +220,6 @@ export class AllRidesComponent implements OnInit {
       queryParams: queryParams,
       queryParamsHandling: 'merge' // Still use merge, but null values now correctly clear params
     });
-    console.log('🔗 URL query params updated to:', queryParams);
   }
 
   // --- Existing Methods (Minor adjustments for URL sync) ---
@@ -265,10 +262,6 @@ export class AllRidesComponent implements OnInit {
     fetchFn.subscribe({
       next: (res) => {
         this.loading = false;
-        console.log('🧾 Raw response from backend:', res);
-        console.log('✅ fetchRides called');
-        console.log('🚦 View Mode:', this.rideViewMode);
-        console.log('📤 Filters sent to API:', filters);
 
         if (Array.isArray(res)) {
           this.orders = res.map(order => ({
@@ -283,7 +276,6 @@ export class AllRidesComponent implements OnInit {
             user_id: order.user_id
           }));
           localStorage.setItem('user_orders', JSON.stringify(this.orders));
-          console.log('Orders from backend:', this.orders);
           
         // ✅ NOW call checkStartedApprovedRides
         this.rideService.checkStartedApprovedRides().subscribe({
@@ -293,7 +285,6 @@ export class AllRidesComponent implements OnInit {
               ...order,
               hasStarted: startedRideIds.includes(order.ride_id)
             }));
-            console.log('rides that supposed tpo start:',startedRideIds)
           },
           error: (err) => {
             console.error('Error checking started rides:', err);
@@ -320,7 +311,6 @@ export class AllRidesComponent implements OnInit {
 
   }
 
-  // --- Other existing methods (no changes needed) ---
 
   get pagedOrders() {
     const start = (this.currentPage - 1) * this.ordersPerPage;
@@ -524,8 +514,7 @@ export class AllRidesComponent implements OnInit {
 
     this.router.navigate(['/ride/edit', order.ride_id]);
   }
-
-  deleteOrder(order: any): void {
+deleteOrder(order: any): void {
     const isPending = order.status.toLowerCase() === 'pending';
     const isFuture = this.parseDate(order.date) >= new Date();
 
@@ -539,7 +528,21 @@ export class AllRidesComponent implements OnInit {
       return;
     }
 
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {width: '380px', height:'190px', data: {}});
+    // Create proper dialog data
+    const dialogData: ConfirmDialogData = {
+      title: 'ביטול הזמנה',
+      message: `?האם אתה בטוח שברצונך לבטל את ההזמנה\n\nתאריך: ${order.date}\nשעה: ${order.time}\nסוג: ${order.type}`,
+      confirmText: 'בטל הזמנה',
+      cancelText: 'חזור',
+      noRestoreText: 'שימ/י לב שלא ניתן לשחזר את הנסיעה',
+      isDestructive: true
+    };
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '420px',
+      height: 'auto',
+      data: dialogData
+    });
 
     dialogRef.afterClosed().subscribe(confirmed => {
       if (!confirmed) return;
@@ -548,13 +551,23 @@ export class AllRidesComponent implements OnInit {
         next: () => {
           this.toastService.show('ההזמנה בוטלה בהצלחה ✅', 'success');
           this.socketService.deleteRequests$.subscribe((deletedRide) => {
-            if (deletedRide) {
-              console.log('a ride has been deleted via socket:', deletedRide);
-              this.fetchRides();
-            }
+         
           });
+          // Remove the order from local state immediately
+
+          //the try catch logic here wont work
+          this.fetchRides();
+          const index = this.orders.findIndex(o => o.ride_id === order.ride_id);
+          if (index !== -1) {
+            this.orders = [
+              ...this.orders.slice(0, index),
+              ...this.orders.slice(index + 1)
+            ];
+          }
+          // Also refresh from server to ensure consistency
         },
-        error: () => {
+        error: (error) => {
+          console.error('Error deleting order:', error);
           this.toastService.show('שגיאה בביטול ההזמנה ❌', 'error');
         }
       });
@@ -570,11 +583,7 @@ export class AllRidesComponent implements OnInit {
     this.router.navigate(['/ride/details', order.ride_id]);
   }
 
-  goToArchivedOrders() {
-    this.router.navigate(['/archived-orders']);
-  }
 
-  warningVisible = true;
   exceededMaxRides(): boolean {
     const maxRides = 6;
     const userOrders = JSON.parse(localStorage.getItem('user_orders') || '[]');
@@ -593,7 +602,6 @@ export class AllRidesComponent implements OnInit {
       return orderDate >= beginningOfMonth && orderDate <= endOfMonth;
     });
 
-    console.log('🗓️ Recent orders in the current month:', recentOrders);
     return recentOrders.length >= maxRides;
   }
 

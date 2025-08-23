@@ -40,7 +40,8 @@ export class AuthInterceptor implements HttpInterceptor {
           if (err.status === 401 && err.error?.detail === 'Invalid token') {
           localStorage.clear();
           this.authService.setFullName('משתמש', '');
-          this.toastService.show('הסתיים תוקף ההתחברות שלך. התחבר מחדש.', 'error'); // ✅ use toast
+          this.authService.logout();
+          this.toastService.show('הסתיים תוקף ההתחברות שלך. התחבר מחדש', 'error'); // ✅ use toast
           this.router.navigate(['/login']);
         } else if (err.status === 403) {
           this.toastService.show('אין לך הרשאות לגשת למשאב זה.', 'error'); // ✅ also convert this one

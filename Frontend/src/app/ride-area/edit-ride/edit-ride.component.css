@@ -7,42 +7,67 @@
 
 html, body {
   font-family: 'Assistant', sans-serif;
-  background-color: #eae4eb;
+  
   direction: rtl;
   height: 100vh;
   overflow: hidden;
   overscroll-behavior: none;
 }
-
-/* Overlay + Modal */
 .overlay {
   display: flex;
+  background-image: url('/assets/images/edit_ride_bg.jpg');
+  /* background-position: center; */
+  background-repeat: no-repeat;
+  background-color: #f5f5f5;
+  background-size: cover;
+background-position: center center;
+  /* KEY CHANGES: Use contain to show full image without cropping */
+background-size: 100% auto; /* or try 70%, 90%, etc. */
+
+  background-repeat: no-repeat;
+  /* Add a fallback background color that matches your theme */
+  background-color: #fbe6c9; /* This fills any empty space like sides or bottom */
+  backdrop-filter: blur(2px);
   justify-content: center;
-  align-items: center;
   min-height: 100vh;
-  background-color: #ccc;
   font-family: 'Alef', sans-serif;
   direction: rtl;
-  position: absolute;
+  position: fixed; /* Changed from absolute to fixed */
+  align-items: center; /* this does the vertical centering */
   top: 0;
   left: 0;
-  width: 100%;
+  width: 100vw; /* Use viewport width */
+  height: 100vh; /* Use viewport height */
   z-index: 10;
+  /* Prevent scrolling */
+  overflow: hidden;
 }
+
+
 
 .modal {
   background-color: white;
   padding: 20px 28px;
   border-radius: 10px;
-  width: 750px;
+  width: min(750px, 90vw);
+  max-height: 85vh;
   overflow-y: auto;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  margin-top: 40px;
+  margin-top: 60px; /* or 60px, play with it */
+
 }
+
+@media (max-width: 600px) {
+  .modal {
+    max-height: 90vh;
+    width: 90vw;
+    padding: 16px;
+  }
+}
+
 
 /* Close Button */
 .close-btn {
@@ -136,6 +161,9 @@ select.styled-select {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+ align-items: stretch;  
+  justify-content: flex-start; /* center vertically */
+  height: auto; 
 }
 .headers{
   display: flex;
@@ -147,15 +175,14 @@ select.styled-select {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  overflow-y: visible;
-  max-height: calc(90vh - 140px);
   padding-right: 4px;
+  flex-grow: 1;
+  width: 100%;
 }
 
 /* Responsive Fix */
 @media (max-width: 600px) {
   .modal {
-    margin-top: 60px;
     width: 90%;
     padding: 16px;
   }
@@ -178,4 +205,45 @@ select.styled-select {
 }
 .back-btn:hover {
   transform: scale(1.03);
+}
+
+.addBtn{
+background: none;
+border: none;
+}
+
+
+.removeBtn{
+background: none;
+border: none;
+}
+
+.ride-type-indicator {
+  margin-bottom: 20px;
+}
+
+.alert {
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.alert .icon {
+  margin-left: 10px;
+  font-size: 20px;
+}
+
+.alert-info {
+  background-color: #e0f7fa; 
+  border: 1px solid #00acc1; 
+  color: #00838f; 
+}
+
+.alert-warning {
+  background-color: #fff3e0; 
+  border: 1px solid #ffb300; 
+  color: #e65100;
 }

@@ -1,71 +1,64 @@
 <div class="page-wrapper">
   <div class="page-container">
     <div class="vehicles-wrapper">
-      <h1 style="text-align: right;">רכבי מחלקה</h1>
-      <br>
 
-      <div class="vehicle-buttons-bar">
-        <div class="left-buttons">
-          <button class="add-vehicle-btn" (click)="navigateToNewVehicle()" *ngIf="userRole !== 'supervisor'">
-            הוסף רכב חדש +
+      <div class="top-header-section">
+        <div class="header-title">
+          <h1 style="text-align: right;">רכבי מחלקה</h1>
+          <button class="filter archive-btn" (click)="navigateToArchivedVehicles()" title=" ארכיון רכבים">
+            📁
           </button>
         </div>
-  <img 
-        src="assets/images/trash_icon.png"
-        alt="הזמנות בארכיון"
-        width="40"
-        height="40"
-        title="הזמנות בארכיון"
-        style="cursor: pointer; margin-right: 4px;"
-        (click)="goToArchivedOrders()"
-     />
-
-    </div>
-        <div class="right-buttons">
+        <div class="header-actions-bar">
+          <div class="add-vehicle-btn-div">
+            <button class="add-vehicle-btn" (click)="navigateToNewVehicle()" *ngIf="userRole !== 'supervisor'">
+              הוסף רכב חדש +
+            </button>
+          </div>
+        </div>
+        <div class="show-filter">
           <button class="filter" (click)="showFilters = !showFilters">
             {{ showFilters ? 'הסתר סינון' : 'הצג סינון' }}
           </button>
+        </div>
 
-          <button class="filter" (click)="toggleVehicleMode()">
-            {{ showingMostUsed ? 'הצג את כל הרכבים' : 'הכי בשימוש החודש' }}
-          </button>
-
-          <button class="filter archive-btn" (click)="navigateToArchivedVehicles()">
-            📁 ארכיון רכבים
+        <div class="show-mileage-upload">
+          <button class="show-upload" (click)="showMileageUpload = !showMileageUpload">
+            {{ showMileageUpload ? 'הסתר העלאת דוח' : 'הצג העלאת דוח ק"מ חודשי' }}
           </button>
         </div>
-</div>
+      </div>
 
-        
-      <div *ngIf="showingMostUsed" style="text-align: right; font-weight: bold; color: #922;">
+      <div *ngIf="showingMostUsed" style="text-align: right; font-weight: bold; color: #922; margin-top: 1rem;">
         מוצגים רכבים לפי כמות שימושים החודש
       </div>
 
-      <div class="status-indicators">
-        <p style="margin-bottom: 0.75rem; font-weight: 600;">מקרא צבעים</p>
-        <div class="status-box">
-          <div class="status-item">
-            <span class="status-indicator available"></span> זמין
+      <div class="utility-sections-wrapper">
+        <div class="status-indicators">
+          <p style="margin-bottom: 0.75rem; font-weight: 600;">מקרא צבעים</p>
+          <div class="status-box">
+            <div class="status-item">
+              <span class="status-indicator available"></span> זמין
+            </div>
+            <div class="status-item">
+              <span class="status-indicator in-use"></span> בשימוש
+            </div>
+            <div class="status-item">
+              <span class="status-indicator frozen"></span> מוקפא
+            </div>
           </div>
-          <div class="status-item">
-            <span class="status-indicator in-use"></span> בשימוש
-          </div>
-          <div class="status-item">
-            <span class="status-indicator frozen"></span> מוקפא
-          </div>
-          
-        </div>
-        <br>
-          <div class="status-item" style="display: flex; align-items: center; gap: 5px;">
+          <div class="status-item" style="display: flex; align-items: center; gap: 5px; margin-top: 0.75rem;">
             <div class="inactive-badge" style="position: static; transform: none; margin-top: 0;">
               לא פעיל
             </div>
-            <span>לא היה בשימוש מעל שבוע</span>
           </div>
+          
+            <small>לא היה בשימוש מעל שבוע</small>
+        </div>
       </div>
 
       <div *ngIf="showFilters"
-        style="margin-bottom: 1.5rem; background: #f7f7f7; padding: 1rem; border-radius: 8px; direction: rtl;">
+        style="margin-bottom: 1.5rem; background-color: rgb(249, 245, 245); border:1px solid #ddd; padding: 1rem; border-radius: 8px; direction: rtl; margin-top: 1rem; width: 600px;">
         <div style="margin-bottom: 1rem; gap: 1rem; display: flex;">
           <label for="statusFilter"> סטטוס:</label>
           <select class="statusFilter" id="statusFilter" [(ngModel)]="statusFilter">
@@ -73,10 +66,8 @@
             <option value="זמין">זמין</option>
             <option value="בשימוש">בשימוש</option>
             <option value="מוקפא">מוקפא</option>
-            
           </select>
         </div>
-
 
         <div style="margin-bottom: 1rem; gap: 1rem; display: flex;">
           <label for="typeFilter"> סוג:</label>
@@ -86,55 +77,49 @@
           </select>
         </div>
 
-
-        <div>
-          <input
-            class="InactiveFilter"
-            id="InactiveFilter"
-            type="checkbox"
-            [(ngModel)]="InactiveFilter"
-            (change)="onInactiveFilterChange()"
-          />
-          הצג מכוניות שלא היו בשימוש מעל לשבוע ⚠️
-        </div>
-
-
         <div style="display: flex; align-items: center; gap: 0.5rem; direction: rtl;">
-          <input type="checkbox" id="showInactive" [(ngModel)]="showInactive"
+          <input type="checkbox" id="showInactive" [(ngModel)]="showInactive" (change)="onInactiveFilterChange()" class="showInactive"
             style="transform: scale(1.2); cursor: pointer;" />
           <label for="showInactive" style="cursor: pointer;">
-            הצג רק רכבים שלא היו בשימוש מעל לשבוע ⚠️
+            הצג רק מכוניות שלא היו בשימוש מעל לשבוע ⚠️
           </label>
         </div>
+
+        <div style="display: flex; align-items: center; gap: 0.5rem; direction: rtl;">
+          <input class="showingMostUsed" id="mostUsed" type="checkbox" [(ngModel)]="showingMostUsed" (change)="onMostUsedChange()"
+          style="transform: scale(1.2); cursor: pointer;"/>
+          <label for="mostUsed" style="cursor: pointer;">
+            הצג מכוניות הכי בשימוש החודש
+          </label>
+        </div>
+
       </div>
 
+      <div *ngIf="showMileageUpload" class="mileage-upload-wrapper"
+  style="margin-bottom: 1.5rem; background-color: rgb(249, 245, 245); border:1px solid #ddd; padding: 1rem; border-radius: 8px; direction: rtl; margin-top: 1rem; width: 600px;">
+  <div class="mileage-upload-section">
+    <label>העלאת דוח ק"מ חודשי</label>
 
-<div class="mileage-upload-section">
-  <h2>העלאת דוח ק"מ חודשי</h2>
+    <div class="file-upload-container">
+      <input type="file" #fileInput accept=".xlsx" (change)="onFileSelected($event)" style="display: none;" />
+      <button type="button" (click)="fileInput.click()" class="custom-file-button">
+        בחר קובץ
+      </button>
+      <span class="file-name">
+        {{ selectedFile ? selectedFile.name : 'לא נבחר קובץ' }}
+      </span>
+    </div>
 
-  <input
-    type="file"
-    accept=".xlsx"
-    (change)="onFileSelected($event)"
-    class="xlsx-upload-input"
-  />
-
-  <button
-    class="submit-button"
-    [disabled]="!selectedFile || isLoading"
-    (click)="uploadMileageReport()"
-  >
-    {{ isLoading ? 'מעלה...' : 'שלח דוח' }}
-  </button>
-
+    <button class="submit-button" [disabled]="!selectedFile || isLoading" (click)="uploadMileageReport()">
+      {{ isLoading ? 'מעלה...' : 'שלח דוח' }}
+    </button>
+  </div>
   <div *ngIf="uploadSuccess" class="upload-success">
     ✔️ הדוח הועלה בהצלחה!
   </div>
-
   <div *ngIf="uploadError" class="upload-error">
     ❌ שגיאה בהעלאת הדוח: {{ uploadError }}
   </div>
-
   <div *ngIf="uploadSummary" class="upload-summary">
     <h3>סיכום:</h3>
     <p><strong>מספר רכבים שעודכנו:</strong> {{ uploadSummary.vehiclesUpdated }}</p>
@@ -146,9 +131,9 @@
     </div>
   </div>
 </div>
-      
-<br>
 
+
+      <br>
 
       <div class="vehicles-cards">
         <p-card *ngFor="let vehicle of filteredVehicles"
@@ -203,4 +188,4 @@
       </div>
     </div>
   </div>
- 
+</div>

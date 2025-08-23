@@ -5,7 +5,6 @@ import { ToastService } from '../../../services/toast.service';
 import { Observable, of } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { RideCompletionFormComponent } from '../../page-area/ride-completion-form/ride-completion-form.component';
 import { environment } from '../../../../environments/environment';
 import { NotificationService } from '../../../services/notification';
 import { SocketService } from '../../../services/socket.service';
@@ -21,7 +20,6 @@ export class HeaderComponent implements OnInit {
   role$: Observable<string> = of('');
   unreadCount$!: Observable<number>; 
   isLoggedIn = false;
-
   showFeedbackModal = false;
   rideIdToComplete: string | null = null;
 
@@ -52,42 +50,27 @@ export class HeaderComponent implements OnInit {
     }
  
 this.socketService.feedbackNeeded$.subscribe((data) => {
-  console.log('📡 Received feedback_needed socket event:', data);
 
   if (data?.ride_id && data?.showPage) {
     localStorage.setItem('pending_feedback_ride', data.ride_id);
     this.rideIdToComplete = data.ride_id;
     this.showFeedbackModal = true;
-    console.log('📣 Feedback modal should now be visible for ride:', this.rideIdToComplete);
 
 
     const role = localStorage.getItem('role');
-    if (role === 'employee') {
-      this.toastService.show('יש למלא טופס חווית נסיעה', 'neutral');
-    }
+    // if (role === 'employee') {
+    //   this.toastService.show('יש למלא טופס חווית נסיעה', 'neutral');
+    // }
   }
 });
 
- 
- 
-  // this.socketService.rideStatusUpdated$.subscribe((data) => {
-  // console.log('ride that needs feedback from header component:', data);
-  // if (data) {
-  //   this.checkFeedbackNeeded();
-    
-  // } else {
-  //   console.warn('Received null or empty feedback data');
-  // }});
- 
 
   }
-
   onLogout(): void {
     this.authService.logout();
     this.toastService.show('התנתקת בהצלחה', 'success');
     this.router.navigate(['/login']);
     this.toastService.clearAll()
-    
   }
 
   getUserId(): string | null {
@@ -108,15 +91,16 @@ checkFeedbackNeeded(): void {
   this.http.get<any>(`${environment.apiUrl}/rides/feedback/check/${userId}`).subscribe(
     
     (res) => {
-      console.log('Feedback check response:', res);
       if (res?.ride_id && res?.showPage) {
         localStorage.setItem('pending_feedback_ride', res.ride_id);
         this.rideIdToComplete = res.ride_id;
         this.showFeedbackModal = true;
-        console.log('📣 Feedback modal should now be visible for ride:', this.rideIdToComplete);
 
          const role=localStorage.getItem('role');
-  if(role==='employee'){this.toastService.show('יש למלא טופס חווית נסיעה','neutral')}
+  // if(role==='employee'){
+  //   this.toastService.show('יש למלא טופס חווית נסיעה','neutral')
+    
+  // }
   
       }
     },

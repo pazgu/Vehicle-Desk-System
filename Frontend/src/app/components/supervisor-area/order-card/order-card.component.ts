@@ -10,6 +10,9 @@ import { OrderService } from '../../../services/order.service';
 import { OrderCardItem } from '../../../models/order-card-item.module';
 import { finalize } from 'rxjs/operators';
 import { CityService } from '../../../services/city.service';
+import { ToastService } from '../../../services/toast.service';
+import { HttpClient } from '@angular/common/http';
+import { VehicleService } from '../../../services/vehicle.service';
 
 @Component({
   selector: 'app-order-card',
@@ -32,6 +35,8 @@ export class OrderCardComponent implements OnInit {
   loading = false;
   rideId!: string;
   cityMap: { [id: string]: string } = {};
+  users: { id: string; user_name: string }[] = [];
+  vehicles: { id: string; vehicle_model: string; plate_number: string }[] = [];
 
 
 
@@ -39,19 +44,19 @@ export class OrderCardComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private orderService: OrderService,
-    private cityService: CityService
-  ) {}
+    private cityService: CityService,
+    private toastService: ToastService,
+    private http: HttpClient,
+    private vehicleService: VehicleService
+  ) { }
 
   ngOnInit(): void {
-    // Retrieve departmentId from localStorage
-    document.body.style.overflow = 'hidden';
     this.departmentId = localStorage.getItem('department_id');
     if (!this.departmentId) {
-      console.error('Department ID not found in localStorage.');
+      this.toastService.show('מחלקה לא נמצאה', 'error');
       return;
     }
     this.rideId = this.route.snapshot.paramMap.get('ride_id')!;
-    console.log('Extracted ride_id:', this.rideId);
 
     // Listen for route params
     this.route.params.subscribe((params) => {
@@ -61,34 +66,37 @@ export class OrderCardComponent implements OnInit {
         this.rideId = orderIdParam;
         this.loadOrder(this.departmentId!, this.rideId); // Use departmentId from localStorage
       } else {
-        console.error('Missing orderId');
+        this.toastService.show('Missing orderId', 'error');
       }
     });
-this.cityService.getCities().subscribe({
-  next: (cities) => {
-    this.cityMap = cities.reduce((map: { [id: string]: string }, city) => {
-      map[city.id] = city.name;
-      return map;
-    }, {});
-  },
-  error: () => {
-    console.error('שגיאה בטעינת ערים');
-  }
-});
+    this.cityService.getCities().subscribe({
+      next: (cities) => {
+        this.cityMap = cities.reduce((map: { [id: string]: string }, city) => {
+          map[city.id] = city.name;
+          return map;
+        }, {});
+      },
+      error: () => {
+        this.toastService.show('שגיאה בטעינת ערים', 'error');
+      }
+    });
+    this.fetchUsers();
+    this.fetchVehicles();
   }
 
   ngOnDestroy(): void {
     document.body.style.overflow = '';
   }
 
-  
-getCityName(id: string): string {
-  return this.cityMap[id] || 'לא ידוע';
-}
 
-  
+  getCityName(id: string): string {
+    return this.cityMap[id] || 'לא ידוע';
+  }
+
+
 
   loadOrder(departmentId: string, orderId: string): void {
+
     this.loading = true;
     this.orderService.getDepartmentSpecificOrder(departmentId, this.rideId)
       .pipe(
@@ -106,6 +114,7 @@ getCityName(id: string): string {
             endDateTime: response.end_datetime,
             startLocation: response.start_location,
             stop: response.stop,
+            extraStops: response.extra_stops || [],
             destination: response.destination,
             estimatedDistanceKm: response.estimated_distance_km,
             actualDistanceKm: response.actual_distance_km,
@@ -114,18 +123,11 @@ getCityName(id: string): string {
             submittedAt: response.submitted_at,
             emergencyEvent: response.emergency_event,
           };
-          console.log("Order loaded with ID:", this.trip.id);
         },
         error: (error) => {
-          console.error('Error loading order:', error);
+          this.toastService.show('שגיאה בטעינת הזמנה', 'error');
         }
       });
-  }
-
-  formatDateTime(dateTime: string): string {
-    const [date, timeWithMs] = dateTime.split('T');
-    const time = timeWithMs?.slice(0, 5); // get HH:MM only
-    return `${date} בשעה: ${time}`;
   }
 
   updateStatus(status: string): void {
@@ -140,14 +142,13 @@ getCityName(id: string): string {
       )
       .subscribe({
         next: (response) => {
-          console.log('Order status updated successfully:', response);
+          this.toastService.show(`סטטוס עודכן בהצלחה`, 'success');
           setTimeout(() => {
             this.loadOrder(this.departmentId!, this.rideId);
           }, 500);
         },
         error: (error) => {
-          console.error('Error updating order status:', error);
-          alert(`Failed to update status: ${error.error?.detail || error.message}`);
+          this.toastService.show('שגיאה בעדכון הסטטוס', 'error');
         }
       });
   }
@@ -158,7 +159,7 @@ getCityName(id: string): string {
 
   getCardClass(status: string | null | undefined): string {
     if (!status) return '';
-    
+
     switch (status.toLowerCase()) {
       case 'approved':
         return 'card-approved';
@@ -175,7 +176,7 @@ getCityName(id: string): string {
 
   translateStatus(status: string | null | undefined): string {
     if (!status) return '';
-    
+
     switch (status.toLowerCase()) {
       case 'approved':
         return 'מאושר';
@@ -186,20 +187,100 @@ getCityName(id: string): string {
       case 'in_progress':
         return 'בתהליך';
       case 'cancelled_due_to_no_show':
-        return 'בוטלה-נסיעה לא יצאה';  
+        return 'בוטלה-נסיעה לא יצאה';
       default:
         return status;
     }
   }
 
-hasTripPassed(): boolean{
-  if (!this.trip || !this.trip.startDateTime) return false;
+  hasTripPassed(): boolean {
+    if (!this.trip || !this.trip.startDateTime) return false;
 
-  const tripStart = new Date(this.trip.startDateTime);
-  const now = new Date();
+    const tripStart = new Date(this.trip.startDateTime);
+    const now = new Date();
 
-  // Check if the trip start time is in the past
-  return tripStart < now;
-}
+    // Check if the trip start time is in the past
+    return tripStart < now;
+  }
+
+  fetchUsers(): void {
+    this.http.get<any>('http://localhost:8000/api/users').subscribe({
+      next: (data) => {
+        const usersArr = Array.isArray(data.users) ? data.users : [];
+        this.users = usersArr.map((user: any) => ({
+          id: user.employee_id,
+          user_name: user.username,
+        }));
+      },
+      error: (err: any) => {
+        this.toastService.show('שגיאה בטעינת רשימת משתמשים', 'error');
+        this.users = [];
+      }
+    });
+  }
+  getUserNameById(id: string): string {
+    if (!Array.isArray(this.users)) return id;
+    const user = this.users.find(u => u.id === id);
+    return user ? `${user.user_name}` : id;
+  }
+
+  fetchVehicles(): void {
+    this.vehicleService.getAllVehicles().subscribe(
+      (data) => {
+        this.vehicles = Array.isArray(data) ? data.map(vehicle => ({
+          ...vehicle,
+        })) : [];
+      },
+      (error) => {
+        this.toastService.show('שגיאה בטעינת רכבים', 'error');
+      }
+    );
+  }
+
+  getVehicleById(vehicleId: string): { vehicle_model: string; plate_number: string } | undefined {
+    return this.vehicles.find(vehicle => vehicle.id === vehicleId);
+  }
+  getVehicleModel(vehicleId: string): string {
+    const vehicle = this.getVehicleById(vehicleId);
+    return vehicle ? `${vehicle.vehicle_model}` : 'לא זמין';
+  }
+  getPlateNumber(vehicleId: string): string {
+    const vehicle = this.getVehicleById(vehicleId);
+    return vehicle ? `${vehicle.plate_number}` : 'לא זמין';
+  }
+
+  translateRideType(rideType: string | null | undefined): string {
+    if (!rideType) return '';
+    switch (rideType.toLowerCase()) {
+      case 'administrative':
+        return 'מנהלתית';
+      case 'operational':
+        return 'מבצעית';
+      default:
+        return rideType;
+    }
+  }
+
+  ceil(value: number): number {
+    return Math.ceil(value);
+  }
+
+  getFormattedStops(firstStopId: string, extraStopsRaw: string[] | null): string {
+    let extraStopIds: string[] = [];
+
+    if (Array.isArray(extraStopsRaw)) {
+      extraStopIds = extraStopsRaw;
+    }
+
+    const allStops = [firstStopId, ...extraStopIds];
+
+    return allStops
+      .filter(Boolean)
+      .map(id => this.getCityName(id))
+      .join(' ← ');
+  }
+
+
+
 
 }

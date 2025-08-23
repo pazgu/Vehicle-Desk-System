@@ -91,8 +91,10 @@ class RideCreate(BaseModel):
     actual_distance_km: float
     four_by_four_reason: Optional[str] = None
     target_type: Optional[str] = "self"  # "Self" or "Other"
-    extra_stops: Optional[List[UUID]] = None
+    extra_stops: Optional[List[UUID]] = None 
+    is_extended_request: Optional[bool] = False
 
+    
 class RideResponse(BaseModel):
     id: UUID
     user_id: UUID
@@ -113,6 +115,8 @@ class RideResponse(BaseModel):
     override_user_id: UUID | None = None
     plate_number: str
     extra_stops: Optional[List[UUID]] = None
+    is_extended_request: Optional[bool] = False
+    vehicle_model:Optional[str]= None
 
     class Config:
         from_attributes = True

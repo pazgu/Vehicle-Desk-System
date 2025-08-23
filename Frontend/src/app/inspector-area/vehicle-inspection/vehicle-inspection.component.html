@@ -1,49 +1,54 @@
-<div class="archived-container">
-  <h1>טופס בדיקת רכב</h1>
-
-  <form [formGroup]="inspectionForm" (ngSubmit)="submitInspection()">
-
-    <label>
-      <input type="checkbox" formControlName="clean" name="clean" />
-      רכבים נקיים
-    </label>
-
-    <label>
-      <input type="checkbox" formControlName="fuel_checked" name="fuel_checked" />
-   נבדקה רמת דלק בכל הרכבים
-      <br> <small>*אם מדובר ברכב חשמלי: נטען באופן מלא או מחובר לעמדת הטענה</small>
-    </label>
-
-    <label>
-      <input type="checkbox" formControlName="no_items_left" name="no_items_left" />
-      אין חפצים שנשכחו
-    </label>
-
-    <label>
-      <input type="checkbox" formControlName="critical_issue_bool" name="critical_issue_bool" />
-      האם יש אירוע חריג?
-    </label>
-
-    <div *ngIf="inspectionForm.get('critical_issue_bool')?.value">
-      <label for="issues_found">אירוע חריג (אם קיים):</label>
-      <input
-        id="issues_found"
-        name="issues_found"
-        type="text"
-        formControlName="issues_found"
-        placeholder="תאר את האירוע החריג"
-      />
-      <div
-        class="error-msg"
-        *ngIf="inspectionForm.get('issues_found')?.touched && inspectionForm.get('issues_found')?.invalid"
-      >
-        יש למלא תיאור של האירוע החריג
-      </div>
-    </div>
-
-    <button type="submit" class="cute-red-button" [disabled]="inspectionForm.invalid">
-      שלח בדיקה
-    </button>
-    
-  </form>
+<div class="search-container" style="margin: 16px; width: 400px;position: relative;">
+  <input
+    type="text"
+    placeholder="חפש לפי לוחית רישוי"
+    [(ngModel)]="searchTerm"
+    class="search-input"
+  />
 </div>
+<div style="text-align: left; margin-right: 16px;margin-top: 10px; position: absolute; ">
+  <button (click)="scrollToBottom()" style="background: none; border: none; cursor: pointer;">
+    <img src="/assets/images/arrows.png" style="width: 2.5 rem ;height: 3.5rem;" title="לך לכפתור שליחה"/>
+  </button>
+</div>
+<table class="vehicle-issues-table">
+  <thead>
+    <tr>
+      <th>רכב</th>
+      <th>מלוכלך</th>
+      <th>לא מתודלק</th>
+      <th>נשכחו חפצים</th>
+      <th>אירוע חריג</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let issue of vehicleIssues">
+      <td>{{ issue.plate }}</td>
+      <td><input type="checkbox" [(ngModel)]="issue.dirty" /></td>
+      <td>
+        <!-- fuel_checked=false means "not fueled", so toggle on change -->
+        <input type="checkbox" [(ngModel)]="issue.fuel_checked" />
+       
+      </td>
+      <td><input type="checkbox" [(ngModel)]="issue.items_left" /></td>
+      <td>
+        <input type="checkbox" [(ngModel)]="issue.critical_issue" />
+        <div *ngIf="issue.critical_issue" class="critical-description" style="margin-top:8px;">
+          <textarea
+            [(ngModel)]="issue.issues_found"
+            rows="3"
+            placeholder="הכנס תיאור כאן"
+            required
+          ></textarea>
+        </div>
+      </td>
+
+    </tr>
+  </tbody>
+</table>
+
+<button (click)="submitIssues()" class="cute-red-button">שלח בדיקות</button>
+<div *ngIf="submitting">שולח...</div>
+<div #bottom></div>
+
+
