@@ -3,6 +3,9 @@ import json
 import traceback
 from fastapi import APIRouter, HTTPException, Depends , Query, Response, status
 from sqlalchemy.orm import Session,aliased
+
+from Backend.src.services.email_service import get_user_email, load_email_template
+from Backend.src.utils.email_utils import async_send_email
 from ..schemas.register_schema import UserCreate
 from ..schemas.login_schema import UserLogin
 from ..schemas.new_ride_schema import RideCreate
