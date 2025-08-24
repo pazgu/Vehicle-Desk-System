@@ -1,7 +1,7 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
 
 import { environment } from '../../../environments/environment';
@@ -65,7 +65,9 @@ export class VehicleInspectionComponent implements OnInit {
   // }
 
   fetchVehicles(): void {
-    this.http.get<Vehicle[]>(`${environment.apiUrl}/all-vehicles`).subscribe({
+      const params = new HttpParams().set('status', 'available');
+
+    this.http.get<Vehicle[]>(`${environment.apiUrl}/all-vehicles`, { params }).subscribe({
       next: (vehicles) => {
         this.vehicleIssues = vehicles.map(vehicle => ({
           vehicle_id: vehicle.id,
