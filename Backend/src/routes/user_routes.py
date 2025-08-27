@@ -232,8 +232,8 @@ async def create_order(
         employee_name = get_user_name(db, new_ride.user_id)
         is_extended = (new_ride.end_datetime - new_ride.start_datetime) > timedelta(days=2)
 
+        # Launch the email task in the background using a fire-and-forget pattern.
         if supervisor_id:
-            employee_name = get_user_name(db, new_ride.user_id)
             supervisor_name = get_user_name(db, supervisor_id)
             
             # Instantiate EmailService for this request
@@ -253,7 +253,7 @@ async def create_order(
                 "plate_number": new_ride.plate_number,
                 "ride_type": new_ride.ride_type,
                 "estimated_distance_km": new_ride.estimated_distance_km,
-                "status": new_ride.status
+                "status": new_ride.status,
             }
 
             # Use asyncio.create_task to send the email in the background.
@@ -269,7 +269,7 @@ async def create_order(
                 )
             )
             
-            # The supervisor notification logic can stay here as it is not blocking
+            # The supervisor notification logic should stay here as it is not blocking
             supervisor_notification = create_system_notification(
                 user_id=supervisor_id,
                 title="בקשת נסיעה חדשה",
@@ -285,81 +285,16 @@ async def create_order(
                 "sent_at": supervisor_notification.sent_at.isoformat(),
                 "order_id": str(supervisor_notification.order_id) if supervisor_notification.order_id else None,
                 "order_status": new_ride.status,
-                "is_extended_request": is_extended 
-
-
+                "is_extended_request": is_extended
             })
-
-            # שליחת מייל למנהל - כאן הקוראים ל-async_send_email
-            supervisor_email = get_user_email(supervisor_id, db)
-            if supervisor_email:
-                # Get the city name from the city ID
-                destination_city = db.query(City).filter(City.id == new_ride.stop).first()
-                destination_name = destination_city.name if destination_city else str(new_ride.stop)
-                duration_days = (new_ride.end_datetime - new_ride.start_datetime).days + 1
-               
-                extended_banner = ""
-                if ride_request.is_extended_request:
-                    extended_banner = f"""
-                    <div style="background-color: #fff3cd; color: #856404; padding: 15px; border-radius: 8px; border: 1px solid #ffeeba; margin-bottom: 20px; text-align: center;">
-                    ⚠️ <strong>בקשה זו כוללת נסיעה ארוכה של {duration_days} ימים ודורשת את תשומת לבך המיידית</strong>
-                    </div>
-                    """
-                
-                html_content = load_email_template("new_ride_request.html", {
-                    "SUPERVISOR_NAME": get_user_name(db, supervisor_id) or "מנהל",
-                    "EMPLOYEE_NAME": employee_name,
-                    "DESTINATION": destination_name,  # Now shows the city name
-                    "DATE_TIME": str(new_ride.start_datetime),
-                    "PLATE_NUMBER": new_ride.plate_number or "לא נבחר",
-                    "DISTANCE": str(new_ride.estimated_distance_km),
-                    "STATUS": new_ride.status,
-                    "EXTENDED_BANNER": extended_banner
-
-                    # "LINK_TO_ORDER": f"{BOOKIT_URL}/home?order_id={new_ride.id}"
-                    })
-                await async_send_email(
-                    to_email=supervisor_email,
-                    subject="📄 בקשת נסיעה חדשה מחכה לאישורך",
-                    html_content=html_content
-                )
-            else:
-                logger.warning("No supervisor email found — skipping email.")
 
         else:
             logger.warning(f"No supervisor found for user ID {user_id} — skipping supervisor notification and email.")
-            
-        # Create and send confirmation notification to the user
-        confirmation = create_system_notification(
-            user_id=new_ride.user_id,
-            title="שליחת בקשה",
-            message="בקשתך נשלחה בהצלחה",
-            order_id=new_ride.id
-        )
-        await sio.emit("new_notification", {
-            "id": str(confirmation.id),
-            "user_id": str(confirmation.user_id),
-            "title": confirmation.title,
-            "message": confirmation.message,
-            "notification_type": confirmation.notification_type.value,
-            "sent_at": confirmation.sent_at.isoformat(),
-            "order_id": str(confirmation.order_id) if confirmation.order_id else None,
-            "order_status": new_ride.status
-        })
-
-        # Return the response immediately after creating the ride.
-        # The email status is no longer needed in the response.
-        return {
-            **RideResponse.model_validate(new_ride).dict(),
-            "inspector_warning": warning_flag,
-        }
 
     except Exception as e:
-        logger.error(f"Order creation failed: {str(e)}")
-        raise HTTPException(
-            status_code=fastapi_status.HTTP_400_BAD_REQUEST,
-            detail=f"Failed to create order: {str(e)}"
-        )
+        # Handle the exception, for example:
+        print(f"An error occurred: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 # async def create_order(
 #     user_id: UUID,
 #     ride_request: RideCreate,
