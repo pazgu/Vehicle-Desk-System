@@ -94,6 +94,14 @@ def get_user_email(user_id: UUID, db: Session) -> str | None:
         return user.email
     return None
 
+def get_admin_emails(db: Session) -> list[str]:
+    """
+    Returns a list of admin email addresses from the database.
+    Assumes User model has an 'is_admin' boolean field and 'email' field.
+    """
+    admins = db.query(User).filter(User.is_admin == True, User.email != None).all()
+    return [admin.email for admin in admins]
+
 async def send_license_expiry_notifications(user_id: UUID, db: Session):
     user = db.query(User).filter(User.employee_id == user_id).first()
     if not user or not user.email:
