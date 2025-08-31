@@ -7,6 +7,8 @@ import logging
 import os
 from datetime import datetime, timedelta
 
+from ..services import form_email
+
 logger = logging.getLogger(__name__)
 
 from ..schemas.email_status_schema import RetryEmailRequest, EmailStatusEnum
@@ -144,7 +146,7 @@ async def retry_email(
                 "ride_type": ride_db_object.ride_type,
             }
             
-            email_sent_successfully = await email_service.send_ride_completion_email(
+            email_sent_successfully = await form_email.send_ride_completion_email(
                 ride_id=ride_db_object.id,
                 recipient_id=recipient_id,
                 db=db,

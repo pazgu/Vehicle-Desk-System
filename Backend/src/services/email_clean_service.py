@@ -309,61 +309,6 @@ class EmailService:
             return False
         
 
-    # # --- ADD/MODIFY send_ride_completion_email (accept use_retries, default False) ---
-    # def send_ride_completion_email(ride_id: str):
-    #     """
-    #     This is the function called by the scheduler.
-    #     It now acts as a dispatcher to the async EmailService.
-    #     """
-    #     db = SessionLocal()
-    #     try:
-    #         ride = db.query(Ride).filter(Ride.id == ride_id).first()
-    #         if not ride:
-    #             print(f"❌ Ride with ID {ride_id} not found.")
-    #             return
-
-    #         user = db.query(User).filter(User.employee_id == ride.user_id).first()
-    #         if not user:
-    #             print(f"❌ User for ride ID {ride_id} not found.")
-    #             return
-
-    #         # 1. Prepare the `ride_details` dictionary your new service expects.
-    #         #    This replaces the old manual string formatting.
-    #         form_link = f"https://localhost:8000/ride-completion-form/{ride.id}"
-
-    #         ride_details = {
-    #             "username": user.first_name,
-    #             "id": ride.id,
-    #             "start_location": ride.start_location,
-    #             "destination": ride.destination,
-    #             "start_datetime": ride.start_datetime,
-    #             "end_datetime": ride.end_datetime,
-    #             "plate_number": ride.vehicle.plate_number if ride.vehicle else "N/A",
-    #             "ride_type": ride.ride_type,
-    #             "form_link": form_link  # Add the link for the template
-    #         }
-
-    #         # 2. Call the async service method from this sync function.
-    #         #    asyncio.run() handles the async-to-sync bridge.
-    #         print(f"🚀 Dispatching email for ride {ride_id} via EmailService...")
-    #         asyncio.run(
-    #             email_service.send_ride_completion_email(
-    #                 ride_id=UUID(ride.id),       # Cast string ID to UUID
-    #                 recipient_id=UUID(user.id),  # Cast string ID to UUID
-    #                 db=db,                       # Pass the active DB session
-    #                 ride_details=ride_details,
-    #                 use_retries=True             # Background jobs should be robust, so use retries
-    #             )
-    #         )
-    #         print(f"✅ Email for ride {ride_id} successfully dispatched.")
-
-    #     except Exception as e:
-    #         print(f"🔥 An error occurred while dispatching email for ride {ride_id}: {e}")
-    #     finally:
-    #         db.close()
-
-
-
     # --- ADD/MODIFY send_ride_cancellation_email (accept use_retries, default False) ---
     async def send_ride_cancellation_email(self, ride_id: UUID, recipient_id: UUID, db: Session, ride_details: Dict[str, Any], cancellation_reason: str = "Unknown reason", use_retries: bool = False) -> bool:
         logger.info(f"Attempting to send ride cancellation email for ride {ride_id} to recipient {recipient_id} (Retries: {use_retries})")
@@ -406,54 +351,54 @@ class EmailService:
             return False
         
 
-email_service = EmailService(sio_server=global_sio_instance)
+# email_service = EmailService(sio_server=global_sio_instance)
 
-# this is the function the scheduler will call.
-def send_ride_completion_email(ride_id: str):
-    """
-    This is the function called by the scheduler.
-    It acts as a dispatcher to the async EmailService.
-    """
-    db = SessionLocal()
-    try:
-        ride = db.query(Ride).filter(Ride.id == ride_id).first()
-        if not ride:
-            print(f"❌ Ride with ID {ride_id} not found.")
-            return
+# # this is the function the scheduler will call.
+# def send_ride_completion_email(ride_id: str):
+#     """
+#     This is the function called by the scheduler.
+#     It acts as a dispatcher to the async EmailService.
+#     """
+#     db = SessionLocal()
+#     try:
+#         ride = db.query(Ride).filter(Ride.id == ride_id).first()
+#         if not ride:
+#             print(f"❌ Ride with ID {ride_id} not found.")
+#             return
 
-        user = db.query(User).filter(User.employee_id == ride.user_id).first()
-        if not user:
-            print(f"❌ User for ride ID {ride_id} not found.")
-            return
+#         user = db.query(User).filter(User.employee_id == ride.user_id).first()
+#         if not user:
+#             print(f"❌ User for ride ID {ride_id} not found.")
+#             return
 
-        form_link = f"https://localhost:8000/ride-completion-form/{ride.id}"
+#         form_link = f"https://localhost:8000/ride-completion-form/{ride.id}"
 
-        # Populate the dictionary with ALL the data needed by the template.
-        ride_details = {
-            "username": user.first_name,
-            "id": ride.id,
-            "start_location": ride.start_location,
-            "destination": ride.destination,
-            "start_datetime": ride.start_datetime,
-            "end_datetime": ride.end_datetime,
-            "plate_number": ride.vehicle.plate_number if ride.vehicle else "N/A",
-            "ride_type": ride.ride_type,
-            "form_link": form_link  # The link for the template
-        }
+#         # Populate the dictionary with ALL the data needed by the template.
+#         ride_details = {
+#             "username": user.first_name,
+#             "id": ride.id,
+#             "start_location": ride.start_location,
+#             "destination": ride.destination,
+#             "start_datetime": ride.start_datetime,
+#             "end_datetime": ride.end_datetime,
+#             "plate_number": ride.vehicle.plate_number if ride.vehicle else "N/A",
+#             "ride_type": ride.ride_type,
+#             "form_link": form_link  # The link for the template
+#         }
 
-        print(f"🚀 Dispatching email for ride {ride_id} via EmailService...")
-        asyncio.run(
-            email_service.send_ride_completion_email(
-                ride_id=UUID(ride.id),
-                recipient_id=UUID(user.employee_id), 
-                db=db,
-                ride_details=ride_details,
-                use_retries=True
-            )
-        )
-        print(f"✅ Email for ride {ride_id} successfully dispatched.")
+#         print(f"🚀 Dispatching email for ride {ride_id} via EmailService...")
+#         asyncio.run(
+#             email_service.send_ride_completion_email(
+#                 ride_id=UUID(ride.id),
+#                 recipient_id=UUID(user.employee_id), 
+#                 db=db,
+#                 ride_details=ride_details,
+#                 use_retries=True
+#             )
+#         )
+#         print(f"✅ Email for ride {ride_id} successfully dispatched.")
 
-    except Exception as e:
-        print(f"🔥 An error occurred while dispatching email for ride {ride_id}: {e}")
-    finally:
-        db.close()
+#     except Exception as e:
+#         print(f"🔥 An error occurred while dispatching email for ride {ride_id}: {e}")
+#     finally:
+#         db.close()
