@@ -54,15 +54,15 @@ export class VehicleInspectionComponent implements OnInit {
   ngOnInit(): void {
     this.fetchVehicles();
   }
-  //  get filteredIssues(): VehicleIssue[] {
-  //   if (!this.searchTerm) {
-  //     return this.vehicleIssues;
-  //   }
-  //   const term = this.searchTerm.trim().toLowerCase();
-  //   return this.vehicleIssues.filter(issue =>
-  //     issue.plate.toLowerCase().includes(term)
-  //   );
-  // }
+   get filteredIssues(): VehicleIssue[] {
+    if (!this.searchTerm) {
+      return this.vehicleIssues;
+    }
+    const term = this.searchTerm.trim().toLowerCase();
+    return this.vehicleIssues.filter(issue =>
+      issue.plate.toLowerCase().includes(term)
+    );
+  }
 
   fetchVehicles(): void {
       const params = new HttpParams().set('status', 'available');
