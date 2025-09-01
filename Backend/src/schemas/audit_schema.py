@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from typing import Any,Optional
 from datetime import datetime
 from uuid import UUID
+
 class AuditLogsSchema(BaseModel):
     id: int
     full_name: str

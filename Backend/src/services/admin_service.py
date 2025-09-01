@@ -1,8 +1,10 @@
-from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
-from uuid import UUID
-from src.models.user_model import User, UserRole
+from sqlalchemy.orm import Session
 from sqlalchemy import text
+from uuid import UUID
+
+from src.models.user_model import User, UserRole
+
 
 def delete_user_by_id(user_id: UUID, current_user: User, db: Session):
     # בדיקת הרשאות

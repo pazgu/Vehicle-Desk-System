@@ -1,20 +1,21 @@
 import asyncio
+import logging
+import os
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from uuid import UUID
+
 from src.models.ride_model import Ride
 from src.models.user_model import User
 from src.models.city_model import City
 from src.models.vehicle_model import Vehicle
 from src.utils.database import SessionLocal
-from src.utils.scheduler import scheduler # Re-use the existing scheduler instance
+from src.utils.scheduler import scheduler
 from src.services.email_service import async_send_email, load_email_template, get_user_email
-import logging
-import os
+
 
 logger = logging.getLogger(__name__)
 
-# Consider loading this from environment variables or a config file
 BOOKIT_FRONTEND_URL = os.getenv("BOOKIT_FRONTEND_URL", "http://localhost:4200")
 
 def schedule_ride_reminder_email(ride_id: UUID, scheduled_start_time: datetime):

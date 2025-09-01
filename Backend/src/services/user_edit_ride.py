@@ -1,15 +1,15 @@
+from uuid import UUID
+
+from fastapi import HTTPException
 from sqlalchemy import text
 from sqlalchemy.orm import Session
+
+from ..models.city_model import City
 from ..models.ride_model import Ride
-from ..schemas.order_card_item import OrderCardItem
-from fastapi import HTTPException
-from uuid import UUID
 from ..models.user_model import User
+from ..schemas.order_card_item import OrderCardItem
 from ..schemas.user_response_schema import UserUpdate
 from ..services.email_service import async_send_email, get_user_email, load_email_template
-from ..models.city_model import City
-from ..models.user_model import User
-
 
 
 async def patch_order_in_db(order_id: UUID, patch_data: OrderCardItem, db: Session, changed_by: str):

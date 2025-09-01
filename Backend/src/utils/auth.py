@@ -1,20 +1,21 @@
-from passlib.context import CryptContext
-import jwt 
 from fastapi import Request, HTTPException, status,Depends
-from jwt import PyJWTError
-from ..models.user_model import User  
-from ..services.auth_service import SECRET_KEY, ALGORITHM
 from fastapi.security import OAuth2PasswordBearer
-from typing import List
-from ..models.department_model import Department
 from sqlalchemy.orm import Session
+from typing import List
+from passlib.context import CryptContext
 from dotenv import load_dotenv 
+import jwt 
+from jwt import PyJWTError
 from os import environ
+
 from .database import get_db
+from ..models.user_model import User  
+from ..models.department_model import Department
+
+from ..services.auth_service import SECRET_KEY, ALGORITHM
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 load_dotenv()
-# Initialize password context for bcrypt hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 SECRET_KEY = environ.get("JWT_SECRET")

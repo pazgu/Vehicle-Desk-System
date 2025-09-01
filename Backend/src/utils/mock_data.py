@@ -1,7 +1,5 @@
-# mock_db.py
 import uuid
 
-# Shared mock database
 mock_users_db = [{
         "id": "a1111111-1111-1111-1111-111111111111",
         "first_name": "John",

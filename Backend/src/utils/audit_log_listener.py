@@ -6,10 +6,10 @@ import json
 from .socket_manager import sio
 import asyncio
 import threading
-from ..models.user_model import User  # Adjust import as needed
-from ..utils.database import SessionLocal  # Adjust import as needed
+from ..models.user_model import User 
+from ..utils.database import SessionLocal  
 
-load_dotenv()  # Loads variables from .env
+load_dotenv()
 
 def listen_for_audit_logs():
     db_url = os.environ["DATABASE_URL"]

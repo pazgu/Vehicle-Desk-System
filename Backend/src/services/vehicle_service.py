@@ -1,52 +1,32 @@
+from fastapi import HTTPException
+from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy import Date, func, cast, and_, or_, not_, select, text
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
-from sqlalchemy.types import String  # To cast to string
-from typing import Optional, List , Dict , Union
-from ..models.vehicle_model import Vehicle, VehicleStatus
-from sqlalchemy import Date, func, cast 
-from sqlalchemy import and_ , or_ , not_ , select
+from sqlalchemy.types import String
+from datetime import datetime, timezone, date, timedelta
+from typing import Optional, List, Dict, Union
+from uuid import UUID
+
+# Utils
+from ..utils.audit_utils import log_action
+from src.utils.database import SessionLocal
+
+# Services
+from ..services.email_service import get_user_email, load_email_template, async_send_email, send_email
+
+# Schemas
+from ..schemas.check_vehicle_schema import VehicleInspectionSchema
+from ..schemas.user_rides_schema import RideSchema
+from ..schemas.vehicle_schema import VehicleOut, InUseVehicleOut
+
+# Models
 from ..models.ride_model import Ride, RideStatus
 from ..models.user_model import User
-from datetime import datetime, timezone, date, timedelta
-from ..schemas.vehicle_schema import VehicleOut, InUseVehicleOut
-from uuid import UUID
-from sqlalchemy import text
-from fastapi import HTTPException
-from sqlalchemy.exc import SQLAlchemyError
-from ..models.vehicle_inspection_model import VehicleInspection 
-from ..schemas.check_vehicle_schema import VehicleInspectionSchema
-from ..utils.audit_utils import log_action 
-from ..schemas.user_rides_schema import RideSchema 
-from ..services.email_service import get_user_email, load_email_template, async_send_email, send_email
-from datetime import datetime
+from ..models.vehicle_inspection_model import VehicleInspection
+from ..models.vehicle_model import Vehicle, VehicleStatus
 
-from src.utils.database import SessionLocal
-from ..services.email_service import get_user_email, load_email_template, async_send_email, send_email
-from datetime import datetime
-
-from fastapi.security import OAuth2PasswordBearer
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-
-# def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
-#     inspection = VehicleInspection(
-#         inspected_by=data.inspected_by,
-#         inspection_date=datetime.now(timezone.utc),
-#         clean=data.clean,
-#         fuel_checked=data.fuel_checked,
-#         no_items_left=data.no_items_left,
-#         critical_issue_bool=data.critical_issue_bool,
-#         issues_found=data.issues_found,
-#     )
-
-#     db.add(inspection)
-#     db.commit()
-#     db.refresh(inspection)
-
-#     return {
-#         "message": "Vehicle inspection recorded successfully",
-#         "inspection_id": str(inspection.inspection_id)
-#     }
-
 
 
 def get_vehicle_km_driven_on_date(db: Session, vehicle_id: int, day: date) -> float:
@@ -192,22 +172,6 @@ def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_re
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"An internal server error occurred: {str(e)}")
-
-    # log_action(
-    #     db=db,
-    #     action="update_vehicle_status",
-    #     entity_type="Vehicle",
-    #     entity_id=str(vehicle.id),
-    #     change_data={
-    #         "new_status": str(vehicle.status),
-    #         "freeze_reason": vehicle.freeze_reason
-    #     },
-    #     changed_by=changed_by,
-    #     checkbox_value=True,  # or the actual value
-    #     inspected_at=datetime.utcnow(),  # or the actual inspection time
-    #     inspector_id=changed_by,  # or the actual inspector's ID
-    #     notes=notes  # can be None
-    # )
     
     db.execute(text("SET session.audit.user_id = DEFAULT"))
     return {"vehicle_id": vehicle.id, "new_status": vehicle.status, "freeze_reason": vehicle.freeze_reason}

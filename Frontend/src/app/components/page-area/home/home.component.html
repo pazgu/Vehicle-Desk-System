@@ -56,7 +56,7 @@
               <label>מספר ימי נסיעה (יום / יומיים)</label>
               <select formControlName="ride_period">
                 <option value="morning">נסיעה יומית</option>
-                <option value="night">נסיעה מעבר ליום</option>
+                <option value="night">נסיעה ליותר מיום</option>
               </select>
             </div>
 
@@ -136,6 +136,9 @@
             <div class="form-field-group">
               <label>תאריך סיום</label>
               <input type="date" formControlName="ride_date_night_end" [min]="minDate" />
+              <small *ngIf="rideForm.errors?.['sameDateNightRide']" class="error-text">
+                  {{ rideForm.errors?.['sameDateNightRide']?.['message'] }}
+              </small>
             </div>
           </div>
 

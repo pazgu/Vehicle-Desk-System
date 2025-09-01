@@ -3,8 +3,6 @@ from typing import List, Optional
 from uuid import UUID
 from datetime import datetime
 
-
-
 class IssueFoundSchema(BaseModel):
     vehicle_id: UUID
     issue_found: str

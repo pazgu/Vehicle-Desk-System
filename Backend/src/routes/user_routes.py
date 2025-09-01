@@ -1,68 +1,65 @@
 import asyncio
 import json
 import traceback
-from fastapi import APIRouter, HTTPException, Depends , Query, Response, status
-from sqlalchemy.orm import Session,aliased
-
-from ..services.email_service import get_user_email, load_email_template
-from ..utils.email_utils import async_send_email
-from ..schemas.register_schema import UserCreate
-from ..schemas.login_schema import UserLogin
-from ..schemas.new_ride_schema import RideCreate
-from ..services import register_service
-from ..services import login_service
-from uuid import UUID
-from sqlalchemy import text
-from ..services.new_ride_service import check_license_validity, create_ride 
-from fastapi.responses import JSONResponse
-from typing import List, Optional, Annotated
-from datetime import datetime, timedelta, timezone
-from ..schemas.user_rides_schema import RideSchema, RideStatus
-from ..services.user_rides_service import get_future_rides, get_past_rides , get_all_rides
-from ..utils.database import get_db
-from src.models import ride_model, vehicle_model
 import logging
-from ..utils.database import get_db
-from ..services.register_service import get_departments 
-from ..schemas.notification_schema import NotificationOut
-from ..services.user_notification import get_user_notifications ,send_notification_async
+from datetime import datetime, timedelta, timezone
+from typing import List, Optional, Annotated
+from uuid import UUID
+
+from fastapi import APIRouter, HTTPException, Depends, Query, Response
 from fastapi import status as fastapi_status
+from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer
-from ..utils.auth import role_check,identity_check,get_current_user,hash_password
-from src.schemas.ride_status_enum import UpdateRideStatusRequest
-from ..schemas.order_card_item import OrderCardItem
-from ..models.ride_model import Ride
-from ..services.user_edit_ride import patch_order_in_db
-from ..services.user_rides_service import get_ride_by_id , get_archived_rides , cancel_order_in_db
-from ..services.user_notification import create_system_notification,get_supervisor_id,get_user_name
-import traceback
-from ..utils.auth import get_current_user
-from ..models.user_model import User
-from ..services.user_form import process_completion_form
-from ..schemas.form_schema import CompletionFormData
-from ..utils.socket_manager import sio  # ✅ import this
-from ..utils.socket_utils import convert_decimal
-from ..services.auth_service import create_reset_token,verify_reset_token
-from ..schemas.reset_password import ResetPasswordInput,ForgotPasswordRequest
-from ..services.user_data import get_user_department
-from ..models.vehicle_model import Vehicle
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-from ..models.ride_model import PendingRideSchema
-from ..utils.scheduler import schedule_ride_start
-from apscheduler.jobstores.base import JobLookupError
-from ..utils.scheduler import scheduler
-from ..services.city_service import get_cities,get_city, calculate_distance
-from ..models.city_model import City
-from sqlalchemy import cast
-from ..services.user_form import get_ride_needing_feedback
+from sqlalchemy import text, cast
+from sqlalchemy.orm import Session, aliased
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
-from src.schemas.department_schema import DepartmentOut
-from src.models.department_model import Department
+from apscheduler.jobstores.base import JobLookupError
+
+# Utils
+from ..utils.database import get_db
+from ..utils.email_utils import async_send_email
+from ..utils.auth import role_check, identity_check, get_current_user, hash_password
+from ..utils.socket_manager import sio
+from ..utils.socket_utils import convert_decimal
+from ..utils.scheduler import schedule_ride_start, scheduler
 from ..utils.time_utils import is_time_in_blocked_window
-from ..schemas.new_ride_schema import RideResponse
+
+# Services
+from ..services import register_service, login_service
+from ..services.email_service import get_user_email, load_email_template
+from ..services.new_ride_service import check_license_validity, create_ride
+from ..services.user_rides_service import get_future_rides, get_past_rides, get_all_rides, get_ride_by_id, get_archived_rides, cancel_order_in_db
+from ..services.register_service import get_departments
+from ..services.user_notification import get_user_notifications, send_notification_async, create_system_notification, get_supervisor_id, get_user_name
+from ..services.user_edit_ride import patch_order_in_db
+from ..services.user_form import process_completion_form, get_ride_needing_feedback
+from ..services.auth_service import create_reset_token, verify_reset_token
+from ..services.user_data import get_user_department
+from ..services.city_service import get_cities, get_city, calculate_distance
 from ..services.ride_reminder_service import schedule_ride_reminder_email
 from ..services.email_clean_service import EmailService
 
+# Schemas
+from ..schemas.register_schema import UserCreate
+from ..schemas.login_schema import UserLogin
+from ..schemas.new_ride_schema import RideCreate, RideResponse
+from ..schemas.user_rides_schema import RideSchema, RideStatus
+from ..schemas.notification_schema import NotificationOut
+from ..schemas.order_card_item import OrderCardItem
+from ..schemas.form_schema import CompletionFormData
+from ..schemas.reset_password import ResetPasswordInput, ForgotPasswordRequest
+from src.schemas.ride_status_enum import UpdateRideStatusRequest
+from src.schemas.department_schema import DepartmentOut
+
+# Models
+from ..models.ride_model import Ride, PendingRideSchema
+from ..models.user_model import User
+from ..models.vehicle_model import Vehicle
+from ..models.city_model import City
+from src.models import ride_model, vehicle_model
+from src.models.department_model import Department
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -295,197 +292,6 @@ async def create_order(
         # Handle the exception, for example:
         print(f"An error occurred: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-# async def create_order(
-#     user_id: UUID,
-#     ride_request: RideCreate,
-#     db: Session = Depends(get_db),
-#     token: str = Depends(oauth2_scheme)
-# ):
-#     role_check(allowed_roles=["employee", "admin"], token=token)
-#     identity_check(user_id=str(user_id), token=token)
-
-#     try:
-#         # Instantiate EmailService for this request
-#         email_service = EmailService(sio_server=sio)
-
-#         email_status_output = {
-#             "email_status": EmailStatusEnum.PENDING,
-#             "email_message": "Email processing started",
-#             "email_timestamp": datetime.now(timezone.utc).isoformat()
-#         }
-
-#         new_ride = await create_ride(db, user_id, ride_request)
-#         schedule_ride_start(new_ride.id, new_ride.start_datetime)
-#         schedule_ride_reminder_email(new_ride.id, new_ride.start_datetime)
-#         warning_flag = is_time_in_blocked_window(new_ride.start_datetime)
-#         department_id = get_user_department(user_id=user_id, db=db)
-
-#         # email_sent_successfully = True | now managed by email_service
-
-#         await sio.emit("new_ride_request", {
-#             "ride_id": str(new_ride.id),
-#             "user_id": str(user_id),
-#             "employee_name": new_ride.username,
-#             "status": new_ride.status,
-#             "destination": new_ride.stop,
-#             "end_datetime": str(new_ride.end_datetime),
-#             "date_and_time": str(new_ride.start_datetime),
-#             "vehicle_id": str(new_ride.vehicle_id),
-#             "requested_vehicle_plate": new_ride.plate_number,
-#             "department_id": str(department_id),
-#             "distance": new_ride.estimated_distance_km,
-#         })
-
-#         supervisor_id = get_supervisor_id(user_id, db)
-#         if supervisor_id:
-#             employee_name = get_user_name(db, new_ride.user_id)
-            
-#             # Create and send socket notification to supervisor
-#             supervisor_notification = create_system_notification(
-#                 user_id=supervisor_id,
-#                 title="בקשת נסיעה חדשה",
-#                 message=f"שלח בקשה חדשה {employee_name} העובד",
-#                 order_id=new_ride.id
-#             )
-#             # employee_name = get_user_name(db, new_ride.user_id)
-
-#         # if supervisor_id:
-#         #     supervisor_notification = create_system_notification(
-#         #         user_id=supervisor_id,
-#         #         title="בקשת נסיעה חדשה",
-#         #         message=f"שלח בקשה חדשה {employee_name} העובד",
-#         #         order_id=new_ride.id
-#         #     )
-
-#             await sio.emit("new_notification", {
-#                 "id": str(supervisor_notification.id),
-#                 "user_id": str(supervisor_notification.user_id),
-#                 "title": supervisor_notification.title,
-#                 "message": supervisor_notification.message,
-#                 "notification_type": supervisor_notification.notification_type.value,
-#                 "sent_at": supervisor_notification.sent_at.isoformat(),
-#                 "order_id": str(supervisor_notification.order_id) if supervisor_notification.order_id else None,
-#                 "order_status": new_ride.status
-#             })
-
-#             # # שליחת מייל למנהל - כאן הקוראים ל-async_send_email
-#             # supervisor_email = get_user_email(supervisor_id, db)
-#             # if supervisor_email:
-#             #     # Get the city name from the city ID
-#             #     destination_city = db.query(City).filter(City.id == new_ride.stop).first()
-#             #     destination_name = destination_city.name if destination_city else str(new_ride.stop)
-
-#             #     html_content = load_email_template("new_ride_request.html", {
-#             #         "SUPERVISOR_NAME": get_user_name(db, supervisor_id) or "מנהל",
-#             #         "EMPLOYEE_NAME": employee_name,
-#             #         "DESTINATION": destination_name,  # Now shows the city name
-#             #         "DATE_TIME": str(new_ride.start_datetime),
-#             #         "PLATE_NUMBER": new_ride.plate_number or "לא נבחר",
-#             #         "DISTANCE": str(new_ride.estimated_distance_km),
-#             #         "STATUS": new_ride.status,
-#             #         # "LINK_TO_ORDER": f"{BOOKIT_URL}/home?order_id={new_ride.id}"
-#             #     })
-                
-#             #     email_sent_successfully = await async_send_email(
-#             #         to_email=supervisor_email,
-#             #         subject="📄 בקשת נסיעה חדשה מחכה לאישורך",
-#             #         html_content=html_content
-#             #     )
-
-#             #     # await async_send_email(
-#             #     #     to_email=supervisor_email,
-#             #     #     subject="📄 בקשת נסיעה חדשה מחכה לאישורך",
-#             #     #     html_content=html_content
-#             #     # )
-#             # else:
-#             #     logger.warning(f"No supervisor email found for supervisor ID {supervisor_id} — skipping email.")
-
-#             supervisor_email_address = await email_service._get_user_email(supervisor_id, db) # Use email_service instance
-#             if supervisor_email_address:
-#                 # Get the city name from the city ID (assuming new_ride.stop is a UUID for City)
-#                 destination_city = db.query(City).filter(City.id == new_ride.stop).first()
-#                 destination_name = destination_city.name if destination_city else str(new_ride.stop)
-#                 ride_details_for_email = {
-#                     "username": employee_name, # The rider's name
-#                     "ride_id": str(new_ride.id),
-#                     "start_location": new_ride.start_location,
-#                     "destination": destination_name,
-#                     "start_datetime": new_ride.start_datetime,
-#                     "end_datetime": new_ride.end_datetime,
-#                     "plate_number": new_ride.plate_number,
-#                     "ride_type": new_ride.ride_type,
-#                     "estimated_distance_km": new_ride.estimated_distance_km,
-#                     "status": new_ride.status # Added status for new_ride_request template
-#                 }
-#                 try:
-#                     await email_service.send_ride_creation_email(
-#                         ride_id=new_ride.id,
-#                         recipient_id=supervisor_id, # Target supervisor
-#                         db=db, # Pass db session
-#                         ride_details=ride_details_for_email,
-#                         email_type="new_ride_request_to_supervisor" # Specific type for supervisor email
-#                     )
-#                     email_status_output["email_status"] = EmailStatusEnum.SENT # MODIFIED: Set to SENT
-#                     email_status_output["email_message"] = "Supervisor email sent successfully." # MODIFIED: Set message
-#                     email_status_output["email_timestamp"] = datetime.now().isoformat() # MODIFIED: Set timestamp
-
-#                 except Exception as e:
-#                     logger.error(f"Failed to send email to supervisor {supervisor_email_address} for ride {new_ride.id}: {e}", exc_info=True)
-#                     email_status_output["email_status"] = EmailStatusEnum.FAILED # MODIFIED: Set to FAILED
-#                     email_status_output["email_message"] = f"Failed to send email to supervisor: {e}" # MODIFIED: Set message
-#                     email_status_output["email_timestamp"] = datetime.now().isoformat() # MODIFIED: Set timestamp
-#                     # --- RETRY LOGIC TRIGGER POINT ---
-#                     # This is where you'd queue the email for retry if you had a more advanced system.
-#                     # For now, it's logged and the front-end will receive the "FAILED" status.
-#                     logger.warning(f"Email to supervisor failed for ride {new_ride.id}. This should be added to a retry queue.")
-#             else:
-#                 logger.warning(f"No supervisor email found for supervisor ID {supervisor_id} — skipping email.")
-#                 email_status_output["email_status"] = EmailStatusEnum.NOT_SENT # MODIFIED: Set to NOT_SENT
-#                 email_status_output["email_message"] = f"No email address for supervisor {supervisor_id}." # MODIFIED: Set message
-#                 email_status_output["email_timestamp"] = datetime.now().isoformat() # MODIFIED: Set timestamp
-
-#         else:
-#             logger.warning(f"No supervisor found for user ID {user_id} — skipping supervisor notification and email.")
-#             # ADDED: If no supervisor, explicitly set email status to NOT_SENT for the response
-#             email_status_output["email_status"] = EmailStatusEnum.NOT_SENT
-#             email_status_output["email_message"] = f"No supervisor found for user {user_id}."
-#             email_status_output["email_timestamp"] = datetime.now().isoformat()
-
-
-#         confirmation = create_system_notification(
-#             user_id=new_ride.user_id,
-#             title="שליחת בקשה",
-#             message="בקשתך נשלחה בהצלחה",
-#             order_id=new_ride.id
-#         )
-
-#         await sio.emit("new_notification", {
-#             "id": str(confirmation.id),
-#             "user_id": str(confirmation.user_id),
-#             "title": confirmation.title,
-#             "message": confirmation.message,
-#             "notification_type": confirmation.notification_type.value,
-#             "sent_at": confirmation.sent_at.isoformat(),
-#             "order_id": str(confirmation.order_id) if confirmation.order_id else None,
-#             "order_status": new_ride.status
-#         })
-
-#         return {
-#             **RideResponse.model_validate(new_ride).dict(),
-#             "inspector_warning": warning_flag,
-#             # MODIFIED: Use the detailed email_status_output
-#             "email_status": email_status_output["email_status"],
-#             "email_message": email_status_output["email_message"],
-#             "email_timestamp": email_status_output["email_timestamp"]
-#         }
-
-#     except Exception as e:
-#         logger.error(f"Order creation failed: {str(e)}")
-#         raise HTTPException(
-#             status_code=fastapi_status.HTTP_400_BAD_REQUEST,
-#             detail=f"Failed to create order: {str(e)}"
-#         )
-
 
 @router.get("/api/rides_supposed-to-start")
 def check_started_approved_rides(db: Session = Depends(get_db)):

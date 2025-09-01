@@ -1,9 +1,11 @@
-from src.utils.database import SessionLocal
-from src.models.ride_model import Ride
-from src.models.user_model import User
+from ..models.ride_model import Ride
+from ..models.user_model import User
+
 from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime
+
 from ..utils.email_utils import send_email
+from ..utils.database import SessionLocal
 
 def send_ride_completion_email(ride_id: str):
     db = SessionLocal()

@@ -1,19 +1,16 @@
-# src/utils/database.py
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-import os
 from sqlalchemy.exc import SQLAlchemyError
-import logging
-from ..models.base import Base  # Only import Base — NO model imports here!
+import os
 from dotenv import load_dotenv
+import logging
+from ..models.base import Base
 
-# Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 load_dotenv()
 
-# Use local or Docker DB URL
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 try:
