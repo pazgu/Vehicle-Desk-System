@@ -6,7 +6,7 @@
 
 }
 .export-disclaimer {
-  margin-right: 35%;
+  margin-right: 38%;
 }
 :host {
   display: block;
@@ -273,6 +273,7 @@ body {
   margin: 1rem 0 0.5rem 0;
   position: relative;
   text-shadow: 0 2px 4px rgba(148, 34, 34, 0.1);
+  margin-bottom: 30px;
 }
 
 .section-heading::after {
@@ -817,6 +818,7 @@ body {
   font-weight: 600;
   color: #4a5568;
   text-align: center;
+  margin: 20px;
 }
 
 /* Responsive design enhancements */

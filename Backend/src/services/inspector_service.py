@@ -57,18 +57,18 @@ async def create_inspection(data: VehicleInspectionSchema, db: Session):
         for inspection in inspections_created:
             db.refresh(inspection)
 
-            # try:
-            #     await sio.emit("new_inspection", {
-            #         "inspection_id": str(inspection.inspection_id),
-            #         "inspection_date": inspection.inspection_date.isoformat(),
-            #         "inspected_by": str(inspection.inspected_by),
-            #         "fuel_checked": inspection.fuel_checked,
-            #         "no_items_left": inspection.no_items_left,
-            #         "critical_issue_bool": inspection.critical_issue_bool,
-            #         "issues_found": inspection.issues_found,
-            #     })
-            # except Exception as socket_error:
-            #     print(f"❌ Socket emission failed: {socket_error}")
+            try:
+                await sio.emit("new_inspection", {
+                    "inspection_id": str(inspection.inspection_id),
+                    "inspection_date": inspection.inspection_date.isoformat(),
+                    "inspected_by": str(inspection.inspected_by),
+                    "fuel_checked": inspection.fuel_checked,
+                    "no_items_left": inspection.no_items_left,
+                    "critical_issue_bool": inspection.critical_issue_bool,
+                    "issues_found": inspection.issues_found,
+                })
+            except Exception as socket_error:
+                print(f"❌ Socket emission failed: {socket_error}")
 
             # ... rest of your email and notification code here ...
 

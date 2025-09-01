@@ -2,16 +2,14 @@
     min-height: 100vh;
     padding: 2rem 0;
     background-image: url('/assets/images/vehicle-dashboard-bg.png');
-    /* your new file name */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
     background-attachment: fixed;
-    /* optional, makes it stay fixed on scroll */
 }
 
 .page-container {
-    max-width: 1100px;
+    max-width: 1030px;
     margin: 0 auto;
     background-color: rgb(255, 255, 255);
     border-radius: 14px;
@@ -50,7 +48,6 @@
     justify-content: ceneter;
 }
 
-/* Scale the card and slightly lift it on hover */
 :host ::ng-deep .p-card.vehicle-card:hover {
     box-shadow: 0 12px 32px rgba(198, 40, 40, 0.18);
     border: 2px solid #c62828;
@@ -60,7 +57,7 @@
     cursor: pointer;
 }
 
-/* Make the image inside the card pop out on hover */
+
 :host ::ng-deep .p-card.vehicle-card:hover img {
     filter: brightness(1.1) drop-shadow(0 2px 8px #c62828aa);
     transform: scale(1.05);
@@ -139,6 +136,9 @@
 }
 
 .status-indicators {
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
     text-align: right;
     direction: lrt;
     border: 1px solid #ddd;
@@ -146,18 +146,19 @@
     padding: 12px 16px;
     max-width: fit-content;
     background-color: rgb(249, 245, 245);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.276);
+   margin-right: -160px; 
+   margin-top: -140px;
 }
 
 .status-box {
     display: flex;
-    gap: 1rem;
+    flex-direction: column;
+    gap: 0.5rem;
     flex-wrap: wrap;
 }
 
 .status-item {
-    background-color: rgb(245, 241, 241);
     padding: 6px 10px;
     border-radius: 8px;
     display: flex;
@@ -653,7 +654,6 @@ label{
     top: 10px;
     left: 10px;
     background-color: #942222;
-    /* Red background */
     color: white;
     border: none;
     padding: 5px 10px;
@@ -661,7 +661,6 @@ label{
     font-size: 0.7em;
     font-weight: bold;
     z-index: 10;
-    /* Ensure it's on top */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -672,11 +671,7 @@ label{
     align-items: center;
     width: 100%;
     margin-bottom: 1rem;
-    /* Space between title and buttons */
 }
-
-
-/* Add this to your vehicle-dashboard.component.css */
 
 .archive-btn {
     color: white;
@@ -692,15 +687,12 @@ label{
 }
 
 
-/* Make sure the right-buttons container can handle more buttons */
 .right-buttons {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
-    /* Allow wrapping if needed */
 }
 
-/* Responsive design for smaller screens */
 @media (max-width: 768px) {
     .right-buttons {
         width: 100%;
@@ -716,28 +708,19 @@ label{
 .header-actions-bar {
     display: flex;
     justify-content: space-between;
-    /* Pushes content to opposite ends */
     width: 100%;
-    /* Take full width */
     margin-top: 1rem;
-    /* Space between title and buttons */
     flex-wrap: wrap;
-    /* Allow wrapping on smaller screens */
     gap: 10px;
-    /* Space between the two action groups */
 }
 
 
 
-/* Utility Sections Wrapper - contains status indicators and mileage upload */
 .utility-sections-wrapper {
+    position: fixed;
     display: flex;
-    flex-wrap: wrap;
-    /* Allow sections to wrap on smaller screens */
+    flex-direction: column;
     gap: 20px;
-    /* Space between the two utility sections */
-    margin-top: 2rem;
-    /* Space below the main header/status message */
 }
 
 h2 {

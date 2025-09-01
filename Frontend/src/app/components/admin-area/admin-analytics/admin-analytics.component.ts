@@ -12,7 +12,7 @@ import { saveAs } from 'file-saver';
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
 import * as XLSX from 'xlsx-js-style';
-import { cloneDeep } from 'lodash';
+import { cloneDeep, toInteger } from 'lodash';
 
 import { VehicleService } from '../../../services/vehicle.service';
 import { FreezeReason, VehicleOutItem } from '../../../models/vehicle-dashboard-item/vehicle-out-item.module';
@@ -127,7 +127,6 @@ export class AdminAnalyticsComponent implements OnInit {
     this.loadNoShowStatistics();
     this.loadDepartments(); // <--- Call this to load departments and then no-show stats
     this.loadVehicleTypes();
-    this.loadRideStatuses();
 
 
 
@@ -143,6 +142,12 @@ export class AdminAnalyticsComponent implements OnInit {
       // Read query params if they exist, else keep defaults
       this.noShowSortOption = params['noShowSort'] || 'countAsc';
       this.selectedSortOption = params['selectedSort'] || 'countAsc';
+      if (params['month']) {
+      this.selectedMonth = String(+params['month']); // convert string to number
+    }
+    if (params['year']) {
+      this.selectedYear = String(+params['year']); // convert string to number
+    }
     });
 
     this.socketService.vehicleStatusUpdated$.subscribe(() => {
@@ -157,6 +162,7 @@ export class AdminAnalyticsComponent implements OnInit {
 
     });
   }
+
 
   // 🔄 פונקציה מעודכנת
   loadVehicleTypes() {
@@ -220,6 +226,13 @@ export class AdminAnalyticsComponent implements OnInit {
 
 
 
+  onMonthOrYearChange() {
+  this.updateQueryParams({
+    month: this.selectedMonth,
+    year: this.selectedYear
+  });
+
+}
   private countFreezeReasons(frozenVehicles: VehicleOutItem[]) {
     const freezeReasonCounts: Record<FreezeReason, number> = {
       [FreezeReason.accident]: 0,
@@ -272,42 +285,61 @@ export class AdminAnalyticsComponent implements OnInit {
       });
   }
 
-private loadRideChart() {
-  const url = this.selectedRideStatus
-    ? `${environment.apiUrl}/analytics/ride-status-summary?status=${encodeURIComponent(this.selectedRideStatus)}`
-    : `${environment.apiUrl}/analytics/ride-status-summary`;
+get isNoData(): boolean {
+  return this.rideChartData?.labels?.length === 1 && this.rideChartData.labels[0] === 'אין נתונים';
+}
+get isVehicleNoData(): boolean {
+  return this.vehicleChartData?.labels?.length === 1 && this.vehicleChartData.labels[0] === 'אין נתונים';
+}
+get isEmptyNoShowData(): boolean {
+  return this.filteredNoShowUsers.length === 0 
+}
+get isMonthlyNoData(): boolean {
+  return !this.monthlyStatsChartData || 
+         !this.monthlyStatsChartData.labels || 
+         this.monthlyStatsChartData.labels.length === 0;
+}
 
-  this.http.get<{ status: string; count: number }[]>(url)
-    .subscribe({
-      next: (data) => {
-        if (!data || data.length === 0) {
+get isAllTimeNoData(): boolean {
+  return !this.allTimeStatsChartData || 
+         !this.allTimeStatsChartData.labels || 
+         this.allTimeStatsChartData.labels.length === 0;
+}
+
+  private loadRideChart() {
+    this.http.get<{ status: string; count: number }[]>(`${environment.apiUrl}/analytics/ride-status-summary`)
+      .subscribe({
+        next: (data) => {
+
+          if (!data || data.length === 0) {
+            this.rideChartData = {
+              labels: ['אין נתונים'],
+              datasets: [{
+                data: [1],
+                backgroundColor: ['#E0E0E0'],
+                hoverBackgroundColor: ['#F0F0F0'],
+                
+              }]
+            };
+          } else {
+            this.updateRideChart(data);
+          }
+          this.rideChartInitialized = true;
+        },
+        error: (error) => {
+          console.error('❌ Error loading ride data:', error);
+          this.rideChartInitialized = true;
           this.rideChartData = {
-            labels: ['אין נתונים'],
+            labels: ['שגיאה בטעינת נתונים'],
             datasets: [{
               data: [1],
-              backgroundColor: ['#E0E0E0'],
-              hoverBackgroundColor: ['#F0F0F0']
+              backgroundColor: ['#FF5252'],
+              hoverBackgroundColor: ['#FF7777']
             }]
           };
-        } else {
-          this.updateRideChart(data);
         }
-        this.rideChartInitialized = true;
-      },
-      error: (error) => {
-        console.error('❌ Error loading ride data:', error);
-        this.rideChartInitialized = true;
-        this.rideChartData = {
-          labels: ['שגיאה בטעינת נתונים'],
-          datasets: [{
-            data: [1],
-            backgroundColor: ['#FF5252'],
-            hoverBackgroundColor: ['#FF7777']
-          }]
-        };
-      }
-    });
-}
+      });
+  }
 
 
   private updateVehicleChart(data: { status: string; count: number }[]) {
@@ -477,20 +509,16 @@ private loadRideChart() {
           const sortedDataV = this.selectedSortOption === 'default' ? data : [...data].sort(sortFnV);
           this.updateVehicleChart(sortedDataV);
         });
-    } else if (this.activeTabIndex === 1) {
-      let url = `${environment.apiUrl}/analytics/ride-status-summary`;
-      if (this.selectedRideStatus && this.selectedRideStatus.trim() !== '') {
-        url += `?status=${encodeURIComponent(this.selectedRideStatus)}`;
-      }
-      this.http.get<{ status: string; count: number }[]>(url)
+    } else {
+      this.http.get<{ status: string; count: number }[]>(`${environment.apiUrl}/analytics/ride-status-summary`)
         .subscribe(data => {
           const sortedDataR = this.selectedSortOption === 'default' ? data : [...data].sort(sortFnR);
           this.updateRideChart(sortedDataR);
         });
     }
     this.updateQueryParams({ selectedSort: this.selectedSortOption });
-  }
 
+  }
   updateQueryParams(params: any) {
     this.router.navigate([], {
       relativeTo: this.route,
@@ -1209,12 +1237,11 @@ private loadRideChart() {
             y: {
               title: { display: true, text: 'רכב' },
               ticks: {
-                beginAtZero: true,
-                stepSize: 1,
-                precision: 0,
-                callback: function (value: any) {
-                  return Number.isInteger(value) ? value : '';
-                }
+                // beginAtZero: true,
+                // stepSize: 1,
+                // precision: 0,
+                  callback: (value: any, index: number, ticks: any) => ticks.length - index
+
               }
             }
           }
@@ -1242,6 +1269,7 @@ private loadRideChart() {
             labels: ['אין נתונים'],
             datasets: [{ data: [1], backgroundColor: ['#E0E0E0'] }]
           };
+          
           this.allTimeChartOptions = {
             plugins: { legend: { display: false } },
             scales: {
@@ -1252,10 +1280,10 @@ private loadRideChart() {
               y: {
                 title: { display: true, text: 'רכב' },
                 ticks: {
-                  beginAtZero: true,
-                  stepSize: 1,
-                  precision: 0,
-                  callback: (value: any) => Number.isInteger(value) ? value : ''
+                  // beginAtZero: true,
+                  // stepSize: 1,
+                  // precision: 0,
+              callback: (value: any, index: number, ticks: any) => ticks.length - index
                 }
               }
             },
@@ -1272,15 +1300,28 @@ private loadRideChart() {
         const labels = stats.map((s: any) => `${s.plate_number} ${s.vehicle_model}`);
         const data = stats.map((s: any) => s.total_rides);
         const kilometers = stats.map((a: { total_km: number }) => a.total_km);
+      // Ensure data is numeric
+const counts = stats.map((v: { total_rides: number }) => 
+  Number.isFinite(v.total_rides) ? v.total_rides : 0
+);
 
-        this.allTimeChartData = {
-          labels,
-          datasets: [{
-            label: 'Total Rides',
-            data,
-            backgroundColor: '#42A5F5'
-          }]
-        };
+const backgroundColors = counts.map((count: number) => {
+  if (count > 10) return '#FF5252';
+  if (count >= 5) return '#FFC107';
+  return '#42A5F5';
+});
+
+
+this.allTimeChartData = {
+  labels,
+  datasets: [{
+    label: 'Total Rides',
+    data: counts,
+    backgroundColor: backgroundColors
+  }]
+};
+
+
 
         this.allTimeChartOptions = {
           indexAxis: 'y',
@@ -1303,10 +1344,11 @@ private loadRideChart() {
             y: {
               title: { display: true, text: 'רכב' },
               ticks: {
-                beginAtZero: true,
-                stepSize: 1,
-                precision: 0,
-                callback: (value: any) => Number.isInteger(value) ? value : ''
+                autoSkip: false, // ensures all labels show
+
+                // stepSize: 1,
+                // precision: 0,
+    callback: (value: any, index: number, ticks: any) => ticks.length - index
               }
             }
           },
