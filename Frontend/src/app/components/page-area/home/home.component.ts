@@ -160,7 +160,14 @@ export class NewRideComponent implements OnInit {
             extraStops: this.fb.array([], this.sameStopAndDestinationValidator()),
             destination: [null],
             four_by_four_reason: ['']
-        }, { validators: this.futureDateTimeValidator() });
+        }, { 
+            validators: [
+        this.futureDateTimeValidator(),
+        this.tripDurationValidator(),
+        this.sameDayValidator(),
+        this.sameDateNightRideValidator()
+    ]
+        });
         this.cityService.getCity('תל אביב').subscribe((city) => {
             this.rideForm.patchValue({
                 start_location: city,
@@ -193,6 +200,75 @@ export class NewRideComponent implements OnInit {
             }
         });
     }
+    tripDurationValidator(): ValidatorFn {
+        return (control: AbstractControl): ValidationErrors | null => {
+            const formGroup = control as FormGroup;
+            const ridePeriod = formGroup.get('ride_period')?.value;
+            const rideDate = formGroup.get('ride_date')?.value;
+            const nightEndDate = formGroup.get('ride_date_night_end')?.value;
+
+            if (ridePeriod !== 'night' || !rideDate || !nightEndDate) {
+                return null;
+            }
+
+            const startDate = new Date(rideDate);
+            const endDate = new Date(nightEndDate);
+
+            const timeDiff = endDate.getTime() - startDate.getTime();
+            const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+            if (daysDiff > 1) {
+                return { 'tripTooLong': { message: 'לא ניתן להזמין נסיעה לותר מיום אחד.' } };
+            }
+
+            return null;
+        };
+    }
+
+    sameDayValidator(): ValidatorFn {
+        return (control: AbstractControl): ValidationErrors | null => {
+            const formGroup = control as FormGroup;
+            const ridePeriod = formGroup.get('ride_period')?.value;
+            const rideDate = formGroup.get('ride_date')?.value;
+
+            if (ridePeriod !== 'morning' || !rideDate) {
+                return null;
+            }
+
+            const selectedDate = new Date(rideDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            selectedDate.setHours(0, 0, 0, 0);
+
+            return null;
+        };
+    }
+    sameDateNightRideValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+        const formGroup = control as FormGroup;
+        const ridePeriod = formGroup.get('ride_period')?.value;
+        const rideDate = formGroup.get('ride_date')?.value;
+        const nightEndDate = formGroup.get('ride_date_night_end')?.value;
+
+        if (ridePeriod !== 'night' || !rideDate || !nightEndDate) {
+            return null;
+        }
+
+        const startDate = new Date(rideDate);
+        const endDate = new Date(nightEndDate);
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(0, 0, 0, 0);
+
+        if (startDate.getTime() === endDate.getTime()) {
+            return { 
+                'sameDateNightRide': { 
+                    message: 'נסיעה מעבר ליום חייבת להיות בין שני תאריכים שונים.' 
+                } 
+            };
+        }
+        return null;
+    };
+}
     get startTime() {
         const h = this.rideForm.get('start_hour')?.value;
         const m = this.rideForm.get('start_minute')?.value;
