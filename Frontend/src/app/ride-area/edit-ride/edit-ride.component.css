@@ -7,7 +7,6 @@
 
 html, body {
   font-family: 'Assistant', sans-serif;
-  
   direction: rtl;
   height: 100vh;
   overflow: hidden;
@@ -16,14 +15,12 @@ html, body {
 .overlay {
   display: flex;
   background-image: url('/assets/images/edit_ride_bg.jpg');
-  /* background-position: center; */
   background-repeat: no-repeat;
   background-color: #f5f5f5;
   background-size: cover;
-background-position: center center;
+  background-position: center center;
   /* KEY CHANGES: Use contain to show full image without cropping */
-background-size: 100% auto; /* or try 70%, 90%, etc. */
-
+  background-size: 100% auto; /* or try 70%, 90%, etc. */
   background-repeat: no-repeat;
   /* Add a fallback background color that matches your theme */
   background-color: #fbe6c9; /* This fills any empty space like sides or bottom */
@@ -32,18 +29,15 @@ background-size: 100% auto; /* or try 70%, 90%, etc. */
   min-height: 100vh;
   font-family: 'Alef', sans-serif;
   direction: rtl;
-  position: fixed; /* Changed from absolute to fixed */
-  align-items: center; /* this does the vertical centering */
+  position: fixed;
+  align-items: center; 
   top: 0;
   left: 0;
-  width: 100vw; /* Use viewport width */
-  height: 100vh; /* Use viewport height */
+  width: 100vw; 
+  height: 100vh; 
   z-index: 10;
-  /* Prevent scrolling */
   overflow: hidden;
 }
-
-
 
 .modal {
   background-color: white;
@@ -56,7 +50,7 @@ background-size: 100% auto; /* or try 70%, 90%, etc. */
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  margin-top: 60px; /* or 60px, play with it */
+  margin-top: 60px;
 
 }
 
@@ -67,9 +61,6 @@ background-size: 100% auto; /* or try 70%, 90%, etc. */
     padding: 16px;
   }
 }
-
-
-/* Close Button */
 .close-btn {
   position: absolute;
   top: 10px;
@@ -92,7 +83,6 @@ hr {
   margin-bottom: 20px;
 }
 
-/* Form Layout */
 form .row {
   display: flex;
   gap: 8px;
@@ -111,7 +101,6 @@ form .row {
   font-weight: bold;
 }
 
-/* Inputs + Selects */
 input, select {
   padding: 10px;
   border-radius: 5px;
@@ -140,7 +129,20 @@ select.styled-select {
   color: #333;
 }
 
-/* Submit Button */
+.info-text {
+  font-size: 12px;
+  margin-top: 3px;
+  color: #666;
+  font-style: italic;
+}
+
+.error-text {
+  font-size: 12px;
+  margin-top: 3px;
+  color: #d32f2f;
+  font-weight: bold;
+}
+
 .submit-btn {
   background-color: #942222;
   color: white;
@@ -156,16 +158,15 @@ select.styled-select {
   background-color: #7a1c1c;
 }
 
-/* Ride Form Container */
 .ride-form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
- align-items: stretch;  
-  justify-content: flex-start; /* center vertically */
+  align-items: stretch;  
+  justify-content: flex-start; 
   height: auto; 
 }
-.headers{
+.headers {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -178,6 +179,34 @@ select.styled-select {
   padding-right: 4px;
   flex-grow: 1;
   width: 100%;
+}
+
+.form-field-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 8px;
+}
+
+.form-field-group label {
+  margin-bottom: 5px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.extra-stop-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+}
+
+.extra-stop-item .form-field-group {
+  flex: 1;
+  margin-bottom: 0;
 }
 
 /* Responsive Fix */
@@ -207,15 +236,39 @@ select.styled-select {
   transform: scale(1.03);
 }
 
-.addBtn{
-background: none;
-border: none;
+.addBtn {
+  background: none;
+  border: none;
+  color: #942222;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 8px;
+  margin-top: 10px;
+  border-radius: 5px;
+  transition: background-color 0.2s ease;
 }
 
+.addBtn:hover {
+  background-color: #f0f0f0;
+}
 
-.removeBtn{
-background: none;
-border: none;
+.addBtn:disabled {
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+.removeBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  border-radius: 3px;
+  transition: background-color 0.2s ease;
+}
+
+.removeBtn:hover {
+  background-color: #ffebee;
 }
 
 .ride-type-indicator {
