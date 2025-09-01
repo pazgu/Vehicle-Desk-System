@@ -370,22 +370,25 @@ export class NewRideComponent implements OnInit {
         this.vehicleService.getVehicleTypes().subscribe(types => {
             this.vehicleTypes = types;
         });
-    }
-    private fetchCities(): void {
-        this.cityService.getCities().subscribe({
-            next: (cities) => {
-                this.cities = cities.map(city => ({
-                    id: city.id,
-                    name: city.name
-                }));
-            },
-            error: (err) => {
-                console.error('Failed to fetch cities', err);
-                this.toastService.show('שגיאה בטעינת ערים', 'error');
-                this.cities = [];
-            }
-        });
-    }
+    }private fetchCities(): void {
+    this.cityService.getCities().subscribe({
+        next: (cities) => {
+            this.cities = cities.map(city => ({
+                id: city.id,
+                name: city.name
+            }));
+            this.cities = cities.map(city => ({ id: city.id, name: city.name }));
+
+        },
+        error: (err) => {
+            console.error('Failed to fetch cities', err);
+            this.toastService.show('שגיאה בטעינת ערים', 'error');
+            this.cities = [];
+        }
+    });
+}
+
+
     private fetchDepartmentEmployees(): void {
         const currentUserId = this.getUserIdFromAuthService();
         if (!currentUserId) return;
