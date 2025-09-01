@@ -32,10 +32,11 @@ export class EditRideComponent implements OnInit {
   estimated_distance_with_buffer: number = 0;
   rideRequestSub!: Subscription; 
   vehicleTypes: string[] = [];
-  
-  // ✅ NEW: Add ride type indicator
   isDayRide: boolean = true;
   rideTypeNote: string = '';
+  private isLoadingExistingRide: boolean = false;
+  private originalEndTime: string = '';
+  private originalStartTime: string = '';
 
   allCars: {
     id: string;
@@ -71,36 +72,32 @@ export class EditRideComponent implements OnInit {
     const endTime = formGroup.get('end_time')?.value;
     const startDate = formGroup.get('ride_date')?.value;
     const endDate = formGroup.get('ride_date_night_end')?.value;
-    
     if (!startTime || !endTime || !startDate) {
       return null;
     }
 
     const [startHour, startMin] = startTime.split(':').map(Number);
     const [endHour, endMin] = endTime.split(':').map(Number);
-    
     const startMinutes = startHour * 60 + startMin;
     const endMinutes = endHour * 60 + endMin;
-    
     // Case 1: Different end date explicitly set - this is an overnight ride
     if (endDate && startDate !== endDate) {
-      return null; // No time validation for explicit overnight rides
+      return null;
     }
-    
+
     // Case 2: End time is before start time - this crosses midnight (overnight)
     if (endMinutes < startMinutes) {
-      return null; // Allow overnight rides when end < start
+      return null; 
     }
-    
+
     // Case 3: Same day ride - validate minimum duration
     if (endMinutes - startMinutes < 15) {
       return { invalidTimeRange: true };
     }
-    
+
     return null;
   }
 
-  // ✅ ENHANCED: Better logic to detect night vs day rides
   private updateRideTypeNote(): void {
     const startDate = this.rideForm.get('ride_date')?.value;
     const endDate = this.rideForm.get('ride_date_night_end')?.value;
@@ -113,26 +110,24 @@ export class EditRideComponent implements OnInit {
       // Priority 1: Check if end date is explicitly set and different
       if (endDate && startDate !== endDate) {
         this.isDayRide = false;
-        this.rideTypeNote = 'נסיעה יותר מיום - נבחר תאריך סיום שונה';
-        console.log('Detected night ride - different end date');
+        this.rideTypeNote = 'נסיעה ליותר מיום - נבחר תאריך סיום שונה';
+        console.log('Detected multi-day ride - different end date');
         return;
       }
-      
+
       // Priority 2: Check if end time suggests overnight ride (end < start)
       if (endTime) {
         const [startHour, startMin] = startTime.split(':').map(Number);
         const [endHour, endMin] = endTime.split(':').map(Number);
-        
+
         const startMinutes = startHour * 60 + startMin;
         const endMinutes = endHour * 60 + endMin;
         
-        console.log('Time comparison:', { startMinutes, endMinutes, isNight: endMinutes < startMinutes });
-        
+        console.log('Time comparison:', { startMinutes, endMinutes, isMultiDay: endMinutes < startMinutes });
         if (endMinutes < startMinutes) {
           this.isDayRide = false;
           this.rideTypeNote = 'נסיעה יותר מיום - הנסיעה חוצה חצות';
-          console.log('Detected night ride - end time before start time');
-          
+          console.log('Detected multi-day ride - end time before start time');
           // Auto-set end date to next day if not already set
           if (!endDate) {
             const nextDay = new Date(startDate);
@@ -143,18 +138,53 @@ export class EditRideComponent implements OnInit {
           return;
         }
       }
-      
-      // Default: Day ride
+
       this.isDayRide = true;
-      this.rideTypeNote = 'נסיעת יום - התחלה וסיום באותו היום';
+      this.rideTypeNote = 'נסיעה יומית - התחלה וסיום באותו היום';
       console.log('Detected day ride');
-      
+
       // Clear end date for day rides (but only if it was the same as start date)
       if (endDate && startDate === endDate) {
         console.log('Clearing end date for day ride');
         this.rideForm.get('ride_date_night_end')?.setValue('', { emitEvent: false });
       }
     }
+  }
+  private ensureOriginalEndTimeAvailable(): void {
+    if (this.originalEndTime && !this.filteredEndTimes.includes(this.originalEndTime)) {
+      console.log('Adding original end time to dropdown:', this.originalEndTime);
+      this.filteredEndTimes = [this.originalEndTime, ...this.filteredEndTimes.filter(time => time !== this.originalEndTime)];
+    }
+  }
+  private updateFilteredEndTimes(startTime?: string): void {
+    const currentStartTime = startTime || this.rideForm.get('start_time')?.value;
+
+    if (!currentStartTime) {
+      this.filteredEndTimes = [...this.timeOptions];
+      this.ensureOriginalEndTimeAvailable();
+      return;
+    }
+
+    if (this.isDayRide) {
+      const [startHour, startMin] = currentStartTime.split(':').map(Number);
+      const startMinutes = startHour * 60 + startMin;
+
+      this.filteredEndTimes = this.timeOptions.filter(time => {
+        const [timeHour, timeMin] = time.split(':').map(Number);
+        const timeMinutes = timeHour * 60 + timeMin;
+        return timeMinutes >= startMinutes + 15;
+      });
+      const currentEndTime = this.rideForm.get('end_time')?.value;
+      if (currentEndTime && !this.filteredEndTimes.includes(currentEndTime)) {
+        if (!this.isLoadingExistingRide && currentEndTime !== this.originalEndTime) {
+          console.log('Resetting invalid end time for day ride:', currentEndTime);
+          this.rideForm.get('end_time')?.setValue('');
+        }
+      }
+    } else {
+      this.filteredEndTimes = [...this.timeOptions];
+    }
+    this.ensureOriginalEndTimeAvailable();
   }
 
   calculateMinDate(daysAhead: number): string {
@@ -170,7 +200,7 @@ export class EditRideComponent implements OnInit {
     this.minDate = this.calculateMinDate(2);
     this.buildForm();
     this.fetchVehicleTypes();
-    
+
     this.rideRequestSub = this.socketService.rideRequests$.subscribe((rideData) => {
       if (rideData) {
         this.toastService.show('🚗 התקבלה הזמנת נסיעה חדשה', 'success');
@@ -179,7 +209,6 @@ export class EditRideComponent implements OnInit {
       }
     });
 
-    // ✅ SEPARATED: Different time filtering for day vs night rides
     this.rideForm.get('start_time')?.valueChanges.subscribe(startTime => {
       if (!startTime) {
         this.filteredEndTimes = [...this.timeOptions];
@@ -188,27 +217,7 @@ export class EditRideComponent implements OnInit {
       
       // First update ride type to know what kind of ride this is
       this.updateRideTypeNote();
-      
-      if (this.isDayRide) {
-        // DAY RIDE: Only show times after start + 15 minutes
-        const [startHour, startMin] = startTime.split(':').map(Number);
-        const startMinutes = startHour * 60 + startMin;
-        
-        this.filteredEndTimes = this.timeOptions.filter(time => {
-          const [timeHour, timeMin] = time.split(':').map(Number);
-          const timeMinutes = timeHour * 60 + timeMin;
-          return timeMinutes >= startMinutes + 15;
-        });
-        
-        // Reset end time if invalid for day ride
-        const currentEndTime = this.rideForm.get('end_time')?.value;
-        if (currentEndTime && !this.filteredEndTimes.includes(currentEndTime)) {
-          this.rideForm.get('end_time')?.setValue('');
-        }
-      } else {
-        // NIGHT RIDE: Show ALL times (no restrictions)
-        this.filteredEndTimes = [...this.timeOptions];
-      }
+      this.updateFilteredEndTimes(startTime);
     });
 
     // ✅ NEW: Watch for date changes to update ride type note
@@ -219,49 +228,14 @@ export class EditRideComponent implements OnInit {
 
     this.rideForm.get('ride_date_night_end')?.valueChanges.subscribe(() => {
       this.updateRideTypeNote();
-      // Update filtered times when end date changes
-      const startTime = this.rideForm.get('start_time')?.value;
-      if (startTime) {
-        if (this.isDayRide) {
-          const [startHour, startMin] = startTime.split(':').map(Number);
-          const startMinutes = startHour * 60 + startMin;
-          
-          this.filteredEndTimes = this.timeOptions.filter(time => {
-            const [timeHour, timeMin] = time.split(':').map(Number);
-            const timeMinutes = timeHour * 60 + timeMin;
-            return timeMinutes >= startMinutes + 15;
-          });
-        } else {
-          this.filteredEndTimes = [...this.timeOptions];
-        }
-      }
+      this.updateFilteredEndTimes();
     });
 
     this.rideForm.get('end_time')?.valueChanges.subscribe(endTime => {
-      // Update ride type when end time changes
       this.updateRideTypeNote();
-      
-      // Re-filter available vehicles
       this.filterAvailableVehicles();
-      
       // Update time options based on new ride type
-      const startTime = this.rideForm.get('start_time')?.value;
-      if (startTime) {
-        if (this.isDayRide) {
-          // DAY RIDE: Filter times
-          const [startHour, startMin] = startTime.split(':').map(Number);
-          const startMinutes = startHour * 60 + startMin;
-          
-          this.filteredEndTimes = this.timeOptions.filter(time => {
-            const [timeHour, timeMin] = time.split(':').map(Number);
-            const timeMinutes = timeHour * 60 + timeMin;
-            return timeMinutes >= startMinutes + 15;
-          });
-        } else {
-          // NIGHT RIDE: All times allowed
-          this.filteredEndTimes = [...this.timeOptions];
-        }
-      }
+      this.updateFilteredEndTimes();
     });
 
     // Load vehicles and then load ride data
@@ -296,7 +270,7 @@ export class EditRideComponent implements OnInit {
       stop: ['', Validators.required],
       destination: ['', Validators.required],
       extraStops: this.fb.array([])
-    }); // ✅ REMOVED: Custom validator temporarily to test
+    });
 
     this.rideForm.get('estimated_distance_km')?.valueChanges.subscribe(() => {
       const d = this.rideForm.get('estimated_distance_km')?.value || 0;
@@ -316,7 +290,7 @@ export class EditRideComponent implements OnInit {
     const selectedDate = this.rideForm.get('ride_date')?.value;
     const startTime = this.rideForm.get('start_time')?.value;
     const endTime = this.rideForm.get('end_time')?.value;
-    
+
     if (!vehicleType) {
       this.availableCars = [];
       return;
@@ -348,6 +322,7 @@ export class EditRideComponent implements OnInit {
       this.router.navigate(['/login']);
       return;
     }
+    this.isLoadingExistingRide = true;
 
     this.rideService.getRideById(this.rideId).subscribe({
       next: (ride) => {
@@ -365,13 +340,13 @@ export class EditRideComponent implements OnInit {
 
         const startDate = new Date(ride.start_datetime);
         const endDate = new Date(ride.end_datetime);
+        this.originalStartTime = startDate.toTimeString().slice(0, 5);
+        this.originalEndTime = endDate.toTimeString().slice(0, 5);
+        console.log('Original times stored:', { start: this.originalStartTime, end: this.originalEndTime });
 
         // Find vehicle by multiple fallbacks
         const selectedVehicle = this.allCars.find(car =>
-          car.id === ride.vehicle_id ||
-          car.vehicle_model === ride.vehicle ||
-          car.fuel_type === ride.vehicle ||
-          car.type === ride.vehicle
+          car.type === ride.vehicle_type && car.vehicle_model === ride.vehicle_model
         );
 
         if (!selectedVehicle) {
@@ -385,22 +360,24 @@ export class EditRideComponent implements OnInit {
         );
 
         console.log('Selected Vehicle:', selectedVehicle);
+        const isOvernightRide = startDate.toDateString() !== endDate.toDateString();
+        const nightEndDate = isOvernightRide ? endDate.toISOString().split('T')[0] : '';
 
         // Patch form values
         this.rideForm.patchValue({
           ride_period: 'morning',
           ride_date: startDate.toISOString().split('T')[0],
-          start_time: startDate.toTimeString().slice(0, 5),
-          end_time: endDate.toTimeString().slice(0, 5),
+          ride_date_night_end: nightEndDate,
+          start_time: this.originalStartTime,
+          end_time: this.originalEndTime,
           estimated_distance_km: parseFloat(ride.estimated_distance || '0'),
           ride_type: ride.ride_type || 'operational',
-          vehicle_type: selectedVehicle.type,
+          vehicle_type: ride.vehicle_type,
           car: selectedVehicle.id,
           start_location: ride.start_location ?? 'מיקום התחלה לא ידוע',
           destination: ride.destination ?? 'יעד לא ידוע'
         });
 
-        // Load stop information
         if (ride.stop) {
           this.cityService.getCityNameById(ride.stop).subscribe({
             next: city => {
@@ -421,7 +398,7 @@ export class EditRideComponent implements OnInit {
           while (this.extraStops.length > 0) {
             this.extraStops.removeAt(0);
           }
-          
+
           ride.extra_stops.forEach((stopId: string) => {
             this.extraStops.push(
               this.fb.group({
@@ -435,8 +412,14 @@ export class EditRideComponent implements OnInit {
         
         // Update ride type note after loading
         this.updateRideTypeNote();
+        this.updateFilteredEndTimes();
+        setTimeout(() => {
+          this.isLoadingExistingRide = false;
+          console.log('Loading flag cleared, original end time should be preserved');
+        }, 100);
       },
       error: (err) => {
+        this.isLoadingExistingRide = false;
         this.toastService.show('שגיאה בטעינת ההזמנה לעריכה', 'error');
         this.router.navigate(['/home']);
       }
@@ -520,21 +503,30 @@ export class EditRideComponent implements OnInit {
     const startDate = this.rideForm.get('ride_date')?.value;
     const endDate = this.rideForm.get('ride_date_night_end')?.value;
 
-    // ✅ SEPARATE VALIDATION: Only validate day rides
-    if (this.isDayRide) {
-      const [startHour, startMin] = startTime.split(':').map(Number);
-      const [endHour, endMin] = endTime.split(':').map(Number);
-      
-      const startMinutes = startHour * 60 + startMin;
-      const endMinutes = endHour * 60 + endMin;
-      
-      // For day rides: end must be at least 15 minutes after start
-      if (endMinutes <= startMinutes || endMinutes - startMinutes < 15) {
-        this.toastService.show('בנסיעת יום: שעת הסיום חייבת להיות לפחות 15 דקות אחרי שעת ההתחלה', 'error');
+    if (!this.isDayRide) {
+      if (!endDate) {
+        this.toastService.show('בנסיעה שיותר מיום חובה לבחור תאריך סיום', 'error');
+        return;
+      }
+      const startDateObj = new Date(startDate);
+      const endDateObj = new Date(endDate);
+
+      if (endDateObj <= startDateObj) {
+        this.toastService.show('בנסיעה שיותר מיום: תאריך הסיום חייב להיות לאחר תאריך ההתחלה', 'error');
         return;
       }
     }
-    // ✅ NIGHT RIDES: No time validation needed
+    if (this.isDayRide) {
+      const [startHour, startMin] = startTime.split(':').map(Number);
+      const [endHour, endMin] = endTime.split(':').map(Number);
+      const startMinutes = startHour * 60 + startMin;
+      const endMinutes = endHour * 60 + endMin;
+      // For day rides: end must be at least 15 minutes after start
+      if (endMinutes <= startMinutes || endMinutes - startMinutes < 15) {
+        this.toastService.show('בנסיעה יומית: שעת הסיום חייבת להיות לפחות 15 דקות אחרי שעת ההתחלה', 'error');
+        return;
+      }
+    }
 
     const rideDate = this.rideForm.get('ride_date')?.value;
     const nightEndDate = this.rideForm.get('ride_date_night_end')?.value;
@@ -544,7 +536,7 @@ export class EditRideComponent implements OnInit {
     const end_datetime = `${nightEndDate || rideDate}T${endTime}`;
 
     console.log('Submitting:', {
-      type: this.isDayRide ? 'DAY' : 'NIGHT',
+      type: this.isDayRide ? 'נסיעה יומית' : 'נסיעה ליותר מיום',
       start_datetime,
       end_datetime,
       nightEndDate
@@ -589,7 +581,6 @@ export class EditRideComponent implements OnInit {
     this.router.navigate(['/home']);
   }
 
-  // ✅ NEW: Helper method to get form control errors
   getFieldError(fieldName: string): string {
     const field = this.rideForm.get(fieldName);
     if (field?.errors && field.touched) {
@@ -599,10 +590,8 @@ export class EditRideComponent implements OnInit {
     return '';
   }
 
-  // ✅ SIMPLE: Helper method to check time validation only for day rides
   hasTimeRangeError(): boolean {
-    if (!this.isDayRide) return false; // Night rides never have time range errors
-    
+    if (!this.isDayRide) return false; 
     const startTime = this.rideForm.get('start_time')?.value;
     const endTime = this.rideForm.get('end_time')?.value;
     
