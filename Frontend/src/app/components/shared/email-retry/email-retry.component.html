@@ -1,0 +1,81 @@
+ <!-- <ng-container *ngIf="state$ | async as s">
+  <div
+    class="retry-toast"
+    *ngIf="(s.visible || s.showRetry)"
+    role="alertdialog"
+    aria-live="assertive"
+    aria-labelledby="emailRetryTitle"
+    aria-describedby="emailRetryMsg"
+  >
+    <div class="retry-card" role="document">
+      <div class="title" id="emailRetryTitle">
+        <span aria-hidden="true">⚠️</span>
+        <span>שליחת המייל נכשלה</span>
+      </div>
+
+      <p class="subtitle" id="emailRetryMsg">
+        {{ s.errorMessage || s.message || 'אירעה תקלה זמנית. תרצה לנסות שוב?' }}
+      </p>
+
+      <div class="retry-actions">
+        <button
+          class="retry-btn primary"
+          (click)="onRetry()"
+          [disabled]="!s.lastOpFactory && !s.retryEmailFn"
+        >
+          נסה שוב
+        </button>
+
+        <button
+          class="retry-btn secondary"
+          (click)="onClose()"
+          aria-label="סגור"
+        >
+          סגור
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-container> -->
+
+
+
+<ng-container *ngIf="state$ | async as s">
+  <div
+    class="retry-toast-overlay"
+    *ngIf="(s.visible || s.showRetry)"
+    role="alertdialog"
+    aria-live="assertive"
+    aria-labelledby="emailRetryTitle"
+    aria-describedby="emailRetryMsg"
+  >
+    <div class="retry-toast-card" role="document">
+      <button
+        class="close-btn"
+        (click)="onClose()"
+        aria-label="סגור"
+      >
+        ✕
+      </button>
+
+      <div class="toast-header">
+        <span class="error-icon" aria-hidden="true">⚠️</span>
+        <span class="toast-title" id="emailRetryTitle">שליחת המייל נכשלה</span>
+      </div>
+
+      <p class="toast-message" id="emailRetryMsg">
+        {{ getErrorMessage(s.errorMessage || s.message) }}
+      </p>
+
+      <div class="toast-actions">
+        <button
+          class="retry-btn"
+          (click)="onRetry()"
+          [disabled]="!s.lastOpFactory && !s.retryEmailFn"
+        >
+          נסה שוב
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-container>

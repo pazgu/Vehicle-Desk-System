@@ -12,7 +12,7 @@ import { saveAs } from 'file-saver';
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
 import * as XLSX from 'xlsx-js-style';
-import { cloneDeep } from 'lodash';
+import { cloneDeep, toInteger } from 'lodash';
 
 import { VehicleService } from '../../../services/vehicle.service';
 import { FreezeReason, VehicleOutItem } from '../../../models/vehicle-dashboard-item/vehicle-out-item.module';
@@ -21,6 +21,7 @@ import { TopNoShowUser } from '../../../models/no-show-stats.model';
 import { StatisticsService } from '../../../services/statistics.service';
 import { UserService } from '../../../services/user_service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { style } from '@angular/animations';
 
 
 pdfMake.vfs = pdfFonts.vfs;
@@ -33,7 +34,7 @@ pdfMake.vfs = pdfFonts.vfs;
     FormsModule,
     ChartModule,
     TabViewModule,
-    DropdownModule 
+    DropdownModule
   ],
   templateUrl: './admin-analytics.component.html',
   styleUrls: ['./admin-analytics.component.css'],
@@ -44,33 +45,33 @@ export class AdminAnalyticsComponent implements OnInit {
   vehicleChartData: any;
   vehicleChartOptions: any;
   rideChartData: any;
-  rideChartOptions: any; 
+  rideChartOptions: any;
   selectedSortOption = 'countDesc';
   noShowSortOption = 'countDesc'
   activeTabIndex = 0;
-  frozenVehicles=<VehicleOutItem[]>[];
+  frozenVehicles = <VehicleOutItem[]>[];
   selectedVehicleType: string = '';
   // Initialization flags
   vehicleChartInitialized = false;
   rideChartInitialized = false;
   isMonthlyView = true; // monthly = default
-showChart = true;
+  showChart = true;
 
-selectedMonth = (new Date().getMonth() + 1).toString(); // default = current month
-selectedYear = new Date().getFullYear().toString(); // default = current year
+  selectedMonth = (new Date().getMonth() + 1).toString(); // default = current month
+  selectedYear = new Date().getFullYear().toString(); // default = current year
 
-monthlyChartData: any;
-monthlyChartOptions: any;
-allTimeChartData: any;
-allTimeChartOptions: any;
+  monthlyChartData: any;
+  monthlyChartOptions: any;
+  allTimeChartData: any;
+  allTimeChartOptions: any;
 
- // 🆕 No-show chart + summary + table
+  // 🆕 No-show chart + summary + table
 
   totalNoShows: number = 0;
   topNoShowUsers: TopNoShowUser[] = [];
 
   noShowFromDate?: string;
-  noShowToDate?: string; 
+  noShowToDate?: string;
 
   filterOnePlus: boolean = false;
   filterCritical: boolean = false;
@@ -79,60 +80,55 @@ allTimeChartOptions: any;
 
 
 
-topUsedVehiclesData: any;
-topUsedVehiclesOptions: any;
-monthlyStatsChartData: any;
-monthlyStatsChartOptions: any;
+  topUsedVehiclesData: any;
+  topUsedVehiclesOptions: any;
+  monthlyStatsChartData: any;
+  monthlyStatsChartOptions: any;
 
-allTimeStatsChartData: any;
-allTimeStatsChartOptions: any;
-uniqueNoShowUsers: number = 0;
-noShowExportWarningVisible: boolean = false;
+  allTimeStatsChartData: any;
+  allTimeStatsChartOptions: any;
+  uniqueNoShowUsers: number = 0;
+  noShowExportWarningVisible: boolean = false;
 
 
- // 🆕 ADD these two properties for department caching
+  // 🆕 ADD these two properties for department caching
   private departmentsMap = new Map<string, string>(); // To store department ID -> Name
   private departmentsLoaded: boolean = false;        // To track if departments are loaded
 
   vehicleTypes: string[] = []; // כבר קיים
 
-months = [
-  { value: '1', label: 'ינואר' },
-  { value: '2', label: 'פברואר' },
-  { value: '3', label: 'מרץ' },
-  { value: '4', label: 'אפריל' },
-  { value: '5', label: 'מאי' },
-  { value: '6', label: 'יוני' },
-  { value: '7', label: 'יולי' },
-  { value: '8', label: 'אוגוסט' },
-  { value: '9', label: 'ספטמבר' },
-  { value: '10', label: 'אוקטובר' },
-  { value: '11', label: 'נובמבר' },
-  { value: '12', label: 'דצמבר' },
-];
+  months = [
+    { value: '1', label: 'ינואר' },
+    { value: '2', label: 'פברואר' },
+    { value: '3', label: 'מרץ' },
+    { value: '4', label: 'אפריל' },
+    { value: '5', label: 'מאי' },
+    { value: '6', label: 'יוני' },
+    { value: '7', label: 'יולי' },
+    { value: '8', label: 'אוגוסט' },
+    { value: '9', label: 'ספטמבר' },
+    { value: '10', label: 'אוקטובר' },
+    { value: '11', label: 'נובמבר' },
+    { value: '12', label: 'דצמבר' },
+  ];
 
-years = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - i).toString());
+  years = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - i).toString());
 
- 
-  constructor(private http: HttpClient, private socketService: SocketService,private vehicleService:VehicleService,  private toastService: ToastService
-   ,private statisticsService: StatisticsService, private userService: UserService, private router: Router,private route: ActivatedRoute) {}
+
+  constructor(private http: HttpClient, private socketService: SocketService, private vehicleService: VehicleService, private toastService: ToastService
+    , private statisticsService: StatisticsService, private userService: UserService, private router: Router, private route: ActivatedRoute) { }
 
   ngOnInit() {
-  this.loadVehicleChart();
-  this.loadRideChart();
-  this.loadFrozenVehicles();
-  this.loadNoShowStatistics();
-  this.loadDepartments(); // <--- Call this to load departments and then no-show stats
-  this.loadVehicleTypes();
+    this.loadVehicleChart();
+    this.loadRideChart();
+    this.loadFrozenVehicles();
+    this.loadNoShowStatistics();
+    this.loadDepartments(); // <--- Call this to load departments and then no-show stats
+    this.loadVehicleTypes();
 
 
 
-  // 👇 Only load monthly chart at start (do NOT override with all-time yet)
-  // if (this.isMonthlyView) {
-  //   this.loadTopUsedVehiclesChart();
-  // } else {
-  //   this.loadAllTimeTopUsedVehiclesChart();
-  // }
+
 
     this.loadTopUsedVehiclesChart();
     this.loadAllTimeTopUsedVehiclesChart();
@@ -140,11 +136,17 @@ years = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - i).toStr
       this.loadRideChart();
 
     });
-     this.route.queryParams.subscribe(params => {
-    // Read query params if they exist, else keep defaults
-    this.noShowSortOption = params['noShowSort'] || 'countAsc';
-    this.selectedSortOption = params['selectedSort'] || 'countAsc';
-  });
+    this.route.queryParams.subscribe(params => {
+      // Read query params if they exist, else keep defaults
+      this.noShowSortOption = params['noShowSort'] || 'countAsc';
+      this.selectedSortOption = params['selectedSort'] || 'countAsc';
+      if (params['month']) {
+      this.selectedMonth = String(+params['month']); // convert string to number
+    }
+    if (params['year']) {
+      this.selectedYear = String(+params['year']); // convert string to number
+    }
+    });
 
     this.socketService.vehicleStatusUpdated$.subscribe(() => {
       this.loadVehicleChart();
@@ -154,10 +156,11 @@ years = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - i).toStr
     this.socketService.deleteRequests$.subscribe(() => {
       this.loadRideChart();
       this.loadVehicleChart();
-     this.loadFrozenVehicles();
+      this.loadFrozenVehicles();
 
     });
   }
+
 
   // 🔄 פונקציה מעודכנת
   loadVehicleTypes() {
@@ -181,59 +184,66 @@ years = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - i).toStr
     const options = [
       { label: 'כל הסוגים', value: '' }
     ];
-    
+
     this.vehicleTypes.forEach(type => {
       if (type && type.trim() !== '') {
         options.push({ label: type, value: type });
       }
     });
-    
+
     return options;
   }
 
-toggleUsageView() {
-  this.isMonthlyView = !this.isMonthlyView;
-  if (this.isMonthlyView) {
-    this.loadTopUsedVehiclesChart();
-    this.reloadChart();
-  } else {
-    this.loadAllTimeTopUsedVehiclesChart();
-    this.reloadChart();
-  }
-}
-
-
-
-
- private countFreezeReasons(frozenVehicles: VehicleOutItem[]) {
-  const freezeReasonCounts: Record<FreezeReason, number> = {
-    [FreezeReason.accident]: 0,
-    [FreezeReason.maintenance]: 0,
-    [FreezeReason.personal]: 0,
-  };
-
-  frozenVehicles.forEach(vehicle => {
-    if (vehicle.freeze_reason) {
-      const reason = vehicle.freeze_reason as FreezeReason;
-      freezeReasonCounts[reason]++;
+  toggleUsageView() {
+    this.isMonthlyView = !this.isMonthlyView;
+    if (this.isMonthlyView) {
+      this.loadTopUsedVehiclesChart();
+      this.reloadChart();
+    } else {
+      this.loadAllTimeTopUsedVehiclesChart();
+      this.reloadChart();
     }
+  }
+
+
+
+
+  onMonthOrYearChange() {
+  this.updateQueryParams({
+    month: this.selectedMonth,
+    year: this.selectedYear
   });
 
-  return freezeReasonCounts;
 }
-private loadFrozenVehicles():void{
-     this.vehicleService.getAllVehiclesByStatus('frozen').subscribe((vehicles) => {
-  this.frozenVehicles = vehicles;
-});
-}
-getFreezeReasonHebrew(reason: FreezeReason): string {
-  const reasonMap: { [key in FreezeReason]: string } = {
-    accident: 'תאונה',
-    maintenance: 'תחזוקה',
-    personal: 'שימוש אישי'
-  };
-  return reasonMap[reason] || reason;
-}
+  private countFreezeReasons(frozenVehicles: VehicleOutItem[]) {
+    const freezeReasonCounts: Record<FreezeReason, number> = {
+      [FreezeReason.accident]: 0,
+      [FreezeReason.maintenance]: 0,
+      [FreezeReason.personal]: 0,
+    };
+
+    frozenVehicles.forEach(vehicle => {
+      if (vehicle.freeze_reason) {
+        const reason = vehicle.freeze_reason as FreezeReason;
+        freezeReasonCounts[reason]++;
+      }
+    });
+
+    return freezeReasonCounts;
+  }
+  private loadFrozenVehicles(): void {
+    this.vehicleService.getAllVehiclesByStatus('frozen').subscribe((vehicles) => {
+      this.frozenVehicles = vehicles;
+    });
+  }
+  getFreezeReasonHebrew(reason: FreezeReason): string {
+    const reasonMap: { [key in FreezeReason]: string } = {
+      accident: 'תאונה',
+      maintenance: 'תחזוקה',
+      personal: 'שימוש אישי'
+    };
+    return reasonMap[reason] || reason;
+  }
 
 
   // 🔄 פונקציה מעודכנת עם פילטר
@@ -256,20 +266,41 @@ getFreezeReasonHebrew(reason: FreezeReason): string {
         }
       });
   }
-  
+
+get isNoData(): boolean {
+  return this.rideChartData?.labels?.length === 1 && this.rideChartData.labels[0] === 'אין נתונים';
+}
+get isVehicleNoData(): boolean {
+  return this.vehicleChartData?.labels?.length === 1 && this.vehicleChartData.labels[0] === 'אין נתונים';
+}
+get isEmptyNoShowData(): boolean {
+  return this.filteredNoShowUsers.length === 0 
+}
+get isMonthlyNoData(): boolean {
+  return !this.monthlyStatsChartData || 
+         !this.monthlyStatsChartData.labels || 
+         this.monthlyStatsChartData.labels.length === 0;
+}
+
+get isAllTimeNoData(): boolean {
+  return !this.allTimeStatsChartData || 
+         !this.allTimeStatsChartData.labels || 
+         this.allTimeStatsChartData.labels.length === 0;
+}
 
   private loadRideChart() {
-    this.http.get<{ status: string; count: number}[]>(`${environment.apiUrl}/analytics/ride-status-summary`)
+    this.http.get<{ status: string; count: number }[]>(`${environment.apiUrl}/analytics/ride-status-summary`)
       .subscribe({
         next: (data) => {
-          
+
           if (!data || data.length === 0) {
             this.rideChartData = {
               labels: ['אין נתונים'],
               datasets: [{
                 data: [1],
                 backgroundColor: ['#E0E0E0'],
-                hoverBackgroundColor: ['#F0F0F0']
+                hoverBackgroundColor: ['#F0F0F0'],
+                
               }]
             };
           } else {
@@ -293,78 +324,78 @@ getFreezeReasonHebrew(reason: FreezeReason): string {
   }
 
 
-private updateVehicleChart(data: { status: string; count: number }[]) {
-  const labels = data.map(d => this.getHebrewLabel(d.status));
-  const values = data.map(d => d.count);
-  const total = values.reduce((sum, val) => sum + val, 0);
+  private updateVehicleChart(data: { status: string; count: number }[]) {
+    const labels = data.map(d => this.getHebrewLabel(d.status));
+    const values = data.map(d => d.count);
+    const total = values.reduce((sum, val) => sum + val, 0);
 
-  const updatedLabels = labels.map((label, i) => {
-    const count = values[i];
-    const percent = ((count / total) * 100).toFixed(1);
-    return `${label} – ${count} רכבים (${percent}%)`;
-  });
+    const updatedLabels = labels.map((label, i) => {
+      const count = values[i];
+      const percent = ((count / total) * 100).toFixed(1);
+      return `${label} – ${count} רכבים (${percent}%)`;
+    });
 
-  const backgroundColors = data.map(d => {
-    switch (d.status) {
-      case 'available':
-        return '#66BB6A'; // green
-      case 'frozen':
-        return '#42A5F5'; // blue
-      case 'in_use':
-        return '#FFA726'; // orange
-      default:
-        return '#BDBDBD'; // gray
-    }
-  });
+    const backgroundColors = data.map(d => {
+      switch (d.status) {
+        case 'available':
+          return '#66BB6A'; // green
+        case 'frozen':
+          return '#42A5F5'; // blue
+        case 'in_use':
+          return '#FFA726'; // orange
+        default:
+          return '#BDBDBD'; // gray
+      }
+    });
 
-  const hoverColors = data.map(d => {
-    switch (d.status) {
-      case 'available':
-        return '#81C784'; // lighter green
-      case 'frozen':
-        return '#64B5F6'; // lighter blue
-      case 'in_use':
-        return '#FFB74D'; // lighter orange
-      default:
-        return '#E0E0E0'; // lighter gray
-    }
-  });
-    
-const newVehicleChartData = {
-labels: updatedLabels,
-    datasets: [{
-      data: [...values],
-      backgroundColor: backgroundColors,
-      hoverBackgroundColor: hoverColors
-    }]
+    const hoverColors = data.map(d => {
+      switch (d.status) {
+        case 'available':
+          return '#81C784'; // lighter green
+        case 'frozen':
+          return '#64B5F6'; // lighter blue
+        case 'in_use':
+          return '#FFB74D'; // lighter orange
+        default:
+          return '#E0E0E0'; // lighter gray
+      }
+    });
+
+    const newVehicleChartData = {
+      labels: updatedLabels,
+      datasets: [{
+        data: [...values],
+        backgroundColor: backgroundColors,
+        hoverBackgroundColor: hoverColors
+      }]
     };
-    
+
     this.vehicleChartData = { ...newVehicleChartData };
 
-  this.vehicleChartOptions = {
-  plugins: {
-    tooltip: {
-      callbacks: {
-        label: (context: any) => {
-          const label = context.label || '';
+    this.vehicleChartOptions = {
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: (context: any) => {
+              const label = context.label || '';
 
-          if (label.toLowerCase().includes('מוקפא')) {
-            const freezeReasonCounts = this.countFreezeReasons(this.frozenVehicles);
+              if (label.toLowerCase().includes('מוקפא')) {
+                const freezeReasonCounts = this.countFreezeReasons(this.frozenVehicles);
 
-            const reasonsText = Object.entries(freezeReasonCounts)
-              .filter(([_, count]) => count > 0)
-              .map(([reason, count]) => `${this.getFreezeReasonHebrew(reason as FreezeReason)}: ${count}`)
-              .join(', ');
+                const reasonsText = Object.entries(freezeReasonCounts)
+                  .filter(([_, count]) => count > 0)
+                  .map(([reason, count]) => `${this.getFreezeReasonHebrew(reason as FreezeReason)}: ${count}`)
+                  .join(', ');
 
-            return `${label}:\nסיבות הקפאה: ${reasonsText}`;
-          }
+                return `${label}:\nסיבות הקפאה: ${reasonsText}`;
+              }
 
           return `${label}:`;
         }
       }
     },
     legend: {
-      position: 'top',
+      position: 'right',
       labels: { color: '#495057',
         font: {
           size: 14,    
@@ -381,9 +412,9 @@ labels: updatedLabels,
 
   }
 
-  private updateRideChart(data: { status: string; count: number}[]) {
-    
-    
+  private updateRideChart(data: { status: string; count: number }[]) {
+
+
     const labels = data.map(d => {
       const hebrewLabel = this.getRideStatusHebrew(d.status);
       return hebrewLabel;
@@ -391,25 +422,26 @@ labels: updatedLabels,
     const values = data.map(d => d.count);
     const total = values.reduce((sum, val) => sum + val, 0);
     const updatedLabels = labels.map((label, i) => {
-  const count = values[i];
-  const percent = ((count / total) * 100).toFixed(1);
-  return `${label} – ${count} רכבים (${percent}%)`;
-});
+      const count = values[i];
+      const percent = ((count / total) * 100).toFixed(1);
+      return `${label} – ${count} נסיעות (${percent}%)`;
+    });
 
     const newrideChartData = {
-labels: updatedLabels,
+      labels: updatedLabels,
       datasets: [{
         data: [...values],
         backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'],
         hoverBackgroundColor: ['#FF6384CC', '#36A2EBCC', '#FFCE56CC', '#4BC0C0CC', '#9966FFCC', '#FF9F40CC']
       }]
     };
-    
+
     this.rideChartData = { ...newrideChartData };
 
     this.rideChartOptions = {
       plugins: {
         legend: { 
+          position: 'right',
           labels: { 
             color: '#495057',
             font: {
@@ -424,23 +456,23 @@ labels: updatedLabels,
       maintainAspectRatio: false,
       locale: 'he-IL' // Hebrew locale
     };
-    
+
   }
 
 
 
   onSortChange() {
     const sortFunctionsR = {
-      countAsc: (a: { status: string; count: number}, b: { status: string; count: number}) => a.count - b.count,
-      countDesc: (a: { status: string; count: number}, b: { status: string; count: number}) => b.count - a.count,
-      alphabetical: (a: { status: string; count: number}, b: { status: string; count: number}) => a.status.localeCompare(b.status),
+      countAsc: (a: { status: string; count: number }, b: { status: string; count: number }) => a.count - b.count,
+      countDesc: (a: { status: string; count: number }, b: { status: string; count: number }) => b.count - a.count,
+      alphabetical: (a: { status: string; count: number }, b: { status: string; count: number }) => a.status.localeCompare(b.status),
       default: () => 0
     };
 
     const sortFunctionsV = {
-      countAsc: (a: { status: string; count: number}, b: { status: string; count: number}) => a.count - b.count,
-      countDesc: (a: { status: string; count: number}, b: { status: string; count: number}) => b.count - a.count,
-      alphabetical: (a: { status: string; count: number}, b: { status: string; count: number}) => a.status.localeCompare(b.status),
+      countAsc: (a: { status: string; count: number }, b: { status: string; count: number }) => a.count - b.count,
+      countDesc: (a: { status: string; count: number }, b: { status: string; count: number }) => b.count - a.count,
+      alphabetical: (a: { status: string; count: number }, b: { status: string; count: number }) => a.status.localeCompare(b.status),
       default: () => 0
     };
 
@@ -459,63 +491,63 @@ labels: updatedLabels,
           this.updateVehicleChart(sortedDataV);
         });
     } else {
-      this.http.get<{ status: string; count: number}[]>(`${environment.apiUrl}/analytics/ride-status-summary`)
+      this.http.get<{ status: string; count: number }[]>(`${environment.apiUrl}/analytics/ride-status-summary`)
         .subscribe(data => {
           const sortedDataR = this.selectedSortOption === 'default' ? data : [...data].sort(sortFnR);
           this.updateRideChart(sortedDataR);
         });
     }
-      this.updateQueryParams({ selectedSort: this.selectedSortOption });
+    this.updateQueryParams({ selectedSort: this.selectedSortOption });
 
   }
-updateQueryParams(params: any) {
-  this.router.navigate([], {
-    relativeTo: this.route,
-    queryParams: params,
-    queryParamsHandling: 'merge', // keeps the other params
-  });
-}
+  updateQueryParams(params: any) {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: params,
+      queryParamsHandling: 'merge', // keeps the other params
+    });
+  }
 
   onTabChange(index: number) {
     this.activeTabIndex = index;
   }
 
   public loadNoShowStatistics(): void {
-  const formattedFromDate = this.noShowFromDate || undefined;
-  const formattedToDate = this.noShowToDate || undefined;
+    const formattedFromDate = this.noShowFromDate || undefined;
+    const formattedToDate = this.noShowToDate || undefined;
 
 
-  this.statisticsService.getTopNoShowUsers(formattedFromDate, formattedToDate).subscribe({
-    next: (noShowData) => {
-      this.totalNoShows = noShowData.total_no_show_events;
-      this.uniqueNoShowUsers = noShowData.unique_no_show_users;
-      this.topNoShowUsers = noShowData.top_no_show_users;
-const mappedUsers = noShowData.top_no_show_users.map(user => ({
-  ...user,
-  email: user.email || 'unknown@example.com',
-  role: user.role || 'לא ידוע',
-  employee_id: user.user_id,
-  no_show_count: user.count
-}));
+    this.statisticsService.getTopNoShowUsers(formattedFromDate, formattedToDate).subscribe({
+      next: (noShowData) => {
+        this.totalNoShows = noShowData.total_no_show_events;
+        this.uniqueNoShowUsers = noShowData.unique_no_show_users;
+        this.topNoShowUsers = noShowData.top_no_show_users;
+        const mappedUsers = noShowData.top_no_show_users.map(user => ({
+          ...user,
+          email: user.email || 'unknown@example.com',
+          role: user.role || 'לא ידוע',
+          employee_id: user.user_id,
+          no_show_count: user.count
+        }));
 
-this.topNoShowUsers = mappedUsers;
+        this.topNoShowUsers = mappedUsers;
 
 
-this.allNoShowUsers = mappedUsers;
-      this.applyNoShowFilter(); // Apply default filter/sort
+        this.allNoShowUsers = mappedUsers;
+        this.applyNoShowFilter(); // Apply default filter/sort
 
-    },
-    error: (err) => {
-      console.error('❌ Failed to load no-show statistics:', err);
-      this.toastService.show('אירעה שגיאה בטעינת נתוני אי-הגעה.', 'error');
+      },
+      error: (err) => {
+        console.error('❌ Failed to load no-show statistics:', err);
+        this.toastService.show('אירעה שגיאה בטעינת נתוני אי-הגעה.', 'error');
 
-      // Reset values on error
-      this.topNoShowUsers = [];
-      this.totalNoShows = 0;
-      this.uniqueNoShowUsers = 0;
-    }
-  });
-}
+        // Reset values on error
+        this.topNoShowUsers = [];
+        this.totalNoShows = 0;
+        this.uniqueNoShowUsers = 0;
+      }
+    });
+  }
 
   getHebrewLabel(status: string): string {
     const statusMap: { [key: string]: string } = {
@@ -538,20 +570,16 @@ this.allNoShowUsers = mappedUsers;
     return statusMap[status] || status;
   }
 
-  // 🆕 ADD this new method to load departments
   private loadDepartments(): void {
     this.userService.getDepartments().subscribe({
       next: (departments) => {
         departments.forEach(dep => this.departmentsMap.set(dep.id, dep.name));
-        this.departmentsLoaded = true; // Mark departments as loaded
-        // Call loadNoShowStatistics ONLY after departments are successfully loaded
+        this.departmentsLoaded = true; 
         this.loadNoShowStatistics();
       },
       error: () => {
         this.toastService.show('אירעה שגיאה בטעינת נתוני מחלקות.', 'error');
-        this.departmentsLoaded = false; // Mark as failed to load
-        // If departments fail to load, still try to load no-show stats
-        // Department names in the table will then default to "מחלקה לא ידועה"
+        this.departmentsLoaded = false; 
         this.loadNoShowStatistics();
       }
     });
@@ -561,33 +589,31 @@ this.allNoShowUsers = mappedUsers;
 goToUserDetails(userId: string) {
   this.router.navigate(['/user-card', userId]);
 }
- // 🆕 MODIFY: Use the component's internal departmentsMap
   resolveDepartment(departmentId: string): string {
     return this.departmentsMap.get(departmentId) || 'מחלקה לא ידועה';
   }
 
 
   applyNoShowFilter() {
-  let filtered = this.allNoShowUsers;
+    let filtered = this.allNoShowUsers;
 
-  if (this.filterOnePlus) {
-    filtered = filtered.filter(u => (u.no_show_count ?? 0) >= 1 && (u.no_show_count ?? 0) <= 2);
-  }
+    if (this.filterOnePlus) {
+      filtered = filtered.filter(u => (u.no_show_count ?? 0) >= 1 && (u.no_show_count ?? 0) <= 2);
+    }
 
   if (this.filterCritical) {
     filtered = filtered.filter(u => (u.no_show_count ?? 0) >= 3);
   }
   if (!['countAsc', 'countDesc', 'nameAsc', 'nameDesc'].includes(this.noShowSortOption)) {
-  this.noShowSortOption = 'countAsc'; // or any default you want
+  this.noShowSortOption = 'countAsc'; 
 
-}
-  this.updateQueryParams({ noShowSort: this.noShowSortOption });
+    }
+    this.updateQueryParams({ noShowSort: this.noShowSortOption });
 
 
-  this.filteredNoShowUsers = this.sortUsers(filtered);
-}
+    this.filteredNoShowUsers = this.sortUsers(filtered);
+  }
 
-// ✅ Sort function based on selected dropdown option
 sortUsers(users: any[]) {
   switch (this.noShowSortOption) {
     case 'countAsc':
@@ -605,27 +631,21 @@ sortUsers(users: any[]) {
 
 
 
- public exportPDF(): void {
-  const isVehicleTab = this.activeTabIndex === 0;
-  const isRideTab = this.activeTabIndex === 1;
-  const isTopUsedTab = this.activeTabIndex === 2;
-  const isNoShowTab = this.activeTabIndex === 3; 
+  public exportPDF(): void {
+    const isVehicleTab = this.activeTabIndex === 0;
+    const isRideTab = this.activeTabIndex === 1;
+    const isTopUsedTab = this.activeTabIndex === 2;
+    const isNoShowTab = this.activeTabIndex === 3;
 
-  // this is for the warnning that shows and disappers after 4 seconds
 if (isNoShowTab && this.filteredNoShowUsers.length === 0) {
   this.showExportWarningTemporarily();
   return;
 }
 
-
-
-
-  // 🔄 MODIFY THIS SECTION - Add conditional logic for no-show tab
   let chartData: any;
   let title: string;
   
   if (isNoShowTab) {
-    // 🆕 ADD THIS BLOCK
     title = 'No-Show Users Report';
   } else {
     chartData = isVehicleTab
@@ -641,130 +661,133 @@ if (isNoShowTab && this.filteredNoShowUsers.length === 0) {
         : this.isMonthlyView
           ? 'Monthly Vehicle Usage'
           : 'Top Used Vehicles';
+
   }
 
 
-  const timestamp = new Date().toLocaleString();
-  const safeTimestamp = timestamp.replace(/[/:]/g, '-');
+    const timestamp = new Date().toLocaleString();
+    const safeTimestamp = timestamp.replace(/[/:]/g, '-');
 
-  let body: any[] = [];
+    let body: any[] = [];
 
-  if (isNoShowTab) {
-    // Create no-show users table
-    body.push([
-      { text: 'User Name', style: 'tableHeader' },
-      { text: 'Email', style: 'tableHeader' },
-      { text: 'Employee ID', style: 'tableHeader' },
-      { text: 'Department', style: 'tableHeader' },
-      { text: 'Role', style: 'tableHeader' },
-      { text: 'No-Show Count', style: 'tableHeader' },
-      { text: 'Status', style: 'tableHeader' }
-    ]);
+    if (isNoShowTab) {
+      // Create no-show users table
+      body.push([
+        { text: 'User Name', style: 'tableHeader' },
+        { text: 'Email', style: 'tableHeader' },
+        { text: 'Employee ID', style: 'tableHeader' },
+        { text: 'Department', style: 'tableHeader' },
+        { text: 'Role', style: 'tableHeader' },
+        { text: 'No-Show Count', style: 'tableHeader' },
+        { text: 'Status', style: 'tableHeader' }
+      ]);
 
-    this.filteredNoShowUsers.forEach(user => {
-      const count = user.no_show_count ?? 0;
-      let status = '';
-      let bgColor = '';
+      this.filteredNoShowUsers.forEach(user => {
+        const count = user.no_show_count ?? 0;
+        let status = '';
+        let bgColor = '';
 
-      if (count >= 3) {
-        status = 'Critical';
-        bgColor = '#FFCDD2'; // light red
-      } else if (count >= 1) {
-        status = 'Warning';
-        bgColor = '#FFF9C4'; // light yellow
-      } else {
-        status = 'Good';
-        bgColor = '#BBDEFB'; // light blue
-      }
+        if (count >= 3) {
+          status = 'Critical';
+          bgColor = '#FFCDD2'; // light red
+        } else if (count >= 1) {
+          status = 'Warning';
+          bgColor = '#FFF9C4'; // light yellow
+        } else {
+          status = 'Good';
+          bgColor = '#BBDEFB'; // light blue
+        }
+
+        body.push([
+          { text: user.name || 'Unknown', fillColor: bgColor },
+          { text: user.email || 'unknown@example.com', fillColor: bgColor },
+          { text: user.employee_id || user.user_id || 'N/A', fillColor: bgColor },
+          { text: this.resolveDepartment(user.department_id || ''), fillColor: bgColor },
+          { text: user.role || 'לא ידוע', fillColor: bgColor },
+          { text: count.toString(), fillColor: bgColor },
+          { text: status, fillColor: bgColor }
+        ]);
+      });
+
+    } else if (isTopUsedTab) {
+      const labels = chartData.labels;
+      const data = chartData.datasets[0].data;
 
       body.push([
-        { text: user.name || 'Unknown', fillColor: bgColor },
-        { text: user.email || 'unknown@example.com', fillColor: bgColor },
-        { text: user.employee_id || user.user_id || 'N/A', fillColor: bgColor },
-        { text: this.resolveDepartment(user.department_id || ''), fillColor: bgColor },
-        { text: user.role || 'לא ידוע', fillColor: bgColor },
-        { text: count.toString(), fillColor: bgColor },
-        { text: status, fillColor: bgColor }
+        { text: 'Vehicle', style: 'tableHeader' },
+        { text: 'Ride Count', style: 'tableHeader' },
+        { text: 'Usage Level', style: 'tableHeader' }
       ]);
-    });
 
-   } else if (isTopUsedTab) {
-    const labels = chartData.labels;
-    const data = chartData.datasets[0].data;
+      for (let i = 0; i < labels.length; i++) {
+        const count = data[i];
+        let usageLabel = '';
+        let bgColor = '';
 
-    body.push([
-      { text: 'Vehicle', style: 'tableHeader' },
-      { text: 'Ride Count', style: 'tableHeader' },
-      { text: 'Usage Level', style: 'tableHeader' }
-    ]);
+        if (count > 10) {
+          usageLabel = 'High Usage';
+          bgColor = '#FFCDD2'; // light red
+        } else if (count >= 5) {
+          usageLabel = 'Medium';
+          bgColor = '#FFF9C4'; // light yellow
+        } else {
+          usageLabel = 'Good';
+          bgColor = '#BBDEFB'; // light blue
+        }
 
-    for (let i = 0; i < labels.length; i++) {
-      const count = data[i];
-      let usageLabel = '';
-      let bgColor = '';
-
-      if (count > 10) {
-        usageLabel = 'High Usage';
-        bgColor = '#FFCDD2'; // light red
-      } else if (count >= 5) {
-        usageLabel = 'Medium';
-        bgColor = '#FFF9C4'; // light yellow
-      } else {
-        usageLabel = 'Good';
-        bgColor = '#BBDEFB'; // light blue
+        body.push([
+          { text: labels[i], fillColor: bgColor },
+          { text: count.toString(), fillColor: bgColor },
+          { text: usageLabel, fillColor: bgColor }
+        ]);
       }
+    } else {
+      const statusKeys = chartData.labels.map((label: string) => {
+        const match = label.split('–')[0].trim();
+        return match;
+      });
 
       body.push([
-        { text: labels[i], fillColor: bgColor },
-        { text: count.toString(), fillColor: bgColor },
-        { text: usageLabel, fillColor: bgColor }
+        { text: 'Status', style: 'tableHeader' },
+        { text: 'Count', style: 'tableHeader' }
       ]);
+
+      for (let i = 0; i < statusKeys.length; i++) {
+        const hebrew = statusKeys[i];
+        const eng = this.getEnglishLabel(this.reverseHebrewLabel(hebrew));
+        const value = chartData.datasets[0].data[i];
+        let bgColor = '';
+
+        if (isVehicleTab) {
+          if (hebrew.includes('זמין')) bgColor = '#C8E6C9';     // light green
+          else if (hebrew.includes('מוקפא')) bgColor = '#FFCDD2'; // light red
+          else if (hebrew.includes('בשימוש')) bgColor = '#FFE0B2'; // light orange
+        }
+
+        if (isRideTab) {
+          if (hebrew.includes('ממתין')) bgColor = '#FFF9C4';    // yellow
+          else if (hebrew.includes('מאושר')) bgColor = '#C8E6C9';  // green
+          else if (hebrew.includes('הושלם')) bgColor = '#BBDEFB';  // blue
+          else if (hebrew.includes('בוטל')) bgColor = '#F8BBD0';    // pink
+          else if (hebrew.includes('נדחה')) bgColor = '#FFCDD2';    // red
+          else if (hebrew.includes('בתהליך')) bgColor = '#D1C4E9';  // purple
+        }
+
+        body.push([
+          { text: eng, fillColor: bgColor },
+          { text: value.toString(), fillColor: bgColor }
+        ]);
+      }
     }
-  } else {
-    const statusKeys = chartData.labels.map((label: string) => {
-      const match = label.split('–')[0].trim();
-      return match;
-    });
 
-    body.push([
-      { text: 'Status', style: 'tableHeader' },
-      { text: 'Count', style: 'tableHeader' }
-    ]);
 
-    for (let i = 0; i < statusKeys.length; i++) {
-      const hebrew = statusKeys[i];
-      const eng = this.getEnglishLabel(this.reverseHebrewLabel(hebrew));
-      const value = chartData.datasets[0].data[i];
-      let bgColor = '';
-
-      if (isVehicleTab) {
-        if (hebrew.includes('זמין')) bgColor = '#C8E6C9';     // light green
-        else if (hebrew.includes('מוקפא')) bgColor = '#FFCDD2'; // light red
-        else if (hebrew.includes('בשימוש')) bgColor = '#FFE0B2'; // light orange
-      }
-
-      if (isRideTab) {
-        if (hebrew.includes('ממתין')) bgColor = '#FFF9C4';    // yellow
-        else if (hebrew.includes('מאושר')) bgColor = '#C8E6C9';  // green
-        else if (hebrew.includes('הושלם')) bgColor = '#BBDEFB';  // blue
-        else if (hebrew.includes('בוטל')) bgColor = '#F8BBD0';    // pink
-        else if (hebrew.includes('נדחה')) bgColor = '#FFCDD2';    // red
-        else if (hebrew.includes('בתהליך')) bgColor = '#D1C4E9';  // purple
-      }
-
-      body.push([
-        { text: eng, fillColor: bgColor },
-        { text: value.toString(), fillColor: bgColor }
-      ]);
-    }
-  }
-
-  
 
   const docDefinition: any = {
+ 
     content: [
       { text: title, style: 'header' },
       { text: `Created: ${timestamp}`, style: 'subheader' },
+    ...(isVehicleTab ? [{ text: `Vehicle Types: ${this.selectedVehicleType == '' ? 'All' : this.selectedVehicleType}`, style: 'summaryHeader'}] : []),
       {
         table: {
           headerRows: 1,
@@ -776,6 +799,7 @@ widths: isNoShowTab
           body: body
         },
         layout: {
+
           fillColor: (rowIndex: number) => rowIndex === 0 ? '#f2f2f2' : null
         }
       }
@@ -808,18 +832,15 @@ widths: isNoShowTab
     }
   };
 
-  pdfMake.createPdf(docDefinition).download(`${title}-${safeTimestamp}.pdf`);
-}
+    pdfMake.createPdf(docDefinition).download(`${title}-${safeTimestamp}.pdf`);
+  }
 
-// Add this method to your component for better performance with *ngFor
 trackByUserId(index: number, user: any): any {
   return user.user_id;
 }
 
-// Optional: Add loading state for better UX
 isTableLoading = false;
 
-// Optional: Add method to handle keyboard navigation
 onTableKeydown(event: KeyboardEvent, user: any): void {
   if (event.key === 'Enter' || event.key === ' ') {
     event.preventDefault();
@@ -827,184 +848,182 @@ onTableKeydown(event: KeyboardEvent, user: any): void {
   }
 }
 
-public exportExcel(): void {
-  const isVehicleTab = this.activeTabIndex === 0;
-  const isRideTab = this.activeTabIndex === 1;
-  const isTopUsedTab = this.activeTabIndex === 2;
-  const isNoShowTab = this.activeTabIndex === 3;
+  public exportExcel(): void {
+    const isVehicleTab = this.activeTabIndex === 0;
+    const isRideTab = this.activeTabIndex === 1;
+    const isTopUsedTab = this.activeTabIndex === 2;
+    const isNoShowTab = this.activeTabIndex === 3;
 
 
-  const chartData = isVehicleTab
-    ? this.vehicleChartData
-    : isRideTab
-      ? this.rideChartData
-      : this.topUsedVehiclesData;
+    const chartData = isVehicleTab
+      ? this.vehicleChartData
+      : isRideTab
+        ? this.rideChartData
+        : this.topUsedVehiclesData;
 
   const title = isVehicleTab
-    ? 'Vehicle Status Summary'
-    : isRideTab
-      ? 'Ride Status Summary'
-      : 'Top Used Vehicles';
+  ? this.selectedVehicleType !== '' 
+    ? `סטטוס רכבים (${this.selectedVehicleType})`
+    : 'סטטוס רכבים (כל הסוגים)'
+  : isRideTab
+    ? 'Ride Status Summary'
+    : 'Top Used Vehicles';
 
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+const timestamp = new Date().toISOString().substring(0, 10);
 let data: any[] = [];
 
-if (isNoShowTab) {
-  data = this.filteredNoShowUsers.map(user => {
-    const count = user.no_show_count ?? 0;
-    let status = '';
-    if (count >= 3) status = 'Critical';
-    else if (count >= 1) status = 'Warning';
-    else status = 'Good';
+    if (isNoShowTab) {
+      data = this.filteredNoShowUsers.map(user => {
+        const count = user.no_show_count ?? 0;
+        let status = '';
+        if (count >= 3) status = 'Critical';
+        else if (count >= 1) status = 'Warning';
+        else status = 'Good';
 
-    return {
-      'User Name': user.name || 'Unknown',
-      'Email': user.email || 'unknown@example.com',
-      'Employee ID': user.employee_id || user.user_id || 'N/A',
-      'Department': this.resolveDepartment(user.department_id || ''),
-      'Role': user.role || 'לא ידוע',
-      'No-Show Count': count,
-      'Status': status
-    };
-  });
-} else if (isTopUsedTab) {
-  const labels = chartData.labels;
-  const counts = chartData.datasets[0].data;
-
-  data = labels.map((label: string, i: number) => {
-    const count = counts[i];
-    let usageLevel = '';
-
-    if (count > 10) usageLevel = 'High Usage';
-    else if (count >= 5) usageLevel = 'Medium';
-    else usageLevel = 'Good';
-
-    return {
-      Vehicle: label,
-      'Ride Count': count,
-      'Usage Level': usageLevel
-    };
-  });
-} else {
-  data = chartData.labels.map((label: string, i: number) => ({
-    'Formatted Status': label,
-    'Count': chartData.datasets[0].data[i]
-  }));
-}
-
-if (isNoShowTab && this.filteredNoShowUsers.length === 0) {
-  this.showExportWarningTemporarily();
-  return;
-}
-
-
-
-  const worksheet = XLSX.utils.json_to_sheet(data);
-  const range = XLSX.utils.decode_range(worksheet['!ref']!);
-
-  if (isNoShowTab) {
-  for (let row = 1; row <= range.e.r; row++) {
-    const count = Number(worksheet[`F${row + 1}`]?.v);
-    let fillColor = 'FFFFFFFF';
-
-    if (count >= 3) fillColor = 'FFFFCDD2';     // Critical = red
-    else if (count >= 1) fillColor = 'FFFFFFCC'; // Warning = yellow
-    else fillColor = 'FFBBDEFB';                // Good = blue
-
-    ['A', 'B', 'C', 'D', 'E', 'F', 'G'].forEach(col => {
-      const cell = worksheet[`${col}${row + 1}`];
-      if (cell) {
-        cell.s = {
-          fill: {
-            patternType: 'solid',
-            fgColor: { rgb: fillColor }
-          }
+        return {
+          'User Name': user.name || 'Unknown',
+          'Email': user.email || 'unknown@example.com',
+          'Employee ID': user.employee_id || user.user_id || 'N/A',
+          'Department': this.resolveDepartment(user.department_id || ''),
+          'Role': user.role || 'לא ידוע',
+          'No-Show Count': count,
+          'Status': status
         };
+      });
+    } else if (isTopUsedTab) {
+      const labels = chartData.labels;
+      const counts = chartData.datasets[0].data;
+
+      data = labels.map((label: string, i: number) => {
+        const count = counts[i];
+        let usageLevel = '';
+
+        if (count > 10) usageLevel = 'High Usage';
+        else if (count >= 5) usageLevel = 'Medium';
+        else usageLevel = 'Good';
+
+        return {
+          Vehicle: label,
+          'Ride Count': count,
+          'Usage Level': usageLevel
+        };
+      });
+    } else {
+      data = chartData.labels.map((label: string, i: number) => ({
+        'Formatted Status': label,
+        'Count': chartData.datasets[0].data[i]
+      }));
+    }
+
+    if (isNoShowTab && this.filteredNoShowUsers.length === 0) {
+      this.showExportWarningTemporarily();
+      return;
+    }
+
+
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const range = XLSX.utils.decode_range(worksheet['!ref']!);
+
+    if (isNoShowTab) {
+      for (let row = 1; row <= range.e.r; row++) {
+        const count = Number(worksheet[`F${row + 1}`]?.v);
+        let fillColor = 'FFFFFFFF';
+
+        if (count >= 3) fillColor = 'FFFFCDD2';     // Critical = red
+        else if (count >= 1) fillColor = 'FFFFFFCC'; // Warning = yellow
+        else fillColor = 'FFBBDEFB';                // Good = blue
+
+        ['A', 'B', 'C', 'D', 'E', 'F', 'G'].forEach(col => {
+          const cell = worksheet[`${col}${row + 1}`];
+          if (cell) {
+            cell.s = {
+              fill: {
+                patternType: 'solid',
+                fgColor: { rgb: fillColor }
+              }
+            };
+          }
+        });
       }
+    } else if (isTopUsedTab) {
+      for (let row = 1; row <= range.e.r; row++) {
+        const rideCount = Number(worksheet[`B${row + 1}`]?.v);
+        let fillColor = rideCount > 10 ? 'FFFFCDD2' : rideCount >= 5 ? 'FFFFFFCC' : 'FFBBDEFB';
+
+        ['A', 'B', 'C'].forEach(col => {
+          const cell = worksheet[`${col}${row + 1}`];
+          if (cell) {
+            cell.s = {
+              fill: {
+                patternType: 'solid',
+                fgColor: { rgb: fillColor }
+              }
+            };
+          }
+        });
+      }
+    } else {
+      for (let row = 1; row <= range.e.r; row++) {
+        const label = worksheet[`A${row + 1}`]?.v as string;
+        let fillColor = 'FFFFFFFF';
+
+        // Vehicle Status tab
+        if (label.includes('זמין')) fillColor = 'FFC8E6C9'; // light green
+        else if (label.includes('מוקפא')) fillColor = 'FFFFCDD2'; // light red
+        else if (label.includes('בשימוש')) fillColor = 'FFFFE0B2'; // light orange
+
+        // Ride Status tab
+        if (label.includes('ממתין')) fillColor = 'FFFFF9C4';      // yellow
+        else if (label.includes('מאושר')) fillColor = 'FFC8E6C9';  // green
+        else if (label.includes('הושלם')) fillColor = 'FFBBDEFB';  // blue
+        else if (label.includes('בוטל')) fillColor = 'FFF8BBD0';    // pink
+        else if (label.includes('נדחה')) fillColor = 'FFFFCDD2';    // red
+        else if (label.includes('בתהליך')) fillColor = 'FFD1C4E9';  // purple
+
+        ['A', 'B'].forEach(col => {
+          const cell = worksheet[`${col}${row + 1}`];
+          if (cell) {
+            cell.s = {
+              fill: {
+                patternType: 'solid',
+                fgColor: { rgb: fillColor }
+              }
+            };
+          }
+        });
+      }
+    }
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Analytics');
+
+    const excelBuffer: any = XLSX.write(workbook, {
+      bookType: 'xlsx',
+      type: 'array',
+      cellStyles: true
     });
-  }
-} else if (isTopUsedTab) {
-    for (let row = 1; row <= range.e.r; row++) {
-      const rideCount = Number(worksheet[`B${row + 1}`]?.v);
-      let fillColor = rideCount > 10 ? 'FFFFCDD2' : rideCount >= 5 ? 'FFFFFFCC' : 'FFBBDEFB';
 
-      ['A', 'B', 'C'].forEach(col => {
-        const cell = worksheet[`${col}${row + 1}`];
-        if (cell) {
-          cell.s = {
-            fill: {
-              patternType: 'solid',
-              fgColor: { rgb: fillColor }
-            }
-          };
-        }
-      });
-    }
-  } else {
-    for (let row = 1; row <= range.e.r; row++) {
-      const label = worksheet[`A${row + 1}`]?.v as string;
-      let fillColor = 'FFFFFFFF';
+    const blob = new Blob([excelBuffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8'
+    });
 
-      // Vehicle Status tab
-      if (label.includes('זמין')) fillColor = 'FFC8E6C9'; // light green
-      else if (label.includes('מוקפא')) fillColor = 'FFFFCDD2'; // light red
-      else if (label.includes('בשימוש')) fillColor = 'FFFFE0B2'; // light orange
-
-      // Ride Status tab
-      if (label.includes('ממתין')) fillColor = 'FFFFF9C4';      // yellow
-      else if (label.includes('מאושר')) fillColor = 'FFC8E6C9';  // green
-      else if (label.includes('הושלם')) fillColor = 'FFBBDEFB';  // blue
-      else if (label.includes('בוטל')) fillColor = 'FFF8BBD0';    // pink
-      else if (label.includes('נדחה')) fillColor = 'FFFFCDD2';    // red
-      else if (label.includes('בתהליך')) fillColor = 'FFD1C4E9';  // purple
-
-      ['A', 'B'].forEach(col => {
-        const cell = worksheet[`${col}${row + 1}`];
-        if (cell) {
-          cell.s = {
-            fill: {
-              patternType: 'solid',
-              fgColor: { rgb: fillColor }
-            }
-          };
-        }
-      });
-    }
-  }
-
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Analytics');
-
-  const excelBuffer: any = XLSX.write(workbook, {
-    bookType: 'xlsx',
-    type: 'array',
-    cellStyles: true
-  });
-
-  const blob = new Blob([excelBuffer], {
-    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8'
-  });
-
-  saveAs(blob, `${title}-${timestamp}.xlsx`);
+  saveAs(blob, `${title}__${timestamp}.xlsx`);
 }
 
 
 
 
- public exportCSV(): void {
-  const isVehicleTab = this.activeTabIndex === 0;
-  const isRideTab = this.activeTabIndex === 1;
-  const isTopUsedTab = this.activeTabIndex === 2;
-  const isNoShowTab = this.activeTabIndex === 3;
+  public exportCSV(): void {
+    const isVehicleTab = this.activeTabIndex === 0;
+    const isRideTab = this.activeTabIndex === 1;
+    const isTopUsedTab = this.activeTabIndex === 2;
+    const isNoShowTab = this.activeTabIndex === 3;
 
-if (isNoShowTab && this.filteredNoShowUsers.length === 0) {
-  this.showExportWarningTemporarily();
-  return;
-}
-
-
-
-  
+    if (isNoShowTab && this.filteredNoShowUsers.length === 0) {
+      this.showExportWarningTemporarily();
+      return;
+    }
 
 let chartData: any;
 if (!isNoShowTab) {
@@ -1017,233 +1036,300 @@ if (!isNoShowTab) {
 const title = isNoShowTab
   ? 'טבלת נעדרים'
   : isVehicleTab
-    ? 'סטטוס רכבים'
-    : isRideTab
-      ? 'סטטוס נסיעות'
+   ? this.selectedVehicleType !== '' 
+  ? `סטטוס רכבים (${this.selectedVehicleType})`
+  : 'סטטוס רכבים (כל הסוגים)'
+: isRideTab
+  ? 'סטטוס נסיעות'
       : this.isMonthlyView
         ? 'שימוש חודשי ברכבים'
         : 'רכבים בשימוש גבוה';
 
-
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+const timestamp = new Date().toISOString().substring(0, 10);
 let data: any[] = [];
 
-if (isNoShowTab) {
-  data = this.filteredNoShowUsers.map(user => {
-    const count = user.no_show_count ?? 0;
-    let status = '';
+    if (isNoShowTab) {
+      data = this.filteredNoShowUsers.map(user => {
+        const count = user.no_show_count ?? 0;
+        let status = '';
 
-    if (count >= 3) status = 'קריטי';
-    else if (count >= 1) status = 'אזהרה';
-    else status = 'תקין';
+        if (count >= 3) status = 'קריטי';
+        else if (count >= 1) status = 'אזהרה';
+        else status = 'תקין';
 
-    return {
-      'שם': user.name || 'לא ידוע',
-      'אימייל': user.email || 'unknown@example.com',
-      'מזהה עובד': user.employee_id || user.user_id || 'N/A',
-      'מחלקה': this.resolveDepartment(user.department_id || ''),
-      'תפקיד': user.role || 'לא ידוע',
-      'כמות אי-הגעות': count,
-      'סטטוס': status
-    };
-  });
-} else if (isTopUsedTab) {
-  const labels = chartData.labels;
-  const counts = chartData.datasets[0].data;
+        return {
+          'שם': user.name || 'לא ידוע',
+          'אימייל': user.email || 'unknown@example.com',
+          'מזהה עובד': user.employee_id || user.user_id || 'N/A',
+          'מחלקה': this.resolveDepartment(user.department_id || ''),
+          'תפקיד': user.role || 'לא ידוע',
+          'כמות אי-הגעות': count,
+          'סטטוס': status
+        };
+      });
+    } else if (isTopUsedTab) {
+      const labels = chartData.labels;
+      const counts = chartData.datasets[0].data;
 
-  data = labels.map((label: string, i: number) => {
-    const count = counts[i];
-    let usageLevel = '';
+      data = labels.map((label: string, i: number) => {
+        const count = counts[i];
+        let usageLevel = '';
 
-    if (count > 10) usageLevel = 'שימוש גבוה';
-    else if (count >= 5) usageLevel = 'בינוני';
-    else usageLevel = 'טוב';
+        if (count > 10) usageLevel = 'שימוש גבוה';
+        else if (count >= 5) usageLevel = 'בינוני';
+        else usageLevel = 'טוב';
 
-    return {
-      'רכב': label,
-      'כמות נסיעות': count,
-      'רמת שימוש': usageLevel
-    };
-  });
-} else {
-  data = chartData.labels.map((label: string, i: number) => ({
-    'סטטוס': label,
-    'כמות': chartData.datasets[0].data[i]
-  }));
-}
+        return {
+          'רכב': label,
+          'כמות נסיעות': count,
+          'רמת שימוש': usageLevel
+        };
+      });
+    } else {
+      data = chartData.labels.map((label: string, i: number) => ({
+        'סטטוס': label,
+        'כמות': chartData.datasets[0].data[i]
+      }));
+    }
 
-  // Add BOM for proper UTF-8 encoding (for Hebrew support)
-  const csv = '\uFEFF' + Papa.unparse(data);
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  saveAs(blob, `${title}-${timestamp}.csv`);
-}
+    // Add BOM for proper UTF-8 encoding (for Hebrew support)
+    const csv = '\uFEFF' + Papa.unparse(data);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    saveAs(blob, `${title}-${timestamp}.csv`);
+  }
 
   private getEnglishLabel(status: string): string {
-  const statusMap: { [key: string]: string } = {
-    'available': 'Available',
-    'in_use': 'In Use',
-    'frozen': 'Frozen',
-    'pending': 'Pending',
-    'approved': 'Approved',
-    'rejected': 'Rejected',
-    'in_progress': 'In Progress',
-    'completed': 'Completed',
-    'cancelled': 'Cancelled',
-    'cancelled_due_to_no_show': 'Cancelled - No Show' // Add this line
+    const statusMap: { [key: string]: string } = {
+      'available': 'Available',
+      'in_use': 'In Use',
+      'frozen': 'Frozen',
+      'pending': 'Pending',
+      'approved': 'Approved',
+      'rejected': 'Rejected',
+      'in_progress': 'In Progress',
+      'completed': 'Completed',
+      'cancelled': 'Cancelled',
+      'cancelled_due_to_no_show': 'Cancelled - No Show' // Add this line
 
-  };
-  return statusMap[status] || status;
-}
+    };
+    return statusMap[status] || status;
+  }
 
-private showExportWarningTemporarily(): void {
-  this.noShowExportWarningVisible = true;
-  setTimeout(() => {
-    this.noShowExportWarningVisible = false;
-  }, 4000); // ⏱️ 4 seconds
-}
-
-
-
-private reloadChart() {
-  this.showChart = false;
-  setTimeout(() => {
-    this.showChart = true;
-  }, 0);
-}
+  private showExportWarningTemporarily(): void {
+    this.noShowExportWarningVisible = true;
+    setTimeout(() => {
+      this.noShowExportWarningVisible = false;
+    }, 4000); // ⏱️ 4 seconds
+  }
 
 
-private reverseHebrewLabel(hebrewLabel: string): string {
-  const reverseMap: { [key: string]: string } = {
-    'זמין': 'available',
-    'בשימוש': 'in_use',
-    'מוקפא': 'frozen',
-    'ממתין': 'pending',
-    'מאושר': 'approved',
-    'נדחה': 'rejected',
-    'בתהליך': 'in_progress',
-    'הושלם': 'completed',
-    'בוטל': 'cancelled',
 
-  };
-  return reverseMap[hebrewLabel] || hebrewLabel;
-}
+  private reloadChart() {
+    this.showChart = false;
+    setTimeout(() => {
+      this.showChart = true;
+    }, 0);
+  }
 
-public loadTopUsedVehiclesChart() {
-  this.http.get<{
-  month: number;
-  stats: { plate_number: string; vehicle_model: string; total_rides: number, total_km: number }[];
-  year: number;
-}>(
-    `${environment.apiUrl}/vehicles/usage-stats?range=month&year=${this.selectedYear}&month=${this.selectedMonth}`
-  ).subscribe({
-    next: data => {
-      const labels = data.stats.map(v => ` ${v.plate_number} – ${v.vehicle_model}`);
-      const counts = data.stats.map(v => Number.isFinite(v.total_rides) ? v.total_rides : 0);
-      const kilometers = data.stats.map(v => v.total_km); // array like [82.68]
 
-      const backgroundColors = counts.map(count => {
-        if (count > 10) return '#FF5252';
-        if (count >= 5) return '#FFC107';
-        return '#42A5F5';
-      });
+  private reverseHebrewLabel(hebrewLabel: string): string {
+    const reverseMap: { [key: string]: string } = {
+      'זמין': 'available',
+      'בשימוש': 'in_use',
+      'מוקפא': 'frozen',
+      'ממתין': 'pending',
+      'מאושר': 'approved',
+      'נדחה': 'rejected',
+      'בתהליך': 'in_progress',
+      'הושלם': 'completed',
+      'בוטל': 'cancelled',
 
-      const hoverColors = backgroundColors.map(color => color + 'CC');
+    };
+    return reverseMap[hebrewLabel] || hebrewLabel;
+  }
 
-      const usageLevels = counts.map(count => {
-        if (count > 10) return 'שימוש גבוה';
-        if (count >= 5) return 'שימוש בינוני';
-        return 'שימוש טוב';
-      });
+  public loadTopUsedVehiclesChart() {
+    this.http.get<{
+      month: number;
+      stats: { plate_number: string; vehicle_model: string; total_rides: number, total_km: number }[];
+      year: number;
+    }>(
+      `${environment.apiUrl}/vehicles/usage-stats?range=month&year=${this.selectedYear}&month=${this.selectedMonth}`
+    ).subscribe({
+      next: data => {
+        const labels = data.stats.map(v => ` ${v.plate_number} – ${v.vehicle_model}`);
+        const counts = data.stats.map(v => Number.isFinite(v.total_rides) ? v.total_rides : 0);
+        const kilometers = data.stats.map(v => v.total_km); // array like [82.68]
 
-      this.monthlyChartData = {
-        labels,
-        datasets: [{
-          label: 'מספר נסיעות',
-          data: counts,
-          backgroundColor: backgroundColors,
-          hoverBackgroundColor: hoverColors,
-          
-        }]
-      };
+        const backgroundColors = counts.map(count => {
+          if (count > 10) return '#FF5252';
+          if (count >= 5) return '#FFC107';
+          return '#42A5F5';
+        });
 
-      this.monthlyChartOptions = {
-        type: 'bar',
-        indexAxis: 'y',
-        plugins: {
-          tooltip: {
-            callbacks: {
-              label: (context: any) => {
-                const label = context.chart.data.labels[context.dataIndex];
-                const value = context.raw;
-                const usage = usageLevels[context.dataIndex];
-                const km = kilometers[context.dataIndex];
+        const hoverColors = backgroundColors.map(color => color + 'CC');
 
-                return `${label}: ${value} נסיעות (${usage}) | ${km} ק"מ`;              }
-            }
-          },
-          legend: { display: false }
-        },
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: {
-            title: { display: true, text: 'כמות נסיעות' },
-            ticks: {
-              stepSize: 1,
-              beginAtZero: true,
-              precision: 0
-            }
-          },
-          y: {
-            title: { display: true, text: 'רכב' },
-            ticks: {
-              beginAtZero: true,
-              stepSize: 1,
-              precision: 0,
-              callback: function (value: any) {
-                return Number.isInteger(value) ? value : '';
-              }
-            }
-          }
-        }
-      };
+        const usageLevels = counts.map(count => {
+          if (count > 10) return 'שימוש גבוה';
+          if (count >= 5) return 'שימוש בינוני';
+          return 'שימוש טוב';
+        });
 
-      // ✅ Assign final chart config
-      this.topUsedVehiclesData = { ...cloneDeep(this.monthlyChartData) };
-      this.topUsedVehiclesOptions = { ...cloneDeep(this.monthlyChartOptions) };
-      this.monthlyStatsChartData= {...this.monthlyChartData};
-      this.monthlyStatsChartOptions={ ...this.monthlyChartOptions };
-    },
-    error: err => {
-      console.error('❌ Error fetching top used vehicles:', err);
-    }
-  });
-}
+        this.monthlyChartData = {
+          labels,
+          datasets: [{
+            label: 'מספר נסיעות',
+            data: counts,
+            backgroundColor: backgroundColors,
+            hoverBackgroundColor: hoverColors,
 
-private loadAllTimeTopUsedVehiclesChart() {
-  this.http.get(`${environment.apiUrl}/vehicles/usage-stats?range=all`).subscribe({
-    next: (res: any) => {
-      const stats = res?.stats || [];
-
-      if (!stats.length) {
-        this.allTimeChartData = {
-          labels: ['אין נתונים'],
-          datasets: [{ data: [1], backgroundColor: ['#E0E0E0'] }]
+          }]
         };
-        this.allTimeChartOptions = {
-          plugins: { legend: { display: false } },
+
+        this.monthlyChartOptions = {
+          type: 'bar',
+          indexAxis: 'y',
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: (context: any) => {
+                  const label = context.chart.data.labels[context.dataIndex];
+                  const value = context.raw;
+                  const usage = usageLevels[context.dataIndex];
+                  const km = kilometers[context.dataIndex];
+
+                  return `${label}: ${value} נסיעות (${usage}) | ${km} ק"מ`;
+                }
+              }
+            },
+            legend: { display: false }
+          },
+          responsive: true,
+          maintainAspectRatio: false,
           scales: {
             x: {
               title: { display: true, text: 'כמות נסיעות' },
-              ticks: { stepSize: 1, beginAtZero: true, precision: 0 }
+              ticks: {
+                stepSize: 1,
+                beginAtZero: true,
+                precision: 0
+              }
             },
             y: {
               title: { display: true, text: 'רכב' },
               ticks: {
-                beginAtZero: true,
-                stepSize: 1,
-                precision: 0,
-                callback: (value: any) => Number.isInteger(value) ? value : ''
+                // beginAtZero: true,
+                // stepSize: 1,
+                // precision: 0,
+                  callback: (value: any, index: number, ticks: any) => ticks.length - index
+
+              }
+            }
+          }
+        };
+
+        // ✅ Assign final chart config
+        this.topUsedVehiclesData = { ...cloneDeep(this.monthlyChartData) };
+        this.topUsedVehiclesOptions = { ...cloneDeep(this.monthlyChartOptions) };
+        this.monthlyStatsChartData = { ...this.monthlyChartData };
+        this.monthlyStatsChartOptions = { ...this.monthlyChartOptions };
+      },
+      error: err => {
+        console.error('❌ Error fetching top used vehicles:', err);
+      }
+    });
+  }
+
+  private loadAllTimeTopUsedVehiclesChart() {
+    this.http.get(`${environment.apiUrl}/vehicles/usage-stats?range=all`).subscribe({
+      next: (res: any) => {
+        const stats = res?.stats || [];
+
+        if (!stats.length) {
+          this.allTimeChartData = {
+            labels: ['אין נתונים'],
+            datasets: [{ data: [1], backgroundColor: ['#E0E0E0'] }]
+          };
+          
+          this.allTimeChartOptions = {
+            plugins: { legend: { display: false } },
+            scales: {
+              x: {
+                title: { display: true, text: 'כמות נסיעות' },
+                ticks: { stepSize: 1, beginAtZero: true, precision: 0 }
+              },
+              y: {
+                title: { display: true, text: 'רכב' },
+                ticks: {
+                  // beginAtZero: true,
+                  // stepSize: 1,
+                  // precision: 0,
+              callback: (value: any, index: number, ticks: any) => ticks.length - index
+                }
+              }
+            },
+            locale: 'he-IL'
+          };
+
+          this.topUsedVehiclesData = { ...cloneDeep(this.allTimeChartData) };
+          this.topUsedVehiclesOptions = { ...cloneDeep(this.allTimeChartOptions) };
+          this.allTimeStatsChartData = { ...cloneDeep(this.allTimeChartData) };
+          this.allTimeStatsChartOptions = { ...cloneDeep(this.allTimeChartOptions) };
+          return;
+        }
+
+        const labels = stats.map((s: any) => `${s.plate_number} ${s.vehicle_model}`);
+        const data = stats.map((s: any) => s.total_rides);
+        const kilometers = stats.map((a: { total_km: number }) => a.total_km);
+      // Ensure data is numeric
+const counts = stats.map((v: { total_rides: number }) => 
+  Number.isFinite(v.total_rides) ? v.total_rides : 0
+);
+
+const backgroundColors = counts.map((count: number) => {
+  if (count > 10) return '#FF5252';
+  if (count >= 5) return '#FFC107';
+  return '#42A5F5';
+});
+
+
+this.allTimeChartData = {
+  labels,
+  datasets: [{
+    label: 'Total Rides',
+    data: counts,
+    backgroundColor: backgroundColors
+  }]
+};
+
+
+
+        this.allTimeChartOptions = {
+          indexAxis: 'y',
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx: any) => {
+                  const km = kilometers[ctx.dataIndex];
+                  return `${ctx.parsed.x} נסיעות | ${km} ק"מ`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              title: { display: true, text: 'כמות הנסיעות' },
+              ticks: { beginAtZero: true, stepSize: 1, precision: 0 }
+            },
+            y: {
+              title: { display: true, text: 'רכב' },
+              ticks: {
+                autoSkip: false, // ensures all labels show
+
+                // stepSize: 1,
+                // precision: 0,
+    callback: (value: any, index: number, ticks: any) => ticks.length - index
               }
             }
           },
@@ -1254,63 +1340,12 @@ private loadAllTimeTopUsedVehiclesChart() {
         this.topUsedVehiclesOptions = { ...cloneDeep(this.allTimeChartOptions) };
         this.allTimeStatsChartData = { ...cloneDeep(this.allTimeChartData) };
         this.allTimeStatsChartOptions = { ...cloneDeep(this.allTimeChartOptions) };
-        return;
+      },
+      error: (err: any) => {
+        console.error("❌ Error fetching all-time used vehicles:", err);
       }
-
-      const labels = stats.map((s: any) => `${s.plate_number} ${s.vehicle_model}`);
-      const data = stats.map((s: any) => s.total_rides);
-      const kilometers = stats.map((a: { total_km: number }) => a.total_km);
-
-      this.allTimeChartData = {
-        labels,
-        datasets: [{
-          label: 'Total Rides',
-          data,
-          backgroundColor: '#42A5F5'
-        }]
-      };
-
-      this.allTimeChartOptions = {
-        indexAxis: 'y',
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: (ctx: any) => {
-                const km = kilometers[ctx.dataIndex];
-                return `${ctx.parsed.x} נסיעות | ${km} ק"מ`;
-              }
-            }
-          }
-        },
-        scales: {
-          x: {
-            title: { display: true, text: 'כמות הנסיעות' },
-            ticks: { beginAtZero: true, stepSize: 1, precision: 0 }
-          },
-          y: {
-            title: { display: true, text: 'רכב' },
-            ticks: {
-              beginAtZero: true,
-              stepSize: 1,
-              precision: 0,
-              callback: (value: any) => Number.isInteger(value) ? value : ''
-            }
-          }
-        },
-        locale: 'he-IL'
-      };
-
-      this.topUsedVehiclesData = { ...cloneDeep(this.allTimeChartData) };
-      this.topUsedVehiclesOptions = { ...cloneDeep(this.allTimeChartOptions) };
-      this.allTimeStatsChartData = { ...cloneDeep(this.allTimeChartData) };
-      this.allTimeStatsChartOptions = { ...cloneDeep(this.allTimeChartOptions) };
-    },
-    error: (err: any) => {
-      console.error("❌ Error fetching all-time used vehicles:", err);
-    }
-  });
-}
+    });
+  }
 
 }
 

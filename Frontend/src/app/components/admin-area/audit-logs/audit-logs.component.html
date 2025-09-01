@@ -44,7 +44,7 @@
           <button class="filter-apply-btn" (click)="onRangeChange()">סנן</button>
         </div>
         <div class="export-buttons">
-          <h3>דיווחים מהשבוע האחרון-בהתאם לסינון</h3>
+          <h3>דיווחים בהתאם לסינון</h3>
           <button class="export-button" (click)="exportToPDF()">ייצוא PDF</button>
           <button class="export-button" (click)="exportToCSV()">ייצוא CSV</button>
           <button class="export-button" (click)="exportToExcel()">ייצוא Excel</button>
@@ -277,10 +277,6 @@
                 <div class="field-row">
                   <div class="field-label">מודל רכב</div>
                   <div class="field-value">{{ selectedLog.change_data.vehicle_model }}</div>
-                </div>
-                <div class="field-row">
-                  <div class="field-label">מיקום נוכחי</div>
-                  <div class="field-value">{{ selectedLog.change_data.current_location }}</div>
                 </div>
                 <div class="field-row">
                   <div class="field-label">מחלקה</div>
@@ -725,10 +721,7 @@
                   <div class="field-value">{{ selectedLog.change_data.vehicle_model }}</div>
                 </div>
 
-                <div class="field-row">
-                  <div class="field-label">מיקום נוכחי</div>
-                  <div class="field-value">{{ selectedLog.change_data.current_location }}</div>
-                </div>
+             
 
                 <div class="field-row">
                   <div class="field-label">מחלקה</div>

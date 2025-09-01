@@ -18,7 +18,6 @@ from typing import List
 from sqlalchemy.orm import Session
 from uuid import UUID
 from src.models.user_model import User  # assuming you have this model with department info and role
-# from ..utils.email_utils import send_email, load_email_template, load_email_template
 from ..services.email_service import async_send_email, load_email_template, get_user_email
   
   

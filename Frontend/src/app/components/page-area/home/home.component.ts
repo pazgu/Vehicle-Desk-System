@@ -17,7 +17,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { formatDate } from '@angular/common';
 
 interface PendingVehicle { vehicle_id: string; date: string; period: string; start_time?: string; end_time?: string; }
-interface Vehicle { id: string; plate_number: string; type: string; fuel_type: string; status: string; freeze_reason?: string | null; last_used_at?: string; current_location?: string; mileage: number; image_url: string; vehicle_model: string; }
+interface Vehicle { id: string; plate_number: string; type: string; fuel_type: string; status: string; freeze_reason?: string | null; last_used_at?: string; mileage: number; image_url: string; vehicle_model: string; }
 interface City { id: string; name: string; }
 interface Employee { id: string; full_name: string; }
 
@@ -1043,11 +1043,18 @@ futureDateTimeValidator(): ValidatorFn {
             },
             error: (err) => {
                 const errorMessage = err.error?.detail || err.message || 'שגיאה לא ידועה';
+                
                 if (errorMessage.includes('currently blocked')) {
                     const match = errorMessage.match(/until (\d{4}-\d{2}-\d{2})/);
                     const blockUntil = match ? match[1] : '';
                     const translated = `אתה חסום עד ${blockUntil}`;
                     this.toastService.show(translated, 'error');
+                } else if (errorMessage.includes('אין לך רישיון בתוקף')) {
+                    this.toastService.show('אין לך רישיון בתוקף במועד זה. יש ליצור קשר עם המנהל לעדכון פרטי הרישיון.', 'error');
+                } else if (errorMessage.includes('לא הוזן תוקף לרישיון המשתמש')) {
+                    this.toastService.show('לא הוזן תוקף לרישיון המשתמש. יש ליצור קשר עם המנהל.', 'error');
+                } else if (errorMessage.includes('משתמש לא נמצא')) {
+                    this.toastService.show('שגיאת זיהוי משתמש - התחבר מחדש', 'error');
                 } else {
                     this.toastService.show('שגיאה בשליחת הבקשה', 'error');
                 }
@@ -1071,6 +1078,12 @@ futureDateTimeValidator(): ValidatorFn {
                     const blockUntil = match ? match[1] : '';
                     const translated = `אתה חסום עד ${blockUntil}`;
                     this.toastService.show(translated, 'error');
+                } else if (errorMessage.includes('אין לך רישיון בתוקף')) {
+                    this.toastService.show('אין לך רישיון בתוקף במועד זה. יש ליצור קשר עם המנהל לעדכון פרטי הרישיון.', 'error');
+                } else if (errorMessage.includes('לא הוזן תוקף לרישיון המשתמש')) {
+                    this.toastService.show('לא הוזן תוקף לרישיון המשתמש. יש ליצור קשר עם המנהל.', 'error');
+                } else if (errorMessage.includes('משתמש לא נמצא')) {
+                    this.toastService.show('שגיאת זיהוי משתמש - התחבר מחדש', 'error');
                 } else {
                     this.toastService.show('שגיאה בשליחת הבקשה', 'error');
                 }

@@ -105,7 +105,6 @@ export class AuditLogsComponent implements OnInit {
     freeze_reason: 'סיבת הקפאה',
     vehicle_model: 'דגם רכב',
     freeze_details: 'פרטי הקפאה',
-    current_location: 'מיקום נוכחי',
     department_id: 'מחלקה',
     mileage: 'מד מרחק',
   };
@@ -419,21 +418,6 @@ formatRouteFromChangeData(changeData: any): string {
     return this.rideFieldLabels[key] || key;
   }
 
-  private getLogsForThisWeek(): any[] {
-    const now = new Date();
-    const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-    startOfWeek.setHours(0, 0, 0, 0);
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6);
-    endOfWeek.setHours(23, 59, 59, 999);
-
-    return this.filteredLogs.filter(log => {
-      const created = new Date(log.created_at);
-      return created >= startOfWeek && created <= endOfWeek;
-    });
-  }
-
   getStatusColor(status: string): string {
     const statusColorMap: { [key: string]: string } = {
       'אושר': '#66BB6A', // green
@@ -597,8 +581,8 @@ formatRouteFromChangeData(changeData: any): string {
   }
 
   // Updated PDF export method
-  exportToPDF() {
-    const weeklyLogs = this.getLogsForThisWeek();
+  async exportToPDF() {
+    const weeklyLogs = await this.filteredLogs;
     const timestamp = new Date().toLocaleString('en-GB');
     const safeTimestamp = timestamp.replace(/[/:]/g, '-');
 
@@ -719,8 +703,11 @@ formatRouteFromChangeData(changeData: any): string {
     };
 
     pdfMake.createPdf(docDefinition).download(`audit_logs_${safeTimestamp}.pdf`);
-  } exportToCSV() {
-    const weeklyLogs = this.getLogsForThisWeek();
+  } 
+  
+  async exportToCSV() {
+    const weeklyLogs = await this.filteredLogs;
+
     const timestamp = new Date().toLocaleString('en-GB').replace(/[/:]/g, '-');
 
     // Color legend section
@@ -770,8 +757,9 @@ formatRouteFromChangeData(changeData: any): string {
   }
 
 
-  exportToExcel() {
-    const weeklyLogs = this.getLogsForThisWeek(); // Your real log data
+  async exportToExcel() {
+    const weeklyLogs = await this.filteredLogs;
+
     const timestamp = new Date().toLocaleString('en-GB').replace(/[/:]/g, '-');
 
     // Define legend rows
@@ -891,7 +879,6 @@ formatRouteFromChangeData(changeData: any): string {
       { label: 'שימוש אחרון', oldValue: oldData.last_used_at, newValue: newData.last_used_at }, // <-- Added this line
       { label: 'סיבת הקפאה', oldValue: this.translateFreezeReason(oldData.freeze_reason), newValue: this.translateFreezeReason(newData.freeze_reason) },
       { label: 'פרטי הקפאה', oldValue: oldData.freeze_details, newValue: newData.freeze_details },
-      { label: 'מיקום נוכחי', oldValue: oldData.current_location, newValue: newData.current_location },
       { label: 'מחלקה', oldValue: this.getDepartmentNameById(oldData.department_id), newValue: this.getDepartmentNameById(newData.department_id) },
       { label: 'קילומטראז\'', oldValue: oldData.mileage, newValue: newData.mileage },
       { label: 'תאריך סיום ליסינג', oldValue: oldData.lease_expiry, newValue: newData.lease_expiry },

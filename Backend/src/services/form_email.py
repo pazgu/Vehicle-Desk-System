@@ -10,10 +10,12 @@ def send_ride_completion_email(ride_id: str):
     try:
         ride = db.query(Ride).filter(Ride.id == ride_id).first()
         if not ride:
+            print(f"❌ Ride with ID {ride_id} not found.")
             return
 
         user = db.query(User).filter(User.employee_id == ride.user_id).first()
         if not user:
+            print(f"❌ User for ride ID {ride_id} not found.")
             return
 
         form_link = f"https://localhost:8000/ride-completion-form/{ride.id}"  # Frontend route
@@ -26,6 +28,7 @@ def send_ride_completion_email(ride_id: str):
         )
 
         send_email(subject=subject, body=body, recipients=[user.email])
+        print(f"📧 Email sent to {user.email} for ride {ride.id}")
 
     finally:
         db.close()

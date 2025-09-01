@@ -1,260 +1,212 @@
 <div class="analytics-container">
   <div class="chart-card">
     <!-- SORT DROPDOWN -->
-    
+
 
     <div class="export-buttons">
       <button (click)="exportCSV()">📁 ייצוא CSV</button>
       <button (click)="exportPDF()">📄 ייצוא PDF</button>
       <button (click)="exportExcel()">📊 ייצוא Excel</button>
 
-<div class="export-warning" *ngIf="noShowExportWarningVisible">
-  אין נתוני אי-הגעה לייצוא כרגע.
-</div>
+      <div class="export-warning" *ngIf="noShowExportWarningVisible">
+        אין נתוני אי-הגעה לייצוא כרגע.
+      </div>
 
     </div>
+    <small class="export-disclaimer">*הייצוא מתבצע בהתאם לסינונים</small>
+
 
     <div class="tab-buttons">
-  <button [class.active]="activeTabIndex === 0" (click)="activeTabIndex = 0">
-    סטטוס רכבים
-  </button>
-  <button [class.active]="activeTabIndex === 1" (click)="activeTabIndex = 1">
-    סטטוס נסיעות
-  </button>
-   <button [class.active]="activeTabIndex === 2" (click)="activeTabIndex = 2">
-  שימוש חודשי ברכבים
-</button>
- 
-  <button [class.active]="activeTabIndex === 4" (click)="activeTabIndex = 4">
-  ספירת נעדרים 
-</button>
+      <button [class.active]="activeTabIndex === 0" (click)="activeTabIndex = 0">
+        סטטוס רכבים
+      </button>
+      <button [class.active]="activeTabIndex === 1" (click)="activeTabIndex = 1">
+        סטטוס נסיעות
+      </button>
+      <button [class.active]="activeTabIndex === 2" (click)="activeTabIndex = 2">
+        שימוש חודשי ברכבים
+      </button>
+
+      <button [class.active]="activeTabIndex === 4" (click)="activeTabIndex = 4">
+        אי-הגעות</button>
 
 
-</div>
-
-<p-tabView [(activeIndex)]="activeTabIndex">
-  <div class="sort-container" *ngIf="activeTabIndex==0 || activeTabIndex==1">
-      <label for="sortSelect">מיין לפי: </label>
-      <select id="sortSelect" [(ngModel)]="selectedSortOption" (change)="onSortChange()">
-        <option value="default">ברירת מחדל</option>
-        <option value="countAsc">כמות - עולה</option>
-        <option value="countDesc">כמות - יורד</option>
-        <option value="alphabetical">א-ת</option>
-      </select>
-    </div>
-  <p-tabPanel header=" " [headerStyle]="{ display: 'none' }">
-    <div>
-          <h3 class="section-heading">פילוח סטטוס רכבים</h3>
-          <div class="filter-container" style="margin-bottom: 1rem;">
-  <label for="vehicleType" style="margin-right: 0.5rem;">סוג רכב:</label>
-  <select
-    id="vehicleType"
-    [(ngModel)]="selectedVehicleType"
-    (change)="onVehicleTypeFilterChange()"
-    class="form-control"
-    style="display: inline-block; width: auto;"
-  >
-    <option value="">All</option>
-    <option *ngFor="let type of vehicleTypes" [value]="type">{{ type }}</option>
-  </select>
-</div>
-
-
-      <p-chart
-        *ngIf="vehicleChartInitialized && vehicleChartData"
-        type="pie"
-        [data]="vehicleChartData"
-        [options]="vehicleChartOptions"
-      ></p-chart>
-    </div>
-  </p-tabPanel>
-
-  <p-tabPanel header=" " [headerStyle]="{ display: 'none' }">
-    <div>
-          <h3 class="section-heading">פילוח סטטוס נסיעות</h3>
-
-      <p-chart
-        *ngIf="rideChartInitialized && rideChartData"
-        type="pie"
-        [data]="rideChartData"
-        [options]="rideChartOptions"
-      ></p-chart>
-    </div>
-  </p-tabPanel>
-  <!-- Vehicle Usage Chart Tab -->
-<p-tabPanel header=" " [headerStyle]="{ display: 'none' }">
-  <div class="date-filter-container" *ngIf="isMonthlyView">
-    <label for="monthSelect">חודש:</label>
-    <select id="monthSelect" [(ngModel)]="selectedMonth">
-      <option *ngFor="let month of months" [value]="month.value">{{ month.label }}</option>
-    </select>
-
-    <label for="yearSelect">שנה:</label>
-    <select id="yearSelect" [(ngModel)]="selectedYear">
-      <option *ngFor="let year of years" [value]="year">{{ year }}</option>
-    </select>
-
-<button class="filter-button" (click)="loadTopUsedVehiclesChart()">סנן</button>
-  </div>
-
-  <div *ngIf="showChart">
-
-<h3 class="section-heading">
-  {{ isMonthlyView ? 'שימוש חודשי ברכבים' : 'שימוש כללי ברכבים' }}
-</h3>
-
-    <button (click)="toggleUsageView()" class="toggle-view-button">
-    {{ isMonthlyView ? 'הצג לפי כל הזמנים' : 'הצג לפי חודש' }}
-  </button>
-
-  <p-chart
-    *ngIf="isMonthlyView"
-    type="bar"
-    [data]="monthlyStatsChartData"
-    [options]="monthlyStatsChartOptions"
-  ></p-chart>
-  
-  <p-chart
-    *ngIf="!isMonthlyView"
-    type="bar"
-    [data]="allTimeStatsChartData"
-    [options]="allTimeStatsChartOptions"
-    
-  ></p-chart>
-  
-    <!-- Legend only relevant for Monthly View -->
-    <div class="usage-legend" *ngIf="showChart">
-      <div class="legend-item">
-        <span class="color-box good"></span> טוב (0–4 נסיעות)
-      </div>
-      <div class="legend-item">
-        <span class="color-box medium"></span> בינוני (5–10 נסיעות)
-      </div>
-      <div class="legend-item">
-        <span class="color-box high"></span> שימוש גבוה (11+ נסיעות)
-      </div>
-    </div>
-  </div>
-</p-tabPanel>
-  <!-- No‑Show Analytics Tab -->
-  <p-tabPanel header=" " [headerStyle]="{ display: 'none' }">
-    <div>
-
-  
-<!-- Enhanced Summary Cards -->
-
-<!-- Enhanced Table with Container -->
-<!-- <div class="table-container" *ngIf="topNoShowUsers && topNoShowUsers.length > 0; else noDataTemplate">
-  <table class="styled-table">
-    <thead>
-      <tr>
-        <th>מזהה משתמש</th>
-        <th>שם</th>
-        <th>מחלקה</th>
-        <th>מספר אי-הגעות</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let user of topNoShowUsers; trackBy: trackByUserId" 
-          (click)="goToUserDetails(user.user_id)"
-          [attr.data-user-id]="user.user_id"
-          class="table-row">
-        <td class="user-id">{{ user.user_id }}</td>
-        <td class="user-name">{{ user.name }}</td>
-        <td class="user-department">{{ resolveDepartment(user.department_id) }}</td>
-        <td class="no-show-count">{{ user.count }}</td>
-      </tr>
-    </tbody>
-  </table>
-</div> -->
-
-<!-- No Data Template -->
-<ng-template #noDataTemplate>
-  <div class="no-data-state">
-    <div class="no-data-icon">📋</div>
-    <div class="no-data-message">אין נתונים להצגה בטווח התאריכים הנבחר</div>
-  </div>
-
-</ng-template>
-  </div>
-  </p-tabPanel>
-
-  <!-- 🆕 NEW TAB: No-Show Count by User -->
-<p-tabPanel header=" " [headerStyle]="{ display: 'none' }">
-  <div>
-    <h3 class="section-heading">טבלת משתמשים נעדרים</h3>
-
-    <!-- FILTERS -->
-    <div class="filter-controls">
-      <div style="display: flex; flex-direction: column; gap:5px;">
-      <label>
-        <input type="checkbox" [(ngModel)]="filterOnePlus" (change)="applyNoShowFilter()" />
-        הצג משתמשים עם 1-2 נעדרים
-      </label>
-      <label>
-        <input type="checkbox" [(ngModel)]="filterCritical" (change)="applyNoShowFilter()" />
-        הצג משתמשים עם 3+ נעדרים (קריטי)
-      </label>
-      </div>
-         <div class="sort-container">
-      <label>מיין לפי: </label>
-
-    <select [(ngModel)]="noShowSortOption" (change)="applyNoShowFilter()">
-
-        <option value="countAsc">כמות נעדרים ↑</option>
-        <option value="countDesc">כמות נעדרים ↓</option>
-        <option value="nameAsc">שם ↑</option>
-        <option value="nameDesc">שם ↓</option>
-
-      </select>
-    </div>
     </div>
 
-    <!-- SORTING -->
- 
-<div class="summary-cards">
-  <div class="card">
-    <div class="card-icon">📊</div>
-    <div class="card-content">
-      <div class="card-number">{{ totalNoShows }}</div>
-      <div class="card-label">סה"כ אי-הגעות</div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-icon">👥</div>
-    <div class="card-content">
-      <div class="card-number">{{ uniqueNoShowUsers }}</div>
-      <div class="card-label">סה"כ משתמשים שלא הגיעו </div>
-    </div>
-  </div>
-</div>
+        <div>
+          <p-tabView [(activeIndex)]="activeTabIndex">
+            <p-tabPanel header=" " [headerStyle]="{ display: 'none' }">
+              <div>
+                <h3 class="section-heading">פילוח סטטוס רכבים</h3>
+                <div class="filter-container" style="margin-bottom: 1rem;">
+                  <label for="vehicleType" style="margin-right: 0.5rem;">סוג רכב:</label>
+                  <select id="vehicleType" [(ngModel)]="selectedVehicleType" (change)="onVehicleTypeFilterChange()"
+                    class="form-control" style="display: inline-block; width: auto;">
+                    <option value="">הכל</option>
+                    <option *ngFor="let type of vehicleTypes" [value]="type">{{ type }}</option>
+                  </select>
+                </div>
 
-    <!-- TABLE -->
-    <div class="table-container">
-      <table class="styled-table">
-        <thead>
-          <tr>
-            <th>שם</th>
-            <th>אימייל</th>
-            <th>תפקיד</th>
-            <th>כמות אי-הגעות</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let user of filteredNoShowUsers" 
-    (click)="goToUserDetails(user.employee_id!)"
-    [ngClass]="{ 
+ <div *ngIf="isVehicleNoData;" class="no-data-message">
+                  אין נתונים להצגה
+                </div>
+                <p-chart *ngIf="vehicleChartInitialized && vehicleChartData&&!isVehicleNoData" type="pie" [data]="vehicleChartData"
+                  [options]="vehicleChartOptions"></p-chart>
+              </div>
+            </p-tabPanel>
+
+            <p-tabPanel header=" " [headerStyle]="{ display: 'none' }">
+              <div>
+                <h3 class="section-heading">פילוח סטטוס נסיעות</h3>
+                <div *ngIf="isNoData;" class="no-data-message">
+                  אין נתונים להצגה
+                </div>
+                <p-chart *ngIf="rideChartInitialized && rideChartData && !isNoData" type="pie" [data]="rideChartData"
+                  [options]="rideChartOptions" ></p-chart>
+              </div>
+            </p-tabPanel>
+            <!-- Vehicle Usage Chart Tab -->
+            <p-tabPanel header=" " [headerStyle]="{ display: 'none' }">
+              <div class="date-filter-container" *ngIf="isMonthlyView">
+               <label for="monthSelect">חודש:</label>
+               <select id="monthSelect" [(ngModel)]="selectedMonth" (change)="onMonthOrYearChange()">
+                <option *ngFor="let month of months" [value]="month.value">{{ month.label }}</option>
+              </select>
+
+                <label for="yearSelect">שנה:</label>
+               <select id="yearSelect" [(ngModel)]="selectedYear" (change)="onMonthOrYearChange()">
+                <option *ngFor="let year of years" [value]="year">{{ year }}</option>
+              </select>
+                <button class="filter-button" (click)="loadTopUsedVehiclesChart();onMonthOrYearChange()">סנן</button>
+              </div>
+
+              <div *ngIf="showChart">
+
+                <h3 class="section-heading">
+                  {{ isMonthlyView ? 'שימוש חודשי ברכבים' : 'שימוש כללי ברכבים' }}
+                </h3>
+
+                <button (click)="toggleUsageView()" class="toggle-view-button">
+                  {{ isMonthlyView ? 'הצג לפי כל הזמנים' : 'הצג לפי חודש' }}
+                </button>
+              <div *ngIf="isMonthlyNoData && isMonthlyView" class="no-data-message">
+                  אין נתונים להצגה
+                </div>
+                <p-chart *ngIf="isMonthlyView && !isMonthlyNoData" type="bar" [data]="monthlyStatsChartData"
+                  [options]="monthlyStatsChartOptions"></p-chart>
+
+                <div *ngIf="isAllTimeNoData&&!isMonthlyView" class="no-data-message">
+                  אין נתונים להצגה
+                </div>
+                <p-chart *ngIf="!isMonthlyView&&!isAllTimeNoData" type="bar" [data]="allTimeStatsChartData"
+                  [options]="allTimeStatsChartOptions"></p-chart>
+
+                <!-- Legend only relevant for Monthly View -->
+                <div class="usage-legend" *ngIf="showChart">
+                  <div class="legend-item">
+                    <span class="color-box good"></span> טוב (0–4 נסיעות)
+                  </div>
+                  <div class="legend-item">
+                    <span class="color-box medium"></span> בינוני (5–10 נסיעות)
+                  </div>
+                  <div class="legend-item">
+                    <span class="color-box high"></span> שימוש גבוה (11+ נסיעות)
+                  </div>
+                </div>
+              </div>
+            </p-tabPanel>
+            <!-- No‑Show Analytics Tab -->
+            <p-tabPanel header=" " [headerStyle]="{ display: 'none' }">
+              <div>
+
+
+
+                <ng-template #noDataTemplate>
+                  <div class="no-data-state">
+                    <div class="no-data-icon">📋</div>
+                    <div class="no-data-message">אין נתונים להצגה בטווח התאריכים הנבחר</div>
+                  </div>
+
+                </ng-template>
+              </div>
+            </p-tabPanel>
+
+            <p-tabPanel header=" " [headerStyle]="{ display: 'none' }">
+              <div>
+                <h3 class="section-heading">טבלת אי-הגעות של משתמשים</h3>
+
+                <!-- FILTERS -->
+                <div class="filter-controls">
+                  <div style="display: flex; flex-direction: column; gap:5px;">
+                    <label>
+                      <input type="checkbox" [(ngModel)]="filterOnePlus" (change)="applyNoShowFilter()" />
+                      הצג משתמשים עם 1-2 נעדרים
+                    </label>
+                    <label>
+                      <input type="checkbox" [(ngModel)]="filterCritical" (change)="applyNoShowFilter()" />
+                      הצג משתמשים עם 3+ נעדרים (קריטי)
+                    </label>
+                  </div>
+                  <div class="sort-container">
+                    <label>מיין לפי: </label>
+
+                    <select [(ngModel)]="noShowSortOption" (change)="applyNoShowFilter()">
+
+                      <option value="countAsc">כמות נעדרים ↑</option>
+                      <option value="countDesc">כמות נעדרים ↓</option>
+                      <option value="nameAsc">שם ↑</option>
+                      <option value="nameDesc">שם ↓</option>
+
+                    </select>
+                  </div>
+                </div>
+
+                <!-- SORTING -->
+
+                <div class="summary-cards">
+                  <div class="card">
+                    <div class="card-icon">📊</div>
+                    <div class="card-content">
+                      <div class="card-number">{{ totalNoShows }}</div>
+                      <div class="card-label">סה"כ אי-הגעות</div>
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-icon">👥</div>
+                    <div class="card-content">
+                      <div class="card-number">{{ uniqueNoShowUsers }}</div>
+                      <div class="card-label">סה"כ משתמשים שלא הגיעו </div>
+                    </div>
+                  </div>
+                </div>
+
+                 <div *ngIf="isEmptyNoShowData" class="no-data-message">
+                  אין נתונים להצגה
+                </div>
+                <!-- No show table -->
+                <div class="table-container" *ngIf="!isEmptyNoShowData">
+                  <table class="styled-table">
+                    <thead>
+                      <tr>
+                        <th>שם</th>
+                        <th>אימייל</th>
+                        <th>תפקיד</th>
+                        <th>כמות אי-הגעות</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let user of filteredNoShowUsers" (click)="goToUserDetails(user.employee_id!)"
+                        [ngClass]="{ 
       'critical-row': (user.no_show_count ?? 0) >= 3, 
       'warning-row': (user.no_show_count ?? 0) === 2 
     }">
-            <td>{{ user.name }}</td>
-            <td>{{ user.email }}</td>
-            <td>{{ user.role }}</td>
-            <td>{{ user.no_show_count }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</p-tabPanel>
-
+                        <td>{{ user.name }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.role }}</td>
+                        <td>{{ user.no_show_count }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </p-tabPanel>

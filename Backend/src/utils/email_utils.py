@@ -41,28 +41,30 @@ def send_email(subject: str, body: str, recipients: List[str]):
         print(f"❌ Failed to send email: {e}")
 
 
-def load_email_template(template_name: str) -> str:
-    """
-    Load an HTML email template from the templates/email/ directory.
-    """
-    base_path = Path(__file__).resolve().parent.parent
-    template_path = base_path / "templates" / "emails" / template_name
-
-    if not template_path.exists():
-        raise FileNotFoundError(f"Email template not found: {template_path}")
-
-    return template_path.read_text(encoding="utf-8")
-
-# async def async_send_email(subject: str, body: str, recipients: List[str]):
+# def load_email_template(template_name: str) -> str:
 #     """
-#     Runs the synchronous send_email function in a separate thread 
-#     to avoid blocking the main asyncio event loop.
+#     Load an HTML email template from the templates/email/ directory.
 #     """
-#     loop = asyncio.get_running_loop()
-#     await loop.run_in_executor(
-#         None,  # Uses the default thread pool executor
-#         send_email,
-#         subject,
-#         body,
-#         recipients
-#     )
+#     base_path = Path(__file__).resolve().parent.parent
+#     template_path = base_path / "templates" / "emails" / template_name
+
+#     if not template_path.exists():
+#         raise FileNotFoundError(f"Email template not found: {template_path}")
+
+#     return template_path.read_text(encoding="utf-8")
+
+
+async def async_send_email(subject: str, body: str, recipients: List[str]):
+    """
+    Runs the synchronous send_email function in a separate thread 
+    to avoid blocking the main asyncio event loop.
+    """
+    print('in async_send_email sending')
+    loop = asyncio.get_running_loop()
+    await loop.run_in_executor(
+        None,  # Uses the default thread pool executor
+        send_email,
+        subject,
+        body,
+        recipients
+    )

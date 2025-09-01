@@ -5,7 +5,6 @@ from uuid import uuid4, UUID
 from ..schemas.new_ride_schema import RideCreate, RideResponse
 from ..models.ride_model import Ride, RideStatus
 from ..models.user_model import User
-from ..utils.email_utils import send_email
 from datetime import datetime, timedelta, timezone
 from ..utils.audit_utils import log_action
 from ..models.vehicle_model import Vehicle
@@ -192,28 +191,6 @@ async def create_supervisor_ride(db: Session, user_id: UUID, ride: RideCreate):
     })
     await send_admin_odometer_notification(vehicle.id, vehicle.mileage)
 
-
-    # # Notification for delegated ride
-    # if ride.target_type == "other" and ride.user_id:
-    #     delegated_notification = create_system_notification(
-    #         user_id=ride.user_id,
-    #         title="בקשת נסיעה חדשה עבורך",
-    #         message="משתמש אחר הגיש עבורך בקשה לנסיעה",
-    #         order_id=new_ride.id
-    #     )
-    #     await sio.emit("new_notification", {
-    #         "id": str(delegated_notification.id),
-    #         "user_id": str(delegated_notification.user_id),
-    #         "title": delegated_notification.title,
-    #         "message": delegated_notification.message,
-    #         "notification_type": delegated_notification.notification_type.value,
-    #         "sent_at": delegated_notification.sent_at.isoformat(),
-    #         "order_id": str(delegated_notification.order_id) if delegated_notification.order_id else None,
-    #         "order_status": new_ride.status,
-
-
-    #     })
-
     db.execute(text("SET session.audit.user_id = DEFAULT"))
 
     ride_response = RideResponse(
@@ -225,3 +202,20 @@ async def create_supervisor_ride(db: Session, user_id: UUID, ride: RideCreate):
     ride_response_dict.pop('_sa_instance_state', None)
 
     return ride_response
+
+def check_license_validity(db: Session, user_id: UUID, ride_start: datetime):
+    from src.models.user_model import User  # או הנתיב הנכון אצלך
+    user = db.query(User).filter(User.employee_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="משתמש לא נמצא")
+
+    if not user.license_expiry_date:
+        raise HTTPException(status_code=400, detail="לא הוזן תוקף לרישיון המשתמש")
+
+    if user.license_expiry_date < ride_start.date():
+        raise HTTPException(
+            status_code=400,
+            detail="אין לך רישיון בתוקף במועד זה"
+        )
+
+    return True

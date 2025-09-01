@@ -291,7 +291,6 @@ def get_vehicle_by_id(vehicle_id: str, db: Session):
         "status": vehicle.status,
         "freeze_reason": vehicle.freeze_reason,
         "last_used_at": vehicle.last_used_at,
-        "current_location": vehicle.current_location,
         "mileage": vehicle.mileage,
         "vehicle_model": vehicle.vehicle_model,
         "image_url": vehicle.image_url,

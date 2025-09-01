@@ -97,6 +97,30 @@ async def start_ride_with_new_session(ride_id: str):
         db.close()
 
 
+
+async def send_notif_to_inspector():
+    db = SessionLocal()
+    try:
+       inspectors=db.query(User).filter(User.role == "inspector").all()
+       for inspector in inspectors:
+            notif = create_system_notification(
+                            user_id=inspector.employee_id,
+                            title="Inspector daily check",
+                            message=f"נא לבצע הבדיקה היומית של הרכבים"
+                        )
+            await sio.emit("new_notification", {
+                    "id": str(notif.id),
+                    "user_id": str(notif.user_id),
+                    "title": notif.title,
+                    "message": notif.message,
+                    "notification_type": notif.notification_type.value,
+                    "sent_at": notif.sent_at.isoformat(),
+        })
+    finally:
+        db.close()
+
+
+
 def check_and_complete_rides():
     db = SessionLocal()
     try:
@@ -1084,6 +1108,14 @@ def periodic_check_no_show_users():
         print(f"Error running periodic_check_no_show_users: {e}")
 
  
+def periodic_check_inspector_notif():
+    future = asyncio.run_coroutine_threadsafe(send_notif_to_inspector(), main_loop)
+    try:
+        future.result(timeout=30)
+    except Exception as e:
+        print(f"Error running periodic_check_no_show_users: {e}")
+
+  
 
 def periodic_delete_archived_vehicles():
     future = asyncio.run_coroutine_threadsafe(delete_old_archived_vehicles(), main_loop)
@@ -1095,6 +1127,14 @@ def periodic_delete_archived_vehicles():
 
 
 scheduler.add_job(periodic_check_vehicle, 'interval', days=1)
+
+scheduler.add_job(
+    periodic_check_inspector_notif,
+    trigger='cron',
+    hour=6,
+    minute=0
+)
+
 scheduler.add_job(periodic_check_no_show_users, 'interval', minutes=15)
 scheduler.add_job(periodic_check_ride_status, 'interval', minutes=15)
 scheduler.add_job(periodic_delete_archived_vehicles, 'interval',  days=30)

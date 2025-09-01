@@ -7,7 +7,6 @@ export interface Vehicle {
   freeze_reason?: 'accident' | 'maintenance' | 'personal';
   freeze_details?: string;
   last_used_at?: string;
-  current_location: string;
   mileage: number;
   vehicle_model: string;
   image_url: string;
