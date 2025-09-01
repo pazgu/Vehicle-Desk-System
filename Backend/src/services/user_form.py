@@ -1,23 +1,27 @@
+from fastapi import HTTPException, status
+from datetime import datetime, timezone
 import asyncio
+import os
 from dotenv import load_dotenv
 from sqlalchemy import text
 from sqlalchemy.orm import Session
+from typing import Optional
 
-from ..services.email_service import async_send_email, get_user_email, load_email_template
 from ..models.user_model import User,UserRole
 from ..models.ride_model import Ride,RideStatus
 from ..models.notification_model import Notification,NotificationType
 from ..models.vehicle_model import Vehicle, VehicleStatus,FreezeReason
+
 from ..schemas.form_schema import CompletionFormData
-from fastapi import HTTPException, status
-from datetime import datetime, timezone
+
+from ..utils.socket_manager import sio
 from .user_notification import create_system_notification_with_db, get_user_name
 from .monthly_trip_counts import increment_completed_trip_stat
-from ..services.user_notification import emit_new_notification
-from ..utils.socket_manager import sio
-from typing import Optional
+
 from ..services.admin_rides_service import update_monthly_usage_stats
-import os
+from ..services.email_service import async_send_email, get_user_email, load_email_template
+from ..services.user_notification import emit_new_notification
+
 load_dotenv() 
 BOOKIT_URL = os.getenv("BOOKIT_FRONTEND_URL", "http://localhost:4200")
 

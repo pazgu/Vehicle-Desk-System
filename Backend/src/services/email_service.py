@@ -10,10 +10,8 @@ from uuid import UUID
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from src.models.user_model import User
 
-# טוען משתני סביבה
 load_dotenv()
 
-# הגדרת נתיב תעודת SSL לסביבת הריצה
 os.environ['SSL_CERT_FILE'] = certifi.where()
 
 SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")

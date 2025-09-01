@@ -1,23 +1,38 @@
-from src.models.department_model import Department
-from datetime import  date, time, datetime, timedelta, timezone
-from sqlalchemy import text,func, or_
-from ..services.vehicle_service import get_vehicle_km_driven_on_date, get_vehicles_with_optional_status,update_vehicle_status,get_vehicle_by_id, get_available_vehicles_for_ride_by_id, get_inactive_vehicles
-from fastapi import APIRouter, Depends, HTTPException, Request, status , Query
-from uuid import UUID
-from ..schemas.vehicle_schema import VehicleStatusUpdate, RideTimelineSchema
-from ..utils.socket_manager import sio
-from sqlalchemy.orm import Session
-from ..schemas.vehicle_schema import VehicleOut
-from ..schemas.check_vehicle_schema import VehicleInspectionSchema
-from ..utils.auth import token_check, get_current_user,role_check
-from ..utils.database import get_db
+from datetime import date, time, datetime, timedelta, timezone
 from typing import List, Optional, Union
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, HTTPException, Request, status, Query
+from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy import text, func, or_
+from sqlalchemy.orm import Session
+
+# Utils
+from ..utils.auth import token_check, get_current_user, role_check
+from ..utils.database import get_db
+from ..utils.socket_manager import sio
+
+# Services
+from ..services.vehicle_service import (
+    get_vehicle_km_driven_on_date,
+    get_vehicles_with_optional_status,
+    update_vehicle_status,
+    get_vehicle_by_id,
+    get_available_vehicles_for_ride_by_id,
+    get_inactive_vehicles
+)
+
+# Schemas
+from ..schemas.check_vehicle_schema import VehicleInspectionSchema
+from ..schemas.vehicle_schema import VehicleOut, VehicleStatusUpdate, RideTimelineSchema
 from src.schemas.vehicle_create_schema import VehicleCreate
-from src.models.vehicle_model import VehicleStatus, Vehicle
+
+# Models
+from src.models.department_model import Department
 from src.models.ride_model import Ride
 from src.models.user_model import User
+from src.models.vehicle_model import VehicleStatus, Vehicle
 
-from fastapi.security import OAuth2PasswordBearer
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 router = APIRouter()

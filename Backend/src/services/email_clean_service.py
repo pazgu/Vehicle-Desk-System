@@ -2,35 +2,34 @@ import asyncio
 import os
 import ssl
 import certifi
-import socketio
 import logging
-from typing_extensions import Annotated
-from fastapi import Depends, HTTPException, status
+from datetime import datetime, timedelta
+from typing import Dict, Any, List, Optional
 from uuid import UUID
-from typing import Dict, Any, List, Optional # Ensure Optional is imported
-from sqlalchemy.orm import Session
+
+import socketio
+from dotenv import load_dotenv
+from fastapi import Depends, HTTPException, status
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
-from dotenv import load_dotenv
-
-# RE-ADD THIS IMPORT FOR TENACITY
+from sqlalchemy.orm import Session
 from tenacity import retry, stop_after_attempt, wait_exponential, before_sleep_log
+from typing_extensions import Annotated
 
-# from ..services import email_service
+# Utils
 from ..utils.database import SessionLocal
+from ..utils.socket_manager import sio as global_sio_instance
 
-from ..models.user_model import User
+# Models
 from ..models.ride_model import Ride
+from ..models.user_model import User
+
+# Schemas
 from ..schemas.email_status_schema import EmailStatusEnum
-from datetime import datetime, timedelta
-from src.utils.socket_manager import sio as global_sio_instance
 
-# Load environment variables
 load_dotenv()
-
 os.environ['SSL_CERT_FILE'] = certifi.where()
-
 logger = logging.getLogger(__name__)
 
 SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
@@ -41,7 +40,6 @@ jinja_env = Environment(
     autoescape=select_autoescape(['html', 'xml'])
 )
 
-# _send_email_sync_sendgrid and _async_send_email_sendgrid remain unchanged from previous correct versions
 def _send_email_sync_sendgrid(subject: str, html_content: str, to_emails: List[str], text_content: str = "") -> bool:
     """Synchronous email sending via SendGrid API."""
     message = Mail(
@@ -119,7 +117,6 @@ class EmailService:
             logger.error(f"Error rendering email template {template_name}: {e}", exc_info=True)
             raise
 
-    # --- NEW PRIVATE HELPER WITH TENACITY RETRIES ---
     @retry(
         stop=stop_after_attempt(3), # Try up to 3 times
         wait=wait_exponential(multiplier=1, min=2, max=10), # Wait 2, 4, 8 seconds

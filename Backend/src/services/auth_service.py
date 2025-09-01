@@ -89,26 +89,3 @@ def verify_reset_token(token: str) -> str:
         raise ValueError("Reset token has expired")
     except InvalidTokenError:
         raise ValueError("Invalid reset token")
-
-
-# def create_access_token(data: dict, expires_delta: timedelta = None):
-#     to_encode = data.copy()
-#     expire = datetime.utcnow() + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
-#     to_encode.update({"exp": expire})
-#     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-#     return encoded_jwt
-
-
-# def get_new_token(user: UserResponse) -> dict:
-#     expiry = datetime.datetime.utcnow() + datetime.timedelta(hours=3)
-#     payload = {
-#         "user": {
-#             "user_id": str(user.id),
-#             "username": user.username,
-#             "role": user.role
-#         },
-#         "exp": expiry
-#     }
-#     token = jwt.encode(payload, AppConfig.jwt_secret, algorithm="HS256")
-#     return {"token": token, "expires_at": expiry.isoformat()}
-

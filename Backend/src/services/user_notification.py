@@ -1,19 +1,18 @@
-from sqlalchemy.orm import Session
+import asyncio
+from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
-from ..models.vehicle_model import Vehicle
-from ..models.notification_model import Notification, NotificationType
-from datetime import datetime, timedelta, timezone
-from ..models.notification_model import Notification, NotificationType
-from ..utils.database import SessionLocal
-from ..models.user_model import User  # adjust import if needed
-from ..models.department_model import Department  # adjust import if needed
 from fastapi import HTTPException, status
-from ..models.ride_model import Ride
-from ..utils.socket_manager import sio  # ✅ CORRECT
-import asyncio
+from sqlalchemy.orm import Session
+
+from ..models.department_model import Department
+from ..models.notification_model import Notification, NotificationType
+from ..models.ride_model import Ride, RideStatus
+from ..models.user_model import User
+from ..models.vehicle_model import Vehicle
 from ..schemas.notification_schema import NotificationOut
-from ..models.ride_model import RideStatus
+from ..utils.database import SessionLocal
+from ..utils.socket_manager import sio
 
 def get_user_notifications(db: Session, user_id: UUID):
     results = (

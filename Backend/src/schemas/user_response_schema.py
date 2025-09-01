@@ -1,7 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from uuid import UUID
 from enum import Enum
-# app/schemas.py
 from pydantic import BaseModel, EmailStr
 from typing import Optional , List
 from uuid import UUID
@@ -25,7 +24,7 @@ class UserUpdate(BaseModel):
     license_file_url: Optional[str] = None
     license_expiry_date: Optional[date] = None
     phone: Optional[str] = None
-    is_blocked: Optional[bool] = False  # New field for blocking user
+    is_blocked: Optional[bool] = False  # Feild for blocking user
     block_expires_at: Optional[date] = None  # Optional, if user is blocked
 
 class UserResponse(BaseModel):
@@ -41,7 +40,7 @@ class UserResponse(BaseModel):
     license_expiry_date: Optional[date] = None
     phone: Optional[str] = None 
     is_blocked: bool = False
-    block_expires_at: Optional[datetime] = None # <--- CHANGE THIS LINE
+    block_expires_at: Optional[datetime] = None
     class Config:
         from_attributes = True
         
