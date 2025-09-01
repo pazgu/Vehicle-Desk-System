@@ -1,5 +1,5 @@
 from ..models.audit_log_model import AuditLog
-from ..models.user_model import User  # Import the User model
+from ..models.user_model import User
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from ..schemas.audit_schema import AuditLogsSchema
@@ -19,7 +19,7 @@ def get_all_audit_logs(
         query = query.filter(AuditLog.created_at <= to_date)
 
     if problematic_only:
-        query = query.filter(AuditLog.checkbox_value == True)  # Only logs with issues
+        query = query.filter(AuditLog.checkbox_value == True)  
 
     logs = query.all()
 

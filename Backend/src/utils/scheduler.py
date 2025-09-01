@@ -1,37 +1,43 @@
-import asyncio
-
-from dotenv import load_dotenv
 from fastapi import HTTPException
-
-from ..routes.admin_routes import get_no_show_events_count_per_user
-
-from ..models.no_show_events import NoShowEvent
-
-from ..models.audit_log_model import AuditLog
-from ..models.monthly_vehicle_usage_model import MonthlyVehicleUsage
-from sqlalchemy.dialects.postgresql import UUID
-from ..models.city_model import City
-from ..services.email_service import async_send_email, load_email_template
-from ..models.notification_model import Notification
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from ..models.department_model import Department
-from ..models.vehicle_model import Vehicle
-from ..services.user_form import get_ride_needing_feedback
-from apscheduler.schedulers.background import BackgroundScheduler
-from datetime import datetime, time, timezone
-from ..utils.database import SessionLocal
-from ..models.user_model import User
-from ..models.ride_model import Ride, RideStatus
-from ..services.user_notification import create_system_notification, emit_new_notification, get_user_name
-import pytz
-from apscheduler.jobstores.base import JobLookupError
-from datetime import datetime, timedelta, timezone, date
-from ..services.form_email import send_ride_completion_email
-from ..services.supervisor_dashboard_service import start_ride 
-from sqlalchemy.orm import Session,joinedload
-from ..utils.socket_manager import sio
+import asyncio
 import os
 import uuid
+from datetime import datetime, time, timezone, timedelta, date
+
+
+import pytz
+from apscheduler.jobstores.base import JobLookupError
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.schedulers.background import BackgroundScheduler
+from dotenv import load_dotenv
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Session, joinedload
+
+# Utils
+from ..utils.database import SessionLocal
+from ..utils.socket_manager import sio
+
+# Routes
+from ..routes.admin_routes import get_no_show_events_count_per_user
+
+# Services
+from ..services.email_service import async_send_email, load_email_template
+from ..services.form_email import send_ride_completion_email
+from ..services.supervisor_dashboard_service import start_ride
+from ..services.user_form import get_ride_needing_feedback
+from ..services.user_notification import create_system_notification, emit_new_notification, get_user_name
+
+# Models
+from ..models.audit_log_model import AuditLog
+from ..models.city_model import City
+from ..models.department_model import Department
+from ..models.monthly_vehicle_usage_model import MonthlyVehicleUsage
+from ..models.no_show_events import NoShowEvent
+from ..models.notification_model import Notification
+from ..models.ride_model import Ride, RideStatus
+from ..models.user_model import User
+from ..models.vehicle_model import Vehicle
+
 load_dotenv() 
 BOOKIT_URL = os.getenv("BOOKIT_FRONTEND_URL", "http://localhost:4200")
 

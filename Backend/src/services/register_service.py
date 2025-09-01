@@ -1,13 +1,15 @@
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
+import uuid
+
 from ..models.user_model import User
-from ..models.department_model import Department  # Import the Department model
+from ..models.department_model import Department
+from ..services.auth_service import create_access_token
 from ..schemas.register_schema import UserCreate
 from ..utils.auth import hash_password
-from ..services.auth_service import create_access_token
 from ..utils.database import SessionLocal
-import uuid
-from sqlalchemy import text
+
 
 
 

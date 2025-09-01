@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
-from .ride_status_enum import RideStatusEnum  # Relative import
+from .ride_status_enum import RideStatusEnum  
 from uuid import UUID
 
 

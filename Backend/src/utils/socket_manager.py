@@ -1,6 +1,6 @@
-# src/sockets/socket_manager.py
 import socketio
 from ..utils.auth import token_check_socket
+
 sio = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins="*")
 
 @sio.event

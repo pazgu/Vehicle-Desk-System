@@ -1,16 +1,19 @@
-from sqlalchemy.orm import Session
-from typing import List, Optional
-from ..models.ride_model import Ride , RideStatus
-from ..schemas.user_rides_schema import RideSchema
-from uuid import UUID
-from ..models.vehicle_model import Vehicle
-from sqlalchemy import String, func, text
-from datetime import datetime, timezone
 from fastapi import HTTPException
+from sqlalchemy.orm import Session
+from sqlalchemy import String, func, text
+from typing import List, Optional
+from uuid import UUID
+from datetime import timedelta ,datetime, timezone
+
+from ..models.ride_model import Ride , RideStatus
+from ..models.vehicle_model import Vehicle
+
+from ..schemas.user_rides_schema import RideSchema
 from src.schemas.ride_status_enum import RideStatusEnum
-from datetime import timedelta
+
 from ..utils.audit_utils import log_action
 from ..utils.auth import get_current_user
+
 def filter_rides(query, status: Optional[RideStatus], from_date, to_date):
     if status:
         query = query.filter(Ride.status == status)
@@ -19,10 +22,6 @@ def filter_rides(query, status: Optional[RideStatus], from_date, to_date):
     if to_date:
         query = query.filter(Ride.start_datetime <= to_date)
     return query.order_by(Ride.start_datetime)
-
-# def get_future_rides(user_id: UUID, db: Session, status=None, from_date=None, to_date=None) -> List[Ride]:
-#     query = db.query(Ride).filter(Ride.user_id == user_id, Ride.start_datetime > datetime.utcnow())
-#     return filter_rides(query, status, from_date, to_date).all()
 
 
 def get_future_rides(user_id: UUID, db: Session, status=None, from_date=None, to_date=None) -> List[RideSchema]:
@@ -57,9 +56,6 @@ def get_future_rides(user_id: UUID, db: Session, status=None, from_date=None, to
     rows = query.all()
     return [RideSchema(**dict(row._mapping)) for row in rows]
 
-# def get_past_rides(user_id: UUID, db: Session, status=None, from_date=None, to_date=None) -> List[Ride]:
-#     query = db.query(Ride).filter(Ride.user_id == user_id, Ride.start_datetime <= datetime.utcnow())
-#     return filter_rides(query, status, from_date, to_date).all()
 
 def get_past_rides(user_id: UUID, db: Session, status=None, from_date=None, to_date=None) -> List[RideSchema]:
     now = datetime.utcnow().replace(tzinfo=None)
@@ -88,10 +84,6 @@ def get_past_rides(user_id: UUID, db: Session, status=None, from_date=None, to_d
     rows = query.all() 
     return [RideSchema(**dict(row._mapping)) for row in rows] 
 
-
-# def get_all_rides(user_id: UUID, db: Session, status=None, from_date=None, to_date=None) -> List[Ride]:
-#     query = db.query(Ride).filter(Ride.user_id == user_id)
-#     return filter_rides(query, status, from_date, to_date).all()
 
 def get_all_rides(user_id: UUID, db: Session, status=None, from_date=None, to_date=None) -> List[RideSchema]:
     query = db.query(
