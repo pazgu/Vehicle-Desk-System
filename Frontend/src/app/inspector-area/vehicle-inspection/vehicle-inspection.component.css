@@ -1,3 +1,13 @@
+:host {
+  display: block;
+  min-height: 100vh; /* ensures full page coverage */
+  background-image: url('/assets/images/vehicle-dashboard-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  font-family: var(--font-family-alef);
+  padding: 1.5rem; /* optional if you want spacing */
+}
 
 
 /* Labels and Inputs */
