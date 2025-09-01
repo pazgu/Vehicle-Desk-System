@@ -1164,7 +1164,7 @@ export class AdminAnalyticsComponent implements OnInit {
       'נדחה': 'rejected',
       'בתהליך': 'in_progress',
       'הושלם': 'completed',
-      'בוטל': 'cancelled',
+      'בוטלה-נסיעה לא בוצעה': 'cancelled_due_to_no_show',
 
     };
     return reverseMap[hebrewLabel] || hebrewLabel;
