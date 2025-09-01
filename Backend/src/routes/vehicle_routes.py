@@ -196,6 +196,18 @@ def get_vehicle_types(
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
     
 
+@router.get("/ride/statuses")
+def get_ride_statuses(
+    db: Session = Depends(get_db),
+    payload: dict = Depends(token_check)
+):
+   try:
+        ride_statuses = db.query(Ride.status).distinct().all()
+        return {"ride_statuses": [rs[0] for rs in ride_statuses]}
+   except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}") 
+    
+
 ALLOWED_RIDE_STATUSES = ["approved", "in_progress", "completed"]
 @router.get("/vehicles/{vehicle_id}/timeline", response_model=List[RideTimelineSchema])
 def get_vehicle_timeline(
