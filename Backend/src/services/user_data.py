@@ -15,4 +15,6 @@ def get_user_department(user_id: UUID, db: Session) -> UUID | None:
     return user.department_id if user else None
 
 
-   
+def get_user_email(db: Session, user_id: UUID) -> str | None:
+    user = db.query(User).filter(User.employee_id == user_id).first()
+    return user.email if user else None

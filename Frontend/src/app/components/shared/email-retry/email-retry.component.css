@@ -1,0 +1,290 @@
+/* .email-retry-container {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.5);
+  direction: rtl;
+  pointer-events: auto;
+}
+
+.retry-card {
+  --primary-color: #c62828;
+  --secondary-color: #f3f4f6;
+  --text-color: #111827;
+  --subtle-text-color: #4b5563;
+  width: min(92vw, 520px);
+  background: #fff;
+  color: var(--text-color);
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.24);
+  animation: fadeInScale 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.retry-card .title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 800;
+  font-size: 1.25rem;
+  margin: 0 0 8px;
+}
+
+.retry-card .subtitle {
+  margin: 0 0 16px;
+  color: var(--subtle-text-color);
+  font-size: 1rem;
+}
+
+.retry-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start;
+  margin-top: 16px;
+}
+
+.retry-btn {
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: background-color 0.2s, opacity 0.2s;
+}
+
+.retry-btn.primary {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+.retry-btn.primary:hover:not(:disabled) {
+  background: #b71c1c;
+}
+
+.retry-btn.secondary {
+  background: var(--secondary-color);
+  color: var(--text-color);
+}
+
+.retry-btn.secondary:hover:not(:disabled) {
+  background: #e5e7eb;
+}
+
+.retry-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid #e0e0e0;
+  border-top: 3px solid var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.toast-message {
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1rem;
+  font-weight: 500;
+  direction: rtl;
+}
+
+.toast-message.success {
+  background: #f0fdf4;
+  border: 1px solid #22c55e;
+  color: #15803d;
+}
+
+.toast-message.error {
+  background: #fef2f2;
+  border: 1px solid #ef4444;
+  color: #dc2626;
+}
+
+.toast-message.loading {
+  background: #f0f9ff;
+  border: 1px solid #0ea5e9;
+  color: #0c4a6e;
+} */
+
+
+
+/* Top-right toast overlay positioning */
+.retry-toast-overlay {
+  position: fixed;
+  top: 80px; /* Increased from 20px to clear the header */
+  right: 20px;
+  z-index: 99999; /* Increased z-index to be above header */
+  direction: rtl;
+  pointer-events: auto;
+  animation: slideInFromRight 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Toast card styling */
+.retry-toast-card {
+  position: relative;
+  width: 350px;
+  max-width: calc(100vw - 40px);
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #fecaca;
+  box-shadow: 
+    0 10px 25px rgba(0, 0, 0, 0.15),
+    0 20px 48px rgba(0, 0, 0, 0.15),
+    0 1px 4px rgba(0, 0, 0, 0.15);
+  border-left: 4px solid #dc2626;
+}
+
+/* Close button */
+.close-btn {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #6b7280;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+/* Header section */
+.toast-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  margin-right: 24px; /* Account for close button */
+}
+
+.error-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.toast-title {
+  font-weight: 700;
+  font-size: 16px;
+  color: #dc2626;
+  margin: 0;
+}
+
+/* Message */
+.toast-message {
+  margin: 0 0 16px 0;
+  color: #374151;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Actions */
+.toast-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.retry-btn {
+  background: #dc2626;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.retry-btn:hover:not(:disabled) {
+  background: #b91c1c;
+  transform: translateY(-1px);
+}
+
+.retry-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
+  .retry-toast-overlay {
+    top: 70px; /* Adjusted for mobile header height */
+    right: 10px;
+    left: 10px;
+  }
+  
+  .retry-toast-card {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+/* Animation for when toast disappears */
+.retry-toast-overlay.fade-out {
+  animation: slideOutToRight 0.3s ease-in-out forwards;
+}
+
+@keyframes slideOutToRight {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}

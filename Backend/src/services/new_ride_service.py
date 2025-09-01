@@ -5,7 +5,6 @@ from uuid import uuid4, UUID
 from ..schemas.new_ride_schema import RideCreate, RideResponse
 from ..models.ride_model import Ride, RideStatus
 from ..models.user_model import User
-from ..utils.email_utils import send_email
 from datetime import datetime, timedelta, timezone
 from ..utils.audit_utils import log_action
 from ..models.vehicle_model import Vehicle
