@@ -29,6 +29,7 @@ export class EditRideComponent implements OnInit {
   rideForm!: FormGroup;
   rideId!: string;
   minDate: string = '';
+  minEndDate: string = '';
   estimated_distance_with_buffer: number = 0;
   rideRequestSub!: Subscription; 
   vehicleTypes: string[] = [];
@@ -96,6 +97,16 @@ export class EditRideComponent implements OnInit {
     }
 
     return null;
+  }
+  // ✅ NEW: Update minimum end date when start date changes
+  private updateMinEndDate(): void {
+    const startDate = this.rideForm.get('ride_date')?.value;
+    if (startDate) {
+      const nextDay = new Date(startDate);
+      nextDay.setDate(nextDay.getDate() + 1);
+      this.minEndDate = nextDay.toISOString().split('T')[0];
+      console.log('Updated minimum end date:', this.minEndDate);
+    }
   }
 
   private updateRideTypeNote(): void {
@@ -220,13 +231,25 @@ export class EditRideComponent implements OnInit {
       this.updateFilteredEndTimes(startTime);
     });
 
-    // ✅ NEW: Watch for date changes to update ride type note
+    // ✅ ENHANCED: Watch for date changes to update ride type note AND minimum end date
     this.rideForm.get('ride_date')?.valueChanges.subscribe(() => {
+      this.updateMinEndDate();
       this.updateRideTypeNote();
       this.filterAvailableVehicles(); // Re-filter vehicles when date changes
     });
 
-    this.rideForm.get('ride_date_night_end')?.valueChanges.subscribe(() => {
+    // ✅ NEW: Validate end date to prevent same-day selection for multi-day rides
+    this.rideForm.get('ride_date_night_end')?.valueChanges.subscribe((endDate) => {
+      if (endDate) {
+        const startDate = this.rideForm.get('ride_date')?.value;
+        if (startDate && endDate === startDate) {
+          console.log('End date cannot be same as start date for multi-day rides');
+          this.toastService.show('בנסיעה ליותר מיום, תאריך הסיום חייב להיות שונה מתאריך ההתחלה', 'error');
+          // Reset to minimum allowed date (next day)
+          this.rideForm.get('ride_date_night_end')?.setValue(this.minEndDate, { emitEvent: false });
+          return;
+        }
+      }
       this.updateRideTypeNote();
       this.updateFilteredEndTimes();
     });
@@ -362,11 +385,15 @@ export class EditRideComponent implements OnInit {
         console.log('Selected Vehicle:', selectedVehicle);
         const isOvernightRide = startDate.toDateString() !== endDate.toDateString();
         const nightEndDate = isOvernightRide ? endDate.toISOString().split('T')[0] : '';
+        // ✅ ENHANCED: Set minimum end date before patching form
+        const startDateStr = startDate.toISOString().split('T')[0];
+        this.rideForm.get('ride_date')?.setValue(startDateStr);
+        this.updateMinEndDate();
 
         // Patch form values
         this.rideForm.patchValue({
           ride_period: 'morning',
-          ride_date: startDate.toISOString().split('T')[0],
+          ride_date: startDateStr,
           ride_date_night_end: nightEndDate,
           start_time: this.originalStartTime,
           end_time: this.originalEndTime,
@@ -506,6 +533,11 @@ export class EditRideComponent implements OnInit {
     if (!this.isDayRide) {
       if (!endDate) {
         this.toastService.show('בנסיעה שיותר מיום חובה לבחור תאריך סיום', 'error');
+        return;
+      }
+      // Prevent same day selection
+      if (endDate === startDate) {
+        this.toastService.show('בנסיעה ליותר מיום, תאריך הסיום חייב להיות שונה מתאריך ההתחלה', 'error');
         return;
       }
       const startDateObj = new Date(startDate);
