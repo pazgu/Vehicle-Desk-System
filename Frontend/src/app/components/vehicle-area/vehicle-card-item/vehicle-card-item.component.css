@@ -1,4 +1,9 @@
 .vehicle-details-wrapper {
+  background-image: url('/assets/images/vehicle-dashboard-bg.png');
+  background-size: cover;
+  min-height: 100vh;
+  background-position: center;
+  background-repeat: no-repeat;
   padding: 3rem 1.5rem;
   min-height: 100vh;
   direction: rtl;
