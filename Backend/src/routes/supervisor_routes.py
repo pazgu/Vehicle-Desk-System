@@ -1,39 +1,46 @@
-from fastapi import APIRouter, Depends, HTTPException
+import logging
+from typing import Optional, List
 from uuid import UUID
 
-from ..services.new_ride_service import create_supervisor_ride
-
-from ..services.user_notification import create_system_notification
-
-from ..services.ride_reminder_service import schedule_ride_reminder_email
-from ..services.user_data import get_user_department
-from ..utils.time_utils import is_time_in_blocked_window
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi import status as fastapi_status
-
-from ..utils.scheduler import schedule_ride_start
-from ..schemas.new_ride_schema import RideCreate, RideResponse
-from src.services.supervisor_dashboard_service import get_department_orders,get_department_specific_order,edit_order_status
-from sqlalchemy.orm import Session
-from src.models.ride_model import Ride 
-from src.utils.database import get_db
-from ..utils.database import get_db
-from ..services.supervisor_dashboard_service import get_department_orders
-from typing import Optional,List
-from ..schemas.order_card_item import OrderCardItem
-from ..services.vehicle_service import freeze_vehicle_service
-from ..schemas.check_vehicle_schema import VehicleInspectionSchema
-from ..utils.auth import identity_check, role_check, supervisor_check, token_check
-from ..services.supervisor_dashboard_service import vehicle_inspection_logic , start_ride
-from ..utils.auth import supervisor_check, token_check
-from ..schemas.vehicle_schema import FreezeVehicleRequest
-from ..utils.socket_manager import sio
-router = APIRouter()
-import logging
 from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy.orm import Session
+
+# Utils
+from ..utils.auth import identity_check, role_check, supervisor_check, token_check
+from ..utils.database import get_db  # or use: from src.utils.database import get_db
+from ..utils.scheduler import schedule_ride_start
+from ..utils.socket_manager import sio
+from ..utils.time_utils import is_time_in_blocked_window
+
+# Services
+from ..services.new_ride_service import create_supervisor_ride
+from ..services.ride_reminder_service import schedule_ride_reminder_email
+from ..services.supervisor_dashboard_service import (
+    get_department_orders,
+    get_department_specific_order,
+    edit_order_status,
+    vehicle_inspection_logic,
+    start_ride
+)
+from ..services.user_data import get_user_department
+from ..services.user_notification import create_system_notification
+from ..services.vehicle_service import freeze_vehicle_service
+
+# Schemas
+from ..schemas.check_vehicle_schema import VehicleInspectionSchema
+from ..schemas.new_ride_schema import RideCreate, RideResponse
+from ..schemas.order_card_item import OrderCardItem
+from ..schemas.vehicle_schema import FreezeVehicleRequest
+
+# Models
+from src.models.ride_model import Ride
+
+router = APIRouter()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-# Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 @router.get("/orders/{department_id}")
@@ -118,85 +125,6 @@ async def create_order(
         )
 
 
-# @router.post("/{ride_id}/end", response_model=OrderCardItem)
-# def end_ride(ride_id: UUID, has_incident: Optional[bool] = False, db: Session = Depends(get_db)):
-#     return end_ride_service(db=db, ride_id=ride_id, has_incident=has_incident)
-
-
-# @router.get("/orders/{department_id}/{order_id}/pending")
-# def get_approval_dashboard_route(department_id: UUID, order_id: UUID):
-#     return {"message": f"Approval dashboard for order {order_id} in department {department_id}"}
-
-# @router.get("/vehicles/{department_id}")
-# def get_department_vehicles_route(department_id: UUID):
-#     return {"message": f"Vehicles for department {department_id}"}
-# @router.get("/vehicles/{department_id}")
-# def get_department_vehicles_route(department_id: UUID):
-#     return {"message": f"Vehicles for department {department_id}"}
-
-# @router.get("/notifications/{department_id}")
-# def view_department_notifications_route(department_id: UUID):
-#     return {"message": f"Notifications for department {department_id}"}
-# @router.get("/notifications/{department_id}")
-# def view_department_notifications_route(department_id: UUID):
-#     return {"message": f"Notifications for department {department_id}"}
-
-# @router.patch("/orders/{department_id}/{ride_id}/update")
-# def supervisor_update_ride_status(
-#     department_id: UUID,
-#     ride_id: UUID,
-#     req: UpdateRideStatusRequest,
-#     db: Session = Depends(get_db)
-# ):
-#     return update_ride_status(ride_id, req.status, db)
-# @router.get("/available-vehicles", response_model=List[VehicleOut])
-# def available_vehicles(
-#     type: Optional[VehicleType] = Query(None),
-#     db: Session = Depends(get_db)
-# ):
-#     return fetch_available_vehicles(db=db, type=type)
-# @router.patch("/orders/{department_id}/{ride_id}/update")
-# def supervisor_update_ride_status(
-#     department_id: UUID,
-#     ride_id: UUID,
-#     req: UpdateRideStatusRequest,
-#     db: Session = Depends(get_db)
-# ):
-#     return update_ride_status(ride_id, req.status, db)
-# @router.get("/available-vehicles", response_model=List[VehicleOut])
-# def available_vehicles(
-#     type: Optional[VehicleType] = Query(None),
-#     db: Session = Depends(get_db)
-# ):
-#     return fetch_available_vehicles(db=db, type=type)
-
-# @router.get("/in-use-vehicles", response_model=List[InUseVehicleOut])
-# def in_use_vehicles( db: Session = Depends(get_db)):
-#     return get_in_use_vehicles(db=db)
-# @router.get("/in-use-vehicles", response_model=List[InUseVehicleOut])
-# def in_use_vehicles( db: Session = Depends(get_db)):
-#     return get_in_use_vehicles(db=db)
-
-# @router.get("/frozen-vehicles", response_model=List[VehicleOut])
-# def frozen_vehicles(
-#     type: Optional[VehicleType] = Query(None),
-#     db: Session = Depends(get_db)
-# ):
-#     return get_frozen_vehicles(db=db, type=type)
-# @router.get("/frozen-vehicles", response_model=List[VehicleOut])
-# def frozen_vehicles(
-#     type: Optional[VehicleType] = Query(None),
-#     db: Session = Depends(get_db)
-# ):
-#     return get_frozen_vehicles(db=db, type=type)
-
-
-
-# @router.post("/{ride_id}/end", response_model=OrderCardItem)
-# def end_ride(ride_id: UUID, has_incident: Optional[bool] = False, db: Session = Depends(get_db),payload: dict = Depends(token_check)):
-#     return end_ride_service(db=db, ride_id=ride_id, has_incident=has_incident)
-
-
 @router.post("/vehicle-inspection")
 def vehicle_inspection(data: VehicleInspectionSchema, db: Session = Depends(get_db),payload: dict = Depends(token_check)):
     try:
@@ -217,12 +145,10 @@ async def start_ride_route(ride_id: UUID, db: Session = Depends(get_db)):
     try:
         ride, vehicle = await start_ride(db, ride_id)
        
-        #  3️⃣ Emit ride update
         await sio.emit("ride_status_updated", {
             "ride_id": str(ride.id),
             "new_status": ride.status.value
         })
-        # 4️⃣ Emit vehicle update
         await sio.emit("vehicle_status_updated", {
             "id": str(vehicle.id),
             "status": vehicle.status.value

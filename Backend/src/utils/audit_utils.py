@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from typing import Optional
 import json
-from datetime import datetime 
 
 def log_action(
     db,

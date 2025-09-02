@@ -1,18 +1,18 @@
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from uuid import uuid4, UUID
+from datetime import datetime, timedelta, timezone
 
 from ..schemas.new_ride_schema import RideCreate, RideResponse
+from src.constants import OFFROAD_TYPES
+from ..services.user_notification import create_system_notification, send_admin_odometer_notification
 from ..models.ride_model import Ride, RideStatus
 from ..models.user_model import User
-from ..utils.email_utils import send_email
-from datetime import datetime, timedelta, timezone
-from ..utils.audit_utils import log_action
 from ..models.vehicle_model import Vehicle
+
+from ..utils.audit_utils import log_action
 from ..utils.socket_manager import sio
-from src.constants import OFFROAD_TYPES
-from fastapi import HTTPException
-from ..services.user_notification import create_system_notification, send_admin_odometer_notification
 
 def is_offroad_vehicle(vehicle_type: str) -> bool:
     return any(keyword.lower() in vehicle_type.lower() for keyword in OFFROAD_TYPES)

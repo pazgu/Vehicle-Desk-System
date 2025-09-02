@@ -1,10 +1,9 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 from uuid import UUID
 from datetime import datetime
 
 from ..models.vehicle_model import FuelType, VehicleStatus, FreezeReason
-from pydantic import BaseModel, Field
 
 class VehicleOut(BaseModel):
     id: UUID
@@ -25,7 +24,7 @@ class VehicleOut(BaseModel):
 
 
     class Config:
-        use_enum_values = True  # return enums as their values in JSON
+        use_enum_values = True
         from_attributes = True  
 
 

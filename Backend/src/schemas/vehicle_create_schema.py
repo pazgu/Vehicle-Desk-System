@@ -1,5 +1,3 @@
-# schemas/vehicle_schema.py
-
 from pydantic import BaseModel, HttpUrl
 from typing import Optional
 from datetime import datetime

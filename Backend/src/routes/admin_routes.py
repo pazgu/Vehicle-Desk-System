@@ -1,77 +1,83 @@
-from fastapi import APIRouter, Depends, HTTPException, Query,Header, Request, status, UploadFile, File, Form , Path , Body
+import pandas as pd
+from datetime import datetime, time, date, timedelta
+from typing import Optional, List, Dict, Any
 from uuid import UUID
+
+from fastapi import (
+    APIRouter, 
+    Depends, 
+    HTTPException, 
+    Query, 
+    Header, 
+    Request, 
+    status, 
+    UploadFile, 
+    File, 
+    Form, 
+    Path, 
+    Body
+)
+from fastapi.responses import JSONResponse
+from fastapi.security import OAuth2PasswordBearer
 from fastapi.staticfiles import StaticFiles
-from typing import Optional , List
-from datetime import datetime, time
-from sqlalchemy.orm import Session,aliased
-from ..models.no_show_events import NoShowEvent
-from src.schemas.vehicle_inspection_schema import VehicleInspectionOut
-from src.schemas.user_response_schema import UserResponse
-from src.schemas.ride_dashboard_item import RideDashboardItem
-from src.schemas.trip_completion_schema import RawCriticalIssueSchema, TripCompletionIssueSchema
-from src.services.user_data import get_user_by_id, get_all_users
+from sqlalchemy import and_, or_, desc, func, text
+from sqlalchemy.orm import Session, aliased
+
+# Utils
+from ..utils.auth import get_current_user, token_check, role_check
+from ..utils.database import get_db
+from ..utils.socket_manager import sio
+from src.utils.stats import generate_monthly_vehicle_usage
+
+# Services
+from src.services import admin_service, department_service
 from src.services.admin_rides_service import (
     get_all_orders,
     get_future_orders,
     get_past_orders,
     get_orders_by_user,
     get_order_by_ride_id,
-    get_all_time_vehicle_usage_stats 
+    get_all_time_vehicle_usage_stats,
+    get_critical_trip_issues,
+    get_current_month_vehicle_usage,
+    get_vehicle_usage_stats,
+    get_critical_issue_by_id
 )
-from typing import Optional
-from datetime import datetime
-from sqlalchemy import and_, or_ ,desc
-from ..utils.database import get_db
-from src.models.user_model import User , UserRole
-from src.models.vehicle_model import Vehicle
-from ..schemas.check_vehicle_schema import VehicleInspectionSchema
-from ..schemas.vehicle_schema import VehicleOut , InUseVehicleOut , VehicleStatusUpdate , MileageUpdateRequest
-from ..utils.auth import get_current_user, token_check
-from ..services.vehicle_service import archive_vehicle_by_id, get_available_vehicles_for_ride_by_id,delete_vehicle_by_id
-from ..services.user_notification import send_admin_odometer_notification
-from datetime import date, datetime, timedelta
-from src.models.vehicle_inspection_model import VehicleInspection
-from ..services.monthly_trip_counts import archive_last_month_stats
-from sqlalchemy import func, text
-from fastapi.responses import JSONResponse
-from src.models.ride_model import Ride
-from src.utils.stats import generate_monthly_vehicle_usage
-from ..schemas.register_schema import UserCreate
-from src.services import admin_service
-from ..schemas.audit_schema import AuditLogsSchema
+from src.services.admin_user_service import create_user_by_admin, get_users_service
 from src.services.audit_service import get_all_audit_logs
-from ..utils.socket_manager import sio
-from ..services.admin_rides_service import get_critical_trip_issues, get_current_month_vehicle_usage ,  get_vehicle_usage_stats
-from fastapi.security import OAuth2PasswordBearer
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-from ..utils.auth import role_check
-from fastapi import HTTPException
-from ..services.admin_user_service import create_user_by_admin , get_users_service
-from ..schemas.user_response_schema import PaginatedUserResponse
-from src.utils.auth import get_current_user
-from ..services.license_service import upload_license_file_service , check_expired_licenses
-from ..services.license_service import upload_license_file_service 
-from src.services.admin_rides_service import get_critical_issue_by_id 
-from src.schemas.order_card_item import OrderCardItem
-from src.schemas.statistics_schema import NoShowStatsResponse,TopNoShowUser
-from src.models.department_model import Department
+from src.services.license_service import upload_license_file_service, check_expired_licenses
+from src.services.user_data import get_user_by_id, get_all_users
+from ..services.admin_rides_service import get_critical_trip_issues, get_current_month_vehicle_usage, get_vehicle_usage_stats
+from ..services.monthly_trip_counts import archive_last_month_stats
+from ..services.user_notification import send_admin_odometer_notification
+from ..services.vehicle_service import (
+    archive_vehicle_by_id,
+    get_available_vehicles_for_ride_by_id,
+    delete_vehicle_by_id
+)
+
+# Schemas
+from src.schemas.audit_schema import AuditLogsSchema
 from src.schemas.department_schema import DepartmentCreate, DepartmentUpdate, DepartmentOut
-from src.services import department_service
-import pandas as pd
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
-from uuid import UUID
-from typing import Optional
-from datetime import datetime
-from sqlalchemy.orm import Session
-from sqlalchemy import text # Make sure text is imported
-from src.schemas.user_response_schema import UserResponse # Assuming this path is correct
-from src.models.user_model import User, UserRole # Import User and UserRole enum
-from src.utils.database import get_db # Assuming this path is correct
-from src.utils.auth import token_check # Assuming this path is correct
-from src.utils.socket_manager import sio # Assuming this path is correct (if you have one)
-from typing import Dict, Any
+from src.schemas.order_card_item import OrderCardItem
+from src.schemas.ride_dashboard_item import RideDashboardItem
+from src.schemas.statistics_schema import NoShowStatsResponse, TopNoShowUser
+from src.schemas.trip_completion_schema import RawCriticalIssueSchema, TripCompletionIssueSchema
+from src.schemas.user_response_schema import UserResponse, PaginatedUserResponse
+from src.schemas.vehicle_inspection_schema import VehicleInspectionOut
+from ..schemas.check_vehicle_schema import VehicleInspectionSchema
+from ..schemas.register_schema import UserCreate
+from ..schemas.vehicle_schema import VehicleOut, InUseVehicleOut, VehicleStatusUpdate, MileageUpdateRequest
 
+# Models
+from src.models.department_model import Department
+from src.models.ride_model import Ride
+from src.models.user_model import User, UserRole
+from src.models.vehicle_inspection_model import VehicleInspection
+from src.models.vehicle_model import Vehicle
+from ..models.no_show_events import NoShowEvent
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 router = APIRouter()
 
 @router.get("/orders", response_model=list[RideDashboardItem])
@@ -597,13 +603,12 @@ def vehicle_status_summary(
         raise HTTPException(status_code=500, detail=f"Error fetching summary: {str(e)}")
 
 @router.get("/analytics/ride-status-summary")
-def ride_status_summary(db: Session = Depends(get_db)):
+def ride_status_summary(status: str = None, db: Session = Depends(get_db)):
     try:
-        result = (
-            db.query(Ride.status, func.count(Ride.id).label("count"))
-            .group_by(Ride.status)
-            .all()
-        )
+        query = db.query(Ride.status, func.count(Ride.id).label("count"))
+        if status:
+            query = query.filter(Ride.status == status)
+        result = query.group_by(Ride.status).all()
         summary = [{"status": row.status.value, "count": row.count} for row in result]
         return JSONResponse(content=summary)
     except Exception as e:
@@ -831,7 +836,6 @@ def get_critical_issue_details(issue_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Failed to fetch issue details: {str(e)}")
 
 
-from sqlalchemy import and_, or_
 
 @router.get("/critical-issues", response_model=Dict[str, List[Any]])
 def get_critical_issues(

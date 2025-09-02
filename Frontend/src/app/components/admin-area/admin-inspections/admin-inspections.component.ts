@@ -44,6 +44,9 @@ export class AdminInspectionsComponent implements OnInit {
   ngOnInit(): void {
     this.fetchUsers();
     this.loadData();
+    this.socketService.newInspection$.subscribe((data) => {
+      this.loadData();
+    });
   }
 
   loadData(): void {

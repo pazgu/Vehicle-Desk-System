@@ -21,7 +21,7 @@ class RawCriticalIssueSchema(BaseModel):
     inspection_date: datetime
 
     inspected_by: Optional[UUID]
-    inspector_name: Optional[str]  # new field from users table
+    inspector_name: Optional[str]  
 
     critical_issue_vehicle_id: Optional[UUID]
     critical_issue_bool: bool

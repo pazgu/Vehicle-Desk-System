@@ -5,14 +5,16 @@ from uuid import uuid4
 from typing import Optional
 
 from ..schemas.register_schema import UserCreate
+from ..schemas.user_response_schema import PaginatedUserResponse
+
 from ..models.user_model import User, UserRole
 from ..models.department_model import Department
+
 from ..utils.auth import hash_password
-from ..schemas.user_response_schema import PaginatedUserResponse
+
 
 
 def create_user_by_admin(user_data: UserCreate, changed_by, db: Session):
-    # Check for existing user
     existing_user = db.query(User).filter(
         (User.email == user_data.email) | (User.username == user_data.username)
     ).first()

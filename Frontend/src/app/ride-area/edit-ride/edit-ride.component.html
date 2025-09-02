@@ -29,7 +29,7 @@
           </div>
 
           <div class="input-group">
-            <label>תאריך</label>
+            <label>תאריך התחלה</label>
             <input type="date" formControlName="ride_date" [min]="minDate" />
             <small class="error-text" *ngIf="getFieldError('ride_date')">
               {{ getFieldError('ride_date') }}
@@ -39,10 +39,10 @@
 
         <div class="row" *ngIf="!isDayRide">
           <div class="input-group">
-            <label>תאריך סיום (נסיעה יותר מיום)</label>
+            <label>תאריך סיום (נסיעה ליותר מיום)</label>
             <input type="date" formControlName="ride_date_night_end"
                    [min]="rideForm.get('ride_date')?.value" />
-            <small class="info-text">הנסיעה מסתיימת ביום הבא</small>
+            <small class="info-text">הנסיעה מסתיימת ביום אחר</small>
           </div>
           <div class="input-group"></div> </div>
 
@@ -75,7 +75,7 @@
               שעת הסיום חייבת להיות לפחות 15 דקות אחרי שעת ההתחלה
             </small>
             <small class="info-text" *ngIf="!isDayRide">
-              לנסיעות לילה ניתן לבחור כל שעה (הנסיעה תסתיים ביום הבא)
+              לנסיעות יותר מיום ניתן לבחור כל שעה
             </small>
           </div>
         </div>

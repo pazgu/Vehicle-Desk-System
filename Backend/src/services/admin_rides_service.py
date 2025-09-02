@@ -1,28 +1,21 @@
-from typing import List, Optional , Dict
-from datetime import datetime,date
-from sqlalchemy.orm import Session
-from sqlalchemy import String, extract, func, and_, or_
+import calendar
+from datetime import datetime, date
+from typing import List, Optional, Dict, Any
 from uuid import UUID
 
-from typing import Optional
-from datetime import date
+from sqlalchemy import String, extract, func, and_, or_
+from sqlalchemy.orm import Session
 
-from ..models.ride_model import Ride, RideStatus
-from ..models.vehicle_model import Vehicle
-from ..models.user_model import User  
+# Schemas
 from ..schemas.ride_dashboard_item import RideDashboardItem
-import calendar
-from ..models.vehicle_inspection_model import VehicleInspection
+
+# Models
 from ..models.monthly_vehicle_usage_model import MonthlyVehicleUsage
+from ..models.ride_model import Ride, RideStatus
+from ..models.user_model import User
+from ..models.vehicle_inspection_model import VehicleInspection
+from ..models.vehicle_model import Vehicle
 from src.models.ride_approval_model import RideApproval
-from src.models.ride_model import Ride
-from typing import List
-from src.models.vehicle_inspection_model import VehicleInspection
-from src.models.ride_approval_model import RideApproval
-from datetime import datetime
-from typing import List, Dict, Any
-from sqlalchemy import or_, and_
-from src.models.ride_approval_model import RideApproval  # double check this import!
 
 
 def filter_rides(query, status: Optional[RideStatus], from_date, to_date):

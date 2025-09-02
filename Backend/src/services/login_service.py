@@ -1,11 +1,11 @@
-from sqlalchemy.orm import Session
-from ..models.user_model import User
-from ..utils.auth import verify_password  # Import the verify_password function
-from ..services.auth_service import create_access_token
-from ..utils.mock_data import mock_users_db
-from ..utils.mock_data import get_user_by_username
 from fastapi import Depends, HTTPException
-from ..utils.database import get_db  # a dependency that returns a db session
+from sqlalchemy.orm import Session
+
+from ..models.user_model import User
+from ..services.auth_service import create_access_token
+from ..utils.auth import verify_password
+from ..utils.database import get_db
+from ..utils.mock_data import mock_users_db, get_user_by_username
 
 def login_user(username: str, password: str, db: Session = Depends(get_db)):
     # Try to fetch the user by username or email

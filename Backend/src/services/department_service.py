@@ -2,7 +2,7 @@ from sqlalchemy import text
 from fastapi import HTTPException, Depends
 from sqlalchemy.orm import Session
 from uuid import UUID
-from src.utils.auth import token_check # Assuming this path is correct
+from src.utils.auth import token_check 
 
 from ..models.department_model import Department
 from ..models.user_model import User, UserRole

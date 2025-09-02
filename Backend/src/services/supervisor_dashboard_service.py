@@ -1,26 +1,30 @@
 import math
+from datetime import datetime, timezone
 from typing import List
-from datetime import datetime,timezone
-from ..schemas.ride_dashboard_item import RideDashboardItem
-from ..schemas.order_card_item import OrderCardItem
-from ..models.ride_model import Ride , RideStatus
-from ..models.user_model import User
-from sqlalchemy.orm import Session
-from ..models.notification_model import NotificationType, Notification
-from ..models.vehicle_model import VehicleStatus , Vehicle
-from fastapi import HTTPException
-from .vehicle_service import update_vehicle_status
-from ..models.vehicle_inspection_model import VehicleInspection 
-from ..schemas.check_vehicle_schema import VehicleInspectionSchema
-from sqlalchemy import String , func, text,desc
-from ..utils.audit_utils import log_action
-from typing import List
-from sqlalchemy.orm import Session
 from uuid import UUID
-from src.models.user_model import User  # assuming you have this model with department info and role
-# from ..utils.email_utils import send_email, load_email_template, load_email_template
+
+from fastapi import HTTPException
+from sqlalchemy import String, func, text, desc
+from sqlalchemy.orm import Session
+
+# Utils
+from ..utils.audit_utils import log_action
+
+# Services
+from .vehicle_service import update_vehicle_status
 from ..services.email_service import async_send_email, load_email_template, get_user_email
-  
+
+# Schemas
+from ..schemas.check_vehicle_schema import VehicleInspectionSchema
+from ..schemas.order_card_item import OrderCardItem
+from ..schemas.ride_dashboard_item import RideDashboardItem
+
+# Models
+from ..models.notification_model import NotificationType, Notification
+from ..models.ride_model import Ride, RideStatus
+from ..models.user_model import User
+from ..models.vehicle_inspection_model import VehicleInspection
+from ..models.vehicle_model import VehicleStatus, Vehicle
   
   #helper function
 # def get_user_email(user_id: UUID, db: Session) -> str | None:
@@ -320,20 +324,6 @@ def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
     critical_issue_bool=data.critical_issue_bool,
     issues_found=data.issues_found,
 )   
-    # If you want to include vehicle_id, uncomment the following line 
-    # inspection = VehicleInspection(
-    #     vehicle_id=data.vehicle_id,
-    #     inspected_by=data.inspected_by,
-    #     # fuel_level=data.fuel_level,
-    #     # tires_ok=data.tires_ok,
-    #     clean=data.clean,
-    #     fuel_checked=data.fuel_checked,
-    #     no_items_left=data.no_items_left,
-    #     critical_issue_bool=data.critical_issue_bool,
-    #     issues_found=data.issues_found,
-    #     inspection_date=datetime.utcnow()
-    # )
-
 
     db.add(inspection)
 

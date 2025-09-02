@@ -10,10 +10,8 @@ from uuid import UUID
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from src.models.user_model import User
 
-# טוען משתני סביבה
 load_dotenv()
 
-# הגדרת נתיב תעודת SSL לסביבת הריצה
 os.environ['SSL_CERT_FILE'] = certifi.where()
 
 SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
@@ -54,8 +52,17 @@ def send_email(to_email: str, subject: str, html_content: str, text_content: str
             masked_key = f"{SENDGRID_API_KEY[:5]}...{SENDGRID_API_KEY[-5:]}"
         sg = SendGridAPIClient(SENDGRID_API_KEY)
         response = sg.send(message)
-        return response
-    except:
+
+        if 200 <= response.status_code < 300:
+            print(f"✅ Email sent successfully with status: {response.status_code}")
+            return True # <--- Return True for success
+        else:
+            print(f"❌ SendGrid returned an error status: {response.status_code}")
+            return False # <--- Return False for a non-2xx status
+
+    except Exception as e:
+        #print(f"❌ Error sending email: {e}")
+        # כאן ניתן להחליט האם לזרוק או לא את החריגה
         raise
 
 
@@ -84,6 +91,14 @@ def get_user_email(user_id: UUID, db: Session) -> str | None:
     if user and user.email:
         return user.email
     return None
+
+def get_admin_emails(db: Session) -> list[str]:
+    """
+    Returns a list of admin email addresses from the database.
+    Assumes User model has an 'is_admin' boolean field and 'email' field.
+    """
+    admins = db.query(User).filter(User.is_admin == True, User.email != None).all()
+    return [admin.email for admin in admins]
 
 async def send_license_expiry_notifications(user_id: UUID, db: Session):
     user = db.query(User).filter(User.employee_id == user_id).first()

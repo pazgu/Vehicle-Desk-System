@@ -11,7 +11,7 @@ export const environment = {
     CompletionFormUrl:'http://localhost:8000/api/complete-ride-form',
     socketUrl: 'http://localhost:8000',
     forgotPassUrl:'http://localhost:8000/api/forgot-password',
-    resertPassUrl:'http://localhost:8000/api/reset-password',
+    resetPassUrl:'http://localhost:8000/api/reset-password',
     rideLocationsUrl:'http://localhost:8000/api/rides/with-locations',
     frozenVehiclesUrl:'http://localhost:8000/api/all-vehicles',
     vehicleUsageStatsUrl: 'http://localhost:8000/vehicles/usage-stats',
