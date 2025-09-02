@@ -50,7 +50,7 @@ get f() {
     const email = this.forgotForm.value.email;
     this.authService.requestPasswordReset(email).subscribe({
       next: res => this.message = res.message,
-      error: err => this.error = err.error.detail || 'Failed to send reset email'
+      error: err => this.error = err.error.detail || 'שגיאה בשליחת אימייל איפוס סיסמה'
     });
   }
 
