@@ -22,7 +22,7 @@
     </tr>
   </thead>
   <tbody>
-    <tr *ngFor="let issue of vehicleIssues">
+    <tr *ngFor="let issue of filteredIssues">
       <td>{{ issue.plate }}</td>
       <td><input type="checkbox" [(ngModel)]="issue.dirty" /></td>
       <td>
