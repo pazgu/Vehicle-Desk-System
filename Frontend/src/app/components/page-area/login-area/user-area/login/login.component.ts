@@ -122,7 +122,6 @@ if (tokenParts.length === 3) {
     },
     error: (err) => {
       console.error('Login failed:', err);
-      this.toastService.show('שם משתמש או סיסמה שגויים', 'error');
     }
   });
 }
