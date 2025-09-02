@@ -2,6 +2,10 @@
   min-height: calc(100vh - 55px);
   padding: 25px;
   direction: rtl;
+  background-image: url('/assets/images/vehicle-dashboard-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .user-data-container {
