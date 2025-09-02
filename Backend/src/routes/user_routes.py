@@ -17,7 +17,6 @@ from apscheduler.jobstores.base import JobLookupError
 
 # Utils
 from ..utils.database import get_db
-from ..utils.email_utils import async_send_email
 from ..utils.auth import role_check, identity_check, get_current_user, hash_password
 from ..utils.socket_manager import sio
 from ..utils.socket_utils import convert_decimal
