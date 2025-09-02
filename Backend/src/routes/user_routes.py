@@ -118,7 +118,7 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
         logger.error(f"Login failed: {str(e)}")
         raise HTTPException(
             status_code=fastapi_status.HTTP_401_UNAUTHORIZED,
-            detail="Login failed: Incorrect username or password."  # Hide internal errors for security
+            detail="שם משתמש או סיסמה שגויים"
         )
     
 
