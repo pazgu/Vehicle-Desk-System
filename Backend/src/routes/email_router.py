@@ -7,7 +7,7 @@ import logging
 import os
 from datetime import datetime, timedelta
 
-from ..services import form_email
+
 
 logger = logging.getLogger(__name__)
 
@@ -146,13 +146,14 @@ async def retry_email(
                 "ride_type": ride_db_object.ride_type,
             }
             
-            email_sent_successfully = await form_email.send_ride_completion_email(
-                ride_id=ride_db_object.id,
-                recipient_id=recipient_id,
-                db=db,
-                ride_details=ride_details_for_email,
-                use_retries=True
-            )
+            #we will replace the send_ride_completion_email from form_email with the new one we create
+            # email_sent_successfully = await form_email.send_ride_completion_email(
+            #     ride_id=ride_db_object.id,
+            #     recipient_id=recipient_id,
+            #     db=db,
+            #     ride_details=ride_details_for_email,
+            #     use_retries=True
+            # )
 
         elif email_type == "ride_cancellation":
             ride_db_object = db.query(RideModel).filter(RideModel.id == identifier_id).first()

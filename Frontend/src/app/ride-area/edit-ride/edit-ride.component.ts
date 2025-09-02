@@ -211,13 +211,13 @@ export class EditRideComponent implements OnInit {
     this.buildForm();
     this.fetchVehicleTypes();
 
-    this.rideRequestSub = this.socketService.rideRequests$.subscribe((rideData) => {
-      if (rideData) {
-        this.toastService.show('🚗 התקבלה הזמנת נסיעה חדשה', 'success');
-        const audio = new Audio('assets/sounds/notif.mp3');
-        audio.play();
-      }
-    });
+    // this.rideRequestSub = this.socketService.rideRequests$.subscribe((rideData) => {
+    //   if (rideData) {
+    //     this.toastService.show('🚗 התקבלה הזמנת נסיעה חדשה', 'success');
+    //     const audio = new Audio('assets/sounds/notif.mp3');
+    //     audio.play();
+    //   }
+    // });
 
     this.rideForm.get('start_time')?.valueChanges.subscribe(startTime => {
       if (!startTime) {

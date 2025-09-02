@@ -9,11 +9,7 @@ from ..models.vehicle_inspection_model import VehicleInspection
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 from ..services.user_notification import create_system_notification
 from ..utils.socket_manager import sio
-from ..services.email_service import (
-    async_send_email,
-    render_email_template,
-    get_user_email
-)
+
 async def create_inspection(data: VehicleInspectionSchema, db: Session):
     print('inspection data', data)
     try:
