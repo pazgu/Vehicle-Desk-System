@@ -19,7 +19,6 @@ from .user_notification import create_system_notification_with_db, get_user_name
 from .monthly_trip_counts import increment_completed_trip_stat
 
 from ..services.admin_rides_service import update_monthly_usage_stats
-from ..services.email_service import async_send_email, get_user_email, load_email_template
 from ..services.user_notification import emit_new_notification
 
 load_dotenv() 

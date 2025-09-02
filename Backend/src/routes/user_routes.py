@@ -26,7 +26,6 @@ from ..utils.time_utils import is_time_in_blocked_window
 
 # Services
 from ..services import register_service, login_service
-from ..services.email_service import get_user_email, load_email_template
 from ..services.new_ride_service import check_license_validity, create_ride
 from ..services.user_rides_service import get_future_rides, get_past_rides, get_all_rides, get_ride_by_id, get_archived_rides, cancel_order_in_db
 from ..services.register_service import get_departments

@@ -21,8 +21,7 @@ from ..utils.socket_manager import sio
 from ..routes.admin_routes import get_no_show_events_count_per_user
 
 # Services
-from ..services.email_service import async_send_email, load_email_template
-from ..services.form_email import send_ride_completion_email
+
 from ..services.supervisor_dashboard_service import start_ride
 from ..services.user_form import get_ride_needing_feedback
 from ..services.user_notification import create_system_notification, emit_new_notification, get_user_name
@@ -42,7 +41,6 @@ load_dotenv()
 BOOKIT_URL = os.getenv("BOOKIT_FRONTEND_URL", "http://localhost:4200")
 
 scheduler = BackgroundScheduler(timezone=pytz.timezone("Asia/Jerusalem"))
-from ..services.email_service import get_user_email, load_email_template, async_send_email
 from ..services.user_notification import create_system_notification,get_supervisor_id,get_user_name
 import logging
 main_loop = asyncio.get_event_loop()
@@ -198,19 +196,19 @@ async def check_inactive_vehicles():
                     vehicle_id=vehicle.id
                 )
 
-                admin_email = get_user_email(admin.employee_id, db)
-                if admin_email:
-                    html_content = load_email_template("inactive_vehicle.html", {
-                        "ADMIN_NAME": get_user_name(db, admin.employee_id),
-                        "VEHICLE": vehicle.vehicle_model,
-                        "PLATE_NUMBER": vehicle.plate_number,
-                        "LAST_RIDE_DATE": last_used_date
-                    })
-                    await async_send_email(
-                        to_email=admin_email,
-                        subject="קיים במערכת רכב שלא היה בשימוש מעל לשבוע ",
-                        html_content=html_content
-                    )
+                # admin_email = get_user_email(admin.employee_id, db)
+                # if admin_email:
+                #     html_content = load_email_template("inactive_vehicle.html", {
+                #         "ADMIN_NAME": get_user_name(db, admin.employee_id),
+                #         "VEHICLE": vehicle.vehicle_model,
+                #         "PLATE_NUMBER": vehicle.plate_number,
+                #         "LAST_RIDE_DATE": last_used_date
+                #     })
+                #     await async_send_email(
+                #         to_email=admin_email,
+                #         subject="קיים במערכת רכב שלא היה בשימוש מעל לשבוע ",
+                #         html_content=html_content
+                #     )
 
                 await sio.emit("vehicle_expiry_notification", {
                     "id": str(notif.id),
@@ -263,23 +261,23 @@ async def check_vehicle_lease_expiry():
                     )
 
 
-                    supervisor_email = get_user_email(supervisor_id, db)
-                    if supervisor_email:
-                        html_content = load_email_template("lease_expired.html", {
-                            "SUPERVISOR_NAME": get_user_name(db, supervisor_id),
-                            "VEHICLE_ID": vehicle.id,
-                            "VEHICLE": vehicle.vehicle_model,
-                            "PLATE": vehicle.plate_number,
-                            "PLATE_NUMBER": vehicle.plate_number,
-                            "EXPIRY_DATE": vehicle.lease_expiry
-                            })
-                        await async_send_email(
-                            to_email=supervisor_email,
-                            subject="קיים במערכת רכב שתקפו יפוג בקרוב",
-                            html_content=html_content
-                        )
-                    else:
-                        logger.warning("No supervisor email found — skipping email.")
+                    # supervisor_email = get_user_email(supervisor_id, db)
+                    # if supervisor_email:
+                    #     html_content = load_email_template("lease_expired.html", {
+                    #         "SUPERVISOR_NAME": get_user_name(db, supervisor_id),
+                    #         "VEHICLE_ID": vehicle.id,
+                    #         "VEHICLE": vehicle.vehicle_model,
+                    #         "PLATE": vehicle.plate_number,
+                    #         "PLATE_NUMBER": vehicle.plate_number,
+                    #         "EXPIRY_DATE": vehicle.lease_expiry
+                    #         })
+                    #     await async_send_email(
+                    #         to_email=supervisor_email,
+                    #         subject="קיים במערכת רכב שתקפו יפוג בקרוב",
+                    #         html_content=html_content
+                    #     )
+                    # else:
+                    #     logger.warning("No supervisor email found — skipping email.")
 
 
                     await sio.emit("vehicle_expiry_notification", {
@@ -308,23 +306,23 @@ async def check_vehicle_lease_expiry():
                         vehicle_id=vehicle.id
                         )
                     
-                    admin_email = get_user_email(admin.employee_id, db)
-                    if admin_email:
-                        html_content = load_email_template("lease_expired.html", {
-                            "SUPERVISOR_NAME": get_user_name(db, admin.employee_id),
-                            "VEHICLE_ID": vehicle.id,
-                            "VEHICLE": vehicle.vehicle_model,
-                            "PLATE": vehicle.plate_number,
-                            "PLATE_NUMBER": vehicle.plate_number,
-                            "EXPIRY_DATE": vehicle.lease_expiry
-                            })
-                        await async_send_email(
-                            to_email=admin.email,
-                            subject="קיים במערכת רכב שתקפו יפוג בקרוב",
-                            html_content=html_content
-                        )
-                    else:
-                        logger.warning("No supervisor email found — skipping email.")
+                    # admin_email = get_user_email(admin.employee_id, db)
+                    # if admin_email:
+                    #     html_content = load_email_template("lease_expired.html", {
+                    #         "SUPERVISOR_NAME": get_user_name(db, admin.employee_id),
+                    #         "VEHICLE_ID": vehicle.id,
+                    #         "VEHICLE": vehicle.vehicle_model,
+                    #         "PLATE": vehicle.plate_number,
+                    #         "PLATE_NUMBER": vehicle.plate_number,
+                    #         "EXPIRY_DATE": vehicle.lease_expiry
+                    #         })
+                    #     await async_send_email(
+                    #         to_email=admin.email,
+                    #         subject="קיים במערכת רכב שתקפו יפוג בקרוב",
+                    #         html_content=html_content
+                    #     )
+                    # else:
+                    #     logger.warning("No supervisor email found — skipping email.")
 
 
                     await sio.emit("vehicle_expiry_notification", {
@@ -441,18 +439,18 @@ async def check_and_notify_overdue_rides():
                     vehicle_id=vehicle.id
                 )
 
-                html_user = load_email_template("vehicle_overdue_user.html", {
-                    "USER_NAME": get_user_name(db, user.employee_id),
-                    "VEHICLE": vehicle.plate_number,
-                    "END_TIME": ride.end_datetime.strftime("%H:%M %d/%m/%Y"),
-                    "ELAPSED": str(elapsed).split('.')[0]
-                })
+                # html_user = load_email_template("vehicle_overdue_user.html", {
+                #     "USER_NAME": get_user_name(db, user.employee_id),
+                #     "VEHICLE": vehicle.plate_number,
+                #     "END_TIME": ride.end_datetime.strftime("%H:%M %d/%m/%Y"),
+                #     "ELAPSED": str(elapsed).split('.')[0]
+                # })
 
-                await async_send_email(
-                    to_email=user.email,
-                    subject=f"⚠️ החזרת רכב באיחור - {vehicle.plate_number}",
-                    html_content=html_user
-                )
+                # await async_send_email(
+                #     to_email=user.email,
+                #     subject=f"⚠️ החזרת רכב באיחור - {vehicle.plate_number}",
+                #     html_content=html_user
+                # )
 
                 await sio.emit("new_notification", {
                     "id": str(user_notif.id),
@@ -482,19 +480,19 @@ async def check_and_notify_overdue_rides():
                         vehicle_id=vehicle.id
                     )
 
-                    html_admin = load_email_template("vehicle_overdue_admin.html", {
-                        "USER_NAME": f"{user.first_name} {user.last_name}",
-                        "USER_EMAIL": user.email,
-                        "VEHICLE": vehicle.plate_number,
-                        "END_TIME": ride.end_datetime.strftime("%H:%M %d/%m/%Y"),
-                        "ELAPSED": str(elapsed).split('.')[0]
-                    })
+                    # html_admin = load_email_template("vehicle_overdue_admin.html", {
+                    #     "USER_NAME": f"{user.first_name} {user.last_name}",
+                    #     "USER_EMAIL": user.email,
+                    #     "VEHICLE": vehicle.plate_number,
+                    #     "END_TIME": ride.end_datetime.strftime("%H:%M %d/%m/%Y"),
+                    #     "ELAPSED": str(elapsed).split('.')[0]
+                    # })
 
-                    await async_send_email(
-                        to_email=admin.email,
-                        subject=f"🚨 רכב לא הוחזר בזמן - {vehicle.plate_number}",
-                        html_content=html_admin
-                    )
+                    # await async_send_email(
+                    #     to_email=admin.email,
+                    #     subject=f"🚨 רכב לא הוחזר בזמן - {vehicle.plate_number}",
+                    #     html_content=html_admin
+                    # )
 
                     await sio.emit("new_notification", {
                         "id": str(admin_notif.id),
@@ -702,21 +700,21 @@ def periodic_check_unstarted_rides():
     future.result(timeout=5)            
 
 
-def check_and_schedule_ride_emails():
-    db = SessionLocal()
-    try:
-        now = datetime.now()
-        rides = db.query(Ride).filter(
-            Ride.end_datetime < now,
-            Ride.status != "completed"
-        ).all()
+# def check_and_schedule_ride_emails():
+#     db = SessionLocal()
+#     try:
+#         now = datetime.now()
+#         rides = db.query(Ride).filter(
+#             Ride.end_datetime < now,
+#             Ride.status != "completed"
+#         ).all()
 
-        for ride in rides:
-            send_ride_completion_email(ride.id)
-    finally:
-        db.close()
+#         for ride in rides:
+#             send_ride_completion_email(ride.id)
+#     finally:
+#         db.close()
 
-scheduler.add_job(check_and_schedule_ride_emails, 'interval', minutes=60)
+# scheduler.add_job(check_and_schedule_ride_emails, 'interval', minutes=60)
 scheduler.add_job(check_and_complete_rides, 'interval', minutes=5)
 scheduler.add_job(periodic_check_overdue_rides, 'interval', minutes=10)
 scheduler.add_job(periodic_check_unblock_users, 'interval', minutes=1)
@@ -816,26 +814,26 @@ async def check_ride_status_and_notify_user():
                     room=str(user.employee_id),
                 )
 
-                if user_email:
-                    html_content = load_email_template("ride_status_update.html", {
-                        "USER_NAME": user_name,
-                        "STATUS_HEBREW": status_hebrew,
-                        "STATUS_COLOR": status_color,
-                        "STATUS_MESSAGE": status_message,
-                        "RIDE_ID": str(ride.id),
-                        "DESTINATION": destination_name,
-                        "DATE_TIME": ride.start_datetime.strftime("%Y-%m-%d %H:%M"), 
-                        "PLATE_NUMBER": plate_number,
-                        "LINK_TO_RIDE": f"{BOOKIT_URL}/ride/details/{ride.id}" 
-                    })
-                    try:
-                        await async_send_email(
-                            to_email=user_email,
-                            subject=subject,
-                            html_content=html_content
-                        )
-                    except Exception as email_e:
-                        print(f"Error sending email:{repr(email_e)}")
+                # if user_email:
+                #     html_content = load_email_template("ride_status_update.html", {
+                #         "USER_NAME": user_name,
+                #         "STATUS_HEBREW": status_hebrew,
+                #         "STATUS_COLOR": status_color,
+                #         "STATUS_MESSAGE": status_message,
+                #         "RIDE_ID": str(ride.id),
+                #         "DESTINATION": destination_name,
+                #         "DATE_TIME": ride.start_datetime.strftime("%Y-%m-%d %H:%M"), 
+                #         "PLATE_NUMBER": plate_number,
+                #         "LINK_TO_RIDE": f"{BOOKIT_URL}/ride/details/{ride.id}" 
+                #     })
+                #     try:
+                #         await async_send_email(
+                #             to_email=user_email,
+                #             subject=subject,
+                #             html_content=html_content
+                #         )
+                #     except Exception as email_e:
+                #         print(f"Error sending email:{repr(email_e)}")
                
     except Exception as e:
         print(f"An error occurred: {repr(e)}")
@@ -918,20 +916,20 @@ async def notify_ride_cancelled_due_to_no_show(ride_id: uuid.UUID):
                 notification=admin_notification
             )
 
-        if user_email:
-            html_content_user = load_email_template("ride_cancelled_no_show.html", {
-                "USER_NAME": user_name,
-                "DESTINATION": destination_name,
-                "DATE_TIME": ride.start_datetime.strftime("%Y-%m-%d %H:%M"),
-                "PLATE_NUMBER": plate_number,
-                "LINK_TO_RIDE": f"{BOOKIT_URL}/ride/details/{ride.id}"
-            })
+        # if user_email:
+        #     html_content_user = load_email_template("ride_cancelled_no_show.html", {
+        #         "USER_NAME": user_name,
+        #         "DESTINATION": destination_name,
+        #         "DATE_TIME": ride.start_datetime.strftime("%Y-%m-%d %H:%M"),
+        #         "PLATE_NUMBER": plate_number,
+        #         "LINK_TO_RIDE": f"{BOOKIT_URL}/ride/details/{ride.id}"
+        #     })
 
-            await async_send_email(
-                to_email=user_email,
-                subject=f"❌ עדכון: הנסיעה שלך בוטלה עקב אי התייצבות",
-                html_content=html_content_user
-            )
+        #     await async_send_email(
+        #         to_email=user_email,
+        #         subject=f"❌ עדכון: הנסיעה שלך בוטלה עקב אי התייצבות",
+        #         html_content=html_content_user
+        #     )
        
 
         
@@ -942,48 +940,48 @@ async def notify_ride_cancelled_due_to_no_show(ride_id: uuid.UUID):
                 admin_email = admin_user.email
                 supervisor_name = get_user_name(db, admin_user.employee_id) or "מפקח יקר" 
 
-                if admin_email: # Check if the admin user actually has an email
-                    try:
-                        html_content_admin = load_email_template("ride_cancelled_no_show_admin.html", {
-                            "SUPERVISOR_NAME": supervisor_name, 
-                            "USER_NAME": user_name,
-                            "DESTINATION": destination_name,
-                            "DATE_TIME": ride.start_datetime.strftime("%Y-%m-%d %H:%M"),
-                            "PLATE_NUMBER": plate_number,
-                            "LINK_TO_RIDE": f"{BOOKIT_URL}/ride/details/{ride.id}"
-                        })
-                        await async_send_email(
-                            to_email=admin_email,
-                            subject=f"🚨 הודעה: הנסיעה של {user_name} בוטלה עקב אי התייצבות",
-                            html_content=html_content_admin
-                        )
-                    except Exception as email_err:
-                        print(f"ERROR: Failed to send admin email:{repr(email_err)}")
-        try:
-            if supervisor_id:
-                supervisor = db.query(User).filter(User.employee_id == supervisor_id).first()
-                if supervisor and supervisor.email:
-                    supervisor_email = supervisor.email
-                    supervisor_name = get_user_name(db, supervisor_id) or "מפקח יקר"
+                # if admin_email: # Check if the admin user actually has an email
+                #     try:
+                #         html_content_admin = load_email_template("ride_cancelled_no_show_admin.html", {
+                #             "SUPERVISOR_NAME": supervisor_name, 
+                #             "USER_NAME": user_name,
+                #             "DESTINATION": destination_name,
+                #             "DATE_TIME": ride.start_datetime.strftime("%Y-%m-%d %H:%M"),
+                #             "PLATE_NUMBER": plate_number,
+                #             "LINK_TO_RIDE": f"{BOOKIT_URL}/ride/details/{ride.id}"
+                #         })
+                #         await async_send_email(
+                #             to_email=admin_email,
+                #             subject=f"🚨 הודעה: הנסיעה של {user_name} בוטלה עקב אי התייצבות",
+                #             html_content=html_content_admin
+                #         )
+                #     except Exception as email_err:
+                #         print(f"ERROR: Failed to send admin email:{repr(email_err)}")
+        # try:
+        #     if supervisor_id:
+        #         supervisor = db.query(User).filter(User.employee_id == supervisor_id).first()
+        #         if supervisor and supervisor.email:
+        #             supervisor_email = supervisor.email
+        #             supervisor_name = get_user_name(db, supervisor_id) or "מפקח יקר"
 
-                    html_content_supervisor = load_email_template("ride_cancelled_no_show_admin.html", {
-                        "SUPERVISOR_NAME": supervisor_name,
-                        "USER_NAME": user_name,
-                        "DESTINATION": destination_name,
-                        "DATE_TIME": ride.start_datetime.strftime("%Y-%m-%d %H:%M"),
-                        "PLATE_NUMBER": plate_number,
-                        "LINK_TO_RIDE": f"{BOOKIT_URL}/ride/details/{ride.id}"
-                    })
+        #             html_content_supervisor = load_email_template("ride_cancelled_no_show_admin.html", {
+        #                 "SUPERVISOR_NAME": supervisor_name,
+        #                 "USER_NAME": user_name,
+        #                 "DESTINATION": destination_name,
+        #                 "DATE_TIME": ride.start_datetime.strftime("%Y-%m-%d %H:%M"),
+        #                 "PLATE_NUMBER": plate_number,
+        #                 "LINK_TO_RIDE": f"{BOOKIT_URL}/ride/details/{ride.id}"
+        #             })
 
-                    await async_send_email(
-                        to_email=supervisor_email,
-                        subject=f"🚨 הודעה: הנסיעה של {user_name} בוטלה עקב אי התייצבות",
-                        html_content=html_content_supervisor
+        #             await async_send_email(
+        #                 to_email=supervisor_email,
+        #                 subject=f"🚨 הודעה: הנסיעה של {user_name} בוטלה עקב אי התייצבות",
+        #                 html_content=html_content_supervisor
 
-                    )
+        #             )
 
-        except Exception as e:
-            print(f"ERROR: Failed to send email: {repr(e)}")    
+        # except Exception as e:
+        #     print(f"ERROR: Failed to send email: {repr(e)}")    
     except Exception as e:
         print(f"Error notifying: {repr(e)}")
       
@@ -1021,23 +1019,23 @@ async def check_and_notify_admin_about_no_shows():
                         )
                         await emit_new_notification(notification=notif)
 
-                    for admin in admins:
-                        admin_email = admin.email
-                        supervisor_name = get_user_name(db, admin.employee_id) or "מפקח יקר"
-                        if admin_email:
-                            try:
-                                html_content_admin = load_email_template("users_passed_3_no_show.html", {
-                                    "SUPERVISOR_NAME": supervisor_name,
-                                    "USER_NAME": user_info["name"],
-                                    "NO_SHOW_COUNT": user_info["no_show_count"],
-                                })
-                                await async_send_email(
-                                    to_email=admin_email,
-                                    subject=f"🚨 משתמש עם 3 או יותר אי התייצבויות: {user_info['name']}",
-                                    html_content=html_content_admin
-                                )
-                            except Exception as email_err:
-                                print(f"ERROR: Failed to send 3+ no-show email")
+                    # for admin in admins:
+                    #     admin_email = admin.email
+                    #     supervisor_name = get_user_name(db, admin.employee_id) or "מפקח יקר"
+                    #     if admin_email:
+                    #         try:
+                    #             html_content_admin = load_email_template("users_passed_3_no_show.html", {
+                    #                 "SUPERVISOR_NAME": supervisor_name,
+                    #                 "USER_NAME": user_info["name"],
+                    #                 "NO_SHOW_COUNT": user_info["no_show_count"],
+                    #             })
+                    #             await async_send_email(
+                    #                 to_email=admin_email,
+                    #                 subject=f"🚨 משתמש עם 3 או יותר אי התייצבויות: {user_info['name']}",
+                    #                 html_content=html_content_admin
+                    #             )
+                    #         except Exception as email_err:
+                    #             print(f"ERROR: Failed to send 3+ no-show email")
                         
                     db.commit()
 
@@ -1051,23 +1049,23 @@ async def check_and_notify_admin_about_no_shows():
 
 
 
-def schedule_ride_completion_email(ride_id: str, end_datetime: datetime):
-    run_time = end_datetime + timedelta(minutes=5)
-    job_id = f"ride-email-{ride_id}"
+# def schedule_ride_completion_email(ride_id: str, end_datetime: datetime):
+#     run_time = end_datetime + timedelta(minutes=5)
+#     job_id = f"ride-email-{ride_id}"
 
-    # Avoid duplicate jobs
-    try:
-        scheduler.remove_job(job_id)
-    except JobLookupError:
-        pass
+#     # Avoid duplicate jobs
+#     try:
+#         scheduler.remove_job(job_id)
+#     except JobLookupError:
+#         pass
 
-    scheduler.add_job(
-        send_ride_completion_email,
-        'date',
-        run_date=run_time,
-        args=[ride_id],
-        id=job_id
-    )
+#     scheduler.add_job(
+#         send_ride_completion_email,
+#         'date',
+#         run_date=run_time,
+#         args=[ride_id],
+#         id=job_id
+#     )
 
 
 
@@ -1206,32 +1204,32 @@ async def check_expired_government_licenses():
             if user.email and "@" in user.email and "." in user.email:
                 try:
                     # שלח מייל למשתמש עצמו
-                    user_html_content = f"""
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <meta charset="UTF-8">
-                        <title>רישיון ממשלתי פג תוקף</title>
-                    </head>
-                    <body>
-                        <div style="direction: rtl; font-family: Arial, sans-serif;">
-                            <h2>שלום {user.first_name},</h2>
-                            <p>רישיון הממשלתי שלך פג תוקף בתאריך: <strong>{expiry}</strong>.</p>
-                            <p>אנא עדכן את המידע בהקדם.</p>
-                            <br/>
-                            <p>תודה,<br/>צוות התמיכה</p>
-                        </div>
-                    </body>
-                    </html>
-                    """
+                    # user_html_content = f"""
+                    # <!DOCTYPE html>
+                    # <html>
+                    # <head>
+                    #     <meta charset="UTF-8">
+                    #     <title>רישיון ממשלתי פג תוקף</title>
+                    # </head>
+                    # <body>
+                    #     <div style="direction: rtl; font-family: Arial, sans-serif;">
+                    #         <h2>שלום {user.first_name},</h2>
+                    #         <p>רישיון הממשלתי שלך פג תוקף בתאריך: <strong>{expiry}</strong>.</p>
+                    #         <p>אנא עדכן את המידע בהקדם.</p>
+                    #         <br/>
+                    #         <p>תודה,<br/>צוות התמיכה</p>
+                    #     </div>
+                    # </body>
+                    # </html>
+                    # """
 
-                    print(f"Sending email to user: {user.email}")
-                    await async_send_email(
-                        to_email=user.email,
-                        subject="רישיון ממשלתי פג תוקף",
-                        html_content=user_html_content
-                    )
-                    print(f"✅ Email sent successfully to user {user.employee_id}")
+                    # print(f"Sending email to user: {user.email}")
+                    # await async_send_email(
+                    #     to_email=user.email,
+                    #     subject="רישיון ממשלתי פג תוקף",
+                    #     html_content=user_html_content
+                    # )
+                    # print(f"✅ Email sent successfully to user {user.employee_id}")
 
                     # שלח התראה למשתמש
                     user_notif = create_system_notification(
@@ -1281,39 +1279,39 @@ async def check_expired_government_licenses():
                         relevant_user_id=user.employee_id
                     )
 
-                    admin_email = get_user_email(admin.employee_id, db)
-                    print(f"Admin email: {admin_email}")
+                    # admin_email = get_user_email(admin.employee_id, db)
+                    # print(f"Admin email: {admin_email}")
                     
-                    if admin_email and "@" in admin_email and "." in admin_email:
-                        admin_html_content = f"""
-                        <!DOCTYPE html>
-                        <html>
-                        <head>
-                            <meta charset="UTF-8">
-                            <title>רישיון ממשלתי לא בתוקף</title>
-                        </head>
-                        <body>
-                            <div style="direction: rtl; font-family: Arial, sans-serif;">
-                                <h2>שלום {get_user_name(db, admin.employee_id)},</h2>
-                                <p>למשתמש <strong>{full_name}</strong> פג תוקף הרישיון הממשלתי בתאריך: <strong>{expiry}</strong>.</p>
-                                <p>מזהה משתמש: {user.employee_id}</p>
-                                <p>אנא בדק ועקוב אחר עדכון הרישיון.</p>
-                                <br/>
-                                <p>בברכה,<br/>מערכת ניהול רישיונות</p>
-                            </div>
-                        </body>
-                        </html>
-                        """
+                    # if admin_email and "@" in admin_email and "." in admin_email:
+                    #     admin_html_content = f"""
+                    #     <!DOCTYPE html>
+                    #     <html>
+                    #     <head>
+                    #         <meta charset="UTF-8">
+                    #         <title>רישיון ממשלתי לא בתוקף</title>
+                    #     </head>
+                    #     <body>
+                    #         <div style="direction: rtl; font-family: Arial, sans-serif;">
+                    #             <h2>שלום {get_user_name(db, admin.employee_id)},</h2>
+                    #             <p>למשתמש <strong>{full_name}</strong> פג תוקף הרישיון הממשלתי בתאריך: <strong>{expiry}</strong>.</p>
+                    #             <p>מזהה משתמש: {user.employee_id}</p>
+                    #             <p>אנא בדק ועקוב אחר עדכון הרישיון.</p>
+                    #             <br/>
+                    #             <p>בברכה,<br/>מערכת ניהול רישיונות</p>
+                    #         </div>
+                    #     </body>
+                    #     </html>
+                    #     """
 
-                        print(f"Sending email to admin: {admin_email}")
-                        await async_send_email(
-                            to_email=admin_email,
-                            subject=f"רישיון ממשלתי לא בתוקף - {full_name}",
-                            html_content=admin_html_content
-                        )
-                        print(f"✅ Email sent successfully to admin {admin.employee_id}")
-                    else:
-                        print(f"⚠️ Invalid admin email: {admin_email}")
+                    #     print(f"Sending email to admin: {admin_email}")
+                    #     await async_send_email(
+                    #         to_email=admin_email,
+                    #         subject=f"רישיון ממשלתי לא בתוקף - {full_name}",
+                    #         html_content=admin_html_content
+                    #     )
+                    #     print(f"✅ Email sent successfully to admin {admin.employee_id}")
+                    # else:
+                    #     print(f"⚠️ Invalid admin email: {admin_email}")
 
                     await sio.emit("license_expiry_notification", {
                         "id": str(notif.id),

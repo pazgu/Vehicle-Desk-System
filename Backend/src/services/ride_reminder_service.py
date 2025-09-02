@@ -11,7 +11,6 @@ from src.models.city_model import City
 from src.models.vehicle_model import Vehicle
 from src.utils.database import SessionLocal
 from src.utils.scheduler import scheduler
-from src.services.email_service import async_send_email, load_email_template, get_user_email
 
 
 logger = logging.getLogger(__name__)
@@ -80,23 +79,23 @@ def send_ride_reminder(ride_id: str):
                 vehicle_plate = vehicle.plate_number
 
 
-        # Load email template and fill context
-        html_content = load_email_template("ride_reminder.html", {
-            "PASSENGER_NAME": user.first_name,
-            "FROM_CITY": from_city_name,
-            "DESTINATION": destination_name,
-            "DATE_TIME": ride.start_datetime.strftime("%Y-%m-%d %H:%M"), # Format as needed
-            "PLATE_NUMBER": vehicle_plate,
-            "DISTANCE": f"{ride.estimated_distance_km:.1f}" if ride.estimated_distance_km is not None else "לא ידוע",
-            "LINK_TO_ORDER": f"{BOOKIT_FRONTEND_URL}/ride/details/{ride.id}" # Adjust frontend route as needed
-        })
+        # # Load email template and fill context
+        # html_content = load_email_template("ride_reminder.html", {
+        #     "PASSENGER_NAME": user.first_name,
+        #     "FROM_CITY": from_city_name,
+        #     "DESTINATION": destination_name,
+        #     "DATE_TIME": ride.start_datetime.strftime("%Y-%m-%d %H:%M"), # Format as needed
+        #     "PLATE_NUMBER": vehicle_plate,
+        #     "DISTANCE": f"{ride.estimated_distance_km:.1f}" if ride.estimated_distance_km is not None else "לא ידוע",
+        #     "LINK_TO_ORDER": f"{BOOKIT_FRONTEND_URL}/ride/details/{ride.id}" # Adjust frontend route as needed
+        # })
 
-        # Send the email asynchronously
-        asyncio.run(async_send_email(
-            to_email=user.email,
-            subject="⏰ תזכורת: נסיעתך מתוכננת בקרוב!",
-            html_content=html_content
-        ))
+        # # Send the email asynchronously
+        # asyncio.run(async_send_email(
+        #     to_email=user.email,
+        #     subject="⏰ תזכורת: נסיעתך מתוכננת בקרוב!",
+        #     html_content=html_content
+        # ))
         logger.info(f"📧 Ride reminder email sent to {user.email} for ride {ride.id}")
 
     except Exception as e:
