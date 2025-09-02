@@ -43,7 +43,9 @@ def get_future_rides(user_id: UUID, db: Session, status=None, from_date=None, to
         Ride.submitted_at,
         Ride.extra_stops,
         Ride.user_id,
-        Vehicle.type.label("vehicle")
+        Vehicle.type.label("vehicle_type"),
+        Vehicle.vehicle_model.label("vehicle_model"),
+        Vehicle.fuel_type.label("vehicle")
     ).join(Vehicle, Ride.vehicle_id == Vehicle.id).filter(
         Ride.user_id == user_id,
         Ride.start_datetime > mynow,
@@ -76,8 +78,9 @@ def get_past_rides(user_id: UUID, db: Session, status=None, from_date=None, to_d
         Ride.submitted_at,
         Ride.user_id,
         Ride.extra_stops,
-        Vehicle.fuel_type.label("vehicle")
-
+        Vehicle.fuel_type.label("vehicle"),
+        Vehicle.type.label("vehicle_type"),
+        Vehicle.vehicle_model.label("vehicle_model")
     ).join(Vehicle, Ride.vehicle_id == Vehicle.id).filter(Ride.user_id == user_id, Ride.start_datetime <= now)
 
     query = filter_rides(query, status, from_date, to_date)
@@ -172,7 +175,10 @@ def get_archived_rides(user_id: UUID, db: Session) -> List[RideSchema]:
         Ride.status,
         Ride.submitted_at,
         Ride.user_id,
-        Vehicle.fuel_type.label("vehicle")
+        Vehicle.fuel_type.label("vehicle"),
+        Vehicle.type.label("vehicle_type"),
+        Vehicle.vehicle_model.label("vehicle_model")
+
     ).join(Vehicle, Ride.vehicle_id == Vehicle.id).filter(
         Ride.user_id == user_id,
         Ride.start_datetime < cutoff_date,
