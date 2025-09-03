@@ -66,7 +66,6 @@ async def create_inspection(data: VehicleInspectionSchema, db: Session):
             except Exception as socket_error:
                 print(f"❌ Socket emission failed: {socket_error}")
 
-            # ... rest of your email and notification code here ...
 
         return inspections_created
 
