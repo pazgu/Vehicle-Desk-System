@@ -59,6 +59,13 @@ export class AllRidesComponent implements OnInit {
   rideViewMode: 'all' | 'future' | 'past' = 'all';
   highlightedOrderId: string | null = null;
 warningVisible = false;
+freeQuotaTotal = 6;          // max free rides per month
+freeQuotaUsed = 0;           // how many already used this month
+
+get freeQuotaExceeded(): boolean {
+  return this.freeQuotaUsed >= this.freeQuotaTotal;
+}
+
 
   ngOnInit(): void {
     const userId = localStorage.getItem('employee_id');
@@ -140,6 +147,8 @@ warningVisible = false;
             updatedOrder,
             ...this.orders.slice(index + 1)
           ];
+          this.updateFreeQuota();
+
           const role = localStorage.getItem('role');
           if (role === 'supervisor') {
             this.toastService.show('✅ יש בקשה שעודכנה בהצלחה', 'success');
@@ -161,6 +170,8 @@ warningVisible = false;
           };
           this.orders = updatedOrders;
           this.orders = [...this.orders];
+          this.updateFreeQuota();
+
         }
       }
     });
@@ -176,6 +187,8 @@ warningVisible = false;
         }
       }
     });
+    this.updateFreeQuota();
+
   }
 
   // --- New / Modified Methods for URL Sync ---
@@ -192,6 +205,33 @@ warningVisible = false;
     this.showFilters = !this.showFilters;
     this.updateUrlQueryParams();
   }
+
+  private updateFreeQuota(): void {
+  // which statuses count as a "used free ride"
+  const countableStatuses = new Set([
+    'pending',
+    'approved',
+    'reserved',
+    'in_progress',
+    'completed'
+  ]);
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+  // use the current in-memory orders list to avoid localStorage drift
+  const used = this.orders.filter(o => {
+    if (!o?.date) return false;
+    const d = this.parseDate(o.date);
+    d.setHours(12, 0, 0, 0);
+    const inMonth = d >= startOfMonth && d <= endOfMonth;
+    const counts = countableStatuses.has(String(o.status || '').toLowerCase());
+    return inMonth && counts;
+  }).length;
+
+  this.freeQuotaUsed = Math.min(used, this.freeQuotaTotal);
+}
+
 
   // This is the core method to update the URL with current filter states
   private updateUrlQueryParams(): void {
@@ -281,6 +321,7 @@ warningVisible = false;
         this.rideService.checkStartedApprovedRides().subscribe({
           next: (res: StartedRidesResponse) => {
             const startedRideIds = res.rides_supposed_to_start; // ✅ fix here
+            this.updateFreeQuota();
             this.orders = this.orders.map(order => ({
               ...order,
               hasStarted: startedRideIds.includes(order.ride_id)
@@ -487,24 +528,92 @@ warningVisible = false;
   }
 
   canEdit(order: any): boolean {
+    const userRole = localStorage.getItem('role');
+    const isSupervisor = userRole === 'supervisor';
+    
+    // For regular users - only pending orders can be edited
     const isPending = order.status.toLowerCase() === 'pending';
     const isFuture = this.parseDate(order.date) >= new Date();
-    return isPending && isFuture;
+    
+    if (!isSupervisor) {
+      return isPending && isFuture;
+    }
+    
+    // For supervisors - allow editing approved orders until 2 hours before ride time
+    const isEditableStatus = ['pending', 'approved'].includes(order.status.toLowerCase());
+    
+    if (!isEditableStatus || !isFuture) {
+      return false;
+    }
+    
+    // Calculate if it's more than 2 hours before the ride
+    const rideDateTime = new Date(`${order.date.split('.').reverse().join('-')}T${order.time}:00`);
+    const now = new Date();
+    const timeDifferenceHours = (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+    
+    return timeDifferenceHours > 2;
   }
 
   canDelete(order: any): boolean {
-    const isPending = ['pending'].includes(order.status.toLowerCase());
+    const userRole = localStorage.getItem('role');
+    const isSupervisor = userRole === 'supervisor';
+    
+    // For regular users - only pending orders can be deleted
+    const isPending = order.status.toLowerCase() === 'pending';
     const isFuture = this.parseDate(order.date) >= new Date();
-    return isPending && isFuture;
+    
+    if (!isSupervisor) {
+      return isPending && isFuture;
+    }
+    
+    // For supervisors - allow deleting approved orders until 2 hours before ride time
+    const isDeletableStatus = ['pending', 'approved'].includes(order.status.toLowerCase());
+    
+    if (!isDeletableStatus || !isFuture) {
+      return false;
+    }
+    
+    // Calculate if it's more than 2 hours before the ride
+    const rideDateTime = new Date(`${order.date.split('.').reverse().join('-')}T${order.time}:00`);
+    const now = new Date();
+    const timeDifferenceHours = (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+    
+    return timeDifferenceHours > 2;
   }
 
   editOrder(order: any): void {
-    const isPending = order.status.toLowerCase() === 'pending';
+    const userRole = localStorage.getItem('role');
+    const isSupervisor = userRole === 'supervisor';
     const isFuture = this.parseDate(order.date) >= new Date();
 
-    if (!isPending || !isFuture) {
-      this.toastService.show('אפשר לערוך רק הזמנות עתידיות במצב "ממתין" ❌', 'error');
+    if (!isFuture) {
+      this.toastService.show('אפשר לערוך רק הזמנות עתידיות ❌', 'error');
       return;
+    }
+
+    // For regular users - only pending status allowed
+    if (!isSupervisor) {
+      const isPending = order.status.toLowerCase() === 'pending';
+      if (!isPending) {
+        this.toastService.show('אפשר לערוך רק הזמנות עתידיות במצב "ממתין" ❌', 'error');
+        return;
+      }
+    } else {
+      // For supervisors - check if it's within the 2-hour window
+      const isEditableStatus = ['pending', 'approved'].includes(order.status.toLowerCase());
+      if (!isEditableStatus) {
+        this.toastService.show('אפשר לערוך רק הזמנות במצב "ממתין" או "מאושר" ❌', 'error');
+        return;
+      }
+
+      const rideDateTime = new Date(`${order.date.split('.').reverse().join('-')}T${order.time}:00`);
+      const now = new Date();
+      const timeDifferenceHours = (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+      
+      if (timeDifferenceHours <= 2) {
+        this.toastService.show('אפשר לערוך הזמנה עד שעתיים לפני זמן הנסיעה ❌', 'error');
+        return;
+      }
     }
 
     if (!order.ride_id) {
@@ -514,13 +623,40 @@ warningVisible = false;
 
     this.router.navigate(['/ride/edit', order.ride_id]);
   }
-deleteOrder(order: any): void {
-    const isPending = order.status.toLowerCase() === 'pending';
+
+  deleteOrder(order: any): void {
+    const userRole = localStorage.getItem('role');
+    const isSupervisor = userRole === 'supervisor';
     const isFuture = this.parseDate(order.date) >= new Date();
 
-    if (!isPending || !isFuture) {
-      this.toastService.show('אפשר לבטל רק הזמנות עתידיות במצב "ממתין" ❌', 'error');
+    if (!isFuture) {
+      this.toastService.show('אפשר לבטל רק הזמנות עתידיות ❌', 'error');
       return;
+    }
+
+    // For regular users - only pending status allowed
+    if (!isSupervisor) {
+      const isPending = order.status.toLowerCase() === 'pending';
+      if (!isPending) {
+        this.toastService.show('אפשר לבטל רק הזמנות עתידיות במצב "ממתין" ❌', 'error');
+        return;
+      }
+    } else {
+      // For supervisors - check if it's within the 2-hour window
+      const isDeletableStatus = ['pending', 'approved'].includes(order.status.toLowerCase());
+      if (!isDeletableStatus) {
+        this.toastService.show('אפשר לבטל רק הזמנות במצב "ממתין" או "מאושר" ❌', 'error');
+        return;
+      }
+
+      const rideDateTime = new Date(`${order.date.split('.').reverse().join('-')}T${order.time}:00`);
+      const now = new Date();
+      const timeDifferenceHours = (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+      
+      if (timeDifferenceHours <= 2) {
+        this.toastService.show('אפשר לבטל הזמנה עד שעתיים לפני זמן הנסיעה ❌', 'error');
+        return;
+      }
     }
 
     if (!order.ride_id) {
@@ -554,8 +690,6 @@ deleteOrder(order: any): void {
          
           });
           // Remove the order from local state immediately
-
-          //the try catch logic here wont work
           this.fetchRides();
           const index = this.orders.findIndex(o => o.ride_id === order.ride_id);
           if (index !== -1) {
@@ -573,6 +707,11 @@ deleteOrder(order: any): void {
       });
     });
   }
+
+  get quotaSegments(): number[] {
+  return Array.from({ length: this.freeQuotaTotal }, (_, i) => i);
+}
+
 
   viewRide(order: any): void {
     if (!order.ride_id) {

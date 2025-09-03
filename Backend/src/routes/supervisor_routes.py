@@ -93,25 +93,6 @@ async def create_order(
             "distance": new_ride.estimated_distance_km,
         })
 
-
-        confirmation = create_system_notification(
-            user_id=new_ride.user_id,
-            title="שליחת בקשה",
-            message="בקשתך נשלחה בהצלחה",
-            order_id=new_ride.id
-        )
-
-        await sio.emit("new_notification", {
-            "id": str(confirmation.id),
-            "user_id": str(confirmation.user_id),
-            "title": confirmation.title,
-            "message": confirmation.message,
-            "notification_type": confirmation.notification_type.value,
-            "sent_at": confirmation.sent_at.isoformat(),
-            "order_id": str(confirmation.order_id) if confirmation.order_id else None,
-            "order_status": new_ride.status
-        })
-
         return {
             **RideResponse.model_validate(new_ride).dict(),
             "inspector_warning": warning_flag
