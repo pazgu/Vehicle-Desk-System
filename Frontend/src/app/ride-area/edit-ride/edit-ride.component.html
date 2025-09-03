@@ -115,33 +115,25 @@
         <div class="row">
           <div class="input-group">
             <label>מרחק (ק"מ)</label>
-            <input type="number" formControlName="estimated_distance_km" min="1" step="0.1" />
-            <small class="error-text" *ngIf="getFieldError('estimated_distance_km')">
-              {{ getFieldError('estimated_distance_km') }}
-            </small>
+           
             <small *ngIf="rideForm.get('estimated_distance_km')?.value" class="distance-info">
               המרחק לאחר תוספת סטייה: {{ estimated_distance_with_buffer }} ק"מ
             </small>
           </div>
           <div class="input-group"></div> </div>
 
-        <div class="row">
-          <div class="input-group">
-            <label>נקודת התחלה</label>
-            <input type="text" formControlName="start_location" placeholder="הזן נקודת התחלה" />
-            <small class="error-text" *ngIf="getFieldError('start_location')">
-              {{ getFieldError('start_location') }}
-            </small>
-          </div>
+       <div class="row">
+  <div class="input-group">
+    <label>נקודת התחלה</label>
+    <input type="text" value="תל אביב" disabled />
+  </div>
 
-          <div class="input-group">
-            <label>יעד סופי</label>
-            <input type="text" formControlName="destination" placeholder="הזן יעד סופי" />
-            <small class="error-text" *ngIf="getFieldError('destination')">
-              {{ getFieldError('destination') }}
-            </small>
-          </div>
-        </div>
+  <div class="input-group">
+    <label>יעד סופי</label>
+    <input type="text" value="תל אביב" disabled />
+  </div>
+</div>
+
 
         <div class="form-field-group">
           <label>תחנה עיקרית</label>
