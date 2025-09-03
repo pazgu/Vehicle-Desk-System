@@ -31,10 +31,10 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 def get_vehicle_km_driven_on_date(db: Session, vehicle_id: int, day: date) -> float:
     rides = db.query(Ride).filter(
         Ride.vehicle_id == vehicle_id,
-        Ride.start_datetime.cast(Date) == day
+        cast(Ride.start_datetime, Date) == day
     ).all()
 
-    return sum(r.actual_distance_km for r in rides)
+    return sum(r.actual_distance_km or 0 for r in rides)
 
 
 def get_vehicles_with_optional_status(
