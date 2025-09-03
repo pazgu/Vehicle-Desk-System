@@ -3,6 +3,7 @@ export interface RideDashboardItem {
   employee_name: string;
   requested_vehicle_model: string;
   date_and_time: string;
+  end_datetime?: string; 
   distance: number;
   status: string;
   destination: string; 
