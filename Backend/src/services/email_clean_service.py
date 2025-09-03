@@ -6,7 +6,6 @@ import logging
 from datetime import datetime, timedelta
 from typing import Dict, Any, List, Optional
 from uuid import UUID
-
 import socketio
 from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, status
