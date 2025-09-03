@@ -11,10 +11,17 @@ body {
   box-sizing: border-box;
 }
 .page-container {
-    min-height: calc(100vh - 55px);
+ min-height: calc(100vh - 55px);
+  background-image: url('/assets/images/user-data.png');
+  background-color: #fbe6c9; /* beige background color */
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center center;
+  width: 100%;
   padding: 25px;
-  direction: rtl;
+  direction: rtl; 
 }
+
 
 .pagination-controls {
   display: flex;
@@ -445,6 +452,7 @@ button.delete:disabled:hover {
 .modal-content h2 {
   color: #333;
   margin-bottom: 15px;
+  font-family:Verdana, Geneva, Tahoma, sans-serif
 }
 
 .modal-content p {
@@ -539,3 +547,4 @@ button.delete:disabled:hover {
   gap: 5px;
   align-items: center;
 }
+

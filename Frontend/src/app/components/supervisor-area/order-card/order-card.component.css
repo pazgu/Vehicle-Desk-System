@@ -1,5 +1,8 @@
 :host {
   display: block;
+  background-image: url('/assets/images/ride_details.png');
+  background-size: cover;
+  background-position: center top;
   padding: 20px; /* Optional: Add padding around the content */
   min-height: calc(100vh - 55px); /* subtract any fixed nav height if needed */
   margin-top: 0;

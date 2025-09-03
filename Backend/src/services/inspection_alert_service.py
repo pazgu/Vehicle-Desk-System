@@ -4,7 +4,6 @@ from uuid import UUID
 from src.models.user_model import User
 from src.models.vehicle_model import Vehicle
 from src.models.vehicle_inspection_model import VehicleInspection
-from src.services.email_service import async_send_email, render_email_template
 from src.services.user_notification import create_system_notification_with_db
 
 async def handle_inspection_alert(db: Session, inspection: VehicleInspection):    
@@ -17,15 +16,15 @@ async def handle_inspection_alert(db: Session, inspection: VehicleInspection):
         if vehicle and vehicle.last_user_id:
             user = db.query(User).filter(User.employee_id == vehicle.last_user_id).first()
             if user:
-                context = {
-                    "user_name": f"{user.first_name} {user.last_name}",
-                    "license_plate": vehicle.plate_number,
-                    "date": date_str,
-                }
-                subject = "הרכב שהשתמשת בו סומן כלא נקי"
-                html_content = render_email_template("vehicle_dirty.html", context)
-                await async_send_email(user.email, subject, html_content)
-                # שליחת נוטיפ בדשבורד
+                # context = {
+                #     "user_name": f"{user.first_name} {user.last_name}",
+                #     "license_plate": vehicle.plate_number,
+                #     "date": date_str,
+                # }
+                # subject = "הרכב שהשתמשת בו סומן כלא נקי"
+                # html_content = render_email_template("vehicle_dirty.html", context)
+                # await async_send_email(user.email, subject, html_content)
+                # # שליחת נוטיפ בדשבורד
                 create_system_notification_with_db(db, user.employee_id,title='רכב לא נקי',
                     message="הרכב שבו השתמשת דווח כלא נקי בבדיקה האחרונה.")
 
@@ -35,14 +34,14 @@ async def handle_inspection_alert(db: Session, inspection: VehicleInspection):
         if vehicle and vehicle.last_user_id:
             user = db.query(User).filter(User.employee_id == vehicle.last_user_id).first()
             if user:
-                context = {
-                    "user_name": f"{user.first_name} {user.last_name}",
-                    "license_plate": vehicle.plate_number,
-                    "date": date_str,
-                }
-                subject = "נמצאו חפצים ברכב שבו נסעת"
-                html_content = render_email_template("forgotten_items.html", context)
-                await async_send_email(user.email, subject, html_content)
+                # context = {
+                #     "user_name": f"{user.first_name} {user.last_name}",
+                #     "license_plate": vehicle.plate_number,
+                #     "date": date_str,
+                # }
+                # subject = "נמצאו חפצים ברכב שבו נסעת"
+                # html_content = render_email_template("forgotten_items.html", context)
+                # await async_send_email(user.email, subject, html_content)
                 create_system_notification_with_db(db, user.employee_id,title='רכב שנשארו בו חפצים',
                     message="נמצאו חפצים ברכב שבו נסעת.")
 
@@ -51,14 +50,14 @@ async def handle_inspection_alert(db: Session, inspection: VehicleInspection):
         vehicle = db.query(Vehicle).filter(Vehicle.id == inspection.critical_issue_vehicle_id).first()
         if vehicle:
             admins = db.query(User).filter(User.role == "admin").all()
-            context = {
-                "license_plate": vehicle.plate_number,
-                "date": date_str,
-                "issue_description": inspection.issues_found or "אירוע חריג ללא פירוט",
-            }
-            subject = f"אירוע חריג דווח ברכב {vehicle.plate_number}"
-            html_content = render_email_template("critical_issue_admin.html", context)
+            # context = {
+            #     "license_plate": vehicle.plate_number,
+            #     "date": date_str,
+            #     "issue_description": inspection.issues_found or "אירוע חריג ללא פירוט",
+            # }
+            # subject = f"אירוע חריג דווח ברכב {vehicle.plate_number}"
+            # html_content = render_email_template("critical_issue_admin.html", context)
             for admin in admins:
-                await async_send_email(admin.email, subject, html_content)
+                # await async_send_email(admin.email, subject, html_content)
                 create_system_notification_with_db(db, admin.employee_id,title='רכב עם בעיה חריגה',
                     message=f"דווחה חריגה ברכב מספר {vehicle.plate_number}")

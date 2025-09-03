@@ -3,28 +3,29 @@
     <div class="vehicles-wrapper">
 
       <div class="top-header-section">
-        <h1 style="text-align: right;">רכבי מחלקה</h1>
-
+        <div class="header-title">
+          <h1 style="text-align: right;">רכבי מחלקה</h1>
+          <button class="filter archive-btn" (click)="navigateToArchivedVehicles()" title=" ארכיון רכבים">
+            📁
+          </button>
+        </div>
         <div class="header-actions-bar">
-          <div class="right-aligned-actions">
+          <div class="add-vehicle-btn-div">
             <button class="add-vehicle-btn" (click)="navigateToNewVehicle()" *ngIf="userRole !== 'supervisor'">
               הוסף רכב חדש +
             </button>
           </div>
+        </div>
+        <div class="show-filter">
+          <button class="filter" (click)="showFilters = !showFilters">
+            {{ showFilters ? 'הסתר סינון' : 'הצג סינון' }}
+          </button>
+        </div>
 
-          <div class="left-aligned-actions">
-            <button class="filter" (click)="showFilters = !showFilters">
-              {{ showFilters ? 'הסתר סינון' : 'הצג סינון' }}
-            </button>
-
-            <button class="filter" (click)="toggleVehicleMode()">
-              {{ showingMostUsed ? 'הצג את כל הרכבים' : 'הכי בשימוש החודש' }}
-            </button>
-
-            <button class="filter archive-btn" (click)="navigateToArchivedVehicles()">
-              📁 ארכיון רכבים
-            </button>
-          </div>
+        <div class="show-mileage-upload">
+          <button class="show-upload" (click)="showMileageUpload = !showMileageUpload">
+            {{ showMileageUpload ? 'הסתר העלאת דוח' : 'הצג העלאת דוח ק"מ חודשי' }}
+          </button>
         </div>
       </div>
 
@@ -50,51 +51,17 @@
             <div class="inactive-badge" style="position: static; transform: none; margin-top: 0;">
               לא פעיל
             </div>
-            <span>לא היה בשימוש מעל שבוע</span>
           </div>
-        </div>
-<div class="upload-btn-wrap">
-        <div class="mileage-upload-section">
-          <h2>העלאת דוח ק"מ חודשי</h2>
-          <input
-            type="file"
-            accept=".xlsx"
-            (change)="onFileSelected($event)"
-            class="xlsx-upload-input"
-          />
-          <button
-            class="submit-button"
-            [disabled]="!selectedFile || isLoading"
-            (click)="uploadMileageReport()"
-          >
-            {{ isLoading ? 'מעלה...' : 'שלח דוח' }}
-          </button>
-
-          </div>
-          <div *ngIf="uploadSuccess" class="upload-success">
-            ✔️ הדוח הועלה בהצלחה!
-          </div>
-          <div *ngIf="uploadError" class="upload-error">
-            ❌ שגיאה בהעלאת הדוח: {{ uploadError }}
-          </div>
-          <div *ngIf="uploadSummary" class="upload-summary">
-            <h3>סיכום:</h3>
-            <p><strong>מספר רכבים שעודכנו:</strong> {{ uploadSummary.vehiclesUpdated }}</p>
-            <div *ngIf="uploadSummary.warnings?.length">
-              <strong>אזהרות / שגיאות:</strong>
-              <ul>
-                <li *ngFor="let warning of uploadSummary.warnings">{{ warning }}</li>
-              </ul>
-            </div>
-          </div>
+          
+            <small>לא היה בשימוש מעל שבוע</small>
         </div>
       </div>
 
       <div *ngIf="showFilters"
-        style="margin-bottom: 1.5rem; background: #f7f7f7; padding: 1rem; border-radius: 8px; direction: rtl; margin-top: 1rem;">
+        style="margin-bottom: 1.5rem; background-color: rgb(249, 245, 245); border:1px solid #ddd; padding: 1rem; border-radius: 8px; direction: rtl; margin-top: 1rem; width: 600px;">
         <div style="margin-bottom: 1rem; gap: 1rem; display: flex;">
           <label for="statusFilter"> סטטוס:</label>
-          <select class="statusFilter" id="statusFilter" [(ngModel)]="statusFilter">
+          <select class="statusFilter" id="statusFilter" [(ngModel)]="statusFilter" (change)="updateQueryParams()">
             <option value="">הצג הכל</option>
             <option value="זמין">זמין</option>
             <option value="בשימוש">בשימוש</option>
@@ -104,31 +71,67 @@
 
         <div style="margin-bottom: 1rem; gap: 1rem; display: flex;">
           <label for="typeFilter"> סוג:</label>
-          <select class="typeFilter" id="typeFilter" [(ngModel)]="typeFilter">
+          <select class="typeFilter" id="typeFilter" [(ngModel)]="typeFilter" (change)="updateQueryParams()">
             <option value="">הצג הכל</option>
-            <option *ngFor="let type of vehicleTypes" [value]="type.translated">{{ type.translated }}</option>
+            <option *ngFor="let type of vehicleTypes" [value]="type.original">{{ type.original }}</option>
           </select>
         </div>
 
-        <div>
-          <input
-            class="InactiveFilter"
-            id="InactiveFilter"
-            type="checkbox"
-            [(ngModel)]="InactiveFilter"
-            (change)="onInactiveFilterChange()"
-          />
-          הצג מכוניות שלא היו בשימוש מעל לשבוע ⚠️
+        <div style="display: flex; align-items: center; gap: 0.5rem; direction: rtl;">
+          <input type="checkbox" id="showInactive" [(ngModel)]="showInactive" (change)="onInactiveFilterChange()" class="showInactive"
+            style="transform: scale(1.2); cursor: pointer;" />
+          <label for="showInactive" style="cursor: pointer;">
+            הצג רק מכוניות שלא היו בשימוש מעל לשבוע ⚠️
+          </label>
         </div>
 
         <div style="display: flex; align-items: center; gap: 0.5rem; direction: rtl;">
-          <input type="checkbox" id="showInactive" [(ngModel)]="showInactive"
-            style="transform: scale(1.2); cursor: pointer;" />
-          <label for="showInactive" style="cursor: pointer;">
-            הצג רק רכבים שלא היו בשימוש מעל לשבוע ⚠️
+          <input class="showingMostUsed" id="mostUsed" type="checkbox" [(ngModel)]="showingMostUsed" (change)="onMostUsedChange()"
+          style="transform: scale(1.2); cursor: pointer;"/>
+          <label for="mostUsed" style="cursor: pointer;">
+            הצג מכוניות הכי בשימוש החודש
           </label>
         </div>
+
       </div>
+
+      <div *ngIf="showMileageUpload" class="mileage-upload-wrapper"
+  style="margin-bottom: 1.5rem; background-color: rgb(249, 245, 245); border:1px solid #ddd; padding: 1rem; border-radius: 8px; direction: rtl; margin-top: 1rem; width: 600px;">
+  <div class="mileage-upload-section">
+    <label>העלאת דוח ק"מ חודשי</label>
+
+    <div class="file-upload-container">
+      <input type="file" #fileInput accept=".xlsx" (change)="onFileSelected($event)" style="display: none;" />
+      <button type="button" (click)="fileInput.click()" class="custom-file-button">
+        בחר קובץ
+      </button>
+      <span class="file-name">
+        {{ selectedFile ? selectedFile.name : 'לא נבחר קובץ' }}
+      </span>
+    </div>
+
+    <button class="submit-button" [disabled]="!selectedFile || isLoading" (click)="uploadMileageReport()">
+      {{ isLoading ? 'מעלה...' : 'שלח דוח' }}
+    </button>
+  </div>
+  <div *ngIf="uploadSuccess" class="upload-success">
+    ✔️ הדוח הועלה בהצלחה!
+  </div>
+  <div *ngIf="uploadError" class="upload-error">
+    ❌ שגיאה בהעלאת הדוח: {{ uploadError }}
+  </div>
+  <div *ngIf="uploadSummary" class="upload-summary">
+    <h3>סיכום:</h3>
+    <p><strong>מספר רכבים שעודכנו:</strong> {{ uploadSummary.vehiclesUpdated }}</p>
+    <div *ngIf="uploadSummary.warnings?.length">
+      <strong>אזהרות / שגיאות:</strong>
+      <ul>
+        <li *ngFor="let warning of uploadSummary.warnings">{{ warning }}</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
 
       <br>
 

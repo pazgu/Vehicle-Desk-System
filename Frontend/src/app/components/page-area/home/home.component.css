@@ -36,13 +36,19 @@ body {
 .form-field-group {
   display: flex;
   flex-direction: column;
-  /* מרווח אחיד בין התווית לשדה */
   gap: 0.5rem;
   flex: 1;
 }
 
+
 .form-field-group label {
+  font-weight: 500;
+  margin-bottom: 6px;
+  padding-left: 2px;
+  color: #222;
+  font-size: 1rem;
   font-weight: bold;
+
 }
 
 /* General styling for inputs and selects */
@@ -50,8 +56,7 @@ input[type="time"],
 input[type="number"],
 input[type="text"],
 input[type="date"],
-select,
-.styled-select {
+select {
   padding: 10px;
   border-radius: 5px;
   border: 1px solid #d3b1b1;
@@ -61,18 +66,15 @@ select,
   width: 100%;
 }
 
-/* Remove old conflicting rules */
 form .row,
 form .column,
 .input-group {
-    margin: 0;
-    padding: 0;
-    flex-direction: unset;
+  margin: 0;
+  padding: 0;
+  flex-direction: unset;
 }
 
-/* ---------------------------------------------------- */
-/* CSS for "add another stop" button */
-/* ---------------------------------------------------- */
+
 form .addBtn,
 form .removeBtn {
   border: none;
@@ -114,7 +116,7 @@ form .removeBtn:hover {
   /* מרווח אחיד של 0.5rem בין כל האלמנטים בתוך המיכל */
   gap: 0.5rem;
   /* הגדרה זו מתגברת על המרווח הגדול של .form-content */
-  margin-top: -1rem; 
+  margin-top: -1rem;
 }
 
 .extra-stop-item {
@@ -181,7 +183,8 @@ form .removeBtn:hover {
   max-height: 150px !important;
   background-color: #e7c1c1;
   color: #333;
-  border: 1px solid #d3b1b1;
+  border: none;
+  /* CHANGED from: border: 1px solid #d3b1b1; */
   border-radius: 4px;
 }
 
@@ -189,7 +192,15 @@ form .removeBtn:hover {
   max-height: 150px;
   overflow-y: auto;
   overflow-x: hidden;
-  border: 1px solid #333;
+  border: none;
+  /* CHANGED from: border: 1px solid #333; */
+  background-color: #e7c1c1;
+}
+
+::ng-deep ng-select.ng-select .ng-dropdown-panel {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
 
 ::ng-deep .custom-hour-dropdown .ng-dropdown-panel .ng-dropdown-panel-items {
@@ -229,33 +240,37 @@ form .removeBtn:hover {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  background-image: url('/assets/images/left-hand-car.png');
+  background-color: #fbe6c9;
+  background-repeat: no-repeat;
+  background-size: 100% auto;
+  background-position: center center;
+  backdrop-filter: blur(2px);
   font-family: 'Alef', sans-serif;
   direction: rtl;
-  padding: 0;
-  margin: 0;
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
-  min-height: 100vh;
+  height: 100vh;
   z-index: 10;
+  overflow: hidden;
 }
 
 .modal {
   background-color: white;
   padding: 20px 28px;
   border-radius: 10px;
-  width: 750px;
-  min-height: 0;
-  max-height: 90vh;
+  width: min(750px, 90vw);
+  max-height: 85vh;
   overflow-y: auto;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-  position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: space-between;
+  z-index: 15;
   margin-top: 60px;
+  position: relative;
 }
 
 .close-btn {
@@ -282,6 +297,7 @@ hr {
 
 .full-trip-display {
   display: flex;
+  position: absolute;
   flex-direction: column;
   align-items: flex-start;
   direction: rtl;
@@ -289,7 +305,7 @@ hr {
   padding: 1rem;
   border: 1px solid #ccc;
   border-radius: 8px;
-  margin-left: 930px;
+  margin-right: 1090px;
   background-color: #9422221f;
   width: 300px;
 }
@@ -355,6 +371,7 @@ hr {
   font-family: 'Assistant', sans-serif;
   font-size: 16px;
 }
+
 .error-text {
   color: red;
   font-size: 0.75rem;
@@ -378,10 +395,12 @@ hr {
 .form-field-group .ng-invalid.ng-touched {
   border-color: red;
 }
+
 .form-field-group input.ng-invalid.ng-touched,
 .form-field-group select.ng-invalid.ng-touched {
   border-color: red;
 }
+
 /* .distance-info {
   min-height: 18px;
   font-size: 12px;
@@ -603,3 +622,182 @@ hr {
   direction: rtl;
   font-family: 'Alef', sans-serif;
 }
+
+.step-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 20px;
+  padding: 10px 0;
+  direction: ltr;
+}
+
+.back-btn {
+  color: #942222;
+  font-family: var(--font-family-alef);
+  font-size: 20px;
+  font-weight: bold;
+  padding: 6px 16px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  background: none;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+  margin: 0;
+  align-self: center;
+  margin-top: 16px;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.back-btn:hover {
+  transform: scale(1.03);
+  background-color: rgba(148, 34, 34, 0.1);
+}
+
+.page-title {
+  color: #942222;
+  font-size: 25px;
+  font-weight: bold;
+  margin: 0;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+h2 {
+  color: #942222;
+  text-align: right;
+  margin-bottom: 10px;
+  display: inline-block;
+}
+
+.back-btn-container {
+  display: none;
+}
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  direction: rtl;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 0;
+}
+
+hr {
+  border: 1px solid #ccc;
+  margin: 0 0 20px 0;
+}
+
+/* Styling for ng-select to match the original select design */
+::ng-deep .styled-select.ng-select .ng-select-container {
+  padding: 10px !important;
+  background-color: #e7c1c1 !important;
+  font-family: 'Assistant', sans-serif !important;
+  font-size: 16px !important;
+  width: 100% !important;
+  min-height: 40px !important;
+  height: 40px !important;
+  box-shadow: none !important;
+  outline: none !important;
+  display: flex;
+  align-items: center;
+}
+
+::ng-deep .styled-select.ng-select .ng-placeholder {
+  color: #666;
+  font-family: 'Assistant', sans-serif;
+  font-size: 16px;
+}
+
+::ng-deep .styled-select.ng-select .ng-single-filter-input {
+  font-family: 'Assistant', sans-serif;
+  font-size: 16px;
+  color: #333;
+}
+
+::ng-deep .styled-select.ng-select .ng-value {
+  font-family: 'Assistant', sans-serif;
+  font-size: 16px;
+  color: #333;
+}
+
+::ng-deep .styled-select.ng-select .ng-arrow-wrapper {
+  padding-left: 10px;
+}
+
+::ng-deep .styled-select.ng-select .ng-dropdown-panel {
+  background-color: #e7c1c1;
+  font-family: 'Assistant', sans-serif;
+  box-shadow: none;
+  margin: 0;
+  padding: 0;
+  border: none !important;
+}
+
+::ng-deep .styled-select.ng-select .ng-dropdown-panel-items {
+  background-color: transparent;
+  margin: 0;
+  padding: 0;
+}
+
+::ng-deep .styled-select.ng-select .ng-option {
+  padding: 10px;
+  font-size: 16px;
+  color: #333;
+  background-color: #e7c1c1;
+}
+
+::ng-deep .styled-select.ng-select .ng-option:hover {
+  background-color: #d3b1b1;
+  color: #333;
+}
+
+::ng-deep .styled-select.ng-select .ng-option.ng-option-selected {
+  background-color: #942222;
+  color: white;
+}
+
+/* Style for "no results found" message */
+::ng-deep .styled-select.ng-select .ng-option.ng-option-disabled {
+  background-color: #e7c1c1;
+  color: #666;
+  text-align: center;
+  font-style: italic;
+  padding: 15px;
+}
+
+/* Additional override for any global ng-select styling */
+::ng-deep .ng-dropdown-panel {
+  box-shadow: none !important;
+  border: none !important;
+  background: #e7c1c1 !important;
+  outline: none !important;
+}
+
+/* remove any border/shadow from the outer ng-select wrapper */
+::ng-deep .styled-select.ng-select {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+::ng-deep .styled-select.ng-select.ng-select-focused .ng-select-container {
+  border: 1px solid #d3b1b1 !important;
+  /* keep your pink border */
+  box-shadow: none !important;
+  /* kill the grey glow */
+  outline: none !important;
+  /* kill the grey rim */
+}
+
+::ng-deep .styled-select.ng-select .ng-select-container:focus,
+::ng-deep .styled-select.ng-select .ng-select-container:focus-within {
+  border: 1px solid #d3b1b1 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+
+ 

@@ -8,7 +8,7 @@
 </div>
 <div style="text-align: left; margin-right: 16px;margin-top: 10px; position: absolute; ">
   <button (click)="scrollToBottom()" style="background: none; border: none; cursor: pointer;">
-    <img src="/assets/images/arrows.png" style="width: 1 rem ;height: 2rem;;"/>
+    <img src="/assets/images/arrows.png" style="width: 2.5 rem ;height: 3.5rem;" title="לך לכפתור שליחה"/>
   </button>
 </div>
 <table class="vehicle-issues-table">
@@ -27,8 +27,8 @@
       <td><input type="checkbox" [(ngModel)]="issue.dirty" /></td>
       <td>
         <!-- fuel_checked=false means "not fueled", so toggle on change -->
-        <input type="checkbox" [(ngModel)]="issue.fuel_checked"
-               (change)="issue.fuel_checked = !issue.fuel_checked" />
+        <input type="checkbox" [(ngModel)]="issue.fuel_checked" />
+       
       </td>
       <td><input type="checkbox" [(ngModel)]="issue.items_left" /></td>
       <td>

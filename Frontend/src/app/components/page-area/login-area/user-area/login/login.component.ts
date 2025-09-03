@@ -109,7 +109,7 @@ if (tokenParts.length === 3) {
   } else if (role === 'supervisor') {
     this.router.navigate(['/supervisor-dashboard']);
  } else if (role === 'inspector') {
-  this.router.navigate(['/inspector/vehicles']);
+  this.router.navigate(['/inspector/inspection']);
 }
  else {
     this.router.navigate(['/home']);
@@ -122,7 +122,6 @@ if (tokenParts.length === 3) {
     },
     error: (err) => {
       console.error('Login failed:', err);
-      this.toastService.show('שם משתמש או סיסמה שגויים', 'error');
     }
   });
 }

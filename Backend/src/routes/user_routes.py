@@ -1,77 +1,87 @@
+import asyncio
 import json
 import traceback
-from fastapi import APIRouter, HTTPException, Depends , Query,Form
-from sqlalchemy.orm import Session,aliased
+import logging
+from datetime import datetime, timedelta, timezone
+from typing import List, Optional, Annotated
+from uuid import UUID
+
+from fastapi import APIRouter, HTTPException, Depends, Query, Response
+from fastapi import status as fastapi_status
+from fastapi.responses import JSONResponse
+from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy import text, cast
+from sqlalchemy.orm import Session, aliased
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+from apscheduler.jobstores.base import JobLookupError
+
+# Utils
+from ..utils.database import get_db
+from ..utils.auth import role_check, identity_check, get_current_user, hash_password
+from ..utils.socket_manager import sio
+from ..utils.socket_utils import convert_decimal
+from ..utils.scheduler import schedule_ride_start, scheduler
+from ..utils.time_utils import is_time_in_blocked_window
+
+# Services
+from ..services import register_service, login_service
+from ..services.new_ride_service import check_license_validity, create_ride
+from ..services.user_rides_service import get_future_rides, get_past_rides, get_all_rides, get_ride_by_id, get_archived_rides, cancel_order_in_db
+from ..services.register_service import get_departments
+from ..services.user_notification import get_user_notifications, send_notification_async, create_system_notification, get_supervisor_id, get_user_name
+from ..services.user_edit_ride import patch_order_in_db
+from ..services.user_form import process_completion_form, get_ride_needing_feedback
+from ..services.auth_service import create_reset_token, verify_reset_token
+from ..services.user_data import get_user_department
+from ..services.city_service import get_cities, get_city, calculate_distance
+from ..services.ride_reminder_service import schedule_ride_reminder_email
+from ..services.email_clean_service import EmailService
+
+# Schemas
 from ..schemas.register_schema import UserCreate
 from ..schemas.login_schema import UserLogin
-from ..schemas.new_ride_schema import RideCreate
-from ..services import register_service
-from ..services import login_service
-from uuid import UUID
-from sqlalchemy import text
-from ..services.new_ride_service import create_ride 
-from fastapi.responses import JSONResponse
-from typing import List, Optional, Union
-from datetime import datetime, timedelta, timezone
+from ..schemas.new_ride_schema import RideCreate, RideResponse
 from ..schemas.user_rides_schema import RideSchema, RideStatus
-from ..services.user_rides_service import get_future_rides, get_past_rides , get_all_rides
-from ..utils.database import get_db
-from src.models import ride_model, vehicle_model
-import logging
-from ..utils.database import get_db
-from ..services.register_service import get_departments 
 from ..schemas.notification_schema import NotificationOut
-from ..services.user_notification import get_user_notifications ,send_notification_async
-from fastapi import status as fastapi_status
-from fastapi.security import OAuth2PasswordBearer
-from ..utils.auth import role_check,identity_check,get_current_user,hash_password
-from src.schemas.ride_status_enum import UpdateRideStatusRequest
 from ..schemas.order_card_item import OrderCardItem
-from ..models.ride_model import Ride
-from ..services.user_edit_ride import patch_order_in_db
-from ..services.user_rides_service import get_ride_by_id , get_archived_rides , cancel_order_in_db
-from ..services.user_notification import create_system_notification,get_supervisor_id,get_user_name
-import traceback
-from ..utils.auth import get_current_user
-from ..models.user_model import User
-from ..services.user_form import process_completion_form
 from ..schemas.form_schema import CompletionFormData
-from ..utils.socket_manager import sio  # ✅ import this
-from ..utils.socket_utils import convert_decimal
-from ..utils.email_utils import send_email
-from ..services.auth_service import create_reset_token,verify_reset_token
-from ..schemas.reset_password import ResetPasswordInput,ForgotPasswordRequest
-from ..services.user_data import get_user_department
-from ..models.vehicle_model import Vehicle
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-from ..models.ride_model import PendingRideSchema
-from ..utils.scheduler import schedule_ride_start
-from apscheduler.jobstores.base import JobLookupError
-from ..utils.scheduler import scheduler
-from ..services.city_service import get_cities,get_city, calculate_distance
-from ..models.city_model import City
-from sqlalchemy import cast
-from ..services.user_form import get_ride_needing_feedback
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+from ..schemas.reset_password import ResetPasswordInput, ForgotPasswordRequest
+from src.schemas.ride_status_enum import UpdateRideStatusRequest
 from src.schemas.department_schema import DepartmentOut
-from src.models.department_model import Department
-from src.services.email_service import send_email, load_email_template, get_user_email, async_send_email
-from ..utils.time_utils import is_time_in_blocked_window
-from ..schemas.new_ride_schema import RideResponse
-from ..services.ride_reminder_service import schedule_ride_reminder_email
 
+# Models
+from ..models.ride_model import Ride, PendingRideSchema
+from ..models.user_model import User
+from ..models.vehicle_model import Vehicle
+from ..models.city_model import City
+from src.models import ride_model, vehicle_model
+from src.models.department_model import Department
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-router = APIRouter()
 
 from dotenv import load_dotenv
 import os
+import socketio
 
-load_dotenv()  # Load environment variables from .env
+load_dotenv()  # Load environment variables  .env
 FROM_CITY = os.getenv("FROM_CITY")
 FROM_CITY_NAME = os.getenv("FROM_CITY", "Unknown City")
 # BOOKIT_URL = os.getenv("BOOKIT_FRONTEND_URL", "http://localhost:4200")  
+
+async def get_email_service(
+    sio_server: Annotated[socketio.AsyncServer, Depends(lambda: sio)] # 'sio' is imported from ..utils.socket_manager
+) -> EmailService:
+    """
+    Dependency injector for EmailService.
+    Ensures EmailService is initialized with the correct Socket.IO server instance.
+    """
+    return EmailService(sio_server=sio_server)
+
+
+router = APIRouter()
 
 
 @router.post("/api/register")
@@ -106,7 +116,7 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
         logger.error(f"Login failed: {str(e)}")
         raise HTTPException(
             status_code=fastapi_status.HTTP_401_UNAUTHORIZED,
-            detail="Login failed: Incorrect username or password."  # Hide internal errors for security
+            detail="שם משתמש או סיסמה שגויים"
         )
     
 
@@ -121,7 +131,7 @@ def get_future_orders(user_id: UUID, status: Optional[RideStatus] = Query(None),
                       ):
 
     try:
-        role_check(allowed_roles=["employee", "admin"], token=token)
+        role_check(allowed_roles=["employee", "admin","supervisor"], token=token)
         identity_check(user_id=str(user_id), token=token)
 
         rides = get_future_rides(user_id, db, status, from_date, to_date)
@@ -135,7 +145,7 @@ def get_future_orders(user_id: UUID, status: Optional[RideStatus] = Query(None),
     except HTTPException as e:
         raise e
     except Exception as e:
-        raise HTTPException(status_code=500, detail="An unexpected error occurred.")
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred :{e}.")
 
 
 @router.get("/api/past-orders/{user_id}", response_model=List[RideSchema])
@@ -145,7 +155,7 @@ def get_past_orders(user_id: UUID, status: Optional[RideStatus] = Query(None),
                     db: Session = Depends(get_db),
                     token: str = Depends(oauth2_scheme)):
 
-    role_check(["employee", "admin"], token)
+    role_check(["employee", "admin","supervisor"], token)
     identity_check(str(user_id), token)
 
     rides = get_past_rides(user_id, db, status, from_date, to_date)
@@ -166,17 +176,11 @@ def get_all_orders(user_id: UUID, status: Optional[RideStatus] = Query(None),
                    db: Session = Depends(get_db),
                    token: str = Depends(oauth2_scheme)):
 
-    role_check(["employee", "admin"], token)
+    role_check(["employee", "admin","supervisor"], token)
     identity_check(str(user_id), token)
 
     rides = get_all_rides(user_id, db, status, from_date, to_date)
     return rides
-
-    
-@router.get("/api/user-orders/{user_id}/{order_id}")
-def get_user_2specific_order():
-    # Implementation pending
-    return {"message": "Not implemented yet"}
 
 @router.post("/api/orders/{user_id}", status_code=fastapi_status.HTTP_201_CREATED)
 async def create_order(
@@ -188,13 +192,27 @@ async def create_order(
     role_check(allowed_roles=["employee", "admin"], token=token)
     identity_check(user_id=str(user_id), token=token)
 
+    check_license_validity(db, user_id, ride_request.start_datetime)
+
     try:
-        new_ride = await create_ride(db, user_id, ride_request)
+        # Fetch the user and get their license status
+        user = db.query(User).filter(User.employee_id == user_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        license_check_passed = bool(getattr(user, "has_government_license", False))
+
+        # Create the ride, setting license_check_passed
+        new_ride = await create_ride(
+            db, user_id, ride_request, license_check_passed=license_check_passed
+        )
+
+        # Schedule other tasks
         schedule_ride_start(new_ride.id, new_ride.start_datetime)
         schedule_ride_reminder_email(new_ride.id, new_ride.start_datetime)
         warning_flag = is_time_in_blocked_window(new_ride.start_datetime)
         department_id = get_user_department(user_id=user_id, db=db)
 
+        # Emit the new ride request via Socket.IO immediately after creation.
         await sio.emit("new_ride_request", {
             "ride_id": str(new_ride.id),
             "user_id": str(user_id),
@@ -204,23 +222,50 @@ async def create_order(
             "end_datetime": str(new_ride.end_datetime),
             "date_and_time": str(new_ride.start_datetime),
             "vehicle_id": str(new_ride.vehicle_id),
-            "requested_vehicle_plate": new_ride.plate_number,
+            "requested_vehicle_model": getattr(new_ride, "vehicle_model", None),
             "department_id": str(department_id),
             "distance": new_ride.estimated_distance_km,
         })
 
+        # Launch the email task in the background using a fire-and-forget pattern.
         supervisor_id = get_supervisor_id(user_id, db)
         employee_name = get_user_name(db, new_ride.user_id)
         is_extended = (new_ride.end_datetime - new_ride.start_datetime) > timedelta(days=2)
 
         if supervisor_id:
+            supervisor_name = get_user_name(db, supervisor_id)
+            email_service = EmailService(sio_server=sio)
+            destination_city = db.query(City).filter(City.id == new_ride.stop).first()
+            destination_name = destination_city.name if destination_city else str(new_ride.stop)
+            ride_details_for_email = {
+                "username": employee_name,
+                "ride_id": str(new_ride.id),
+                "supervisor_name": supervisor_name,
+                "start_location": new_ride.start_location,
+                "destination": destination_name,
+                "start_datetime": new_ride.start_datetime,
+                "end_datetime": new_ride.end_datetime,
+                "plate_number": new_ride.plate_number,
+                "ride_type": new_ride.ride_type,
+                "estimated_distance_km": new_ride.estimated_distance_km,
+                "status": new_ride.status,
+            }
+            asyncio.create_task(
+                email_service.send_ride_creation_email(
+                    ride_id=new_ride.id,
+                    recipient_id=supervisor_id,
+                    db=db,
+                    ride_details=ride_details_for_email,
+                    email_type="new_ride_request_to_supervisor",
+                    use_retries=True
+                )
+            )
             supervisor_notification = create_system_notification(
                 user_id=supervisor_id,
                 title="בקשת נסיעה חדשה",
-                message=f"שלח בקשה חדשה {employee_name} העובד",
+                message=f"העובד/ת {employee_name} שלח/ה בקשה חדשה",
                 order_id=new_ride.id
             )
-
             await sio.emit("new_notification", {
                 "id": str(supervisor_notification.id),
                 "user_id": str(supervisor_notification.user_id),
@@ -230,79 +275,122 @@ async def create_order(
                 "sent_at": supervisor_notification.sent_at.isoformat(),
                 "order_id": str(supervisor_notification.order_id) if supervisor_notification.order_id else None,
                 "order_status": new_ride.status,
-                "is_extended_request": is_extended 
-
-
+                "is_extended_request": is_extended
             })
-
-            # שליחת מייל למנהל - כאן הקוראים ל-async_send_email
-            supervisor_email = get_user_email(supervisor_id, db)
-            if supervisor_email:
-                # Get the city name from the city ID
-                destination_city = db.query(City).filter(City.id == new_ride.stop).first()
-                destination_name = destination_city.name if destination_city else str(new_ride.stop)
-                duration_days = (new_ride.end_datetime - new_ride.start_datetime).days + 1
-               
-                extended_banner = ""
-                if ride_request.is_extended_request:
-                    extended_banner = f"""
-                    <div style="background-color: #fff3cd; color: #856404; padding: 15px; border-radius: 8px; border: 1px solid #ffeeba; margin-bottom: 20px; text-align: center;">
-                    ⚠️ <strong>בקשה זו כוללת נסיעה ארוכה של {duration_days} ימים ודורשת את תשומת לבך המיידית</strong>
-                    </div>
-                    """
-                
-                html_content = load_email_template("new_ride_request.html", {
-                    "SUPERVISOR_NAME": get_user_name(db, supervisor_id) or "מנהל",
-                    "EMPLOYEE_NAME": employee_name,
-                    "DESTINATION": destination_name,  # Now shows the city name
-                    "DATE_TIME": str(new_ride.start_datetime),
-                    "PLATE_NUMBER": new_ride.plate_number or "לא נבחר",
-                    "DISTANCE": str(new_ride.estimated_distance_km),
-                    "STATUS": new_ride.status,
-                    "EXTENDED_BANNER": extended_banner
-
-                    # "LINK_TO_ORDER": f"{BOOKIT_URL}/home?order_id={new_ride.id}"
-                    })
-                await async_send_email(
-                    to_email=supervisor_email,
-                    subject="📄 בקשת נסיעה חדשה מחכה לאישורך",
-                    html_content=html_content
-                )
-            else:
-                logger.warning("No supervisor email found — skipping email.")
-
         else:
-            logger.warning("No supervisor found — skipping supervisor notification.")
+            logger.warning(f"No supervisor found for user ID {user_id} — skipping supervisor notification and email.")
 
-        confirmation = create_system_notification(
-            user_id=new_ride.user_id,
-            title="שליחת בקשה",
-            message="בקשתך נשלחה בהצלחה",
-            order_id=new_ride.id
-        )
-
-        await sio.emit("new_notification", {
-            "id": str(confirmation.id),
-            "user_id": str(confirmation.user_id),
-            "title": confirmation.title,
-            "message": confirmation.message,
-            "notification_type": confirmation.notification_type.value,
-            "sent_at": confirmation.sent_at.isoformat(),
-            "order_id": str(confirmation.order_id) if confirmation.order_id else None,
-            "order_status": new_ride.status
-        })
-
-        return {
-            **RideResponse.model_validate(new_ride).dict(),
-            "inspector_warning": warning_flag
-        }
+        return new_ride
 
     except Exception as e:
-        logger.error(f"Order creation failed: {str(e)}")
-        raise HTTPException(
-            status_code=fastapi_status.HTTP_400_BAD_REQUEST,
-            detail=f"Failed to create order: {str(e)}"
-        )
+        print(f"An error occurred: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+# @router.post("/api/orders/{user_id}", status_code=fastapi_status.HTTP_201_CREATED)
+# async def create_order(
+#     user_id: UUID,
+#     ride_request: RideCreate,
+#     db: Session = Depends(get_db),
+#     token: str = Depends(oauth2_scheme)
+# ):
+#     role_check(allowed_roles=["employee", "admin"], token=token)
+#     identity_check(user_id=str(user_id), token=token)
+
+#     check_license_validity(db, user_id, ride_request.start_datetime)
+
+#     try:
+#         # Create the ride first - this is the critical, core action.
+#         new_ride = await create_ride(db, user_id, ride_request)
+        
+#         # Schedule other tasks
+#         schedule_ride_start(new_ride.id, new_ride.start_datetime)
+#         schedule_ride_reminder_email(new_ride.id, new_ride.start_datetime)
+#         warning_flag = is_time_in_blocked_window(new_ride.start_datetime)
+#         department_id = get_user_department(user_id=user_id, db=db)
+
+#         # Emit the new ride request via Socket.IO immediately after creation.
+#         await sio.emit("new_ride_request", {
+#             "ride_id": str(new_ride.id),
+#             "user_id": str(user_id),
+#             "employee_name": new_ride.username,
+#             "status": new_ride.status,
+#             "destination": new_ride.stop,
+#             "end_datetime": str(new_ride.end_datetime),
+#             "date_and_time": str(new_ride.start_datetime),
+#             "vehicle_id": str(new_ride.vehicle_id),
+#             "requested_vehicle_model": new_ride.vehicle_model,
+#             "department_id": str(department_id),
+#             "distance": new_ride.estimated_distance_km,
+#         })
+        
+#         # Launch the email task in the background using a fire-and-forget pattern.
+#         # Do NOT await this call.
+#         supervisor_id = get_supervisor_id(user_id, db)
+#         employee_name = get_user_name(db, new_ride.user_id)
+#         is_extended = (new_ride.end_datetime - new_ride.start_datetime) > timedelta(days=2)
+
+#         # Launch the email task in the background using a fire-and-forget pattern.
+#         if supervisor_id:
+#             supervisor_name = get_user_name(db, supervisor_id)
+            
+#             # Instantiate EmailService for this request
+#             email_service = EmailService(sio_server=sio)
+            
+#             destination_city = db.query(City).filter(City.id == new_ride.stop).first()
+#             destination_name = destination_city.name if destination_city else str(new_ride.stop)
+            
+#             ride_details_for_email = {
+#                 "username": employee_name,
+#                 "ride_id": str(new_ride.id),
+#                 "supervisor_name": supervisor_name,
+#                 "start_location": new_ride.start_location,
+#                 "destination": destination_name,
+#                 "start_datetime": new_ride.start_datetime,
+#                 "end_datetime": new_ride.end_datetime,
+#                 "plate_number": new_ride.plate_number,
+#                 "ride_type": new_ride.ride_type,
+#                 "estimated_distance_km": new_ride.estimated_distance_km,
+#                 "status": new_ride.status,
+#             }
+
+#             # Use asyncio.create_task to send the email in the background.
+#             # The function will return immediately. The email sending and retries will happen in the background.
+#             asyncio.create_task(
+#                 email_service.send_ride_creation_email(
+#                     ride_id=new_ride.id,
+#                     recipient_id=supervisor_id,
+#                     db=db,
+#                     ride_details=ride_details_for_email,
+#                     email_type="new_ride_request_to_supervisor",
+#                     use_retries=True # Use retries for this critical background task
+#                 )
+#             )
+            
+#             # The supervisor notification logic should stay here as it is not blocking
+#             supervisor_notification = create_system_notification(
+#                 user_id=supervisor_id,
+#                 title="בקשת נסיעה חדשה",
+#                 message=f"העובד/ת {employee_name} שלח/ה בקשה חדשה",
+#                 order_id=new_ride.id
+#             )
+#             await sio.emit("new_notification", {
+#                 "id": str(supervisor_notification.id),
+#                 "user_id": str(supervisor_notification.user_id),
+#                 "title": supervisor_notification.title,
+#                 "message": supervisor_notification.message,
+#                 "notification_type": supervisor_notification.notification_type.value,
+#                 "sent_at": supervisor_notification.sent_at.isoformat(),
+#                 "order_id": str(supervisor_notification.order_id) if supervisor_notification.order_id else None,
+#                 "order_status": new_ride.status,
+#                 "is_extended_request": is_extended
+#             })
+
+#         else:
+#             logger.warning(f"No supervisor found for user ID {user_id} — skipping supervisor notification and email.")
+
+#     except Exception as e:
+#         # Handle the exception, for example:
+#         print(f"An error occurred: {e}")
+#         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/api/rides_supposed-to-start")
 def check_started_approved_rides(db: Session = Depends(get_db)):
@@ -339,7 +427,7 @@ async def patch_order(
     current_user: User = Depends(get_current_user)
 ):
     # Update the order
-    updated_order = patch_order_in_db(order_id, patch_data, db, changed_by=str(current_user.employee_id))
+    updated_order = await patch_order_in_db(order_id, patch_data, db, changed_by=str(current_user.employee_id))
     user = db.query(User).filter(User.employee_id == updated_order.user_id).first()
     vehicle = db.query(Vehicle).filter(Vehicle.id == updated_order.vehicle_id).first()
 
@@ -349,7 +437,7 @@ async def patch_order(
     "user_id": str(updated_order.user_id),
     "employee_name":f"{user.first_name} {user.last_name}",
     "vehicle_id": str(updated_order.vehicle_id) if updated_order.vehicle_id else None,
-    "requested_vehicle_plate":vehicle.plate_number,
+    "requested_vehicle_model":vehicle.vehicle_model,
     "ride_type": updated_order.ride_type,
     "start_datetime": updated_order.start_datetime,
     "end_datetime": updated_order.end_datetime,
@@ -495,17 +583,6 @@ async def submit_completion_form(
     return await process_completion_form(db, user, form_data)
 
 
-@router.get("/api/archived-orders/{user_id}", response_model=List[RideSchema])
-def get_archived_orders_route(
-    user_id: UUID,
-    db: Session = Depends(get_db),
-    token: str = Depends(oauth2_scheme)
-):
-    role_check(["employee", "admin"], token)
-    identity_check(str(user_id), token)
-
-    return get_archived_rides(user_id, db)
-
 @router.get("/api/orders/pending-cars", response_model=List[PendingRideSchema])
 def get_pending_car_orders(db: Session = Depends(get_db)):
     pending_rides = (
@@ -536,34 +613,58 @@ def get_vehicle_types(db: Session = Depends(get_db)):
 
 
 
-@router.post("/api/forgot-password")
-def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
+@router.post("/api/forgot-password", status_code=fastapi_status.HTTP_200_OK)
+async def forgot_password(
+    request: ForgotPasswordRequest,
+    response: Response, # Add the Response object to modify the status code on failure
+    email_service: EmailService = Depends(get_email_service),
+    db: Session = Depends(get_db)
+):
     email = request.email
     user = db.query(User).filter(User.email == email).first()
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=fastapi_status.HTTP_404_NOT_FOUND, detail="User not found")
 
     token = create_reset_token(str(user.employee_id))
-    reset_link = f"http://localhost:8000/reset-password?token={token}"
-    send_email(
-    subject="🚗 Reset Your Password - Vehicle Desk System",
-    body=f"""
-Hi {user.first_name},
 
-We received a request to reset your password for your Vehicle Desk System account.
+    frontend_url = os.getenv("BOOKIT_FRONTEND_URL", "http://localhost:4200")
+    reset_link = f"{frontend_url}/reset-password/{token}" # Using the correct path param format
 
-To reset your password, click the link below:
-{reset_link}
+    subject = "🚗 Reset Your Password - Vehicle Desk System"
+    context = { "username": user.first_name, "reset_link": reset_link }
 
-This link will expire in 30 minutes. If you didn’t request this, you can safely ignore it.
+    try:
+        email_html_content = email_service._render_email_template("password_reset_email.html", context)
+    except Exception as e:
+        logger.error(f"Failed to render password reset email template: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=fastapi_status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate reset email content."
+        )
 
-Thanks,  
-Vehicle Desk Support Team  
-    """,
-    recipients=[user.email]
-)
+    # Call the service with use_retries=False for the initial attempt
+    email_sent_successfully = await email_service.send_email_direct(
+        to_email=user.email,
+        subject=subject,
+        html_content=email_html_content,
+        user_id=user.employee_id,   
+        email_type="forgot_password",
+        use_retries=False # Correct for an initial, real-time request
+    )
 
-    return {"message": "Reset email sent"}
+    if email_sent_successfully:
+        return {"message": "Reset link has been sent"}
+    else:
+        # --- CHANGE: Return a specific error with the ID needed for retry ---
+        logger.error(f"Initial password reset email failed for {user.email}.")
+        response.status_code = fastapi_status.HTTP_422_UNPROCESSABLE_ENTITY
+        return {
+            "detail": "Could not send the password reset email.",
+            "retry_info": {
+                "identifier_id": str(user.employee_id),
+                "email_type": "forgot_password"
+            }
+        }
 
 
 @router.post("/api/reset-password")
@@ -633,6 +734,17 @@ def get_cities_route(db: Session = Depends(get_db)):
 def get_city_route(name:str,db: Session = Depends(get_db)):
     city = get_city(name,db)
     return {"id": str(city.id), "name": city.name} 
+
+def get_city_by_id(id: str, db: Session):
+    return db.query(City).filter(City.id == id).first()
+
+@router.get("/api/cityname")
+def get_city_name(id: str, db: Session = Depends(get_db)):
+    city = get_city_by_id(id, db)
+    if city is None:
+        raise HTTPException(status_code=404, detail=f"City with id {id} not found")
+    return {"id": str(city.id), "name": city.name}
+
 
 @router.get("/api/rides/feedback/check/{user_id}")
 def check_feedback_needed(

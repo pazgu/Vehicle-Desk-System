@@ -1,3 +1,16 @@
+:host {
+  display: block;
+  min-height: 100vh;
+
+  /* your background */
+  background-image: url('/assets/images/notifications-bg.png'); /* note: no leading slash */
+  background-repeat: repeat;
+  background-size: cover;       
+  background-repeat: no-repeat; 
+  background-position: center;   
+  background-attachment: fixed; 
+}
+
 
 .notification-page {
   background: white;
@@ -9,6 +22,7 @@
   padding: 2rem 2rem;
 }
 .wrapper {
+    background-image: url('/assets/images/notifications-bg.png');
   height: 100vh;
   overflow: hidden;
   padding-top: 40px;
@@ -34,6 +48,9 @@
 }
 
 .notification {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
   padding: 0.5rem;
   border-radius: 8px;
   margin-bottom: 0.5rem;
@@ -43,6 +60,7 @@
   opacity: 1;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  
 }
 
 .notification:hover {
@@ -93,39 +111,42 @@
 
 .time {
   font-weight: bold;
-  margin-bottom: 0.5rem;
-  color: #c62828;
+  color: #c62828;  
+  flex-shrink: 0;
+  white-space: nowrap;
+  justify-content: flex-end;
 }
 
 .content {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  align-items: center;  
+  justify-content: space-between !important;    
   color: #000;
+  width:100%
 }
 
 .status-icon {
   height: 1.3rem;
   width: 1.3rem;
-  margin-right: 7px;
-  
+  justify-content: flex-start;
 }
 
 .text {
   flex: 1;
   font-size: 1.1rem;
   color: #000;
- 
+  justify-content: center; 
+  text-align: center;
 }
+
+
 
 .message-icon {
   width: 30px;
-  height: 30px;
-  margin-inline-start: 10px;
-  vertical-align: middle;
-  margin-top: -2px; 
-
+  height: 30px;  
+  flex-shrink: 1;
 }
+
 .pagination {
   display: flex;
   justify-content: center;
@@ -167,6 +188,7 @@
     cursor: pointer;
     color: #811313;
   }
+
 .ride-filter-buttons {
   display: flex;
   justify-content: center;
@@ -204,7 +226,7 @@ body {
   margin: 0;
   padding: 0;
   font-family: 'Alef', sans-serif;
-  background-image: url('/assets/images/notifications-bg.png');
+  /* background-image: url('/assets/images/notifications-bg.png'); */
   background-size: 300px auto;
   background-repeat: repeat;
   background-position: top center;

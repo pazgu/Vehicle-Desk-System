@@ -1,61 +1,40 @@
+from fastapi import HTTPException
+from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy import Date, func, cast, and_, or_, not_, select, text
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
-from sqlalchemy.types import String  # To cast to string
-from typing import Optional, List , Dict , Union
-from ..models.vehicle_model import Vehicle, VehicleStatus
-from sqlalchemy import Date, func, cast 
-from sqlalchemy import and_ , or_ , not_ , select
+from sqlalchemy.types import String
+from datetime import datetime, timezone, date, timedelta
+from typing import Optional, List, Dict, Union
+from uuid import UUID
+
+# Utils
+from ..utils.audit_utils import log_action
+from src.utils.database import SessionLocal
+
+# Services
+
+# Schemas
+from ..schemas.check_vehicle_schema import VehicleInspectionSchema
+from ..schemas.user_rides_schema import RideSchema
+from ..schemas.vehicle_schema import VehicleOut, InUseVehicleOut
+
+# Models
 from ..models.ride_model import Ride, RideStatus
 from ..models.user_model import User
-from datetime import datetime, timezone, date, timedelta
-from ..schemas.vehicle_schema import VehicleOut, InUseVehicleOut
-from uuid import UUID
-from sqlalchemy import text
-from fastapi import HTTPException
-from sqlalchemy.exc import SQLAlchemyError
-from ..models.vehicle_inspection_model import VehicleInspection 
-from ..schemas.check_vehicle_schema import VehicleInspectionSchema
-from ..utils.audit_utils import log_action 
-from ..schemas.user_rides_schema import RideSchema 
-from ..services.email_service import get_user_email, load_email_template, async_send_email, send_email
-from datetime import datetime
+from ..models.vehicle_inspection_model import VehicleInspection
+from ..models.vehicle_model import Vehicle, VehicleStatus
 
-from src.utils.database import SessionLocal
-from ..services.email_service import get_user_email, load_email_template, async_send_email, send_email
-from datetime import datetime
-
-from fastapi.security import OAuth2PasswordBearer
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-
-# def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
-#     inspection = VehicleInspection(
-#         inspected_by=data.inspected_by,
-#         inspection_date=datetime.now(timezone.utc),
-#         clean=data.clean,
-#         fuel_checked=data.fuel_checked,
-#         no_items_left=data.no_items_left,
-#         critical_issue_bool=data.critical_issue_bool,
-#         issues_found=data.issues_found,
-#     )
-
-#     db.add(inspection)
-#     db.commit()
-#     db.refresh(inspection)
-
-#     return {
-#         "message": "Vehicle inspection recorded successfully",
-#         "inspection_id": str(inspection.inspection_id)
-#     }
-
 
 
 def get_vehicle_km_driven_on_date(db: Session, vehicle_id: int, day: date) -> float:
     rides = db.query(Ride).filter(
         Ride.vehicle_id == vehicle_id,
-        Ride.start_datetime.cast(Date) == day
+        cast(Ride.start_datetime, Date) == day
     ).all()
 
-    return sum(r.actual_distance_km for r in rides)
+    return sum(r.actual_distance_km or 0 for r in rides)
 
 
 def get_vehicles_with_optional_status(
@@ -105,86 +84,86 @@ def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_re
 
         # 🔍 Try to find a supervisor from the same department (if any)
         # --- Email Recipient Determination Logic ---
-        recipient_emails_set: set[str] = set() # Use a set to handle duplicates automatically
-        log_messages: List[str] = []
+        # recipient_emails_set: set[str] = set() # Use a set to handle duplicates automatically
+        # log_messages: List[str] = []
 
-        # 1. Get the user who performed the change (actor - e.g., Yorgo or Zalman)
-        # Find the actor to use their name in the email context, but NOT necessarily as a recipient
-        actor_user = db.query(User).filter(User.employee_id == changed_by).first()
-        if not actor_user:
-            log_messages.append("Actor user not found for context.")
+        # # 1. Get the user who performed the change (actor - e.g., Yorgo or Zalman)
+        # # Find the actor to use their name in the email context, but NOT necessarily as a recipient
+        # actor_user = db.query(User).filter(User.employee_id == changed_by).first()
+        # if not actor_user:
+        #     log_messages.append("Actor user not found for context.")
 
-        # NEW LOGIC FOR RECIPIENTS: STRICTLY ONLY SUPERVISORS
-        supervisor_found_for_vehicle_department = False
+        # # NEW LOGIC FOR RECIPIENTS: STRICTLY ONLY SUPERVISORS
+        # supervisor_found_for_vehicle_department = False
 
-        if vehicle.department_id:
-            # Try to find a supervisor in the vehicle's specific department
-            department_supervisor = db.query(User).filter(
-                User.department_id == vehicle.department_id,
-                User.role == "supervisor",
-                User.email.isnot(None),
-                User.email != ''
-            ).first()
+        # if vehicle.department_id:
+        #     # Try to find a supervisor in the vehicle's specific department
+        #     department_supervisor = db.query(User).filter(
+        #         User.department_id == vehicle.department_id,
+        #         User.role == "supervisor",
+        #         User.email.isnot(None),
+        #         User.email != ''
+        #     ).first()
 
-            if department_supervisor and department_supervisor.email:
-                recipient_emails_set.add(department_supervisor.email)
-                log_messages.append(f"Added department-specific supervisor's email: {department_supervisor.email}")
-                supervisor_found_for_vehicle_department = True
-            else:
-                log_messages.append(f"No specific supervisor found for vehicle's department {vehicle.department_id}.")
-        else:
-            log_messages.append(f"Vehicle {vehicle.plate_number} has no department ID.")
-
-
-        # If no department-specific supervisor was found OR vehicle has no department,
-        # THEN notify ALL general supervisors.
-        if not supervisor_found_for_vehicle_department:
-            log_messages.append("Falling back to all general supervisors.")
-            general_supervisors = db.query(User).filter(
-                User.role == "supervisor",
-                User.email.isnot(None),
-                User.email != ''
-            ).all()
-            for sup_user in general_supervisors:
-                recipient_emails_set.add(sup_user.email)
-                log_messages.append(f"Added general supervisor's email: {sup_user.email}")
-
-        # Convert the set to a list for iteration
-        recipient_emails = list(recipient_emails_set)
+        #     if department_supervisor and department_supervisor.email:
+        #         recipient_emails_set.add(department_supervisor.email)
+        #         log_messages.append(f"Added department-specific supervisor's email: {department_supervisor.email}")
+        #         supervisor_found_for_vehicle_department = True
+        #     else:
+        #         log_messages.append(f"No specific supervisor found for vehicle's department {vehicle.department_id}.")
+        # else:
+        #     log_messages.append(f"Vehicle {vehicle.plate_number} has no department ID.")
 
 
+        # # If no department-specific supervisor was found OR vehicle has no department,
+        # # THEN notify ALL general supervisors.
+        # if not supervisor_found_for_vehicle_department:
+        #     log_messages.append("Falling back to all general supervisors.")
+        #     general_supervisors = db.query(User).filter(
+        #         User.role == "supervisor",
+        #         User.email.isnot(None),
+        #         User.email != ''
+        #     ).all()
+        #     for sup_user in general_supervisors:
+        #         recipient_emails_set.add(sup_user.email)
+        #         log_messages.append(f"Added general supervisor's email: {sup_user.email}")
 
-        context = {
-            "PLATE_NUMBER": vehicle.plate_number,
-            "VEHICLE_MODEL": vehicle.vehicle_model if vehicle.vehicle_model else "N/A",
-            "DATE_TIME": datetime.now().strftime("%d/%m/%Y %H:%M"),
-            "FIRST_NAME": actor_user.first_name if actor_user and actor_user.first_name else "המערכת",
-            "FREEZE_REASON": FREEZE_REASON_TRANSLATIONS.get(
-                str(freeze_reason).split(".")[-1],  # fallback to raw key if not found
-                str(freeze_reason).split(".")[-1]),
-            "FREEZE_DETAILS": notes or "אין פרטים נוספים"
-        }
+        # # Convert the set to a list for iteration
+        # recipient_emails = list(recipient_emails_set)
 
-        # --- Send Emails ---
-        if recipient_emails:
-            try:
-                subject = ""
-                html_content = ""
 
-                if new_status == VehicleStatus.frozen:
-                    subject = "📌 BookIt System Update: Vehicle Frozen"
-                    html_content = load_email_template("vehicle_frozen.html", context)
-                elif old_status == VehicleStatus.frozen and new_status != VehicleStatus.frozen:
-                    subject = "✅ BookIt System Update: Vehicle Unfrozen"
-                    html_content = load_email_template("vehicle_unfrozen.html", context)
-                else:
-                    return {"vehicle_id": vehicle.id, "new_status": vehicle.status, "freeze_reason": vehicle.freeze_reason}
 
-                for email_address in recipient_emails:
-                    send_email(email_address, subject, html_content)
+        # context = {
+        #     "PLATE_NUMBER": vehicle.plate_number,
+        #     "VEHICLE_MODEL": vehicle.vehicle_model if vehicle.vehicle_model else "N/A",
+        #     "DATE_TIME": datetime.now().strftime("%d/%m/%Y %H:%M"),
+        #     "FIRST_NAME": actor_user.first_name if actor_user and actor_user.first_name else "המערכת",
+        #     "FREEZE_REASON": FREEZE_REASON_TRANSLATIONS.get(
+        #         str(freeze_reason).split(".")[-1],  # fallback to raw key if not found
+        #         str(freeze_reason).split(".")[-1]),
+        #     "FREEZE_DETAILS": notes or "אין פרטים נוספים"
+        # }
 
-            except Exception as e:
-                print(f"Error during email sending process: {e}")
+        # # --- Send Emails ---
+        # if recipient_emails:
+        #     try:
+        #         subject = ""
+        #         html_content = ""
+
+        #         if new_status == VehicleStatus.frozen:
+        #             subject = "📌 BookIt System Update: Vehicle Frozen"
+        #             html_content = load_email_template("vehicle_frozen.html", context)
+        #         elif old_status == VehicleStatus.frozen and new_status != VehicleStatus.frozen:
+        #             subject = "✅ BookIt System Update: Vehicle Unfrozen"
+        #             html_content = load_email_template("vehicle_unfrozen.html", context)
+        #         else:
+        #             return {"vehicle_id": vehicle.id, "new_status": vehicle.status, "freeze_reason": vehicle.freeze_reason}
+
+        #         for email_address in recipient_emails:
+        #             send_email(email_address, subject, html_content)
+
+            # except Exception as e:
+            #     print(f"Error during email sending process: {e}")
 
     except SQLAlchemyError as e:
         db.rollback()
@@ -192,22 +171,6 @@ def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_re
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"An internal server error occurred: {str(e)}")
-
-    # log_action(
-    #     db=db,
-    #     action="update_vehicle_status",
-    #     entity_type="Vehicle",
-    #     entity_id=str(vehicle.id),
-    #     change_data={
-    #         "new_status": str(vehicle.status),
-    #         "freeze_reason": vehicle.freeze_reason
-    #     },
-    #     changed_by=changed_by,
-    #     checkbox_value=True,  # or the actual value
-    #     inspected_at=datetime.utcnow(),  # or the actual inspection time
-    #     inspector_id=changed_by,  # or the actual inspector's ID
-    #     notes=notes  # can be None
-    # )
     
     db.execute(text("SET session.audit.user_id = DEFAULT"))
     return {"vehicle_id": vehicle.id, "new_status": vehicle.status, "freeze_reason": vehicle.freeze_reason}
@@ -291,7 +254,6 @@ def get_vehicle_by_id(vehicle_id: str, db: Session):
         "status": vehicle.status,
         "freeze_reason": vehicle.freeze_reason,
         "last_used_at": vehicle.last_used_at,
-        "current_location": vehicle.current_location,
         "mileage": vehicle.mileage,
         "vehicle_model": vehicle.vehicle_model,
         "image_url": vehicle.image_url,

@@ -12,26 +12,40 @@
     <button (click)="showWarning()">⚠️</button>
   </div>
 
+  <div class="quota-float" dir="rtl">
+  <div class="free-quota-indicator" [class.exceeded]="freeQuotaExceeded" aria-label="מכסת הזמנות חינמיות">
+    <div class="fq-header">
+      <span class="fq-title">מכסת הזמנות חינמיות</span>
+      <span class="fq-count">{{ freeQuotaUsed }}/{{ freeQuotaTotal }}</span>
+    </div>
+
+    <div class="fq-segments" [style.--fq-total]="freeQuotaTotal">
+      <div
+        class="fq-segment"
+        *ngFor="let i of quotaSegments; let idx = index"
+        [class.filled]="idx < freeQuotaUsed"
+        [attr.title]="'פריט ' + (idx + 1) + ' מתוך ' + freeQuotaTotal">
+      </div>
+    </div>
+
+    <div class="fq-hint" *ngIf="freeQuotaExceeded">
+      הגעת למכסה — הזמנות נוספות בתשלום
+    </div>
+  </div>
+</div>
+
   <div class="orders-wrapper">
     <div id="header-wrap">
       <h1>ההזמנות שלי</h1>
       <button class="back-btn" (click)="goBack()">חזור ←</button>
     </div>
+
+
     <br>
     <div class="ride-filter-buttons">
       <button [ngClass]="{ 'active': rideViewMode === 'future' }" (click)="rideViewMode = 'future'; applyFiltersAndSort()">הצג נסיעות עתידיות</button>
       <button [ngClass]="{ 'active': rideViewMode === 'past' }" (click)="rideViewMode = 'past'; applyFiltersAndSort()">הצג נסיעות קודמות</button>
       <button [ngClass]="{ 'active': rideViewMode === 'all' }" (click)="rideViewMode = 'all'; applyFiltersAndSort()">הצג הכל</button>
-
-      <img
-        src="assets/images/trash_icon.png"
-        alt="הזמנות בארכיון"
-        width="40"
-        height="40"
-        title="הזמנות בארכיון"
-        style="cursor: pointer; margin-right: 4px;"
-        (click)="goToArchivedOrders()"
-      />
     </div>
 
     <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; direction: rtl;">
@@ -56,7 +70,9 @@
           <option value="">הצג הכל</option>
           <option value="approved">מאושר</option>
           <option value="pending">ממתין</option>
-          <option value="rejected">בוטל</option>
+          <option value="cancelled_due_to_no_show">בוטלה-נסיעה לא יצאה</option>
+          <option value="rejected">נדחה</option>
+
         </select>
       </div>
 
@@ -178,10 +194,10 @@
       </div>
     </div>
 
-    <div *ngIf="!loading && filteredOrders.length === 0 && (rideViewMode !== 'all' || statusFilter || startDate || endDate || showOldOrders)" class="no-orders-message">
+    <!-- <div *ngIf="!loading && filteredOrders.length === 0 && (rideViewMode !== 'all' || statusFilter || startDate || endDate || showOldOrders)" class="no-orders-message">
         לא נמצאו הזמנות התואמות את המסננים שבחרת.
     </div>
-
+ -->
 
     <div class="pagination-controls">
       <button (click)="prevPage()" [disabled]="currentPage === 1">

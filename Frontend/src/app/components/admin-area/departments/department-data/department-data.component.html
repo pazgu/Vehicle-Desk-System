@@ -1,8 +1,9 @@
 <div class="departments-container">
   <h2>נתוני מחלקות</h2>
-  <button (click)="toggleNewDepartmentMode()" class="add-department-button">
-    + הוסף מחלקה חדשה
-  </button>
+ <button (click)="toggleNewDepartmentMode()" 
+        [class]="isNewDepartmentMode ? 'back-button' : 'add-department-button'">
+  {{ isNewDepartmentMode ? 'חזור' : '+ הוסף מחלקה חדשה' }}
+</button>
   <div *ngIf="isNewDepartmentMode" class="new-department-form">
     <form [formGroup]="newDepartmentForm" (ngSubmit)="submitNewDepartment()">
       <div>
@@ -18,7 +19,11 @@
           </option>
         </select>
       </div>
-      <button type="submit" [disabled]="newDepartmentForm.invalid">שמור</button>
+      <button type="submit" 
+        [disabled]="newDepartmentForm.invalid || isSubmitting"
+        class="save-button">
+  {{ isSubmitting ? 'שומר...' : 'שמור' }}
+</button>
     </form>
   </div>
 
@@ -63,9 +68,11 @@
           </select>
         </div>
         <div class="modal-actions">
-          <button type="submit" [disabled]="editDepartmentForm.invalid">
-            שמור
-          </button>
+         <button type="submit" 
+        [disabled]="editDepartmentForm.invalid || isSubmitting"
+        class="save-button-modal">
+  {{ isSubmitting ? 'שומר...' : 'שמור' }}
+</button>
           <button type="button" (click)="closeEditModal()">ביטול</button>
         </div>
       </form>

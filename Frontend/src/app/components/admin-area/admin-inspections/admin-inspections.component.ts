@@ -27,6 +27,9 @@ export class AdminInspectionsComponent implements OnInit {
   showCriticalIssues = false;
   filteredInspections: VehicleInspection[] = [];
   users: { id: string; user_name: string }[] = [];
+  currentPage = 1;
+  inspectionsPerPage = 4;
+
 
 
   constructor(
@@ -41,6 +44,9 @@ export class AdminInspectionsComponent implements OnInit {
   ngOnInit(): void {
     this.fetchUsers();
     this.loadData();
+    this.socketService.newInspection$.subscribe((data) => {
+      this.loadData();
+    });
   }
 
   loadData(): void {
@@ -76,6 +82,7 @@ export class AdminInspectionsComponent implements OnInit {
 
   applyInspectionFilters(): void {
     this.filteredInspections = [...this.inspections];
+    this.currentPage = 1; 
   }
 
   fetchUsers(): void {
@@ -100,5 +107,23 @@ export class AdminInspectionsComponent implements OnInit {
     }
     const user = this.users.find(u => u.id === id);
     return user ? `${user.user_name}` : id;
+  }
+
+
+  get pagedInspections() {
+    const start = (this.currentPage - 1) * this.inspectionsPerPage;
+    return this.filteredInspections.slice(start, start + this.inspectionsPerPage);
+  }
+
+  get totalPages() {
+    return this.filteredInspections.length > 0 ? Math.ceil(this.filteredInspections.length / this.inspectionsPerPage) : 1;
+  }
+
+  nextPage() {
+    if (this.currentPage < this.totalPages) this.currentPage++;
+  }
+
+  prevPage() {
+    if (this.currentPage > 1) this.currentPage--;
   }
 }

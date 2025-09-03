@@ -1,6 +1,8 @@
 from math import radians, sin, cos, sqrt, atan2
 from sqlalchemy.orm import Session
 from ..models.city_model import City , CityAlias
+from sqlalchemy import asc  
+
 
 EARTH_RADIUS_KM = 6371.0
 
@@ -39,7 +41,8 @@ def calculate_distance(city_id1: str, city_id2: str, db: Session) -> float:
     return round(distance_with_buffer, 2)
 
 def get_cities(db: Session):
-    return db.query(City).all()
+    return db.query(City).order_by(asc(City.name)).all()
+
 
 def get_city(name: str, db: Session):
     return db.query(City).filter(City.name == name).first()

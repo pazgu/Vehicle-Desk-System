@@ -1,33 +1,37 @@
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.middleware.cors import CORSMiddleware
-from socketio import ASGIApp
-import socketio
-from fastapi.staticfiles import StaticFiles
+import asyncio
+import logging
+import threading
+from typing import Annotated
 
-from src.routes.user_routes import router as user_route
-from src.routes.supervisor_routes import router as supervisor_route
-from src.routes.admin_routes import router as admin_route 
+import socketio
+from fastapi import Depends, FastAPI, HTTPException, Request, logger
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from socketio import ASGIApp
+
+# Utils
+from .utils.audit_log_listener import listen_for_audit_logs
+from .utils.socket_manager import connect, sio
+from src.utils.scheduler import start_scheduler
+
+# Services
+from src.services.email_clean_service import EmailService
+
+# Schemas
 from src.schemas.vehicle_create_schema import VehicleCreate
+
+# Routes
+from src.routes.admin_routes import router as admin_route
+from src.routes.email_router import router as email_router
+from src.routes.inspector_routes import router as inspector_route
+from src.routes.supervisor_routes import router as supervisor_route
+from src.routes.user_routes import router as user_route
 from src.routes.vehicle_routes import router as vehicle_route
 
-from src.routes.inspector_routes import router as inspector_route
-from fastapi import Request
-from fastapi_socketio import SocketManager
-from .utils.socket_manager import connect
-import asyncio
-from socketio import ASGIApp
-from .utils.socket_manager import sio
-import threading
-from .utils.audit_log_listener import listen_for_audit_logs
-
-from src.utils.scheduler import start_scheduler
-from src.utils.socket_manager import sio  # your socketio.AsyncServer
-from src.services.email_service import send_email
+logger = logging.getLogger(__name__) 
 
 
-# ✅ Step 1–5: Create and configure the FastAPI app
 app = FastAPI()
-# Start the audit log listener in a background thread
 threading.Thread(target=listen_for_audit_logs, daemon=True).start()
 
 app.add_middleware(
@@ -43,6 +47,7 @@ app.include_router(supervisor_route, prefix="/api", tags=["Supervisors"])
 app.include_router(admin_route, prefix="/api", tags=["Admin"])
 app.include_router(inspector_route, prefix="/api", tags=["Inspector"])
 app.include_router(vehicle_route, prefix="/api")
+app.include_router(email_router, prefix="/api", tags=["Emails"])
 start_scheduler()
 
 @app.get("/")
@@ -66,16 +71,3 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 sio_app = socketio.ASGIApp(sio, other_asgi_app=app)
 
-
-@app.get("/test-email")
-def test_email():
-    try:
-        send_email(
-            to_email="bookitkrm@gmail.com",  
-            subject="בדיקת מייל מ-FastAPI",
-            html_content="<h2>בדיקה</h2><p>זהו מייל בדיקה</p>",
-            text_content="בדיקה פשוטה"
-        )
-        return {"message": "המייל נשלח בהצלחה"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="שליחת המייל נכשלה")

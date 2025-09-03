@@ -19,8 +19,9 @@
 
 body {
     font-family: 'Heebo', sans-serif;
-    background: linear-gradient(135deg, #ea6666 0%, #a24b4b 100%);
-    height: 110%;;
+    background: linear-gradient(135deg, #ea6666c4 0%, #a24b4b 100%);
+    height: 110%;
+    ;
     padding: 10px;
     color: var(--text-primary);
     direction: rtl;
@@ -60,14 +61,24 @@ body {
     right: -50%;
     width: 200%;
     height: 150%;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
     animation: float 6s ease-in-out infinite;
 }
 
 @keyframes float {
-    0%, 100% { transform: translate(0, 0) rotate(0deg); }
-    33% { transform: translate(30px, -30px) rotate(120deg); }
-    66% { transform: translate(-20px, 20px) rotate(240deg); }
+
+    0%,
+    100% {
+        transform: translate(0, 0) rotate(0deg);
+    }
+
+    33% {
+        transform: translate(30px, -30px) rotate(120deg);
+    }
+
+    66% {
+        transform: translate(-20px, 20px) rotate(240deg);
+    }
 }
 
 .form-title {
@@ -96,15 +107,24 @@ body {
     animation: slideIn 0.6s ease-out;
 }
 
-.question:nth-child(1) { animation-delay: 0.1s; }
-.question:nth-child(2) { animation-delay: 0.2s; }
-.question:nth-child(3) { animation-delay: 0.3s; }
+.question:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.question:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.question:nth-child(3) {
+    animation-delay: 0.3s;
+}
 
 @keyframes slideIn {
     from {
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -153,10 +173,12 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(82, 55, 55, 0.3);
 }
-#elaborateText{
+
+#elaborateText {
     width: 300px;
     height: 100px;
 }
+
 .divider {
     height: 1px;
     background: linear-gradient(90deg, transparent, var(--border-color), transparent);
@@ -165,7 +187,7 @@ body {
 
 .submit-section {
     text-align: center;
-    
+
 }
 
 .submit-btn {
@@ -218,8 +240,13 @@ body {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* Mobile responsiveness */
@@ -227,51 +254,89 @@ body {
     body {
         padding: 10px;
     }
-    
+
     .form-content {
         padding: 30px 20px;
     }
-    
+
     .header {
         padding: 30px 20px;
     }
-    
+
     .form-title {
         font-size: 24px;
     }
-    
+
     .question-text {
         font-size: 16px;
     }
-    
+
     .options {
         flex-direction: column;
         gap: 8px;
     }
-    
+
     .option {
         padding: 14px 20px;
     }
 }
+
 .back-btn {
-  color: #ffffff;
-  font-family: var(--font-family-alef);
-  font-size: 12px; 
-  font-weight: bold;
-  padding: 6px 12px; 
-  border: none;
-  border-radius: 10px; 
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.15s ease;
-  margin-top: 12px; 
-  display: inline-block;
-  background: none;
+    color: #ffffff;
+    font-family: var(--font-family-alef);
+    font-size: 12px;
+    font-weight: bold;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.15s ease;
+    margin-top: 12px;
+    display: inline-block;
+    background: none;
 }
+
 .back-btn:hover {
-  transform: scale(1.02);
+    transform: scale(1.02);
 }
+
 .back-btn-container {
-  display: flex;
-  justify-content: flex-end; 
-  padding: 1rem;
+    display: flex;
+    justify-content: flex-end;
+    padding: 1rem;
+}
+
+.question label {
+    margin-top: 36px;
+    display: block;
+    font-size: 17px;
+    font-weight: 500;
+    color: #000;
+    margin-bottom: 8px;
+}
+
+.emergency_details {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: rgb(255, 208, 208);
+    color: #000;
+    font-family: 'Heebo', sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    transition: all 0.3s ease;
+    resize: vertical;
+    min-height: 80px;
+}
+
+.emergency_details::placeholder {
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.emergency_details:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(var(--primary-color), 0.1);
 }

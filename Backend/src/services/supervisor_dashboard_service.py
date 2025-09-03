@@ -1,25 +1,29 @@
+import math
+from datetime import datetime, timezone
 from typing import List
-from datetime import datetime,timezone
-from ..schemas.ride_dashboard_item import RideDashboardItem
-from ..schemas.order_card_item import OrderCardItem
-from ..models.ride_model import Ride , RideStatus
-from ..models.user_model import User
-from sqlalchemy.orm import Session
-from ..models.notification_model import NotificationType, Notification
-from ..models.vehicle_model import VehicleStatus , Vehicle
-from fastapi import HTTPException
-from .vehicle_service import update_vehicle_status
-from ..models.vehicle_inspection_model import VehicleInspection 
-from ..schemas.check_vehicle_schema import VehicleInspectionSchema
-from sqlalchemy import String , func, text,desc
-from ..utils.audit_utils import log_action
-from typing import List
-from sqlalchemy.orm import Session
 from uuid import UUID
-from src.models.user_model import User  # assuming you have this model with department info and role
-# from ..utils.email_utils import send_email, load_email_template, load_email_template
-from ..services.email_service import async_send_email, load_email_template, get_user_email
-  
+
+from fastapi import HTTPException
+from sqlalchemy import String, func, text, desc
+from sqlalchemy.orm import Session
+
+# Utils
+from ..utils.audit_utils import log_action
+
+# Services
+from .vehicle_service import update_vehicle_status
+
+# Schemas
+from ..schemas.check_vehicle_schema import VehicleInspectionSchema
+from ..schemas.order_card_item import OrderCardItem
+from ..schemas.ride_dashboard_item import RideDashboardItem
+
+# Models
+from ..models.notification_model import NotificationType, Notification
+from ..models.ride_model import Ride, RideStatus
+from ..models.user_model import User
+from ..models.vehicle_inspection_model import VehicleInspection
+from ..models.vehicle_model import VehicleStatus, Vehicle
   
   #helper function
 # def get_user_email(user_id: UUID, db: Session) -> str | None:
@@ -37,7 +41,7 @@ def get_department_orders(department_id: str, db: Session) -> List[RideDashboard
     """
     # Query the database for rides where the user's department matches the given department_id
     orders = (
-    db.query(Ride, Vehicle.plate_number)
+    db.query(Ride, Vehicle.vehicle_model)
     .join(User, User.employee_id == Ride.user_id)
     .join(Vehicle, Ride.vehicle_id == Vehicle.id)
     .filter(User.department_id == department_id)
@@ -49,23 +53,22 @@ def get_department_orders(department_id: str, db: Session) -> List[RideDashboard
     # Map the database results to the RideDashboardItem schema
     dashboard_items = []
 
-    for order, plate_number in orders:
+    for order, vehicle_model in orders:
         # Query the users table to get the employee name
         user = db.query(User).filter(User.employee_id == order.user_id).first()
         employee_name = f"{user.first_name} {user.last_name}" if user else "Unknown"
 
         # Get the vehicle plate (mocked for now)
-        vehicle_plate = plate_number # Replace with actual logic if needed
 
         # Create a RideDashboardItem schema for each order
         dashboard_item = RideDashboardItem(
             ride_id=order.id,
             vehicle_id=order.vehicle_id,
             employee_name=employee_name,
-            requested_vehicle_plate=vehicle_plate,
+            requested_vehicle_model=vehicle_model,
             date_and_time=order.start_datetime,
             destination=order.destination,
-            distance=order.estimated_distance_km,
+            distance = math.ceil(order.estimated_distance_km),
             status=order.status.value,  # Access the string value of the enum
             submitted_at=order.submitted_at 
         )
@@ -102,7 +105,7 @@ def get_department_specific_order(department_id: str, order_id: str, db: Session
         stop=order.stop or "",
         extra_stops=order.extra_stops or [],
         destination=order.destination,
-        estimated_distance_km=float(order.estimated_distance_km),
+        estimated_distance_km = float(math.ceil(order.estimated_distance_km)),
         actual_distance_km=float(order.actual_distance_km) if order.actual_distance_km else None,
         status=order.status,  # Pass as RideStatusEnum
         license_check_passed=order.license_check_passed,
@@ -163,55 +166,55 @@ async def edit_order_status(department_id: str, order_id: str, new_status: str,u
     vehicle = db.query(Vehicle).filter(Vehicle.id == order.vehicle_id).first()
 
 
-    if user and vehicle:
-        employee_email = get_user_email(order.user_id, db) # Use the helper function
+    # if user and vehicle:
+    #     employee_email = get_user_email(order.user_id, db) # Use the helper function
 
-        if employee_email:
-            # Determine which template to use and the subject
-            template_name = ""
-            email_subject = ""
-            if new_status.lower() == "approved":
-                template_name = "ride_approved.html"
-                email_subject = "✅ הנסיעה שלך אושרה"
-            elif new_status.lower() == "rejected":
-                template_name = "ride_rejected.html"
-                email_subject = "❌ הבקשה שלך נדחתה"
+    #     if employee_email:
+    #         # Determine which template to use and the subject
+    #         template_name = ""
+    #         email_subject = ""
+    #         if new_status.lower() == "approved":
+    #             template_name = "ride_approved.html"
+    #             email_subject = "✅ הנסיעה שלך אושרה"
+    #         elif new_status.lower() == "rejected":
+    #             template_name = "ride_rejected.html"
+    #             email_subject = "❌ הבקשה שלך נדחתה"
 
-            if template_name: # Only proceed if a valid template name was set
-                template_context = {
-                    "EMPLOYEE_NAME": f"{user.first_name} {user.last_name}",
-                    "DESTINATION": order.destination,
-                    "DATE_TIME": order.start_datetime.strftime("%Y-%m-%d %H:%M"),
-                    "PLATE_NUMBER": vehicle.plate_number,
-                    "DISTANCE": f"{order.estimated_distance_km} ק״מ",
-                    "APPROVER_NAME": "המנהל שלך" # Keep this static for now, or fetch actual approver name
-                }
+    #         if template_name: # Only proceed if a valid template name was set
+    #             template_context = {
+    #                 "EMPLOYEE_NAME": f"{user.first_name} {user.last_name}",
+    #                 "DESTINATION": order.destination,
+    #                 "DATE_TIME": order.start_datetime.strftime("%Y-%m-%d %H:%M"),
+    #                 "PLATE_NUMBER": vehicle.plate_number,
+    #                 "DISTANCE": f"{order.estimated_distance_km} ק״מ",
+    #                 "APPROVER_NAME": "המנהל שלך" # Keep this static for now, or fetch actual approver name
+    #             }
 
-                # Add rejection reason to context only if status is rejected
-                if new_status.lower() == "rejected":
-                    template_context["REJECTION_REASON"] = rejection_reason or "לא צוינה סיבה"
-                else:
-                    # Ensure REJECTION_REASON is cleared even if template for approved has it
-                    template_context["REJECTION_REASON"] = ""
+    #             # Add rejection reason to context only if status is rejected
+    #             if new_status.lower() == "rejected":
+    #                 template_context["REJECTION_REASON"] = rejection_reason or "לא צוינה סיבה"
+    #             else:
+    #                 # Ensure REJECTION_REASON is cleared even if template for approved has it
+    #                 template_context["REJECTION_REASON"] = ""
 
-                # Load the email template and automatically replace placeholders using the context
-                body = load_email_template(template_name, template_context)
-
-
+    #             # Load the email template and automatically replace placeholders using the context
+    #             body = load_email_template(template_name, template_context)
 
 
-                # Handle REJECTION_REASON for both approved and rejected emails
-                if new_status.lower() == "rejected":
-                    body = body.replace("{{REJECTION_REASON}}", rejection_reason or "לא צוינה סיבה")
-                else:
-                    body = body.replace("{{REJECTION_REASON}}", "")
 
-                body = body.replace("{{APPROVER_NAME}}", "המנהל שלך")
-                await async_send_email(
-                    to_email = employee_email,
-                    subject=email_subject,
-                    html_content=body
-                )
+
+    #             # Handle REJECTION_REASON for both approved and rejected emails
+    #             if new_status.lower() == "rejected":
+    #                 body = body.replace("{{REJECTION_REASON}}", rejection_reason or "לא צוינה סיבה")
+    #             else:
+    #                 body = body.replace("{{REJECTION_REASON}}", "")
+
+    #             body = body.replace("{{APPROVER_NAME}}", "המנהל שלך")
+    #             await async_send_email(
+    #                 to_email = employee_email,
+    #                 subject=email_subject,
+    #                 html_content=body
+    #             )
 
     # Always reset the audit session var
     db.execute(text("SET session.audit.user_id = DEFAULT"))
@@ -320,20 +323,6 @@ def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
     critical_issue_bool=data.critical_issue_bool,
     issues_found=data.issues_found,
 )   
-    # If you want to include vehicle_id, uncomment the following line 
-    # inspection = VehicleInspection(
-    #     vehicle_id=data.vehicle_id,
-    #     inspected_by=data.inspected_by,
-    #     # fuel_level=data.fuel_level,
-    #     # tires_ok=data.tires_ok,
-    #     clean=data.clean,
-    #     fuel_checked=data.fuel_checked,
-    #     no_items_left=data.no_items_left,
-    #     critical_issue_bool=data.critical_issue_bool,
-    #     issues_found=data.issues_found,
-    #     inspection_date=datetime.utcnow()
-    # )
-
 
     db.add(inspection)
 

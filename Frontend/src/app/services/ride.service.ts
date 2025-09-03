@@ -9,6 +9,7 @@ import { environment } from '../../environments/environment';
 export class RideService {
   private baseUrl = 'http://localhost:8000/api/orders';
   private distanceUrl = 'http://localhost:8000/api/distance'; // ✅ distance API URL
+    private supervisorUrl = 'http://localhost:8000/api/supervisor-orders';
 
 
   constructor(private http: HttpClient) {}
@@ -27,13 +28,25 @@ export class RideService {
     return this.http.post(`${this.baseUrl}/${user_id}`, data, { headers });
   }
 
+   createSupervisorRide(data: any, user_id: string): Observable<any> {
+    const token = localStorage.getItem('access_token'); // ⬅️ get the token from login
+
+    if (!token) {
+      throw new Error('Access token not found in localStorage.');
+    }
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`
+    });
+
+    return this.http.post(`${this.supervisorUrl}/${user_id}`, data, { headers });
+  }
+
 getRideById(rideId: string): Observable<any> {
   const token = localStorage.getItem('access_token');
   const headers = new HttpHeaders({
     Authorization: `Bearer ${token}`
   });
-  
-
   return this.http.get(`http://localhost:8000/api/rides/${rideId}`, { headers });
 }
 
@@ -56,19 +69,6 @@ startRide(rideId: string): Observable<any> {
 }
 
 
-getArchivedOrders(userId: string): Observable<any[]> {
-  const token = localStorage.getItem('access_token');
-
-  if (!token) {
-    throw new Error('Access token not found in localStorage.');
-  }
-
-  const headers = new HttpHeaders({
-    Authorization: `Bearer ${token}`
-  });
-
-  return this.http.get<any[]>(`http://localhost:8000/api/archived-orders/${userId}`, { headers });
-}
 
 // ✅ NEW: Fetch estimated distance from backend
 // getDistance(from: string, to: string): Observable<{ distance_km: number }> {

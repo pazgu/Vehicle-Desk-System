@@ -1,6 +1,13 @@
 <div class="overlay">
   <div class="modal">
-    <h2>הזמנה חדשה</h2>
+    <div class="header-row">
+      <h2 class="page-title">הזמנה חדשה</h2>
+      <div *ngIf="step === 2" class="step-header">
+        <button type="button" class="back-btn" (click)="goBackToStep1()">
+          ← חזור
+        </button>
+      </div>
+    </div>
     <hr />
 
     <form [formGroup]="rideForm">
@@ -41,12 +48,15 @@
         </div>
 
         <div class="form-content">
+
+
+          <!-- Row 1: ride_period + ride_date + ride_type -->
           <div class="form-row">
             <div class="form-field-group">
-              <label>זמן נסיעה (בוקר / לילה)</label>
+              <label>מספר ימי נסיעה (יום / יומיים)</label>
               <select formControlName="ride_period">
-                <option value="morning">נסיעת בוקר</option>
-                <option value="night">נסיעת לילה</option>
+                <option value="morning">נסיעה יומית</option>
+                <option value="night">נסיעה ליותר מיום</option>
               </select>
             </div>
 
@@ -84,6 +94,9 @@
                   class="time-select custom-hour-dropdown" [searchable]="false" [clearable]="false">
                 </ng-select>
               </div>
+              <small *ngIf="rideForm.errors?.['futureDateTime']" class="error-text">
+                {{ rideForm.errors?.['futureDateTime']?.['message'] }}
+              </small>
               <small
                 *ngIf="rideForm.get('ride_period')?.value === 'morning' && f.start_time.touched && f.start_time.errors?.['required']"
                 class="error-text">
@@ -123,29 +136,34 @@
             <div class="form-field-group">
               <label>תאריך סיום</label>
               <input type="date" formControlName="ride_date_night_end" [min]="minDate" />
+              <small *ngIf="rideForm.errors?.['sameDateNightRide']" class="error-text">
+                  {{ rideForm.errors?.['sameDateNightRide']?.['message'] }}
+              </small>
             </div>
           </div>
 
           <div class="form-field-group">
             <label>תחנה</label>
-            <select formControlName="stop">
-              <option value="">בחר עיר</option>
-              <option *ngFor="let city of cities" [value]="city.id">{{ city.name }}</option>
-            </select>
-            <small *ngIf="f.ride_date.touched && f.ride_date.errors?.['required']" class="error-text">חובה למלא את
-              שדה זה</small>
+            <ng-select [items]="cities" bindLabel="name" bindValue="id" formControlName="stop" [searchable]="true"
+              [clearable]="false" class="styled-select" placeholder="בחר עיר" notFoundText="לא נמצאו תחנות">
+            </ng-select>
+            <small *ngIf="f.stop.touched && f.stop.errors?.['required']" class="error-text">
+              חובה למלא את שדה זה
+            </small>
             <small class="distance-info">*נסיעתך תתחיל ותסתיים בבסיס הארגון: תל אביב</small>
           </div>
 
           <div id="extrastops" formArrayName="extraStops">
             <div *ngFor="let control of extraStops?.controls; let i = index" class="extra-stop-item">
               <button type="button" (click)="removeExtraStop(i)" class="removeBtn">❌</button>
-              <div class="extra-stop-fields">
+              <div class="form-field-group">
                 <label>תחנה נוספת {{ i + 1 }}</label>
-                <select [formControlName]="i">
-                  <option value="">בחר עיר</option>
-                  <option *ngFor="let city of cities" [value]="city.id">{{ city.name }}</option>
-                </select>
+                <ng-select [items]="cities" bindLabel="name" bindValue="id" [formControlName]="i" [searchable]="true"
+                  [clearable]="false" class="styled-select" placeholder="בחר עיר">
+                </ng-select>
+                <small *ngIf="control.touched && control.errors?.['required']" class="error-text">
+                  חובה למלא את שדה זה
+                </small>
               </div>
             </div>
 
@@ -153,29 +171,36 @@
               *ngIf="extraStops">
               ➕ הוסף תחנה נוספת (אופציונלי)
             </button>
+            <small *ngIf="extraStops.errors?.['sameStopAsDestination']" class="error-text">
+              תחנה נוספת לא יכולה להיות זהה לתחנה אחרת.
+            </small>
+            <small *ngIf="extraStops.errors?.['duplicateExtraStops']" class="error-text">
+              תחנות נוספות לא יכולות להיות כפולות.
+            </small>
           </div>
 
           <div class="form-row">
-<div class="form-field-group">
-  <label>סוג רכב</label>
-  <select formControlName="vehicle_type" class="styled-select" (change)="onRideTypeChange()">
-    <option value="" disabled selected>בחר סוג</option>
-    <option *ngFor="let type of vehicleTypes" [value]="type">{{ type }}</option>
-  </select>
+            <div class="form-field-group">
+              <label>סוג רכב</label>
+              <select formControlName="vehicle_type" class="styled-select" (change)="onRideTypeChange()">
+                <option value="" disabled selected>בחר סוג</option>
+                <option *ngFor="let type of vehicleTypes" [value]="type">{{ type }}</option>
+              </select>
 
-  <small *ngIf="f.vehicle_type.touched && f.vehicle_type.errors?.['required']" class="error-text">
-    חובה למלא את שדה זה
-  </small>
+              <small *ngIf="f.vehicle_type.touched && f.vehicle_type.errors?.['required']" class="error-text">
+                חובה למלא את שדה זה
+              </small>
 
-  <textarea formControlName="vehicle_type_reason" placeholder="אנא פרט.י מדוע יש צורך בכרב 4X4"
-    class="vehicle-type-info"
-    *ngIf="f.vehicle_type.value?.toLowerCase().includes('jeep') || f.vehicle_type.value?.toLowerCase().includes('van') || f.vehicle_type.value?.toLowerCase().includes('4x4')"></textarea>
+              <textarea formControlName="four_by_four_reason" placeholder="אנא פרט.י מדוע יש צורך בכרב 4X4"
+                class="vehicle-type-info"
+                *ngIf="f.vehicle_type.value?.toLowerCase().includes('jeep') || f.vehicle_type.value?.toLowerCase().includes('van') || f.vehicle_type.value?.toLowerCase().includes('4x4')"></textarea>
 
-  <small *ngIf="(f.vehicle_type.value?.toLowerCase().includes('jeep') || f.vehicle_type.value?.toLowerCase().includes('van') || f.vehicle_type.value?.toLowerCase().includes('4x4')) && rideForm.get('vehicle_type_reason')?.touched && rideForm.get('vehicle_type_reason')?.errors?.['required']"
-    class="error-text">
-    חובה לפרט מדוע יש צורך ברכב זה
-  </small>
-</div>
+              <small
+                *ngIf="(f.vehicle_type.value?.toLowerCase().includes('jeep') || f.vehicle_type.value?.toLowerCase().includes('van') || f.vehicle_type.value?.toLowerCase().includes('4x4')) && rideForm.get('four_by_four_reason')?.touched && rideForm.get('four_by_four_reason')?.errors?.['required']"
+                class="error-text">
+                חובה לפרט מדוע יש צורך ברכב זה
+              </small>
+            </div>
 
             <div class="form-field-group">
               <label *ngIf="!shouldShowCarError()">בחר רכב זמין</label>
@@ -204,10 +229,55 @@
           </div>
         </div>
 
+
+
+
+
         <div class="button-container">
           <button type="submit" class="submit-btn" (click)="submit()">שלח</button>
         </div>
       </div>
     </form>
+
+
+
+
+
+
+
   </div>
+
+
+  <div *ngIf="step === 2" class="full-trip-display">
+    <h4>מסלול הנסיעה שלך:</h4>
+    <hr>
+    <a>תל אביב</a>
+    <p>↓</p>
+    <a>{{ getSelectedStopName() }}</a>
+    <ng-container *ngFor="let extra of getExtraStopNames()">
+      <p>↓</p>
+      <a>{{ extra }}</a>
+    </ng-container>
+    <p>↓</p>
+    <a>תל אביב</a>
+
+    <div class="input-group">
+      <label id="distance-title">הערכת מרחק (ק"מ)</label>
+
+      <small *ngIf="f.estimated_distance_km.touched && f.estimated_distance_km.errors?.['required']"
+        class="distance-info">
+        חובה למלא את שדה זה
+      </small>
+
+      <small *ngIf="f.estimated_distance_km.errors?.['min']" class="distance-info">
+        המרחק חייב להיות לפחות 1 ק״מ
+      </small>
+
+      <small class="distance-info" *ngIf="estimated_distance_with_buffer">
+        המרחק לאחר תוספת סטייה: {{ estimated_distance_with_buffer }} ק"מ
+      </small>
+
+    </div>
+  </div>
+
 </div>

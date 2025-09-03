@@ -5,7 +5,6 @@ import { ToastService } from '../../../services/toast.service';
 import { Observable, of } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { RideCompletionFormComponent } from '../../page-area/ride-completion-form/ride-completion-form.component';
 import { environment } from '../../../../environments/environment';
 import { NotificationService } from '../../../services/notification';
 import { SocketService } from '../../../services/socket.service';
@@ -21,7 +20,6 @@ export class HeaderComponent implements OnInit {
   role$: Observable<string> = of('');
   unreadCount$!: Observable<number>; 
   isLoggedIn = false;
-
   showFeedbackModal = false;
   rideIdToComplete: string | null = null;
 
@@ -60,22 +58,19 @@ this.socketService.feedbackNeeded$.subscribe((data) => {
 
 
     const role = localStorage.getItem('role');
-    if (role === 'employee') {
-      this.toastService.show('יש למלא טופס חווית נסיעה', 'neutral');
-    }
+    // if (role === 'employee') {
+    //   this.toastService.show('יש למלא טופס חווית נסיעה', 'neutral');
+    // }
   }
 });
 
- 
 
   }
-
   onLogout(): void {
     this.authService.logout();
     this.toastService.show('התנתקת בהצלחה', 'success');
     this.router.navigate(['/login']);
     this.toastService.clearAll()
-    
   }
 
   getUserId(): string | null {
@@ -102,7 +97,10 @@ checkFeedbackNeeded(): void {
         this.showFeedbackModal = true;
 
          const role=localStorage.getItem('role');
-  if(role==='employee'){this.toastService.show('יש למלא טופס חווית נסיעה','neutral')}
+  // if(role==='employee'){
+  //   this.toastService.show('יש למלא טופס חווית נסיעה','neutral')
+    
+  // }
   
       }
     },

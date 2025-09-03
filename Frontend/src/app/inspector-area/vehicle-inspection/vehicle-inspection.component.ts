@@ -1,12 +1,13 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
 
 import { environment } from '../../../environments/environment';
 import { ToastService } from '../../services/toast.service';
 import { InspectionService } from '../../services/inspection.service';
+import { VehicleService } from '../../services/vehicle.service';
 interface Vehicle {
   id: string;
   plate_number: string;
@@ -45,7 +46,9 @@ export class VehicleInspectionComponent implements OnInit {
     private http: HttpClient,
     private router: Router,
     private toastService: ToastService,
-    private InspectorService: InspectionService
+    private InspectorService: InspectionService,
+    private vehicleService:VehicleService
+
   ) {}
 
   ngOnInit(): void {
@@ -62,7 +65,9 @@ export class VehicleInspectionComponent implements OnInit {
   }
 
   fetchVehicles(): void {
-    this.http.get<Vehicle[]>(`${environment.apiUrl}/all-vehicles`).subscribe({
+      const params = new HttpParams().set('status', 'available');
+
+    this.http.get<Vehicle[]>(`${environment.apiUrl}/all-vehicles`, { params }).subscribe({
       next: (vehicles) => {
         this.vehicleIssues = vehicles.map(vehicle => ({
           vehicle_id: vehicle.id,
@@ -80,24 +85,39 @@ export class VehicleInspectionComponent implements OnInit {
       }
     });
   }
+logFuelChange(value: boolean) {
+  console.log('Fuel checked changed to:', value);
+}
 
   submitIssues(): void {
+      const nothingSelected = this.vehicleIssues.every(v =>
+    !v.dirty &&
+    !v.fuel_checked &&
+    !v.items_left &&
+    !v.critical_issue
+  );
+
+  if (nothingSelected) {
+    this.toastService.show('לא נבחרה אף בעיה לרכב. יש לבחור לפחות שדה אחד לפני השליחה.','error');
+    return; // Stop submission
+  }
+
     this.submitting = true;
 
     const dirtyIds = this.vehicleIssues.filter(v => v.dirty).map(v => v.vehicle_id);
     const itemsLeftIds = this.vehicleIssues.filter(v => v.items_left).map(v => v.vehicle_id);
     const criticalIds = this.vehicleIssues.filter(v => v.critical_issue).map(v => v.vehicle_id);
 
-    const fuelCheckedAll = this.vehicleIssues.every(v => v.fuel_checked);
+    const unfueledVehicleIds = this.vehicleIssues
+  .filter(v => v.fuel_checked)
+  .map(v => v.vehicle_id);
+
     const cleanAll = this.vehicleIssues.every(v => !v.dirty);
     const itemsLeftNone = this.vehicleIssues.every(v => !v.items_left);
     const hasCritical = criticalIds.length > 0;
 
     const payload = {
-      clean: cleanAll,
-      fuel_checked: fuelCheckedAll,
-      no_items_left: itemsLeftNone,
-      critical_issue_bool: hasCritical,
+      unfueled_vehicle_ids: unfueledVehicleIds,
       issues_found: this.vehicleIssues
         .filter(v => v.critical_issue && v.issues_found?.trim())
         .map(v => ({
@@ -110,6 +130,7 @@ export class VehicleInspectionComponent implements OnInit {
       items_left_vehicle_ids: itemsLeftIds,
       critical_issue_vehicle_ids: criticalIds
     };
+console.log('inspection data in front:', JSON.stringify(payload, null, 2));
     const missingDescriptions = this.vehicleIssues.some(
   v => v.critical_issue && (!v.issues_found || !v.issues_found)
 );
@@ -119,12 +140,24 @@ if (missingDescriptions) {
   return;
 }
 
-this.toastService.show('שולח בדיקה... יש להמתין');
+
 
   this.InspectorService.postInspection(payload).subscribe({
   next: () => {
     this.toastService.show('הבדיקה נשלחה בהצלחה', 'success');
     this.submitting = false;
+    const criticalVehicles = this.vehicleIssues.filter(v => v.critical_issue);
+
+    criticalVehicles.forEach(vehicle => {
+      this.vehicleService.updateVehicleStatus(
+        vehicle.vehicle_id,
+        'frozen',
+        'maintenance'
+      ).subscribe({
+        next: () => console.log(`Vehicle frozen`),
+        error: err => console.error(`Failed to freeze vehicle `, err)
+      });
+    });
 
   },
   error: (err) => {

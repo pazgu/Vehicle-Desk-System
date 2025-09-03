@@ -45,13 +45,13 @@ export const routes: Routes = [
   { path: 'user-data-edit/:user_id', component: UserDataEditComponent,canActivate: [ProtectedRouteGuard] }, // Moved lower
   { path: 'user-card/:user_id', component: UserCardComponent,canActivate: [ProtectedRouteGuard] }, // Moved lower
   { path: 'user-data', component: UserDataComponent,canActivate: [ProtectedRouteGuard] }, 
-  { path: 'vehicle-details/:id', component: VehicleCardItemComponent },
-  { path: 'vehicle-dashboard', component: VehicleDashboardComponent },
-  { path: 'vehicle-dashboard/new-vehicle', component: AddVehicleComponent},
+  { path: 'vehicle-details/:id', component: VehicleCardItemComponent,canActivate: [ProtectedRouteGuard] },
+  { path: 'vehicle-dashboard', component: VehicleDashboardComponent,canActivate: [ProtectedRouteGuard] },
+  { path: 'vehicle-dashboard/new-vehicle', component: AddVehicleComponent,canActivate: [ProtectedRouteGuard]},
   { path: 'department-data', component: DepartmentDataComponent, canActivate: [ProtectedRouteGuard]},
 
   { path: 'ride-completion-form/:ride_id', component: RideCompletionFormComponent },
-  { path: 'audit-logs', component: AuditLogsComponent },
+  { path: 'audit-logs', component: AuditLogsComponent,canActivate: [ProtectedRouteGuard] },
   { path: 'forgot-password', component: ForgotPasswordComponent },
   { path: 'reset-password/:token', component: ResetPasswordComponent },
   { path: 'archived-vehicles', component: ArchivedVehiclesComponent },
@@ -66,14 +66,10 @@ export const routes: Routes = [
   loadComponent: () => import('./ride-area/ride-details/ride-details.component').then(m => m.RideDetailsComponent)
 },
 {
-  path: 'archived-orders',
-  loadComponent: () =>
-    import('./ride-area/archived-orders/archived-orders.component').then(m => m.ArchivedOrdersComponent)
-},
-{
   path: 'inspector/inspection',
   loadComponent: () =>
-    import('./inspector-area/vehicle-inspection/vehicle-inspection.component').then(m => m.VehicleInspectionComponent)
+    import('./inspector-area/vehicle-inspection/vehicle-inspection.component').then(m => m.VehicleInspectionComponent),
+  canActivate: [ProtectedRouteGuard]
 },
 
 {

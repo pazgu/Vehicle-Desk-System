@@ -1,3 +1,13 @@
+:host {
+  display: block;
+  min-height: 100vh; /* ensures full page coverage */
+  background-image: url('/assets/images/vehicle-dashboard-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  font-family: var(--font-family-alef);
+  padding: 1.5rem; /* optional if you want spacing */
+}
 
 
 /* Labels and Inputs */
@@ -31,36 +41,12 @@ textarea {
   min-height: 80px;
 }
 
-/* Submit button */
-.cute-red-button {
-  background-color: #942222;
-  color: white;
-  font-family: var(--font-family-alef);
-  font-size: 16px;
-  font-weight: bold;
-  padding: 10px 22px;
-  border: none;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.15s ease;
-  margin-top: 24px;
-  display: inline-block;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
-}
 
-.cute-red-button:hover {
-  background-color: #7c1b1b;
-  transform: scale(1.03);
-}
 
 .cute-red-button:active {
   transform: scale(0.97);
 }
-.cute-red-button-container {
-  display: flex;
-  justify-content: flex-end; 
-  padding: 1rem;
-}
+
 .error-msg {
   color: rgb(128, 0, 0);
   font-size: 14px;
@@ -165,6 +151,8 @@ textarea {
   display: block;
   transition: background 0.2s ease;
   margin-bottom: 50px !important
+  
+  
 }
 
 .cute-red-button:hover {

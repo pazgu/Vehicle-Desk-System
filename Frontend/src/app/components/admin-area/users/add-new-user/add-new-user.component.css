@@ -1,3 +1,27 @@
+:host {
+  margin: 0;
+  padding: 0;
+  display: block;
+  min-height: 100vh;
+  background-image: url('/assets/images/add-user.png');
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center ;
+}
+
+
+body {
+  margin-top: 30px;
+  font-family: 'Alef', sans-serif;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+.wrapper{
+  height: 120%;
+}
+
 /* Form Container */
 .form-container {
   background-color: white;
@@ -5,7 +29,8 @@
   border-radius: 10px;
   width: 100%;
   max-width: 750px;
-  margin: 0 auto;
+  margin: 30px auto;
+  margin-top: 0px;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
   font-family: 'Alef', sans-serif;
   direction: rtl;
@@ -23,6 +48,7 @@
 
 /* Form Styling */
 .form-container form {
+  margin: 30px;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -37,7 +63,6 @@
 
 .form-group.center {
   align-items: center;
-  margin-top: 20px;
 }
 
 /* Labels */
@@ -89,7 +114,7 @@
 
 /* Submit Button */
 .submit-btn {
-  background-color: #942222;
+  background-color: #942222; /* Changed from #942222 to match your red theme */
   color: white;
   border: none;
   padding: 12px 24px;
@@ -101,6 +126,18 @@
   transition: background-color 0.2s ease, transform 0.15s ease;
   min-width: 150px;
 }
+
+.submit-btn:hover {
+  background-color: #7a1c1c; /* Changed from #7a1c1c to darker red */
+  transform: scale(1.03);
+}
+
+.submit-btn:active {
+  transform: scale(0.98);
+}
+
+
+
 
 .submit-btn:hover {
   background-color: #7a1c1c;
@@ -168,7 +205,6 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .form-container {
-    padding: 16px 20px;
     margin: 10px;
     width: calc(100% - 20px);
   }
@@ -311,12 +347,7 @@ input:checked + .slider::after {
 
 
 
-
-
-
-
-
-.form-container {
+/* .form-container {
   max-width: 600px;
   margin: 0 auto;
   padding: 30px;
@@ -324,7 +355,7 @@ input:checked + .slider::after {
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   direction: rtl;
-}
+} */
 
 .form-container h2 {
   text-align: center;
@@ -548,7 +579,7 @@ input:checked + .slider:before {
 }
 
 .submit-btn {
-  background-color: #007bff;
+  background-color: #942222; /* Changed from #007bff to your red theme */
   color: white;
   border: none;
   padding: 15px 40px;
@@ -561,14 +592,13 @@ input:checked + .slider:before {
 }
 
 .submit-btn:hover {
-  background-color: #0056b3;
+  background-color: #7a1c1c; /* Changed from #0056b3 to darker red */
 }
 
 .submit-btn:disabled {
   background-color: #6c757d;
   cursor: not-allowed;
 }
-
 /* Responsive design */
 @media (max-width: 768px) {
   .form-container {

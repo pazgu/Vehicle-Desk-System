@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { VehicleService } from '../../../services/vehicle.service';
 import { CardModule } from 'primeng/card';
 import { VehicleInItem } from '../../../models/vehicle-dashboard-item/vehicle-in-use-item.module';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { SocketService } from '../../../services/socket.service';
@@ -25,7 +25,6 @@ export class VehicleDashboardComponent implements OnInit {
   showingMostUsed: boolean = false;
 
   inactiveVehicles: Vehicle[] = []; // vehicles not used in 7+ days
-  InactiveFilter: boolean = false; // checkbox state
   showInactive: boolean = false;
 
   selectedType: string = '';
@@ -34,14 +33,9 @@ export class VehicleDashboardComponent implements OnInit {
   showFilters: boolean = false;
   sortBy: string = 'date_and_time';
   vehicleTypes: { original: string; translated: string }[] = [];
-  vehicleTypeTranslations: { [key: string]: string } = {
-  'Private': 'פרטי',
-  'Small Commercial': 'מסחרי קטן',
-  'Large Commercial': 'מסחרי גדול',
-  '4x4 Pickup': '4x4 טנדר',
-  '4x4 SUV': '4x4 ג’יפ',
-  '8-Seater': 'מושבים 8'
-};
+ 
+  showMileageUpload: boolean = false;
+
 
 
   topUsedVehiclesMap: Record<string, number> = {};
@@ -51,26 +45,27 @@ export class VehicleDashboardComponent implements OnInit {
 
   departmentMap: Map<string, string> = new Map();
   selectedFile: File | null = null;
-isLoading = false;
-uploadSuccess = false;
-uploadError: string | null = null;
-uploadSummary: { vehiclesUpdated: number; warnings: string[] } | null = null;
+  isLoading = false;
+  uploadSuccess = false;
+  uploadError: string | null = null;
+  uploadSummary: { vehiclesUpdated: number; warnings: string[] } | null = null;
 
-  constructor(
-    private vehicleService: VehicleService,
-    private router: Router,
-    private http: HttpClient,
-    private socketService: SocketService,
-    private toastService: ToastService
-  ) { }
-
+constructor(
+  private vehicleService: VehicleService,
+  private router: Router,
+  private route: ActivatedRoute,
+  private http: HttpClient,
+  private socketService: SocketService,
+  private toastService: ToastService
+) { }
   ngOnInit(): void {
-    this.getUserRole();
-    this.fetchAndMapDepartments().then(() => {
-      this.loadVehicles();
-      this.fetchVehicleTypes();
-      this.loadVehicleUsageData();
-    });
+  this.getUserRole();
+  this.loadQueryParams();
+  this.fetchAndMapDepartments().then(() => {
+    this.loadVehicles();
+    this.fetchVehicleTypes();
+    this.loadVehicleUsageData();
+  });
 
     this.socketService.newVehicle$.subscribe((vehicleData) => {
       if (vehicleData && vehicleData.id) {
@@ -107,6 +102,8 @@ uploadSummary: { vehiclesUpdated: number; warnings: string[] } | null = null;
     }
   }
 
+
+
   navigateToNewVehicle() {
     this.router.navigate(['vehicle-dashboard/new-vehicle']);
   }
@@ -122,6 +119,7 @@ uploadSummary: { vehiclesUpdated: number; warnings: string[] } | null = null;
           ...vehicle,
           department: this.departmentMap.get(vehicle.department_id || '') || (vehicle.department_id ? 'מחלקה לא ידועה' : 'לא משוייך למחלקה')
         })) : [];
+        this.mostUsedVehicles = []; // Clear most used when loading all
         this.showingMostUsed = false;
       },
       (error) => {
@@ -147,20 +145,20 @@ uploadSummary: { vehiclesUpdated: number; warnings: string[] } | null = null;
     });
   }
 
-fetchVehicleTypes() {
-  this.vehicleService.getVehicleTypes().subscribe({
-    next: (types) => {
-      this.vehicleTypes = (types || []).map(type => ({
-        original: type,
-        translated: this.vehicleTypeTranslations[type] || type // fallback to original if not found
-      }));
-    },
-    error: (err) => {
-      console.error('Error fetching vehicle types:', err);
-      this.vehicleTypes = [];
-    }
-  });
-}
+  fetchVehicleTypes() {
+    this.vehicleService.getVehicleTypes().subscribe({
+      next: (types) => {
+        this.vehicleTypes = (types || []).map(type => ({
+          original: type,
+          translated: "", // fallback to original if not found
+        }));
+      },
+      error: (err) => {
+        console.error('Error fetching vehicle types:', err);
+        this.vehicleTypes = [];
+      }
+    });
+  }
 
 
   getVehicleUsageCount(plateNumber: string): number {
@@ -192,55 +190,55 @@ fetchVehicleTypes() {
     return Math.min((count / maxRides) * 100, 100);
   }
 
-  loadMostUsedVehicles(): void {
-    const currentDate = new Date();
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth() + 1;
-
-    this.vehicleService.getAllVehicles().subscribe(
-      (allVehicles) => {
-        const vehiclesWithNames = Array.isArray(allVehicles) ? allVehicles.map(vehicle => ({
-          ...vehicle,
-          department: this.departmentMap.get(vehicle.department_id || '') || (vehicle.department_id ? 'מחלקה לא ידועה' : 'ללא מחלקה')
-        })) : [];
-        this.vehicles = vehiclesWithNames;
-
-        this.vehicleService.getMostUsedVehiclesThisMonth(year, month).subscribe({
-          next: (response) => {
-
-            const enrichedStats = response.stats
-              .map((stat: any) => {
-                const match = vehiclesWithNames.find(v => v.id === stat.vehicle_id);
-                if (match) {
-                  return {
-                    ...match,
-                    ride_count: stat.total_rides
-                  };
-                }
-                return null;
-              })
-              .filter((v) => v !== null) as VehicleInItem[];
-
-            this.mostUsedVehicles = enrichedStats;
-            this.showingMostUsed = true;
-          },
-          error: (err) => {
-            console.error('❌ Error loading most used vehicles:', err);
-          }
-        });
-      },
-      (error) => {
-        console.error('❌ Error loading all vehicles:', error);
-      }
-    );
-  }
-
-  toggleVehicleMode(): void {
+  onMostUsedChange(): void {
     if (this.showingMostUsed) {
-      this.loadVehicles();
-    } else {
-      this.loadMostUsedVehicles();
+      this.showInactive = false;
+      this.onInactiveFilterChange();
     }
+
+    if (this.showingMostUsed) {
+      const currentDate = new Date();
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth() + 1;
+
+      this.vehicleService.getAllVehicles().subscribe(
+        (allVehicles) => {
+          const vehiclesWithNames = Array.isArray(allVehicles) ? allVehicles.map(vehicle => ({
+            ...vehicle,
+            department: this.departmentMap.get(vehicle.department_id || '') || (vehicle.department_id ? 'מחלקה לא ידועה' : 'ללא מחלקה')
+          })) : [];
+          this.vehicles = vehiclesWithNames;
+
+          this.vehicleService.getMostUsedVehiclesThisMonth(year, month).subscribe({
+            next: (response) => {
+              const enrichedStats = response.stats
+                .map((stat: any) => {
+                  const match = vehiclesWithNames.find(v => v.id === stat.vehicle_id);
+                  if (match) {
+                    return {
+                      ...match,
+                      ride_count: stat.total_rides
+                    };
+                  }
+                  return null;
+                })
+                .filter((v) => v !== null) as VehicleInItem[];
+
+              this.mostUsedVehicles = enrichedStats;
+            },
+            error: (err) => {
+              console.error('❌ Error loading most used vehicles:', err);
+            }
+          });
+        },
+        (error) => {
+          console.error('❌ Error loading all vehicles:', error);
+        }
+      );
+    } else {
+      this.loadVehicles();
+    }
+    this.updateQueryParams();
   }
 
   getCardClass(status: string | null | undefined): string {
@@ -260,8 +258,14 @@ fetchVehicleTypes() {
   getInactiveVehicles(): Observable<Vehicle[]> {
     return this.http.get<Vehicle[]>(`${environment.apiUrl}/vehicles/inactive`);
   }
+
   onInactiveFilterChange(): void {
-    if (this.InactiveFilter) {
+    if (this.showInactive) {
+      this.showingMostUsed = false;
+      this.onMostUsedChange();
+    }
+
+    if (this.showInactive) {
       this.getInactiveVehicles().subscribe({
         next: (data) => {
           this.inactiveVehicles = data;
@@ -273,8 +277,9 @@ fetchVehicleTypes() {
     } else {
       this.inactiveVehicles = [];
     }
+    this.updateQueryParams();
   }
-  // New method to check if a vehicle is inactive
+
   isInactive(lastUsedAt: string | null | undefined): boolean {
     if (!lastUsedAt) {
       return true; // Consider vehicles with no last_used_at as inactive
@@ -283,10 +288,8 @@ fetchVehicleTypes() {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     return lastUsedDate < sevenDaysAgo;
-
   }
 
-  
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
@@ -362,12 +365,8 @@ fetchVehicleTypes() {
     if (this.typeFilter) {
       filtered = filtered.filter(vehicle => vehicle.type === this.typeFilter);
     }
-    if (this.InactiveFilter && this.inactiveVehicles.length > 0) {
-      const inactiveIds = new Set(this.inactiveVehicles.map((v) => v.id));
-      filtered = filtered.filter((v) => inactiveIds.has(v.id));
-    }
 
-
+    // Only apply this filter if the checkbox is checked
     if (this.showInactive) {
       const oneWeekAgo = new Date();
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
@@ -384,7 +383,63 @@ fetchVehicleTypes() {
       return filtered;
     }
   }
+
   navigateToArchivedVehicles(): void {
     this.router.navigate(['/archived-vehicles']);
   }
+
+  // קריאת query parameters מה-URL
+loadQueryParams(): void {
+  this.route.queryParams.subscribe(params => {
+    this.statusFilter = this.translateToHebrew(params['status'] || '', 'status');
+    this.typeFilter = this.translateToHebrew(params['type'] || '', 'type');
+    this.showInactive = params['showInactive'] === 'true';
+    this.showingMostUsed = params['showingMostUsed'] === 'true';
+  });
+}
+
+// עדכון ה-URL עם query parameters
+updateQueryParams(): void {
+  const queryParams: any = {};
+  
+  if (this.statusFilter) queryParams['status'] = this.translateToEnglish(this.statusFilter, 'status');
+  if (this.typeFilter) queryParams['type'] = this.translateToEnglish(this.typeFilter, 'type');
+  if (this.showInactive) queryParams['showInactive'] = 'true';
+  if (this.showingMostUsed) queryParams['showingMostUsed'] = 'true';
+  
+  this.router.navigate([], {
+    relativeTo: this.route,
+    queryParams: queryParams,
+    queryParamsHandling: 'replace'
+  });
+}
+translateToEnglish(value: string, type: 'status' | 'type'): string {
+  if (type === 'status') {
+    const statusMap: { [key: string]: string } = {
+      'זמין': 'available',
+      'בשימוש': 'in_use', 
+      'מוקפא': 'frozen'
+    };
+    return statusMap[value] || value;
+  }
+  
+
+  
+  return value;
+}
+
+// תרגום מאנגלית לעברית מURL
+translateToHebrew(value: string, type: 'status' | 'type'): string {
+  if (type === 'status') {
+    const statusMap: { [key: string]: string } = {
+      'available': 'זמין',
+      'in_use': 'בשימוש',
+      'frozen': 'מוקפא'
+    };
+    return statusMap[value] || value;
+  }
+  
+
+  return value;
+}
 }

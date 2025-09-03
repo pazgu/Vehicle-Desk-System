@@ -1,10 +1,9 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 from uuid import UUID
 from datetime import datetime
 
 from ..models.vehicle_model import FuelType, VehicleStatus, FreezeReason
-from pydantic import BaseModel, Field
 
 class VehicleOut(BaseModel):
     id: UUID
@@ -15,7 +14,6 @@ class VehicleOut(BaseModel):
     freeze_reason: Optional[FreezeReason] = None
     freeze_details: Optional[str] = None
     last_used_at: Optional[datetime] = None
-    # current_location: str
     mileage: int
     mileage_last_updated: Optional[datetime] = None 
     vehicle_model: Optional[str] = None
@@ -26,7 +24,7 @@ class VehicleOut(BaseModel):
 
 
     class Config:
-        use_enum_values = True  # return enums as their values in JSON
+        use_enum_values = True
         from_attributes = True  
 
 
@@ -41,7 +39,6 @@ class InUseVehicleOut(BaseModel):
     mileage: float
     vehicle_model: Optional[str] = None  
     image_url: Optional[str] = None  
-    # current_location: Optional[str] = None 
     user_id: Optional[UUID] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None
