@@ -281,7 +281,7 @@ async def create_order(
                 "order_id": str(supervisor_notification.order_id) if supervisor_notification.order_id else None,
                 "order_status": new_ride.status,
                 "is_extended_request": is_extended
-            })
+            },room=str(supervisor_id))
 
         else:
             logger.warning(f"No supervisor found for user ID {user_id} — skipping supervisor notification and email.")
