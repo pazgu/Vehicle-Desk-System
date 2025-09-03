@@ -67,17 +67,21 @@ def _send_email_sync_sendgrid(subject: str, html_content: str, to_emails: List[s
 
 async def _async_send_email_sendgrid(subject: str, body: str, recipients: List[str]) -> bool:
     """Asynchronous SendGrid email sender."""
-    # return False #TEMP: will make the email sending fail every time
+    try:
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(
+            None,
+            _send_email_sync_sendgrid,
+            subject,
+            body,
+            recipients,
+            ""
+        )
+    except Exception as e:
+        # Log the error instead of crashing the app
+        print(f"❌ Failed to send async email: {e}")
+        return False
 
-    loop = asyncio.get_running_loop()
-    return await loop.run_in_executor(
-        None,
-        _send_email_sync_sendgrid,
-        subject,
-        body,
-        recipients,
-        ""
-    )
 
 class EmailService:
     def __init__(self, sio_server: socketio.AsyncServer):
@@ -85,13 +89,27 @@ class EmailService:
 
     async def _get_user_email(self, user_id: UUID, db: Session) -> str | None:
         """Retrieves the email address of a user by their UUID."""
-        user = db.query(User).filter(User.employee_id == user_id).first()
-        if user and user.email:
-            return user.email
-        logger.warning(f"Email not found for user ID: {user_id}")
-        return None
+        try:
+            user = db.query(User).filter(User.employee_id == user_id).first()
+            if user and user.email:
+                return user.email
 
-    async def _emit_email_status(self, user_id: UUID, email_type: str, status: EmailStatusEnum, message: str, identifier_id: UUID | None = None):
+            logger.warning(f"Email not found for user ID: {user_id}")
+            return None
+
+        except Exception as e:
+            logger.error(f"❌ Error while fetching email for user {user_id}: {e}")
+            return None
+
+
+    async def _emit_email_status(
+        self,
+        user_id: UUID,
+        email_type: str,
+        status: EmailStatusEnum,
+        message: str,
+        identifier_id: UUID | None = None
+    ):
         """Emits an email status update via Socket.IO."""
         event_name = f"email_status_{user_id}"
         data = {
@@ -104,8 +122,14 @@ class EmailService:
         if identifier_id:
             data["identifier_id"] = str(identifier_id)
 
-        logger.info(f"Emitting Socket.IO event '{event_name}' with data: {data}")
-        await self.sio_server.emit(event_name, data, room=str(user_id))
+        try:
+            logger.info(f"Emitting Socket.IO event '{event_name}' with data: {data}")
+            await self.sio_server.emit(event_name, data, room=str(user_id))
+        except Exception as e:
+            logger.error(
+                f"❌ Failed to emit email status for user {user_id}, event {event_name}: {e}"
+            )
+
 
     def _render_email_template(self, template_name: str, context: Dict[str, Any]) -> str:
         """Loads and renders an HTML email template using Jinja2."""
@@ -232,22 +256,43 @@ class EmailService:
 
 
     # --- MODIFIED: send_email_direct (Takes new 'use_retries' param, default False) ---
-    async def send_email_direct(self, to_email: str, subject: str, html_content: str, user_id: UUID, email_type: str = "direct_notification", text_content: str = "", use_retries: bool = False) -> bool:
+    async def send_email_direct(
+        self,
+        to_email: str,
+        subject: str,
+        html_content: str,
+        user_id: UUID,
+        email_type: str = "direct_notification",
+        text_content: str = "",
+        use_retries: bool = False
+    ) -> bool:
         """
         Sends a simple email directly using the internal consolidated SendGrid utility.
         'use_retries=False' by default for immediate feedback to user (e.g., forgot password).
+        Returns True if email was sent, False otherwise.
         """
-        logger.info(f"Attempting to send direct email to: {to_email} with subject '{subject}' (Type: {email_type}, Retries: {use_retries})")
-        return await self._async_send_email_via_utils(
-            subject=subject,
-            body=html_content,
-            recipients=[to_email],
-            user_id=user_id,
-            email_type=email_type,
-            identifier_id=None,
-            use_retries=use_retries # Pass the new parameter
+        logger.info(
+            f"📧 Attempting to send direct email to: {to_email} | "
+            f"Subject: '{subject}' | Type: {email_type} | Retries: {use_retries}"
         )
-    # --- END MODIFIED ---
+
+        try:
+            return await self._async_send_email_via_utils(
+                subject=subject,
+                body=html_content,
+                recipients=[to_email],
+                user_id=user_id,
+                email_type=email_type,
+                identifier_id=None,
+                use_retries=use_retries
+            )
+        except Exception as e:
+            logger.error(
+                f"❌ Failed to send direct email to {to_email} (user {user_id}, type {email_type}): {e}",
+                exc_info=True
+            )
+            return False
+
 
     async def send_ride_creation_email(
         self,
