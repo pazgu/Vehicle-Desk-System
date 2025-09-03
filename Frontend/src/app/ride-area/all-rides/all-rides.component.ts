@@ -59,8 +59,8 @@ export class AllRidesComponent implements OnInit {
   rideViewMode: 'all' | 'future' | 'past' = 'all';
   highlightedOrderId: string | null = null;
 warningVisible = false;
-freeQuotaTotal = 6;          // max free rides per month
-freeQuotaUsed = 0;           // how many already used this month
+freeQuotaTotal = 6;
+freeQuotaUsed = 0;         
 
 get freeQuotaExceeded(): boolean {
   return this.freeQuotaUsed >= this.freeQuotaTotal;
@@ -89,8 +89,6 @@ get freeQuotaExceeded(): boolean {
       this.showFilters = params['filters'] === 'true';
       this.showOldOrders = params['old_orders'] === 'true';
 
-      // Special handling for 'showOldOrders' from URL to affect startDate logic
-      // This ensures that if it's true in URL, startDate is prepared for fetchRides
       if (this.showOldOrders && !this.startDate && !this.endDate) {
          const oneMonthAgo = new Date();
          oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
@@ -140,6 +138,7 @@ get freeQuotaExceeded(): boolean {
             status: updatedRide.status.toLowerCase(),
             distance: updatedRide.estimated_distance_km,
             start_datetime: updatedRide.start_datetime,
+            end_datetime: updatedRide.end_datetime,
             submitted_at: updatedRide.submitted_at
           };
           this.orders = [
@@ -247,9 +246,7 @@ get freeQuotaExceeded(): boolean {
       old_orders: this.showOldOrders === false ? null : true, // Only include if true
     };
 
-    // Preserve the 'highlight' param if it exists (for navigation from other pages)
-    // This needs to be handled separately as it's not a filter controlled by the user
-    // on this page, but potentially passed from elsewhere.
+ 
     const currentHighlight = this.route.snapshot.queryParamMap.get('highlight');
     if (currentHighlight) {
         queryParams['highlight'] = currentHighlight;
@@ -258,11 +255,9 @@ get freeQuotaExceeded(): boolean {
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: queryParams,
-      queryParamsHandling: 'merge' // Still use merge, but null values now correctly clear params
+      queryParamsHandling: 'merge' 
     });
   }
-
-  // --- Existing Methods (Minor adjustments for URL sync) ---
 
   fetchRides() {
     const userId = localStorage.getItem('employee_id');
@@ -272,13 +267,9 @@ get freeQuotaExceeded(): boolean {
     const filters: any = {};
     if (this.statusFilter) filters.status = this.statusFilter;
 
-    // Use synced startDate/endDate for API if they are explicitly set by user
     if (this.startDate) filters.from_date = this.startDate;
     if (this.endDate) filters.to_date = this.endDate;
 
-    // If 'showOldOrders' is true AND no specific date range is set,
-    // then override startDate to be 1 month ago for the API call.
-    // This handles the checkbox's specific meaning for the API.
     if (this.showOldOrders && !this.startDate && !this.endDate) {
         const oneMonthAgo = new Date();
         oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
@@ -312,15 +303,16 @@ get freeQuotaExceeded(): boolean {
             distance: order.estimated_distance,
             status: order.status.toLowerCase(),
             start_datetime: order.start_datetime,
+            end_datetime: order.end_datetime,
             submitted_at: order.submitted_at,
             user_id: order.user_id
           }));
           localStorage.setItem('user_orders', JSON.stringify(this.orders));
           
-        // ✅ NOW call checkStartedApprovedRides
+
         this.rideService.checkStartedApprovedRides().subscribe({
           next: (res: StartedRidesResponse) => {
-            const startedRideIds = res.rides_supposed_to_start; // ✅ fix here
+            const startedRideIds = res.rides_supposed_to_start; 
             this.updateFreeQuota();
             this.orders = this.orders.map(order => ({
               ...order,
@@ -336,10 +328,9 @@ get freeQuotaExceeded(): boolean {
           this.orders = [];
         }
       },
-    error: (err: HttpErrorResponse) => { // Type the error as HttpErrorResponse
+    error: (err: HttpErrorResponse) => { 
         this.loading = false;
         if (err.status === 404) {
-          // Specific handling for 404 meaning "no data found"
           console.warn('Backend returned 404 for orders, treating as no orders found:', err);
           this.orders = []; 
         } else {
@@ -722,6 +713,19 @@ get freeQuotaExceeded(): boolean {
     this.router.navigate(['/ride/details', order.ride_id]);
   }
 
+checkIfOverOneDay(order: any): boolean {
+  const orderStartDate = new Date(order.start_datetime);
+  const orderEndDate = new Date(order.end_datetime);
+
+  console.log('Order Start Date:', orderStartDate);
+  console.log('Order End Date:', orderEndDate);
+
+  // Extract only the date part (ignoring time)
+  const startDay = orderStartDate.toISOString().split('T')[0];
+  const endDay = orderEndDate.toISOString().split('T')[0];
+
+  return startDay !== endDay;
+}
 
   exceededMaxRides(): boolean {
     const maxRides = 6;
