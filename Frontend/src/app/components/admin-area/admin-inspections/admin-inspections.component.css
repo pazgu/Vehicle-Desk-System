@@ -48,12 +48,10 @@
   text-align: right;
 }
 
-/*
-  Controls Section: Tabs and Filters
-*/
+
 .controls-container {
   display: flex;
-  justify-content: flex-start; /* Aligns items to the right in an RTL context */
+  justify-content: flex-start; 
   align-items: center;
   gap: 20px;
   margin-bottom: 30px;

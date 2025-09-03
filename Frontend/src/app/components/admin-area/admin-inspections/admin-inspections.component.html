@@ -34,11 +34,13 @@
       </button>
       <div class="filter-options" *ngIf="showProblematicFilters">
         <label class="checkbox-label">
-          <input type="checkbox" [(ngModel)]="showMediumIssues" (change)="loadData()" />
+          <!-- Changed (change) to call the new handleFilterChange method -->
+          <input type="checkbox" [(ngModel)]="showMediumIssues" (change)="handleFilterChange('medium')" />
           <span>הצג בעיות - דרגה בינונית</span>
         </label>
         <label class="checkbox-label">
-          <input type="checkbox" [(ngModel)]="showCriticalIssues" (change)="loadData()" />
+          <!-- Changed (change) to call the new handleFilterChange method -->
+          <input type="checkbox" [(ngModel)]="showCriticalIssues" (change)="handleFilterChange('critical')" />
           <span>הצג בעיות - דרגה חריגה</span>
         </label>
       </div>
