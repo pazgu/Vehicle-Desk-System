@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { VehicleService } from '../../../services/vehicle.service';
 import { CardModule } from 'primeng/card';
 import { VehicleInItem } from '../../../models/vehicle-dashboard-item/vehicle-in-use-item.module';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { SocketService } from '../../../services/socket.service';
@@ -33,14 +33,7 @@ export class VehicleDashboardComponent implements OnInit {
   showFilters: boolean = false;
   sortBy: string = 'date_and_time';
   vehicleTypes: { original: string; translated: string }[] = [];
-  vehicleTypeTranslations: { [key: string]: string } = {
-    'Private': 'פרטי',
-    'Small Commercial': 'מסחרי קטן',
-    'Large Commercial': 'מסחרי גדול',
-    '4x4 Pickup': '4x4 טנדר',
-    '4x4 SUV': '4x4 ג’יפ',
-    '8-Seater': 'מושבים 8'
-  };
+ 
   showMileageUpload: boolean = false;
 
 
@@ -57,21 +50,22 @@ export class VehicleDashboardComponent implements OnInit {
   uploadError: string | null = null;
   uploadSummary: { vehiclesUpdated: number; warnings: string[] } | null = null;
 
-  constructor(
-    private vehicleService: VehicleService,
-    private router: Router,
-    private http: HttpClient,
-    private socketService: SocketService,
-    private toastService: ToastService
-  ) { }
-
+constructor(
+  private vehicleService: VehicleService,
+  private router: Router,
+  private route: ActivatedRoute,
+  private http: HttpClient,
+  private socketService: SocketService,
+  private toastService: ToastService
+) { }
   ngOnInit(): void {
-    this.getUserRole();
-    this.fetchAndMapDepartments().then(() => {
-      this.loadVehicles();
-      this.fetchVehicleTypes();
-      this.loadVehicleUsageData();
-    });
+  this.getUserRole();
+  this.loadQueryParams();
+  this.fetchAndMapDepartments().then(() => {
+    this.loadVehicles();
+    this.fetchVehicleTypes();
+    this.loadVehicleUsageData();
+  });
 
     this.socketService.newVehicle$.subscribe((vehicleData) => {
       if (vehicleData && vehicleData.id) {
@@ -156,7 +150,7 @@ export class VehicleDashboardComponent implements OnInit {
       next: (types) => {
         this.vehicleTypes = (types || []).map(type => ({
           original: type,
-          translated: this.vehicleTypeTranslations[type] || type // fallback to original if not found
+          translated: "", // fallback to original if not found
         }));
       },
       error: (err) => {
@@ -244,6 +238,7 @@ export class VehicleDashboardComponent implements OnInit {
     } else {
       this.loadVehicles();
     }
+    this.updateQueryParams();
   }
 
   getCardClass(status: string | null | undefined): string {
@@ -282,6 +277,7 @@ export class VehicleDashboardComponent implements OnInit {
     } else {
       this.inactiveVehicles = [];
     }
+    this.updateQueryParams();
   }
 
   isInactive(lastUsedAt: string | null | undefined): boolean {
@@ -391,4 +387,59 @@ export class VehicleDashboardComponent implements OnInit {
   navigateToArchivedVehicles(): void {
     this.router.navigate(['/archived-vehicles']);
   }
+
+  // קריאת query parameters מה-URL
+loadQueryParams(): void {
+  this.route.queryParams.subscribe(params => {
+    this.statusFilter = this.translateToHebrew(params['status'] || '', 'status');
+    this.typeFilter = this.translateToHebrew(params['type'] || '', 'type');
+    this.showInactive = params['showInactive'] === 'true';
+    this.showingMostUsed = params['showingMostUsed'] === 'true';
+  });
+}
+
+// עדכון ה-URL עם query parameters
+updateQueryParams(): void {
+  const queryParams: any = {};
+  
+  if (this.statusFilter) queryParams['status'] = this.translateToEnglish(this.statusFilter, 'status');
+  if (this.typeFilter) queryParams['type'] = this.translateToEnglish(this.typeFilter, 'type');
+  if (this.showInactive) queryParams['showInactive'] = 'true';
+  if (this.showingMostUsed) queryParams['showingMostUsed'] = 'true';
+  
+  this.router.navigate([], {
+    relativeTo: this.route,
+    queryParams: queryParams,
+    queryParamsHandling: 'replace'
+  });
+}
+translateToEnglish(value: string, type: 'status' | 'type'): string {
+  if (type === 'status') {
+    const statusMap: { [key: string]: string } = {
+      'זמין': 'available',
+      'בשימוש': 'in_use', 
+      'מוקפא': 'frozen'
+    };
+    return statusMap[value] || value;
+  }
+  
+
+  
+  return value;
+}
+
+// תרגום מאנגלית לעברית מURL
+translateToHebrew(value: string, type: 'status' | 'type'): string {
+  if (type === 'status') {
+    const statusMap: { [key: string]: string } = {
+      'available': 'זמין',
+      'in_use': 'בשימוש',
+      'frozen': 'מוקפא'
+    };
+    return statusMap[value] || value;
+  }
+  
+
+  return value;
+}
 }

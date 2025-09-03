@@ -42,6 +42,17 @@
           <span class="label">דוא"ל:</span>
           <span class="value">{{ user?.email }}</span>
         </div>
+        <div class="detail-row">
+  <span class="label">מספר טלפון:</span>
+  <span class="value">{{ user?.phone || 'לא זמין' }}</span>
+</div>
+
+<div class="detail-row" *ngIf="user?.has_government_license">
+  <span class="label">רישיון ממשלתי:</span>
+  <span class="value">יש</span>
+</div>
+
+
 
 </div>
         

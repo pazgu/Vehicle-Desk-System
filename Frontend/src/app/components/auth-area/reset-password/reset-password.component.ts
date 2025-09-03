@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-reset-password',
@@ -23,7 +24,8 @@ export class ResetPasswordComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -59,7 +61,8 @@ export class ResetPasswordComponent implements OnInit {
 
     this.authService.resetPassword(this.token, password).subscribe({
       next: () => {
-        this.message = 'Password has been reset successfully';
+        this.message = 'הסיסמה אופסה בהצלחה';
+        this.router.navigate(['/login']);
       },
       error: (err) => {
         this.error = err.error.detail || 'Failed to reset password';
