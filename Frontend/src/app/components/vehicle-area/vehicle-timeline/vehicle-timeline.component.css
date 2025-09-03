@@ -754,6 +754,11 @@
   display: block;
   padding: 1.5rem;
   font-family: var(--font-family-alef);
+  background-image: url('/assets/images/vehicle-dashboard-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 
 /* Wrapper and Layout */
