@@ -12,11 +12,35 @@
     <button (click)="showWarning()">⚠️</button>
   </div>
 
+  <div class="quota-float" dir="rtl">
+  <div class="free-quota-indicator" [class.exceeded]="freeQuotaExceeded" aria-label="מכסת הזמנות חינמיות">
+    <div class="fq-header">
+      <span class="fq-title">מכסת הזמנות חינמיות</span>
+      <span class="fq-count">{{ freeQuotaUsed }}/{{ freeQuotaTotal }}</span>
+    </div>
+
+    <div class="fq-segments" [style.--fq-total]="freeQuotaTotal">
+      <div
+        class="fq-segment"
+        *ngFor="let i of quotaSegments; let idx = index"
+        [class.filled]="idx < freeQuotaUsed"
+        [attr.title]="'פריט ' + (idx + 1) + ' מתוך ' + freeQuotaTotal">
+      </div>
+    </div>
+
+    <div class="fq-hint" *ngIf="freeQuotaExceeded">
+      הגעת למכסה — הזמנות נוספות בתשלום
+    </div>
+  </div>
+</div>
+
   <div class="orders-wrapper">
     <div id="header-wrap">
       <h1>ההזמנות שלי</h1>
       <button class="back-btn" (click)="goBack()">חזור ←</button>
     </div>
+
+
     <br>
     <div class="ride-filter-buttons">
       <button [ngClass]="{ 'active': rideViewMode === 'future' }" (click)="rideViewMode = 'future'; applyFiltersAndSort()">הצג נסיעות עתידיות</button>

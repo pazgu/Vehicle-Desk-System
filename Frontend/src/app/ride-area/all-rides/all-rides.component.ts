@@ -59,6 +59,13 @@ export class AllRidesComponent implements OnInit {
   rideViewMode: 'all' | 'future' | 'past' = 'all';
   highlightedOrderId: string | null = null;
 warningVisible = false;
+freeQuotaTotal = 6;          // max free rides per month
+freeQuotaUsed = 0;           // how many already used this month
+
+get freeQuotaExceeded(): boolean {
+  return this.freeQuotaUsed >= this.freeQuotaTotal;
+}
+
 
   ngOnInit(): void {
     const userId = localStorage.getItem('employee_id');
@@ -140,6 +147,8 @@ warningVisible = false;
             updatedOrder,
             ...this.orders.slice(index + 1)
           ];
+          this.updateFreeQuota();
+
           const role = localStorage.getItem('role');
           if (role === 'supervisor') {
             this.toastService.show('✅ יש בקשה שעודכנה בהצלחה', 'success');
@@ -161,6 +170,8 @@ warningVisible = false;
           };
           this.orders = updatedOrders;
           this.orders = [...this.orders];
+          this.updateFreeQuota();
+
         }
       }
     });
@@ -176,6 +187,8 @@ warningVisible = false;
         }
       }
     });
+    this.updateFreeQuota();
+
   }
 
   // --- New / Modified Methods for URL Sync ---
@@ -192,6 +205,33 @@ warningVisible = false;
     this.showFilters = !this.showFilters;
     this.updateUrlQueryParams();
   }
+
+  private updateFreeQuota(): void {
+  // which statuses count as a "used free ride"
+  const countableStatuses = new Set([
+    'pending',
+    'approved',
+    'reserved',
+    'in_progress',
+    'completed'
+  ]);
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+  // use the current in-memory orders list to avoid localStorage drift
+  const used = this.orders.filter(o => {
+    if (!o?.date) return false;
+    const d = this.parseDate(o.date);
+    d.setHours(12, 0, 0, 0);
+    const inMonth = d >= startOfMonth && d <= endOfMonth;
+    const counts = countableStatuses.has(String(o.status || '').toLowerCase());
+    return inMonth && counts;
+  }).length;
+
+  this.freeQuotaUsed = Math.min(used, this.freeQuotaTotal);
+}
+
 
   // This is the core method to update the URL with current filter states
   private updateUrlQueryParams(): void {
@@ -281,6 +321,7 @@ warningVisible = false;
         this.rideService.checkStartedApprovedRides().subscribe({
           next: (res: StartedRidesResponse) => {
             const startedRideIds = res.rides_supposed_to_start; // ✅ fix here
+            this.updateFreeQuota();
             this.orders = this.orders.map(order => ({
               ...order,
               hasStarted: startedRideIds.includes(order.ride_id)
@@ -573,6 +614,11 @@ deleteOrder(order: any): void {
       });
     });
   }
+
+  get quotaSegments(): number[] {
+  return Array.from({ length: this.freeQuotaTotal }, (_, i) => i);
+}
+
 
   viewRide(order: any): void {
     if (!order.ride_id) {
