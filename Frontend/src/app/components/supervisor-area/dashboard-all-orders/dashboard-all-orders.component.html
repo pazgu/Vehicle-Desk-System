@@ -96,10 +96,11 @@
 
 
 
+    <div style="position: relative;">
       <p-table #table [value]="trips" [rows]="rows" [totalRecords]="filteredOrders.length" dir="rtl">
         <ng-template pTemplate="header">
           <tr class="table-header">
-            <th>מזהה נסיעה</th>
+            <th></th> <th>מזהה נסיעה</th>
             <th>שם עובד</th>
             <th>רכב</th>
             <th>תאריך</th>
@@ -107,16 +108,18 @@
             <th>סטטוס</th>
           </tr>
         </ng-template>
-        <ng-template pTemplate="body" let-trip>
+        <ng-template pTemplate="body" let-trip let-ri="rowIndex">
           <tr [ngClass]="getRowClass(trip.status)" (click)="onRowSelect(trip)">
-            <td [matTooltip]="trip.ride_id" class="copy-button">
-              <button (click)="copyToClipboard(trip.ride_id);$event.stopPropagation()"><img class="copy-icon"
-                  src="/assets/images/copy.png" />
-                <span *ngIf="copiedRideId === trip.ride_id" class="copied-message">
-                  Copied!
-                </span>
+            <td> <div class="duration-indicator-inline">
+                {{ getDurationIndicator(trip) }}
+              </div>
+            </td>
+            <td [matTooltip]="trip.ride_id">
+              <button class="copy-button" (click)="copyToClipboard(trip.ride_id);$event.stopPropagation()">
+                <img class="copy-icon" src="/assets/images/copy.png" />
+                <span *ngIf="copiedRideId === trip.ride_id" class="copied-message">Copied!</span>
               </button>
-              {{ trip.ride_id.slice(0, 4) }}...
+              <span class="ride-id-text">{{ trip.ride_id.slice(0, 4) }}...</span>
             </td>
             <td>{{ trip.employee_name }}</td>
             <td>{{ trip.requested_vehicle_model }}</td>
@@ -127,7 +130,7 @@
         </ng-template>
         <ng-template pTemplate="emptymessage">
           <tr>
-            <td colspan="6" style="text-align: center;">לא נמצאו הזמנות</td>
+            <td colspan="7" style="text-align: center;">לא נמצאו הזמנות</td>
           </tr>
         </ng-template>
       </p-table>
