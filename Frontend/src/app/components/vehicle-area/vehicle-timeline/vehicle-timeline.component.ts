@@ -25,6 +25,7 @@ interface RenderableRide {
   styleUrl: './vehicle-timeline.component.css'
 })
 export class VehicleTimelineComponent implements OnInit {
+
   vehicleId: string | null = null;
   vehicleTimelineData: any[] = [];
 
@@ -35,6 +36,19 @@ export class VehicleTimelineComponent implements OnInit {
 
   private HOUR_SLOT_HEIGHT = 40;
   private VERTICAL_GAP_PX = 4;
+
+  // NEW: Legend data
+  statusLegend = [
+    { status: 'approved', color: '#a4d1ae', label: 'מאושר' },
+    { status: 'pending', color: '#f5e2a8', label: 'ממתין' },
+    { status: 'in_progress', color: '#6aa5d6', label: 'בביצוע' },
+    { status: 'rejected', color: '#f1b5b5', label: 'נדחה' },
+    { status: 'completed', color: '#b7dbf3', label: 'הושלם' },
+    { status: 'cancelled', color: '#bfb9b9', label: 'בוטל' }
+  ];
+  hoverCardVisible: boolean = false;
+hoveredRide: RenderableRide | null = null;
+hoverCardPosition: { x: number; y: number } = { x: 0, y: 0 };
 
   constructor(
     private route: ActivatedRoute,
@@ -84,6 +98,46 @@ export class VehicleTimelineComponent implements OnInit {
     if (this.vehicleId) {
       this.loadVehicleTimeline(this.currentWeekStart);
     }
+  }
+onRideHover(event: MouseEvent, ride: RenderableRide): void {
+    this.hoveredRide = ride;
+    this.hoverCardVisible = true;
+    
+    // Position the card relative to the mouse
+    const rect = (event.target as HTMLElement).getBoundingClientRect();
+    this.hoverCardPosition = {
+      x: event.clientX - 150, // Offset to center the card
+      y: rect.top - 10 // Position above the ride block
+    };
+  }
+
+  onRideLeave(): void {
+    // Only hide if we're not hovering over the card itself
+    setTimeout(() => {
+      if (!this.isHoveringOverCard()) {
+        this.hoverCardVisible = false;
+        this.hoveredRide = null;
+      }
+    }, 100);
+  }
+
+  // FIXED: Close hover card method
+  onCloseHoverCard(): void {
+    this.hoverCardVisible = false;
+    this.hoveredRide = null;
+  }
+
+  
+  // Helper method to check if mouse is over the hover card
+  private isHoveringOverCard(): boolean {
+    // This is a simple check - in a real implementation you might want more sophisticated detection
+    return false;
+  }
+
+  onRideClick(ride: RenderableRide): void {
+    // TODO: Navigate to ride details or open modal
+    console.log('Clicked ride:', ride);
+    // Example: this.router.navigate(['/ride-details', ride.id]);
   }
 
   // --- Utility Functions for Date Handling ---
@@ -262,5 +316,14 @@ navigateBack(): void {
       },
       queryParamsHandling: 'merge',
     });
+  }
+
+  // TrackBy functions for better performance
+  trackByDate(index: number, day: Date): string {
+    return this.getDateKey(day);
+  }
+
+  trackRide(index: number, ride: RenderableRide): string {
+    return `${ride.user_id}-${ride.start_datetime}`;
   }
 }
