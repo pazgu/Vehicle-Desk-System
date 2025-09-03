@@ -61,7 +61,7 @@
         style="margin-bottom: 1.5rem; background-color: rgb(249, 245, 245); border:1px solid #ddd; padding: 1rem; border-radius: 8px; direction: rtl; margin-top: 1rem; width: 600px;">
         <div style="margin-bottom: 1rem; gap: 1rem; display: flex;">
           <label for="statusFilter"> סטטוס:</label>
-          <select class="statusFilter" id="statusFilter" [(ngModel)]="statusFilter">
+          <select class="statusFilter" id="statusFilter" [(ngModel)]="statusFilter" (change)="updateQueryParams()">
             <option value="">הצג הכל</option>
             <option value="זמין">זמין</option>
             <option value="בשימוש">בשימוש</option>
@@ -71,9 +71,9 @@
 
         <div style="margin-bottom: 1rem; gap: 1rem; display: flex;">
           <label for="typeFilter"> סוג:</label>
-          <select class="typeFilter" id="typeFilter" [(ngModel)]="typeFilter">
+          <select class="typeFilter" id="typeFilter" [(ngModel)]="typeFilter" (change)="updateQueryParams()">
             <option value="">הצג הכל</option>
-            <option *ngFor="let type of vehicleTypes" [value]="type.translated">{{ type.translated }}</option>
+            <option *ngFor="let type of vehicleTypes" [value]="type.original">{{ type.original }}</option>
           </select>
         </div>
 

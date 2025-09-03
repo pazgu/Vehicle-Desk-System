@@ -528,24 +528,92 @@ get freeQuotaExceeded(): boolean {
   }
 
   canEdit(order: any): boolean {
+    const userRole = localStorage.getItem('role');
+    const isSupervisor = userRole === 'supervisor';
+    
+    // For regular users - only pending orders can be edited
     const isPending = order.status.toLowerCase() === 'pending';
     const isFuture = this.parseDate(order.date) >= new Date();
-    return isPending && isFuture;
+    
+    if (!isSupervisor) {
+      return isPending && isFuture;
+    }
+    
+    // For supervisors - allow editing approved orders until 2 hours before ride time
+    const isEditableStatus = ['pending', 'approved'].includes(order.status.toLowerCase());
+    
+    if (!isEditableStatus || !isFuture) {
+      return false;
+    }
+    
+    // Calculate if it's more than 2 hours before the ride
+    const rideDateTime = new Date(`${order.date.split('.').reverse().join('-')}T${order.time}:00`);
+    const now = new Date();
+    const timeDifferenceHours = (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+    
+    return timeDifferenceHours > 2;
   }
 
   canDelete(order: any): boolean {
-    const isPending = ['pending'].includes(order.status.toLowerCase());
+    const userRole = localStorage.getItem('role');
+    const isSupervisor = userRole === 'supervisor';
+    
+    // For regular users - only pending orders can be deleted
+    const isPending = order.status.toLowerCase() === 'pending';
     const isFuture = this.parseDate(order.date) >= new Date();
-    return isPending && isFuture;
+    
+    if (!isSupervisor) {
+      return isPending && isFuture;
+    }
+    
+    // For supervisors - allow deleting approved orders until 2 hours before ride time
+    const isDeletableStatus = ['pending', 'approved'].includes(order.status.toLowerCase());
+    
+    if (!isDeletableStatus || !isFuture) {
+      return false;
+    }
+    
+    // Calculate if it's more than 2 hours before the ride
+    const rideDateTime = new Date(`${order.date.split('.').reverse().join('-')}T${order.time}:00`);
+    const now = new Date();
+    const timeDifferenceHours = (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+    
+    return timeDifferenceHours > 2;
   }
 
   editOrder(order: any): void {
-    const isPending = order.status.toLowerCase() === 'pending';
+    const userRole = localStorage.getItem('role');
+    const isSupervisor = userRole === 'supervisor';
     const isFuture = this.parseDate(order.date) >= new Date();
 
-    if (!isPending || !isFuture) {
-      this.toastService.show('אפשר לערוך רק הזמנות עתידיות במצב "ממתין" ❌', 'error');
+    if (!isFuture) {
+      this.toastService.show('אפשר לערוך רק הזמנות עתידיות ❌', 'error');
       return;
+    }
+
+    // For regular users - only pending status allowed
+    if (!isSupervisor) {
+      const isPending = order.status.toLowerCase() === 'pending';
+      if (!isPending) {
+        this.toastService.show('אפשר לערוך רק הזמנות עתידיות במצב "ממתין" ❌', 'error');
+        return;
+      }
+    } else {
+      // For supervisors - check if it's within the 2-hour window
+      const isEditableStatus = ['pending', 'approved'].includes(order.status.toLowerCase());
+      if (!isEditableStatus) {
+        this.toastService.show('אפשר לערוך רק הזמנות במצב "ממתין" או "מאושר" ❌', 'error');
+        return;
+      }
+
+      const rideDateTime = new Date(`${order.date.split('.').reverse().join('-')}T${order.time}:00`);
+      const now = new Date();
+      const timeDifferenceHours = (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+      
+      if (timeDifferenceHours <= 2) {
+        this.toastService.show('אפשר לערוך הזמנה עד שעתיים לפני זמן הנסיעה ❌', 'error');
+        return;
+      }
     }
 
     if (!order.ride_id) {
@@ -555,13 +623,40 @@ get freeQuotaExceeded(): boolean {
 
     this.router.navigate(['/ride/edit', order.ride_id]);
   }
-deleteOrder(order: any): void {
-    const isPending = order.status.toLowerCase() === 'pending';
+
+  deleteOrder(order: any): void {
+    const userRole = localStorage.getItem('role');
+    const isSupervisor = userRole === 'supervisor';
     const isFuture = this.parseDate(order.date) >= new Date();
 
-    if (!isPending || !isFuture) {
-      this.toastService.show('אפשר לבטל רק הזמנות עתידיות במצב "ממתין" ❌', 'error');
+    if (!isFuture) {
+      this.toastService.show('אפשר לבטל רק הזמנות עתידיות ❌', 'error');
       return;
+    }
+
+    // For regular users - only pending status allowed
+    if (!isSupervisor) {
+      const isPending = order.status.toLowerCase() === 'pending';
+      if (!isPending) {
+        this.toastService.show('אפשר לבטל רק הזמנות עתידיות במצב "ממתין" ❌', 'error');
+        return;
+      }
+    } else {
+      // For supervisors - check if it's within the 2-hour window
+      const isDeletableStatus = ['pending', 'approved'].includes(order.status.toLowerCase());
+      if (!isDeletableStatus) {
+        this.toastService.show('אפשר לבטל רק הזמנות במצב "ממתין" או "מאושר" ❌', 'error');
+        return;
+      }
+
+      const rideDateTime = new Date(`${order.date.split('.').reverse().join('-')}T${order.time}:00`);
+      const now = new Date();
+      const timeDifferenceHours = (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+      
+      if (timeDifferenceHours <= 2) {
+        this.toastService.show('אפשר לבטל הזמנה עד שעתיים לפני זמן הנסיעה ❌', 'error');
+        return;
+      }
     }
 
     if (!order.ride_id) {
@@ -595,8 +690,6 @@ deleteOrder(order: any): void {
          
           });
           // Remove the order from local state immediately
-
-          //the try catch logic here wont work
           this.fetchRides();
           const index = this.orders.findIndex(o => o.ride_id === order.ride_id);
           if (index !== -1) {

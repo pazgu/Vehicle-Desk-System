@@ -182,7 +182,6 @@ def get_all_orders(user_id: UUID, status: Optional[RideStatus] = Query(None),
     rides = get_all_rides(user_id, db, status, from_date, to_date)
     return rides
 
-
 @router.post("/api/orders/{user_id}", status_code=fastapi_status.HTTP_201_CREATED)
 async def create_order(
     user_id: UUID,
@@ -195,11 +194,18 @@ async def create_order(
 
     check_license_validity(db, user_id, ride_request.start_datetime)
 
-
     try:
-        # Create the ride first - this is the critical, core action.
-        new_ride = await create_ride(db, user_id, ride_request)
-        
+        # Fetch the user and get their license status
+        user = db.query(User).filter(User.employee_id == user_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        license_check_passed = bool(getattr(user, "has_government_license", False))
+
+        # Create the ride, setting license_check_passed
+        new_ride = await create_ride(
+            db, user_id, ride_request, license_check_passed=license_check_passed
+        )
+
         # Schedule other tasks
         schedule_ride_start(new_ride.id, new_ride.start_datetime)
         schedule_ride_reminder_email(new_ride.id, new_ride.start_datetime)
@@ -216,27 +222,21 @@ async def create_order(
             "end_datetime": str(new_ride.end_datetime),
             "date_and_time": str(new_ride.start_datetime),
             "vehicle_id": str(new_ride.vehicle_id),
-            "requested_vehicle_model": new_ride.vehicle_model,
+            "requested_vehicle_model": getattr(new_ride, "vehicle_model", None),
             "department_id": str(department_id),
             "distance": new_ride.estimated_distance_km,
         })
-        
+
         # Launch the email task in the background using a fire-and-forget pattern.
-        # Do NOT await this call.
         supervisor_id = get_supervisor_id(user_id, db)
         employee_name = get_user_name(db, new_ride.user_id)
         is_extended = (new_ride.end_datetime - new_ride.start_datetime) > timedelta(days=2)
 
-        # Launch the email task in the background using a fire-and-forget pattern.
         if supervisor_id:
             supervisor_name = get_user_name(db, supervisor_id)
-            
-            # Instantiate EmailService for this request
             email_service = EmailService(sio_server=sio)
-            
             destination_city = db.query(City).filter(City.id == new_ride.stop).first()
             destination_name = destination_city.name if destination_city else str(new_ride.stop)
-            
             ride_details_for_email = {
                 "username": employee_name,
                 "ride_id": str(new_ride.id),
@@ -250,9 +250,6 @@ async def create_order(
                 "estimated_distance_km": new_ride.estimated_distance_km,
                 "status": new_ride.status,
             }
-
-            # Use asyncio.create_task to send the email in the background.
-            # The function will return immediately. The email sending and retries will happen in the background.
             asyncio.create_task(
                 email_service.send_ride_creation_email(
                     ride_id=new_ride.id,
@@ -260,11 +257,9 @@ async def create_order(
                     db=db,
                     ride_details=ride_details_for_email,
                     email_type="new_ride_request_to_supervisor",
-                    use_retries=True # Use retries for this critical background task
+                    use_retries=True
                 )
             )
-            
-            # The supervisor notification logic should stay here as it is not blocking
             supervisor_notification = create_system_notification(
                 user_id=supervisor_id,
                 title="בקשת נסיעה חדשה",
@@ -281,15 +276,121 @@ async def create_order(
                 "order_id": str(supervisor_notification.order_id) if supervisor_notification.order_id else None,
                 "order_status": new_ride.status,
                 "is_extended_request": is_extended
-            },room=str(supervisor_id))
-
+            })
         else:
             logger.warning(f"No supervisor found for user ID {user_id} — skipping supervisor notification and email.")
 
+        return new_ride
+
     except Exception as e:
-        # Handle the exception, for example:
         print(f"An error occurred: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+# @router.post("/api/orders/{user_id}", status_code=fastapi_status.HTTP_201_CREATED)
+# async def create_order(
+#     user_id: UUID,
+#     ride_request: RideCreate,
+#     db: Session = Depends(get_db),
+#     token: str = Depends(oauth2_scheme)
+# ):
+#     role_check(allowed_roles=["employee", "admin"], token=token)
+#     identity_check(user_id=str(user_id), token=token)
+
+#     check_license_validity(db, user_id, ride_request.start_datetime)
+
+#     try:
+#         # Create the ride first - this is the critical, core action.
+#         new_ride = await create_ride(db, user_id, ride_request)
+        
+#         # Schedule other tasks
+#         schedule_ride_start(new_ride.id, new_ride.start_datetime)
+#         schedule_ride_reminder_email(new_ride.id, new_ride.start_datetime)
+#         warning_flag = is_time_in_blocked_window(new_ride.start_datetime)
+#         department_id = get_user_department(user_id=user_id, db=db)
+
+#         # Emit the new ride request via Socket.IO immediately after creation.
+#         await sio.emit("new_ride_request", {
+#             "ride_id": str(new_ride.id),
+#             "user_id": str(user_id),
+#             "employee_name": new_ride.username,
+#             "status": new_ride.status,
+#             "destination": new_ride.stop,
+#             "end_datetime": str(new_ride.end_datetime),
+#             "date_and_time": str(new_ride.start_datetime),
+#             "vehicle_id": str(new_ride.vehicle_id),
+#             "requested_vehicle_model": new_ride.vehicle_model,
+#             "department_id": str(department_id),
+#             "distance": new_ride.estimated_distance_km,
+#         })
+        
+#         # Launch the email task in the background using a fire-and-forget pattern.
+#         # Do NOT await this call.
+#         supervisor_id = get_supervisor_id(user_id, db)
+#         employee_name = get_user_name(db, new_ride.user_id)
+#         is_extended = (new_ride.end_datetime - new_ride.start_datetime) > timedelta(days=2)
+
+#         # Launch the email task in the background using a fire-and-forget pattern.
+#         if supervisor_id:
+#             supervisor_name = get_user_name(db, supervisor_id)
+            
+#             # Instantiate EmailService for this request
+#             email_service = EmailService(sio_server=sio)
+            
+#             destination_city = db.query(City).filter(City.id == new_ride.stop).first()
+#             destination_name = destination_city.name if destination_city else str(new_ride.stop)
+            
+#             ride_details_for_email = {
+#                 "username": employee_name,
+#                 "ride_id": str(new_ride.id),
+#                 "supervisor_name": supervisor_name,
+#                 "start_location": new_ride.start_location,
+#                 "destination": destination_name,
+#                 "start_datetime": new_ride.start_datetime,
+#                 "end_datetime": new_ride.end_datetime,
+#                 "plate_number": new_ride.plate_number,
+#                 "ride_type": new_ride.ride_type,
+#                 "estimated_distance_km": new_ride.estimated_distance_km,
+#                 "status": new_ride.status,
+#             }
+
+#             # Use asyncio.create_task to send the email in the background.
+#             # The function will return immediately. The email sending and retries will happen in the background.
+#             asyncio.create_task(
+#                 email_service.send_ride_creation_email(
+#                     ride_id=new_ride.id,
+#                     recipient_id=supervisor_id,
+#                     db=db,
+#                     ride_details=ride_details_for_email,
+#                     email_type="new_ride_request_to_supervisor",
+#                     use_retries=True # Use retries for this critical background task
+#                 )
+#             )
+            
+#             # The supervisor notification logic should stay here as it is not blocking
+#             supervisor_notification = create_system_notification(
+#                 user_id=supervisor_id,
+#                 title="בקשת נסיעה חדשה",
+#                 message=f"העובד/ת {employee_name} שלח/ה בקשה חדשה",
+#                 order_id=new_ride.id
+#             )
+#             await sio.emit("new_notification", {
+#                 "id": str(supervisor_notification.id),
+#                 "user_id": str(supervisor_notification.user_id),
+#                 "title": supervisor_notification.title,
+#                 "message": supervisor_notification.message,
+#                 "notification_type": supervisor_notification.notification_type.value,
+#                 "sent_at": supervisor_notification.sent_at.isoformat(),
+#                 "order_id": str(supervisor_notification.order_id) if supervisor_notification.order_id else None,
+#                 "order_status": new_ride.status,
+#                 "is_extended_request": is_extended
+#             })
+
+#         else:
+#             logger.warning(f"No supervisor found for user ID {user_id} — skipping supervisor notification and email.")
+
+#     except Exception as e:
+#         # Handle the exception, for example:
+#         print(f"An error occurred: {e}")
+#         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/api/rides_supposed-to-start")
 def check_started_approved_rides(db: Session = Depends(get_db)):
