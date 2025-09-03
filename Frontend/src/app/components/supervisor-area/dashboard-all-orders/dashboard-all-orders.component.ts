@@ -75,6 +75,7 @@ this.route.queryParams.subscribe(params => {
           employee_name: updatedRide.employee_name, // make sure this is in your updatedRide
           requested_vehicle_model: updatedRide.requested_vehicle_model || '', // or map from vehicle_id if needed
           date_and_time: updatedRide.start_datetime,
+          end_datetime: updatedRide.end_datetime || updatedRide.end_time,
           distance: updatedRide.estimated_distance_km,
           status: updatedRide.status.toLowerCase(),
           destination: updatedRide.destination || '', // adjust based on your data
@@ -343,5 +344,30 @@ updateQueryParams() {
     }, 2000);
   }
 
-
+  getDurationIndicator(trip: RideDashboardItem): string {
+    // אם אין תאריך סיום, זו נסיעה יומית
+    if (!trip.end_datetime) {
+      return 'יום';
+    }
+    
+    // אם יש תאריך סיום, נבדוק אם הנסיעה חוצה חצות
+    const startDate = new Date(trip.date_and_time);
+    const endDate = new Date(trip.end_datetime);
+    
+    // בדיקה אם התאריכים שונים (חוצה חצות)
+    const startDay = startDate.getDate();
+    const endDay = endDate.getDate();
+    const startMonth = startDate.getMonth();
+    const endMonth = endDate.getMonth();
+    const startYear = startDate.getFullYear();
+    const endYear = endDate.getFullYear();
+    
+    // אם התאריך שונה, זו נסיעה שחוצה חצות
+    if (startDay !== endDay || startMonth !== endMonth || startYear !== endYear) {
+      return 'יום+';
+    }
+    
+    // אם התאריכים זהים, זו נסיעה יומית
+    return 'יום';
+  }
 }

@@ -12,6 +12,7 @@ class RideDashboardItem(BaseModel):
     requested_vehicle_model: str
     vehicle_id: UUID
     date_and_time: datetime
+    end_datetime: Optional[datetime] = None
     distance: float
     status: RideStatusEnum
     submitted_at: datetime 
