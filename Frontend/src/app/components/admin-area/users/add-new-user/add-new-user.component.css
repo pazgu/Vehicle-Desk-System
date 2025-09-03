@@ -566,22 +566,7 @@ input:checked + .slider:before {
   margin-top: 30px;
 }
 
-.submit-btn {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 15px 40px;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  min-width: 150px;
-}
 
-.submit-btn:hover {
-  background-color: #0056b3;
-}
 
 .submit-btn:disabled {
   background-color: #6c757d;
