@@ -13,10 +13,10 @@
           <button class="collapse-btn" (click)="filtersCollapsed = !filtersCollapsed">
             {{ filtersCollapsed ? 'הצג אפשרויות סינון וייצוא' : 'הסתר אפשרויות סינון וייצוא' }}
           </button>
-          <label class="exceeded-monthly-trip-quota-label">
+          <!-- <label class="exceeded-monthly-trip-quota-label">
             <input type="checkbox" [(ngModel)]="showExceededQuotaOnly" (change)="fetchAuditLogs()" />
             הצג חריגות מהמכסה החודשית
-          </label>
+          </label> -->
         </div>
       </div>
 
@@ -88,9 +88,9 @@
           <div class="status-item">
             <span class="status-indicator cancelled-due-to-no-show"></span> בוטל עקב אי הגעה
           </div>
-          <div class="status-item">
+          <!-- <div class="status-item">
             <span class="status-indicator exceeded-monthly-trip-quota"></span> חריגה מהמכסה החודשית
-          </div>
+          </div> -->
         </div>
       </div>
 
@@ -729,7 +729,6 @@
                 </div>
 
                 <div class="field-row">
-                  <div class="field-label">ק"מ נוכחי</div>
                   <div class="field-value">{{ selectedLog.change_data.mileage }}</div>
                 </div>
 
@@ -750,10 +749,10 @@
 
                 <div class="field-row">
                   <div class="field-label">שימוש אחרון</div>
-                  <div class="field-value">
-                    {{ selectedLog.change_data.last_used_at ? (selectedLog.change_data.last_used_at | date:'dd/MM/yyyy
-                    HH:mm') : '-' }}
-                  </div>
+                 <div class="field-value">
+                  {{ selectedLog.change_data.last_used_at ? (selectedLog.change_data.last_used_at | date:'dd/MM/yyyy HH:mm') : '-' }}
+                </div>
+
                 </div>
 
                 <div class="field-row" *ngIf="selectedLog.change_data.image_url">

@@ -74,13 +74,13 @@
       </div>
       <div class="modal-body">
         <label for="newMileage">קילומטראז' חדש:</label>
-        <input type="number" [(ngModel)]="newMileage" [min]="vehicle.mileage" class="form-control" id="newMileage" />
+        <input type="number" [(ngModel)]="newMileage" [min]="0" class="form-control" id="newMileage" />
 
         <small class="text-muted">התאריך: {{ currentDate | date:'dd/MM/yyyy HH:mm' }}</small>
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" (click)="closeMileageModal()">ביטול</button>
-        <button class="btn btn-primary" [disabled]="newMileage <= vehicle.mileage" (click)="saveMileage()">שמור</button>
+        <button class="btn btn-primary" [disabled]="newMileage < 0" (click)="saveMileage()">שמור</button>
       </div>
     </div>
   </div>
