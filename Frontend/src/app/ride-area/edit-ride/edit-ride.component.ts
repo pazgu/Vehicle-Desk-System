@@ -293,6 +293,9 @@ export class EditRideComponent implements OnInit {
 
   loadRide(): void {
     const user_id = localStorage.getItem('employee_id');
+    const userRole = localStorage.getItem('role');
+    const isSupervisor = userRole === 'supervisor';
+    
     if (!user_id) {
       this.toastService.show('שגיאת זיהוי משתמש - התחבר מחדש', 'error');
       this.router.navigate(['/login']);
@@ -306,11 +309,35 @@ export class EditRideComponent implements OnInit {
         this.submittedAt = ride.submitted_at || new Date().toISOString();
         this.licenseCheckPassed = ride.license_check_passed ?? true;
         const isPending = ride.status && ride.status.toLowerCase() === 'pending';
-
-        if (!isPending) {
-          this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
-          this.router.navigate(['/home']);
-          return;
+        const isApproved = ride.status && ride.status.toLowerCase() === 'approved';
+        
+        if (!isSupervisor) {
+          // Regular users can only edit pending orders
+          if (!isPending) {
+            this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
+            this.router.navigate(['/home']);
+            return;
+          }
+        } else {
+          // Supervisors can edit pending or approved orders, but check time limit for approved
+          if (!isPending && !isApproved) {
+            this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
+            this.router.navigate(['/home']);
+            return;
+          }
+          
+          if (isApproved) {
+            // Check if it's within 2 hours of ride time
+            const rideDateTime = new Date(ride.start_datetime);
+            const now = new Date();
+            const timeDifferenceHours = (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+            
+            if (timeDifferenceHours <= 2) {
+              this.toastService.show('אפשר לערוך הזמנה מאושרת עד שעתיים לפני זמן הנסיעה', 'error');
+              this.router.navigate(['/home']);
+              return;
+            }
+          }
         }
 
         const startDate = new Date(ride.start_datetime);
