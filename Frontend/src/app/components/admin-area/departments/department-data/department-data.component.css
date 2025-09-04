@@ -115,12 +115,7 @@
     flex-direction: row;
 }
 
-i{
-    color: #991b1b;
-    font-size: 20px;
-    margin-right: 440px;
-    position: absolute;
-}
+
 i:hover {
     color: #dc2626;
 }
@@ -601,4 +596,96 @@ background-color: #b91c1c;
 
 .close-modal-button:hover {
     color: #666666;
+}
+
+/* Department Actions Container */
+.department-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Delete Icon Styling */
+.delete-icon {
+  color: #dc2626 !important;
+  font-size: 18px;
+  transition: all 0.3s ease;
+}
+
+.delete-icon:hover {
+  color: #b91c1c !important;
+  transform: scale(1.1);
+}
+
+/* Delete Confirmation Modal Content */
+.delete-confirmation {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.delete-confirmation p {
+  margin-bottom: 10px;
+  color: #374151;
+}
+
+.delete-confirmation .warning-text {
+  font-size: 0.9rem;
+  color: #dc2626;
+  font-style: italic;
+}
+
+/* Delete Confirm Button */
+.delete-confirm-button {
+  background-color: #dc2626 !important;
+  color: white !important;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.delete-confirm-button:hover:not(:disabled) {
+  background-color: #b91c1c !important;
+}
+
+.delete-confirm-button:disabled {
+  background-color: #9ca3af !important;
+  cursor: not-allowed;
+}
+
+/* Enhanced Department Title Layout */
+.department-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.department-title h3 {
+  margin: 0;
+  flex-grow: 1;
+}
+
+/* Responsive adjustments for actions */
+@media (max-width: 768px) {
+  .department-actions {
+    gap: 3px;
+  }
+  
+  .delete-icon, .edit-icon {
+    font-size: 16px !important;
+  }
+}
+/* Edit Icon Styling */
+.edit-icon {
+  color: #1f2937 !important; /* Set a consistent color for the edit icon */
+  font-size: 18px; /* Match the size of the delete icon */
+  transition: all 0.3s ease;
+}
+
+.edit-icon:hover {
+  color: #374151 !important; /* A darker shade on hover for a subtle effect */
+  transform: scale(1.1);
 }

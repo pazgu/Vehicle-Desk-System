@@ -67,7 +67,7 @@
 
               <td class="column-role" [ngClass]="{'blocked-text': user.is_blocked}">{{ user.role }}</td>
               <td class="column-department" [ngClass]="{'blocked-text': user.is_blocked}">
-                {{ departmentNames[user.department_id] || user.department_id }}
+                {{ getDepartmentName(user.department_id) }}
               </td>
 
               <td class="column-email" [ngClass]="{'blocked-text': user.is_blocked}">{{ user.email }}</td>

@@ -23,4 +23,13 @@ export class DepartmentService {
     const updateData = { name, supervisor_id };
     return this.http.patch<any>(url, updateData);
   }
+
+  deleteDepartment(departmentId: string): Observable<any> {
+  return this.http.delete(`${this.apiUrl}/departments/${departmentId}`);
 }
+
+  getDepartments(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/departments`);
+  }
+}
+

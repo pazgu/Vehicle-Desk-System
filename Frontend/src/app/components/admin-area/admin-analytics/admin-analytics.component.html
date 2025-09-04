@@ -147,16 +147,25 @@
 
             <!-- FILTERS -->
             <div class="filter-controls">
-              <div style="display: flex; flex-direction: column; gap:5px;">
-                <label>
-                  <input type="checkbox" [(ngModel)]="filterOnePlus" (change)="applyNoShowFilter()" />
-                  הצג משתמשים עם 1-2 אי-הגעות
-                </label>
-                <label>
-                  <input type="checkbox" [(ngModel)]="filterCritical" (change)="applyNoShowFilter()" />
-                  הצג משתמשים עם 3+ אי-הגעות (קריטי)
-                </label>
-              </div>
+         <div style="display: flex; flex-direction: column; gap:5px;">
+  <label>
+    <input
+      type="checkbox"
+      [(ngModel)]="filterOnePlus"
+      (change)="onFilterChange('onePlus')"
+    />
+    הצג משתמשים עם 1-2 אי-הגעות
+  </label>
+  <label>
+    <input
+      type="checkbox"
+      [(ngModel)]="filterCritical"
+      (change)="onFilterChange('critical')"
+    />
+    הצג משתמשים עם 3+ אי-הגעות (קריטי)
+  </label>
+</div>
+
               <div class="sort-container">
                 <label>מיין לפי: </label>
 

@@ -11,9 +11,9 @@
         <input formControlName="name" type="text" />
       </div>
       <div>
-        <label>מנהל מחלקה</label>
+        <label>מפקח מחלקה</label>
         <select formControlName="supervisor_id">
-          <option value="">בחר מנהל</option>
+          <option value="">בחר מפקח</option>
           <option *ngFor="let user of users" [value]="user.employee_id">
             {{ user.first_name }} {{ user.last_name }}
           </option>
@@ -26,29 +26,34 @@
 </button>
     </form>
   </div>
-
-  <div class="departments-list">
-    <div class="department-cards" *ngFor="let department of departments">
-      <div
-        class="department-info"
-        (mouseenter)="setHoveredDepartment(department.department_id)"
-        (mouseleave)="setHoveredDepartment(null)"
-      >
-        <div class="department-title">
-          <h3>{{ department.name }}</h3>
+<div class="departments-list">
+  <div class="department-cards" *ngFor="let department of departments">
+    <div
+      class="department-info"
+      (mouseenter)="setHoveredDepartment(department.department_id)"
+      (mouseleave)="setHoveredDepartment(null)"
+    >
+      <div class="department-title">
+        <h3>{{ department.name }}</h3>
+        <div class="department-actions">
           <i
             *ngIf="hoveredDepartmentId === department.department_id"
             (click)="openEditModal(department)"
             class="pi pi-pencil edit-icon"
-            style="cursor: pointer; opacity: 0.7; margin-left: 10px"
+          ></i>
+          <i
+            *ngIf="hoveredDepartmentId === department.department_id"
+            (click)="openDeleteModal(department)"
+            class="pi pi-trash delete-icon"
           ></i>
         </div>
-        <div class="department-supervisor">
-          <p>מנהל מחלקה : {{ department.supervisorName }}</p>
-        </div>
+      </div>
+      <div class="department-supervisor">
+        <p>מפקח מחלקה : {{ department.supervisorName }}</p>
       </div>
     </div>
   </div>
+</div>
 
   <div *ngIf="isEditModalOpen" class="modal-overlay">
     <div class="modal-content">
@@ -59,9 +64,9 @@
           <input id="editName" formControlName="name" type="text" />
         </div>
         <div class="form-group">
-          <label for="editSupervisor">מנהל מחלקה</label>
+          <label for="editSupervisor">מפקח מחלקה</label>
           <select id="editSupervisor" formControlName="supervisor_id">
-            <option value="">בחר מנהל</option>
+            <option value="">בחר מפקח</option>
             <option *ngFor="let user of users" [value]="user.employee_id">
               {{ user.first_name }} {{ user.last_name }}
             </option>
@@ -76,6 +81,27 @@
           <button type="button" (click)="closeEditModal()">ביטול</button>
         </div>
       </form>
+    </div>
+  </div>
+<div *ngIf="isDeleteModalOpen" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>אישור מחיקה</h3>
+      <button type="button" class="close-modal-button" (click)="closeDeleteModal()">×</button>
+    </div>
+    <div class="delete-confirmation">
+      <p>{{ deleteModalMessage }}</p> 
+      <p class="warning-text">פעולה זו אינה ניתנת לביטול</p>
+    </div>
+    <div class="modal-actions">
+      <button 
+        type="button" 
+        (click)="confirmDelete()"
+        [disabled]="isSubmitting"
+        class="delete-confirm-button">
+        {{ isSubmitting ? 'מוחק...' : 'מחק' }}
+      </button>
+      <button type="button" (click)="closeDeleteModal()">ביטול</button>
     </div>
   </div>
 </div>

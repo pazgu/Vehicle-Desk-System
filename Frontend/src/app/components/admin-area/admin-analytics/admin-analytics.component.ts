@@ -81,6 +81,7 @@ export class AdminAnalyticsComponent implements OnInit {
 
 
 
+
   topUsedVehiclesData: any;
   topUsedVehiclesOptions: any;
   monthlyStatsChartData: any;
@@ -90,6 +91,7 @@ export class AdminAnalyticsComponent implements OnInit {
   allTimeStatsChartOptions: any;
   uniqueNoShowUsers: number = 0;
   noShowExportWarningVisible: boolean = false;
+  
 
 
   // 🆕 ADD these two properties for department caching
@@ -196,6 +198,22 @@ export class AdminAnalyticsComponent implements OnInit {
     this.loadRideChart();
   }
 
+  // Add these methods to your AdminAnalyticsComponent class
+
+onFilterOnePlusChange() {
+  if (this.filterOnePlus) {
+    this.filterCritical = false; // Uncheck critical when one-plus is selected
+  }
+  this.applyNoShowFilter();
+}
+
+onFilterCriticalChange() {
+  if (this.filterCritical) {
+    this.filterOnePlus = false; // Uncheck one-plus when critical is selected
+  }
+  this.applyNoShowFilter();
+}
+
   // 🆕 פונקציה חדשה ליצירת אפשרויות הDropdown
   getVehicleTypeOptions() {
     const options = [
@@ -232,6 +250,17 @@ export class AdminAnalyticsComponent implements OnInit {
     });
 
   }
+
+onFilterChange(type: 'onePlus' | 'critical') {
+  if (type === 'onePlus' && this.filterOnePlus) {
+    this.filterCritical = false;
+  }
+  if (type === 'critical' && this.filterCritical) {
+    this.filterOnePlus = false;
+  }
+  this.applyNoShowFilter();
+}
+
   private countFreezeReasons(frozenVehicles: VehicleOutItem[]) {
     const freezeReasonCounts: Record<FreezeReason, number> = {
       [FreezeReason.accident]: 0,
