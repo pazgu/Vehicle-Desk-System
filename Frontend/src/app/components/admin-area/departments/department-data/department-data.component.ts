@@ -165,7 +165,7 @@ updateDepartment() {
         this.closeDeleteModal();
         this.showToast('Department deleted successfully. Redirecting to User Data page.');
         // Navigate to the user data page
-        this.router.navigate(['/admin/user-data']); // Adjust the path as needed
+        this.router.navigate(['/user-data']); // Adjust the path as needed
       },
       error: (err) => {
         this.isSubmitting = false;

@@ -11,9 +11,9 @@
         <input formControlName="name" type="text" />
       </div>
       <div>
-        <label>מנהל מחלקה</label>
+        <label>מפקח מחלקה</label>
         <select formControlName="supervisor_id">
-          <option value="">בחר מנהל</option>
+          <option value="">בחר מפקח</option>
           <option *ngFor="let user of users" [value]="user.employee_id">
             {{ user.first_name }} {{ user.last_name }}
           </option>
@@ -49,7 +49,7 @@
         </div>
       </div>
       <div class="department-supervisor">
-        <p>מנהל מחלקה : {{ department.supervisorName }}</p>
+        <p>מפקח מחלקה : {{ department.supervisorName }}</p>
       </div>
     </div>
   </div>
@@ -64,9 +64,9 @@
           <input id="editName" formControlName="name" type="text" />
         </div>
         <div class="form-group">
-          <label for="editSupervisor">מנהל מחלקה</label>
+          <label for="editSupervisor">מפקח מחלקה</label>
           <select id="editSupervisor" formControlName="supervisor_id">
-            <option value="">בחר מנהל</option>
+            <option value="">בחר מפקח</option>
             <option *ngFor="let user of users" [value]="user.employee_id">
               {{ user.first_name }} {{ user.last_name }}
             </option>

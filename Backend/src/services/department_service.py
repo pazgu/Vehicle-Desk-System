@@ -56,7 +56,6 @@ def update_department(db: Session, dept_id: UUID, dept_data: DepartmentUpdate, p
 
     return department
 
-
 # In department_service.py
 
 def delete_department(db: Session, department_id: str, payload: dict):
@@ -66,22 +65,38 @@ def delete_department(db: Session, department_id: str, payload: dict):
         raise HTTPException(status_code=404, detail="Department not found")
 
     # Get the "Unassigned" department to reassign users
-    unassigned_dept = get_unassigned_department(db)
+    unassigned_dept_name = "Unassigned"
+    unassigned_dept = db.query(Department).filter_by(name=unassigned_dept_name).first()
 
-    # Find all users associated with the department
+    if not unassigned_dept:
+        # Create the "Unassigned" department and assign the supervisor of the deleted department to it.
+        supervisor_to_demote = db.query(User).filter_by(employee_id=department.supervisor_id).first()
+        if not supervisor_to_demote:
+            raise HTTPException(
+                status_code=404,
+                detail="Supervisor of the department to be deleted not found."
+            )
+        
+        # Now, create the Unassigned department with this user as supervisor
+        unassigned_dept = Department(name=unassigned_dept_name, supervisor_id=supervisor_to_demote.employee_id)
+        db.add(unassigned_dept)
+        db.commit()
+        db.refresh(unassigned_dept)
+
+    # Reassign users from the old department to the new "Unassigned" department
     users_in_department = db.query(User).filter(User.department_id == department_id).all()
     
-    # Reassign users and change supervisor roles
+    # Reassign users and demote the supervisor of the deleted department
     if users_in_department:
         for user in users_in_department:
-            if user.role == UserRole.supervisor:
-                # Demote supervisor to employee
+            if user.role == UserRole.supervisor and user.employee_id == department.supervisor_id:
+                # The supervisor of the deleted department becomes a regular employee in the Unassigned department.
                 user.role = UserRole.employee
             
-            # Reassign user to the "Unassigned" department
+            # All users from the deleted department are now assigned to the "Unassigned" department.
             user.department_id = unassigned_dept.id
         
-        # We need an audit trail for the supervisor update.
+        # Apply audit trail user
         user_id_from_token = payload.get("user_id") or payload.get("sub")
         db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id_from_token)})
 
