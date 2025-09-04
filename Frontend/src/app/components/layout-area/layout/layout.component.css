@@ -39,7 +39,7 @@
   right: 45%;
   z-index: 1000;
 
-  background-color: #007bff; /* Bootstrap blue */
+  background-color: #942222; 
   color: white;
   border: none;
   border-radius: 50px;
@@ -51,7 +51,7 @@
   transition: background-color 0.3s ease;
 }
 .modal-overlay:hover {
-  background-color: #b30000; /* Darker blue on hover */
+  background-color: #b93333;
 }
 
 
