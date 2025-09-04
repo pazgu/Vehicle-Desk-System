@@ -16,7 +16,6 @@ import { VehicleCardItemComponent } from './components/vehicle-area/vehicle-card
 import { VehicleDashboardComponent } from './components/vehicle-area/vehicle-dashboard/vehicle-dashboard.component';
 import { RideCompletionFormComponent } from './components/page-area/ride-completion-form/ride-completion-form.component';
 import { AuditLogsComponent } from './components/admin-area/audit-logs/audit-logs.component';
-import { AvailableAndFrozenCarsComponent } from './inspector-area/available-and-frozen-cars/available-and-frozen-cars.component';
 import { ForgotPasswordComponent } from './components/auth-area/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './components/auth-area/reset-password/reset-password.component';
 import { AdminAnalyticsComponent } from './components/admin-area/admin-analytics/admin-analytics.component';
@@ -79,10 +78,6 @@ export const routes: Routes = [
       .then(m => m.AdminInspectionsComponent),
   canActivate: [ProtectedRouteGuard]
 },
-{ 
-  path: 'inspector/vehicles',
-  component: AvailableAndFrozenCarsComponent
-},
 
 {
   path: 'vehicle-details/:id/timeline',
@@ -102,5 +97,4 @@ export const routes: Routes = [
 
   { path: '**', component: Page404Component }
 ];
-
 

@@ -1,3 +1,13 @@
+<div *ngIf="orderSubmitted" class="success-container">
+  <div class="success-message">
+    <h2> הזמנה נשלחה בהצלחה!</h2>
+    <p>הזמנתך התקבלה ותעובד בהקדם</p>
+    <button (click)="openNewOrderForm()" class="new-form-button">
+      הזמן נסיעה חדשה
+    </button>
+  </div>
+</div>
+<div *ngIf="!orderSubmitted">
 <div class="overlay">
   <div class="modal">
     <div class="header-row">
@@ -280,4 +290,5 @@
     </div>
   </div>
 
+</div>
 </div>
