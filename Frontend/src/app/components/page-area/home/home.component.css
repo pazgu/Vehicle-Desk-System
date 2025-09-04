@@ -799,5 +799,57 @@ hr {
   outline: none !important;
 }
 
+/* הודעת הצלחה */
+.success-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 70vh;
+}
+
+.success-message {
+  background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+  border-radius: 20px;
+  padding: 3rem;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  max-width: 500px;
+  border: 3px solid #8b0000;
+}
+
+.success-message h2 {
+  color: #8b0000;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.success-message p {
+  color: #6c757d;
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+}
+
+.new-form-button {
+  background-color: #8b0000;
+  color: white;
+  border: none;
+  padding: 0.5rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  margin: 1rem auto;
+  display: block;
+  transition: background 0.2s ease;
+}
+
+.new-form-button:hover {
+  background-color: #a00000;
+}
+
+.new-form-button:active {
+  transform: scale(0.97);
+}
 
  
