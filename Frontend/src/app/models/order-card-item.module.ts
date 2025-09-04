@@ -15,4 +15,5 @@ export interface OrderCardItem {
   license_check_passed: boolean;
   submitted_at: string;
   emergency_event: string;
+  freeze_details?: string;
 }
