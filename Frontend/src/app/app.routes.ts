@@ -79,7 +79,6 @@ export const routes: Routes = [
   canActivate: [ProtectedRouteGuard]
 },
 
-
 {
   path: 'vehicle-details/:id/timeline',
   loadComponent: () => import('./components/vehicle-area/vehicle-timeline/vehicle-timeline.component')
@@ -98,5 +97,4 @@ export const routes: Routes = [
 
   { path: '**', component: Page404Component }
 ];
-
 
