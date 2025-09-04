@@ -27,6 +27,7 @@ export class AdminInspectionsComponent implements OnInit {
   inspectionsPerPage = 4;
   activeTable: 'inspections' | 'rides' = 'inspections';
   showNotesColumn: boolean = false;
+  hasCriticalIssues: boolean = false;
 
 
   constructor(
@@ -62,6 +63,8 @@ export class AdminInspectionsComponent implements OnInit {
         this.inspections = data.inspections || [];
         this.rides = data.rides || [];
         this.applyInspectionFilters();
+        this.hasCriticalIssues = this.inspections.some(insp => insp.critical_issue_bool);
+
         this.loading = false;
         this.cdr.detectChanges();
       },

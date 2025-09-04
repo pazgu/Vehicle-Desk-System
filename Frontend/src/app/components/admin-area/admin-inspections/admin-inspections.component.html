@@ -46,47 +46,49 @@
   </div>
 
   <div class="content-table-section" *ngIf="activeTable === 'inspections'">
-    <h2 class="section-subtitle">בדיקות רכבים</h2>
-     <button class="toggle-notes-button" (click)="toggleNotesColumn()">
-     {{ showNotesColumn ? 'הסתר הערות' : 'הצג הערות' }}
-     </button>
-     <div class="table-wrapper">
-    <table class="data-table">
-    <thead>
-     <tr>
-     <th>תאריך</th>
-     <th>בודק</th>
-     <th>נקי</th>
-    <th>מתודלק</th>
-    <th>אין חפצים</th>
-     <th>בעיה קריטית</th>
-     <th *ngIf="showNotesColumn">הערות</th>
-    </tr>
-    </thead>
-     <tbody>
-     <tr *ngFor="let insp of pagedInspections">
-    <td>{{ insp.inspection_date | date: 'short' }}</td>
-     <td>{{ insp.inspected_by_name || '—' }}</td>
-     <td [class.status-positive]="insp.clean" [class.status-negative]="!insp.clean">
-     {{ insp.clean ? '✔️' : '❌' }}
-    </td>
-     <td [class.status-positive]="!insp.fuel_checked" [class.status-negative]="insp.fuel_checked">
-     {{ !insp.fuel_checked ? '✔️' : '❌' }}
-     </td>
-     <td [class.status-positive]="insp.no_items_left" [class.status-negative]="!insp.no_items_left">
-     {{ insp.no_items_left ? '✔️' : '❌' }}
-     </td>
-     <td [class.status-critical]="insp.critical_issue_bool">
-     {{ insp.critical_issue_bool ? 'כן' : 'לא' }}
-     </td>
-     <td *ngIf="showNotesColumn">{{ insp.issues_found || '—' }}</td>
-     </tr>
-     <tr *ngIf="filteredInspections.length === 0 && !loading">
-     <td [attr.colspan]="showNotesColumn ? 7 : 6" class="empty-state">לא נמצאו בדיקות רכב</td>
-     </tr>
-     </tbody>
-     </table>
-     </div>
+    <div class="section-header">
+      <h2 class="section-subtitle">בדיקות רכבים</h2>
+      <button class="toggle-notes-button" (click)="toggleNotesColumn()" *ngIf="hasCriticalIssues">
+        {{ showNotesColumn ? 'הסתר הערות' : 'הצג הערות' }}
+      </button>
+    </div>
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>תאריך</th>
+            <th>בודק</th>
+            <th>נקי</th>
+            <th>מתודלק</th>
+            <th>אין חפצים</th>
+            <th>בעיה קריטית</th>
+            <th *ngIf="showNotesColumn">הערות</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let insp of pagedInspections">
+            <td>{{ insp.inspection_date | date: 'short' }}</td>
+            <td>{{ insp.inspected_by_name || '—' }}</td>
+            <td [class.status-positive]="insp.clean" [class.status-negative]="!insp.clean">
+              {{ insp.clean ? '✔️' : '❌' }}
+            </td>
+            <td [class.status-positive]="!insp.fuel_checked" [class.status-negative]="insp.fuel_checked">
+              {{ !insp.fuel_checked ? '✔️' : '❌' }}
+            </td>
+            <td [class.status-positive]="insp.no_items_left" [class.status-negative]="!insp.no_items_left">
+              {{ insp.no_items_left ? '✔️' : '❌' }}
+            </td>
+            <td [class.status-critical]="insp.critical_issue_bool">
+              {{ insp.critical_issue_bool ? 'כן' : 'לא' }}
+            </td>
+            <td *ngIf="showNotesColumn">{{ insp.issues_found || '—' }}</td>
+          </tr>
+          <tr *ngIf="filteredInspections.length === 0 && !loading">
+            <td [attr.colspan]="showNotesColumn ? 7 : 6" class="empty-state">לא נמצאו בדיקות רכב</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
 
