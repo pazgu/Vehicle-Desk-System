@@ -13,26 +13,23 @@
   </div>
 
   <div class="quota-float" dir="rtl">
-  <div class="free-quota-indicator" [class.exceeded]="freeQuotaExceeded" aria-label="מכסת הזמנות חינמיות">
-    <div class="fq-header">
-      <span class="fq-title">מכסת הזמנות חינמיות</span>
-      <span class="fq-count">{{ freeQuotaUsed }}/{{ freeQuotaTotal }}</span>
-    </div>
+    <div class="free-quota-indicator" [class.exceeded]="freeQuotaExceeded" aria-label="מכסת הזמנות חינמיות">
+      <div class="fq-header">
+        <span class="fq-title">מכסת הזמנות חינמיות</span>
+        <span class="fq-count">{{ freeQuotaUsed }}/{{ freeQuotaTotal }}</span>
+      </div>
 
-    <div class="fq-segments" [style.--fq-total]="freeQuotaTotal">
-      <div
-        class="fq-segment"
-        *ngFor="let i of quotaSegments; let idx = index"
-        [class.filled]="idx < freeQuotaUsed"
-        [attr.title]="'פריט ' + (idx + 1) + ' מתוך ' + freeQuotaTotal">
+      <div class="fq-segments" [style.--fq-total]="freeQuotaTotal">
+        <div class="fq-segment" *ngFor="let i of quotaSegments; let idx = index" [class.filled]="idx < freeQuotaUsed"
+          [attr.title]="'פריט ' + (idx + 1) + ' מתוך ' + freeQuotaTotal">
+        </div>
+      </div>
+
+      <div class="fq-hint" *ngIf="freeQuotaExceeded">
+        הגעת למכסה — הזמנות נוספות בתשלום
       </div>
     </div>
-
-    <div class="fq-hint" *ngIf="freeQuotaExceeded">
-      הגעת למכסה — הזמנות נוספות בתשלום
-    </div>
   </div>
-</div>
 
   <div class="orders-wrapper">
     <div id="header-wrap">
@@ -43,9 +40,12 @@
 
     <br>
     <div class="ride-filter-buttons">
-      <button [ngClass]="{ 'active': rideViewMode === 'future' }" (click)="rideViewMode = 'future'; applyFiltersAndSort()">הצג נסיעות עתידיות</button>
-      <button [ngClass]="{ 'active': rideViewMode === 'past' }" (click)="rideViewMode = 'past'; applyFiltersAndSort()">הצג נסיעות קודמות</button>
-      <button [ngClass]="{ 'active': rideViewMode === 'all' }" (click)="rideViewMode = 'all'; applyFiltersAndSort()">הצג הכל</button>
+      <button [ngClass]="{ 'active': rideViewMode === 'future' }"
+        (click)="rideViewMode = 'future'; applyFiltersAndSort()">הצג נסיעות עתידיות</button>
+      <button [ngClass]="{ 'active': rideViewMode === 'past' }"
+        (click)="rideViewMode = 'past'; applyFiltersAndSort()">הצג נסיעות קודמות</button>
+      <button [ngClass]="{ 'active': rideViewMode === 'all' }" (click)="rideViewMode = 'all'; applyFiltersAndSort()">הצג
+        הכל</button>
     </div>
 
     <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; direction: rtl;">
@@ -77,20 +77,10 @@
       </div>
 
       <div style="display: flex; gap: 1rem;">החל מ:
-        <input
-          id="startDate"
-          type="date"
-          [(ngModel)]="startDate"
-          [min]="minDate"
-          [max]="maxDate"
+        <input id="startDate" type="date" [(ngModel)]="startDate" [min]="minDate" [max]="maxDate"
           (change)="validateDate('start'); applyFiltersAndSort()" />
         עד:
-        <input
-          id="endDate"
-          type="date"
-          [(ngModel)]="endDate"
-          [min]="minDate"
-          [max]="maxDate"
+        <input id="endDate" type="date" [(ngModel)]="endDate" [min]="minDate" [max]="maxDate"
           (change)="validateDate('end'); applyFiltersAndSort()" />
 
         <label *ngIf="rideViewMode !== 'future'">
@@ -115,11 +105,7 @@
         <div class="cell">פעולות</div>
       </div>
 
-      <div
-        class="orders-data-row"
-        *ngFor="let order of pagedOrders"
-        [id]="order.ride_id"
-        (click)="viewRide(order)"
+      <div class="orders-data-row" *ngFor="let order of pagedOrders" [id]="order.ride_id" (click)="viewRide(order)"
         [ngClass]="[
           getStatusClass(order.status),
           isPastOrder(order) ? 'past-order' : '',
@@ -127,36 +113,22 @@
           isCompletedOrder(order)? 'completed-order':'',
           order.ride_id === highlightedOrderId ? 'highlight highlight-background' : '',
           order.hasStarted ? 'ride-started' : ''
-        ]"
-        [title]="isPaidOrder(order) ? 'הזמנה זו בתשלום עצמי - מעל 6 הזמנות החודש' : ''"
-        style="cursor: pointer;">
+        ]" [title]="isPaidOrder(order) ? 'הזמנה זו בתשלום עצמי - מעל 6 הזמנות החודש' : ''" style="cursor: pointer;">
 
         <div class="icon-cell">
-          <span
-            class="pi"
-            [ngClass]="{
+          <span class="pi" [ngClass]="{
              'pi-verified': !order.hasStarted &&order.status.toLowerCase() === 'approved',
              'pi-clock': !order.hasStarted &&order.status.toLowerCase() === 'pending',
              'pi-times-circle': !order.hasStarted &&order.status.toLowerCase() === 'rejected',
              'pi-list-check': !order.hasStarted &&order.status.toLowerCase() === 'completed',
              'pi-forward': !order.hasStarted &&order.status.toLowerCase() === 'in_progress',  
 
-            }"
-            [title]="getStatusTooltip(order.status)"
-            style="font-size: 1.3rem;">
+            }" [title]="getStatusTooltip(order.status)" style="font-size: 1.3rem;">
           </span>
-          <img
-              *ngIf="order.hasStarted && order.status.toLowerCase() === 'approved'"
-              src="assets/images/timed-clock.gif"
-              alt="Started"
-              class="started-gif-icon"
-            />
-            <img
-              *ngIf="order.status.toLowerCase() === 'cancelled_due_to_no_show'"
-              src="assets/images/cancelled_no_show.png"
-              alt="Cancelled due to No Show"
-              class="cancelled-no-show-icon"
-            />
+          <img *ngIf="order.hasStarted && order.status.toLowerCase() === 'approved'" src="assets/images/timed-clock.gif"
+            alt="Started" class="started-gif-icon" />
+          <img *ngIf="order.status.toLowerCase() === 'cancelled_due_to_no_show'"
+            src="assets/images/cancelled_no_show.png" alt="Cancelled due to No Show" class="cancelled-no-show-icon" />
         </div>
 
         <div class="cell">{{ order.date }}</div>
@@ -173,19 +145,13 @@
         <div class="cell">{{ order.distance }}</div>
 
         <div class="modify-buttons">
-          <button
-            class="modify"
-            (click)="canEdit(order) ? editOrder(order) : null; $event.stopPropagation()"
-            [disabled]="!canEdit(order)"
-            [style.opacity]="canEdit(order) ? '1' : '0.5'"
+          <button class="modify" (click)="canEdit(order) ? editOrder(order) : null; $event.stopPropagation()"
+            [disabled]="!canEdit(order)" [style.opacity]="canEdit(order) ? '1' : '0.5'"
             [style.cursor]="canEdit(order) ? 'pointer' : 'not-allowed'">
             ✏️
           </button>
 
-          <button
-            class="delete"
-            [disabled]="!canDelete(order)"
-            [style.opacity]="canDelete(order) ? '1' : '0.5'"
+          <button class="delete" [disabled]="!canDelete(order)" [style.opacity]="canDelete(order) ? '1' : '0.5'"
             (click)="canDelete(order) ? deleteOrder(order) : null ; $event.stopPropagation()"
             [style.cursor]="canDelete(order) ? 'pointer' : 'not-allowed'">
             🗑️
@@ -194,25 +160,37 @@
         <div>
 
         </div>
-             <div class="ride-type-icon">
-  <i title="נסיעה של יותר מיום" class="pi pi-moon" *ngIf="checkIfOverOneDay(order)"></i>
-  <i title="נסיעה של יום" class="pi pi-sun" *ngIf="!checkIfOverOneDay(order)"></i>
-</div>
+        <div class="ride-type-icon">
+          <i title="נסיעה של יותר מיום" class="pi pi-moon" *ngIf="checkIfOverOneDay(order)"></i>
+          <i title="נסיעה של יום" class="pi pi-sun" *ngIf="!checkIfOverOneDay(order)"></i>
+        </div>
 
       </div>
 
     </div>
 
-<small>
-  * רק 6 נסיעות בחודש הן על חשבון המערכת
-</small>
+    <small>
+      * רק 6 נסיעות בחודש הן על חשבון המערכת
+    </small>
+
     <div class="pagination-controls">
+
       <button (click)="prevPage()" [disabled]="currentPage === 1">
-        ▶
+        <span class="icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+
+            <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z" />
+          </svg>
+        </span>
       </button>
+
       <span>עמוד {{ currentPage }} מתוך {{ totalPages }}</span>
       <button (click)="nextPage()" [disabled]="currentPage === totalPages">
-        ◀
+        <span class="icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+          </svg>
+        </span>
       </button>
     </div>
   </div>
