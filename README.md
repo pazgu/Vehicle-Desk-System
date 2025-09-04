@@ -70,13 +70,13 @@ cd Vehicle-Desk-System
 ## 2️⃣ Backend Setup
 ```bash
 
-cd backend
+cd Backend
 pip install -r requirements.txt
 uvicorn app.main:sio_app --reload
 ```
 ## 3️⃣ Frontend Setup
 ```bash
-cd frontend
+cd Frontend
 npm install
 npm start
 ```
