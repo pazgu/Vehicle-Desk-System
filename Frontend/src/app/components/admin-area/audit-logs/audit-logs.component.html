@@ -144,10 +144,23 @@
             לא נמצאו רשומות ביקורת
           </div>
         </table>
-        <div class="pagination-controls" dir="rtl" style="text-align: center; margin-top: 1.5rem;">
-          <button (click)="prevPage()" [disabled]="currentPage === 1">▶</button>
+
+        <div class="pagination-controls">
+          <button (click)="prevPage()" [disabled]="currentPage === 1">
+            <span class="icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z" />
+              </svg>
+            </span>
+          </button>
           <span>עמוד {{ currentPage }} מתוך {{ totalPages }}</span>
-          <button (click)="nextPage()" [disabled]="currentPage === totalPages">◀</button>
+          <button (click)="nextPage()" [disabled]="currentPage === totalPages">
+            <span class="icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+              </svg>
+            </span>
+          </button>
         </div>
       </div>
 
@@ -721,7 +734,7 @@
                   <div class="field-value">{{ selectedLog.change_data.vehicle_model }}</div>
                 </div>
 
-             
+
 
                 <div class="field-row">
                   <div class="field-label">מחלקה</div>
@@ -749,9 +762,10 @@
 
                 <div class="field-row">
                   <div class="field-label">שימוש אחרון</div>
-                 <div class="field-value">
-                  {{ selectedLog.change_data.last_used_at ? (selectedLog.change_data.last_used_at | date:'dd/MM/yyyy HH:mm') : '-' }}
-                </div>
+                  <div class="field-value">
+                    {{ selectedLog.change_data.last_used_at ? (selectedLog.change_data.last_used_at | date:'dd/MM/yyyy
+                    HH:mm') : '-' }}
+                  </div>
 
                 </div>
 

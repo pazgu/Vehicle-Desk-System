@@ -76,7 +76,6 @@ export class AdminInspectionsComponent implements OnInit {
     });
   }
 
-  // New function to handle the exclusive checkbox logic
   handleFilterChange(filterType: 'medium' | 'critical'): void {
     if (filterType === 'medium') {
       if (this.showMediumIssues) {
@@ -92,7 +91,6 @@ export class AdminInspectionsComponent implements OnInit {
 
   applyInspectionFilters(): void {
     this.filteredInspections = [...this.inspections];
-    this.currentPage = 1;
   }
 
   fetchUsers(): void {
@@ -139,9 +137,12 @@ export class AdminInspectionsComponent implements OnInit {
 
   setActiveTable(table: 'inspections' | 'rides'): void {
     this.activeTable = table;
+    this.currentPage = 1;
+
   }
 
   toggleVehicleNotesColumn(): void {
+    this.currentPage = 1;
     this.showVehicleNotesColumn = !this.showVehicleNotesColumn;
   }
 
