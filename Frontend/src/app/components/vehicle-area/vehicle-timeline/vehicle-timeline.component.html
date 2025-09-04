@@ -3,30 +3,28 @@
     <div class="timeline-container">
    <div class="timeline-header">
     <button class="back-btn" (click)="navigateBack()">חזור ←</button>
-
   <h2 class="timeline-title">לו״ז רכב</h2>
-
   <div class="header-sub">
     <p>מזהה רכב: {{ vehicleId }}</p>
 
     <div class="week-controls">
-      <button (click)="navigateWeek(-1)">→ שבוע קודם</button>
-      <span class="week-label">
-        {{ currentWeekStart | date: 'd MMMM' : 'he' }} - {{ weekEnd | date: 'd MMMM y' : 'he' }}
-      </span>
-      <button (click)="navigateWeek(1)">שבוע הבא ←</button>
+  <button (click)="navigateWeek(-1)">→ שבוע קודם</button>
+  <span class="week-label">
+    {{ currentWeekStart | date: 'd MMMM' : 'he' }} - {{ weekEnd | date: 'd MMMM y' : 'he' }}
+  </span>
+  <button (click)="navigateWeek(1)">שבוע הבא ←</button>
 
-     <div class="status-legend">
-      <h3 class="legend-title">מקרא סטטוסים:</h3>
-      <div class="legend-items">
-        <div *ngFor="let item of statusLegend" class="legend-item">
-          <div class="legend-color" [ngStyle]="{'background-color': item.color}"></div>
-          <span class="legend-label">{{ item.label }}</span>
-        </div>
+  <div class="status-legend">
+    <h3 class="legend-title">מקרא סטטוסים:</h3>
+    <div class="legend-items">
+      <div *ngFor="let item of statusLegend" class="legend-item">
+        <div class="legend-color" [ngStyle]="{'background-color': item.color}"></div>
+        <span class="legend-label">{{ item.label }}</span>
       </div>
     </div>
-  </div>
-</div>
+  </div> <!-- close status-legend -->
+</div> <!-- close week-controls -->
+
 
 
       <div class="timeline-body">
@@ -48,7 +46,7 @@
 
               
                <div
-                *ngFor="let ride of processedRides.get(getDateKey(day))"
+                *ngFor="let ride of processedRides.get(getDateKey(day)) || []"
                 class="ride-block"
                 [class.is-midnight-block]="ride.top === 0"
                 [ngStyle]="{
@@ -60,35 +58,10 @@
                 (mouseleave)="onRideLeave()"
                 (click)="onRideClick(ride)"
               >
-                <div class="ride-info">
-                    <span class="ride-driver">{{ride.first_name}} {{ride.last_name}}</span>
-                    <span class="ride-status">{{ride.status}}</span>
-                </div>
-                  <!-- Added hint text -->
-
-  <div class="hover-card-hint">
-
-    תלחץ כדי לראות פרטים נוספים
-
-  </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
 <div 
   *ngIf="hoverCardVisible && hoveredRide"
   class="hover-card"
-  [ngStyle]="{
-    'position': 'fixed',
-    'left.px': hoverCardPosition.x,
-    'top.px': hoverCardPosition.y,
-    'z-index': 1000
-  }"
+ 
   (mouseenter)="hoverCardVisible = true"
   (mouseleave)="onRideLeave()"
 >
@@ -120,6 +93,26 @@
     <div class="hover-card-row">
       <span class="hover-card-label">מזהה משתמש:</span>
       <span class="hover-card-value">{{ hoveredRide.user_id }}</span>
+    </div>
+  </div>
+</div>
+                <div class="ride-info">
+                    <span class="ride-driver">{{ride.first_name}} {{ride.last_name}}</span>
+                    <span class="ride-status">{{ride.status}}</span>
+                                    <small >למידע נוסף</small>
+
+                </div>
+
+  <div class="hover-card-hint">
+
+    תלחץ כדי לראות פרטים נוספים
+
+  </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

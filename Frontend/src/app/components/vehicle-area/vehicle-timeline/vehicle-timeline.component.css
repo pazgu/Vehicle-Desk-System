@@ -1061,6 +1061,16 @@ background: rgba(255, 255, 255, 0.95);
 position: relative;
 }
 
+.timeline-hours {
+  position: relative; /* required for top.px positioning */
+}
+.ride-block {
+  position: absolute;
+  width: 90%;
+  left: 5%;
+  border-radius: 4px;
+  cursor: pointer;
+}
 
 
 .ride-block:hover {
@@ -1141,6 +1151,7 @@ padding: 12px 8px 8px;
 
 .hover-card {
   background: rgba(255, 255, 255, 0.98);
+  position:fixed;
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   border: 1px solid rgba(148, 34, 34, 0.1);
@@ -1149,8 +1160,9 @@ padding: 12px 8px 8px;
   max-width: 350px;
   overflow: hidden;
   z-index: 1000;
-  pointer-events: all; /* FIXED: Allow interactions */
+  pointer-events: all; 
 }
+
 
 .hover-card-header {
   background: linear-gradient(145deg, #f9f9f9 0%, #f0f0f0 100%);
@@ -1289,7 +1301,6 @@ padding: 12px 8px 8px;
   max-width: 350px;
   overflow: hidden;
   z-index: 1000;
-  /* Removed pointer-events: none to make it interactive */
 }
 
 .ride-hint {
@@ -1334,3 +1345,4 @@ visibility: visible; /* Show the element */
 .back-btn:hover {
   transform: scale(1.03);
 }
+
