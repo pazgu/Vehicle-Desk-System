@@ -88,7 +88,7 @@ export class RideCompletionFormComponent implements OnInit {
       freeze_details: [''],
       // completed: ['', Validators.required],
       fueled: ['', Validators.required],
-      is_vehicle_ready_for_next_ride: [true, Validators.required] 
+      is_vehicle_ready_for_next_ride: ['', Validators.required] 
     });
 
 

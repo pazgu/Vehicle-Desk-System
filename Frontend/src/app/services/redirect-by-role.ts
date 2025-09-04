@@ -19,7 +19,7 @@ export class RedirectByRoleComponent implements OnInit {
     } else if (role === 'supervisor') {
       this.router.navigate(['/supervisor-dashboard']);
     } else if (role === 'inspector') {
-    this.router.navigate(['/inspector/vehicles']); // ✅ FIXED HERE
+    this.router.navigate(['/inspector/inspection']); // ✅ FIXED HERE
   } else {
       this.router.navigate(['/home']);
     }
