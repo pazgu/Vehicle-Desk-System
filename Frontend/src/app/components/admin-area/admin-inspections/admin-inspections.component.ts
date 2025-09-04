@@ -26,7 +26,8 @@ export class AdminInspectionsComponent implements OnInit {
   currentPage = 1;
   inspectionsPerPage = 4;
   activeTable: 'inspections' | 'rides' = 'inspections';
-  showNotesColumn: boolean = false;
+  showVehicleNotesColumn: boolean = false;
+  showRideNotesColumn: boolean = false;
   hasCriticalIssues: boolean = false;
 
 
@@ -140,7 +141,11 @@ export class AdminInspectionsComponent implements OnInit {
     this.activeTable = table;
   }
 
-  toggleNotesColumn(): void {
-    this.showNotesColumn = !this.showNotesColumn;
+  toggleVehicleNotesColumn(): void {
+    this.showVehicleNotesColumn = !this.showVehicleNotesColumn;
+  }
+
+  toggleRideNotesColumn(): void {
+    this.showRideNotesColumn = !this.showRideNotesColumn;
   }
 }
