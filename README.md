@@ -41,6 +41,34 @@ The system provides ride requests, supervisor approvals, automated vehicle alloc
 - **Ride Completion Forms** → scheduled email reminders, submission workflows  
 
 ---
+###🚀 Getting Started
+##1️⃣ Clone the Repository
+git clone https://github.com/pazgu/Vehicle-Desk-System.git
+cd Vehicle-Desk-System
+##2️⃣ Backend Setup
+cd backend
+pip install -r requirements.txt
+uvicorn app.main:sio_app --reload
+##3️⃣ Frontend Setup
+cd frontend
+npm install
+npm start
+##4️⃣ (Optional) Run with Docker
+docker-compose up --build
+
+---
+
+###📌 Team Workflow
+
+All changes go through Pull Requests (PRs)
+
+Branch naming: feature/<name>, fix/<name>, hotfix/<name>
+
+PR → Code Review → Merge into dev → Merge into main
+
+Only admins can approve merges into main
+
+---
 
 ## 📂 Project Structure  
 
@@ -60,27 +88,4 @@ Vehicle-Desk-System/
   └── docker-compose.yml
 
   
-###🚀 Getting Started
-##1️⃣ Clone the Repository
-git clone https://github.com/pazgu/Vehicle-Desk-System.git
-cd Vehicle-Desk-System
-##2️⃣ Backend Setup
-cd backend
-pip install -r requirements.txt
-uvicorn app.main:sio_app --reload
-##3️⃣ Frontend Setup
-cd frontend
-npm install
-npm start
-##4️⃣ (Optional) Run with Docker
-docker-compose up --build
 
-###📌 Team Workflow
-
-All changes go through Pull Requests (PRs)
-
-Branch naming: feature/<name>, fix/<name>, hotfix/<name>
-
-PR → Code Review → Merge into dev → Merge into main
-
-Only admins can approve merges into main
