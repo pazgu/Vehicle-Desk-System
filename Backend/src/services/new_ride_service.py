@@ -146,6 +146,12 @@ async def create_supervisor_ride(db: Session, user_id: UUID, ride: RideCreate):
             detail="You must have a government license to request a ride."
         )
     
+    if not user.license_expiry_date:
+        raise HTTPException(
+            status_code=403,
+            detail="You must have a government license to request a ride."
+        )
+    
     if user.license_expiry_date <= ride.start_datetime.date():
         raise HTTPException(
             status_code=403,
