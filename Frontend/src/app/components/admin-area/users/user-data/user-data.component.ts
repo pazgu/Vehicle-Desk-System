@@ -5,24 +5,25 @@ import { UserService } from '../../../../services/user_service';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { FormsModule } from '@angular/forms'; // Keep FormsModule if you have other template-driven forms
+import { FormsModule } from '@angular/forms';
 import { ConfirmDialogComponent } from '../../../page-area/confirm-dialog/confirm-dialog.component';
 import { ToastService } from '../../../../services/toast.service';
 import { SocketService } from '../../../../services/socket.service';
 import { MatDialog } from '@angular/material/dialog';
 import { ChangeDetectorRef } from '@angular/core';
+import { forkJoin } from 'rxjs';
 import {
   FormBuilder,
   FormGroup,
   Validators,
-  ReactiveFormsModule, // <-- Ensure this is imported for reactive forms
+  ReactiveFormsModule,
 } from '@angular/forms';
 
 @Component({
   selector: 'app-user-data',
   templateUrl: './user-data.component.html',
   styleUrls: ['./user-data.component.css'],
-  imports: [RouterModule, CommonModule, FormsModule, ReactiveFormsModule], // Add ReactiveFormsModule
+  imports: [RouterModule, CommonModule, FormsModule, ReactiveFormsModule],
 })
 export class UserDataComponent implements OnInit {
   users: User[] = [];
@@ -36,32 +37,45 @@ export class UserDataComponent implements OnInit {
   availableRoles: string[] = [];
   license_expiry_date?: Date;
   licenceExpiredMap: { [userId: string]: boolean } = {};
+  departmentNames: { [key: string]: string } = {};
 
   // --- New/Updated Properties for Blocking ---
-  isBlockUserModalOpen: boolean = false; // Controls the block modal visibility
-  isUnblockConfirmationModalOpen: boolean = false; // Controls the unblock modal visibility
-  selectedUserForBlock: User | null = null; // Stores the user object selected for blocking/unblocking
-  blockUserForm!: FormGroup; // Reactive Form for block duration
-  isSubmitting: boolean = false; // To disable buttons during API calls
+  isBlockUserModalOpen: boolean = false;
+  isUnblockConfirmationModalOpen: boolean = false;
+  selectedUserForBlock: User | null = null;
+  blockUserForm!: FormGroup;
+  isSubmitting: boolean = false;
 
   constructor(
     private userService: UserService,
     private router: Router,
     private toastservice: ToastService,
     private socketservice: SocketService,
-    private dialog: MatDialog, // MatDialog might not be needed if you're building custom modals
+    private dialog: MatDialog,
     private cdr: ChangeDetectorRef,
-    private fb: FormBuilder // Inject FormBuilder
+    private fb: FormBuilder
   ) {}
 
   ngOnInit(): void {
     // Initialize the reactive form for block user
     this.blockUserForm = this.fb.group({
-      blockDuration: [14, [Validators.required, Validators.min(1)]], // Default 14 days, min 1
+      blockDuration: [14, [Validators.required, Validators.min(1)]],
     });
 
-    this.userService.getAllUsers().subscribe({
-      next: (users) => {
+    this.loadUsersAndDepartments();
+  }
+
+  private loadUsersAndDepartments(): void {
+    const users$ = this.userService.getAllUsers();
+    const departments$ = this.userService.getDepartments();
+
+    forkJoin([users$, departments$]).subscribe({
+      next: ([users, departments]) => {
+        this.departmentNames = departments.reduce((map, dept) => {
+          map[dept.id] = dept.name;
+          return map;
+        }, {} as { [key: string]: string });
+
         this.users = users;
         this.filteredLogs = [...users];
         this.checkLicence(users);
@@ -69,88 +83,79 @@ export class UserDataComponent implements OnInit {
           Boolean
         );
 
-        this.socketservice.deleteUserRequests$.subscribe((deletedUser) => {
-          if (deletedUser) {
-            this.users = this.users.filter((u) => u.employee_id !== deletedUser.id);
-            this.filterLogs();
-          }
-        });
-
-      this.socketservice.usersBlockStatus$.subscribe(update => {
-    // Ensure you compare same types
-    const id = String(update.id);
-    const idx = this.users.findIndex(u => String(u.employee_id) === id);
-    if (idx === -1) return;
-
-    // Create new object (immutability) and assign normalized values
-    const updatedUser = {
-      ...this.users[idx],
-      is_blocked: update.is_blocked,
-      block_expires_at: update.block_expires_at, // already a Date | null from the service
-    };
-
-    // Update the main list immutably (helps OnPush)
-    this.users = [
-      ...this.users.slice(0, idx),
-      updatedUser,
-      ...this.users.slice(idx + 1),
-    ];
-
-    // If filteredLogs is derived from users via a filter function,
-    // prefer re-running that filter instead of updating it separately:
-    // this.filteredLogs = this.applyCurrentFilters(this.users);
-
-    // But if you do keep a separate array, update it in sync:
-    const fIdx = this.filteredLogs.findIndex(u => String(u.employee_id) === id);
-    if (fIdx !== -1) {
-      this.filteredLogs = [
-        ...this.filteredLogs.slice(0, fIdx),
-        updatedUser,
-        ...this.filteredLogs.slice(fIdx + 1),
-      ];
-    }
-
-    // Close modals if they target this user
-    if (this.selectedUserForBlock?.employee_id && String(this.selectedUserForBlock.employee_id) === id) {
-      this.closeBlockUserModal();
-      this.closeUnblockConfirmationModal();
-    }
-
-    this.cdr.detectChanges();
-  });
-
-        // Also ensure your user_license_updated subscription correctly handles updates.
-        // I'm assuming you have socketservice.usersLicense$ defined and working.
-        this.socketservice.usersLicense$.subscribe((update) => {
-          const idx = this.users.findIndex((u) => u.employee_id === update.id);
-          if (idx === -1) return;
-
-          const updatedUser = { ...this.users[idx], ...update };
-          if (update.license_expiry_date) {
-            updatedUser.license_expiry_date = new Date(update.license_expiry_date);
-          }
-
-          this.users[idx] = updatedUser;
-          this.licenceExpiredMap[update.id] = updatedUser.license_expiry_date ? updatedUser.license_expiry_date < new Date() : false;
-
-          // If the blocked user modal is open for this user, update its form values
-          // (This part is less critical now as we reload users)
-          // if (this.blockedUserId === update.id) { ... }
-
-          this.cdr.detectChanges();
-        });
-
-
+        this.setupSocketListeners();
       },
-      error: (err) => console.error('Failed to fetch users', err),
+      error: (err) => console.error('Failed to fetch data', err),
     });
+  }
+
+  private setupSocketListeners(): void {
+    this.socketservice.deleteUserRequests$.subscribe((deletedUser) => {
+      if (deletedUser) {
+        this.users = this.users.filter((u) => u.employee_id !== deletedUser.id);
+        this.filterLogs();
+      }
+    });
+
+    this.socketservice.usersBlockStatus$.subscribe(update => {
+      const id = String(update.id);
+      const idx = this.users.findIndex(u => String(u.employee_id) === id);
+      if (idx === -1) return;
+
+      const updatedUser = {
+        ...this.users[idx],
+        is_blocked: update.is_blocked,
+        block_expires_at: update.block_expires_at,
+      };
+
+      this.users = [
+        ...this.users.slice(0, idx),
+        updatedUser,
+        ...this.users.slice(idx + 1),
+      ];
+
+      const fIdx = this.filteredLogs.findIndex(u => String(u.employee_id) === id);
+      if (fIdx !== -1) {
+        this.filteredLogs = [
+          ...this.filteredLogs.slice(0, fIdx),
+          updatedUser,
+          ...this.filteredLogs.slice(fIdx + 1),
+        ];
+      }
+
+      if (this.selectedUserForBlock?.employee_id && String(this.selectedUserForBlock.employee_id) === id) {
+        this.closeBlockUserModal();
+        this.closeUnblockConfirmationModal();
+      }
+
+      this.cdr.detectChanges();
+    });
+
+    this.socketservice.usersLicense$.subscribe((update) => {
+      const idx = this.users.findIndex((u) => u.employee_id === update.id);
+      if (idx === -1) return;
+
+      const updatedUser = { ...this.users[idx], ...update };
+      if (update.license_expiry_date) {
+        updatedUser.license_expiry_date = new Date(update.license_expiry_date);
+      }
+
+      this.users[idx] = updatedUser;
+      this.licenceExpiredMap[update.id] = updatedUser.license_expiry_date ? updatedUser.license_expiry_date < new Date() : false;
+
+      this.cdr.detectChanges();
+    });
+  }
+
+  getDepartmentName(departmentId: string): string {
+    return this.departmentNames[departmentId] || departmentId || 'לא זמין';
   }
 
   // --- Modal Control Methods ---
   openBlockUserModal(user: User) {
     this.selectedUserForBlock = user;
     this.isBlockUserModalOpen = true;
-    this.blockUserForm.reset({ blockDuration: 14 }); // Reset with default
+    this.blockUserForm.reset({ blockDuration: 14 });
   }
 
   closeBlockUserModal() {
@@ -182,8 +187,7 @@ export class UserDataComponent implements OnInit {
     const now = new Date();
     const blockExpiresAt = new Date(now.setDate(now.getDate() + blockDuration));
 
-    // Prepare FormData with ALL required fields + the block/unblock changes
-    const formData = this.createFormDataForUserUpdate(this.selectedUserForBlock, true, blockExpiresAt.toISOString().slice(0, 16)); // YYYY-MM-DDTHH:MM
+    const formData = this.createFormDataForUserUpdate(this.selectedUserForBlock, true, blockExpiresAt.toISOString().slice(0, 16));
 
     this.userService.updateUser(this.selectedUserForBlock.employee_id, formData).subscribe({
       next: () => {
@@ -206,8 +210,7 @@ export class UserDataComponent implements OnInit {
 
     this.isSubmitting = true;
 
-    // Prepare FormData with ALL required fields + the unblock changes
-    const formData = this.createFormDataForUserUpdate(this.selectedUserForBlock, false, null); // Set is_blocked to false, block_expires_at to null
+    const formData = this.createFormDataForUserUpdate(this.selectedUserForBlock, false, null);
 
     this.userService.updateUser(this.selectedUserForBlock.employee_id, formData).subscribe({
       next: () => {
@@ -223,14 +226,6 @@ export class UserDataComponent implements OnInit {
     });
   }
 
-  /**
-   * Helper function to create FormData with all required user fields.
-   * This is crucial because your backend endpoint expects all fields via Form(...).
-   * @param user The current user object.
-   * @param isBlocked The new value for is_blocked.
-   * @param blockExpiresAt The new value for block_expires_at (YYYY-MM-DDTHH:MM string or null).
-   * @returns FormData object.
-   */
   private createFormDataForUserUpdate(
     user: User,
     isBlocked: boolean,
@@ -238,7 +233,6 @@ export class UserDataComponent implements OnInit {
   ): FormData {
     const formData = new FormData();
 
-    // Append ALL required fields from the existing user object
     formData.append('first_name', user.first_name || '');
     formData.append('last_name', user.last_name || '');
     formData.append('username', user.username || '');
@@ -246,45 +240,33 @@ export class UserDataComponent implements OnInit {
     formData.append('phone', user.phone || '');
     formData.append('role', user.role || '');
 
-    // Department ID: Handle nullable and UUID conversion for FormData
     if (user.department_id) {
       formData.append('department_id', user.department_id);
     } else {
-      formData.append('department_id', ''); // Send empty string if null
+      formData.append('department_id', '');
     }
 
-    // has_government_license: Convert boolean to string "true" or "false"
     formData.append('has_government_license', String(user.has_government_license || false));
 
-    // license_expiry_date: Convert Date object to YYYY-MM-DD or send empty string
     if (user.license_expiry_date) {
       const date = new Date(user.license_expiry_date);
-      const formattedDate = date.toISOString().split('T')[0]; // YYYY-MM-DD
+      const formattedDate = date.toISOString().split('T')[0];
       formData.append('license_expiry_date', formattedDate);
     } else {
       formData.append('license_expiry_date', '');
     }
 
-    // Append the SPECIFIC fields being updated
-    formData.append('is_blocked', String(isBlocked)); // Boolean to string
+    formData.append('is_blocked', String(isBlocked));
 
     if (blockExpiresAt) {
       formData.append('block_expires_at', blockExpiresAt);
     } else {
-      formData.append('block_expires_at', ''); // Send empty string to clear it (set to null on backend)
+      formData.append('block_expires_at', '');
     }
 
     return formData;
   }
 
-
-  // --- Existing Methods (keep them as they are) ---
-  departmentNames: { [key: string]: string } = {
-    '21fed496-72a3-4551-92d6-7d6b8d979dd6': 'Security',
-    '3f67f7d5-d1a4-45c2-9ae4-8b7a3c50d3fa': 'Engineering',
-    '912a25b9-08e7-4461-b1a3-80e66e79d29e': 'HR',
-    'b3a91e1e-2f42-4e3e-bf74-49b7c8aaf1c7': 'Finance',
-  };
 
   goToUserCard(userId: string): void {
     this.router.navigate(['/user-card', userId]);
@@ -320,18 +302,18 @@ export class UserDataComponent implements OnInit {
   }
 
   deleteUser(userId: string): void {
-  const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-    width: '420px',
-    height: 'auto',
-    data: {
-      title: 'מחיקת משתמש',
-      message: '?האם אתה בטוח שברצונך למחוק את המשתמש',
-      confirmText: 'מחק משתמש',
-      cancelText: 'חזור',
-      noRestoreText: 'שימ/י לב שלא ניתן לשחזר את המשתמש',
-      isDestructive: true
-    },
-  });
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '420px',
+      height: 'auto',
+      data: {
+        title: 'מחיקת משתמש',
+        message: '?האם אתה בטוח שברצונך למחוק את המשתמש',
+        confirmText: 'מחק משתמש',
+        cancelText: 'חזור',
+        noRestoreText: 'שימ/י לב שלא ניתן לשחזר את המשתמש',
+        isDestructive: true
+      },
+    });
 
     dialogRef.afterClosed().subscribe((confirmed) => {
       if (!confirmed) return;
