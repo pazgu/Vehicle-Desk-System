@@ -30,6 +30,8 @@ class User(Base):
     license_expiry_date = Column(Date, nullable=True)
     is_blocked = Column(Boolean, default=False, nullable=False)
     block_expires_at = Column(DateTime, nullable=True)
+    is_unassigned_user = Column(Boolean, default=False, nullable=False)
+
     
 
     no_show_events = relationship("NoShowEvent", back_populates="user")

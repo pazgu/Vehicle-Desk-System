@@ -2,7 +2,7 @@
 
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { UserService } from '../../../../services/user_service';
 import {
   FormBuilder,
@@ -23,7 +23,8 @@ export class DepartmentDataComponent implements OnInit {
   constructor(
     private userService: UserService,
     private departmentService: DepartmentService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private router: Router
   ) {}
 
   departments: any[] = [];
@@ -35,6 +36,11 @@ export class DepartmentDataComponent implements OnInit {
   editedDepartmentId: string | null = null; 
   hoveredDepartmentId: string | null = null;
   isSubmitting: boolean = false; 
+
+  isDeleteModalOpen: boolean = false;
+  departmentToDelete: any = null;
+
+  deleteModalMessage: string = ''; 
 
 
 
@@ -138,6 +144,37 @@ updateDepartment() {
       });
   }
 }
+
+  openDeleteModal(department: any) {
+    this.departmentToDelete = department;
+    this.isDeleteModalOpen = true;
+    this.deleteModalMessage = `האם אתה בטוח שברצונך למחוק את המחלקה "${department.name}"?  וכל המשתמשים שהיו משויכים למחלקה ינותקו, ותפקיד המפקח של המחלקה ישתנה לתפקיד של עובד רגיל וגם מנותק.`;  }
+
+  closeDeleteModal() {
+    this.isDeleteModalOpen = false;
+    this.departmentToDelete = null;
+  }
+
+  confirmDelete() { // Renamed the function for clarity
+    if (!this.departmentToDelete) return;
+
+    this.isSubmitting = true;
+    this.departmentService.deleteDepartment(this.departmentToDelete.id).subscribe({
+      next: () => {
+        this.isSubmitting = false;
+        this.closeDeleteModal();
+        this.showToast('Department deleted successfully. Redirecting to User Data page.');
+        // Navigate to the user data page
+        this.router.navigate(['/admin/user-data']); // Adjust the path as needed
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        console.error('Error deleting department:', err);
+        this.showToast('Error deleting department', true);
+        this.closeDeleteModal(); // Close modal on error as well
+      },
+    });
+  }
 
   toggleNewDepartmentMode() {
     this.isNewDepartmentMode = !this.isNewDepartmentMode;
