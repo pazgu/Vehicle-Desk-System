@@ -91,6 +91,7 @@ export class AdminAnalyticsComponent implements OnInit {
   allTimeStatsChartOptions: any;
   uniqueNoShowUsers: number = 0;
   noShowExportWarningVisible: boolean = false;
+  
 
 
   // 🆕 ADD these two properties for department caching
@@ -196,6 +197,22 @@ export class AdminAnalyticsComponent implements OnInit {
   onRideStatusFilterChange() {
     this.loadRideChart();
   }
+
+  // Add these methods to your AdminAnalyticsComponent class
+
+onFilterOnePlusChange() {
+  if (this.filterOnePlus) {
+    this.filterCritical = false; // Uncheck critical when one-plus is selected
+  }
+  this.applyNoShowFilter();
+}
+
+onFilterCriticalChange() {
+  if (this.filterCritical) {
+    this.filterOnePlus = false; // Uncheck one-plus when critical is selected
+  }
+  this.applyNoShowFilter();
+}
 
   // 🆕 פונקציה חדשה ליצירת אפשרויות הDropdown
   getVehicleTypeOptions() {

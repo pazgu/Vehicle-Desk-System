@@ -678,7 +678,7 @@ button[ng-click="showWarning()"]:hover {
 /* === Floating Quota Card (top-right) === */
 .quota-float {
   position: fixed;
-  top: 90px;          /* sits below your exceeded toast at top:20px */
+  top: 100px;          /* sits below your exceeded toast at top:20px */
   right: 7px;
   z-index: 1000;      /* above content, below modal dialogs */
 }

@@ -149,11 +149,12 @@ openNewForm(): void {
     };
 console.log('inspection data in front:', JSON.stringify(payload, null, 2));
     const missingDescriptions = this.vehicleIssues.some(
-  v => v.critical_issue && (!v.issues_found || !v.issues_found)
+    v => v.critical_issue && (!v.issues_found || !v.issues_found) // (redundant check)
 );
 
 if (missingDescriptions) {
   this.toastService.show('יש למלא תיאור של האירוע החריג לכל רכב רלוונטי', 'error');
+  this.submitting = false; 
   return;
 }
 
@@ -177,6 +178,8 @@ if (missingDescriptions) {
         error: err => console.error(`Failed to freeze vehicle `, err)
       });
     });
+      this.resetFormState();
+
 
   },
   error: (err) => {
@@ -191,5 +194,18 @@ if (missingDescriptions) {
   hasCriticalIssue(): boolean {
   return this.vehicleIssues?.some(v => v.critical_issue) ?? false;
 }
+
+private resetFormState(): void {
+  this.vehicleIssues = this.vehicleIssues.map(v => ({
+    ...v,
+    dirty: false,
+    fuel_checked: false,
+    items_left: false,
+    critical_issue: false,
+    issues_found: ''
+  }));
+  this.searchTerm = '';
+}
+
 
 }

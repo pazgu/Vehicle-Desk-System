@@ -30,7 +30,8 @@ from ..utils.socket_manager import sio
 from src.utils.stats import generate_monthly_vehicle_usage
 
 # Services
-from src.services import admin_service, department_service
+from src.services import admin_service, department_service 
+from src.services.department_service import create_department, update_department, delete_department
 from src.services.admin_rides_service import (
     get_all_orders,
     get_future_orders,
@@ -1161,3 +1162,12 @@ def create_department(dept: DepartmentCreate, db: Session = Depends(get_db), pay
 @router.patch("/departments/{department_id}", response_model=DepartmentOut)
 def patch_department(department_id: UUID, dept: DepartmentUpdate, db: Session = Depends(get_db), payload: dict = Depends(token_check)):
     return department_service.update_department(db, department_id, dept, payload)
+
+
+@router.delete("/departments/{dept_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_department_endpoint(
+    dept_id: UUID,
+    db: Session = Depends(get_db),
+    payload: dict = Depends(token_check)
+):
+    return delete_department(db, dept_id, payload)
