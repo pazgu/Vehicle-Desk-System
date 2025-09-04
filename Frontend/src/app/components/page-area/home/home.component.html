@@ -181,11 +181,11 @@
               *ngIf="extraStops">
               ➕ הוסף תחנה נוספת (אופציונלי)
             </button>
-            <small *ngIf="extraStops.errors?.['sameStopAsDestination']" class="error-text">
-              תחנה נוספת לא יכולה להיות זהה לתחנה אחרת.
+            <small *ngIf="extraStops.errors?.['consecutiveDuplicateStops']" class="error-text">
+              תחנות עוקבות לא יכולות להיות זהות.
             </small>
             <small *ngIf="extraStops.errors?.['duplicateExtraStops']" class="error-text">
-              תחנות נוספות לא יכולות להיות כפולות.
+              תחנות עוקבות לא יכולות להיות זהות.
             </small>
           </div>
 
