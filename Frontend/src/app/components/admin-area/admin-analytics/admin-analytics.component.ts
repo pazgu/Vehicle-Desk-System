@@ -81,6 +81,7 @@ export class AdminAnalyticsComponent implements OnInit {
 
 
 
+
   topUsedVehiclesData: any;
   topUsedVehiclesOptions: any;
   monthlyStatsChartData: any;
@@ -232,6 +233,17 @@ export class AdminAnalyticsComponent implements OnInit {
     });
 
   }
+
+onFilterChange(type: 'onePlus' | 'critical') {
+  if (type === 'onePlus' && this.filterOnePlus) {
+    this.filterCritical = false;
+  }
+  if (type === 'critical' && this.filterCritical) {
+    this.filterOnePlus = false;
+  }
+  this.applyNoShowFilter();
+}
+
   private countFreezeReasons(frozenVehicles: VehicleOutItem[]) {
     const freezeReasonCounts: Record<FreezeReason, number> = {
       [FreezeReason.accident]: 0,
