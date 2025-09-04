@@ -1,10 +1,3 @@
-🚗 Vehicle-Desk-System
-
-Enterprise Car Rental & Management Platform
-
-A smart internal vehicle management system designed for enterprises and government-level use.
-The system provides ride requests, supervisor approvals, automated vehicle allocation, inspections, real-time tracking and more.
-
 🧰 Tech Stack
 Frontend
 
@@ -29,6 +22,7 @@ Backend
 [APScheduler] – Scheduled background jobs
 
 Integrations
+
 Email System – Ride completion forms & notifications
 
 ✨ Key Features
@@ -63,26 +57,23 @@ Vehicle-Desk-System/
   │   ├── routers/     # API routes
   │   ├── models/      # SQLAlchemy models
   │   ├── services/    # Business logic
-  │   ├── utils/       # contains APScheduler 
-  │   ├──requirements.txt
+  │   ├── utils/       # contains APScheduler
+  │   ├── requirements.txt
   │   └── main.py
+  └── docker-compose.yml
   
-
 🚀 Getting Started
 1️⃣ Clone the Repository
 git clone https://github.com/pazgu/Vehicle-Desk-System.git
 cd Vehicle-Desk-System
-
 2️⃣ Backend Setup
-cd Backend
+cd backend
 pip install -r requirements.txt
 uvicorn app.main:sio_app --reload
-
 3️⃣ Frontend Setup
-cd Frontend
+cd frontend
 npm install
 npm start
-
 4️⃣ (Optional) Run with Docker
 docker-compose up --build
 
