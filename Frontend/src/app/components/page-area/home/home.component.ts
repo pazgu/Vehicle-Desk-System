@@ -49,6 +49,7 @@ export class NewRideComponent implements OnInit {
     hours = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
     quarterHours = ['00', '15', '30', '45'];
     formReady = false;
+    orderSubmitted = false;
 
     constructor(
         private fb: FormBuilder,
@@ -86,14 +87,17 @@ export class NewRideComponent implements OnInit {
             }
 
             const destinationId = this.rideForm?.get('stop')?.value;
-            const extraStopIds = extraStopsArray.value;
+            const extraStopIds = extraStopsArray.value.filter((stopId: string) => stopId);
 
-            if (extraStopIds.some((stopId: string) => stopId && stopId === destinationId)) {
-                return { sameStopAsDestination: true };
+            if (extraStopIds.length === 0) {
+                return null;
             }
-            const uniqueExtraStops = new Set(extraStopIds.filter((stopId: string) => stopId));
-            if (uniqueExtraStops.size !== extraStopIds.filter((stopId: string) => stopId).length) {
-                return { duplicateExtraStops: true };
+            if(destinationId==extraStopIds[0]){
+                return { 'duplicateExtraStops': { message: 'תחנות עוקבות לא יכולות להיות זהות.' } };
+            }else{
+                if(extraStopIds[0]==extraStopIds[1]){
+                    return { 'consecutiveDuplicateStops': { message: 'תחנות עוקבות לא יכולות להיות זהות.' } };
+                }
             }
 
             return null;
@@ -938,6 +942,45 @@ futureDateTimeValidator(): ValidatorFn {
 
     return null; // valid
   };
+  
+}
+    
+resetOrderForm(): void {
+  this.rideForm.reset();
+  this.step = 1;
+  this.orderSubmitted = false;
+  this.availableCars = [];
+  this.extraStops.clear();
+  this.showStep1Error = false;
+  this.disableRequest = false;
+  this.fetchedDistance = null;
+  this.estimated_distance_with_buffer = null;
+  
+  
+  this.rideForm.patchValue({
+    target_type: 'self',
+    target_employee_id: null,
+    ride_period: 'morning',
+    ride_date: '',
+    ride_date_night_end: '',
+    start_hour: '',
+    start_minute: '',
+    end_hour: '',
+    end_minute: '',
+    start_time: '',
+    end_time: '',
+    estimated_distance_km: null,
+    ride_type: '',
+    vehicle_type: '',
+    car: '',
+    stop: '',
+    four_by_four_reason: ''
+  });
+}
+
+openNewOrderForm(): void {
+  this.resetOrderForm();
+  this.initializeComponent(); 
 }
     submit(confirmedWarning = false): void {
         if (this.disableRequest) {
@@ -945,16 +988,12 @@ futureDateTimeValidator(): ValidatorFn {
             return;
         }
         const extraStopsControl = this.rideForm.get('extraStops');
-        if (extraStopsControl?.errors?.['sameStopAsDestination']) {
-            this.toastService.show('תחנות נוספות לא יכולות להיות כפולות.', 'error');
-            extraStopsControl.markAsTouched();
-            return;
-        }
-        if (extraStopsControl?.errors?.['duplicateExtraStops']) {
-            this.toastService.show('תחנות נוספות לא יכולות להיות כפולות.', 'error');
-            extraStopsControl.markAsTouched();
-            return;
-        }
+
+    if (extraStopsControl?.errors?.['consecutiveDuplicateStops']) {
+        this.toastService.show('תחנות עוקבות לא יכולות להיות זהות.', 'error');
+        extraStopsControl.markAsTouched();
+        return;
+    }
         if (this.rideForm.invalid) {
             this.rideForm.markAllAsTouched();
             this.toastService.show('יש להשלים את כל שדות הטופס כנדרש', 'error');
@@ -1032,13 +1071,14 @@ futureDateTimeValidator(): ValidatorFn {
             this.rideService.createRide(formData, user_id).subscribe({
             next: (createdRide) => {
                 this.toastService.show('הבקשה נשלחה בהצלחה! ✅', 'success');
+                this.orderSubmitted = true;
                 this.loadFuelType(formData.vehicle_id);
                 this.showFuelTypeMessage();
                 this.socketService.sendMessage('new_ride_request', {
                     ...createdRide,
                     user_id
                 });
-                this.router.navigate(['/']);
+                
             },
             error: (err) => {
                 const errorMessage = err.error?.detail || err.message || 'שגיאה לא ידועה';
@@ -1066,9 +1106,10 @@ futureDateTimeValidator(): ValidatorFn {
                      this.rideService.createSupervisorRide(formData, user_id).subscribe({
             next: () => {
                 this.toastService.show('הבקשה נשלחה בהצלחה! ✅', 'success');
+                this.orderSubmitted = true;
                 this.loadFuelType(formData.vehicle_id);
                 this.showFuelTypeMessage();
-                this.router.navigate(['/']);
+                
             },
             error: (err) => {
                 const errorMessage = err.error?.detail || err.message || 'שגיאה לא ידועה';

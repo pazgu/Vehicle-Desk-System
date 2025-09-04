@@ -1,3 +1,13 @@
+<div *ngIf="formSubmitted" class="success-container">
+  <div class="success-message">
+    <h2> הבדיקה נשלחה בהצלחה!</h2>
+    <p>כל הנתונים נשמרו במערכת</p>
+    <button (click)="openNewForm()" class="new-form-button">
+      פתח טופס חדש
+    </button>
+  </div>
+</div>
+<div *ngIf="!formSubmitted">
 <div class="search-container" style="margin: 16px; width: 400px;position: relative;">
   <input
     type="text"
@@ -50,5 +60,5 @@
 <button (click)="submitIssues()" class="cute-red-button">שלח בדיקות</button>
 <div *ngIf="submitting">שולח...</div>
 <div #bottom></div>
-
+</div>
 
