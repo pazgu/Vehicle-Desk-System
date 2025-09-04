@@ -145,28 +145,31 @@
           <div>
             <h3 class="section-heading">טבלת אי-הגעות של משתמשים</h3>
 
-          <!-- filter -->
-<div class="filter-controls">
-  <div style="display: flex; flex-direction: column; gap:5px;">
-    <label>
-      <input type="checkbox" [(ngModel)]="filterOnePlus" (change)="onFilterOnePlusChange()" />
-      הצג משתמשים עם 1-2 נעדרים
-    </label>
-    <label>
-      <input type="checkbox" [(ngModel)]="filterCritical" (change)="onFilterCriticalChange()" />
-      הצג משתמשים עם 3+ נעדרים (קריטי)
-    </label>
-  </div>
-  <div class="sort-container">
-    <label>מיין לפי: </label>
-    <select [(ngModel)]="noShowSortOption" (change)="applyNoShowFilter()">
-      <option value="countAsc">כמות נעדרים ↑</option>
-      <option value="countDesc">כמות נעדרים ↓</option>
-      <option value="nameAsc">שם - א-ת</option>
-      <option value="nameDesc">שם - ת-א</option>
-    </select>
-  </div>
-</div>
+            <!-- FILTERS -->
+            <div class="filter-controls">
+              <div style="display: flex; flex-direction: column; gap:5px;">
+                <label>
+                  <input type="checkbox" [(ngModel)]="filterOnePlus" (change)="applyNoShowFilter()" />
+                  הצג משתמשים עם 1-2 אי-הגעות
+                </label>
+                <label>
+                  <input type="checkbox" [(ngModel)]="filterCritical" (change)="applyNoShowFilter()" />
+                  הצג משתמשים עם 3+ אי-הגעות (קריטי)
+                </label>
+              </div>
+              <div class="sort-container">
+                <label>מיין לפי: </label>
+
+                <select [(ngModel)]="noShowSortOption" (change)="applyNoShowFilter()">
+
+                  <option value="countAsc">כמות אי-הגעות ↑</option>
+                  <option value="countDesc">כמות אי-הגעות ↓</option>
+                  <option value="nameAsc">שם - א-ת</option>
+                  <option value="nameDesc">שם - ת-א</option>
+
+                </select>
+              </div>
+            </div>
 
 
             <div class="summary-cards">

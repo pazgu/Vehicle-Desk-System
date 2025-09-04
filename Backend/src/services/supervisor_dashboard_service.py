@@ -67,6 +67,7 @@ def get_department_orders(department_id: str, db: Session) -> List[RideDashboard
             employee_name=employee_name,
             requested_vehicle_model=vehicle_model,
             date_and_time=order.start_datetime,
+            end_datetime=order.end_datetime,
             destination=order.destination,
             distance = math.ceil(order.estimated_distance_km),
             status=order.status.value,  # Access the string value of the enum

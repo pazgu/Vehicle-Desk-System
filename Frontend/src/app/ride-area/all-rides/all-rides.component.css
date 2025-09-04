@@ -1,6 +1,6 @@
 .orders-wrapper {
   background-color: white;
-  padding: 1.2rem 1.5rem;
+  padding: 1.2rem 2.1rem;
   border-radius: 12px;
   width: 720px;
   margin: 1rem auto;
@@ -8,9 +8,7 @@
   direction: rtl;
   font-family: sans-serif;
   min-height: 420px;
-
-   /* ✅ Scroll settings */
-  max-height: 500px; /* or whatever fits your page nicely */
+  max-height: 500px; 
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -114,9 +112,6 @@
   color: #333 !important;
 }
 
-
-
-  
   .icon-cell {
     width: 2.1rem;
     text-align: center;
@@ -153,6 +148,20 @@
   margin-left: 4px; /* space from main icon */
   vertical-align: middle;
 }
+
+.orders-data-row {
+  position: relative;
+}
+
+.ride-type-icon {
+  position: absolute;
+  right: -28px;          /* move outside the right edge */
+  top: 50%;              /* vertical center */
+  transform: translateY(-50%);
+  font-size: 1.3rem;
+  color: #811313;
+}
+
 
 .status-cancelled-no-show{
  background-color: #ffe1e184;

@@ -191,14 +191,21 @@
             🗑️
           </button>
         </div>
+        <div>
+
+        </div>
+             <div class="ride-type-icon">
+  <i title="נסיעה של יותר מיום" class="pi pi-moon" *ngIf="checkIfOverOneDay(order)"></i>
+  <i title="נסיעה של יום" class="pi pi-sun" *ngIf="!checkIfOverOneDay(order)"></i>
+</div>
+
       </div>
+
     </div>
 
-    <!-- <div *ngIf="!loading && filteredOrders.length === 0 && (rideViewMode !== 'all' || statusFilter || startDate || endDate || showOldOrders)" class="no-orders-message">
-        לא נמצאו הזמנות התואמות את המסננים שבחרת.
-    </div>
- -->
-
+<small>
+  * רק 6 נסיעות בחודש הן על חשבון המערכת
+</small>
     <div class="pagination-controls">
       <button (click)="prevPage()" [disabled]="currentPage === 1">
         ▶

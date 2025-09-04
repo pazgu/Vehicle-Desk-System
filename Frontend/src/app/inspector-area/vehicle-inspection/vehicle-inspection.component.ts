@@ -37,6 +37,7 @@ export class VehicleInspectionComponent implements OnInit {
 
   loading = true;
   submitting = false;
+  formSubmitted = false;
   @ViewChild('bottom') bottomRef!: ElementRef;
 
   scrollToBottom(): void {
@@ -88,7 +89,23 @@ export class VehicleInspectionComponent implements OnInit {
 logFuelChange(value: boolean) {
   console.log('Fuel checked changed to:', value);
 }
+  // ← הוסף את 2 הפונקציות האלה
+resetForm(): void {
+  this.vehicleIssues.forEach(vehicle => {
+    vehicle.dirty = false;
+    vehicle.fuel_checked = false;
+    vehicle.items_left = false;
+    vehicle.critical_issue = false;
+    vehicle.issues_found = '';
+  });
+  this.searchTerm = '';
+  this.formSubmitted = false;
+}
 
+openNewForm(): void {
+  this.resetForm();
+  this.fetchVehicles();
+}
   submitIssues(): void {
       const nothingSelected = this.vehicleIssues.every(v =>
     !v.dirty &&
@@ -147,6 +164,8 @@ if (missingDescriptions) {
   next: () => {
     this.toastService.show('הבדיקה נשלחה בהצלחה', 'success');
     this.submitting = false;
+    this.formSubmitted = true;
+    window.scrollTo(0, 0);
     const criticalVehicles = this.vehicleIssues.filter(v => v.critical_issue);
 
     criticalVehicles.forEach(vehicle => {
