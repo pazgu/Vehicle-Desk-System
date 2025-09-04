@@ -165,8 +165,9 @@
 
           <div id="extrastops" formArrayName="extraStops">
             <div *ngFor="let control of extraStops?.controls; let i = index" class="extra-stop-item">
-              <button type="button" (click)="removeExtraStop(i)" class="removeBtn">❌</button>
-              <div class="form-field-group">
+<button type="button" (click)="removeExtraStop(i)" class="removeBtn" pButton>
+  <i class="pi pi-times"></i>
+</button>              <div class="form-field-group">
                 <label>תחנה נוספת {{ i + 1 }}</label>
                 <ng-select [items]="cities" bindLabel="name" bindValue="id" [formControlName]="i" [searchable]="true"
                   [clearable]="false" class="styled-select" placeholder="בחר עיר">
@@ -178,9 +179,9 @@
             </div>
 
             <button type="button" (click)="addExtraStop()" [disabled]="extraStops.length >= 2" class="addBtn"
-              *ngIf="extraStops">
-              ➕ הוסף תחנה נוספת (אופציונלי)
-            </button>
+  *ngIf="extraStops" pButton>
+  <i class="pi pi-plus"></i> הוסף תחנה נוספת (אופציונלי)
+</button>
             <small *ngIf="extraStops.errors?.['consecutiveDuplicateStops']" class="error-text">
               תחנות עוקבות לא יכולות להיות זהות.
             </small>

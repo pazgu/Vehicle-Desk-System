@@ -81,31 +81,46 @@ form .removeBtn {
   background: transparent;
   cursor: pointer;
   padding: 2px 4px;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: #0079fb;
 }
 
-form .addBtn:disabled {
-  color: #6c757d;
-  cursor: not-allowed;
-  text-decoration: none;
+form .addBtn {
+  color: #dc3545; /* Red color like removeBtn */
+  align-self: flex-end; /* Align to the right */
+  margin-right: 0; /* Remove any right margin */
+  direction: rtl; /* Ensure RTL direction */
+   align-self: flex-start;  /* right side in RTL when parent is flex-direction: column */
+
 }
+
+
 
 form .addBtn:hover:not(:disabled) {
   text-decoration: underline;
 }
 
 form .removeBtn {
-  color: #dc3545;
-  font-size: 0.75rem;
+  color: #942222;        /* darker red than add */
+  font-size: 0.9rem;     /* slightly bigger */
+  font-weight: bold;     /* make it stronger */
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px;
+  text-decoration: none; /* no underline by default */
 }
 
+
 form .removeBtn:hover {
-  text-decoration: underline;
-}
+color: #b30000;        /* even darker on hover */
+transform: scale(1.05);
+text-decoration: none;}
 
 /* ---------------------------------------------------- */
 /* Styles for the extra stops section - UPDATED */
@@ -117,6 +132,7 @@ form .removeBtn:hover {
   gap: 0.5rem;
   /* הגדרה זו מתגברת על המרווח הגדול של .form-content */
   margin-top: -1rem;
+  
 }
 
 .extra-stop-item {
