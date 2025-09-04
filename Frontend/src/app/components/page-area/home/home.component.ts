@@ -217,10 +217,6 @@ export class NewRideComponent implements OnInit {
             const timeDiff = endDate.getTime() - startDate.getTime();
             const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
 
-            if (daysDiff > 1) {
-                return { 'tripTooLong': { message: 'לא ניתן להזמין נסיעה לותר מיום אחד.' } };
-            }
-
             return null;
         };
     }
