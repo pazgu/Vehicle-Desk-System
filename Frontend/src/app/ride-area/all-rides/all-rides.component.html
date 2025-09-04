@@ -144,19 +144,30 @@
 
         <div class="cell">{{ order.distance }}</div>
 
-        <div class="modify-buttons">
-          <button class="modify" (click)="canEdit(order) ? editOrder(order) : null; $event.stopPropagation()"
-            [disabled]="!canEdit(order)" [style.opacity]="canEdit(order) ? '1' : '0.5'"
-            [style.cursor]="canEdit(order) ? 'pointer' : 'not-allowed'">
-            ✏️
-          </button>
+          <div class="cell ride-type-icon">
+    <i title="נסיעה של יותר מיום" class="pi pi-moon" *ngIf="checkIfOverOneDay(order)"></i>
+    <i title="נסיעה של יום" class="pi pi-sun" *ngIf="!checkIfOverOneDay(order)"></i>
+  </div>
 
-          <button class="delete" [disabled]="!canDelete(order)" [style.opacity]="canDelete(order) ? '1' : '0.5'"
-            (click)="canDelete(order) ? deleteOrder(order) : null ; $event.stopPropagation()"
-            [style.cursor]="canDelete(order) ? 'pointer' : 'not-allowed'">
-            🗑️
-          </button>
-        </div>
+        <div class="modify-buttons">
+  <button
+    class="modify"
+    (click)="canEdit(order) ? editOrder(order) : null; $event.stopPropagation()"
+    [disabled]="!canEdit(order)"
+    [style.opacity]="canEdit(order) ? '1' : '0.5'"
+    [style.cursor]="canEdit(order) ? 'pointer' : 'not-allowed'">
+    <i class="pi pi-pencil"></i>
+  </button>
+
+  <button
+    class="delete"
+    [disabled]="!canDelete(order)"
+    [style.opacity]="canDelete(order) ? '1' : '0.5'"
+    (click)="canDelete(order) ? deleteOrder(order) : null ; $event.stopPropagation()"
+    [style.cursor]="canDelete(order) ? 'pointer' : 'not-allowed'">
+    <i class="pi pi-trash"></i>
+  </button>
+</div>
         <div>
 
         </div>

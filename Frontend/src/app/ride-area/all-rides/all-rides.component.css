@@ -570,34 +570,46 @@ button[ng-click="showWarning()"]:hover {
 .modify-buttons {
   display: flex;
   flex-direction: row; /* Important for RTL layout */
-  gap: 0.1rem;
-  justify-content: flex-start;
+  gap: 0.2rem;
+  justify-content: flex-end;
   align-items: center;
   direction: rtl; /* Ensures RTL button order */
+  margin-left: 10px;
 }
 
 /* General style for all modify buttons */
 .modify-buttons button.modify {
-  padding: 0.1rem 0.1rem;
-  color: rgb(0, 0, 0);
-  border: none;
+  padding: 0.3rem 0.4rem;
+  color: #4a90e2; /* Blue color for edit icon */
+  background-color: transparent;
+  border: 1px solid rgba(74, 144, 226, 0.3);
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.9rem;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+  
 .delete {
-  padding: 0.1rem 0.1rem;
-  color: rgb(0, 0, 0);
-  border: none;
+  padding: 0.4rem 0.5rem;
+  color: #e74c3c; /* Red color for delete icon */
+  background-color: transparent;
+  border: 1px solid rgba(231, 76, 60, 0.3);
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.9rem;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 /* Hover effect */
-.modify-buttons button.modify:hover {
-  background-color: #c8e2ff;
+.modify-buttons button.modify:hover:not(:disabled) {
+  background-color: rgba(74, 144, 226, 0.1);
+  border-color: #4a90e2;
+  color: #357abd;
 }
 #header-wrap{
   display: flex;
@@ -610,6 +622,27 @@ button[ng-click="showWarning()"]:hover {
 }
 .delete:hover {
   background-color: #ffc7c7;
+}
+
+/* Disabled state styling */
+.modify-buttons button:disabled,
+.delete:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  color: #999;
+  border-color: rgba(153, 153, 153, 0.3);
+}
+
+.modify-buttons button:disabled:hover,
+.delete:disabled:hover {
+  background-color: transparent;
+  transform: none;
+}
+
+.delete:hover:not(:disabled) {
+  background-color: rgba(231, 76, 60, 0.1);
+  border-color: #e74c3c;
+  color: #c0392b;
 }
 .back-btn {
   width: 100px;
@@ -775,3 +808,50 @@ button[ng-click="showWarning()"]:hover {
   .free-quota-indicator { min-width: 220px; padding: .7rem .9rem; }
 }
 
+/* === Actions "cell" (CSS-only) ===
+   Treat .modify-buttons like a fixed-width flex cell inside the row.
+*/
+.orders-data-row .modify-buttons {
+  /* make it behave like a cell in the flex row */
+  flex: 0 0 92px;         /* width of the actions cell; tweak 84–110px if needed */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;               /* space between edit & delete */
+  margin: 0;              /* override any earlier margins */
+  align-self: center;     /* vertically center within the row */
+  position: static;       /* ensure it’s not accidentally absolute */
+}
+
+/* neutralize your global button rule just for the two action buttons */
+.orders-data-row .modify-buttons button {
+  margin: 0;              /* keep them inside the cell bounds */
+  font-size: 1rem;        /* compact icon size */
+  width: 32px;            /* consistent touch target */
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  padding: 0;
+}
+
+/* keep their existing look but ensure no weird positioning */
+.orders-data-row .modify-buttons .modify,
+.orders-data-row .modify-buttons .delete {
+  position: static !important;
+}
+
+/* icon size inside the buttons */
+.orders-data-row .modify-buttons i {
+  font-size: 16px;
+}
+
+/* OPTIONAL: if your global `button { font-size:1.5rem; margin:0 1rem; }` is still too aggressive,
+   fence it off for the table area like this: */
+.orders-table button,
+.orders-header-row button,
+.orders-data-row button {
+  font-size: 1rem;
+  margin: 0;
+}

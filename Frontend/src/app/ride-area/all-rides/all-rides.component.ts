@@ -10,11 +10,12 @@ import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../components/page-area/confirm-dialog/confirm-dialog.component';
 import { HttpErrorResponse } from '@angular/common/http';
 import { StartedRide, StartedRidesResponse } from '../../models/ride.model';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule , ButtonModule],
   templateUrl: './all-rides.component.html',
   styleUrls: ['./all-rides.component.css']
 })
