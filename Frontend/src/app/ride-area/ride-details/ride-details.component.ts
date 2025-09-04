@@ -69,6 +69,18 @@ canStartRide(): boolean {
 
   return this.ride.status === 'approved' && startTime <= now;
 }
+isRideLongerThanOneDay(): boolean {
+  if (!this.ride?.start_datetime || !this.ride?.end_datetime) return false;
+  
+  const startDate = new Date(this.ride.start_datetime);
+  const endDate = new Date(this.ride.end_datetime);
+  
+  // Compare only the date part (ignore time)
+  const startDay = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+  const endDay = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+  
+  return endDay > startDay;
+}
 
   startRide() {
   if (!this.ride) return;
