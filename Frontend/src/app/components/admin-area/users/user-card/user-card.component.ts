@@ -1,9 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { forkJoin } from 'rxjs';
 import { User } from '../../../../models/user.model';
 import { UserService, NoShowResponse } from '../../../../services/user_service';
 import { environment } from '../../../../../environments/environment';
+
+interface Department {
+  id: string;
+  name: string;
+}
 
 @Component({
   selector: 'app-user-card',
@@ -17,12 +23,8 @@ export class UserCardComponent implements OnInit {
   NoShowsCNT = 0;
   NoShowsData!: NoShowResponse;
 
-  departmentNames: { [key: string]: string } = {
-    '21fed496-72a3-4551-92d6-7d6b8d979dd6': 'Security',
-    '3f67f7d5-d1a4-45c2-9ae4-8b7a3c50d3fa': 'Engineering',
-    '912a25b9-08e7-4461-b1a3-80e66e79d29e': 'HR',
-    'b3a91e1e-2f42-4e3e-bf74-49b7c8aaf1c7': 'Finance',
-  };
+  departmentName: string = '';
+  departments: Department[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -33,27 +35,27 @@ export class UserCardComponent implements OnInit {
     this.userId = this.route.snapshot.paramMap.get('user_id');
 
     if (this.userId) {
-      this.loadUserInfo(this.userId);
-      this.loadUserNoShowData(this.userId);
+      this.loadAllData(this.userId);
     } else {
       console.warn('No user_id found in route params');
     }
   }
 
-  private loadUserInfo(userId: string): void {
-    this.userService.getUserById(userId).subscribe({
-      next: (user) => (this.user = user),
-      error: (err) => console.error('Failed to load user:', err),
-    });
-  }
-
-  private loadUserNoShowData(userId: string): void {
-    this.userService.getNoShowData(userId).subscribe({
-      next: (noShowData) => {
+  private loadAllData(userId: string): void {
+    const user$ = this.userService.getUserById(userId);
+    const noShow$ = this.userService.getNoShowData(userId);
+    const departments$ = this.userService.getDepartments();
+    
+    forkJoin([user$, noShow$, departments$]).subscribe({
+      next: ([user, noShowData, departments]) => {
+        this.user = user;
         this.NoShowsData = noShowData;
-        this.NoShowsCNT = noShowData.count; // in case you want it separately
+        this.NoShowsCNT = noShowData.count;
+        this.departments = departments;
+        const userDepartment = departments.find(dept => dept.id === user.department_id);
+        this.departmentName = userDepartment?.name || user.department_id || 'לא זמין';
       },
-      error: () => console.error('Failed to load user no-shows:'),
+      error: (err) => console.error('Failed to load data:', err)
     });
   }
 
