@@ -86,14 +86,17 @@ export class NewRideComponent implements OnInit {
             }
 
             const destinationId = this.rideForm?.get('stop')?.value;
-            const extraStopIds = extraStopsArray.value;
+            const extraStopIds = extraStopsArray.value.filter((stopId: string) => stopId);
 
-            if (extraStopIds.some((stopId: string) => stopId && stopId === destinationId)) {
-                return { sameStopAsDestination: true };
+            if (extraStopIds.length === 0) {
+                return null;
             }
-            const uniqueExtraStops = new Set(extraStopIds.filter((stopId: string) => stopId));
-            if (uniqueExtraStops.size !== extraStopIds.filter((stopId: string) => stopId).length) {
-                return { duplicateExtraStops: true };
+            if(destinationId==extraStopIds[0]){
+                return { 'duplicateExtraStops': { message: 'תחנות עוקבות לא יכולות להיות זהות.' } };
+            }else{
+                if(extraStopIds[0]==extraStopIds[1]){
+                    return { 'consecutiveDuplicateStops': { message: 'תחנות עוקבות לא יכולות להיות זהות.' } };
+                }
             }
 
             return null;
@@ -949,16 +952,12 @@ futureDateTimeValidator(): ValidatorFn {
             return;
         }
         const extraStopsControl = this.rideForm.get('extraStops');
-        if (extraStopsControl?.errors?.['sameStopAsDestination']) {
-            this.toastService.show('תחנות נוספות לא יכולות להיות כפולות.', 'error');
-            extraStopsControl.markAsTouched();
-            return;
-        }
-        if (extraStopsControl?.errors?.['duplicateExtraStops']) {
-            this.toastService.show('תחנות נוספות לא יכולות להיות כפולות.', 'error');
-            extraStopsControl.markAsTouched();
-            return;
-        }
+
+    if (extraStopsControl?.errors?.['consecutiveDuplicateStops']) {
+        this.toastService.show('תחנות עוקבות לא יכולות להיות זהות.', 'error');
+        extraStopsControl.markAsTouched();
+        return;
+    }
         if (this.rideForm.invalid) {
             this.rideForm.markAllAsTouched();
             this.toastService.show('יש להשלים את כל שדות הטופס כנדרש', 'error');
