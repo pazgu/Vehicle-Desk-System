@@ -1,106 +1,99 @@
-# Vehicle-Desk-System
-# 🚗 Car Rental & Management System
+# 🚗 Vehicle-Desk-System  
 
-A smart internal car rental platform designed for enterprises and government-level use.  
-This system helps manage ride requests, vehicle allocation, supervisor approvals, and real-time tracking using SAP, RFID key dispensers, and LPR camera integrations.
+**Enterprise Car Rental & Management Platform**  
 
----
-
-## 🧰 Tech Stack
-
-### Frontend
-- [Angular] – TypeScript SPA framework
-- [Primeng]– UI components
-
-### Backend
-- [Python 3.x]
-- [FastAPI] – Modern, async Python web framework
-- [SQLAlchemy]– ORM for DB models
-- [PostgreSQL]– Relational database
-
-### Integrations
-- **SAP** – Sync for trip usage and approvals
-- **RFID Key Dispenser** – Key authorization based on approved trips
-- **LPR (License Plate Reader)** – Real-time vehicle entry/exit logging
+A smart internal vehicle management system designed for enterprises and government-level use.  
+The system provides ride requests, supervisor approvals, automated vehicle allocation, inspections, real-time tracking, and more.  
 
 ---
 
-## 🎯 Project Goals (MVP)
+## 🧰 Tech Stack  
 
-- Allow users to submit rides requests with purpose and time.
-- Allow supervisors to approve or reject requests.
-- Match requests to available vehicles intelligently.
-- Enforce rules (time limits, licensing, exceptions).
-- Log vehicle movements with LPR cameras.
-- Authenticate users for key release via RFID cards.
-- Admin dashboard to manage:
-  - Vehicle statuses
-  - Frozen/unavailable cars
-  - Daily inspections & alerts
+### Frontend  
+- [Angular] – TypeScript SPA framework  
+- [PrimeNG] – UI components library  
+- [Socket.IO Client] – Real-time updates  
+
+### Backend  
+- [Python 3.x]  
+- [FastAPI] – Modern, async Python web framework  
+- [SQLAlchemy] – ORM for DB models  
+- [PostgreSQL] – Relational database  
+- [Socket.IO] – Real-time communication  
+- [APScheduler] – Scheduled background jobs  
+
+### Integrations  
+- **Email System** – Ride completion forms & notifications  
 
 ---
 
-## 🚧 Folder Structure (Planned)
-```
+## ✨ Key Features  
+
+- **User Ride Requests** → request rides with purpose, vehicle type, and time  
+- **Supervisor Approvals** → approve/reject rides with audit logging  
+- **Smart Vehicle Allocation** → prioritize based on fuel type, distance, availability  
+- **Rules Enforcement** → licensing checks, time limits, 4x4 reasons, frozen cars  
+- **Real-Time Tracking** → WebSocket updates for ride changes & notifications  
+- **Admin Dashboard** →  
+  - Vehicle statuses & inspections  
+  - Alerts (expired licenses, overdue rides, etc.)  
+  - Department-wide ride monitoring  
+- **Ride Completion Forms** → scheduled email reminders, submission workflows  
+
+---
+
+## 📂 Project Structure  
+
+```bash
 Vehicle-Desk-System/
-  ├── frontend/ # Angular App
-    │ ├── src/
-    │ └── ...
-  ├── backend/ # FastAPI App
-    │ ├── app/
-    │ ├── routers/
-    │ ├── models/
-    │ └── main.py
-    ├── docs/ # ERD, flowcharts, specs
-    ├── .github
-    ├── README.md
-    └── requirements.txt
-```
-    
-## 🚀 Getting Started
+  ├── frontend/        # Angular App
+  │   ├── src/
+  │   └── ...
+  ├── backend/         # FastAPI App
+  │   ├── app/
+  │   ├── routers/     # API routes
+  │   ├── models/      # SQLAlchemy models
+  │   ├── services/    # Business logic
+  │   ├── utils/       # contains APScheduler
+  │   ├── requirements.txt
+  │   └── main.py
+  └── docker-compose.yml
 
-### 1. 📂 Create and Open Project Folder
-- Create a folder named `Bookit` on your computer.
-- Open the folder in **Visual Studio Code**.
+  ```
+## 🚀 Getting Started  
 
-### 2. 🧬 Clone the Repository
-- Open the **terminal** in VS Code.
-- Make sure you're using **Git Bash** as the terminal shell.
-- Run the following commands:
-```
+### 1️⃣ Clone the Repository  
+```bash
 git clone https://github.com/pazgu/Vehicle-Desk-System.git
-cd Vehicle-Desk-System/ 
-```
-
-### 3. ⚙️ Set Up the Backend Environment
-- Open a new terminal tab and switch to PowerShell.
-- Run the following commands to navigate and install dependencies:
-```
 cd Vehicle-Desk-System
+```
+## 2️⃣ Backend Setup
+```bash
+
 cd Backend
 pip install -r requirements.txt
+uvicorn app.main:sio_app --reload
 ```
-- Start the FastAPI development server:
-``` uvicorn src.main:sio_app --reload  ```
-
-### 4. ⚙️ Set Up the Frontend Environment
-- Open a new terminal tab and switch to PowerShell.
-- Run the following commands to navigate and install dependencies:
-```
-cd Vehicle-Desk-System
+## 3️⃣ Frontend Setup
+```bash
 cd Frontend
 npm install
+npm start
 ```
-- Start the Angular development server:
-``` ng serve ```
+## 4️⃣ (Optional) Run with Docker
+```bash
+docker-compose up --build
+```
 
-## 📌 Team Roles & Workflow
-- Code must be submitted via Pull Requests.
+### 📌 Team Workflow
 
-- Only the team lead (admin) can approve merges into main.
+All changes go through Pull Requests (PRs)
 
-- Developers push feature branches (feature/abc-xyz) → PR → review → dev → main.
+Branch naming: feature/<name>, fix/<name>, hotfix/<name>
 
-## 👤 Maintainer
-Built and managed by the internal R&D team. 
+PR → Code Review → Merge into dev → Merge into main
+
+Only admins can approve merges into main
+
+
 

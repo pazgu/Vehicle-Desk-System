@@ -89,7 +89,8 @@ currentDate = new Date();
   }
 
   goBack(): void {
-    this.location.back();
+          this.navigateRouter.navigate([`/vehicle-dashboard`]);
+
   }
 
   // New method to load vehicle usage data from analytics
