@@ -34,21 +34,24 @@
       </button>
       <div class="filter-options" *ngIf="showProblematicFilters">
         <label class="checkbox-label">
-          <!-- Changed (change) to call the new handleFilterChange method -->
           <input type="checkbox" [(ngModel)]="showMediumIssues" (change)="handleFilterChange('medium')" />
           <span>הצג בעיות - דרגה בינונית</span>
         </label>
         <label class="checkbox-label">
-          <!-- Changed (change) to call the new handleFilterChange method -->
           <input type="checkbox" [(ngModel)]="showCriticalIssues" (change)="handleFilterChange('critical')" />
           <span>הצג בעיות - דרגה חריגה</span>
         </label>
       </div>
     </div>
   </div>
-  <div class="content-table-section" *ngIf="activeTable === 'inspections'">
 
-    <h2 class="section-subtitle">בדיקות רכבים</h2>
+  <div class="content-table-section" *ngIf="activeTable === 'inspections'">
+    <div class="section-header">
+      <h2 class="section-subtitle">בדיקות רכבים</h2>
+      <button class="toggle-notes-button" (click)="toggleVehicleNotesColumn()" *ngIf=hasCriticalIssues>
+        {{ showVehicleNotesColumn ? 'הסתר הערות' : 'הצג הערות' }}
+      </button>
+    </div>
     <div class="table-wrapper">
       <table class="data-table">
         <thead>
@@ -59,7 +62,7 @@
             <th>מתודלק</th>
             <th>אין חפצים</th>
             <th>בעיה קריטית</th>
-            <th>הערות</th>
+            <th *ngIf="showVehicleNotesColumn">הערות</th>
           </tr>
         </thead>
         <tbody>
@@ -78,10 +81,10 @@
             <td [class.status-critical]="insp.critical_issue_bool">
               {{ insp.critical_issue_bool ? 'כן' : 'לא' }}
             </td>
-            <td>{{ insp.issues_found || '—' }}</td>
+            <td *ngIf="showVehicleNotesColumn">{{ insp.issues_found || '—' }}</td>
           </tr>
           <tr *ngIf="filteredInspections.length === 0 && !loading">
-            <td colspan="7" class="empty-state">לא נמצאו בדיקות רכב</td>
+            <td [attr.colspan]="showVehicleNotesColumn ? 7 : 6" class="empty-state">לא נמצאו בדיקות רכב</td>
           </tr>
         </tbody>
       </table>
@@ -91,7 +94,13 @@
 
 
   <div class="content-table-section" *ngIf="activeTable === 'rides'">
-    <h2 class="section-subtitle">נסיעות</h2>
+    <div class="section-header">
+      <h2 class="section-subtitle">דוחות נסיעות</h2>
+      <button class="toggle-notes-button" (click)="toggleRideNotesColumn()">
+        {{ showRideNotesColumn ? 'הסתר הערות' : 'הצג הערות' }}
+      </button>
+    </div>
+
     <div class="table-wrapper">
       <table class="data-table">
         <thead>
@@ -104,6 +113,8 @@
             <th>מרחק משוער (ק"מ)</th>
             <th>מרחק בפועל (ק"מ)</th>
             <th>אירוע חירום</th>
+            <th *ngIf="showRideNotesColumn">הערות</th>
+
           </tr>
         </thead>
         <tbody>
@@ -118,6 +129,8 @@
             <td [class.status-critical]="ride.emergency_event === 'true'">
               {{ ride.emergency_event === 'true' ? 'כן' : 'לא' }}
             </td>
+            <td *ngIf="showRideNotesColumn">{{ ride.freeze_details || '—' }}</td>
+
           </tr>
           <tr *ngIf="rides.length === 0 && !loading">
             <td colspan="8" class="empty-state">לא נמצאו נסיעות</td>

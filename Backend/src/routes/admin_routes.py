@@ -852,9 +852,22 @@ def get_critical_issues(
         UserAlias, VehicleInspection.inspected_by == UserAlias.employee_id
     )
 
-    rides = db.query(Ride).filter(Ride.emergency_event == "true").all()
-    rides_data = [OrderCardItem.from_orm(r) for r in rides]
+    rides_query = db.query(
+        Ride,
+        Vehicle.freeze_details  # ✅ Select both Ride object and freeze_details
+    ).join(
+        Vehicle, Ride.vehicle_id == Vehicle.id  # ✅ Join on vehicle_id
+    ).filter(Ride.emergency_event == "true")
+    rides = rides_query.all()
 
+    rides_data = []
+    for ride, freeze_details in rides:
+        # ✅ create a temporary dictionary from the Ride object and add freeze_details
+        ride_dict = OrderCardItem.from_orm(ride).model_dump()
+        ride_dict["freeze_details"] = freeze_details
+        rides_data.append(ride_dict)
+
+        
     if problem_type == "medium":
         inspections_query = inspections_query.filter(
             and_(
