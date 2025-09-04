@@ -98,22 +98,31 @@ export class UserService {
 getDepartmentsWithSupervisors(): Observable<{ id: string; name: string; supervisor_id: string; supervisorName: string }[]> {
   return this.http.get<{ id: string; name: string; supervisor_id: string }[]>(`${this.apiUrl}/departments`).pipe(
     switchMap(departments => {
-      const departmentsWithNames$ = departments.map(dept =>
-        this.getUserById(dept.supervisor_id).pipe(
+      const departmentsWithNames$ = departments.map(dept =>{
+        if (!dept.supervisor_id || dept.supervisor_id === null) {
+          return of({
+            id: dept.id,
+            name: dept.name,
+            supervisor_id: dept.supervisor_id,
+            supervisorName: 'אין מפקח מוגדר'
+          });
+        }
+        
+        return this.getUserById(dept.supervisor_id).pipe(
           map(user => ({
             id: dept.id,
             name: dept.name,
-            supervisor_id: dept.supervisor_id,     // keep this here
+            supervisor_id: dept.supervisor_id,
             supervisorName: `${user.first_name} ${user.last_name}`
           })),
           catchError(() => of({
             id: dept.id,
             name: dept.name,
-            supervisor_id: dept.supervisor_id,     // keep even on error
+            supervisor_id: dept.supervisor_id,
             supervisorName: 'לא ידוע'
           }))
-        )
-      );
+        );
+      });
       return forkJoin(departmentsWithNames$);
     })
   );
