@@ -40,11 +40,13 @@ export class VehicleService {
 
     return this.http.get<VehicleInItem[]>(url, { params });
   }
-getAllVehiclesForNewRide(distance: number, rideDate: string, vehicleType: string): Observable<Vehicle[]> {
+getAllVehiclesForNewRide(distance: number, rideDate: string, vehicleType: string,startTime:string,endTime:string): Observable<Vehicle[]> {
   const params: any = {
     distance_km: distance,
     ride_date: rideDate,
-    type: vehicleType
+    type: vehicleType,
+    start_time: startTime,
+    end_time: endTime
   };
 
   return this.http.get<Vehicle[]>(`${environment.apiUrl}/all-vehicles-new-ride`, { params });
