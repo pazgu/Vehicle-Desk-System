@@ -844,25 +844,26 @@ def get_critical_issues(
     db: Session = Depends(get_db)
 ):
     UserAlias = aliased(User)
-
     inspections_query = db.query(
         VehicleInspection,
-        UserAlias.username.label("inspected_by_name")  # ✅ get inspector name
+        UserAlias.username.label("inspected_by_name"),
+        Vehicle.plate_number.label("plate_number")
     ).outerjoin(
         UserAlias, VehicleInspection.inspected_by == UserAlias.employee_id
+    ).outerjoin(
+        Vehicle, VehicleInspection.vehicle_id == Vehicle.id
     )
 
     rides_query = db.query(
         Ride,
-        Vehicle.freeze_details  # ✅ Select both Ride object and freeze_details
+        Vehicle.freeze_details
     ).join(
-        Vehicle, Ride.vehicle_id == Vehicle.id  # ✅ Join on vehicle_id
+        Vehicle, Ride.vehicle_id == Vehicle.id
     ).filter(Ride.emergency_event == "true")
     rides = rides_query.all()
 
     rides_data = []
     for ride, freeze_details in rides:
-        # ✅ create a temporary dictionary from the Ride object and add freeze_details
         ride_dict = OrderCardItem.from_orm(ride).model_dump()
         ride_dict["freeze_details"] = freeze_details
         rides_data.append(ride_dict)
@@ -916,13 +917,14 @@ def get_critical_issues(
 
     inspections = inspections_query.all()
 
-    # ✅ build schema manually from tuples (VehicleInspection, inspected_by_name)
     inspections_data = []
-    for inspection, inspected_by_name in inspections:
+
+    for inspection, inspected_by_name, plate_number in inspections:
         data = VehicleInspectionOut.model_validate(inspection, from_attributes=True).model_dump()
         # Remove inspected_by_name if it exists to avoid duplication
         data.pop("inspected_by_name", None)
-        out = VehicleInspectionOut(**data, inspected_by_name=inspected_by_name)
+        out = VehicleInspectionOut(**data, inspected_by_name=inspected_by_name).model_dump()
+        out["plate_number"] = plate_number # ✅ Add this line
         inspections_data.append(out)
 
     return {
