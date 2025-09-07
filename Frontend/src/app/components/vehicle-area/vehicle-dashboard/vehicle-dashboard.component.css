@@ -674,16 +674,21 @@ label{
 }
 
 .archive-btn {
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 35px;
-    display: flex;
-    align-items: center;
-    margin-bottom: 0.5rem;
-    gap: 4px;
+  color: #942222;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+  background: none;
+  transition: color 0.2s ease;
+}
+
+.archive-btn:hover {
+  color: #7a1c1c;
 }
 
 
@@ -769,4 +774,47 @@ h2 {
         /* Stack utility sections */
         gap: 15px;
     }
+}
+
+/* Archive button icon styling */
+.archive-btn .pi {
+  font-size: 28px;
+  color: #942222;
+}
+
+.archive-btn:hover .pi {
+  color: #7a1c1c;
+}
+
+/* Warning icon in labels */
+label .pi-exclamation-triangle {
+  color: #ff9800;
+  font-size: 1.1em;
+  margin-left: 4px;
+}
+
+/* Upload status icons */
+.upload-success .pi-check-circle {
+  color: #28a745;
+  font-size: 1.2em;
+  margin-right: 6px;
+}
+
+.upload-error .pi-times-circle {
+  color: #dc3545;
+  font-size: 1.2em;
+  margin-right: 6px;
+}
+
+/* Empty state success icon */
+.empty-state .pi-check {
+  color: #28a745;
+  font-size: 1.1em;
+  margin-left: 6px;
+}
+
+/* General icon alignment in RTL */
+[dir="rtl"] .pi {
+  margin-left: 4px;
+  margin-right: 0;
 }

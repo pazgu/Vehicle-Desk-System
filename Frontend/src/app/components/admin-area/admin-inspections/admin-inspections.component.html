@@ -5,7 +5,7 @@
 
 <div *ngIf="!loading" class="admin-inspections-container">
   <div class="title-container">
-    <h1 class="page-title">דוחות חריגות</h1>
+    <h1 class="page-title">דוחות ובדיקות</h1>
   </div>
 
 
@@ -48,15 +48,18 @@
   <div class="content-table-section" *ngIf="activeTable === 'inspections'">
     <div class="section-header">
       <h2 class="section-subtitle">בדיקות רכבים</h2>
-      <button class="toggle-notes-button" (click)="toggleVehicleNotesColumn()" *ngIf=hasCriticalIssues>
-        {{ showVehicleNotesColumn ? 'הסתר הערות' : 'הצג הערות' }}
-      </button>
+    <button class="toggle-notes-button" (click)="toggleVehicleNotesColumn()" *ngIf="hasCriticalIssues">
+  <i class="pi pi-file-edit"></i>
+  {{ showVehicleNotesColumn ? 'הסתר הערות' : 'הצג הערות' }}
+</button>
     </div>
     <div class="table-wrapper">
       <table class="data-table">
         <thead>
           <tr>
             <th>תאריך</th>
+            <th>לוחית רישוי </th>
+
             <th>בודק</th>
             <th>נקי</th>
             <th>מתודלק</th>
@@ -68,16 +71,18 @@
         <tbody>
           <tr *ngFor="let insp of pagedInspections">
             <td>{{ insp.inspection_date | date: 'short' }}</td>
+            <td>{{ insp.plate_number }}</td>
+
             <td>{{ insp.inspected_by_name || '—' }}</td>
-            <td [class.status-positive]="insp.clean" [class.status-negative]="!insp.clean">
-              {{ insp.clean ? '✔️' : '❌' }}
-            </td>
-            <td [class.status-positive]="!insp.fuel_checked" [class.status-negative]="insp.fuel_checked">
-              {{ !insp.fuel_checked ? '✔️' : '❌' }}
-            </td>
-            <td [class.status-positive]="insp.no_items_left" [class.status-negative]="!insp.no_items_left">
-              {{ insp.no_items_left ? '✔️' : '❌' }}
-            </td>
+           <td [class.status-positive]="insp.clean" [class.status-negative]="!insp.clean">
+  <i [class]="insp.clean ? 'pi pi-check' : 'pi pi-times'"></i>
+</td>
+<td [class.status-positive]="!insp.fuel_checked" [class.status-negative]="insp.fuel_checked">
+  <i [class]="!insp.fuel_checked ? 'pi pi-check' : 'pi pi-times'"></i>
+</td>
+<td [class.status-positive]="insp.no_items_left" [class.status-negative]="!insp.no_items_left">
+  <i [class]="insp.no_items_left ? 'pi pi-check' : 'pi pi-times'"></i>
+</td>
             <td [class.status-critical]="insp.critical_issue_bool">
               {{ insp.critical_issue_bool ? 'כן' : 'לא' }}
             </td>
@@ -96,9 +101,10 @@
   <div class="content-table-section" *ngIf="activeTable === 'rides'">
     <div class="section-header">
       <h2 class="section-subtitle">דוחות נסיעות</h2>
-      <button class="toggle-notes-button" (click)="toggleRideNotesColumn()">
-        {{ showRideNotesColumn ? 'הסתר הערות' : 'הצג הערות' }}
-      </button>
+     <button class="toggle-notes-button" (click)="toggleRideNotesColumn()">
+  <i class="pi pi-file-edit"></i>
+  {{ showRideNotesColumn ? 'הסתר הערות' : 'הצג הערות' }}
+</button>
     </div>
 
     <div class="table-wrapper">

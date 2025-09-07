@@ -4,9 +4,9 @@
 
 
     <div class="export-buttons">
-      <button (click)="exportCSV()">📁 ייצוא CSV</button>
-      <button (click)="exportPDF()">📄 ייצוא PDF</button>
-      <button (click)="exportExcel()">📊 ייצוא Excel</button>
+      <button (click)="exportCSV()"><i class="pi pi-folder"></i> ייצוא CSV</button>
+      <button (click)="exportPDF()"><i class="pi pi-file-pdf"></i> ייצוא PDF</button>
+      <button (click)="exportExcel()"><i class="pi pi-file-excel"></i> ייצוא Excel</button>
 
       <div class="export-warning" *ngIf="noShowExportWarningVisible">
         אין נתוני אי-הגעה לייצוא כרגע.
@@ -133,7 +133,7 @@
 
             <ng-template #noDataTemplate>
               <div class="no-data-state">
-                <div class="no-data-icon">📋</div>
+<div class="no-data-icon"><i class="pi pi-clipboard"></i></div>
                 <div class="no-data-message">אין נתונים להצגה בטווח התאריכים הנבחר</div>
               </div>
 
@@ -183,14 +183,14 @@
 
             <div class="summary-cards">
               <div class="card">
-                <div class="card-icon">📊</div>
+<div class="card-icon"><i class="pi pi-chart-bar"></i></div>
                 <div class="card-content">
                   <div class="card-number">{{ totalNoShows }}</div>
                   <div class="card-label">סה"כ אי-הגעות</div>
                 </div>
               </div>
               <div class="card">
-                <div class="card-icon">👥</div>
+<div class="card-icon"><i class="pi pi-users"></i></div>
                 <div class="card-content">
                   <div class="card-number">{{ uniqueNoShowUsers }}</div>
                   <div class="card-label">סה"כ משתמשים שלא הגיעו </div>

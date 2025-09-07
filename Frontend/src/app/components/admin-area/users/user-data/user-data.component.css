@@ -13,7 +13,7 @@ body {
 .page-container {
  min-height: calc(100vh - 55px);
   background-image: url('/assets/images/user-data.png');
-  background-color: #fbe6c9; /* beige background color */
+  /* background-color: #fbe6c9; beige background color */
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center center;
@@ -125,7 +125,7 @@ position: absolute;
 
 /* עטיפת הטבלה */
 .table-wrapper {
-  overflow-x: auto;
+  overflow-x: visible;
   width: 100%;
 }
 
@@ -194,35 +194,49 @@ position: absolute;
 
 /* General style for all modify buttons */
 .modify-buttons button.modify {
-  padding: 0.1rem 0.1rem;
-  color: rgb(0, 0, 0);
+ margin-right: -10px; 
+  padding: 0.3rem 0.5rem;
+  color: #007bff;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 1.2rem;
-  transition: background-color 0.2s ease;
+  font-size: 1.1rem;
+  transition: all 0.2s ease;
   background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .delete {
-  padding: 0.1rem 0.1rem;
-  color: rgb(0, 0, 0);
+  padding: 0.3rem 0.5rem;
+  color: #dc3545;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 1.2rem;
-  transition: background-color 0.2s ease;
+  font-size: 1.1rem;
+  transition: all 0.2s ease;
   background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.block {
+  padding: 0.3rem 0.5rem !important;
+  color: #dc3545;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem !important; /* Same as other buttons */
+  transition: all 0.2s ease;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
 }
 
-.block{
-  padding: 0.1rem 0.1rem;
-  color: rgb(0, 0, 0);
-  border: none;
-  cursor: pointer;
-  font-size: 1.2rem;
-  transition: background-color 0.2s ease;
-  background: none;
+.modify-buttons .pi {
+  font-size: 1.1em;
 }
 
 /* Hover effect */
@@ -415,38 +429,61 @@ button.cancel {
   margin-left: 5px;
 }
 
-/* Unblock button styling */
 .unblock {
-  color: #33b151;
+  color: #28a745;
   border: none;
-  padding: 6px 8px;
+  padding: 0.3rem 0.5rem;
   border-radius: 4px;
   cursor: pointer;
-  margin-left: 5px;
-  font-size: 12px;
+  font-size: 1.1rem;
   background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+/* Hover effects */
+.modify-buttons button.modify:hover {
+  background-color: #e3f2fd;
+  transform: scale(1.1);
+}
+
+.modify-buttons button.delete:hover {
+  background-color: #ffebee;
+  transform: scale(1.1);
+}
+
+.block:hover {
+  background-color: #ffebee;
+  transform: scale(1.1);
 }
 
 .unblock:hover {
-  color: #218838;
+  background-color: #e8f5e8;
+  transform: scale(1.1);
 }
 
-/* Block button styling (existing, but making sure it's consistent) */
-.block {
-  color: #dc3545;
-  border: none;
-  padding: 6px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-left: 5px;
-  font-size: 12px;
-  transition: background-color 0.2s;
-}
+
 
 .block:hover {
   transform: scale(1.05);
 }
 
+.edit-button {
+  text-decoration: none !important;
+  border: none !important;
+  outline: none !important;
+  color: inherit !important;
+}
+
+.edit-button:hover,
+.edit-button:focus,
+.edit-button:active {
+  text-decoration: none !important;
+  border: none !important;
+  outline: none !important;
+}
 /* Disabled button styling - only for modify and delete buttons */
 button.modify:disabled,
 button.delete:disabled {
@@ -567,3 +604,78 @@ button.delete:disabled:hover {
   align-items: center;
 }
 
+/* Expired license warning icon */
+.expired .pi-exclamation-triangle {
+  color: #ffc107;
+  font-size: 1.2em;
+}
+
+/* Blocked user indicator icon */
+.blocked-indicator .pi-ban {
+  color: #dc3545;
+  font-size: 1.1em;
+  margin-left: 5px;
+}
+
+/* Action button icons */
+.modify .pi-pencil {
+  color: #007bff;
+  font-size: 1.1em;
+}
+
+.delete .pi-trash {
+  color: #dc3545;
+  font-size: 1.1em;
+}
+
+.block .pi-ban {
+  color: #dc3545;
+  font-size: 1.1em;
+  /* margin-right: -10px; move the block icon to the right */
+
+}
+
+.unblock .pi-check-circle {
+  color: #28a745;
+  font-size: 1.1em;
+}
+
+/* Hover effects for action buttons */
+.modify:hover .pi-pencil {
+  color: #0056b3;
+}
+
+.delete:hover .pi-trash {
+  color: #c82333;
+}
+
+.block:hover .pi-ban {
+  color: #bd2130;
+}
+
+.unblock:hover .pi-check-circle {
+  color: #1e7e34;
+}
+
+/* Tooltip styling for expired license */
+.expired {
+  position: relative;
+  cursor: help;
+}
+
+.expired:hover::after {
+  content: "רישיון פג תוקף";
+  position: absolute;
+  top: -25px;
+  right: 50%;
+  transform: translateX(50%);
+  background: #fff3cd;
+  color: #856404;
+  padding: 4px 8px;
+  border: 1px solid #ffeaa7;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-size: 0.8em;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}

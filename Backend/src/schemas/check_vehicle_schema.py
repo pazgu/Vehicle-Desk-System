@@ -9,14 +9,10 @@ class IssueFoundSchema(BaseModel):
 
 
 class VehicleInspectionSchema(BaseModel):
-    inspection_id: Optional[UUID] = None
-    inspected_by: Optional[UUID] = None
-
-    dirty_vehicle_ids: Optional[List[UUID]] = None
-    items_left_vehicle_ids: Optional[List[UUID]] = None
-    critical_issue_vehicle_ids: Optional[List[UUID]] = None
-    unfueled_vehicle_ids: Optional[List[UUID]] = None
-    issues_found: Optional[List[IssueFoundSchema]] = None
-
-    class Config:
-        from_attributes = True
+    inspected_by: UUID
+    vehicle_id: UUID
+    is_clean: bool
+    is_unfueled: bool
+    has_items_left: bool
+    has_critical_issue: bool
+    issues_found: Optional[str] = None
