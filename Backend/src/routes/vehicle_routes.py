@@ -208,7 +208,8 @@ def get_ride_statuses(
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}") 
     
 
-ALLOWED_RIDE_STATUSES = ["approved", "in_progress", "completed"]
+
+
 @router.get("/vehicles/{vehicle_id}/timeline", response_model=List[RideTimelineSchema])
 def get_vehicle_timeline(
     vehicle_id: UUID,
@@ -216,8 +217,10 @@ def get_vehicle_timeline(
     to_date: date = Query(..., alias="to"),
     db: Session = Depends(get_db),
 ):
+    # Define the start of the first day and the end of the last day
     start_dt = datetime.combine(from_date, time.min)  # 00:00:00 on from_date
-    end_dt = datetime.combine(to_date, time.max)      # 23:59:59.999999 on to_date
+    # We need to go up to the *end* of the to_date
+    end_dt = datetime.combine(to_date, time.max)    # 23:59:59.999999 on to_date
 
     rides = (
         db.query(
@@ -232,15 +235,17 @@ def get_vehicle_timeline(
         .join(User, Ride.user_id == User.employee_id)
         .filter(
             Ride.vehicle_id == vehicle_id,
-            Ride.start_datetime < end_dt,   # starts before the window ends
-            Ride.end_datetime > start_dt,   # ends after the window starts
-            Ride.status.in_(ALLOWED_RIDE_STATUSES),
+            Ride.start_datetime < end_dt,  # Ride starts before the requested period ends
+            Ride.end_datetime > start_dt,  # Ride ends after the requested period starts
+           
         )
         .all()
     )
 
+  
     return [RideTimelineSchema(**dict(row._mapping)) for row in rides]
 
+   
 @router.get("/vehicles/inactive", response_model=List[VehicleOut])
 def return_inactive_vehicle(db: Session = Depends(get_db)):
     
