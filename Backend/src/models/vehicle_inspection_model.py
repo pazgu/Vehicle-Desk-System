@@ -18,10 +18,7 @@ class VehicleInspection(Base):
     inspected_by = Column(UUID(as_uuid=True), ForeignKey("users.employee_id"), nullable=True)
 
     # New foreign keys to vehicles table
-    dirty_vehicle_id = Column(UUID(as_uuid=True), ForeignKey("vehicles.id"), nullable=True)
-    items_left_vehicle_id = Column(UUID(as_uuid=True), ForeignKey("vehicles.id"), nullable=True)
-    critical_issue_vehicle_id = Column(UUID(as_uuid=True), ForeignKey("vehicles.id"), nullable=True)
-    unfueled_vehicle_id = Column(UUID(as_uuid=True), ForeignKey("vehicles.id"), nullable=True)
+    vehicle_id = Column(UUID(as_uuid=True), ForeignKey("vehicles.id"), nullable=True)
 
     # Inspection details
     clean = Column(Boolean, nullable=False)

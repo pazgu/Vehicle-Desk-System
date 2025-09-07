@@ -235,3 +235,56 @@ textarea {
 .new-form-button:active {
   transform: translateY(0);
 }
+
+/* הודעת אין רכבים זמינים */
+.no-vehicles-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 70vh;
+}
+
+.no-vehicles-message {
+  background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+  border-radius: 20px;
+  padding: 3rem;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  max-width: 500px;
+  border: 3px solid #8b0000;
+}
+
+.no-vehicles-message h2 {
+  color: #8b0000;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.no-vehicles-message p {
+  color: #343a40; /* כהה יותר */
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+  font-weight: 600; /* עוד יותר מודגש */
+}
+.refresh-button {
+  background: linear-gradient(135deg, #8b0000 0%, #b22222 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2.5rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(139, 0, 0, 0.3);
+}
+
+.refresh-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(139, 0, 0, 0.4);
+}
+
+.refresh-button:active {
+  transform: translateY(0);
+}

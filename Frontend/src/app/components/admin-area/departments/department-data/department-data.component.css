@@ -350,6 +350,7 @@ cursor: cell;
 
 /* New Department Form Styling */
 .new-department-form {
+    position: relative; /* מאפשר מיקום יחסי של הכפתור בפנים */
     max-width: 500px;
     margin: 0 auto 2rem auto;
     padding: 2rem;
@@ -525,6 +526,22 @@ background-color: #942222;
   background-color: #6c757d; /* Grey for cancel */
   color: white;
 }
+.closed-button:hover {
+     color: #c12a2a; 
+     transform: translateY(-2px); 
+     background: none; 
+    }
+.closed-button {
+     color: #942222;
+     background: none; 
+     border: none; 
+     border-radius: 8px;
+      padding: 10px 20px; 
+      font-size: 16px; 
+      font-weight: bold; 
+      cursor: pointer; 
+      transition: all 0.3s ease;
+     }
 
 .back-button {
     color: #942222;
@@ -536,7 +553,15 @@ background-color: #942222;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
-}
+    position: absolute;
+    top: 10px;     /* מרחק מהחלק העליון */
+    left: 10px;    /* מרחק מצד שמאל */
+    background-color: transparent;
+    border: none;
+    color: #333;
+    font-weight: bold;
+    cursor: pointer;
+    }
 
 .back-button:hover {
     color: #c12a2a; 
