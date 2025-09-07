@@ -74,8 +74,11 @@ fetchVehicles(): void {
       if (vehicles.length === 0) {
         this.noVehiclesAvailable = true;
         this.vehicleIssues = [];
+        window.scrollTo(0, 0);
+        document.body.style.overflow = 'hidden';
       } else {
         this.noVehiclesAvailable = false;
+        document.body.style.overflow = 'auto';
         this.vehicleIssues = vehicles.map(vehicle => ({
           vehicle_id: vehicle.id,
           plate: vehicle.plate_number,
@@ -107,6 +110,7 @@ resetForm(): void {
 }
 
 openNewForm(): void {
+  document.body.style.overflow = 'auto';
   this.resetForm();
   this.fetchVehicles();
 }
@@ -170,6 +174,7 @@ if (missingDescriptions) {
     this.submitting = false;
     this.formSubmitted = true;
     window.scrollTo(0, 0);
+    document.body.style.overflow = 'hidden'
     const criticalVehicles = this.vehicleIssues.filter(v => v.critical_issue);
 
     criticalVehicles.forEach(vehicle => {
