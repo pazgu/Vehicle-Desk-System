@@ -5,7 +5,7 @@
 
 <div *ngIf="!loading" class="admin-inspections-container">
   <div class="title-container">
-    <h1 class="page-title">דוחות חריגות</h1>
+    <h1 class="page-title">דוחות ובדיקות</h1>
   </div>
 
 
@@ -57,10 +57,12 @@
         <thead>
           <tr>
             <th>תאריך</th>
+            <th>**מזהה רכב**</th>
+
             <th>בודק</th>
             <th>נקי</th>
             <th>מתודלק</th>
-            <th>ריק מחפצים</th>
+            <th>אין חפצים</th>
             <th>בעיה קריטית</th>
             <th *ngIf="showVehicleNotesColumn">הערות</th>
           </tr>
@@ -68,6 +70,8 @@
         <tbody>
           <tr *ngFor="let insp of pagedInspections">
             <td>{{ insp.inspection_date | date: 'short' }}</td>
+            <td>{{ insp.vehicle_id }}</td>
+
             <td>{{ insp.inspected_by_name || '—' }}</td>
             <td [class.status-positive]="insp.clean" [class.status-negative]="!insp.clean">
               {{ insp.clean ? '✔️' : '❌' }}

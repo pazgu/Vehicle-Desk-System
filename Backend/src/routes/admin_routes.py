@@ -911,22 +911,6 @@ def get_critical_issues(
             )
         )
 
-    else:
-        inspections_query = inspections_query.filter(
-            or_(
-                 VehicleInspection.clean == False,                     # dirty vehicle
-                    VehicleInspection.no_items_left == False,             # items left
-                    VehicleInspection.fuel_checked==True,        # unfueled vehicle
-                    VehicleInspection.critical_issue_bool == True,
-                and_(
-                    VehicleInspection.critical_issue_bool == True,
-                    and_(
-                        VehicleInspection.issues_found != None,
-                        VehicleInspection.issues_found != ""
-                    )
-                )
-            )
-        )
 
     inspections_query = inspections_query.order_by(VehicleInspection.inspection_date.desc())
 
