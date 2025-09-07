@@ -216,25 +216,28 @@ def get_vehicle_timeline(
     to_date: date = Query(..., alias="to"),
     db: Session = Depends(get_db),
 ):
-    
     start_dt = datetime.combine(from_date, time.min)  # 00:00:00 on from_date
     end_dt = datetime.combine(to_date, time.max)      # 23:59:59.999999 on to_date
 
-    rides = db.query(
-        Ride.vehicle_id,
-        Ride.start_datetime,
-        Ride.end_datetime,
-        Ride.status,
-        Ride.user_id,
-        User.first_name,
-        User.last_name,
-    ).join(User, Ride.user_id == User.employee_id).filter(
-        Ride.vehicle_id == vehicle_id,
-        Ride.start_datetime >= start_dt,
-        Ride.end_datetime <= end_dt,
-        Ride.status.in_(ALLOWED_RIDE_STATUSES)
-
-    ).all()
+    rides = (
+        db.query(
+            Ride.vehicle_id,
+            Ride.start_datetime,
+            Ride.end_datetime,
+            Ride.status,
+            Ride.user_id,
+            User.first_name,
+            User.last_name,
+        )
+        .join(User, Ride.user_id == User.employee_id)
+        .filter(
+            Ride.vehicle_id == vehicle_id,
+            Ride.start_datetime < end_dt,   # starts before the window ends
+            Ride.end_datetime > start_dt,   # ends after the window starts
+            Ride.status.in_(ALLOWED_RIDE_STATUSES),
+        )
+        .all()
+    )
 
     return [RideTimelineSchema(**dict(row._mapping)) for row in rides]
 
