@@ -16,6 +16,7 @@ from ..utils.socket_manager import sio
 from ..services.vehicle_service import (
     get_vehicle_km_driven_on_date,
     get_vehicles_with_optional_status,
+    get_available_vehicles_new_ride,
     update_vehicle_status,
     get_vehicle_by_id,
     get_available_vehicles_for_ride_by_id,
@@ -59,11 +60,13 @@ router = APIRouter()
 def get_all_vehicles_route(
     distance_km: float = Query(...),
     ride_date: Optional[date] = Query(None),
-    type: Optional[str] = Query(None),  # renamed here
+    type: Optional[str] = Query(None), 
+    start_time:Optional[datetime]=Query(None),
+    end_time:Optional[datetime]=Query(None),# renamed here
     db: Session = Depends(get_db),
     payload: dict = Depends(token_check),
 ):
-    vehicles = get_vehicles_with_optional_status(db, "available", type)
+    vehicles = get_available_vehicles_new_ride(db,start_time,end_time,type)
 
 
     if type:
@@ -84,6 +87,7 @@ def get_all_vehicles_route(
         elif v.fuel_type =="gasoline":
             fuel.append(v)
 
+   
     # Step 2: Apply fuel priority within selected vehicle_type
     prioritized = []
     if distance_km <= 200 and electric:
