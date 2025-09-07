@@ -38,6 +38,7 @@ export class VehicleInspectionComponent implements OnInit {
   loading = true;
   submitting = false;
   formSubmitted = false;
+  noVehiclesAvailable = false;
   @ViewChild('bottom') bottomRef!: ElementRef;
 
   scrollToBottom(): void {
@@ -65,11 +66,16 @@ export class VehicleInspectionComponent implements OnInit {
     );
   }
 
-  fetchVehicles(): void {
-      const params = new HttpParams().set('status', 'available');
+fetchVehicles(): void {
+  const params = new HttpParams().set('status', 'available');
 
-    this.http.get<Vehicle[]>(`${environment.apiUrl}/all-vehicles`, { params }).subscribe({
-      next: (vehicles) => {
+  this.http.get<Vehicle[]>(`${environment.apiUrl}/all-vehicles`, { params }).subscribe({
+    next: (vehicles) => {
+      if (vehicles.length === 0) {
+        this.noVehiclesAvailable = true;
+        this.vehicleIssues = [];
+      } else {
+        this.noVehiclesAvailable = false;
         this.vehicleIssues = vehicles.map(vehicle => ({
           vehicle_id: vehicle.id,
           plate: vehicle.plate_number,
@@ -78,16 +84,14 @@ export class VehicleInspectionComponent implements OnInit {
           items_left: false,
           critical_issue: false
         }));
-        this.loading = false;
-      },
-      error: () => {
-        this.toastService.show('שגיאה בטעינת רכבים', 'error');
-        this.loading = false;
       }
-    });
-  }
-logFuelChange(value: boolean) {
-  console.log('Fuel checked changed to:', value);
+      this.loading = false;
+    },
+    error: () => {
+      this.toastService.show('שגיאה בטעינת רכבים', 'error');
+      this.loading = false;
+    }
+  });
 }
   // ← הוסף את 2 הפונקציות האלה
 resetForm(): void {
