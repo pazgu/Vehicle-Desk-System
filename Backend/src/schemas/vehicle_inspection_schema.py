@@ -13,6 +13,7 @@ class VehicleInspectionOut(BaseModel):
     no_items_left: bool
     critical_issue_bool: bool
     issues_found: Optional[str]
+    vehicle_id: UUID
 
     class Config:
         from_attributes = True 
