@@ -874,7 +874,7 @@ def get_critical_issues(
             and_(
                 or_(
                     VehicleInspection.clean == False,
-                    VehicleInspection.unfueled_vehicle_id != None,
+                    VehicleInspection.fuel_checked == False,
                     VehicleInspection.no_items_left == False
                 ),
                 VehicleInspection.critical_issue_bool == False
@@ -898,7 +898,7 @@ def get_critical_issues(
             or_(
                 and_(
                     or_(
-                        VehicleInspection.unfueled_vehicle_id != None,
+                        VehicleInspection.fuel_checked == False,
                     ),
                     VehicleInspection.critical_issue_bool == False
                 ),
