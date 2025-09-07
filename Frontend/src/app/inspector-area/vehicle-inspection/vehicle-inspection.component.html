@@ -7,7 +7,13 @@
     </button>
   </div>
 </div>
-<div *ngIf="!formSubmitted">
+<div *ngIf="!formSubmitted && noVehiclesAvailable" class="no-vehicles-container">
+  <div class="no-vehicles-message">
+    <h2> אין רכבים זמינים לבדיקה</h2>
+    <p>כל הרכבים נמצאים כעת בהקפאה או בטיפול</p>
+  </div>
+</div>
+<div *ngIf="!formSubmitted && !noVehiclesAvailable">
 <div class="search-container" style="margin: 16px; width: 400px;position: relative;">
   <input
     type="text"

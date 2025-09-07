@@ -6,8 +6,8 @@
         <div class="header-title">
           <h1 style="text-align: right;">רכבי מחלקה</h1>
           <button class="filter archive-btn" (click)="navigateToArchivedVehicles()" title=" ארכיון רכבים">
-            📁
-          </button>
+  <i class="pi pi-folder"></i>
+</button>
         </div>
         <div class="header-actions-bar">
           <div class="add-vehicle-btn-div">
@@ -81,8 +81,8 @@
           <input type="checkbox" id="showInactive" [(ngModel)]="showInactive" (change)="onInactiveFilterChange()" class="showInactive"
             style="transform: scale(1.2); cursor: pointer;" />
           <label for="showInactive" style="cursor: pointer;">
-            הצג רק מכוניות שלא היו בשימוש מעל לשבוע ⚠️
-          </label>
+  הצג רק מכוניות שלא היו בשימוש מעל לשבוע <i class="pi pi-exclamation-triangle"></i>
+</label>
         </div>
 
         <div style="display: flex; align-items: center; gap: 0.5rem; direction: rtl;">
@@ -115,11 +115,11 @@
     </button>
   </div>
   <div *ngIf="uploadSuccess" class="upload-success">
-    ✔️ הדוח הועלה בהצלחה!
-  </div>
+  <i class="pi pi-check-circle"></i> הדוח הועלה בהצלחה!
+</div>
   <div *ngIf="uploadError" class="upload-error">
-    ❌ שגיאה בהעלאת הדוח: {{ uploadError }}
-  </div>
+  <i class="pi pi-times-circle"></i> שגיאה בהעלאת הדוח: {{ uploadError }}
+</div>
   <div *ngIf="uploadSummary" class="upload-summary">
     <h3>סיכום:</h3>
     <p><strong>מספר רכבים שעודכנו:</strong> {{ uploadSummary.vehiclesUpdated }}</p>
@@ -180,8 +180,8 @@
 
       <div *ngIf="filteredVehicles?.length === 0" class="empty-state" style="text-align: center; margin-top: 2rem;">
         <ng-container *ngIf="showInactive; else noVehicles">
-          כל הרכבים היו בשימוש בשבוע האחרון ✅
-        </ng-container>
+  כל הרכבים היו בשימוש בשבוע האחרון <i class="pi pi-check"></i>
+</ng-container>
         <ng-template #noVehicles>
           לא נמצאו רכבים
         </ng-template>

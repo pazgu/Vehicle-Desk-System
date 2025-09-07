@@ -8,7 +8,7 @@
 
     <div class="ride-type-indicator" *ngIf="rideTypeNote">
       <div class="alert" [ngClass]="{'alert-info': isDayRide, 'alert-warning': !isDayRide}">
-        <span class="icon">{{ isDayRide ? '☀️' : '🌙' }}</span>
+<i class="icon" [ngClass]="isDayRide ? 'pi pi-sun' : 'pi pi-moon'"></i>
         <span>{{ rideTypeNote }}</span>
       </div>
     </div>
@@ -153,8 +153,10 @@
           <div *ngFor="let control of extraStops.controls; let i = index"
                [formGroupName]="i"
                class="extra-stop-item">
-            <button type="button" (click)="removeExtraStop(i)" class="removeBtn">❌</button>
-            <div class="form-field-group">
+<button type="button" (click)="removeExtraStop(i)" class="removeBtn">
+  <i class="pi pi-times"></i>
+</button>
+          <div class="form-field-group">
               <label>תחנה נוספת {{ i + 1 }}</label>
               <select formControlName="stop" class="styled-select">
                 <option value="">בחר עיר</option>
@@ -168,11 +170,11 @@
           </div>
 
           <button type="button"
-                  (click)="addExtraStop()"
-                  [disabled]="extraStops.length >= 2"
-                  class="addBtn">
-            ➕ הוסף תחנה נוספת (אופציונלי - מקסימום 2)
-          </button>
+        (click)="addExtraStop()"
+        [disabled]="extraStops.length >= 2"
+        class="addBtn">
+  <i class="pi pi-plus"></i> הוסף תחנה נוספת (אופציונלי - מקסימום 2)
+</button>
 
           <small *ngIf="extraStops.errors?.['sameStopAsDestination']" class="error-text">
             תחנה נוספת לא יכולה להיות זהה לתחנה העיקרית

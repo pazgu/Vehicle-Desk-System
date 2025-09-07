@@ -235,40 +235,45 @@ select.styled-select {
 .back-btn:hover {
   transform: scale(1.03);
 }
-
-.addBtn {
-  background: none;
+form .addBtn,
+form .removeBtn {
   border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 2px 4px;
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+form .addBtn {
+  color: #dc3545;
+  align-self: flex-start;
+}
+
+form .addBtn:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+form .removeBtn {
   color: #942222;
-  cursor: pointer;
-  font-size: 14px;
-  padding: 8px;
-  margin-top: 10px;
-  border-radius: 5px;
-  transition: background-color 0.2s ease;
-}
-
-.addBtn:hover {
-  background-color: #f0f0f0;
-}
-
-.addBtn:disabled {
-  color: #ccc;
-  cursor: not-allowed;
-}
-
-.removeBtn {
-  background: none;
+  font-size: 0.9rem;
+  font-weight: bold;
   border: none;
+  background: transparent;
   cursor: pointer;
-  font-size: 16px;
-  padding: 4px;
-  border-radius: 3px;
-  transition: background-color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px;
+  text-decoration: none;
 }
 
-.removeBtn:hover {
-  background-color: #ffebee;
+form .removeBtn:hover {
+  color: #b30000;
+  transform: scale(1.05);
+  text-decoration: none;
 }
 
 .ride-type-indicator {
@@ -299,4 +304,26 @@ select.styled-select {
   background-color: #fff3e0; 
   border: 1px solid #ffb300; 
   color: #e65100;
+}
+
+.alert .icon {
+  margin-left: 10px;
+  font-size: 20px;
+  /* Remove the emoji-specific styling */
+}
+
+/* Add specific styling for PrimeNG icons */
+.alert .icon.pi {
+  font-size: 18px;
+  margin-left: 8px;
+}
+
+.removeBtn .pi {
+  font-size: 14px;
+  color: inherit;  
+}
+
+.addBtn .pi {
+  margin-left: 5px;
+  font-size: 14px;
 }
