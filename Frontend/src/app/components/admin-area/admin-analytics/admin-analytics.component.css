@@ -1,10 +1,18 @@
 /* Reset and Base Styles */
-* {
-  border: none;
-  box-sizing: border-box;
-  background: white;
-
+/* Reset and Base Styles – safer version */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;        /* keep this */
 }
+
+/* Put background only on the page, not on every element */
+html, body {
+  background: white;
+  margin: 0;
+  padding: 0;
+}
+
 .export-disclaimer {
   margin-right: 38%;
 }
@@ -222,10 +230,15 @@ body {
   z-index: 2;
 }
 
-.tab-buttons button.active * {
+.tab-buttons button.active span,
+.tab-buttons button.active {
   color: white !important;
   position: relative;
   z-index: 3;
+}
+
+.tab-buttons button.active i {
+  color: inherit
 }
 
 .tab-buttons button span {
@@ -642,15 +655,20 @@ body {
 }
 
 .summary-cards .card {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.95));
-  border-radius: 10px;
-  padding: 1rem; 
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
   text-align: center;
-  box-shadow: 
-    0 10px 30px rgba(148, 34, 34, 0.08),
-    0 1px 0 rgba(255, 255, 255, 0.6) inset;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   position: relative;
   overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.warning-row:hover {
+  background: linear-gradient(135deg, #fef5e7 0%, #feebc8 100%) !important;
+  box-shadow: 0 4px 12px rgba(221, 107, 32, 0.15);
 }
 
 .summary-cards .card::before {
@@ -659,17 +677,20 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #942222, #b91c1c, #dc2626);
-  background-size: 200% 100%;
+  height: 4px;
+  background: linear-gradient(90deg, #942222, #dc2626);
 }
 
 
 
 .summary-cards .card-icon {
-  font-size: 2.5rem;
   margin-bottom: 1rem;
   display: block;
+}
+
+.summary-cards .card-icon i {
+  font-size: 2.5rem;
+  color: #942222;
 }
 
 .summary-cards .card-content {
@@ -692,58 +713,55 @@ body {
   letter-spacing: 1px;
 }
 
-
+.summary-cards .card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
 
 /* No-Show Users Table - Enhanced Red Theme */
 .styled-table {
   width: 100%;
   margin: 2rem 0;
   font-family: 'Alef', sans-serif;
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
-  border: 1px solid rgba(148, 34, 34, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   direction: rtl;
   position: relative;
-  color:black
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
 }
 
 /* Table Header Styling - Red Theme */
 .styled-table thead {
-  background: linear-gradient(135deg, #942222 0%, #b91c1c 50%, #dc2626 100%);
-  position: relative;
+background: linear-gradient(135deg, #942222, #c53030); /* Red gradient */
+border-bottom: none;
 }
 
 
-
-
-
-
 .styled-table th {
-  padding: 1.5rem 2rem;
-  text-align: center;
-  font-weight: 800;
-  font-size: 1.1rem;
-  color: black;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  position: relative;
-  background: transparent;
-  border: none;
-  border-bottom: solid #942222 ;
-
+padding: 1.2rem 2rem;
+text-align: center;
+font-weight: 700;
+font-size: 1rem;
+color: white; /* Make text white for contrast */
+text-transform: uppercase;
+letter-spacing: 1px;
+position: relative;
+background: transparent;
+border: none;
 }
 
 
 
 /* Table Data Styling - Enhanced */
 .styled-table td {
-  padding: 1.3rem 2rem;
-  text-align: center;
-  border: none;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #2d3748;
-  position: relative;
+padding: 1rem 2rem;
+text-align: center;
+border: none;
+font-size: 0.95rem;
+font-weight: 500;
+color: #5c3535; /* A dark, reddish-brown for better contrast */
+position: relative;
 }
 
 /* Special styling for different columns
@@ -787,8 +805,10 @@ body {
 /* Table container for better presentation */
 .table-container {
   overflow-x: auto;
-  border-radius: 20px;
+  border-radius: 12px;
   position: relative;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 
@@ -807,9 +827,13 @@ body {
 }
 
 .no-data-icon {
-  font-size: 4rem;
   margin-bottom: 1.5rem;
   opacity: 0.6;
+}
+
+.no-data-icon i {
+  font-size: 4rem;
+  color: #6b7280;
 }
 
 .no-data-message {
@@ -923,18 +947,26 @@ body {
   border-radius: 12px;
 }
 
-/* .styled-table tbody tr:hover::after {
-  opacity: 1;
+/* .styled-table tbody tr:hover {
+background: linear-gradient(135deg, #ffebee 0%, #ffe0e0 100%) !important;
 } */
 
 .critical-row {
-  background-color: #ffe0e0;
-  font-weight: bold;
-  color: #b71c1c;
+  background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%) !important;
+  border-left: 4px solid #e53e3e;
+  color: #c53030 !important;
+  font-weight: 600;
+}
+.critical-row:hover {
+  background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%) !important;
+  box-shadow: 0 4px 12px rgba(229, 62, 62, 0.15);
 }
 
 .warning-row {
-  background-color: #fff3cd;
+  background: linear-gradient(135deg, #fffaf0 0%, #fef5e7 100%) !important;
+  border-left: 4px solid #dd6b20;
+  color: #c05621 !important;
+  font-weight: 600;
 }
 .filter-controls {
   display: flex;
@@ -1050,9 +1082,14 @@ body {
   max-width: 90%;
 }
 
-/* Icon before text */
 .export-disclaimer::before {
-  content: "ℹ️";
+  content: "";
+}
+
+/* ADD THIS: */
+.export-disclaimer::after {
+  content: "\e90a"; /* PrimeNG info icon unicode */
+  font-family: 'PrimeIcons';
   margin-left: 0.5rem;
   font-size: 0.9rem;
 }
@@ -1080,7 +1117,8 @@ body {
 }
 
 .export-disclaimer.bold-version::before {
-  content: "⚠️";
+  content: "\e91b"; /* PrimeNG warning icon unicode */
+  font-family: 'PrimeIcons';
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
 }
 

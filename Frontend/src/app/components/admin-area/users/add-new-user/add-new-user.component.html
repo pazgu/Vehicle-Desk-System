@@ -90,8 +90,11 @@
   </label>
 </div>
 
-<h4 id="warning" *ngIf="!checkIfHasGovernmentlicense()">⚠️ המשתמש לא יוכל להזמין נסיעות ⚠️</h4>
-
+<h4 id="warning" *ngIf="!checkIfHasGovernmentlicense()">
+  <i class="pi pi-exclamation-triangle"></i> 
+  המשתמש לא יוכל להזמין נסיעות 
+  <i class="pi pi-exclamation-triangle"></i>
+</h4>
        <div class="form-row">
   <div class="form-group" *ngIf="checkIfHasGovernmentlicense()">
     <label for="license_expiry_date">תוקף רישיון</label>
