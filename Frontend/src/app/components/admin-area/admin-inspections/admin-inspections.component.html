@@ -70,7 +70,7 @@
         <tbody>
           <tr *ngFor="let insp of pagedInspections">
             <td>{{ insp.inspection_date | date: 'short' }}</td>
-            <td>{{ insp.vehicle_id }}</td>
+            <td>{{ insp.plate_number }}</td>
 
             <td>{{ insp.inspected_by_name || '—' }}</td>
             <td [class.status-positive]="insp.clean" [class.status-negative]="!insp.clean">
