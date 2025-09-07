@@ -38,6 +38,7 @@
 //   loading = true;
 //   submitting = false;
 //   formSubmitted = false;
+//   noVehiclesAvailable = false;
 //   @ViewChild('bottom') bottomRef!: ElementRef;
 
 //   scrollToBottom(): void {
@@ -65,11 +66,19 @@
 //     );
 //   }
 
-//   fetchVehicles(): void {
-//       const params = new HttpParams().set('status', 'available');
+// fetchVehicles(): void {
+//   const params = new HttpParams().set('status', 'available');
 
-//     this.http.get<Vehicle[]>(`${environment.apiUrl}/all-vehicles`, { params }).subscribe({
-//       next: (vehicles) => {
+//   this.http.get<Vehicle[]>(`${environment.apiUrl}/all-vehicles`, { params }).subscribe({
+//     next: (vehicles) => {
+//       if (vehicles.length === 0) {
+//         this.noVehiclesAvailable = true;
+//         this.vehicleIssues = [];
+//         window.scrollTo(0, 0);
+//         document.body.style.overflow = 'hidden';
+//       } else {
+//         this.noVehiclesAvailable = false;
+//         document.body.style.overflow = 'auto';
 //         this.vehicleIssues = vehicles.map(vehicle => ({
 //           vehicle_id: vehicle.id,
 //           plate: vehicle.plate_number,
@@ -78,16 +87,14 @@
 //           items_left: false,
 //           critical_issue: false
 //         }));
-//         this.loading = false;
-//       },
-//       error: () => {
-//         this.toastService.show('שגיאה בטעינת רכבים', 'error');
-//         this.loading = false;
 //       }
-//     });
-//   }
-// logFuelChange(value: boolean) {
-//   console.log('Fuel checked changed to:', value);
+//       this.loading = false;
+//     },
+//     error: () => {
+//       this.toastService.show('שגיאה בטעינת רכבים', 'error');
+//       this.loading = false;
+//     }
+//   });
 // }
 //   // ← הוסף את 2 הפונקציות האלה
 // resetForm(): void {
@@ -103,6 +110,7 @@
 // }
 
 // openNewForm(): void {
+//   document.body.style.overflow = 'auto';
 //   this.resetForm();
 //   this.fetchVehicles();
 // }
@@ -166,6 +174,7 @@
 //     this.submitting = false;
 //     this.formSubmitted = true;
 //     window.scrollTo(0, 0);
+//     document.body.style.overflow = 'hidden'
 //     const criticalVehicles = this.vehicleIssues.filter(v => v.critical_issue);
 
 //     criticalVehicles.forEach(vehicle => {
@@ -209,7 +218,6 @@
 
 
 // }
-// vehicle-inspection.component.ts
 
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -293,6 +301,7 @@ fetchVehicles(): void {
         this.vehicleIssues = [];
       } else {
         this.noVehiclesAvailable = false;
+       
         this.vehicleIssues = vehicles.map(vehicle => ({
           vehicle_id: vehicle.id,
           plate: vehicle.plate_number,
@@ -324,6 +333,7 @@ resetForm(): void {
 }
 
   openNewForm(): void {
+    document.body.style.overflow = 'auto';
     this.resetForm();
     this.fetchVehicles();
   }
@@ -373,6 +383,8 @@ resetForm(): void {
           this.toastService.show('הבדיקות נשלחו בהצלחה', 'success');
           this.formSubmitted = true;
           window.scrollTo(0, 0);
+          document.body.style.overflow = 'hidden';
+
 
           const criticalVehicles = inspectedVehicles.filter(v => v.critical_issue);
           criticalVehicles.forEach(vehicle => {
