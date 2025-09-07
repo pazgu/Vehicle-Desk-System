@@ -325,10 +325,19 @@ input:checked + .slider:before {
   border-radius: 50%;
 }
 
-#warning{
-  color:rgb(220, 0, 0);
+#warning {
+  color: rgb(220, 0, 0);
   font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
+
+#warning .pi {
+  font-size: 1.2em;
+}
+
 .slider::after {
   content: "לא";
   position: absolute;
