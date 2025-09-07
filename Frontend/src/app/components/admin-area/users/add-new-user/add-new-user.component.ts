@@ -147,20 +147,14 @@ export class AddNewUserComponent implements OnInit {
     return map[field] || field;
   }
 
-  private departmentHebrewMap: { [key: string]: string } = {
-    Engineering: 'הנדסה',
-    HR: 'משאבי אנוש',
-    'IT Department': 'טכנولוגיות מידע',
-    Finance: 'כספים',
-    Security: 'ביטחון'
-  };
+ 
 
   fetchDepartments(): void {
     this.http.get<any[]>('http://localhost:8000/api/departments').subscribe({
       next: (data) => {
         this.departments = data.map(dep => ({
           ...dep,
-          name: this.departmentHebrewMap[dep.name] || dep.name
+          name: dep.name
         }));
       },
       error: (err: any) => {
