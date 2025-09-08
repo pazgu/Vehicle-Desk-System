@@ -49,11 +49,14 @@ export const routes: Routes = [
   { path: 'vehicle-dashboard/new-vehicle', component: AddVehicleComponent,canActivate: [ProtectedRouteGuard]},
   { path: 'department-data', component: DepartmentDataComponent, canActivate: [ProtectedRouteGuard]},
 
-  { path: 'ride-completion-form/:ride_id', component: RideCompletionFormComponent },
+  { path: 'ride-completion-form/:ride_id', component: RideCompletionFormComponent, canActivate: [ProtectedRouteGuard]
+ },
   { path: 'audit-logs', component: AuditLogsComponent,canActivate: [ProtectedRouteGuard] },
   { path: 'forgot-password', component: ForgotPasswordComponent },
-  { path: 'reset-password/:token', component: ResetPasswordComponent },
-  { path: 'archived-vehicles', component: ArchivedVehiclesComponent },
+  { path: 'reset-password/:token', component: ResetPasswordComponent,  canActivate: [ProtectedRouteGuard]
+ },
+  { path: 'archived-vehicles', component: ArchivedVehiclesComponent,  canActivate: [ProtectedRouteGuard]
+ },
   {
   path: 'admin/analytics',
   component: AdminAnalyticsComponent,
@@ -62,7 +65,9 @@ export const routes: Routes = [
 
 {
   path: 'ride/details/:id',
-  loadComponent: () => import('./ride-area/ride-details/ride-details.component').then(m => m.RideDetailsComponent)
+  loadComponent: () => import('./ride-area/ride-details/ride-details.component').then(m => m.RideDetailsComponent),
+    canActivate: [ProtectedRouteGuard]
+
 },
 {
   path: 'inspector/inspection',
