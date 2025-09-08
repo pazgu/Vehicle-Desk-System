@@ -100,7 +100,7 @@ canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean 
   }
 
   // ✅ Allow employees to edit their rides
-  if (url.startsWith('/ride/edit') && role === 'employee') {
+  if (url.startsWith('/ride/edit') && (role === 'employee'||'supervisor')) {
     return true;
   }
 
