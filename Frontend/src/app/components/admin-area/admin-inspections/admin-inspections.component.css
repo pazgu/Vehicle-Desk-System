@@ -376,7 +376,48 @@
 }
 
 /* Optional: Add a simple icon to the button for better visual feedback */
-.toggle-notes-button::before {
-  content: '📝'; /* Unicode for a pencil emoji */
-  margin-left: 8px; /* Spacing from the text */
+.toggle-notes-button {
+  background-color: transparent;
+  color: #777;
+  border: 1px solid #ccc;
+  border-radius: 8px; 
+  padding: 8px 16px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap; 
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toggle-notes-button:hover {
+  background-color: #f0f0f0;
+  border-color: #bbb;
+  color: #555;
+}
+
+.toggle-notes-button:active {
+  transform: translateY(1px);
+}
+.status-positive i {
+  color: #2e7d32;
+  font-size: 1.1rem;
+}
+
+.status-negative i {
+  color: #d32f2f;
+  font-size: 1.1rem;
+}
+
+.status-critical i {
+  color: #d32f2f;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.toggle-notes-button i {
+  font-size: 0.9rem;
 }

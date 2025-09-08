@@ -1,3 +1,224 @@
+// import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+// import { CommonModule } from '@angular/common';
+// import { FormsModule } from '@angular/forms';
+// import { HttpClient, HttpParams } from '@angular/common/http';
+// import { Router } from '@angular/router';
+
+// import { environment } from '../../../environments/environment';
+// import { ToastService } from '../../services/toast.service';
+// import { InspectionService } from '../../services/inspection.service';
+// import { VehicleService } from '../../services/vehicle.service';
+// interface Vehicle {
+//   id: string;
+//   plate_number: string;
+// }
+
+// interface VehicleIssue {
+//   vehicle_id: string;
+//   plate: string;
+//   dirty: boolean;
+//   fuel_checked: boolean;
+//   items_left: boolean;
+//   critical_issue: boolean;
+//   issues_found?: string;
+// }
+
+// @Component({
+//   selector: 'app-vehicle-issue-table',
+//   standalone: true,
+//   imports: [CommonModule, FormsModule],
+//   templateUrl: './vehicle-inspection.component.html',
+//   styleUrls: ['./vehicle-inspection.component.css']
+// })
+// export class VehicleInspectionComponent implements OnInit {
+//   vehicleIssues: VehicleIssue[] = [];
+//   issues_found: string = '';
+//   searchTerm: string = '';      // ← new
+
+//   loading = true;
+//   submitting = false;
+//   formSubmitted = false;
+//   noVehiclesAvailable = false;
+//   @ViewChild('bottom') bottomRef!: ElementRef;
+
+//   scrollToBottom(): void {
+//     this.bottomRef.nativeElement.scrollIntoView({ behavior: 'smooth' });
+//   }
+//   constructor(
+//     private http: HttpClient,
+//     private router: Router,
+//     private toastService: ToastService,
+//     private InspectorService: InspectionService,
+//     private vehicleService:VehicleService
+
+//   ) {}
+
+//   ngOnInit(): void {
+//     this.fetchVehicles();
+//   }
+//    get filteredIssues(): VehicleIssue[] {
+//     if (!this.searchTerm) {
+//       return this.vehicleIssues;
+//     }
+//     const term = this.searchTerm.trim().toLowerCase();
+//     return this.vehicleIssues.filter(issue =>
+//       issue.plate.toLowerCase().includes(term)
+//     );
+//   }
+
+// fetchVehicles(): void {
+//   const params = new HttpParams().set('status', 'available');
+
+//   this.http.get<Vehicle[]>(`${environment.apiUrl}/all-vehicles`, { params }).subscribe({
+//     next: (vehicles) => {
+//       if (vehicles.length === 0) {
+//         this.noVehiclesAvailable = true;
+//         this.vehicleIssues = [];
+//         window.scrollTo(0, 0);
+//         document.body.style.overflow = 'hidden';
+//       } else {
+//         this.noVehiclesAvailable = false;
+//         document.body.style.overflow = 'auto';
+//         this.vehicleIssues = vehicles.map(vehicle => ({
+//           vehicle_id: vehicle.id,
+//           plate: vehicle.plate_number,
+//           dirty: false,
+//           fuel_checked: false,
+//           items_left: false,
+//           critical_issue: false
+//         }));
+//       }
+//       this.loading = false;
+//     },
+//     error: () => {
+//       this.toastService.show('שגיאה בטעינת רכבים', 'error');
+//       this.loading = false;
+//     }
+//   });
+// }
+//   // ← הוסף את 2 הפונקציות האלה
+// resetForm(): void {
+//   this.vehicleIssues.forEach(vehicle => {
+//     vehicle.dirty = false;
+//     vehicle.fuel_checked = false;
+//     vehicle.items_left = false;
+//     vehicle.critical_issue = false;
+//     vehicle.issues_found = '';
+//   });
+//   this.searchTerm = '';
+//   this.formSubmitted = false;
+// }
+
+// openNewForm(): void {
+//   document.body.style.overflow = 'auto';
+//   this.resetForm();
+//   this.fetchVehicles();
+// }
+//   submitIssues(): void {
+//       const nothingSelected = this.vehicleIssues.every(v =>
+//     !v.dirty &&
+//     !v.fuel_checked &&
+//     !v.items_left &&
+//     !v.critical_issue
+//   );
+
+//   if (nothingSelected) {
+//     this.toastService.show('לא נבחרה אף בעיה לרכב. יש לבחור לפחות שדה אחד לפני השליחה.','error');
+//     return; // Stop submission
+//   }
+
+//     this.submitting = true;
+
+//     const dirtyIds = this.vehicleIssues.filter(v => v.dirty).map(v => v.vehicle_id);
+//     const itemsLeftIds = this.vehicleIssues.filter(v => v.items_left).map(v => v.vehicle_id);
+//     const criticalIds = this.vehicleIssues.filter(v => v.critical_issue).map(v => v.vehicle_id);
+
+//     const unfueledVehicleIds = this.vehicleIssues
+//   .filter(v => v.fuel_checked)
+//   .map(v => v.vehicle_id);
+
+//     const cleanAll = this.vehicleIssues.every(v => !v.dirty);
+//     const itemsLeftNone = this.vehicleIssues.every(v => !v.items_left);
+//     const hasCritical = criticalIds.length > 0;
+
+//     const payload = {
+//       unfueled_vehicle_ids: unfueledVehicleIds,
+//       issues_found: this.vehicleIssues
+//         .filter(v => v.critical_issue && v.issues_found?.trim())
+//         .map(v => ({
+//           vehicle_id: v.vehicle_id,
+//           issue_found: v.issues_found?.trim() || ''
+//         }))
+// ,
+//       inspected_by: localStorage.getItem('employee_id'),
+//       dirty_vehicle_ids: dirtyIds,
+//       items_left_vehicle_ids: itemsLeftIds,
+//       critical_issue_vehicle_ids: criticalIds
+//     };
+// console.log('inspection data in front:', JSON.stringify(payload, null, 2));
+//     const missingDescriptions = this.vehicleIssues.some(
+//     v => v.critical_issue && (!v.issues_found || !v.issues_found) // (redundant check)
+// );
+
+// if (missingDescriptions) {
+//   this.toastService.show('יש למלא תיאור של האירוע החריג לכל רכב רלוונטי', 'error');
+//   this.submitting = false; 
+//   return;
+// }
+
+
+
+//   this.InspectorService.postInspection(payload).subscribe({
+//   next: () => {
+//     this.toastService.show('הבדיקה נשלחה בהצלחה', 'success');
+//     this.submitting = false;
+//     this.formSubmitted = true;
+//     window.scrollTo(0, 0);
+//     document.body.style.overflow = 'hidden'
+//     const criticalVehicles = this.vehicleIssues.filter(v => v.critical_issue);
+
+//     criticalVehicles.forEach(vehicle => {
+//       this.vehicleService.updateVehicleStatus(
+//         vehicle.vehicle_id,
+//         'frozen',
+//         'maintenance'
+//       ).subscribe({
+//         next: () => console.log(`Vehicle frozen`),
+//         error: err => console.error(`Failed to freeze vehicle `, err)
+//       });
+//     });
+//       this.resetFormState();
+
+
+//   },
+//   error: (err) => {
+//     console.error('❌ Failed to save inspection:', err);
+//     this.toastService.show('שליחה נכשלה', 'error');
+//           this.submitting = false;
+
+//   }
+// });
+
+//   }
+//   hasCriticalIssue(): boolean {
+//   return this.vehicleIssues?.some(v => v.critical_issue) ?? false;
+// }
+
+// private resetFormState(): void {
+//   this.vehicleIssues = this.vehicleIssues.map(v => ({
+//     ...v,
+//     dirty: false,
+//     fuel_checked: false,
+//     items_left: false,
+//     critical_issue: false,
+//     issues_found: ''
+//   }));
+//   this.searchTerm = '';
+// }
+
+
+// }
+
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -8,6 +229,9 @@ import { environment } from '../../../environments/environment';
 import { ToastService } from '../../services/toast.service';
 import { InspectionService } from '../../services/inspection.service';
 import { VehicleService } from '../../services/vehicle.service';
+import { forkJoin, of } from 'rxjs'; // Import forkJoin and of
+import { catchError, finalize } from 'rxjs/operators';
+
 interface Vehicle {
   id: string;
   plate_number: string;
@@ -33,29 +257,31 @@ interface VehicleIssue {
 export class VehicleInspectionComponent implements OnInit {
   vehicleIssues: VehicleIssue[] = [];
   issues_found: string = '';
-  searchTerm: string = '';      // ← new
+  searchTerm: string = '';
 
   loading = true;
   submitting = false;
   formSubmitted = false;
+  noVehiclesAvailable = false;
   @ViewChild('bottom') bottomRef!: ElementRef;
 
   scrollToBottom(): void {
     this.bottomRef.nativeElement.scrollIntoView({ behavior: 'smooth' });
   }
+
   constructor(
     private http: HttpClient,
     private router: Router,
     private toastService: ToastService,
     private InspectorService: InspectionService,
-    private vehicleService:VehicleService
-
+    private vehicleService: VehicleService
   ) {}
 
   ngOnInit(): void {
     this.fetchVehicles();
   }
-   get filteredIssues(): VehicleIssue[] {
+
+  get filteredIssues(): VehicleIssue[] {
     if (!this.searchTerm) {
       return this.vehicleIssues;
     }
@@ -65,29 +291,33 @@ export class VehicleInspectionComponent implements OnInit {
     );
   }
 
-  fetchVehicles(): void {
-      const params = new HttpParams().set('status', 'available');
+fetchVehicles(): void {
+  const params = new HttpParams().set('status', 'available');
 
-    this.http.get<Vehicle[]>(`${environment.apiUrl}/all-vehicles`, { params }).subscribe({
-      next: (vehicles) => {
+  this.http.get<Vehicle[]>(`${environment.apiUrl}/all-vehicles`, { params }).subscribe({
+    next: (vehicles) => {
+      if (vehicles.length === 0) {
+        this.noVehiclesAvailable = true;
+        this.vehicleIssues = [];
+      } else {
+        this.noVehiclesAvailable = false;
+       
         this.vehicleIssues = vehicles.map(vehicle => ({
           vehicle_id: vehicle.id,
           plate: vehicle.plate_number,
           dirty: false,
           fuel_checked: false,
           items_left: false,
-          critical_issue: false
+          critical_issue: false,
         }));
-        this.loading = false;
-      },
-      error: () => {
-        this.toastService.show('שגיאה בטעינת רכבים', 'error');
-        this.loading = false;
       }
-    });
-  }
-logFuelChange(value: boolean) {
-  console.log('Fuel checked changed to:', value);
+      this.loading = false;
+    },
+    error: () => {
+      this.toastService.show('שגיאה בטעינת רכבים', 'error');
+      this.loading = false;
+    }
+  });
 }
   // ← הוסף את 2 הפונקציות האלה
 resetForm(): void {
@@ -102,110 +332,92 @@ resetForm(): void {
   this.formSubmitted = false;
 }
 
-openNewForm(): void {
-  this.resetForm();
-  this.fetchVehicles();
-}
-  submitIssues(): void {
-      const nothingSelected = this.vehicleIssues.every(v =>
-    !v.dirty &&
-    !v.fuel_checked &&
-    !v.items_left &&
-    !v.critical_issue
-  );
-
-  if (nothingSelected) {
-    this.toastService.show('לא נבחרה אף בעיה לרכב. יש לבחור לפחות שדה אחד לפני השליחה.','error');
-    return; // Stop submission
+  openNewForm(): void {
+    document.body.style.overflow = 'auto';
+    this.resetForm();
+    this.fetchVehicles();
   }
+
+  submitIssues(): void {
+    const inspectedVehicles = this.vehicleIssues.filter(v =>
+      v.dirty || v.fuel_checked || v.items_left || v.critical_issue
+    );
+
+    if (inspectedVehicles.length === 0) {
+      this.toastService.show('לא נבחרה אף בעיה לרכב. יש לבחור לפחות שדה אחד לפני השליחה.', 'error');
+      return;
+    }
+
+    const missingDescriptions = inspectedVehicles.some(v => v.critical_issue && (!v.issues_found || v.issues_found.trim() === ''));
+    if (missingDescriptions) {
+      this.toastService.show('יש למלא תיאור של האירוע החריג לכל רכב רלוונטי', 'error');
+      return;
+    }
 
     this.submitting = true;
+    const requests = inspectedVehicles.map(v => {
+      const payload = {
+        inspected_by: localStorage.getItem('employee_id'),
+        vehicle_id: v.vehicle_id,
+        is_clean: !v.dirty, // Invert logic for the new schema
+        is_unfueled: v.fuel_checked,
+        has_items_left: v.items_left,
+        has_critical_issue: v.critical_issue,
+        issues_found: v.issues_found?.trim() || ''
+      };
 
-    const dirtyIds = this.vehicleIssues.filter(v => v.dirty).map(v => v.vehicle_id);
-    const itemsLeftIds = this.vehicleIssues.filter(v => v.items_left).map(v => v.vehicle_id);
-    const criticalIds = this.vehicleIssues.filter(v => v.critical_issue).map(v => v.vehicle_id);
-
-    const unfueledVehicleIds = this.vehicleIssues
-  .filter(v => v.fuel_checked)
-  .map(v => v.vehicle_id);
-
-    const cleanAll = this.vehicleIssues.every(v => !v.dirty);
-    const itemsLeftNone = this.vehicleIssues.every(v => !v.items_left);
-    const hasCritical = criticalIds.length > 0;
-
-    const payload = {
-      unfueled_vehicle_ids: unfueledVehicleIds,
-      issues_found: this.vehicleIssues
-        .filter(v => v.critical_issue && v.issues_found?.trim())
-        .map(v => ({
-          vehicle_id: v.vehicle_id,
-          issue_found: v.issues_found?.trim() || ''
-        }))
-,
-      inspected_by: localStorage.getItem('employee_id'),
-      dirty_vehicle_ids: dirtyIds,
-      items_left_vehicle_ids: itemsLeftIds,
-      critical_issue_vehicle_ids: criticalIds
-    };
-console.log('inspection data in front:', JSON.stringify(payload, null, 2));
-    const missingDescriptions = this.vehicleIssues.some(
-    v => v.critical_issue && (!v.issues_found || !v.issues_found) // (redundant check)
-);
-
-if (missingDescriptions) {
-  this.toastService.show('יש למלא תיאור של האירוע החריג לכל רכב רלוונטי', 'error');
-  this.submitting = false; 
-  return;
-}
-
-
-
-  this.InspectorService.postInspection(payload).subscribe({
-  next: () => {
-    this.toastService.show('הבדיקה נשלחה בהצלחה', 'success');
-    this.submitting = false;
-    this.formSubmitted = true;
-    window.scrollTo(0, 0);
-    const criticalVehicles = this.vehicleIssues.filter(v => v.critical_issue);
-
-    criticalVehicles.forEach(vehicle => {
-      this.vehicleService.updateVehicleStatus(
-        vehicle.vehicle_id,
-        'frozen',
-        'maintenance'
-      ).subscribe({
-        next: () => console.log(`Vehicle frozen`),
-        error: err => console.error(`Failed to freeze vehicle `, err)
-      });
+      return this.InspectorService.postInspection(payload).pipe(
+        catchError(err => {
+          console.error(`❌ Failed to save inspection for vehicle ${v.plate}:`, err);
+          return of(null); // Return a new observable that emits null on error
+        })
+      );
     });
-      this.resetFormState();
+
+    forkJoin(requests).pipe(
+      finalize(() => this.submitting = false)
+    ).subscribe({
+      next: (responses) => {
+        const successfulCount = responses.filter(res => res !== null).length;
+        if (successfulCount > 0) {
+          this.toastService.show('הבדיקות נשלחו בהצלחה', 'success');
+          this.formSubmitted = true;
+          window.scrollTo(0, 0);
+          document.body.style.overflow = 'hidden';
 
 
-  },
-  error: (err) => {
-    console.error('❌ Failed to save inspection:', err);
-    this.toastService.show('שליחה נכשלה', 'error');
-          this.submitting = false;
-
+          const criticalVehicles = inspectedVehicles.filter(v => v.critical_issue);
+          criticalVehicles.forEach(vehicle => {
+            this.vehicleService.updateVehicleStatus(
+              vehicle.vehicle_id,
+              'frozen',
+              'maintenance'
+            ).subscribe({
+              next: () => console.log(`Vehicle frozen`),
+              error: err => console.error(`Failed to freeze vehicle `, err)
+            });
+          });
+        }
+      },
+      error: () => {
+        this.toastService.show('שליחה נכשלה עבור חלק מהרכבים', 'error');
+      }
+    });
   }
-});
 
-  }
   hasCriticalIssue(): boolean {
-  return this.vehicleIssues?.some(v => v.critical_issue) ?? false;
-}
+    return this.vehicleIssues?.some(v => v.critical_issue) ?? false;
+  }
 
-private resetFormState(): void {
-  this.vehicleIssues = this.vehicleIssues.map(v => ({
-    ...v,
-    dirty: false,
-    fuel_checked: false,
-    items_left: false,
-    critical_issue: false,
-    issues_found: ''
-  }));
-  this.searchTerm = '';
-}
-
-
+  private resetFormState(): void {
+    this.vehicleIssues = this.vehicleIssues.map(v => ({
+      ...v,
+      dirty: false,
+      fuel_checked: false,
+      items_left: false,
+      critical_issue: false,
+      issues_found: ''
+    }));
+    this.searchTerm = '';
+  }
 }

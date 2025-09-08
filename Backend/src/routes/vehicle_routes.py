@@ -16,6 +16,7 @@ from ..utils.socket_manager import sio
 from ..services.vehicle_service import (
     get_vehicle_km_driven_on_date,
     get_vehicles_with_optional_status,
+    get_available_vehicles_new_ride,
     update_vehicle_status,
     get_vehicle_by_id,
     get_available_vehicles_for_ride_by_id,
@@ -59,11 +60,13 @@ router = APIRouter()
 def get_all_vehicles_route(
     distance_km: float = Query(...),
     ride_date: Optional[date] = Query(None),
-    type: Optional[str] = Query(None),  # renamed here
+    type: Optional[str] = Query(None), 
+    start_time:Optional[datetime]=Query(None),
+    end_time:Optional[datetime]=Query(None),# renamed here
     db: Session = Depends(get_db),
     payload: dict = Depends(token_check),
 ):
-    vehicles = get_vehicles_with_optional_status(db, "available", type)
+    vehicles = get_available_vehicles_new_ride(db,start_time,end_time,type)
 
 
     if type:
@@ -84,6 +87,7 @@ def get_all_vehicles_route(
         elif v.fuel_type =="gasoline":
             fuel.append(v)
 
+   
     # Step 2: Apply fuel priority within selected vehicle_type
     prioritized = []
     if distance_km <= 200 and electric:
@@ -208,7 +212,8 @@ def get_ride_statuses(
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}") 
     
 
-ALLOWED_RIDE_STATUSES = ["approved", "in_progress", "completed"]
+
+
 @router.get("/vehicles/{vehicle_id}/timeline", response_model=List[RideTimelineSchema])
 def get_vehicle_timeline(
     vehicle_id: UUID,
@@ -216,28 +221,35 @@ def get_vehicle_timeline(
     to_date: date = Query(..., alias="to"),
     db: Session = Depends(get_db),
 ):
-    
+    # Define the start of the first day and the end of the last day
     start_dt = datetime.combine(from_date, time.min)  # 00:00:00 on from_date
-    end_dt = datetime.combine(to_date, time.max)      # 23:59:59.999999 on to_date
+    # We need to go up to the *end* of the to_date
+    end_dt = datetime.combine(to_date, time.max)    # 23:59:59.999999 on to_date
 
-    rides = db.query(
-        Ride.vehicle_id,
-        Ride.start_datetime,
-        Ride.end_datetime,
-        Ride.status,
-        Ride.user_id,
-        User.first_name,
-        User.last_name,
-    ).join(User, Ride.user_id == User.employee_id).filter(
-        Ride.vehicle_id == vehicle_id,
-        Ride.start_datetime >= start_dt,
-        Ride.end_datetime <= end_dt,
-        Ride.status.in_(ALLOWED_RIDE_STATUSES)
+    rides = (
+        db.query(
+            Ride.vehicle_id,
+            Ride.start_datetime,
+            Ride.end_datetime,
+            Ride.status,
+            Ride.user_id,
+            User.first_name,
+            User.last_name,
+        )
+        .join(User, Ride.user_id == User.employee_id)
+        .filter(
+            Ride.vehicle_id == vehicle_id,
+            Ride.start_datetime < end_dt,  # Ride starts before the requested period ends
+            Ride.end_datetime > start_dt,  # Ride ends after the requested period starts
+           
+        )
+        .all()
+    )
 
-    ).all()
-
+  
     return [RideTimelineSchema(**dict(row._mapping)) for row in rides]
 
+   
 @router.get("/vehicles/inactive", response_model=List[VehicleOut])
 def return_inactive_vehicle(db: Session = Depends(get_db)):
     

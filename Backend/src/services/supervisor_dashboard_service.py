@@ -323,6 +323,7 @@ def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
     no_items_left=data.no_items_left,
     critical_issue_bool=data.critical_issue_bool,
     issues_found=data.issues_found,
+    vehicle_id=data.vehicle_id,
 )   
 
     db.add(inspection)
@@ -330,5 +331,4 @@ def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
     db.commit()
 
     return {"message": "Ride completed and vehicle inspection recorded successfully"}
-
 

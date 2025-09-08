@@ -57,6 +57,46 @@ def get_vehicles_with_optional_status(
 
 
 
+from sqlalchemy import and_, or_
+from datetime import timedelta
+
+def get_available_vehicles_new_ride(
+    db: Session,
+    start_time: Optional[datetime] = None,
+    end_time: Optional[datetime] = None,
+    type: Optional[str] = None
+) -> List[Vehicle]:
+    query = db.query(Vehicle).filter(Vehicle.is_archived == False)
+
+    if type:
+        query = query.filter(func.lower(Vehicle.type) == type.lower())
+
+    # Filter out vehicles that are already booked
+    if start_time and end_time:
+        # Subquery to find vehicles with overlapping rides
+    
+        # Add 2 hours buffer
+        end_time_with_buffer = end_time + timedelta(hours=2)
+
+        overlapping_rides = db.query(Ride.vehicle_id).filter(
+            or_(
+                and_(Ride.start_datetime <= start_time, Ride.end_datetime > start_time),
+                and_(Ride.start_datetime < end_time_with_buffer, Ride.end_datetime >= end_time_with_buffer),
+                and_(Ride.start_datetime >= start_time, Ride.end_datetime <= end_time_with_buffer)
+            )
+        ).subquery()
+
+
+        query = query.filter(~Vehicle.id.in_(overlapping_rides))
+
+    final_query = query.all()
+    print('Available vehicles for new ride:', [v.id for v in final_query])
+
+    return final_query
+
+
+
+
 def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_reason: str, db: Session, changed_by: UUID, notes: Optional[str] = None):
     FREEZE_REASON_TRANSLATIONS = {
     "accident": "תאונה",

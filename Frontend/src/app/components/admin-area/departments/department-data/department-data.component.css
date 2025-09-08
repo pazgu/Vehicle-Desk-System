@@ -224,12 +224,7 @@ cursor: cell;
     color: #1f2937;
 }
 
-.department-info p::before {
-    content: '👤';
-    font-size: 1.2rem;
-    opacity: 0.8;
-    transition: transform 0.3s ease;
-}
+
 
 .department-info:hover p::before {
     transform: scale(1.2);
@@ -355,6 +350,7 @@ cursor: cell;
 
 /* New Department Form Styling */
 .new-department-form {
+    position: relative; /* מאפשר מיקום יחסי של הכפתור בפנים */
     max-width: 500px;
     margin: 0 auto 2rem auto;
     padding: 2rem;
@@ -530,6 +526,22 @@ background-color: #942222;
   background-color: #6c757d; /* Grey for cancel */
   color: white;
 }
+.closed-button:hover {
+     color: #c12a2a; 
+     transform: translateY(-2px); 
+     background: none; 
+    }
+.closed-button {
+     color: #942222;
+     background: none; 
+     border: none; 
+     border-radius: 8px;
+      padding: 10px 20px; 
+      font-size: 16px; 
+      font-weight: bold; 
+      cursor: pointer; 
+      transition: all 0.3s ease;
+     }
 
 .back-button {
     color: #942222;
@@ -541,7 +553,15 @@ background-color: #942222;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
-}
+    position: absolute;
+    top: 10px;     /* מרחק מהחלק העליון */
+    left: 10px;    /* מרחק מצד שמאל */
+    background-color: transparent;
+    border: none;
+    color: #333;
+    font-weight: bold;
+    cursor: pointer;
+    }
 
 .back-button:hover {
     color: #c12a2a; 
@@ -688,4 +708,31 @@ background-color: #b91c1c;
 .edit-icon:hover {
   color: #374151 !important; /* A darker shade on hover for a subtle effect */
   transform: scale(1.1);
+}
+
+/* Add styles for the icon approach */
+.department-supervisor {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.department-supervisor i {
+    color: #6b7280;
+    font-size: 1.1rem;
+    opacity: 0.8;
+    transition: all 0.3s ease;
+}
+
+.department-info:hover .department-supervisor i {
+    color: #374151;
+    transform: scale(1.1);
+}
+
+/* Alternative: If you want to keep the existing p styling but add icon */
+.department-supervisor p {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
 }

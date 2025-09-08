@@ -59,8 +59,12 @@
               [ngClass]="{'blocked-user-row': user.is_blocked}">
               <td>
                 <div class="column-name">
-                  <small *ngIf="licenceExpiredMap[user.employee_id]" class="expired"> ⚠️ </small>
-                  <small *ngIf="user.is_blocked" class="blocked-indicator"> 🚫 </small>
+<small *ngIf="licenceExpiredMap[user.employee_id]" class="expired">
+  <i class="pi pi-exclamation-triangle"></i>
+</small>                 
+<small *ngIf="user.is_blocked" class="blocked-indicator">
+  <i class="pi pi-ban"></i>
+</small>
                   <span [ngClass]="{'blocked-text': user.is_blocked}">{{ user.first_name }} {{ user.last_name }}</span>
                 </div>
               </td>
@@ -77,15 +81,15 @@
                   <a class="edit-button" routerLink="/user-data-edit/{{user?.employee_id}}">
 
                     <button title="ערוך משתמש" class="modify">
-                      ✏️
-                    </button>
+  <i class="pi pi-pencil"></i>
+</button>
                   </a>
                   <!-- Delete Button -->
 
                   <button onclick="event.stopPropagation()" (click)="deleteUser(user.employee_id)" class="delete"
-                    title="מחק משתמש">
-                    🗑️
-                  </button>
+  title="מחק משתמש">
+  <i class="pi pi-trash"></i>
+</button>
 
                   <!-- Block/Unblock Button -->
                   <button *ngIf="!user.is_blocked" class="block" onclick="event.stopPropagation()"

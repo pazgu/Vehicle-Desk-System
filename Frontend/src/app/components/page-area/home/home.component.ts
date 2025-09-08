@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, AbstractControl, ValidatorFn, FormControl, ReactiveFormsModule, FormsModule, FormArray } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ToastService } from '../../../services/toast.service';
@@ -62,7 +62,8 @@ export class NewRideComponent implements OnInit {
         private location: Location,
         private cityService: CityService,
         private UserService: UserService,
-        private AuthService: AuthService
+        private AuthService: AuthService,
+        private cdr: ChangeDetectorRef,
     ) { }
 
     ngOnInit(): void {
@@ -379,6 +380,7 @@ export class NewRideComponent implements OnInit {
         });
         this.setupDistanceCalculationSubscriptions();
         this.rideForm.get('vehicle_type')?.valueChanges.subscribe(value => {
+            this.updateAvailableCars();
             this.updateVehicleTypeValidation(value);
         });
         this.rideForm.get('stop')?.valueChanges.subscribe(() => {
@@ -479,16 +481,10 @@ export class NewRideComponent implements OnInit {
             }
         });
     }
-    private loadVehicles(distance: number, rideDate: string, vehicleType: string): void {
-        this.vehicleService.getAllVehiclesForNewRide(distance, rideDate, vehicleType).subscribe({
+    private loadVehicles(distance: number, rideDate: string, vehicleType: string,startTime:string,endTime:string): void {
+        this.vehicleService.getAllVehiclesForNewRide(distance, rideDate, vehicleType,startTime,endTime).subscribe({
             next: (vehicles) => {
                 this.allCars = vehicles
-                    .filter(v =>
-                        v.status === 'available' &&
-                        !!v.id &&
-                        !!v.type &&
-                        !!v.plate_number &&
-                        typeof v.mileage === 'number')
                     .map(v => ({
                         ...v,
                         image_url: v.image_url || 'assets/default-car.png',
@@ -565,26 +561,15 @@ export class NewRideComponent implements OnInit {
     private updateAvailableCars(): void {
         const selectedType = this.rideForm.get('vehicle_type')?.value;
         this.availableCars = this.allCars.filter(car =>
-            car.type === selectedType &&
-            (car as any).can_order !== false &&
-            !this.isPendingVehicle(car.id));
-        const rideDate = this.rideForm.get('ride_date')?.value;
-        const startTime = this.rideForm.get('start_time')?.value;
-        const endTime = this.rideForm.get('end_time')?.value;
-        if (rideDate && startTime && endTime) {
-            const storedOrders = localStorage.getItem('user_orders');
-            const existingOrders = storedOrders ? JSON.parse(storedOrders) : [];
-            this.availableCars = this.availableCars.filter(car =>
-                !existingOrders.some((order: any) =>
-                    order.type === car.type &&
-                    order.date === this.formatDateForComparison(rideDate) &&
-                    order.status === 'approved'));
-        }
-        else {
-            this.availableCars = [];
-        }
+            car.type === selectedType 
+            // &&(car as any).can_order !== false &&
+            // !this.isPendingVehicle(car.id)
+        );
+        console.log('Available cars after type filter:', this.availableCars);
+        console.log('all cars:',this.allCars)
         const carControl = this.rideForm.get('car');
         if (this.availableCars.length === 1) {
+            console.log('Only one available car, auto-selecting:', this.availableCars[0]);
             const onlyCar = this.availableCars[0];
             carControl?.setValue(onlyCar.id);
             carControl?.markAsTouched();
@@ -611,11 +596,13 @@ export class NewRideComponent implements OnInit {
             }
         }
         const carId = carControl?.value;
-        if (carId && this.isPendingVehicle(carId)) {
+       if (carId && this.isPendingVehicle(carId)) {
+        setTimeout(() => {
             carControl?.setErrors({ pending: true });
             carControl?.markAsTouched();
             carControl?.markAsDirty();
-        } else if (carControl?.errors?.['pending'] && !this.isPendingVehicle(carId)) {
+        });
+    } else if (carControl?.errors?.['pending'] && !this.isPendingVehicle(carId)) {
             carControl.setErrors(null);
             carControl.updateValueAndValidity();
         }
@@ -633,11 +620,20 @@ export class NewRideComponent implements OnInit {
         const rideDate = this.rideForm.get('ride_date')?.value;
         const vehicleType = this.rideForm.get('vehicle_type')?.value;
         const rideDateNight = this.rideForm.get('ride_date_night_end')?.value;
+         const startHour = this.rideForm.get('start_hour')?.value;
+        const startMinute = this.rideForm.get('start_minute')?.value;
+        const endHour = this.rideForm.get('end_hour')?.value;
+        const endMinute = this.rideForm.get('end_minute')?.value;
+        const startTime = `${startHour}:${startMinute}`;
+        const endTime = `${endHour}:${endMinute}`;
+        const pad = (n: number) => n.toString().padStart(2, '0');
+            const startDateTime = `${rideDate} ${pad(startHour)}:${pad(startMinute)}:00`;
+            const endDateTime = `${rideDate} ${pad(endHour)}:${pad(endMinute)}:00`;
         const period = this.rideForm.get('ride_period')?.value;
         if (period != 'morning') {
             if (distance && rideDateNight && vehicleType) {
                 const isoDate = new Date(rideDate).toISOString().split('T')[0];
-                this.loadVehicles(distance, isoDate, vehicleType);
+                this.loadVehicles(distance, isoDate, vehicleType,startDateTime,endDateTime);
             } else {
                 this.toastService.show('אנא הזן מרחק, תאריך וסוג רכב לפני סינון רכבים', 'error');
                 this.availableCars = [];
@@ -647,7 +643,7 @@ export class NewRideComponent implements OnInit {
         else {
             if (distance && rideDate && vehicleType) {
                 const isoDate = new Date(rideDate).toISOString().split('T')[0];
-                this.loadVehicles(distance, isoDate, vehicleType);
+                this.loadVehicles(distance, isoDate, vehicleType,startDateTime,endDateTime);
             } else {
                 this.toastService.show('אנא הזן מרחק, תאריך וסוג רכב לפני סינון רכבים', 'error');
                 this.availableCars = [];
@@ -675,6 +671,7 @@ export class NewRideComponent implements OnInit {
         const ridePeriod = this.rideForm.get('ride_period')?.value;
         const startTime = this.startTime;
         const endTime = this.endTime;
+
         if (!rideDate || !ridePeriod || !vehicle_id || !startTime || !endTime) {
             return false;
         }
@@ -1020,9 +1017,13 @@ openNewOrderForm(): void {
         const endTime = `${endHour}:${endMinute}`;
         const distance = this.rideForm.get('estimated_distance_km')?.value;
         const vehicleType = this.rideForm.get('vehicle_type')?.value;
-        if (distance && rideDate && vehicleType) {
+
+        if (distance && rideDate && vehicleType&&startTime&&endTime) {
+            const pad = (n: number) => n.toString().padStart(2, '0');
+            const startDateTime = `${rideDate} ${pad(startHour)}:${pad(startMinute)}:00`;
+            const endDateTime = `${rideDate} ${pad(endHour)}:${pad(endMinute)}:00`;
             const isoDate = new Date(rideDate).toISOString().split('T')[0];
-            this.loadVehicles(distance, isoDate, vehicleType);
+            this.loadVehicles(distance, isoDate, vehicleType,startDateTime,endDateTime);
         }
         if (ridePeriod === 'morning' && startTime && endTime && startTime >= endTime) {
             this.toastService.show('שעת הסיום חייבת להיות אחרי שעת ההתחלה', 'error');
