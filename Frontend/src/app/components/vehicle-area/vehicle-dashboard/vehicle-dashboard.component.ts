@@ -280,15 +280,21 @@ constructor(
     this.updateQueryParams();
   }
 
-  isInactive(lastUsedAt: string | null | undefined): boolean {
-    if (!lastUsedAt) {
-      return true; // Consider vehicles with no last_used_at as inactive
-    }
-    const lastUsedDate = new Date(lastUsedAt);
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    return lastUsedDate < sevenDaysAgo;
+isInactive(lastUsedAt: string | null | undefined): boolean {
+  console.log('called with', lastUsedAt);
+
+  if (!lastUsedAt) {
+    return true; 
   }
+
+  const lastUsedDate = new Date(lastUsedAt);
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+  console.log('returning for', lastUsedAt);
+  return lastUsedDate < sevenDaysAgo;
+}
+
 
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -343,10 +349,10 @@ constructor(
 
   get filteredVehicles() {
     const baseList = this.showingMostUsed ? this.mostUsedVehicles : this.vehicles;
-
     if (!baseList) return [];
 
     let filtered = [...baseList];
+console.log('Filtering vehicles from base list of length:', baseList.length);
 
     if (this.statusFilter) {
       switch (this.statusFilter) {
@@ -366,7 +372,6 @@ constructor(
       filtered = filtered.filter(vehicle => vehicle.type === this.typeFilter);
     }
 
-    // Only apply this filter if the checkbox is checked
     if (this.showInactive) {
       const oneWeekAgo = new Date();
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
@@ -388,7 +393,6 @@ constructor(
     this.router.navigate(['/archived-vehicles']);
   }
 
-  // קריאת query parameters מה-URL
 loadQueryParams(): void {
   this.route.queryParams.subscribe(params => {
     this.statusFilter = this.translateToHebrew(params['status'] || '', 'status');
@@ -398,7 +402,6 @@ loadQueryParams(): void {
   });
 }
 
-// עדכון ה-URL עם query parameters
 updateQueryParams(): void {
   const queryParams: any = {};
   
