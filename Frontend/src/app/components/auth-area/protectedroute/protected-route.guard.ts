@@ -76,7 +76,17 @@ canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean 
     }
     return true; // allow others
   }
- 
+  if(url.includes('order-card')) {
+    const userId = url.split('/')[2]; 
+    const currentUserId = localStorage.getItem('user_id');
+    
+    if(role === 'supervisor') return true;
+    if(role === 'employee' && userId === currentUserId) return true;
+    
+    this.toastService.show('אין לך הרשאה לגשת להזמנה זו', 'error');
+    this.router.navigate(['/home']);
+    return false;
+  }
   if(url.includes('supervisor-dashboard') && role != 'supervisor'){
      this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
       this.router.navigate(['/admin/critical-issues']);
