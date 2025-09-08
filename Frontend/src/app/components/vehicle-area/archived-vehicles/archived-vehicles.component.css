@@ -69,18 +69,16 @@
 }
 
 .archive-info-banner {
-  background: #942222;
-  border: 1px solid #942222;
   border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 1.5rem;
+  padding: 0.1rem;
+  margin-bottom: 0.5rem;
   text-align: center;
-  color: #fff;
+  color: #942222;
   font-weight: 500;
 }
 
 .status-indicators {
-  margin-bottom: 1rem;
+  margin-bottom: 0.2rem;
   direction: rtl;
 }
 
