@@ -66,7 +66,7 @@ def get_available_vehicles_new_ride(
     end_time: Optional[datetime] = None,
     type: Optional[str] = None
 ) -> List[Vehicle]:
-    query = db.query(Vehicle).filter(Vehicle.is_archived == False)
+    query = db.query(Vehicle).filter(Vehicle.is_archived == False,Vehicle.status== VehicleStatus.available)
 
     if type:
         query = query.filter(func.lower(Vehicle.type) == type.lower())

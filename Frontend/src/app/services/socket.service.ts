@@ -79,12 +79,19 @@ this.socket.on('order_deleted', (data: any) => {
   this.deleteRequests$.next(data); // ✅ Pushes to subscribers like HomeComponent
   
 });
-    this.socket.on('new_notification', (data: any) => {
 
-      this.notifications$.next(data);
-      const current = this.notificationService.unreadCount$.getValue();
-  this.notificationService.unreadCount$.next(current + 1);
-    });
+    this.socket.on('new_notification', (data: any) => {
+  const userId = localStorage.getItem('employee_id');
+
+  // Make sure both exist and compare them
+  if (data.user_id && userId && data.user_id.toString() === userId.toString()) {
+    this.notifications$.next(data);
+
+    const current = this.notificationService.unreadCount$.getValue();
+    this.notificationService.unreadCount$.next(current + 1);
+  }
+});
+
 
 
      this.socket.on('vehicle_expiry_notification', (data: any) => {
