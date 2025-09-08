@@ -229,6 +229,7 @@
 /* Filters Section */
 .filters-section {
     margin-bottom: 30px;
+    
 }
 
 .toggle-filters-btn {
@@ -317,7 +318,6 @@ input[type="file"]::file-selector-button {
 
 input[type="file"]::file-selector-button:hover {
     background-color: #dc7474;
-    /* Darker green on hover */
 }
 
 .submit-button {
@@ -411,6 +411,7 @@ label{
 
 .vehicle-card {
     cursor: pointer;
+    position: relative;
     transition: all 0.3s ease;
     border-radius: 12px;
     overflow: hidden;
@@ -662,7 +663,9 @@ label{
     font-weight: bold;
     z-index: 10;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 10000;
 }
+
 
 
 .header-title {
@@ -817,4 +820,8 @@ label .pi-exclamation-triangle {
 [dir="rtl"] .pi {
   margin-left: 4px;
   margin-right: 0;
+}
+
+:host ::ng-deep .p-card.vehicle-card {
+  position: relative;  
 }

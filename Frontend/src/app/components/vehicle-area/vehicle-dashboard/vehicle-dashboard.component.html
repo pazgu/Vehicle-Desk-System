@@ -137,27 +137,30 @@
 
       <div class="vehicles-cards">
         <p-card *ngFor="let vehicle of filteredVehicles"
-          [styleClass]="'vehicle-card ' + getCardClass(vehicle.status) + (isInactive(vehicle.last_used_at) ? ' is-inactive' : '')"
-          (click)="goToVehicleDetails(vehicle.id)">
+          [styleClass]="'vehicle-card ' + getCardClass(vehicle.status)"
+          (click)="goToVehicleDetails(vehicle.id)"> 
+          <div *ngIf="isInactive(vehicle.last_used_at)" class="inactive-badge">
+              לא פעיל
+            </div>
 
           <ng-template pTemplate="header">
             <div class="usage-section">
               <div class="usage-line">
-                <div class="usage-indicator" [style.background-color]="getUsageBarColor(vehicle.plate_number)"></div>
+                <div class="usage-indicator" [style.background-color]="getUsageBarColor(vehicle.plate_number)">  
+                 
+          </div>
                 <span class="usage-number" *ngIf="getVehicleUsageCount(vehicle.plate_number)>0"> {{
                   getVehicleUsageCount(vehicle.plate_number) }} נסיעות</span>
               </div>
             </div>
-            <div *ngIf="isInactive(vehicle.last_used_at)" class="inactive-badge">
-              לא פעיל
-            </div>
+          
             <img *ngIf="vehicle.image_url" [src]="vehicle.image_url" alt="תמונה של הרכב"
               style="width: 100%; max-width: 250px; margin-top: 10px;" />
           </ng-template>
 
           <h3>רכב: {{ vehicle.plate_number }}</h3>
           <div *ngIf="vehicle.vehicle_model">
-            <strong>דגם:</strong> {{ vehicle.vehicle_model }}
+            <strong>דגם:</strong> {{vehicle.vehicle_model }}
           </div>
 
           <div class="department-container">
