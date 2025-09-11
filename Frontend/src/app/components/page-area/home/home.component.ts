@@ -653,18 +653,8 @@ export class NewRideComponent implements OnInit {
     }
     private updateVehicleTypeValidation(value: string): void {
         const vehicleTypeReason = this.rideForm.get('four_by_four_reason');
-        if (value?.toLowerCase().includes('jeep') ||
-            value?.toLowerCase().includes('van') ||
-            value?.toLowerCase().includes('4x4')) {
-            vehicleTypeReason?.setValidators([Validators.required]);
-        } else {
-            vehicleTypeReason?.clearValidators();
-        }
-        // vehicleTypeReason?.updateValueAndValidity();
-        // const fourByFourReason = this.rideForm.get('four_by_four_reason');
-        // if (!value?.toLowerCase().includes('4x4')) {
-        //     fourByFourReason?.setValue('');
-        // }
+        vehicleTypeReason?.clearValidators();
+        vehicleTypeReason?.updateValueAndValidity();
     }
     isPendingVehicle(vehicle_id: string): boolean {
         const rideDate = this.rideForm.get('ride_date')?.value;
@@ -981,6 +971,20 @@ openNewOrderForm(): void {
   this.initializeComponent(); 
 }
     submit(confirmedWarning = false): void {
+        const carControl = this.rideForm.get('car');
+        const selectedCarId = carControl?.value;
+        const selectedCar = this.allCars.find(car => car.id === selectedCarId);
+        const selectedCarType = selectedCar?.type?.toLowerCase() || '';
+        const reasonControl = this.rideForm.get('four_by_four_reason');
+        if ((selectedCarType.includes('4x4') || selectedCarType.includes('jeep') || selectedCarType.includes('van')) && (!reasonControl?.value || reasonControl.value.trim() === '')) {
+            reasonControl?.setErrors({ required: true });
+            reasonControl?.markAsTouched();
+            return;
+        } else {
+            if (reasonControl?.hasError('required')) {
+                reasonControl.setErrors(null);
+            }
+        }
         if (this.disableRequest) {
             this.toastService.show('לא ניתן לשלוח בקשה: למשתמש שנבחר אין רישיון ממשלתי תקףץ לעדכון פרטים יש ליצור קשר עם המנהל.', 'error');
             return;
