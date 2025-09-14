@@ -23,6 +23,7 @@ import { AddNewUserComponent } from './components/admin-area/users/add-new-user/
 import { AddVehicleComponent } from './components/vehicle-area/add-vehicle/add-vehicle.component';
 import { ArchivedVehiclesComponent } from './components/vehicle-area/archived-vehicles/archived-vehicles.component';
 import { DepartmentDataComponent } from './components/admin-area/departments/department-data/department-data.component';
+import { EditRideComponent } from './ride-area/edit-ride/edit-ride.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -31,11 +32,12 @@ export const routes: Routes = [
   { path: 'new-ride', component: AllRidesComponent, canActivate: [ProtectedRouteGuard] },
   { path: 'all-rides', component: AllRidesComponent, canActivate: [ProtectedRouteGuard] },
 
-  {
-  path: 'ride/edit/:id',
-  loadComponent: () => import('./ride-area/edit-ride/edit-ride.component').then(m => m.EditRideComponent),
-  canActivate: [ProtectedRouteGuard]
-},
+//   {
+//   path: 'ride/edit/:id',
+//   loadComponent: () => import('./ride-area/edit-ride/edit-ride.component').then(m => m.EditRideComponent),
+//   canActivate: [ProtectedRouteGuard]
+// },
+  { path: 'ride/edit/:id', component:EditRideComponent, canActivate: [ProtectedRouteGuard] },
   { path: 'supervisor-dashboard', component: DashboardAllOrdersComponent, canActivate: [ProtectedRouteGuard] },
   { path: 'order-card/:ride_id', component: OrderCardComponent, canActivate: [ProtectedRouteGuard] },
   { path: 'notifications', component: NotificationsComponent, canActivate: [ProtectedRouteGuard] },
