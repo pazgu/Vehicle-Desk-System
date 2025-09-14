@@ -204,7 +204,7 @@ if (url.includes('ride-completion-form') && role != 'employee') {
     }
 
     }
-    return false;
+    return true;
   }
 
 
