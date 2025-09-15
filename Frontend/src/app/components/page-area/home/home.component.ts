@@ -347,6 +347,7 @@ export class NewRideComponent implements OnInit {
     }
     private setupFormSubscriptions(): void {
         this.rideForm.get('target_type')?.valueChanges.subscribe(type => {
+            this.showStep1Error = false;
             if (type === 'other') {
                 this.fetchDepartmentEmployees();
                 this.rideForm.get('target_employee_id')?.setValue(null, { emitEvent: true });
