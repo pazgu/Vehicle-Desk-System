@@ -14,11 +14,17 @@
     <div class="form-group">
       <label>שם משפחה</label>
       <input type="text" formControlName="last_name" />
+      <small *ngIf="addUserForm.get('last_name')?.touched && addUserForm.get('last_name')?.invalid" class="error">
+        שדה חובה
+      </small>
     </div>
 
     <div class="form-group">
       <label>שם משתמש</label>
       <input type="text" formControlName="username" />
+      <small *ngIf="addUserForm.get('username')?.touched && addUserForm.get('username')?.invalid" class="error">
+        שדה חובה
+      </small>
     </div>
 
     <div class="form-group">
@@ -35,27 +41,39 @@
     <div class="form-group">
       <label>טלפון</label>
       <input type="text" formControlName="phone" />
+      <small *ngIf="addUserForm.get('phone')?.touched && addUserForm.get('phone')?.hasError('required')" class="error">
+        חובה להזין טלפון
+      </small>
+      <small *ngIf="addUserForm.get('phone')?.touched && addUserForm.get('phone')?.hasError('pattern')" class="error">
+        טלפון חייב להכיל 10 ספרות בלבד
+      </small>
     </div>
 
-  <div class="form-group">
-  <label>תפקיד</label>
-  <select formControlName="role">
-    <option value="" disabled selected>בחר תפקיד</option>
-    <option *ngFor="let r of roles" [value]="r.key">{{ r.label }}</option>
-  </select>
-</div>
+    <div class="form-group">
+      <label>תפקיד</label>
+      <select formControlName="role">
+        <option value="" disabled selected>בחר תפקיד</option>
+        <option *ngFor="let r of roles" [value]="r.key">{{ r.label }}</option>
+      </select>
+      <small *ngIf="addUserForm.get('role')?.touched && addUserForm.get('role')?.invalid" class="error">
+        שדה חובה
+      </small>
+    </div>
+
+    <div class="form-group">
+      <label>מחלקה {{ isDepartmentRequired() ? '*' : '(אופציונלי)' }}</label>
+      <select formControlName="department_id">
+        <option value="" disabled selected>
+          {{ isDepartmentRequired() ? 'בחר מחלקה' : 'בחר מחלקה (אופציונלי)' }}
+        </option>
+        <option *ngFor="let d of departments" [value]="d.id">{{ d.name }}</option>
+      </select>
+      <small *ngIf="addUserForm.get('department_id')?.touched && addUserForm.get('department_id')?.invalid && isDepartmentRequired()" class="error">
+        שדה חובה
+      </small>
+    </div>
 
 
-   <div class="form-group">
-  <label>מחלקה</label>
-  <select formControlName="department_id">
-    <option value="" disabled selected>בחר מחלקה</option>
-    <option *ngFor="let d of departments" [value]="d.id">{{ d.name }}</option>
-  </select>
-</div>
-
-
-<!-- ✅ Updated password field with toggle exactly like login -->
     <div class="form-group">
       <label>סיסמה</label>
       <div class="password-container">
@@ -65,62 +83,56 @@
           class="password-input"
         />
         <mat-icon class="show-password" (click)="togglePassword()">
-  {{ showPassword ? 'visibility' : 'visibility_off' }}
-</mat-icon>
-
+          {{ showPassword ? 'visibility' : 'visibility_off' }}
+        </mat-icon>
       </div>
 
       <small *ngIf="addUserForm.get('password')?.touched && addUserForm.get('password')?.hasError('required')" class="error">
-    חובה להזין סיסמה
-  </small>
- <small *ngIf="addUserForm.get('password')?.touched && addUserForm.get('password')?.hasError('pattern')" class="error">
-  הסיסמה חייבת להכיל לפחות אות גדולה אחת באנגלית
-</small>
-
-
- <div class="form-group">
-  <label for="has_government_license">האם המשתמש בעל רישיון נהיגה ממשלתי?</label>
-  <label class="switch">
-    <input
-      type="checkbox"
-      id="has_government_license"
-      formControlName="has_government_license"
-    />
-    <span class="slider round"></span>
-  </label>
-</div>
-
-<h4 id="warning" *ngIf="!checkIfHasGovernmentlicense()">
-  <i class="pi pi-exclamation-triangle"></i> 
-  המשתמש לא יוכל להזמין נסיעות 
-  <i class="pi pi-exclamation-triangle"></i>
-</h4>
-       <div class="form-row">
-  <div class="form-group" *ngIf="checkIfHasGovernmentlicense()">
-    <label for="license_expiry_date">תוקף רישיון</label>
-    <input type="date" id="license_expiry_date" formControlName="license_expiry_date" class="form-control" />
-  </div>
-</div>
-
-<div class="form-group" *ngIf="checkIfHasGovernmentlicense()">
-  <label>העלה תמונת/קובץ רישיון</label>
-  <div class="custom-file-upload">
-    <input type="file" id="licenseUpload" (change)="onFileSelected($event)" #fileInput>
-    
-    <div class="file-upload-area" (click)="fileInput.click()">
-      <span class="file-text" *ngIf="selectedFileName">{{ selectedFileName }}</span>
-      <button type="button" class="choose-file-btn">בחר קובץ</button>
+        חובה להזין סיסמה
+      </small>
+      <small *ngIf="addUserForm.get('password')?.touched && addUserForm.get('password')?.hasError('pattern')" class="error">
+        הסיסמה חייבת להכיל לפחות אות גדולה אחת באנגלית
+      </small>
     </div>
 
+    <div class="form-group">
+      <label for="has_government_license">האם המשתמש בעל רישיון נהיגה ממשלתי?</label>
+      <label class="switch">
+        <input
+          type="checkbox"
+          id="has_government_license"
+          formControlName="has_government_license"
+        />
+        <span class="slider round"></span>
+      </label>
+    </div>
 
+    <h4 id="warning" *ngIf="!checkIfHasGovernmentlicense()">
+      <i class="pi pi-exclamation-triangle"></i> 
+      המשתמש לא יוכל להזמין נסיעות 
+      <i class="pi pi-exclamation-triangle"></i>
+    </h4>
 
-  </div>
-  <small *ngIf="hasGovlicenseButNoFile()" class="error">קובץ רישיון נדרש</small>
+    <div class="form-row">
+      <div class="form-group" *ngIf="checkIfHasGovernmentlicense()">
+        <label for="license_expiry_date">תוקף רישיון</label>
+        <input type="date" id="license_expiry_date" formControlName="license_expiry_date" class="form-control" />
+      </div>
+    </div>
 
-</div>
-</div>
-
-
+    <div class="form-group" *ngIf="checkIfHasGovernmentlicense()">
+      <label>העלה תמונת/קובץ רישיון (אופציונלי)</label>
+      <div class="custom-file-upload">
+        <input type="file" id="licenseUpload" (change)="onFileSelected($event)" #fileInput>
+        
+        <div class="file-upload-area" (click)="fileInput.click()">
+          <span class="file-text" *ngIf="selectedFileName">{{ selectedFileName }}</span>
+          <span class="file-text" *ngIf="!selectedFileName">לא נבחר קובץ</span>
+          <button type="button" class="choose-file-btn">בחר קובץ</button>
+        </div>
+      </div>
+      <small class="info">ניתן להעלות קובץ רישיון מאוחר יותר</small>
+    </div>
 
     <div class="form-group center">
       <button type="submit" class="submit-btn">הוסף משתמש</button>

@@ -39,33 +39,50 @@ export class AddNewUserComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const today = new Date().toISOString().split('T')[0]; // Today's date in YYYY-MM-DD
-  const maxDate = new Date();
-  maxDate.setFullYear(maxDate.getFullYear() + 10); // 10 years from now
-  const maxDateStr = maxDate.toISOString().split('T')[0];
+    const today = new Date().toISOString().split('T')[0];
+    const maxDate = new Date();
+    maxDate.setFullYear(maxDate.getFullYear() + 10);
+    const maxDateStr = maxDate.toISOString().split('T')[0];
 
     this.addUserForm = this.fb.group({
       first_name: ['', Validators.required],
       last_name: ['', Validators.required],
       username: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
- phone: ['', [
-      Validators.required, 
-      Validators.pattern(/^\d{10}$/)  // Exactly 10 digits
-    ]],      role: ['', Validators.required],
-      has_government_license: [false], // ✅ Initialize as boolean, not string
-      department_id: ['', Validators.required],
-       license_expiry_date: ['', [
-      Validators.required,
-      this.dateRangeValidator(today, maxDateStr)
-    ]],
+      phone: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
+      role: ['', Validators.required],
+      has_government_license: [false],
+      department_id: [''], 
+      license_expiry_date: ['', [
+        Validators.required,
+        this.dateRangeValidator(today, maxDateStr)
+      ]],
       password: ['', [
         Validators.required,
         Validators.minLength(8),
-        Validators.pattern(/^(?=.*[A-Z]).*$/) // ✅ At least one capital letter
+        Validators.pattern(/^(?=.*[A-Z]).*$/)
       ]],
     });
+
+    this.addUserForm.get('role')?.valueChanges.subscribe(role => {
+      this.updateDepartmentValidation(role);
+    });
+
     this.fetchDepartments();
+  }
+
+  updateDepartmentValidation(role: string): void {
+    const departmentControl = this.addUserForm.get('department_id');
+    
+    if (role === 'inspector') {
+      // Inspectors don't require a department
+      departmentControl?.clearValidators();
+    } else {
+      // Other roles require a department
+      departmentControl?.setValidators([Validators.required]);
+    }
+    
+    departmentControl?.updateValueAndValidity();
   }
 
   togglePassword(): void {
@@ -73,36 +90,26 @@ export class AddNewUserComponent implements OnInit {
   }
 
   submit(): void {
-    if (this.addUserForm.invalid || this.hasGovlicenseButNoFile()) {
+    if (this.addUserForm.invalid) {
       this.addUserForm.markAllAsTouched();
-      
-      if (this.hasGovlicenseButNoFile()) {
-        this.toast.show('קובץ רישיון נדרש עבור משתמש עם רישיון', 'error');
-      } else {
-        this.toast.show('אנא מלא את כל השדות הנדרשים', 'error');
-      }
+      this.toast.show('אנא מלא את כל השדות הנדרשים', 'error');
       return;
     }
 
     const formData = new FormData();
     const formValues = this.addUserForm.value;
 
-    // ✅ Append each field - FormData will handle boolean to string conversion
     for (const key in formValues) {
       const value = formValues[key];
-      if (value !== null && value !== undefined) {
+      if (value !== null && value !== undefined && value !== '') {
         formData.append(key, value.toString());
       }
     }
 
-    // ✅ Append the file only if needed
     if (this.checkIfHasGovernmentlicense() && this.selectedFile) {
       formData.append('license_file', this.selectedFile);
     }
 
-    
-
-    // ✅ Submit
     this.userService.addNewUser(formData).subscribe({
       next: () => {
         this.toast.show('המשתמש נוסף בהצלחה!', 'success');
@@ -147,8 +154,6 @@ export class AddNewUserComponent implements OnInit {
     return map[field] || field;
   }
 
- 
-
   fetchDepartments(): void {
     this.http.get<any[]>('http://localhost:8000/api/departments').subscribe({
       next: (data) => {
@@ -166,28 +171,32 @@ export class AddNewUserComponent implements OnInit {
   }
 
   checkIfHasGovernmentlicense(): boolean {
-    return this.addUserForm.get('has_government_license')?.value === true; // ✅ Compare with boolean true
+    return this.addUserForm.get('has_government_license')?.value === true;
   }
 
-  hasGovlicenseButNoFile(): boolean {
-    return this.checkIfHasGovernmentlicense() && !this.selectedFile;
+  isDepartmentRequired(): boolean {
+    const role = this.addUserForm.get('role')?.value;
+    return role !== 'inspector';
   }
+  
+  hasGovlicenseButNoFile(): boolean {
+    return this.checkIfHasGovernmentlicense() && !this.selectedFile;}
 
   dateRangeValidator(minDate: string, maxDate: string) {
-  return (control: any) => {
-    if (!control.value) return null;
-    
-    const selectedDate = new Date(control.value);
-    const min = new Date(minDate);
-    const max = new Date(maxDate);
-    
-    if (selectedDate < min) {
-      return { dateRange: { message: 'Date cannot be in the past' } };
-    }
-    if (selectedDate > max) {
-      return { dateRange: { message: 'Date cannot be more than 10 years in the future' } };
-    }
-    return null;
-  };
-}
+    return (control: any) => {
+      if (!control.value) return null;
+      
+      const selectedDate = new Date(control.value);
+      const min = new Date(minDate);
+      const max = new Date(maxDate);
+      
+      if (selectedDate < min) {
+        return { dateRange: { message: 'Date cannot be in the past' } };
+      }
+      if (selectedDate > max) {
+        return { dateRange: { message: 'Date cannot be more than 10 years in the future' } };
+      }
+      return null;
+    };
+  }
 }
