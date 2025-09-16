@@ -153,9 +153,8 @@ async def edit_user_by_id_route(
     db: Session = Depends(get_db),
     payload: dict = Depends(token_check),
     license_expiry_date: Optional[str] = Form(None),
-    # Ensure these are correctly received as parameters
-    is_blocked: Optional[bool] = Form(False), # This will capture the boolean from frontend
-    block_expires_at: Optional[str] = Form(None) # This will capture the string from frontend
+    is_blocked: Optional[bool] = Form(False),
+    block_expires_at: Optional[str] = Form(None)
 ):
     user_id_from_token = payload.get("user_id") or payload.get("sub")
     user_role_from_token = payload.get("role")
@@ -177,39 +176,36 @@ async def edit_user_by_id_route(
 
     has_gov_license = has_government_license.lower() == "true"
 
-    # --- License File and Expiry Date Logic (from your old code, unchanged for this issue) ---
-    if user.license_file_url is not None and has_gov_license != user.has_government_license:
-        raise HTTPException(
-            status_code=403,
-            detail="'Has government license' flag cannot be changed after initial upload."
-        )
-
-    if user.license_file_url is not None and license_file:
-        raise HTTPException(
-            status_code=403,
-            detail="Government license file cannot be re-uploaded after initial upload."
-        )
-
-    if user.license_file_url is None and license_file:
-        try:
-            contents = await license_file.read()
-            filename = f"uploads/{license_file.filename}"
-            with open(filename, "wb") as f:
-                f.write(contents)
-            user.license_file_url = f"/{filename}"
-            if user.has_government_license is None: # This might still be True/False from DB, not None. Consider `if not user.has_government_license:`
-                user.has_government_license = True
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Failed to save license file: {e}")
-
-    if license_expiry_date:
+    if not has_gov_license and user.has_government_license:
+        user.license_file_url = None
+        user.license_expiry_date = None
+    elif has_gov_license:
+        if not user.license_file_url and license_file:
+            try:
+                contents = await license_file.read()
+                filename = f"uploads/{license_file.filename}"
+                with open(filename, "wb") as f:
+                    f.write(contents)
+                user.license_file_url = f"/{filename}"
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Failed to save license file: {e}")
+        elif not user.license_file_url and not license_file:
+            raise HTTPException(
+                status_code=400, 
+                detail="License file is required when enabling government license."
+            )
+        elif user.license_file_url and license_file:
+            raise HTTPException(
+                status_code=403,
+                detail="Government license file cannot be re-uploaded after initial upload."
+            )
+    if license_expiry_date and has_gov_license:
         try:
             user.license_expiry_date = datetime.strptime(license_expiry_date, "%Y-%m-%d").date()
-            if user.has_government_license is None: # Same note as above.
-                user.has_government_license = True
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid date format for license_expiry_date. Expected YYYY-MM-DD.")
-    # --- End License File and Expiry Date Logic ---
+    elif not has_gov_license:
+        user.license_expiry_date = None
 
     user.first_name = first_name
     user.last_name = last_name
