@@ -31,8 +31,10 @@ export class UserDataEditComponent implements OnInit {
   selectedFileName = '';
   hasExistingLicenseFile = false;
   hasExistingExpiryDate = false;
+  showFileRemovedMessage = false;
   private subs: Subscription[] = [];
 
+  private isSubmitting = false;
 
   constructor(
     private fb: FormBuilder,
@@ -64,7 +66,8 @@ export class UserDataEditComponent implements OnInit {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      if (this.user && (this.user.has_government_license === null || this.user.has_government_license === undefined)) {
+      if (this.user && (this.user.has_government_license === null || this.user.has_government_license === undefined) &&
+          !this.userForm.get('has_government_license')?.dirty) {
         if (expiry && !isNaN(expiry.getTime())) {
           this.userForm.get('has_government_license')?.setValue(expiry >= today, { emitEvent: false });
         } else if (!value) {
@@ -76,6 +79,12 @@ export class UserDataEditComponent implements OnInit {
     const hasLicenseSub = this.userForm.get('has_government_license')?.valueChanges.subscribe((checked: boolean) => {
       if (!checked) {
         this.userForm.get('license_expiry_date')?.setValue('');
+        if (this.hasExistingLicenseFile) {
+          this.showFileRemovedMessage = true;
+          this.hasExistingLicenseFile = false;
+        }
+      } else {
+        this.showFileRemovedMessage = false;
       }
     });
 
@@ -100,6 +109,7 @@ export class UserDataEditComponent implements OnInit {
       });
       this.hasExistingLicenseFile = !!this.user.license_file_url;
       this.hasExistingExpiryDate = !!this.user.license_expiry_date;
+      this.showFileRemovedMessage = false;
       this.cdr.detectChanges();
     });
     this.subs.push(sockeytSub);
@@ -162,6 +172,7 @@ export class UserDataEditComponent implements OnInit {
           this.user = user;
           this.hasExistingLicenseFile = !!user.license_file_url;
           this.hasExistingExpiryDate = !!user.license_expiry_date;
+          this.showFileRemovedMessage = false;
           this.userForm.patchValue({
             first_name: user.first_name,
             last_name: user.last_name,
@@ -191,14 +202,38 @@ export class UserDataEditComponent implements OnInit {
     if (input && input.files && input.files.length > 0) {
       this.selectedFile = input.files[0];
       this.selectedFileName = this.selectedFile.name;
+      this.showFileRemovedMessage = false; 
     } else {
       this.selectedFile = null;
       this.selectedFileName = '';
     }
   }
   
+  private validateLicenseRequirements(): { isValid: boolean; errorMessage?: string } {
+    const hasGovernmentLicense = this.userForm.get('has_government_license')?.value;
+    const licenseExpiryDate = this.userForm.get('license_expiry_date')?.value;
+    
+    if (hasGovernmentLicense) {
+      if (!this.hasExistingLicenseFile && !this.selectedFile) {
+        return { isValid: false, errorMessage: 'נדרש קובץ רשיון בעת הפעלת רשיון ממשלתי' };
+      }
+      if (!licenseExpiryDate || licenseExpiryDate.trim() === '') {
+        return { isValid: false, errorMessage: 'נדרש תאריך תפוגת רשיון בעת הפעלת רשיון ממשלתי' };
+      }
+    }
+    return { isValid: true };
+  }
   onSubmit(): void {
+    if (this.isSubmitting) {
+      return;
+    }
+    const validationResult = this.validateLicenseRequirements();
+    if (!validationResult.isValid) {
+      this.toastService.show(validationResult.errorMessage!, 'error');
+      return;
+    }
     if (this.userForm.valid && this.userId) {
+      this.isSubmitting = true;
       const formData = new FormData();
       const formValues = this.userForm.value;
 
@@ -211,18 +246,9 @@ export class UserDataEditComponent implements OnInit {
       formData.append('department_id', formValues.department_id);
       formData.append('phone', formValues.phone);
 
-      // --- CRITICAL FIX: Ensure has_government_license is sent correctly ---
-      // If a license file already exists, or an expiry date already exists,
-      // send the original value of has_government_license from the loaded user object.
-      // This prevents the backend from seeing an "attempted change" when the field is fixed.
-      if (this.hasExistingLicenseFile || this.hasExistingExpiryDate) {
-        formData.append('has_government_license', this.user.has_government_license ? 'true' : 'false');
-      } else {
-        // If neither file nor date exists, send the current form control value (for initial setting).
-        const hasLicenseControl = this.userForm.get('has_government_license');
-        if (hasLicenseControl) {
-          formData.append('has_government_license', hasLicenseControl.value ? 'true' : 'false');
-        }
+      const hasLicenseControl = this.userForm.get('has_government_license');
+      if (hasLicenseControl) {
+        formData.append('has_government_license', hasLicenseControl.value ? 'true' : 'false');
       }
 
       // Logic for license_file upload: Only send if it's a new upload (no existing file) AND a file is selected.
@@ -246,16 +272,22 @@ formData.forEach((value, key) => {
 });
       this.userService.updateUser(this.userId, formData).subscribe({
         next: (updatedUser) => {
+          this.isSubmitting = false;
           this.toastService.show('המשתמש עודכן בהצלחה', 'success');
           setTimeout(() => {
             this.router.navigate(['/user-data']);
           }, 500);
         },
         error: (err: HttpErrorResponse) => {
+          this.isSubmitting = false;
           console.error('Failed to update user');
           // Extract specific error detail from backend if available, otherwise use a generic message
           const errorMessage = err.error && err.error.detail ? err.error.detail : 'שגיאה בעדכון המשתמש';
-          this.toastService.show(errorMessage, 'error');
+          if (!errorMessage.includes('נדרש קובץ רשיון בעת הפעלת רשיון ממשלתי') && 
+              !errorMessage.includes('נדרש תאריך תפוגת רשיון בעת הפעלת רשיון ממשלתי') &&
+              !errorMessage.includes('License file is required when enabling government license')) {
+            this.toastService.show(errorMessage, 'error');
+          }
         }
       });
     } else {
