@@ -7,7 +7,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 60vh;
+  min-height: 100%; 
   box-sizing: border-box;
 }
 .page-container {
@@ -676,6 +676,35 @@ button.delete:disabled:hover {
   border-radius: 4px;
   white-space: nowrap;
   font-size: 0.8em;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.no-license {
+  color: #ff6f00;
+  font-weight: bold;
+  margin-left: 5px;
+  position: relative;
+  cursor: help;
+}
+
+.no-license .pi-exclamation-circle {
+  color: #ff6f00;
+  font-size: 1.6em;
+}
+
+.no-license:hover::after {
+  content: "אין רישיון ממשלתי";
+  position: absolute;
+  top: -25px;
+  right: 50%;
+  transform: translateX(50%);
+  background: #fff3e0;
+  color: #e65100;
+  padding: 4px 8px;
+  border: 1px solid #ffcc02;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-size: 1.2em;
   z-index: 1000;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
