@@ -14,8 +14,7 @@ export const appConfig: ApplicationConfig = {
     provideAnimations(),
     provideHttpClient(withInterceptorsFromDi()),
     authInterceptorProvider,
-    loadingInterceptorProvider,  // 👈 Add this line
-    // This enables DI-based interceptors
+    loadingInterceptorProvider,
     { provide: LOCALE_ID, useValue: 'he' } 
   ]
   
