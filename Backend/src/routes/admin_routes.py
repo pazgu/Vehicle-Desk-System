@@ -917,10 +917,9 @@ def get_critical_issues(
 
     for inspection, inspected_by_name, plate_number in inspections:
         data = VehicleInspectionOut.model_validate(inspection, from_attributes=True).model_dump()
-        # Remove inspected_by_name if it exists to avoid duplication
         data.pop("inspected_by_name", None)
         out = VehicleInspectionOut(**data, inspected_by_name=inspected_by_name).model_dump()
-        out["plate_number"] = plate_number # ✅ Add this line
+        out["plate_number"] = plate_number
         inspections_data.append(out)
 
     return {
