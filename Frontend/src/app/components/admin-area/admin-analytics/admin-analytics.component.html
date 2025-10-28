@@ -59,14 +59,7 @@
           <div>
             <h3 class="section-heading">פילוח סטטוס נסיעות</h3>
 
-            <div class="filter-container" style="margin-bottom: 1rem;">
-              <label for="rideStatus" style="margin-right: 0.5rem;">מיין לפי סטטוס נסיעה:</label>
-              <select id="rideStatus" [(ngModel)]="selectedRideStatus" (change)="onRideStatusFilterChange()"
-                class="form-control" style="display: inline-block; width: auto;">
-                <option value="">הכל</option>
-                <option *ngFor="let status of rideStatuses" [value]="status">{{ getRideStatusHebrew(status) }}</option>
-              </select>
-            </div>
+           
 
             <div *ngIf="isNoData;" class="no-data-message">
               אין נתונים להצגה
