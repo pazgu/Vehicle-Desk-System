@@ -110,7 +110,7 @@ async def send_notif_to_inspector():
             notif = create_system_notification(
                             user_id=inspector.employee_id,
                             title="Inspector daily check",
-                            message=f"נא לבצע הבדיקה היומית של הרכבים"
+                            message=f"יש לבצע את הבדיקה היומית של הרכבים"
                         )
             await sio.emit("new_notification", {
                     "id": str(notif.id),
