@@ -114,8 +114,7 @@
             <th>תאריך</th>
             <th>נהג</th>
             <th>סוג נסיעה</th>
-            <th>מיקום התחלה</th>
-            <th>יעד</th>
+            <th>תחנה/ות עצירה</th>
             <th>מרחק משוער (ק"מ)</th>
             <th>מרחק בפועל (ק"מ)</th>
             <th>אירוע חירום</th>
@@ -128,8 +127,7 @@
             <td>{{ ride.start_datetime | date: 'short' }}</td>
             <td>{{ getUserNameById(ride.user_id) }}</td>
             <td>{{ ride.ride_type }}</td>
-            <td>{{ ride.start_location }}</td>
-            <td>{{ ride.destination }}</td>
+            <td>{{ getFormattedStops(ride.stop, ride.extra_stops) }}</td>
             <td>{{ ride.estimated_distance_km | number }}</td>
             <td>{{ ride.actual_distance_km | number }}</td>
             <td [class.status-critical]="ride.emergency_event === 'true'">
