@@ -137,11 +137,6 @@ if (url.includes('ride-completion-form') && role != 'employee') {
       this.router.navigate(['/admin/critical-issues']);
       return false;
     }
-      if(role=='supervisor'){
-         this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
-    this.router.navigate(['/supervisor-dashboard']);
-    return false
-  }
   if(role=='inspector'){
     this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
     this.router.navigate(['/inspector/inspection']);
@@ -204,7 +199,7 @@ if (url.includes('ride-completion-form') && role != 'employee') {
     }
 
     }
-    return false;
+    return true;
   }
 
 
