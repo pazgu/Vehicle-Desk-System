@@ -37,14 +37,12 @@
       <th>אירוע חריג</th>
     </tr>
   </thead>
-  <tbody>
+<tbody>
     <tr *ngFor="let issue of filteredIssues">
       <td>{{ issue.plate }}</td>
       <td><input type="checkbox" [(ngModel)]="issue.dirty" /></td>
       <td>
-        <!-- fuel_checked=false means "not fueled", so toggle on change -->
         <input type="checkbox" [(ngModel)]="issue.fuel_checked" />
-       
       </td>
       <td><input type="checkbox" [(ngModel)]="issue.items_left" /></td>
       <td>
@@ -58,7 +56,12 @@
           ></textarea>
         </div>
       </td>
+    </tr>
 
+    <tr *ngIf="filteredIssues.length === 0">
+      <td colspan="5" class="empty-state-message">
+        לא נמצאו רכבים תואמים
+      </td>
     </tr>
   </tbody>
 </table>
