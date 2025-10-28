@@ -45,7 +45,7 @@ class Vehicle(Base):
     is_archived = Column(Boolean, default=False, nullable=False)
     archived_at = Column(DateTime, nullable=True)
     last_user_id = Column(UUID(as_uuid=True),  nullable=True)
-    max_daily_distance_km = Column(Numeric, nullable=True)  # ✅ Add this line
+    max_daily_distance_km = Column(Numeric, nullable=True)
 
 
    

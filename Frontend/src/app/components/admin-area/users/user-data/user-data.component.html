@@ -59,12 +59,15 @@
               [ngClass]="{'blocked-user-row': user.is_blocked}">
               <td>
                 <div class="column-name">
-<small *ngIf="licenceExpiredMap[user.employee_id]" class="expired">
-  <i class="pi pi-exclamation-triangle"></i>
-</small>                 
-<small *ngIf="user.is_blocked" class="blocked-indicator">
-  <i class="pi pi-ban"></i>
-</small>
+                  <small *ngIf="hasExpiredLicense(user)" class="expired" [title]="getLicenseWarningMessage(user)">
+                    <i class="pi pi-exclamation-triangle"></i>
+                  </small>
+                  <small *ngIf="hasNoLicense(user)" class="no-license" [title]="getLicenseWarningMessage(user)">
+                    <i class="pi pi-exclamation-circle"></i>
+                  </small>
+                  <small *ngIf="user.is_blocked" class="blocked-indicator">
+                    <i class="pi pi-ban"></i>
+                  </small>
                   <span [ngClass]="{'blocked-text': user.is_blocked}">{{ user.first_name }} {{ user.last_name }}</span>
                 </div>
               </td>

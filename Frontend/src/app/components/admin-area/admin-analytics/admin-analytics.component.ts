@@ -867,7 +867,7 @@ onFilterChange(type: 'onePlus' | 'critical') {
           margin: [0, 0, 0, 20],
           alignment: 'center'
         },
-        summaryHeader: { // 🆕 ADD THIS STYLE
+        summaryHeader: {
           fontSize: 14,
           bold: true,
           margin: [0, 10, 0, 5]
@@ -1160,7 +1160,7 @@ onFilterChange(type: 'onePlus' | 'critical') {
       'in_progress': 'In Progress',
       'completed': 'Completed',
       'cancelled': 'Cancelled',
-      'cancelled_due_to_no_show': 'Cancelled - No Show' // Add this line
+      'cancelled_due_to_no_show': 'Cancelled - No Show'
 
     };
     return statusMap[status] || status;
