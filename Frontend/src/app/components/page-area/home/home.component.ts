@@ -25,7 +25,7 @@ interface Employee { id: string; full_name: string; }
 @Component({
     selector: 'app-new-ride',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, HttpClientModule, NgSelectModule , ButtonModule],
+    imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, HttpClientModule, NgSelectModule, ButtonModule],
     templateUrl: './home.component.html',
     styleUrls: ['./home.component.css']
 })
@@ -94,10 +94,10 @@ export class NewRideComponent implements OnInit {
             if (extraStopIds.length === 0) {
                 return null;
             }
-            if(destinationId==extraStopIds[0]){
+            if (destinationId == extraStopIds[0]) {
                 return { 'duplicateExtraStops': { message: 'תחנות עוקבות לא יכולות להיות זהות.' } };
-            }else{
-                if(extraStopIds[0]==extraStopIds[1]){
+            } else {
+                if (extraStopIds[0] == extraStopIds[1]) {
                     return { 'consecutiveDuplicateStops': { message: 'תחנות עוקבות לא יכולות להיות זהות.' } };
                 }
             }
@@ -112,6 +112,34 @@ export class NewRideComponent implements OnInit {
             return true
         }
         return false;
+    }
+
+    rideDateValidator(): ValidatorFn {
+        return (control: AbstractControl): ValidationErrors | null => {
+            const value = control.value;
+            if (!value) return null;
+
+            const selectedDate = new Date(value);
+
+            // Check for invalid date (e.g. 31.2, 31.9, etc.)
+            if (isNaN(selectedDate.getTime())) {
+                return { invalidDate: true };
+            }
+
+            const year = selectedDate.getFullYear();
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            if (year < 2025 || year > 2099) {
+                return { invalidYear: true };
+            }
+
+            if (selectedDate < today) {
+                return { pastDate: true };
+            }
+
+            return null;
+        };
     }
     canChooseVehicle(): boolean {
         const distance = this.rideForm.get('estimated_distance_km')?.value;
@@ -134,6 +162,7 @@ export class NewRideComponent implements OnInit {
             }
         }
     }
+
     private initializeComponent(): void {
         this.fetchVehicleTypes();
         this.minDate = this.calculateMinDate();
@@ -149,7 +178,7 @@ export class NewRideComponent implements OnInit {
             target_type: ['self', Validators.required],
             target_employee_id: [null],
             ride_period: ['morning'],
-            ride_date: ['', [Validators.required, this.validYearRangeValidator(2025, 2099)]],
+            ride_date: ['', [Validators.required, this.rideDateValidator()]],
             ride_date_night_end: [''],
             start_hour: ['', Validators.required],
             start_minute: ['', Validators.required],
@@ -166,13 +195,13 @@ export class NewRideComponent implements OnInit {
             extraStops: this.fb.array([], this.sameStopAndDestinationValidator()),
             destination: [null],
             four_by_four_reason: ['']
-        }, { 
+        }, {
             validators: [
-        this.futureDateTimeValidator(),
-        this.tripDurationValidator(),
-        this.sameDayValidator(),
-        this.sameDateNightRideValidator()
-    ]
+                this.futureDateTimeValidator(),
+                this.tripDurationValidator(),
+                this.sameDayValidator(),
+                this.sameDateNightRideValidator()
+            ]
         });
         this.cityService.getCity('תל אביב').subscribe((city) => {
             this.rideForm.patchValue({
@@ -246,31 +275,31 @@ export class NewRideComponent implements OnInit {
         };
     }
     sameDateNightRideValidator(): ValidatorFn {
-    return (control: AbstractControl): ValidationErrors | null => {
-        const formGroup = control as FormGroup;
-        const ridePeriod = formGroup.get('ride_period')?.value;
-        const rideDate = formGroup.get('ride_date')?.value;
-        const nightEndDate = formGroup.get('ride_date_night_end')?.value;
+        return (control: AbstractControl): ValidationErrors | null => {
+            const formGroup = control as FormGroup;
+            const ridePeriod = formGroup.get('ride_period')?.value;
+            const rideDate = formGroup.get('ride_date')?.value;
+            const nightEndDate = formGroup.get('ride_date_night_end')?.value;
 
-        if (ridePeriod !== 'night' || !rideDate || !nightEndDate) {
+            if (ridePeriod !== 'night' || !rideDate || !nightEndDate) {
+                return null;
+            }
+
+            const startDate = new Date(rideDate);
+            const endDate = new Date(nightEndDate);
+            startDate.setHours(0, 0, 0, 0);
+            endDate.setHours(0, 0, 0, 0);
+
+            if (startDate.getTime() === endDate.getTime()) {
+                return {
+                    'sameDateNightRide': {
+                        message: 'נסיעה מעבר ליום חייבת להיות בין שני תאריכים שונים.'
+                    }
+                };
+            }
             return null;
-        }
-
-        const startDate = new Date(rideDate);
-        const endDate = new Date(nightEndDate);
-        startDate.setHours(0, 0, 0, 0);
-        endDate.setHours(0, 0, 0, 0);
-
-        if (startDate.getTime() === endDate.getTime()) {
-            return { 
-                'sameDateNightRide': { 
-                    message: 'נסיעה מעבר ליום חייבת להיות בין שני תאריכים שונים.' 
-                } 
-            };
-        }
-        return null;
-    };
-}
+        };
+    }
     get startTime() {
         const h = this.rideForm.get('start_hour')?.value;
         const m = this.rideForm.get('start_minute')?.value;
@@ -347,6 +376,7 @@ export class NewRideComponent implements OnInit {
     }
     private setupFormSubscriptions(): void {
         this.rideForm.get('target_type')?.valueChanges.subscribe(type => {
+            this.showStep1Error = false;
             if (type === 'other') {
                 this.fetchDepartmentEmployees();
                 this.rideForm.get('target_employee_id')?.setValue(null, { emitEvent: true });
@@ -449,23 +479,23 @@ export class NewRideComponent implements OnInit {
         this.vehicleService.getVehicleTypes().subscribe(types => {
             this.vehicleTypes = types;
         });
-    }private fetchCities(): void {
-    this.cityService.getCities().subscribe({
-        next: (cities) => {
-            this.cities = cities.map(city => ({
-                id: city.id,
-                name: city.name
-            }));
-            this.cities = cities.map(city => ({ id: city.id, name: city.name }));
+    } private fetchCities(): void {
+        this.cityService.getCities().subscribe({
+            next: (cities) => {
+                this.cities = cities.map(city => ({
+                    id: city.id,
+                    name: city.name
+                }));
+                this.cities = cities.map(city => ({ id: city.id, name: city.name }));
 
-        },
-        error: (err) => {
-            console.error('Failed to fetch cities', err);
-            this.toastService.show('שגיאה בטעינת ערים', 'error');
-            this.cities = [];
-        }
-    });
-}
+            },
+            error: (err) => {
+                console.error('Failed to fetch cities', err);
+                this.toastService.show('שגיאה בטעינת ערים', 'error');
+                this.cities = [];
+            }
+        });
+    }
 
 
     private fetchDepartmentEmployees(): void {
@@ -481,8 +511,8 @@ export class NewRideComponent implements OnInit {
             }
         });
     }
-    private loadVehicles(distance: number, rideDate: string, vehicleType: string,startTime:string,endTime:string): void {
-        this.vehicleService.getAllVehiclesForNewRide(distance, rideDate, vehicleType,startTime,endTime).subscribe({
+    private loadVehicles(distance: number, rideDate: string, vehicleType: string, startTime: string, endTime: string): void {
+        this.vehicleService.getAllVehiclesForNewRide(distance, rideDate, vehicleType, startTime, endTime).subscribe({
             next: (vehicles) => {
                 this.allCars = vehicles
                     .map(v => ({
@@ -561,12 +591,12 @@ export class NewRideComponent implements OnInit {
     private updateAvailableCars(): void {
         const selectedType = this.rideForm.get('vehicle_type')?.value;
         this.availableCars = this.allCars.filter(car =>
-            car.type === selectedType 
+            car.type === selectedType
             // &&(car as any).can_order !== false &&
             // !this.isPendingVehicle(car.id)
         );
         console.log('Available cars after type filter:', this.availableCars);
-        console.log('all cars:',this.allCars)
+        console.log('all cars:', this.allCars)
         const carControl = this.rideForm.get('car');
         if (this.availableCars.length === 1) {
             console.log('Only one available car, auto-selecting:', this.availableCars[0]);
@@ -596,13 +626,13 @@ export class NewRideComponent implements OnInit {
             }
         }
         const carId = carControl?.value;
-       if (carId && this.isPendingVehicle(carId)) {
-        setTimeout(() => {
-            carControl?.setErrors({ pending: true });
-            carControl?.markAsTouched();
-            carControl?.markAsDirty();
-        });
-    } else if (carControl?.errors?.['pending'] && !this.isPendingVehicle(carId)) {
+        if (carId && this.isPendingVehicle(carId)) {
+            setTimeout(() => {
+                carControl?.setErrors({ pending: true });
+                carControl?.markAsTouched();
+                carControl?.markAsDirty();
+            });
+        } else if (carControl?.errors?.['pending'] && !this.isPendingVehicle(carId)) {
             carControl.setErrors(null);
             carControl.updateValueAndValidity();
         }
@@ -620,20 +650,20 @@ export class NewRideComponent implements OnInit {
         const rideDate = this.rideForm.get('ride_date')?.value;
         const vehicleType = this.rideForm.get('vehicle_type')?.value;
         const rideDateNight = this.rideForm.get('ride_date_night_end')?.value;
-         const startHour = this.rideForm.get('start_hour')?.value;
+        const startHour = this.rideForm.get('start_hour')?.value;
         const startMinute = this.rideForm.get('start_minute')?.value;
         const endHour = this.rideForm.get('end_hour')?.value;
         const endMinute = this.rideForm.get('end_minute')?.value;
         const startTime = `${startHour}:${startMinute}`;
         const endTime = `${endHour}:${endMinute}`;
         const pad = (n: number) => n.toString().padStart(2, '0');
-            const startDateTime = `${rideDate} ${pad(startHour)}:${pad(startMinute)}:00`;
-            const endDateTime = `${rideDate} ${pad(endHour)}:${pad(endMinute)}:00`;
+        const startDateTime = `${rideDate} ${pad(startHour)}:${pad(startMinute)}:00`;
+        const endDateTime = `${rideDate} ${pad(endHour)}:${pad(endMinute)}:00`;
         const period = this.rideForm.get('ride_period')?.value;
         if (period != 'morning') {
             if (distance && rideDateNight && vehicleType) {
                 const isoDate = new Date(rideDate).toISOString().split('T')[0];
-                this.loadVehicles(distance, isoDate, vehicleType,startDateTime,endDateTime);
+                this.loadVehicles(distance, isoDate, vehicleType, startDateTime, endDateTime);
             } else {
                 this.toastService.show('אנא הזן תאריך וסוג רכב לפני סינון רכבים', 'error');
                 this.availableCars = [];
@@ -643,7 +673,7 @@ export class NewRideComponent implements OnInit {
         else {
             if (distance && rideDate && vehicleType) {
                 const isoDate = new Date(rideDate).toISOString().split('T')[0];
-                this.loadVehicles(distance, isoDate, vehicleType,startDateTime,endDateTime);
+                this.loadVehicles(distance, isoDate, vehicleType, startDateTime, endDateTime);
             } else {
                 this.toastService.show('אנא הזן תאריך וסוג רכב לפני סינון רכבים', 'error');
                 this.availableCars = [];
@@ -774,13 +804,13 @@ export class NewRideComponent implements OnInit {
         const date = new Date();
         return date.toISOString().split('T')[0];
     }
-    validYearRangeValidator(minYear: number, maxYear: number): ValidatorFn {
-        return (control: AbstractControl) => {
-            if (!control.value) return null;
-            const selectedYear = new Date(control.value).getFullYear();
-            return selectedYear >= minYear && selectedYear <= maxYear ? null : { invalidYear: true };
-        };
-    }
+    // validYearRangeValidator(minYear: number, maxYear: number): ValidatorFn {
+    //     return (control: AbstractControl) => {
+    //         if (!control.value) return null;
+    //         const selectedYear = new Date(control.value).getFullYear();
+    //         return selectedYear >= minYear && selectedYear <= maxYear ? null : { invalidYear: true };
+    //     };
+    // }
     onPeriodChange(value: string): void {
         const nightEndControl = this.rideForm.get('ride_date_night_end');
         const rideDateControl = this.rideForm.get('ride_date');
@@ -790,9 +820,6 @@ export class NewRideComponent implements OnInit {
         } else {
             nightEndControl?.clearValidators();
             nightEndControl?.setValue('');
-            rideDateControl?.setValidators([
-                Validators.required,
-                this.validYearRangeValidator(2025, 2099)]);
         }
         rideDateControl?.updateValueAndValidity();
         nightEndControl?.updateValueAndValidity();
@@ -846,130 +873,128 @@ export class NewRideComponent implements OnInit {
             this.disableRequest = false;
             return;
         }
-       this.UserService.getUserById(employeeId).subscribe({
-    next: (user) => {
-        if ('has_government_license' in user) {
-            const hasLicense = user.has_government_license;
-            const expiryDateStr = user.license_expiry_date; // Assuming it's a string like "2025-07-01"
+        this.UserService.getUserById(employeeId).subscribe({
+            next: (user) => {
+                if ('has_government_license' in user) {
+                    const hasLicense = user.has_government_license;
+                    const expiryDateStr = user.license_expiry_date; // Assuming it's a string like "2025-07-01"
 
-            if (hasLicense) {
-                let isExpired = false;
+                    if (hasLicense) {
+                        let isExpired = false;
 
-                if (expiryDateStr) {
-                    const expiryDate = new Date(expiryDateStr);
-                    const today = new Date();
+                        if (expiryDateStr) {
+                            const expiryDate = new Date(expiryDateStr);
+                            const today = new Date();
 
-                    // Remove time for accurate day comparison
-                    expiryDate.setHours(0, 0, 0, 0);
-                    today.setHours(0, 0, 0, 0);
+                            // Remove time for accurate day comparison
+                            expiryDate.setHours(0, 0, 0, 0);
+                            today.setHours(0, 0, 0, 0);
 
-                    if (expiryDate < today) {
-                        isExpired = true;
+                            if (expiryDate < today) {
+                                isExpired = true;
+                            }
+                        }
+
+                        if (isExpired) {
+                            this.toastService.showPersistent(
+                                'לא ניתן לשלוח בקשה: למשתמש שנבחר רישיון ממשלתי פג תוקף. לעדכון פרטים יש ליצור קשר עם המנהל.',
+                                'error'
+                            );
+                            this.disableRequest = true;
+                        } else {
+                            this.disableRequest = false; // ✅ License valid
+                        }
+
+                    } else {
+                        this.toastService.showPersistent(
+                            'לא ניתן לשלוח בקשה: למשתמש שנבחר אין רישיון ממשלתי תקף. לעדכון פרטים יש ליצור קשר עם המנהל.',
+                            'error'
+                        );
+                        this.disableRequest = true;
                     }
-                }
 
-                if (isExpired) {
-                    this.toastService.showPersistent(
-                        'לא ניתן לשלוח בקשה: למשתמש שנבחר רישיון ממשלתי פג תוקף. לעדכון פרטים יש ליצור קשר עם המנהל.',
-                        'error'
-                    );
-                    this.disableRequest = true;
                 } else {
-                    this.disableRequest = false; // ✅ License valid
+                    console.error('🚨 user object missing has_government_license property:', user);
+                    this.toastService.show('שגיאה: פרטי רישיון ממשלתי לא נמצאו.', 'error');
+                    this.disableRequest = true;
                 }
-
-            } else {
-                this.toastService.showPersistent(
-                    'לא ניתן לשלוח בקשה: למשתמש שנבחר אין רישיון ממשלתי תקף. לעדכון פרטים יש ליצור קשר עם המנהל.',
-                    'error'
-                );
+            },
+            error: (err) => {
+                console.error('❌ Failed to fetch user data from API:', err);
+                this.toastService.show('שגיאה בבדיקת רישיון ממשלתי', 'error');
                 this.disableRequest = true;
             }
-
-        } else {
-            console.error('🚨 user object missing has_government_license property:', user);
-            this.toastService.show('שגיאה: פרטי רישיון ממשלתי לא נמצאו.', 'error');
-            this.disableRequest = true;
-        }
-    },
-    error: (err) => {
-        console.error('❌ Failed to fetch user data from API:', err);
-        this.toastService.show('שגיאה בבדיקת רישיון ממשלתי', 'error');
-        this.disableRequest = true;
-    }
-});
+        });
 
     }
-futureDateTimeValidator(): ValidatorFn {
-  return (control: AbstractControl): ValidationErrors | null => {
-    const formGroup = control as FormGroup;
-    const rideDateControl = formGroup.get('ride_date');
-    const startHourControl = formGroup.get('start_hour');
-    const startMinuteControl = formGroup.get('start_minute');
 
-    // Return null if any of the controls are empty, allowing other validators to handle 'required' checks
-    if (!rideDateControl?.value || !startHourControl?.value || !startMinuteControl?.value) {
-      return null;
+
+    futureDateTimeValidator(): ValidatorFn {
+        return (formGroup: AbstractControl): ValidationErrors | null => {
+            const rideDateControl = formGroup.get('ride_date');
+            const startHourControl = formGroup.get('start_hour');
+            const startMinuteControl = formGroup.get('start_minute');
+
+            if (!rideDateControl?.value || !startHourControl?.value || !startMinuteControl?.value) {
+                return null;
+            }
+
+            const selectedDate = new Date(rideDateControl.value);
+            const selectedHour = Number(startHourControl.value);
+            const selectedMinute = Number(startMinuteControl.value);
+
+            selectedDate.setHours(selectedHour, selectedMinute, 0, 0);
+
+            const now = new Date();
+            const twoHoursFromNow = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+
+            if (selectedDate.getTime() < twoHoursFromNow.getTime()) {
+                formGroup.setErrors({ futureDateTime: { message: 'לא ניתן להזמין נסיעה לשעתיים הקרובות.' } });
+            } else {
+                formGroup.setErrors(null);
+            }
+
+            return null;
+        };
     }
 
-    const selectedDate = new Date(rideDateControl.value);
-    const selectedHour = Number(startHourControl.value);
-    const selectedMinute = Number(startMinuteControl.value);
+    resetOrderForm(): void {
+        this.rideForm.reset();
+        this.step = 1;
+        this.orderSubmitted = false;
+        this.availableCars = [];
+        this.extraStops.clear();
+        this.showStep1Error = false;
+        this.disableRequest = false;
+        this.fetchedDistance = null;
+        this.estimated_distance_with_buffer = null;
 
-    // Set the selected time on the date
-    selectedDate.setHours(selectedHour, selectedMinute, 0, 0);
 
-    const now = new Date();
-
-    // If selected time is before now => error
-    const twoHoursFromNow = new Date(now.getTime() + 2 * 60 * 60 * 1000); // Add 2 hours in milliseconds
-    if (selectedDate.getTime() < twoHoursFromNow.getTime()) {
-      // The selected time is less than two hours from the current time.
-      return { 'futureDateTime': { message: 'לא ניתן להזמין נסיעה לשעתיים הקרובות.' } };
+        this.rideForm.patchValue({
+            target_type: 'self',
+            target_employee_id: null,
+            ride_period: 'morning',
+            ride_date: '',
+            ride_date_night_end: '',
+            start_hour: '',
+            start_minute: '',
+            end_hour: '',
+            end_minute: '',
+            start_time: '',
+            end_time: '',
+            estimated_distance_km: null,
+            ride_type: '',
+            vehicle_type: '',
+            car: '',
+            stop: '',
+            four_by_four_reason: ''
+        });
     }
 
-    return null; // valid
-  };
-  
-}
-    
-resetOrderForm(): void {
-  this.rideForm.reset();
-  this.step = 1;
-  this.orderSubmitted = false;
-  this.availableCars = [];
-  this.extraStops.clear();
-  this.showStep1Error = false;
-  this.disableRequest = false;
-  this.fetchedDistance = null;
-  this.estimated_distance_with_buffer = null;
-  
-  
-  this.rideForm.patchValue({
-    target_type: 'self',
-    target_employee_id: null,
-    ride_period: 'morning',
-    ride_date: '',
-    ride_date_night_end: '',
-    start_hour: '',
-    start_minute: '',
-    end_hour: '',
-    end_minute: '',
-    start_time: '',
-    end_time: '',
-    estimated_distance_km: null,
-    ride_type: '',
-    vehicle_type: '',
-    car: '',
-    stop: '',
-    four_by_four_reason: ''
-  });
-}
-
-openNewOrderForm(): void {
-  this.resetOrderForm();
-  this.initializeComponent(); 
-}
+    openNewOrderForm(): void {
+        this.resetOrderForm();
+        this.initializeComponent();
+    }
     submit(confirmedWarning = false): void {
         const carControl = this.rideForm.get('car');
         const selectedCarId = carControl?.value;
@@ -991,11 +1016,11 @@ openNewOrderForm(): void {
         }
         const extraStopsControl = this.rideForm.get('extraStops');
 
-    if (extraStopsControl?.errors?.['consecutiveDuplicateStops']) {
-        this.toastService.show('תחנות עוקבות לא יכולות להיות זהות.', 'error');
-        extraStopsControl.markAsTouched();
-        return;
-    }
+        if (extraStopsControl?.errors?.['consecutiveDuplicateStops']) {
+            this.toastService.show('תחנות עוקבות לא יכולות להיות זהות.', 'error');
+            extraStopsControl.markAsTouched();
+            return;
+        }
         if (this.rideForm.invalid) {
             this.rideForm.markAllAsTouched();
             this.toastService.show('יש להשלים את כל שדות הטופס כנדרש', 'error');
@@ -1022,12 +1047,12 @@ openNewOrderForm(): void {
         const distance = this.rideForm.get('estimated_distance_km')?.value;
         const vehicleType = this.rideForm.get('vehicle_type')?.value;
 
-        if (distance && rideDate && vehicleType&&startTime&&endTime) {
+        if (distance && rideDate && vehicleType && startTime && endTime) {
             const pad = (n: number) => n.toString().padStart(2, '0');
             const startDateTime = `${rideDate} ${pad(startHour)}:${pad(startMinute)}:00`;
             const endDateTime = `${rideDate} ${pad(endHour)}:${pad(endMinute)}:00`;
             const isoDate = new Date(rideDate).toISOString().split('T')[0];
-            this.loadVehicles(distance, isoDate, vehicleType,startDateTime,endDateTime);
+            this.loadVehicles(distance, isoDate, vehicleType, startDateTime, endDateTime);
         }
         if (ridePeriod === 'morning' && startTime && endTime && startTime >= endTime) {
             this.toastService.show('שעת הסיום חייבת להיות אחרי שעת ההתחלה', 'error');
@@ -1073,72 +1098,72 @@ openNewOrderForm(): void {
             is_extended_request: this.isExtendedRequest,
         };
         const role = localStorage.getItem('role');
-        if(role=='employee'){
+        if (role == 'employee') {
             this.rideService.createRide(formData, user_id).subscribe({
-            next: (createdRide) => {
-                this.toastService.show('הבקשה נשלחה בהצלחה! ✅', 'success');
-                this.orderSubmitted = true;
-                this.loadFuelType(formData.vehicle_id);
-                this.showFuelTypeMessage();
-                this.socketService.sendMessage('new_ride_request', {
-                    ...createdRide,
-                    user_id
+                next: (createdRide) => {
+                    this.toastService.show('הבקשה נשלחה בהצלחה! ✅', 'success');
+                    this.orderSubmitted = true;
+                    this.loadFuelType(formData.vehicle_id);
+                    this.showFuelTypeMessage();
+                    this.socketService.sendMessage('new_ride_request', {
+                        ...createdRide,
+                        user_id
+                    });
+
+                },
+                error: (err) => {
+                    const errorMessage = err.error?.detail || err.message || 'שגיאה לא ידועה';
+
+                    if (errorMessage.includes('currently blocked')) {
+                        const match = errorMessage.match(/until (\d{4}-\d{2}-\d{2})/);
+                        const blockUntil = match ? match[1] : '';
+                        const translated = `אתה חסום עד ${blockUntil}`;
+                        this.toastService.show(translated, 'error');
+                    } else if (errorMessage.includes('אין לך רישיון בתוקף')) {
+                        this.toastService.show('אין לך רישיון בתוקף במועד זה. יש ליצור קשר עם המנהל לעדכון פרטי הרישיון.', 'error');
+                    } else if (errorMessage.includes('לא הוזן תוקף לרישיון המשתמש')) {
+                        this.toastService.show('לא הוזן תוקף לרישיון המשתמש. יש ליצור קשר עם המנהל.', 'error');
+                    } else if (errorMessage.includes('משתמש לא נמצא')) {
+                        this.toastService.show('שגיאת זיהוי משתמש - התחבר מחדש', 'error');
+                    } else {
+                        this.toastService.show('שגיאה בשליחת הבקשה', 'error');
+                    }
+                    console.error('Submit error:', err);
+                }
+            });
+        }
+        else {
+            if (role == 'supervisor') {
+                this.rideService.createSupervisorRide(formData, user_id).subscribe({
+                    next: () => {
+                        this.toastService.show('הבקשה נשלחה בהצלחה! ✅', 'success');
+                        this.orderSubmitted = true;
+                        this.loadFuelType(formData.vehicle_id);
+                        this.showFuelTypeMessage();
+
+                    },
+                    error: (err) => {
+                        const errorMessage = err.error?.detail || err.message || 'שגיאה לא ידועה';
+                        if (errorMessage.includes('currently blocked')) {
+                            const match = errorMessage.match(/until (\d{4}-\d{2}-\d{2})/);
+                            const blockUntil = match ? match[1] : '';
+                            const translated = `אתה חסום עד ${blockUntil}`;
+                            this.toastService.show(translated, 'error');
+                        } else if (errorMessage.includes('אין לך רישיון בתוקף')) {
+                            this.toastService.show('אין לך רישיון בתוקף במועד זה. יש ליצור קשר עם המנהל לעדכון פרטי הרישיון.', 'error');
+                        } else if (errorMessage.includes('לא הוזן תוקף לרישיון המשתמש')) {
+                            this.toastService.show('לא הוזן תוקף לרישיון המשתמש. יש ליצור קשר עם המנהל.', 'error');
+                        } else if (errorMessage.includes('משתמש לא נמצא')) {
+                            this.toastService.show('שגיאת זיהוי משתמש - התחבר מחדש', 'error');
+                        } else {
+                            this.toastService.show('שגיאה בשליחת הבקשה', 'error');
+                        }
+                        console.error('Submit error:', err);
+                    }
                 });
-                
-            },
-            error: (err) => {
-                const errorMessage = err.error?.detail || err.message || 'שגיאה לא ידועה';
-                
-                if (errorMessage.includes('currently blocked')) {
-                    const match = errorMessage.match(/until (\d{4}-\d{2}-\d{2})/);
-                    const blockUntil = match ? match[1] : '';
-                    const translated = `אתה חסום עד ${blockUntil}`;
-                    this.toastService.show(translated, 'error');
-                } else if (errorMessage.includes('אין לך רישיון בתוקף')) {
-                    this.toastService.show('אין לך רישיון בתוקף במועד זה. יש ליצור קשר עם המנהל לעדכון פרטי הרישיון.', 'error');
-                } else if (errorMessage.includes('לא הוזן תוקף לרישיון המשתמש')) {
-                    this.toastService.show('לא הוזן תוקף לרישיון המשתמש. יש ליצור קשר עם המנהל.', 'error');
-                } else if (errorMessage.includes('משתמש לא נמצא')) {
-                    this.toastService.show('שגיאת זיהוי משתמש - התחבר מחדש', 'error');
-                } else {
-                    this.toastService.show('שגיאה בשליחת הבקשה', 'error');
-                }
-                console.error('Submit error:', err);
-            }
-        });  
-        }
-        else{
-            if(role=='supervisor'){
-                     this.rideService.createSupervisorRide(formData, user_id).subscribe({
-            next: () => {
-                this.toastService.show('הבקשה נשלחה בהצלחה! ✅', 'success');
-                this.orderSubmitted = true;
-                this.loadFuelType(formData.vehicle_id);
-                this.showFuelTypeMessage();
-                
-            },
-            error: (err) => {
-                const errorMessage = err.error?.detail || err.message || 'שגיאה לא ידועה';
-                if (errorMessage.includes('currently blocked')) {
-                    const match = errorMessage.match(/until (\d{4}-\d{2}-\d{2})/);
-                    const blockUntil = match ? match[1] : '';
-                    const translated = `אתה חסום עד ${blockUntil}`;
-                    this.toastService.show(translated, 'error');
-                } else if (errorMessage.includes('אין לך רישיון בתוקף')) {
-                    this.toastService.show('אין לך רישיון בתוקף במועד זה. יש ליצור קשר עם המנהל לעדכון פרטי הרישיון.', 'error');
-                } else if (errorMessage.includes('לא הוזן תוקף לרישיון המשתמש')) {
-                    this.toastService.show('לא הוזן תוקף לרישיון המשתמש. יש ליצור קשר עם המנהל.', 'error');
-                } else if (errorMessage.includes('משתמש לא נמצא')) {
-                    this.toastService.show('שגיאת זיהוי משתמש - התחבר מחדש', 'error');
-                } else {
-                    this.toastService.show('שגיאה בשליחת הבקשה', 'error');
-                }
-                console.error('Submit error:', err);
-            }
-        });  
             }
         }
-      
+
     }
     private showFuelTypeMessage(): void {
         if (localStorage.getItem('role') == 'employee') {
@@ -1183,5 +1208,5 @@ openNewOrderForm(): void {
         this.step = 1;
         this.showStep1Error = false;
     }
-    
+
 }

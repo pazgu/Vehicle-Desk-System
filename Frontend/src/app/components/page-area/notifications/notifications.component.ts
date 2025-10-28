@@ -82,9 +82,8 @@ export class NotificationsComponent implements OnInit {
     };
     
 
-    // Add to the top of the list
     this.notifications = [notifWithTimeAgo, ...this.notifications];
-    this.cdr.detectChanges(); // ← Add this line
+    this.cdr.detectChanges();
 
   if (this.router.url != '/notifications') {
 
@@ -109,7 +108,7 @@ this.socketService.odometerNotif$.subscribe(
     
       if (!payload || !payload.updated_notifications) {
       console.warn("Got null or bad odometer notification payload:", payload);
-      return; // Don't crash!
+      return; 
     }
 
     const notifs = payload.updated_notifications;
@@ -175,10 +174,8 @@ this.socketService.odometerNotif$.subscribe(
       }),
     };
     
-
-    // Add to the top of the list
     this.notifications = [notifWithTimeAgo, ...this.notifications];
-    this.cdr.detectChanges(); // ← Add this line
+    this.cdr.detectChanges();
 
   if (this.router.url != '/notifications') {
 

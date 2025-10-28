@@ -1086,15 +1086,13 @@ background: linear-gradient(135deg, #ffebee 0%, #ffe0e0 100%) !important;
   content: "";
 }
 
-/* ADD THIS: */
 .export-disclaimer::after {
-  content: "\e90a"; /* PrimeNG info icon unicode */
+  content: "\e90a";
   font-family: 'PrimeIcons';
   margin-left: 0.5rem;
   font-size: 0.9rem;
 }
 
-/* Hover effect */
 .export-disclaimer:hover {
   background: linear-gradient(135deg, rgba(148, 34, 34, 0.12), rgba(185, 28, 28, 0.08));
   border-color: rgba(148, 34, 34, 0.3);
@@ -1104,7 +1102,6 @@ background: linear-gradient(135deg, #ffebee 0%, #ffe0e0 100%) !important;
     0 1px 0 rgba(255, 255, 255, 0.4) inset;
 }
 
-/* Alternative bolder version */
 .export-disclaimer.bold-version {
   background: linear-gradient(135deg, #942222, #b91c1c);
   color: white;
@@ -1117,7 +1114,7 @@ background: linear-gradient(135deg, #ffebee 0%, #ffe0e0 100%) !important;
 }
 
 .export-disclaimer.bold-version::before {
-  content: "\e91b"; /* PrimeNG warning icon unicode */
+  content: "\e91b";
   font-family: 'PrimeIcons';
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
 }
@@ -1130,7 +1127,6 @@ background: linear-gradient(135deg, #ffebee 0%, #ffe0e0 100%) !important;
     0 1px 0 rgba(255, 255, 255, 0.3) inset;
 }
 
-/* Subtle pulse animation */
 .export-disclaimer.animated {
   animation: subtlePulse 3s ease-in-out infinite;
 }
@@ -1148,7 +1144,6 @@ background: linear-gradient(135deg, #ffebee 0%, #ffe0e0 100%) !important;
   }
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
   .export-disclaimer {
     font-size: 0.8rem;

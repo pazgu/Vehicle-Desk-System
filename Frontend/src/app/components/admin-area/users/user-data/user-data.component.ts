@@ -150,6 +150,20 @@ export class UserDataComponent implements OnInit {
   getDepartmentName(departmentId: string): string {
     return this.departmentNames[departmentId] || departmentId || 'לא זמין';
   }
+  hasNoLicense(user: User): boolean {
+    return !user.has_government_license;
+  }
+  hasExpiredLicense(user: User): boolean {
+    return user.has_government_license && this.licenceExpiredMap[user.employee_id];
+  }
+  getLicenseWarningMessage(user: User): string {
+    if (this.hasNoLicense(user)) {
+      return 'אין רישיון ממשלתי';
+    } else if (this.hasExpiredLicense(user)) {
+      return 'רישיון פג תוקף';
+    }
+    return '';
+  }
 
   // --- Modal Control Methods ---
   openBlockUserModal(user: User) {

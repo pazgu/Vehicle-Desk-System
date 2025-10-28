@@ -458,24 +458,21 @@ formatRouteFromChangeData(changeData: any): string {
   }
 
 
-  // Add this helper method to get row background color based on log status
   private getRowBackgroundColor(log: any): string {
-    // Check for specific conditions that match your CSS classes
 
-    // Delete operations
     if (log.action === 'DELETE') {
-      return '#f8e2e2'; // delete-row color
+      return '#f8e2e2'; // delete row color
     }
 
     // Emergency events
     if (log.action === 'UPDATE' && log.entity_type === 'Ride' &&
       (log.change_data?.new?.emergency_event === true || log.change_data?.new?.emergency_event === 'true')) {
-      return '#feaf66'; // emergency-row color
+      return '#feaf66'; // emergency row color
     }
 
     // Frozen vehicles
     if (log.entity_type === 'Vehicle' && log.change_data?.new?.status === 'frozen') {
-      return '#e2f0f8'; // frozen-vehicle-row color
+      return '#e2f0f8'; // frozen vehicle row color
     }
 
     // Pending rides
@@ -483,36 +480,36 @@ formatRouteFromChangeData(changeData: any): string {
       (log.action === 'UPDATE' && log.change_data?.new?.status === 'pending') ||
       (log.action === 'INSERT' && log.change_data?.status === 'pending')
     )) {
-      return '#fbf3da'; // pending-row color
+      return '#fbf3da'; // pending row color
     }
 
-    // Active rides/vehicles (in progress/in use)
+    // Active rides/vehicles
     if ((log.entity_type === 'Ride' && log.change_data?.new?.status === 'in_progress') ||
       (log.entity_type === 'Vehicle' && log.change_data?.new?.status === 'in_use')) {
-      return '#ffe5b4'; // active-row color
+      return '#ffe5b4'; // active row color
     }
 
     // Approved/completed rides
     if (log.entity_type === 'Ride' &&
       (log.change_data?.new?.status === 'approved' || log.change_data?.new?.status === 'completed')) {
-      return '#60cd79'; // approved-row color
+      return '#60cd79'; // approved row color
     }
 
     // Rejected rides
     if (log.entity_type === 'Ride' && log.change_data?.new?.status === 'rejected') {
-      return '#dc5b5b'; // rejected-row color
+      return '#dc5b5b'; // rejected row color
     }
 
     // Cancelled due to no show
     if (log.entity_type === 'Ride' && log.action === 'UPDATE' &&
       (log.change_data?.new?.status === 'cancelled_due_to_no_show' ||
         log.change_data?.new?.status === 'cancelled-due-to-no-show')) {
-      return '#e0d6e8'; // cancelled-due-to-no-show color
+      return '#e0d6e8'; // cancelled due to no show color
     }
 
     // Exceeded monthly trip quota
     if (log.entity_type === 'User' && log.change_data?.new?.exceeded_monthly_trip_quota === true) {
-      return '#cdb69b'; // exceeded-monthly-trip-quota-row color
+      return '#cdb69b'; // exceeded monthly trip row color
     }
 
     // Success operations (User/Department/Vehicle INSERT/UPDATE)
@@ -522,14 +519,13 @@ formatRouteFromChangeData(changeData: any): string {
         (log.action === 'UPDATE' && (log.change_data?.new?.status === 'available' || log.change_data?.new?.status === 'approved')) ||
         log.action === 'INSERT'
       ))) {
-      return '#dcf1e1'; // success-row color
+      return '#dcf1e1'; // success row color
     }
 
     // Default color
     return '#ffffff';
   }
 
-  // Add this helper method to get English status labels
   private getEnglishStatusLabel(log: any): string {
     if (log.action === 'DELETE') {
       return 'Deleted';
@@ -580,7 +576,6 @@ formatRouteFromChangeData(changeData: any): string {
     return 'Unknown';
   }
 
-  // Updated PDF export method
   async exportToPDF() {
     const weeklyLogs = await this.filteredLogs;
     const timestamp = new Date().toLocaleString('en-GB');
@@ -710,7 +705,6 @@ formatRouteFromChangeData(changeData: any): string {
 
     const timestamp = new Date().toLocaleString('en-GB').replace(/[/:]/g, '-');
 
-    // Color legend section
     const legendRows = [
       ['# Color Legend (Row background colors used in PDF/Excel):'],
       ['Color', 'Meaning'],
@@ -727,10 +721,8 @@ formatRouteFromChangeData(changeData: any): string {
       [''],
     ];
 
-    // Main data headers
     const headers = ['Action', 'Full Name', 'Entity Type', 'Status', 'Date Created', 'Row Color'];
 
-    // Log rows
     const dataRows = weeklyLogs.map(log => {
       const statusLabel = this.getEnglishStatusLabel(log);
       const bgColor = this.getRowBackgroundColor(log);
@@ -745,13 +737,11 @@ formatRouteFromChangeData(changeData: any): string {
       ];
     });
 
-    // Combine legend + data
     const csv = Papa.unparse({
-      fields: [], // optional since we give full 2D array
+      fields: [], 
       data: [...legendRows, headers, ...dataRows]
     });
 
-    // Save the file
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     saveAs(blob, `audit_logs_colored_${timestamp}.csv`);
   }
@@ -762,7 +752,6 @@ formatRouteFromChangeData(changeData: any): string {
 
     const timestamp = new Date().toLocaleString('en-GB').replace(/[/:]/g, '-');
 
-    // Define legend rows
     const legendRows = [
       ['Color', 'Meaning'],
       [' ', 'Approved / Completed'],
@@ -798,12 +787,10 @@ formatRouteFromChangeData(changeData: any): string {
       return [color, color, color, color, color];
     });
 
-    // Combine legend + data with spacing row
     const fullSheet: any[][] = [...legendRows, [''], ...data];
 
     const wsData: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet(fullSheet);
 
-    // Style all rows
     const legendLength = legendRows.length;
     fullSheet.forEach((row, rowIndex) => {
       row.forEach((cell, colIndex) => {
@@ -811,7 +798,6 @@ formatRouteFromChangeData(changeData: any): string {
 
         if (!wsData[cellRef]) return;
 
-        // Header styling
         if (rowIndex === legendLength) {
           wsData[cellRef].s = {
             font: { bold: true },
@@ -820,7 +806,6 @@ formatRouteFromChangeData(changeData: any): string {
           return;
         }
 
-        // Legend color square
         if (rowIndex > 0 && rowIndex < legendLength && colIndex === 0) {
           wsData[cellRef].s = {
             fill: { fgColor: { rgb: legendColors[rowIndex].replace('#', '') } }
@@ -828,7 +813,6 @@ formatRouteFromChangeData(changeData: any): string {
           return;
         }
 
-        // Main table rows
         if (rowIndex > legendLength) {
           const colorIndex = rowIndex - legendLength - 1;
           const bgColor = bgColors[colorIndex]?.[colIndex] || '#FFFFFF';
