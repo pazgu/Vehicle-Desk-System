@@ -89,7 +89,7 @@
             <td *ngIf="showVehicleNotesColumn">{{ insp.issues_found || '—' }}</td>
           </tr>
           <tr *ngIf="filteredInspections.length === 0 && !loading">
-            <td [attr.colspan]="showVehicleNotesColumn ? 7 : 6" class="empty-state">לא נמצאו בדיקות רכב</td>
+            <td [attr.colspan]="showVehicleNotesColumn ? 7 : 6" class="empty-state"  style="padding-right: 235px;">לא נמצאו בדיקות רכב</td>
           </tr>
         </tbody>
       </table>
