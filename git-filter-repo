@@ -227,33 +227,12 @@ class AncestryGraph(object):
   """
 
   def __init__(self):
-    # The next internal identifier we will use; increments with every commit
-    # added to the AncestryGraph
     self.cur_value = 0
-
-    # A mapping from the external identifers given to us to the simple integers
-    # we use in self.graph
     self.value = {}
-
-    # A tuple of (depth, list-of-ancestors).  Values and keys in this graph are
-    # all integers from the (values of the) self.value dict.  The depth of a
-    # commit is one more than the max depth of any of its ancestors.
     self.graph = {}
-
-    # A mapping from external identifier (i.e. from the keys of self.value) to
-    # the hash of the given commit.  Only populated for graphs based on
-    # commit.old_id, since we won't know until later what the git_hash for
-    # graphs based on commit.id (since we have to wait for fast-import to
-    # create the commit and notify us of its hash; see _pending_renames).
-    # elsewhere
     self.git_hash = {}
-
-    # Reverse maps; only populated if needed.  Caller responsible to check
-    # and ensure they are populated
     self._reverse_value = {}
     self._hash_to_id = {}
-
-    # Cached results from previous calls to is_ancestor().
     self._cached_is_ancestor = {}
 
   def record_external_commits(self, external_commits):

@@ -638,11 +638,10 @@ def get_city_name(id: str, db: Session = Depends(get_db)):
 
 @router.get("/api/rides/feedback/check/{user_id}")
 def check_feedback_needed(
-    user_id: UUID,  # Add this parameter to capture the path variable
+    user_id: UUID,  
     db: Session = Depends(get_db)
 ):
     
-    # Get the most recent completed ride for this user that needs feedback
     ride = get_ride_needing_feedback(db, user_id)
 
     if not ride:

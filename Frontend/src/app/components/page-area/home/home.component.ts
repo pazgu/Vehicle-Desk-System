@@ -179,6 +179,7 @@ export class NewRideComponent implements OnInit {
             target_employee_id: [null],
             ride_period: ['morning'],
             ride_date: ['', [Validators.required, this.rideDateValidator()]],
+            ride_date_night_end: [''],
             start_hour: ['', Validators.required],
             start_minute: ['', Validators.required],
             end_hour: ['', Validators.required],
