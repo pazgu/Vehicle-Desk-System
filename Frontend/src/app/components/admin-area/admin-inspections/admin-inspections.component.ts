@@ -6,6 +6,8 @@ import { Router } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
 import { VehicleInspection } from '../../../models/vehicle-inspections.model';
 import { OrderCardItem } from '../../../models/order-card-item.module';
+import { CityService } from '../../../services/city.service';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-admin-inspections',
@@ -29,18 +31,33 @@ export class AdminInspectionsComponent implements OnInit {
   showVehicleNotesColumn: boolean = false;
   showRideNotesColumn: boolean = false;
   hasCriticalIssues: boolean = false;
+  cityMap: { [id: string]: string } = {};
+
 
 
   constructor(
     private http: HttpClient,
     private route: ActivatedRoute,
     private cdr: ChangeDetectorRef,
-    private router: Router
+    private router: Router ,
+    private cityService: CityService,
+    private toastService: ToastService
   ) { }
 
   ngOnInit(): void {
     this.fetchUsers();
     this.loadData();
+      this.cityService.getCities().subscribe({
+      next: (cities) => {
+        this.cityMap = cities.reduce((map: { [id: string]: string }, city) => {
+          map[city.id] = city.name;
+          return map;
+        }, {});
+      },
+      error: () => {
+        this.toastService.show('שגיאה בטעינת ערים', 'error');
+      }
+    });
   }
 
   loadData(): void {
@@ -109,6 +126,26 @@ export class AdminInspectionsComponent implements OnInit {
       }
     });
   }
+
+  getCityName(id: string): string {
+    return this.cityMap[id] || 'לא ידוע';
+  }
+
+  getFormattedStops(firstStopId: string, extraStopsRaw?: string[] | null): string {
+    let extraStopIds: string[] = [];
+
+    if (Array.isArray(extraStopsRaw)) {
+      extraStopIds = extraStopsRaw;
+    }
+
+    const allStops = [firstStopId, ...extraStopIds];
+
+    return allStops
+      .filter(Boolean)
+      .map(id => this.getCityName(id))
+      .join(' ← ');
+  }
+  
 
   getUserNameById(id: string): string {
     if (!this.users || this.users.length === 0) {

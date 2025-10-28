@@ -157,7 +157,7 @@
             </div>
 
             <div class="modal-buttons">
-              <button type="submit" class="btn btn-primary" [disabled]="blockUserForm.invalid">
+              <button type="submit" class="btn btn-primary" [disabled]="blockUserForm.invalid" (click)="confirmBlockUser()">
                 כן
               </button>
               <button type="button" class="btn btn-secondary" (click)="closeBlockUserModal()">

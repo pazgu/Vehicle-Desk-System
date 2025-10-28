@@ -149,7 +149,7 @@ async def send_admin_odometer_notification(vehicle_id: UUID, mileage: float):
                     user_id=admin.employee_id,
                     notification_type=NotificationType.system,
                     title="Vehicle Odometer Update",
-                    message=f"{plate_number} לרכב עם מספר רישוי ק״מ {mileage} יש מד אוץ של ",
+                    message = f"הרכב {plate_number} עבר את מכסת הקילומטראז' של 10,000 ק״מ",
                     sent_at=datetime.now(timezone.utc),
                     vehicle_id=vehicle_id
                 )

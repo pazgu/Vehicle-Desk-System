@@ -155,7 +155,7 @@ updateDepartment() {
     this.departmentToDelete = null;
   }
 
-  confirmDelete() { // Renamed the function for clarity
+  confirmDelete() {
     if (!this.departmentToDelete) return;
 
     this.isSubmitting = true;
@@ -163,15 +163,12 @@ updateDepartment() {
       next: () => {
         this.isSubmitting = false;
         this.closeDeleteModal();
-        this.showToast('Department deleted successfully. Redirecting to User Data page.');
-        // Navigate to the user data page
-        this.router.navigate(['/user-data']); // Adjust the path as needed
+        this.showToast('מחלקה נמחקה בהצלחה');
       },
       error: (err) => {
         this.isSubmitting = false;
-        console.error('Error deleting department:', err);
-        this.showToast('Error deleting department', true);
-        this.closeDeleteModal(); // Close modal on error as well
+        this.showToast('שגיאה במחיקת מחלקה', true);
+        this.closeDeleteModal(); 
       },
     });
   }
