@@ -99,7 +99,7 @@
               <div class="time-select-container">
                 <ng-select [items]="hours" bindLabel="" formControlName="start_hour" placeholder="שעה"
                   class="time-select custom-hour-dropdown" [searchable]="false" [clearable]="false">
-                </ng-select>
+                </ng-select>:
                 <ng-select [items]="quarterHours" bindLabel="" formControlName="start_minute" placeholder="דקות"
                   class="time-select custom-hour-dropdown" [searchable]="false" [clearable]="false">
                 </ng-select>
@@ -112,9 +112,6 @@
                 class="error-text">
                 חובה למלא את שדה זה
               </small>
-              <small *ngIf="f.start_time.touched && f.start_time.errors?.['invalidTimeStep']" class="error-text">
-                נא לבחור זמן במרווחים של 15 דקות בלבד
-              </small>
             </div>
 
             <div class="form-field-group">
@@ -122,7 +119,7 @@
               <div class="time-select-container">
                 <ng-select [items]="hours" bindLabel="" formControlName="end_hour" placeholder="שעה"
                   class="time-select custom-hour-dropdown" [searchable]="false" [clearable]="false">
-                </ng-select>
+                </ng-select>:
                 <ng-select [items]="quarterHours" bindLabel="" formControlName="end_minute" placeholder="דקות"
                   class="time-select custom-hour-dropdown" [searchable]="false" [clearable]="false">
                 </ng-select>
@@ -131,9 +128,6 @@
                 *ngIf="rideForm.get('ride_period')?.value === 'morning' && f.end_time.touched && f.end_time.errors?.['required']"
                 class="error-text">
                 חובה למלא את שדה זה
-              </small>
-              <small *ngIf="f.end_time.touched && f.end_time.errors?.['invalidTimeStep']" class="error-text">
-                נא לבחור זמן במרווחים של 15 דקות בלבד
               </small>
             </div>
           </div>
