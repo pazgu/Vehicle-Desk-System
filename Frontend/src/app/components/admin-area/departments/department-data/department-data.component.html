@@ -36,19 +36,19 @@
     <div class="department-cards" *ngFor="let department of departments">
       <div
         class="department-info"
-        (mouseenter)="setHoveredDepartment(department.department_id)"
+        (mouseenter)="setHoveredDepartment(department.id)"
         (mouseleave)="setHoveredDepartment(null)"
       >
         <div class="department-title">
           <h3>{{ department.name }}</h3>
           <div class="department-actions">
             <i
-              *ngIf="hoveredDepartmentId === department.department_id && !isUnassignedDepartment(department)"
+              *ngIf="hoveredDepartmentId === department.id && !isUnassignedDepartment(department)"
               (click)="openEditModal(department)"
               class="pi pi-pencil edit-icon"
             ></i>
             <i
-              *ngIf="hoveredDepartmentId === department.department_id && !isUnassignedDepartment(department)"
+              *ngIf="hoveredDepartmentId === department.id && !isUnassignedDepartment(department)"
               (click)="openDeleteModal(department)"
               class="pi pi-trash delete-icon"
             ></i>

@@ -62,8 +62,7 @@ def delete_department(db: Session, department_id: str, payload: dict):
     if not department:
         raise HTTPException(status_code=404, detail="Department not found")
     if department.name == "Unassigned":
-        raise HTTPException(status_code=400, detail="Cannot delete the 'Unassigned' department")
-
+        return {"message": "Cannot delete 'Unassigned' department"}
     unassigned_dept_name = "Unassigned"
     unassigned_dept = db.query(Department).filter_by(name=unassigned_dept_name).first()
 
@@ -94,7 +93,6 @@ def delete_department(db: Session, department_id: str, payload: dict):
                     user.role = UserRole.employee 
 
             user.department_id = unassigned_dept.id
-        db.commit()
     db.delete(department)
     db.commit()
     db.execute(text("SET session.audit.user_id = DEFAULT"))
