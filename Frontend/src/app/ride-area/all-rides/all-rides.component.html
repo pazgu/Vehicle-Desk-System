@@ -18,6 +18,7 @@
         <span class="fq-title">מכסת הזמנות חינמיות</span>
         <span class="fq-count">{{ freeQuotaUsed }}/{{ freeQuotaTotal }}</span>
       </div>
+      
 
       <div class="fq-segments" [style.--fq-total]="freeQuotaTotal">
         <div class="fq-segment" *ngFor="let i of quotaSegments; let idx = index" [class.filled]="idx < freeQuotaUsed"
@@ -28,8 +29,13 @@
       <div class="fq-hint" *ngIf="freeQuotaExceeded">
         הגעת למכסה — הזמנות נוספות בתשלום
       </div>
+      
     </div>
+    <small>
+      * רק 6 נסיעות בחודש הן על חשבון המערכת
+    </small>
   </div>
+
 
   <div class="orders-wrapper">
     <div id="header-wrap">
@@ -177,13 +183,6 @@
         </div>
 
       </div>
-
-    </div>
-
-    <small>
-      * רק 6 נסיעות בחודש הן על חשבון המערכת
-    </small>
-
     <div class="pagination-controls">
 
       <button (click)="prevPage()" [disabled]="currentPage === 1">

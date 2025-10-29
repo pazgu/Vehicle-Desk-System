@@ -1,7 +1,4 @@
-<div *ngIf="loading" class="loading-state">
-  <div class="loader"></div>
-  <span>טוען...</span>
-</div>
+
 
 <div *ngIf="!loading" class="admin-inspections-container">
   <div class="title-container">
@@ -89,7 +86,7 @@
             <td *ngIf="showVehicleNotesColumn">{{ insp.issues_found || '—' }}</td>
           </tr>
           <tr *ngIf="filteredInspections.length === 0 && !loading">
-            <td [attr.colspan]="showVehicleNotesColumn ? 7 : 6" class="empty-state">לא נמצאו בדיקות רכב</td>
+            <td [attr.colspan]="showVehicleNotesColumn ? 7 : 6" class="empty-state"  style="padding-right: 235px;">לא נמצאו בדיקות רכב</td>
           </tr>
         </tbody>
       </table>
@@ -114,8 +111,7 @@
             <th>תאריך</th>
             <th>נהג</th>
             <th>סוג נסיעה</th>
-            <th>מיקום התחלה</th>
-            <th>יעד</th>
+            <th>תחנה/ות עצירה</th>
             <th>מרחק משוער (ק"מ)</th>
             <th>מרחק בפועל (ק"מ)</th>
             <th>אירוע חירום</th>
@@ -124,12 +120,11 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let ride of rides">
+          <tr *ngFor="let ride of pagedRides">
             <td>{{ ride.start_datetime | date: 'short' }}</td>
             <td>{{ getUserNameById(ride.user_id) }}</td>
             <td>{{ ride.ride_type }}</td>
-            <td>{{ ride.start_location }}</td>
-            <td>{{ ride.destination }}</td>
+            <td>{{ getFormattedStops(ride.stop, ride.extra_stops) }}</td>
             <td>{{ ride.estimated_distance_km | number }}</td>
             <td>{{ ride.actual_distance_km | number }}</td>
             <td [class.status-critical]="ride.emergency_event === 'true'">

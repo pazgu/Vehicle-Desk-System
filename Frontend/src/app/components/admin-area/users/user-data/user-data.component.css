@@ -239,13 +239,7 @@ position: absolute;
   font-size: 1.1em;
 }
 
-/* Hover effect */
-.modify-buttons button.modify:hover {
-  background-color: #c8e2ff;
-}
-.modify-buttons button.delete:hover {
-  background-color: #ffc8c8;
-}
+
 
 /* 🔍 Search + Filter container */
 .search-container {
@@ -445,17 +439,14 @@ button.cancel {
 
 /* Hover effects */
 .modify-buttons button.modify:hover {
-  background-color: #e3f2fd;
   transform: scale(1.1);
 }
 
 .modify-buttons button.delete:hover {
-  background-color: #ffebee;
   transform: scale(1.1);
 }
 
 .block:hover {
-  background-color: #ffebee;
   transform: scale(1.1);
 }
 

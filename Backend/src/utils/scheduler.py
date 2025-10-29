@@ -110,7 +110,7 @@ async def send_notif_to_inspector():
             notif = create_system_notification(
                             user_id=inspector.employee_id,
                             title="Inspector daily check",
-                            message=f"נא לבצע הבדיקה היומית של הרכבים"
+                            message=f"יש לבצע את הבדיקה היומית של הרכבים"
                         )
             await sio.emit("new_notification", {
                     "id": str(notif.id),
@@ -612,21 +612,21 @@ def periodic_check_overdue_rides():
         print(f"Overdue rides check failed: {e}")
 
 
-def periodic_check():
-    db = SessionLocal()
-    try:
-        user_ids = [user.id for user in db.query(User).all()]
-    finally:
-        db.close()
-    for user_id in user_ids:  # Example user IDs
-        future = asyncio.run_coroutine_threadsafe(
-            notify_ride_needs_feedback(user_id),
-            main_loop
-        )
-        try:
-            result = future.result(timeout=5)
-        except Exception as e:
-            print('Coroutine error:', e)
+# def periodic_check():
+#     db = SessionLocal()
+#     try:
+#         user_ids = [user.id for user in db.query(User).all()]
+#     finally:
+#         db.close()
+#     for user_id in user_ids:  # Example user IDs
+#         future = asyncio.run_coroutine_threadsafe(
+#             notify_ride_needs_feedback(user_id),
+#             main_loop
+#         )
+#         try:
+#             result = future.result(timeout=5)
+#         except Exception as e:
+#             print('Coroutine error:', e)
 
 
 

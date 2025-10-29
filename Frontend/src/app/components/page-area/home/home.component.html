@@ -1,7 +1,7 @@
 <div *ngIf="orderSubmitted" class="success-container">
   <div class="success-message">
     <h2> הזמנה נשלחה בהצלחה!</h2>
-    <p>הזמנתך התקבלה ותעובד בהקדם</p>
+    <p>הזמנתך התקבלה ותטופל בהקדם</p>
     <button (click)="openNewOrderForm()" class="new-form-button">
       הזמן נסיעה חדשה
     </button>
@@ -100,50 +100,44 @@
               </div>
             </div>
 
-            <div class="form-row">
-              <div class="form-field-group">
-                <label>שעת התחלה</label>
-                <div class="time-select-container">
-                  <ng-select [items]="hours" bindLabel="" formControlName="start_hour" placeholder="שעה"
-                    class="time-select custom-hour-dropdown" [searchable]="false" [clearable]="false">
-                  </ng-select>
-                  <ng-select [items]="quarterHours" bindLabel="" formControlName="start_minute" placeholder="דקות"
-                    class="time-select custom-hour-dropdown" [searchable]="false" [clearable]="false">
-                  </ng-select>
-                </div>
-                <small *ngIf="rideForm.errors?.['futureDateTime']" class="error-text">
-                  {{ rideForm.errors?.['futureDateTime']?.['message'] }}
-                </small>
-                <small
-                  *ngIf="rideForm.get('ride_period')?.value === 'morning' && f.start_time.touched && f.start_time.errors?.['required']"
-                  class="error-text">
-                  חובה למלא את שדה זה
-                </small>
-                <small *ngIf="f.start_time.touched && f.start_time.errors?.['invalidTimeStep']" class="error-text">
-                  נא לבחור זמן במרווחים של 15 דקות בלבד
-                </small>
+          <div class="form-row">
+            <div class="form-field-group">
+              <label>שעת התחלה</label>
+              <div class="time-select-container">
+                <ng-select [items]="hours" bindLabel="" formControlName="start_hour" placeholder="שעה"
+                  class="time-select custom-hour-dropdown" [searchable]="false" [clearable]="false">
+                </ng-select>:
+                <ng-select [items]="quarterHours" bindLabel="" formControlName="start_minute" placeholder="דקות"
+                  class="time-select custom-hour-dropdown" [searchable]="false" [clearable]="false">
+                </ng-select>
               </div>
-
-              <div class="form-field-group">
-                <label>שעת סיום</label>
-                <div class="time-select-container">
-                  <ng-select [items]="hours" bindLabel="" formControlName="end_hour" placeholder="שעה"
-                    class="time-select custom-hour-dropdown" [searchable]="false" [clearable]="false">
-                  </ng-select>
-                  <ng-select [items]="quarterHours" bindLabel="" formControlName="end_minute" placeholder="דקות"
-                    class="time-select custom-hour-dropdown" [searchable]="false" [clearable]="false">
-                  </ng-select>
-                </div>
-                <small
-                  *ngIf="rideForm.get('ride_period')?.value === 'morning' && f.end_time.touched && f.end_time.errors?.['required']"
-                  class="error-text">
-                  חובה למלא את שדה זה
-                </small>
-                <small *ngIf="f.end_time.touched && f.end_time.errors?.['invalidTimeStep']" class="error-text">
-                  נא לבחור זמן במרווחים של 15 דקות בלבד
-                </small>
-              </div>
+              <small *ngIf="rideForm.errors?.['futureDateTime']" class="error-text">
+                {{ rideForm.errors?.['futureDateTime']?.['message'] }}
+              </small>
+              <small
+                *ngIf="rideForm.get('ride_period')?.value === 'morning' && f.start_time.touched && f.start_time.errors?.['required']"
+                class="error-text">
+                חובה למלא את שדה זה
+              </small>
             </div>
+
+            <div class="form-field-group">
+              <label>שעת סיום</label>
+              <div class="time-select-container">
+                <ng-select [items]="hours" bindLabel="" formControlName="end_hour" placeholder="שעה"
+                  class="time-select custom-hour-dropdown" [searchable]="false" [clearable]="false">
+                </ng-select>:
+                <ng-select [items]="quarterHours" bindLabel="" formControlName="end_minute" placeholder="דקות"
+                  class="time-select custom-hour-dropdown" [searchable]="false" [clearable]="false">
+                </ng-select>
+              </div>
+              <small
+                *ngIf="rideForm.get('ride_period')?.value === 'morning' && f.end_time.touched && f.end_time.errors?.['required']"
+                class="error-text">
+                חובה למלא את שדה זה
+              </small>
+            </div>
+          </div>
 
             <div *ngIf="rideForm.get('ride_period')?.value === 'night'" class="form-row">
               <div class="form-field-group">
