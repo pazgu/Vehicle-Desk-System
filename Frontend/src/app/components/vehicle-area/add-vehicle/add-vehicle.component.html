@@ -128,6 +128,12 @@
       <div class="error" *ngIf="vehicleForm.get('image_url')?.touched && vehicleForm.get('image_url')?.invalid">
         כתובת תמונה נדרשת
       </div>
+<img
+  *ngIf="vehicleForm.get('image_url')?.value"
+  [src]="vehicleForm.get('image_url')?.value"
+  alt="תצוגת תמונה"
+  class="vehicle-image"
+/>
 
       <button type="submit">שלח</button>
     </form>

@@ -172,6 +172,15 @@ button[type="submit"]:hover::before {
   box-shadow: 0 4px 12px rgba(148, 34, 34, 0.3);
 }
 
+.vehicle-image {
+  border-radius: 0.5rem; 
+  width: 160px;         
+  height: 128px;        
+  object-fit: cover;     
+  display: block;        
+}
+
+
 .vehicle-wrapper-header {
   display: flex;
   align-items: left;
