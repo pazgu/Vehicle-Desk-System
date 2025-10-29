@@ -142,7 +142,6 @@ updateDepartment() {
             if (err.status === 409) {
               this.showToast('שם מחלקה כבר קיים', true);
             } else {
-              console.error('Error updating department:', err);
               this.showToast('שגיאה בעדכון מחלקה', true);
             }
           },
