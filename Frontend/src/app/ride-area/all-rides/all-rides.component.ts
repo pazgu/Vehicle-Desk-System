@@ -41,7 +41,7 @@ export class AllRidesComponent implements OnInit {
   loading: boolean = false;
 
   get ordersPerPage(): number {
-    return this.showFilters ? 3 : 5;
+    return this.showFilters ? 3 : 4;
   }
 
   filterBy = 'date';

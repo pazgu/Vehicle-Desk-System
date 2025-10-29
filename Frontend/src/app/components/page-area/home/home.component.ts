@@ -665,7 +665,7 @@ export class NewRideComponent implements OnInit {
                 const isoDate = new Date(rideDate).toISOString().split('T')[0];
                 this.loadVehicles(distance, isoDate, vehicleType, startDateTime, endDateTime);
             } else {
-                this.toastService.show('אנא הזן מרחק, תאריך וסוג רכב לפני סינון רכבים', 'error');
+                this.toastService.show('אנא הזן תאריך וסוג רכב לפני סינון רכבים', 'error');
                 this.availableCars = [];
                 this.rideForm.get('car')?.setValue(null);
             }
@@ -675,7 +675,7 @@ export class NewRideComponent implements OnInit {
                 const isoDate = new Date(rideDate).toISOString().split('T')[0];
                 this.loadVehicles(distance, isoDate, vehicleType, startDateTime, endDateTime);
             } else {
-                this.toastService.show('אנא הזן מרחק, תאריך וסוג רכב לפני סינון רכבים', 'error');
+                this.toastService.show('אנא הזן תאריך וסוג רכב לפני סינון רכבים', 'error');
                 this.availableCars = [];
                 this.rideForm.get('car')?.setValue(null);
             }

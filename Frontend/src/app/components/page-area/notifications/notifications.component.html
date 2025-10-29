@@ -11,8 +11,7 @@
   *ngFor="let note of pagedNotifications" 
   (click)="handleNotificationClick(note)"
   [ngClass]="[
-    note.order_status ? getStatusClass(note.order_status) : 
-    note.notification_type ? getLeaseAlerts(note.notification_type) || getInactiveAlerts(note.notification_type) : 'neutral',
+     'neutral',
     note.title === 'Vehicle Lease Expiry' ? 'lease-alert' : '',
     note.title === 'Inactive Vehicle' ? 'inactive-alert' : '',
     note.is_extended_request ? 'extended-alert' : ''

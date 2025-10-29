@@ -19,7 +19,6 @@
   border: 1px solid rgba(255, 255, 255, 0.5);
   position: relative;
   z-index: 5;
-  animation: floatyCard 5s ease-in-out infinite;
   overflow: hidden;
 }
 
@@ -43,11 +42,9 @@
   left: -2px;
   right: -2px;
   bottom: -2px;
-  background: linear-gradient(135deg, rgba(148, 34, 34, 0.1), rgba(183, 28, 28, 0.1));
   border-radius: 22px;
   z-index: -1;
   opacity: 0;
-  transition: opacity 0.3s ease;
 }
 
 .vehicle-form-container:hover::after {
@@ -174,6 +171,15 @@ button[type="submit"]:hover::before {
   color: white;
   box-shadow: 0 4px 12px rgba(148, 34, 34, 0.3);
 }
+
+.vehicle-image {
+  border-radius: 0.5rem; 
+  width: 160px;         
+  height: 128px;        
+  object-fit: cover;     
+  display: block;        
+}
+
 
 .vehicle-wrapper-header {
   display: flex;
