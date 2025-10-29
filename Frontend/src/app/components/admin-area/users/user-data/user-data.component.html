@@ -1,10 +1,6 @@
 <div class="page-container">
   <div class="user-data-container">
     <div class="content">
-      <!-- כפתור סגירה -->
-      <!-- <a routerLink="/admin/critical-issues"><span class="close-button">✕</span></a> -->
-
-      <!-- כותרת -->
       <div class="header">
         <h2 class="header-title">פרטי משתמשים</h2>
       </div>
@@ -15,11 +11,8 @@
           </button>
         </div>
         <div class="filter-actions-row">
-
-
         </div>
       </div>
-
       <div *ngIf="showFilters" class="search-container">
         <div class="search-container">
           <input type="text" class="audit-search-input" placeholder="חיפוש לפי שם או מייל  " [(ngModel)]="searchTerm"
@@ -79,22 +72,16 @@
 
               <td class="column-email" [ngClass]="{'blocked-text': user.is_blocked}">{{ user.email }}</td>
               <td class="column-actions">
-                <!-- Edit Button -->
                 <div class="modify-buttons">
                   <a class="edit-button" routerLink="/user-data-edit/{{user?.employee_id}}">
-
                     <button title="ערוך משתמש" class="modify">
-  <i class="pi pi-pencil"></i>
-</button>
+                      <i class="pi pi-pencil"></i>
+                    </button>
                   </a>
-                  <!-- Delete Button -->
-
-                  <button onclick="event.stopPropagation()" (click)="deleteUser(user.employee_id)" class="delete"
-  title="מחק משתמש">
-  <i class="pi pi-trash"></i>
-</button>
-
-                  <!-- Block/Unblock Button -->
+                     <button onclick="event.stopPropagation()" (click)="deleteUser(user.employee_id)" class="delete"
+                      title="מחק משתמש">
+                        <i class="pi pi-trash"></i>
+                    </button>
                   <button *ngIf="!user.is_blocked" class="block" onclick="event.stopPropagation()"
                     (click)="openBlockUserModal(user)" title="חסום משתמש">
                     <i class="pi pi-ban"></i>

@@ -13,7 +13,6 @@ body {
 .page-container {
  min-height: calc(100vh - 55px);
   background-image: url('/assets/images/user-data.png');
-  /* background-color: #fbe6c9; beige background color */
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center center;
@@ -72,7 +71,6 @@ body {
   font-weight: 500;
 }
 
-/* קונטיינר הראשי (כרטיס) */
 .user-data-container {
   background: #fff;
   border-radius: 10px;
@@ -192,7 +190,6 @@ position: absolute;
   margin-right: 25px;
 }
 
-/* General style for all modify buttons */
 .modify-buttons button.modify {
  margin-right: -10px; 
   padding: 0.3rem 0.5rem;
@@ -226,22 +223,18 @@ position: absolute;
   color: #dc3545;
   border: none;
   cursor: pointer;
-  font-size: 1.1rem !important; /* Same as other buttons */
+  font-size: 1.1rem !important; 
   transition: all 0.2s ease;
   background: none;
   display: flex;
   align-items: center;
   justify-content: center;
-
 }
 
 .modify-buttons .pi {
   font-size: 1.1em;
 }
 
-
-
-/* 🔍 Search + Filter container */
 .search-container {
   display: flex;
   flex-direction: row-reverse;
@@ -362,11 +355,13 @@ position: absolute;
 
 .modal-content {
   background: white;
-  padding: 2rem;
+  padding: 1.8rem;
   border-radius: 1rem;
-  width: 350px;
+  width: 30rem;
   max-width: 95%;
   box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
+  border: 2px solid #942222;
+  border-radius: 26px;
 }
 
 .modal-content h3 {
@@ -398,25 +393,20 @@ button.cancel {
   background-color: #ccc;
 }
 
-
-
-/* Blocked user row styling */
 .blocked-user-row {
-  background-color: #ffe6e6 !important; /* Light red background */
+  background-color: #ffe6e6 !important; 
   opacity: 0.7;
 }
 
 .blocked-user-row:hover {
-  background-color: #ffcccc !important; /* Slightly darker on hover */
+  background-color: #ffcccc !important; 
 }
 
-/* Blocked text styling */
 .blocked-text {
   color: #999 !important;
   font-style: italic;
 }
 
-/* Blocked indicator */
 .blocked-indicator {
   color: #dc3545;
   font-weight: bold;
@@ -437,7 +427,6 @@ button.cancel {
   transition: all 0.2s ease;
 }
 
-/* Hover effects */
 .modify-buttons button.modify:hover {
   transform: scale(1.1);
 }
@@ -454,8 +443,6 @@ button.cancel {
   background-color: #e8f5e8;
   transform: scale(1.1);
 }
-
-
 
 .block:hover {
   transform: scale(1.05);
@@ -475,7 +462,6 @@ button.cancel {
   border: none !important;
   outline: none !important;
 }
-/* Disabled button styling - only for modify and delete buttons */
 button.modify:disabled,
 button.delete:disabled {
   opacity: 0.5;
@@ -488,18 +474,17 @@ button.delete:disabled:hover {
   background-color: #6c757d;
 }
 
-/* Expired license indicator */
 .expired {
   color: #ffc107;
   font-weight: bold;
   margin-left: 5px;
 }
 
-/* Modal improvements */
 .modal-content h2 {
   color: #333;
   margin-bottom: 15px;
-  font-family:Verdana, Geneva, Tahoma, sans-serif
+  font-weight: 100;
+  font-family:Alef;
 }
 
 .modal-content p {
@@ -511,7 +496,6 @@ button.delete:disabled:hover {
   color: #333;
 }
 
-/* Form styling in modal */
 .form-group {
   margin-bottom: 20px;
 }
@@ -543,7 +527,6 @@ button.delete:disabled:hover {
   margin-top: 5px;
 }
 
-/* Button styling in modals */
 .modal-buttons {
   display: flex;
   gap: 10px;
@@ -559,19 +542,38 @@ button.delete:disabled:hover {
   font-size: 14px;
   transition: background-color 0.2s;
 }
-
 .btn-primary {
-  background-color: #00ff73;
-  color: white;
+  background-color: #ffffff;
+  color: #942222;
+  border: none;
+  border-radius: 26px;
+  font-size: 1.05rem;
+  padding: 10px 32px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: #00b36b;
+  background-color: #fee9e9;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+
 }
 
 .btn-secondary {
-  background-color: #ff9a9a;
-  color: white;
+  background-color: #ffd4e5;
+  color: #c93e7e;
+  border: none;
+  border-radius: 26px;
+  font-size: 1.05rem;
+  padding: 6px 28px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: #ffc4dc;
 }
 
 .btn-secondary:hover {
@@ -583,32 +585,27 @@ button.delete:disabled:hover {
   cursor: not-allowed;
 }
 
-/* Tooltip styling for disabled buttons */
 [title] {
   position: relative;
 }
 
-/* Action buttons container */
 .modify-buttons {
   display: flex;
   gap: 5px;
   align-items: center;
 }
 
-/* Expired license warning icon */
 .expired .pi-exclamation-triangle {
   color: #ffc107;
   font-size: 1.2em;
 }
 
-/* Blocked user indicator icon */
 .blocked-indicator .pi-ban {
   color: #dc3545;
   font-size: 1.1em;
   margin-left: 5px;
 }
 
-/* Action button icons */
 .modify .pi-pencil {
   color: #007bff;
   font-size: 1.1em;
@@ -622,8 +619,6 @@ button.delete:disabled:hover {
 .block .pi-ban {
   color: #dc3545;
   font-size: 1.1em;
-  /* margin-right: -10px; move the block icon to the right */
-
 }
 
 .unblock .pi-check-circle {
@@ -631,7 +626,6 @@ button.delete:disabled:hover {
   font-size: 1.1em;
 }
 
-/* Hover effects for action buttons */
 .modify:hover .pi-pencil {
   color: #0056b3;
 }
@@ -648,7 +642,6 @@ button.delete:disabled:hover {
   color: #1e7e34;
 }
 
-/* Tooltip styling for expired license */
 .expired {
   position: relative;
   cursor: help;
