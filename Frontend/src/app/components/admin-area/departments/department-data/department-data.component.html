@@ -1,69 +1,72 @@
 <div class="departments-container">
   <h2>נתוני מחלקות</h2>
- <button (click)="toggleNewDepartmentMode()" 
-        [class]="isNewDepartmentMode ? 'closed-button' : 'add-department-button'">
-  {{ isNewDepartmentMode ? 'סגור חלון ' : '+ הוסף מחלקה חדשה' }}
-</button>
-  
-<div *ngIf="isNewDepartmentMode" class="new-department-form">
-  <!-- כפתור חזור למעלה בתוך הקופסה -->
-  <button type="button" class="back-button" (click)="toggleNewDepartmentMode()">
-    חזור
+  <button (click)="toggleNewDepartmentMode()" 
+          [class]="isNewDepartmentMode ? 'closed-button' : 'add-department-button'">
+    {{ isNewDepartmentMode ? 'סגור חלון ' : '+ הוסף מחלקה חדשה' }}
   </button>
-
-  <form [formGroup]="newDepartmentForm" (ngSubmit)="submitNewDepartment()">
-    <div>
-      <label>שם מחלקה</label>
-      <input formControlName="name" type="text" />
-    </div>
-    <div>
-      <label>מפקח מחלקה</label>
-      <select formControlName="supervisor_id">
-        <option value="">בחר מפקח</option>
-        <option *ngFor="let user of users" [value]="user.employee_id">
-          {{ user.first_name }} {{ user.last_name }}
-        </option>
-      </select>
-    </div>
-    <button type="submit" 
-      [disabled]="newDepartmentForm.invalid || isSubmitting"
-      class="save-button">
-      {{ isSubmitting ? 'שומר...' : 'שמור' }}
+  
+  <div *ngIf="isNewDepartmentMode" class="new-department-form">
+    <button type="button" class="back-button" (click)="toggleNewDepartmentMode()">
+      חזור
     </button>
-  </form>
-</div>
 
-<div class="departments-list">
-  <div class="department-cards" *ngFor="let department of departments">
-    <div
-      class="department-info"
-      (mouseenter)="setHoveredDepartment(department.department_id)"
-      (mouseleave)="setHoveredDepartment(null)"
-    >
-      <div class="department-title">
-        <h3>{{ department.name }}</h3>
-        <div class="department-actions">
-          <i
-            *ngIf="hoveredDepartmentId === department.department_id"
-            (click)="openEditModal(department)"
-            class="pi pi-pencil edit-icon"
-          ></i>
-          <i
-            *ngIf="hoveredDepartmentId === department.department_id"
-            (click)="openDeleteModal(department)"
-            class="pi pi-trash delete-icon"
-          ></i>
+    <form [formGroup]="newDepartmentForm" (ngSubmit)="submitNewDepartment()">
+      <div>
+        <label>שם מחלקה</label>
+        <input formControlName="name" type="text" />
+      </div>
+      <div>
+        <label>מפקח מחלקה</label>
+        <select formControlName="supervisor_id">
+          <option value="">בחר מפקח</option>
+          <option *ngFor="let user of users" [value]="user.employee_id">
+            {{ user.first_name }} {{ user.last_name }}
+          </option>
+        </select>
+      </div>
+      <button type="submit" 
+        [disabled]="newDepartmentForm.invalid || isSubmitting"
+        class="save-button">
+        {{ isSubmitting ? 'שומר...' : 'שמור' }}
+      </button>
+    </form>
+  </div>
+
+  <div class="departments-list">
+    <div class="department-cards" *ngFor="let department of departments">
+      <div
+        class="department-info"
+        (mouseenter)="setHoveredDepartment(department.id)"
+        (mouseleave)="setHoveredDepartment(null)"
+      >
+        <div class="department-title">
+          <h3>{{ department.name }}</h3>
+          <div class="department-actions">
+            <i
+              *ngIf="hoveredDepartmentId === department.id && !isUnassignedDepartment(department)"
+              (click)="openEditModal(department)"
+              class="pi pi-pencil edit-icon"
+            ></i>
+            <i
+              *ngIf="hoveredDepartmentId === department.id && !isUnassignedDepartment(department)"
+              (click)="openDeleteModal(department)"
+              class="pi pi-trash delete-icon"
+            ></i>
+          </div>
+        </div>
+        <div class="department-supervisor">
+          <p *ngIf="!isUnassignedDepartment(department)">
+            <i class="pi pi-user"></i>
+            מפקח מחלקה : {{ department.supervisorName }}
+          </p>
+          <p *ngIf="isUnassignedDepartment(department)">
+            <i class="pi pi-info-circle"></i>
+            מחלקת ברירת מחדל (ללא מפקח)
+          </p>
         </div>
       </div>
-      <div class="department-supervisor">
-  <p>
-    <i class="pi pi-user"></i>
-    מפקח מחלקה : {{ department.supervisorName }}
-  </p>
-</div>
     </div>
   </div>
-</div>
 
   <div *ngIf="isEditModalOpen" class="modal-overlay">
     <div class="modal-content">
@@ -83,35 +86,37 @@
           </select>
         </div>
         <div class="modal-actions">
-         <button type="submit" 
-        [disabled]="editDepartmentForm.invalid || isSubmitting"
-        class="save-button-modal">
-  {{ isSubmitting ? 'שומר...' : 'שמור' }}
-</button>
+          <button type="submit" 
+            [disabled]="editDepartmentForm.invalid || isSubmitting"
+            class="save-button-modal">
+            {{ isSubmitting ? 'שומר...' : 'שמור' }}
+          </button>
           <button type="button" (click)="closeEditModal()">ביטול</button>
         </div>
       </form>
     </div>
   </div>
-<div *ngIf="isDeleteModalOpen" class="modal-overlay">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3>אישור מחיקה</h3>
-      <button type="button" class="close-modal-button" (click)="closeDeleteModal()">×</button>
-    </div>
-    <div class="delete-confirmation">
-      <p>{{ deleteModalMessage }}</p> 
-      <p class="warning-text">פעולה זו אינה ניתנת לביטול</p>
-    </div>
-    <div class="modal-actions">
-      <button 
-        type="button" 
-        (click)="confirmDelete()"
-        [disabled]="isSubmitting"
-        class="delete-confirm-button">
-        {{ isSubmitting ? 'מוחק...' : 'מחק' }}
-      </button>
-      <button type="button" (click)="closeDeleteModal()">ביטול</button>
+
+  <div *ngIf="isDeleteModalOpen" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>אישור מחיקה</h3>
+        <button type="button" class="close-modal-button" (click)="closeDeleteModal()">×</button>
+      </div>
+      <div class="delete-confirmation">
+        <p>{{ deleteModalMessage }}</p> 
+        <p class="warning-text">פעולה זו אינה ניתנת לביטול</p>
+      </div>
+      <div class="modal-actions">
+        <button 
+          type="button" 
+          (click)="confirmDelete()"
+          [disabled]="isSubmitting"
+          class="delete-confirm-button">
+          {{ isSubmitting ? 'מוחק...' : 'מחק' }}
+        </button>
+        <button type="button" (click)="closeDeleteModal()">ביטול</button>
+      </div>
     </div>
   </div>
 </div>
