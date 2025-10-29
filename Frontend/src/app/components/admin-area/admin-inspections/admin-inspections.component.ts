@@ -32,6 +32,8 @@ export class AdminInspectionsComponent implements OnInit {
   showRideNotesColumn: boolean = false;
   hasCriticalIssues: boolean = false;
   cityMap: { [id: string]: string } = {};
+  ridesPerPage = 4; 
+  filteredRides: OrderCardItem[] = []; 
 
 
 
@@ -81,6 +83,7 @@ export class AdminInspectionsComponent implements OnInit {
         this.inspections = data.inspections || [];
         this.rides = data.rides || [];
         this.applyInspectionFilters();
+        this.applyRideFilters();
         this.hasCriticalIssues = this.inspections.some(insp => insp.critical_issue_bool);
 
         this.loading = false;
@@ -108,6 +111,11 @@ export class AdminInspectionsComponent implements OnInit {
 
   applyInspectionFilters(): void {
     this.filteredInspections = [...this.inspections];
+  }
+
+  get pagedRides() {
+    const start = (this.currentPage - 1) * this.ridesPerPage;
+    return this.filteredRides.slice(start, start + this.ridesPerPage);
   }
 
   fetchUsers(): void {
@@ -161,7 +169,17 @@ export class AdminInspectionsComponent implements OnInit {
   }
 
   get totalPages() {
-    return this.filteredInspections.length > 0 ? Math.ceil(this.filteredInspections.length / this.inspectionsPerPage) : 1;
+    if (this.activeTable === 'inspections') {
+      const totalItems = this.filteredInspections.length;
+      return totalItems > 0 ? Math.ceil(totalItems / this.inspectionsPerPage) : 1;
+    } else { 
+      const totalItems = this.filteredRides.length;
+      return totalItems > 0 ? Math.ceil(totalItems / this.ridesPerPage) : 1;
+    }
+  }
+
+  applyRideFilters(): void {
+    this.filteredRides = [...this.rides];
   }
 
   nextPage() {
