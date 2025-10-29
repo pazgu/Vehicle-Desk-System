@@ -125,72 +125,95 @@ get freeQuotaExceeded(): boolean {
 
     this.socketService.orderUpdated$.subscribe((updatedRide) => {
       if (!updatedRide) return;
-      if (updatedRide) {
-        const index = this.orders.findIndex(o => o.ride_id === updatedRide.id);
-        if (index !== -1) {
-          const newDate = formatDate(updatedRide.start_datetime, 'dd.MM.yyyy', 'en-US');
-          const newTime = formatDate(updatedRide.start_datetime, 'HH:mm', 'en-US');
-          const newRecent = updatedRide.submitted_at
-            ? formatDate(updatedRide.submitted_at, 'dd.MM.yyyy', 'en-US')
-            : newDate;
-          const updatedOrder = {
-            ...this.orders[index],
-            recent: newRecent,
-            date: newDate,
-            time: newTime,
-            status: updatedRide.status.toLowerCase(),
-            distance: updatedRide.estimated_distance_km,
-            start_datetime: updatedRide.start_datetime,
-            end_datetime: updatedRide.end_datetime,
-            submitted_at: updatedRide.submitted_at
-          };
-          this.orders = [
-            ...this.orders.slice(0, index),
-            updatedOrder,
-            ...this.orders.slice(index + 1)
-          ];
-          this.loadAllOrdersForQuota();
-
-          const role = localStorage.getItem('role');
-          if (role === 'supervisor') {
-            this.toastService.show('✅ יש בקשה שעודכנה בהצלחה', 'success');
-          }
-        }
+      const idx = this.allOrdersFull.findIndex(o => o.ride_id === updatedRide.id);
+      if (idx !== -1) {
+        const newDate = formatDate(updatedRide.start_datetime, 'dd.MM.yyyy', 'en-US');
+        const newTime = formatDate(updatedRide.start_datetime, 'HH:mm', 'en-US');
+        const newRecent = updatedRide.submitted_at
+          ? formatDate(updatedRide.submitted_at, 'dd.MM.yyyy', 'en-US')
+          : newDate;
+        const updatedOrder = {
+          ...this.allOrdersFull[idx],
+          recent: newRecent,
+          date: newDate,
+          time: newTime,
+          status: updatedRide.status.toLowerCase(),
+          distance: updatedRide.estimated_distance_km,
+          start_datetime: updatedRide.start_datetime,
+          end_datetime: updatedRide.end_datetime,
+          submitted_at: updatedRide.submitted_at
+        };
+        this.allOrdersFull = [
+          ...this.allOrdersFull.slice(0, idx),
+          updatedOrder,
+          ...this.allOrdersFull.slice(idx + 1)
+        ];
+        this.updateFreeQuota();
+      }
+      const index = this.orders.findIndex(o => o.ride_id === updatedRide.id);
+      if (index !== -1) {
+        const newDate = formatDate(updatedRide.start_datetime, 'dd.MM.yyyy', 'en-US');
+        const newTime = formatDate(updatedRide.start_datetime, 'HH:mm', 'en-US');
+        const newRecent = updatedRide.submitted_at
+          ? formatDate(updatedRide.submitted_at, 'dd.MM.yyyy', 'en-US')
+          : newDate;
+        const updatedOrder = {
+          ...this.orders[index],
+          recent: newRecent,
+          date: newDate,
+          time: newTime,
+          status: updatedRide.status.toLowerCase(),
+          distance: updatedRide.estimated_distance_km,
+          start_datetime: updatedRide.start_datetime,
+          end_datetime: updatedRide.end_datetime,
+          submitted_at: updatedRide.submitted_at
+        };
+        this.orders = [
+          ...this.orders.slice(0, index),
+          updatedOrder,
+          ...this.orders.slice(index + 1)
+        ];
+      }
+      const role = localStorage.getItem('role');
+      if (role === 'supervisor') {
+        this.toastService.show('✅ יש בקשה שעודכנה בהצלחה', 'success');
       }
     });
 
     this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
       if (!updatedStatus) return;
-      if (updatedStatus) {
-        const index = this.orders.findIndex(o => o.ride_id === updatedStatus.ride_id);
-        if (index !== -1) {
-          const newStatus = updatedStatus.new_status;
-          const updatedOrders = [...this.orders];
-          updatedOrders[index] = {
-            ...updatedOrders[index],
-            status: newStatus
-          };
-          this.orders = updatedOrders;
-          this.orders = [...this.orders];
-          this.loadAllOrdersForQuota();
-
-        }
+      const idx = this.allOrdersFull.findIndex(o => o.ride_id === updatedStatus.ride_id);
+      if (idx !== -1) {
+        this.allOrdersFull[idx] = {
+          ...this.allOrdersFull[idx],
+          status: updatedStatus.new_status
+        };
+        this.updateFreeQuota();
+      }
+      const index = this.orders.findIndex(o => o.ride_id === updatedStatus.ride_id);
+      if (index !== -1) {
+        this.orders[index] = {
+          ...this.orders[index],
+          status: updatedStatus.new_status
+        };
+        this.orders = [...this.orders];
       }
     });
 
     this.socketService.deleteRequests$.subscribe((deletedRide) => {
       if (deletedRide) {
+        this.allOrdersFull = this.allOrdersFull.filter(o => o.ride_id !== deletedRide.id);
+        this.updateFreeQuota();
         const index = this.orders.findIndex(o => o.ride_id === deletedRide.id);
         if (index !== -1) {
           this.orders = [
             ...this.orders.slice(0, index),
             ...this.orders.slice(index + 1)
           ];
-          this.loadAllOrdersForQuota();
         }
       }
     });
-    this.loadAllOrdersForQuota();
+  this.loadAllOrdersForQuota();
 
   }
 
@@ -336,7 +359,6 @@ get freeQuotaExceeded(): boolean {
           this.allOrders = mappedOrders;
           this.orders = mappedOrders;
           localStorage.setItem('user_orders', JSON.stringify(this.allOrders));
-      this.loadAllOrdersForQuota();
               
 
         this.rideService.checkStartedApprovedRides().subscribe({
