@@ -32,6 +32,6 @@ mat-dialog-content, mat-dialog-actions, p {
 mat-dialog-actions {
   display: flex !important;
   flex-direction: row !important;
-  justify-content: flex-start !important; /* Force align buttons to the left */
+  justify-content: flex-start !important; 
   direction: ltr;
 }
