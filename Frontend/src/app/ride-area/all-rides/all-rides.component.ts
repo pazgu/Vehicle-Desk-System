@@ -31,6 +31,7 @@ export class AllRidesComponent implements OnInit {
     private dialog: MatDialog
   ) {}
   
+  private allOrders: any[] = [];
 
   goBack(): void {
     this.location.back();
@@ -57,6 +58,7 @@ export class AllRidesComponent implements OnInit {
 
   sortBy = 'recent';
   orders: any[] = [];
+  allOrdersFull: any[] = [];
   rideViewMode: 'all' | 'future' | 'past' = 'all';
   highlightedOrderId: string | null = null;
 warningVisible = false;
@@ -147,7 +149,7 @@ get freeQuotaExceeded(): boolean {
             updatedOrder,
             ...this.orders.slice(index + 1)
           ];
-          this.updateFreeQuota();
+          this.loadAllOrdersForQuota();
 
           const role = localStorage.getItem('role');
           if (role === 'supervisor') {
@@ -170,7 +172,7 @@ get freeQuotaExceeded(): boolean {
           };
           this.orders = updatedOrders;
           this.orders = [...this.orders];
-          this.updateFreeQuota();
+          this.loadAllOrdersForQuota();
 
         }
       }
@@ -184,10 +186,11 @@ get freeQuotaExceeded(): boolean {
             ...this.orders.slice(0, index),
             ...this.orders.slice(index + 1)
           ];
+          this.loadAllOrdersForQuota();
         }
       }
     });
-    this.updateFreeQuota();
+    this.loadAllOrdersForQuota();
 
   }
 
@@ -207,30 +210,52 @@ get freeQuotaExceeded(): boolean {
   }
 
   private updateFreeQuota(): void {
-  // which statuses count as a "used free ride"
-  const countableStatuses = new Set([
-    'pending',
-    'approved',
-    'reserved',
-    'in_progress',
-    'completed'
-  ]);
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
   const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
 
-  // use the current in-memory orders list to avoid localStorage drift
-  const used = this.orders.filter(o => {
+  const source = Array.isArray(this.allOrdersFull) && this.allOrdersFull.length > 0
+    ? this.allOrdersFull
+    : this.allOrders;
+  const used = source.filter((o: any) => {
     if (!o?.date) return false;
     const d = this.parseDate(o.date);
     d.setHours(12, 0, 0, 0);
-    const inMonth = d >= startOfMonth && d <= endOfMonth;
-    const counts = countableStatuses.has(String(o.status || '').toLowerCase());
-    return inMonth && counts;
+    return d >= startOfMonth && d <= endOfMonth;
   }).length;
 
   this.freeQuotaUsed = Math.min(used, this.freeQuotaTotal);
 }
+  private loadAllOrdersForQuota(): void {
+    const userId = localStorage.getItem('employee_id');
+    if (!userId) return;
+    this.rideService.getAllOrders(userId, {}).subscribe({
+      next: (res) => {
+        if (!Array.isArray(res)) {
+          this.allOrdersFull = [];
+          this.updateFreeQuota();
+          return;
+        }
+        this.allOrdersFull = res.map(order => ({
+          ride_id: order.ride_id,
+          date: formatDate(order.start_datetime, 'dd.MM.yyyy', 'en-US'),
+          time: formatDate(order.start_datetime, 'HH:mm', 'en-US'),
+          type: order.vehicle,
+          distance: order.estimated_distance,
+          status: order.status ? String(order.status).toLowerCase() : '',
+          start_datetime: order.start_datetime,
+          end_datetime: order.end_datetime,
+          submitted_at: order.submitted_at,
+          user_id: order.user_id
+        }));
+        this.updateFreeQuota();
+      },
+      error: (err) => {
+        console.error('Error loading full orders for quota:', err);
+        this.updateFreeQuota();
+      }
+    });
+  }
 
 
   // This is the core method to update the URL with current filter states
@@ -296,7 +321,7 @@ get freeQuotaExceeded(): boolean {
         this.loading = false;
 
         if (Array.isArray(res)) {
-          this.orders = res.map(order => ({
+          const mappedOrders = res.map(order => ({
             ride_id: order.ride_id,
             date: formatDate(order.start_datetime, 'dd.MM.yyyy', 'en-US'),
             time: formatDate(order.start_datetime, 'HH:mm', 'en-US'),
@@ -308,13 +333,16 @@ get freeQuotaExceeded(): boolean {
             submitted_at: order.submitted_at,
             user_id: order.user_id
           }));
-          localStorage.setItem('user_orders', JSON.stringify(this.orders));
-          
+          this.allOrders = mappedOrders;
+          this.orders = mappedOrders;
+          localStorage.setItem('user_orders', JSON.stringify(this.allOrders));
+      this.loadAllOrdersForQuota();
+              
 
         this.rideService.checkStartedApprovedRides().subscribe({
           next: (res: StartedRidesResponse) => {
             const startedRideIds = res.rides_supposed_to_start; 
-            this.updateFreeQuota();
+            this.loadAllOrdersForQuota();
             this.orders = this.orders.map(order => ({
               ...order,
               hasStarted: startedRideIds.includes(order.ride_id)
