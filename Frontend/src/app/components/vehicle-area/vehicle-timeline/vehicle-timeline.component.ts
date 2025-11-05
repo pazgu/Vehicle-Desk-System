@@ -352,4 +352,16 @@ onRideHover(event: MouseEvent, ride: RenderableRide): void {
   trackRide(index: number, ride: RenderableRide): string {
     return `${ride.user_id}-${ride.start_datetime}`;
   }
+  
+  getStatusLabel(status: string): string {
+  const statusMap: { [key: string]: string } = {
+    'approved': 'מאושר',
+    'pending': 'ממתין לאישור',
+    'in_progress': 'בביצוע',
+    'rejected': 'נדחה',
+    'completed': 'הושלם',
+    'cancelled': 'בוטל'
+  };
+  return statusMap[status?.toLowerCase()] || status;
+}
 }
