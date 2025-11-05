@@ -74,11 +74,9 @@ export class AddNewUserComponent implements OnInit {
   updateDepartmentValidation(role: string): void {
     const departmentControl = this.addUserForm.get('department_id');
     
-    if (role === 'inspector') {
-      // Inspectors don't require a department
+    if (role !='employee') {
       departmentControl?.clearValidators();
     } else {
-      // Other roles require a department
       departmentControl?.setValidators([Validators.required]);
     }
     
@@ -176,7 +174,10 @@ export class AddNewUserComponent implements OnInit {
 
   isDepartmentRequired(): boolean {
     const role = this.addUserForm.get('role')?.value;
-    return role !== 'inspector';
+    if(role=='employee'){
+      return true
+    }
+    return false
   }
   
   hasGovlicenseButNoFile(): boolean {
