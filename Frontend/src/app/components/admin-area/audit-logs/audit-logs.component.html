@@ -196,13 +196,18 @@
             </div>
             <div class="info-item">
               <div class="info-label">שונה על ידי</div>
-              <div class="info-value">{{ selectedLog.changed_by }}</div>
+              <div class="info-value">{{ getUsernameById(selectedLog.changed_by) }}</div>
             </div>
           </div>
         </div>
 
         <div class="change-section">
-          <h3>נתוני שינוי</h3>
+          
+<h3 class="change-header">
+    <i class="pi pi-clipboard copy-icon"></i>
+
+  נתוני שינוי
+</h3>
 
           <div *ngIf="selectedLog.action === 'INSERT'">
             <div class="data-card insert-data">
