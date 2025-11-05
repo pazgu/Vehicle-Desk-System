@@ -123,6 +123,16 @@
                 <option value="personal">אישי</option>
               </select>
 
+             <div *ngIf="freezeReason === 'personal'" class="personal-reason-box">
+  <label class="personal-reason-label">פרטי הקפאה אישיים:</label>
+  <textarea
+    [(ngModel)]="freezeDetails"
+    rows="2"
+    class="personal-textarea"
+  ></textarea>
+</div>
+
+
               <button class="confirm-freeze-button button-spacing" (click)="confirmFreeze()">
                 אישור הקפאה
               </button>

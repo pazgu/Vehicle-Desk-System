@@ -659,5 +659,35 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
+.personal-reason-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* RTL: label on right side */
+  margin-top: 10px;
+  gap: 8px;
+  text-align: right; /* RTL text alignment */
+}
 
+.personal-reason-label {
+  font-weight: 600;
+  color: #942222;
+  font-family: var(--font-family-alef);
+  font-size: 0.9rem; /* smaller text size */
+  align-self: flex-start; /* RTL: position on right */
+  padding-right: 0.5rem; /* align with dropdown text */
+  line-height: 1.2; /* tighter line height to match dropdown */
+}
+
+.personal-textarea {
+  width: 100%;
+  border: 1px solid #942222;
+  border-radius: 8px;
+  padding: 8px;
+  font-size: 0.9rem; /* smaller text size */
+  direction: rtl;
+  text-align: right; /* RTL text alignment */
+  resize: none;
+  font-family: inherit;
+  transition: border-color 0.2s ease;
+}
   

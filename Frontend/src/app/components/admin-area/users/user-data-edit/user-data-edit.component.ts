@@ -127,7 +127,7 @@ export class UserDataEditComponent implements OnInit {
       has_government_license: [false],
       license_file_url: [''],
       license_expiry_date: [''],
-      phone: ['', Validators.required]
+      phone: ['', [Validators.required, Validators.pattern(/^05\d{8}$/)]],
 
     });
   }
@@ -214,9 +214,6 @@ export class UserDataEditComponent implements OnInit {
     const licenseExpiryDate = this.userForm.get('license_expiry_date')?.value;
     
     if (hasGovernmentLicense) {
-      if (!this.hasExistingLicenseFile && !this.selectedFile) {
-        return { isValid: false, errorMessage: 'נדרש קובץ רשיון בעת הפעלת רשיון ממשלתי' };
-      }
       if (!licenseExpiryDate || licenseExpiryDate.trim() === '') {
         return { isValid: false, errorMessage: 'נדרש תאריך תפוגת רשיון בעת הפעלת רשיון ממשלתי' };
       }

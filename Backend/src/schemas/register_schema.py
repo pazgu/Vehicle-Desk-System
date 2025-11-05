@@ -19,7 +19,7 @@ class UserCreate(BaseModel):
     employee_id: Optional[UUID] = None 
     role: UserRole
     phone: Optional[str] = None
-    department_id: UUID
+    department_id: Optional[UUID]
     password: str
     has_government_license: bool = False
     license_file_url: Optional[str] = None

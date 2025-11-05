@@ -391,6 +391,13 @@ formatRouteFromChangeData(changeData: any): string {
     this.selectedLog = log;
   }
 
+  getChangedByFullName(id: string): string {
+  if (!id) return "לא ידוע"; // unknown
+  const user = this.users.find(u => u.id === id);
+  return user ? `${user.first_name} ${user.last_name}` : id;
+}
+
+
   closeDetails() {
     this.selectedLog = null;
   }
