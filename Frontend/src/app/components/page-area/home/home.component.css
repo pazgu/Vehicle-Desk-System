@@ -859,3 +859,17 @@ hr {
   transform: scale(0.97);
 }
  
+.addBtn.disabled-button {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #cccccc;
+}
+
+.addBtn.disabled-button:hover {
+  background-color: #cccccc;
+  transform: none;
+}
+
+.pi-lock {
+  color: #666;
+}
