@@ -134,13 +134,7 @@
     <!-- employee routes -->
     <a *ngIf="(role$ | async) === 'employee'" [routerLink]="['/all-rides']" class="nav-link" href="#">ההזמנות שלי</a>
 
-    <!-- inspector routes -->
-    <!-- <a *ngIf="(role$ | async) === 'inspector'" [routerLink]="['/inspector/vehicles']" class="nav-link">סטטוס רכבים |</a> -->
-    <a *ngIf="(role$ | async) === 'inspector'" [routerLink]="['/inspector/inspection']" class="nav-link">בדיקת רכבים יומית</a>
-
-
-      
-
+   <a *ngIf="(role$ | async) === 'inspector'" [routerLink]="['/inspector/inspection']" class="nav-link">בדיקת רכבים יומית</a>
     <a routerLink="/notifications">
         <img src="/assets/images/bell-icon.png" alt="Notifications" />
           <span
