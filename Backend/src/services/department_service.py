@@ -22,7 +22,7 @@ def create_department(db: Session, dept_data: DepartmentCreate, payload: dict):
     db.add(new_dept)
     db.commit()
     db.refresh(new_dept)
-    supervisor.department_id = new_dept.id
+    supervisor.department_id = new_dept.id if new_dept.id else None
     db.commit()
     db.execute(text("SET session.audit.user_id = DEFAULT"))
     return new_dept
@@ -91,8 +91,10 @@ def delete_department(db: Session, department_id: str, payload: dict):
                 ).count()
                 if other_supervised_depts == 0:
                     user.role = UserRole.employee 
-
-            user.department_id = unassigned_dept.id
+                else:
+                    user.department_id=None
+            if(user.role==UserRole.employee):
+                user.department_id = unassigned_dept.id
     db.delete(department)
     db.commit()
     db.execute(text("SET session.audit.user_id = DEFAULT"))
