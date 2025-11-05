@@ -1,5 +1,3 @@
-// department-data.component.ts
-
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
@@ -56,7 +54,7 @@ export class DepartmentDataComponent implements OnInit {
     });
 
     this.editDepartmentForm = this.fb.group({
-      department_id: ['', Validators.required], // This will be set when opening the modal
+      department_id: ['', Validators.required],
       name: ['', Validators.required],
       supervisor_id: ['', Validators.required],
     });
@@ -68,8 +66,8 @@ export class DepartmentDataComponent implements OnInit {
   loadDepartments() {
     this.userService.getDepartmentsWithSupervisors().subscribe({
       next: (departmentsdata) => {
-      this.departments = departmentsdata;
-    },
+        this.departments = departmentsdata;
+      },
       error: () => console.error('Error fetching departments:'),
     });
   }
@@ -81,10 +79,13 @@ export class DepartmentDataComponent implements OnInit {
     });
   }
 
-getSupervisorName(supervisorId: string): string {
-  const supervisor = this.users.find(user => user.employee_id === supervisorId);
-  return supervisor ? `${supervisor.first_name} ${supervisor.last_name}` : 'לא ידוע';
-}
+  getSupervisorName(supervisorId: string): string {
+    const supervisor = this.users.find(user => user.employee_id === supervisorId);
+    return supervisor ? `${supervisor.first_name} ${supervisor.last_name}` : 'לא ידוע';
+  }
+  isUnassignedDepartment(department: any): boolean {
+    return department.name === 'Unassigned';
+  }
 
 
 
@@ -93,28 +94,32 @@ getSupervisorName(supervisorId: string): string {
   }
 
 
- openEditModal(department: any) {
-  this.editedDepartmentId = department.id;
-  this.editDepartmentForm.patchValue({
-    department_id: department.id,
-    name: department.name,
-    supervisor_id: department.supervisor_id,
-  });
-  this.isEditModalOpen = true;
-}
+  openEditModal(department: any) {
+    if (this.isUnassignedDepartment(department)) {
+      this.showToast('לא ניתן לערוך את מחלקת "Unassigned"', true);
+      return;
+    }
+    this.editedDepartmentId = department.id;
+    this.editDepartmentForm.patchValue({
+      department_id: department.id,
+      name: department.name,
+      supervisor_id: department.supervisor_id,
+    });
+    this.isEditModalOpen = true;
+  }
 
 
 
   closeEditModal() {
-    this.isEditModalOpen = false; // Close the modal
-    this.editDepartmentForm.reset(); // Reset the form in the modal
-    this.editedDepartmentId = null; // Clear the edited department ID
+    this.isEditModalOpen = false;
+    this.editDepartmentForm.reset();
+    this.editedDepartmentId = null;
   }
 updateDepartment() {
   const departmentIdToUpdate = this.editedDepartmentId;
 
-  if (this.editDepartmentForm.valid && departmentIdToUpdate !== null) {
-    const { name, supervisor_id } = this.editDepartmentForm.value;
+    if (this.editDepartmentForm.valid && departmentIdToUpdate !== null) {
+      const { name, supervisor_id } = this.editDepartmentForm.value;
 
     this.isSubmitting = true;
     this.departmentService
@@ -139,9 +144,15 @@ updateDepartment() {
 }
 
   openDeleteModal(department: any) {
+    if (this.isUnassignedDepartment(department)) {
+      this.showToast('לא ניתן למחוק את מחלקת "Unassigned"', true);
+      return;
+    }
+
     this.departmentToDelete = department;
     this.isDeleteModalOpen = true;
-    this.deleteModalMessage = `האם אתה בטוח שברצונך למחוק את המחלקה "${department.name}"?  וכל המשתמשים שהיו משויכים למחלקה ינותקו, ותפקיד המפקח של המחלקה ישתנה לתפקיד של עובד רגיל וגם מנותק.`;  }
+    this.deleteModalMessage = `האם אתה בטוח שברצונך למחוק את המחלקה "${department.name}"? כל המשתמשים שהיו משויכים למחלקה יועברו למחלקת "Unassigned".`;
+  }
 
   closeDeleteModal() {
     this.isDeleteModalOpen = false;
@@ -172,9 +183,9 @@ updateDepartment() {
       this.newDepartmentForm.reset();
     }
   }
-submitNewDepartment() {
-  if (this.newDepartmentForm.valid) {
-    const { name, supervisor_id } = this.newDepartmentForm.value;
+  submitNewDepartment() {
+    if (this.newDepartmentForm.valid) {
+      const { name, supervisor_id } = this.newDepartmentForm.value;
 
     this.isSubmitting = true;
     this.departmentService.createDepartment(name, supervisor_id).subscribe({

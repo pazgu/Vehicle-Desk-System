@@ -123,7 +123,7 @@
           <tr *ngFor="let ride of pagedRides">
             <td>{{ ride.start_datetime | date: 'short' }}</td>
             <td>{{ getUserNameById(ride.user_id) }}</td>
-            <td>{{ ride.ride_type }}</td>
+            <td>{{ ride.ride_type === 'operational' ? 'מבצעית' : 'מנהלתית' }}</td>
             <td>{{ getFormattedStops(ride.stop, ride.extra_stops) }}</td>
             <td>{{ ride.estimated_distance_km | number }}</td>
             <td>{{ ride.actual_distance_km | number }}</td>

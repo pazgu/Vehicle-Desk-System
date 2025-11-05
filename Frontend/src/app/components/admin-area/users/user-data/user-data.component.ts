@@ -57,7 +57,7 @@ export class UserDataComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Initialize the reactive form for block user
+
     this.blockUserForm = this.fb.group({
       blockDuration: [14, [Validators.required, Validators.min(1)]],
     });
