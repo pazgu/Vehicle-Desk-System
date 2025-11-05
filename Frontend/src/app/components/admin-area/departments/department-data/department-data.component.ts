@@ -167,10 +167,7 @@ updateDepartment() {
       next: () => {
         this.isSubmitting = false;
         this.closeDeleteModal();
-         this.departments = this.departments.filter(
-        d => d.id !== this.departmentToDelete.id
-      );
-      this.departments=[...this.departments]
+       this.loadDepartments()
         this.toastService.show('מחלקה נמחקה בהצלחה','success');
       },
       error: (err) => {
