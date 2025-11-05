@@ -49,8 +49,7 @@ export class AddNewUserComponent implements OnInit {
       last_name: ['', Validators.required],
       username: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      phone: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
-      role: ['', Validators.required],
+      phone: ['', [Validators.required, Validators.pattern(/^05\d{8}$/)]],
       has_government_license: [false],
       department_id: [''], 
       license_expiry_date: ['', [
