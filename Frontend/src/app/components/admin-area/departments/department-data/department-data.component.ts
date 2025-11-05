@@ -96,7 +96,7 @@ export class DepartmentDataComponent implements OnInit {
 
   openEditModal(department: any) {
     if (this.isUnassignedDepartment(department)) {
-      this.showToast('לא ניתן לערוך את מחלקת "Unassigned"', true);
+      this.toastService.show('לא ניתן לערוך את מחלקת "Unassigned"', "error");
       return;
     }
     this.editedDepartmentId = department.id;
@@ -145,7 +145,7 @@ updateDepartment() {
 
   openDeleteModal(department: any) {
     if (this.isUnassignedDepartment(department)) {
-      this.showToast('לא ניתן למחוק את מחלקת "Unassigned"', true);
+      this.toastService.show('לא ניתן למחוק את מחלקת "Unassigned"', 'error');
       return;
     }
 
