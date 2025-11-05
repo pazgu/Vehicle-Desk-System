@@ -1111,7 +1111,7 @@ def manual_mileage_edit(
     if request.new_mileage < vehicle.mileage:
         raise HTTPException(
             status_code=400,
-            detail=f"New mileage ({request.new_mileage}) cannot be less than current mileage ({vehicle.mileage})"
+            detail=f"קריאת הקילומטרים החדשה ({request.new_mileage}) אינה יכולה להיות פחות מזו לפניה ({vehicle.mileage})"
         )
 
     vehicle.mileage = request.new_mileage
