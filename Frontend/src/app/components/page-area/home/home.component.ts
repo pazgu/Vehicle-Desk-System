@@ -1172,7 +1172,7 @@ export class NewRideComponent implements OnInit {
             } else if (this.vehicleFuelType === 'hybrid') {
                 this.toastService.showPersistent('אנא ודא כי יש מספיק דלק וטעינה לפני ההחזרה.', 'neutral');
             } else if (this.vehicleFuelType === 'gasoline') {
-                this.toastService.showPersistent('אנא ודא כי מיכל הדלק מלא לפני ההחזרה.', 'neutral');
+                this.toastService.showPersistent('נא להחזיר את הרכב נקי ומתודלק', 'neutral');
             }
         }
     }
