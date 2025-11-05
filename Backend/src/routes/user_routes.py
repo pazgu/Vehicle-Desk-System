@@ -205,7 +205,7 @@ async def create_order(
         )
 
         schedule_ride_start(new_ride.id, new_ride.start_datetime)
-        schedule_ride_reminder_email(new_ride.id, new_ride.start_datetime)
+        # schedule_ride_reminder_email(new_ride.id, new_ride.start_datetime)
         warning_flag = is_time_in_blocked_window(new_ride.start_datetime)
         department_id = get_user_department(user_id=user_id, db=db)
 
@@ -229,7 +229,7 @@ async def create_order(
 
         if supervisor_id:
             supervisor_name = get_user_name(db, supervisor_id)
-            email_service = EmailService(sio_server=sio)
+            # email_service = EmailService(sio_server=sio)
             destination_city = db.query(City).filter(City.id == new_ride.stop).first()
             destination_name = destination_city.name if destination_city else str(new_ride.stop)
             ride_details_for_email = {
@@ -245,16 +245,16 @@ async def create_order(
                 "estimated_distance_km": new_ride.estimated_distance_km,
                 "status": new_ride.status,
             }
-            asyncio.create_task(
-                email_service.send_ride_creation_email(
-                    ride_id=new_ride.id,
-                    recipient_id=supervisor_id,
-                    db=db,
-                    ride_details=ride_details_for_email,
-                    email_type="new_ride_request_to_supervisor",
-                    use_retries=True
-                )
-            )
+            # asyncio.create_task(
+            #     email_service.send_ride_creation_email(
+            #         ride_id=new_ride.id,
+            #         recipient_id=supervisor_id,
+            #         db=db,
+            #         ride_details=ride_details_for_email,
+            #         email_type="new_ride_request_to_supervisor",
+            #         use_retries=True
+            #     )
+            # )
             supervisor_notification = create_system_notification(
                 user_id=supervisor_id,
                 title="בקשת נסיעה חדשה",
