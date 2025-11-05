@@ -1,9 +1,7 @@
 :host {
   display: block;
   min-height: 100vh;
-
-  /* your background */
-  background-image: url('/assets/images/notifications-bg.png'); /* note: no leading slash */
+  background-image: url('/assets/images/notifications-bg.png'); 
   background-repeat: repeat;
   background-size: cover;       
   background-repeat: no-repeat; 
