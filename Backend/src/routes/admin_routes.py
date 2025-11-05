@@ -149,7 +149,7 @@ async def edit_user_by_id_route(
     role: str = Form(...),
     department_id: str = Form(...),
     has_government_license: str = Form(...),
-    license_file: UploadFile = File(None),
+    license_file: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
     payload: dict = Depends(token_check),
     license_expiry_date: Optional[str] = Form(None),
@@ -189,11 +189,11 @@ async def edit_user_by_id_route(
                 user.license_file_url = f"/{filename}"
             except Exception as e:
                 raise HTTPException(status_code=500, detail=f"Failed to save license file: {e}")
-        elif not user.license_file_url and not license_file:
-            raise HTTPException(
-                status_code=400, 
-                detail="License file is required when enabling government license."
-            )
+        # elif not user.license_file_url and not license_file:
+        #     raise HTTPException(
+        #         status_code=400, 
+        #         detail="License file is required when enabling government license."
+        #     )
         elif user.license_file_url and license_file:
             raise HTTPException(
                 status_code=403,
@@ -426,6 +426,7 @@ async def add_user_as_admin(
 
    
     result = create_user_by_admin(user_data, changed_by, db)
+
     
     
     return result

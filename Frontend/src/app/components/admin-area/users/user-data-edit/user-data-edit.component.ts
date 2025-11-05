@@ -214,9 +214,6 @@ export class UserDataEditComponent implements OnInit {
     const licenseExpiryDate = this.userForm.get('license_expiry_date')?.value;
     
     if (hasGovernmentLicense) {
-      if (!this.hasExistingLicenseFile && !this.selectedFile) {
-        return { isValid: false, errorMessage: 'נדרש קובץ רשיון בעת הפעלת רשיון ממשלתי' };
-      }
       if (!licenseExpiryDate || licenseExpiryDate.trim() === '') {
         return { isValid: false, errorMessage: 'נדרש תאריך תפוגת רשיון בעת הפעלת רשיון ממשלתי' };
       }
