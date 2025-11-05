@@ -127,7 +127,7 @@ export class UserDataEditComponent implements OnInit {
       has_government_license: [false],
       license_file_url: [''],
       license_expiry_date: [''],
-      phone: ['', Validators.required]
+      phone: ['', [Validators.required, Validators.pattern(/^05\d{8}$/)]],
 
     });
   }

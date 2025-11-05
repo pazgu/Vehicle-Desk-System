@@ -24,6 +24,7 @@ export class VehicleCardItemComponent implements OnInit {
   vehicle: any;
   isFreezeReasonFieldVisible: boolean = false;
   freezeReason: string = '';
+  freezeDetails: string = '';
   topUsedVehiclesMap: Record<string, number> = {};
   vehicleUsageData: { plate_number: string; vehicle_model: string; ride_count: number }[] = [];
   currentVehicleRideCount: number = 0;

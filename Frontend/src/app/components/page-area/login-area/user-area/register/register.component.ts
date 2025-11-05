@@ -40,7 +40,7 @@ export class RegisterComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(8), Validators.pattern(/^(?=.*[A-Z])(?=.*\d).+$/)]],
       department_id: ['', Validators.required],
-      phone: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]]
+      phone: ['', [Validators.required, Validators.pattern(/^05\d{8}$/)]],
     });
 
     this.fetchDepartments();
