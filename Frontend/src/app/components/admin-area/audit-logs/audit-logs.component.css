@@ -345,12 +345,7 @@
   gap: 0.5rem;
 }
 
-.change-section h3::before {
-  content: '📋';
-  font-size: 1.2rem;
-}
 
-/* Data Cards */
 .data-card {
   background: white;
   border-radius: 12px;
