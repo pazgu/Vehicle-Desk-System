@@ -146,9 +146,9 @@ resetForm(): void {
       };
 
       return this.InspectorService.postInspection(payload).pipe(
-        catchError(err => {
-          console.error(`❌ Failed to save inspection for vehicle ${v.plate}:`, err);
-          return of(null); // Return a new observable that emits null on error
+        catchError(() => {
+          console.error(`שגיאה בשליחת הטופס`);
+          return of(null); 
         })
       );
     });
@@ -172,8 +172,6 @@ resetForm(): void {
               'frozen',
               'maintenance'
             ).subscribe({
-              next: () => console.log(`Vehicle frozen`),
-              error: err => console.error(`Failed to freeze vehicle `, err)
             });
           });
         }

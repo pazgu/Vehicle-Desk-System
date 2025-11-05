@@ -38,6 +38,7 @@ export class UserDataComponent implements OnInit {
   license_expiry_date?: Date;
   licenceExpiredMap: { [userId: string]: boolean } = {};
   departmentNames: { [key: string]: string } = {};
+  supervisorToDeptName: { [key: string]: string } = {};
 
   // --- New/Updated Properties for Blocking ---
   isBlockUserModalOpen: boolean = false;
@@ -65,29 +66,46 @@ export class UserDataComponent implements OnInit {
     this.loadUsersAndDepartments();
   }
 
-  private loadUsersAndDepartments(): void {
-    const users$ = this.userService.getAllUsers();
-    const departments$ = this.userService.getDepartments();
+private loadUsersAndDepartments(): void {
+  const users$ = this.userService.getAllUsers();
+  const departments$ = this.userService.getDepartments();
 
-    forkJoin([users$, departments$]).subscribe({
-      next: ([users, departments]) => {
-        this.departmentNames = departments.reduce((map, dept) => {
-          map[dept.id] = dept.name;
-          return map;
-        }, {} as { [key: string]: string });
+  forkJoin([users$, departments$]).subscribe({
+    next: ([users, departments]) => {
+      const deptIdToName = departments.reduce((map, dept) => {
+        map[dept.id] = dept.name;
+        return map;
+      }, {} as { [key: string]: string });
 
-        this.users = users;
-        this.filteredLogs = [...users];
-        this.checkLicence(users);
-        this.availableRoles = Array.from(new Set(users.map((u) => u.role))).filter(
-          Boolean
-        );
+      this.supervisorToDeptName = departments.reduce((map, dept) => {
+        if (dept.supervisor_id) {
+          map[dept.supervisor_id] = dept.name;
+        }
+        return map;
+      }, {} as { [key: string]: string });
 
-        this.setupSocketListeners();
-      },
-      error: (err) => console.error('Failed to fetch data', err),
-    });
-  }
+      this.users = users.map(user => {
+        let deptName = '—'; 
+        if (user.role === 'supervisor' && this.supervisorToDeptName[user.employee_id]) {
+          deptName = this.supervisorToDeptName[user.employee_id]; 
+        } else if (user.department_id && deptIdToName[user.department_id]) {
+          deptName = deptIdToName[user.department_id]; 
+        }
+
+        return { ...user, department_name: deptName };
+      });
+
+      this.filteredLogs = [...this.users];
+      this.departmentNames = deptIdToName;
+      this.checkLicence(this.users);
+      this.availableRoles = Array.from(new Set(users.map(u => u.role))).filter(Boolean);
+
+      this.setupSocketListeners();
+    },
+    error: (err) => console.error('Failed to fetch data', err),
+  });
+}
+
 
   private setupSocketListeners(): void {
     this.socketservice.deleteUserRequests$.subscribe((deletedUser) => {
@@ -147,9 +165,15 @@ export class UserDataComponent implements OnInit {
     });
   }
 
-  getDepartmentName(departmentId: string): string {
-    return this.departmentNames[departmentId] || departmentId || 'לא זמין';
+ getDepartmentName(user: any): string {
+  // If supervisor, take the department they supervise
+  if (user.role === 'supervisor' && user.employee_id in this.supervisorToDeptName) {
+    return this.supervisorToDeptName[user.employee_id];
   }
+
+  // Otherwise, take from the user's department_id
+  return this.departmentNames[user.department_id] || 'לא זמין';
+}
   hasNoLicense(user: User): boolean {
     return !user.has_government_license;
   }

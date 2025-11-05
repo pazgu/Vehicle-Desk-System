@@ -90,7 +90,7 @@ export class UserService {
   
 
 
- getDepartments(): Observable<{ id: string; name: string }[]> {
+ getDepartments(): Observable<{ id: string; name: string;supervisor_id:string }[]> {
   return this.http.get<{ id: string; name: string, supervisor_id: string }[]>(`${this.apiUrl}/departments`);
 }
 

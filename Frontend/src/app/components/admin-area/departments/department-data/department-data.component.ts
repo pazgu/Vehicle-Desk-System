@@ -9,6 +9,7 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { DepartmentService } from '../../../../services/department_service';
+import { ToastService } from '../../../../services/toast.service';
 
 @Component({
   selector: 'app-department-data',
@@ -22,7 +23,8 @@ export class DepartmentDataComponent implements OnInit {
     private userService: UserService,
     private departmentService: DepartmentService,
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private toastService:ToastService
   ) {}
 
   departments: any[] = [];
@@ -85,15 +87,7 @@ export class DepartmentDataComponent implements OnInit {
     return department.name === 'Unassigned';
   }
 
-  showToast(message: string, isError: boolean = false) {
-    const toast = document.createElement('div');
-    toast.textContent = message;
-    toast.className = `custom-toast ${isError ? 'error' : 'success'}`;
-    document.body.appendChild(toast);
-    setTimeout(() => {
-      toast.remove();
-    }, 3000);
-  }
+
 
   setHoveredDepartment(departmentId: string | null): void {
     this.hoveredDepartmentId = departmentId;
@@ -102,7 +96,7 @@ export class DepartmentDataComponent implements OnInit {
 
   openEditModal(department: any) {
     if (this.isUnassignedDepartment(department)) {
-      this.showToast('לא ניתן לערוך את מחלקת "Unassigned"', true);
+      this.toastService.show('לא ניתן לערוך את מחלקת "Unassigned"', "error");
       return;
     }
     this.editedDepartmentId = department.id;
@@ -127,31 +121,31 @@ updateDepartment() {
     if (this.editDepartmentForm.valid && departmentIdToUpdate !== null) {
       const { name, supervisor_id } = this.editDepartmentForm.value;
 
-      this.isSubmitting = true;
-      this.departmentService
-        .updateDepartment(String(departmentIdToUpdate), name, supervisor_id)
-        .subscribe({
-          next: () => {
-            this.isSubmitting = false;
-            this.closeEditModal();
-            this.loadDepartments();
-            this.showToast('המחלקה עודכנה בהצלחה');
-          },
-          error: (err) => {
-            this.isSubmitting = false;
-            if (err.status === 409) {
-              this.showToast('שם מחלקה כבר קיים', true);
-            } else {
-              this.showToast('שגיאה בעדכון מחלקה', true);
-            }
-          },
-        });
-    }
+    this.isSubmitting = true;
+    this.departmentService
+      .updateDepartment(String(departmentIdToUpdate), name, supervisor_id)
+      .subscribe({
+        next: () => {
+          this.isSubmitting = false;
+          this.closeEditModal();
+          this.loadDepartments();
+          this.toastService.show('המחלקה עודכנה בהצלחה','success');
+        },
+        error: (err) => {
+          this.isSubmitting = false;
+          if (err.status === 409) {
+            this.toastService.show('שם מחלקה כבר קיים', 'error');
+          } else {
+            this.toastService.show('שגיאה בעדכון מחלקה', 'error');
+          }
+        },
+      });
   }
+}
 
   openDeleteModal(department: any) {
     if (this.isUnassignedDepartment(department)) {
-      this.showToast('לא ניתן למחוק את מחלקת "Unassigned"', true);
+      this.toastService.show('לא ניתן למחוק את מחלקת "Unassigned"', 'error');
       return;
     }
 
@@ -173,14 +167,13 @@ updateDepartment() {
       next: () => {
         this.isSubmitting = false;
         this.closeDeleteModal();
-        this.showToast('המחלקה נמחקה בהצלחה. מעביר לעמוד נתוני משתמשים.');
-        this.router.navigate(['/user-data']);
+       this.loadDepartments()
+        this.toastService.show('מחלקה נמחקה בהצלחה','success');
       },
       error: (err) => {
         this.isSubmitting = false;
-        console.error('Error deleting department:', err);
-        this.showToast('שגיאה במחיקת מחלקה', true);
-        this.closeDeleteModal();
+        this.toastService.show('שגיאה במחיקת מחלקה', 'error');
+        this.closeDeleteModal(); 
       },
     });
   }
@@ -195,26 +188,25 @@ updateDepartment() {
     if (this.newDepartmentForm.valid) {
       const { name, supervisor_id } = this.newDepartmentForm.value;
 
-      this.isSubmitting = true;
-      this.departmentService.createDepartment(name, supervisor_id).subscribe({
-        next: () => {
-          this.newDepartmentForm.reset();
-          this.isNewDepartmentMode = false;
-          this.isSubmitting = false;
-          this.loadDepartments();
-          this.showToast('המחלקה נוספה בהצלחה');
-        },
-        error: (err) => {
-          this.isSubmitting = false;
-          if (err.status === 409) {
-            this.showToast('שם מחלקה כבר קיים', true);
-          } else {
-            console.error('Error creating department:', err);
-            this.showToast('שגיאה ביצירת מחלקה', true);
-          }
-        },
-      });
-    }
+    this.isSubmitting = true;
+    this.departmentService.createDepartment(name, supervisor_id).subscribe({
+      next: () => {
+        this.newDepartmentForm.reset();
+        this.isNewDepartmentMode = false;
+        this.isSubmitting = false;
+        this.loadDepartments();
+        this.toastService.show('המחלקה נוספה בהצלחה','success');
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        if (err.status === 409) {
+          this.toastService.show('שם מחלקה כבר קיים', 'error');
+        } else {
+          this.toastService.show('שגיאה ביצירת מחלקה', 'error');
+        }
+      },
+    });
   }
+}
 
 }
