@@ -207,9 +207,6 @@ saveMileage(): void {
       this.vehicle.mileage_last_updated = new Date();
       this.closeMileageModal();
     },
-    error: (err) => {
-      this.toastService.show(err.error?.detail || 'שגיאה בעדכון הקילומטראז׳', 'error');
-    }
   });
 }
   translateFreezeReason(freezeReason: string | null | undefined): string {
