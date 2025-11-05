@@ -189,11 +189,6 @@ async def edit_user_by_id_route(
                 user.license_file_url = f"/{filename}"
             except Exception as e:
                 raise HTTPException(status_code=500, detail=f"Failed to save license file: {e}")
-        # elif not user.license_file_url and not license_file:
-        #     raise HTTPException(
-        #         status_code=400, 
-        #         detail="License file is required when enabling government license."
-        #     )
         elif user.license_file_url and license_file:
             raise HTTPException(
                 status_code=403,
