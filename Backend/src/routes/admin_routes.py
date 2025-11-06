@@ -54,7 +54,7 @@ from ..services.user_notification import send_admin_odometer_notification
 from ..services.vehicle_service import (
     archive_vehicle_by_id,
     get_available_vehicles_for_ride_by_id,
-    delete_vehicle_by_id
+    delete_vehicle
 )
 
 # Schemas
@@ -736,15 +736,22 @@ def force_license_check(db: Session = Depends(get_db)):
 
 
 @router.delete("/vehicles/{vehicle_id}")
-def delete_vehicle(
-    request: Request,  
+async def delete_vehicle_route(
+    request: Request,
     vehicle_id: UUID,
     db: Session = Depends(get_db),
     token: str = Depends(oauth2_scheme)
 ):
-    user = get_current_user(request)
+    user = get_current_user(request)  # this expects the real Request
     role_check(["admin"], token)
-    return delete_vehicle_by_id(vehicle_id, db, user.employee_id)  # ✅ not user.id
+
+    # Pass db and user_id to your async delete function
+    result = await delete_vehicle(vehicle_id, db, user.employee_id)
+
+    if "error" in result:
+        raise HTTPException(status_code=400, detail=result["error"])
+
+    return result
 
 @router.post("/vehicles/{vehicle_id}/archive")
 def archive_vehicle(

@@ -7,6 +7,16 @@ from sqlalchemy.types import String
 from datetime import datetime, timezone, date, timedelta
 from typing import Optional, List, Dict, Union
 from uuid import UUID
+from ..utils.socket_manager import sio
+
+from ..models.audit_log_model import AuditLog
+
+from ..models.no_show_events import NoShowEvent
+from ..models.ride_approval_model import RideApproval
+from ..models.ride_log_model import RideLog
+
+from ..models.monthly_vehicle_usage_model import MonthlyVehicleUsage
+from ..models.notification_model import Notification, NotificationType
 
 # Utils
 from ..utils.audit_utils import log_action
@@ -321,7 +331,6 @@ def freeze_vehicle_service(db: Session, vehicle_id: UUID, reason: str, changed_b
 
     return {"message": f"Vehicle {vehicle_id} has been frozen successfully."}
 
-    api_router.include_router(vehicle_route, prefix="/vehicles", tags=["Vehicles"])
 
 def get_available_vehicles_by_type_and_time(
     db: Session,
@@ -353,31 +362,76 @@ def get_available_vehicles_by_type_and_time(
     return vehicles
 
 
-def delete_vehicle_by_id(vehicle_id: UUID, db: Session, user_id: UUID):
-    vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
-    if not vehicle:
-        raise HTTPException(status_code=404, detail="Vehicle not found")
+async def delete_vehicle(vehicle_id: UUID, db: Session, user_id: UUID):
+    db: Session = SessionLocal()
+    try:
+        vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
+        if not vehicle:
+            return {"error": "Vehicle not found"}
 
-    if vehicle.status == VehicleStatus.in_use:
-        raise HTTPException(status_code=400, detail="Cannot delete a vehicle that is currently in use")
+        db.query(AuditLog).filter(AuditLog.entity_id == str(vehicle_id)).delete()
 
-    if not vehicle.lease_expiry or vehicle.lease_expiry.date() >= date.today():
-        raise HTTPException(status_code=400, detail="Cannot delete: lease not expired.")
-    if vehicle.status == VehicleStatus.frozen:
-        raise HTTPException(status_code=400, detail="Cannot delete: vehicle is frozen")
-    if vehicle.is_archived:
-        raise HTTPException(status_code=400, detail="Cannot delete: the vehicle is archived.")
+        db.query(MonthlyVehicleUsage).filter(MonthlyVehicleUsage.vehicle_id == vehicle_id).delete()
+        db.query(Notification).filter(Notification.vehicle_id == vehicle_id).delete()
+        db.query(VehicleInspection).filter(VehicleInspection.vehicle_id == vehicle_id).delete()
+
+        rides = db.query(Ride).filter(Ride.vehicle_id == vehicle_id).all()
+        ride_ids = [r.id for r in rides]
+        ride_users = list({r.user_id for r in rides if r.user_id})  # unique user IDs
+
+        if ride_ids:
+            db.query(NoShowEvent).filter(NoShowEvent.ride_id.in_(ride_ids)).delete(synchronize_session=False)
+            db.query(Notification).filter(Notification.order_id.in_(ride_ids)).delete(synchronize_session=False)
+            db.query(RideApproval).filter(RideApproval.ride_id.in_(ride_ids)).delete(synchronize_session=False)
+            db.query(RideLog).filter(RideLog.ride_id.in_(ride_ids)).delete(synchronize_session=False)
+            db.query(Ride).filter(Ride.id.in_(ride_ids)).delete(synchronize_session=False)
+
+        db.delete(vehicle)
+        db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id)})
+        db.commit()
+
+        if ride_users:
+            await notify_users_vehicle_deleted(vehicle, ride_users)
+
+        return {"message": "Vehicle and all related data deleted successfully."}
+
+    except Exception as e:
+        db.rollback()
+        print(f"Exception in delete_vehicle: {e}")
+        return {"error": str(e)}
+    finally:
+        db.close()
 
 
-    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id)})
-    db.delete(vehicle)
-    db.commit()
-    db.execute(text("SET session.audit.user_id = DEFAULT"))
+async def notify_users_vehicle_deleted(vehicle, user_ids: list[UUID]):
+    db = SessionLocal()
+    try:
+        notifications = []
+        for user_id in user_ids:
+            notif = Notification(
+                user_id=user_id,
+                notification_type=NotificationType.system,
+                title="רכב נמחק",
+                message = f"כל הנסיעות שלך הקשורות לרכב {vehicle.plate_number} בוטלו מכיוון שהרכב אינו זמין עוד.",
+                sent_at=datetime.now(timezone.utc),
+            )
+            db.add(notif)
+            notifications.append(notif)
 
-    return {"message": f"Vehicle {vehicle.plate_number} deleted successfully."}
+        db.commit()
 
+        # Emit notifications to connected users
+        for notif in notifications:
+            await sio.emit(
+                "new_notification",
+                {"updated_notifications": [notif.to_dict()]},
+                room=str(notif.user_id)
+            )
 
-
+    except Exception as e:
+        print(f"Exception in notify_users_vehicle_deleted: {e}")
+    finally:
+        db.close()
 async def get_inactive_vehicles():
     db: Session = SessionLocal()
     try:
