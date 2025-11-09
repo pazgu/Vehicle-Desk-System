@@ -169,8 +169,9 @@
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
   border: 1px solid rgba(0, 0, 0, 0.05);
-  position: relative; /* Ensure this is set for .hover-card to be absolute to it */
-  overflow-y: auto; /* Assuming this is the scrollable container for vertical scroll */
+  /**/
+  position: relative;
+  overflow-y: auto; 
 
 }
 
