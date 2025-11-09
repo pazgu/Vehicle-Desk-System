@@ -112,7 +112,39 @@ currentDate = new Date();
       }
     });
   }
+confirmDeleteVehicle(vehicle: any) {
+  if (vehicle.status === 'in-use') return; // extra safety
 
+  const dialogData: ConfirmDialogData = {
+    title: 'מחיקת רכב',
+    message: 'האם אתה בטוח שברצונך למחוק את הרכב? פעולה זו אינה ניתנת לשחזור.',
+    confirmText: 'מחק',
+    cancelText: 'בטל',
+    noRestoreText: 'לא ניתן לשחזור',
+    isDestructive: true
+  };
+
+  const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+    data: dialogData
+  });
+
+  dialogRef.afterClosed().subscribe(result => {
+    if (result) {
+      this.vehicleService.deleteVehicle(vehicle.id).subscribe({
+        next: () => {
+          this.toastService.show('הרכב נמחק בהצלחה', 'success');
+          this.navigateRouter.navigate(['/vehicle-dashboard'])
+        },
+        error: err => this.toastService.show(err.error.detail || 'שגיאה במחיקת הרכב', 'error')
+      });
+    }
+  });
+}
+
+  deleteVehicle(vehicleId: string) {
+    // call service later
+    console.log('Delete vehicle ID:', vehicleId);
+  }
   translateStatus(status: string | null | undefined): string {
     if (!status) return '';
     switch (status.toLowerCase()) {
@@ -175,9 +207,6 @@ saveMileage(): void {
       this.vehicle.mileage_last_updated = new Date();
       this.closeMileageModal();
     },
-    error: (err) => {
-      this.toastService.show(err.error?.detail || 'שגיאה בעדכון הקילומטראז׳', 'error');
-    }
   });
 }
   translateFreezeReason(freezeReason: string | null | undefined): string {
@@ -289,38 +318,7 @@ saveMileage(): void {
     }
   }
 
-  // UPDATED: Delete confirmation
-  confirmDelete(vehicle: any): void {
-    const message = `תוקף חוזה ההשכרה של רכב ${vehicle.plate_number} פג.\nהאם את/ה בטוח/ה שברצונך למחוק את הרכב?`;
-
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: '400px',
-      data: {
-        title: 'מחיקת רכב',
-        message,
-        confirmText: 'מחק',
-        cancelText: 'בטל',
-        isDestructive: true
-      }
-    });
-
-    dialogRef.afterClosed().subscribe(confirmed => {
-      if (!confirmed) return;
-
-      this.vehicleService.deleteVehicle(vehicle.id).subscribe({
-        next: () => {
-          this.toastService.show(`הרכב ${vehicle.plate_number} נמחק בהצלחה.`)
-          this.location.back();
-        },
-        error: (err) => {
-          console.error("❌ מחיקה נכשלה:", err);
-          const msg = err?.error?.detail || "המחיקה נכשלה.";
-          this.toastService.show(msg, 'error');
-        }
-      });
-    });
-  }
-
+  
   // UPDATED: Archive confirmation
   confirmArchive(vehicle: any): void {
     const message = `תוקף חוזה ההשכרה של רכב ${vehicle.plate_number} פג והרכב מוקפא.\nלא ניתן למחוק את הרכב, אך ניתן לארכב אותו.\n\nהאם את/ה בטוח/ה שברצונך לארכב את הרכב?`;

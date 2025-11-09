@@ -57,7 +57,6 @@
   </button>
 </p>
 
-<!-- <p><strong>עודכן לאחרונה:</strong> {{ vehicle.mileage_last_updated | date:'dd/MM/yyyy' }}</p> -->
   <p *ngIf="vehicle.mileage_last_updated" class="last-updated-info">
               <strong>עודכן לאחרונה:</strong> {{ vehicle.mileage_last_updated | date:'dd/MM/yyyy' }}
             </p>
@@ -102,15 +101,16 @@
           </p>
 
           <!-- שחרור מהקפאה -->
-          <button
+       
+          <div style="display: flex; align-items: center; gap: 15px;"> 
+               <button
             class="unfreeze-button button-spacing"
             (click)="confirmUnfreeze()"
             *ngIf="vehicle.status === 'frozen'">
             שחרור מהקפאה
           </button>
 
-          <!-- הקפאת רכב -->
-          <div *ngIf="vehicle.status === 'in-use' || vehicle.status === 'available'">
+             <div *ngIf="vehicle.status === 'in-use' || vehicle.status === 'available'">
             <button class="freeze-button button-spacing" (click)="showFreezeReasonField()">
               הקפא רכב
             </button>
@@ -138,6 +138,16 @@
               </button>
             </div>
           </div>
+          
+          <button class="freeze-button button-spacing" dir="rtl"
+            (click)="confirmDeleteVehicle(vehicle)"
+>
+    {{ vehicle.status === 'in-use' ? 'לא ניתן למחוק רכב בשימוש' : 'מחק רכב' }}
+          </button>
+        </div>
+          <!-- הקפאת רכב -->
+        
+
 
           <!-- ארכוב -->
           <button
@@ -148,14 +158,7 @@
             ארכוב רכב
           </button>
 
-          <!-- מחיקה -->
-          <button
-            *ngIf="vehicle.status !== 'frozen' && vehicle.status !== 'in_use' && isLeaseExpired(vehicle.lease_expiry) && vehicle.canDelete"
-            class="freeze-button"
-            (click)="confirmDelete(vehicle)"
-            title="תוקף החוזה פג – ניתן למחוק">
-            מחיקת רכב
-          </button>
+         
 
           <!-- צפה בלוח זמנים -->
           <button class="timeline-button-inline button-spacing" (click)="navigateToTimeline()">
