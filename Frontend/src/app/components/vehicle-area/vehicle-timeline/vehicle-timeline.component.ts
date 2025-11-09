@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
@@ -22,20 +23,19 @@ interface RenderableRide {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './vehicle-timeline.component.html',
-  styleUrls: ['./vehicle-timeline.component.css'], // ✅ fixed plural
+  styleUrls: ['./vehicle-timeline.component.css'],
 })
-export class VehicleTimelineComponent implements OnInit {
+export class VehicleTimelineComponent implements OnInit, OnDestroy {
   vehicleId: string | null = null;
   vehicleTimelineData: any[] = [];
   processedRides = new Map<string, RenderableRide[]>();
 
   currentWeekStart: Date;
   weekEnd: Date;
+
   private HOUR_SLOT_HEIGHT = 40;
-  private VERTICAL_GAP_PX = 4;
-  private HOVER_CARD_WIDTH = 350; 
-  private HOVER_CARD_HEIGHT = 350; 
-  private CARD_OFFSET = 12;
+  private VERTICAL_GAP_PX = 4;
+  
 
   statusLegend = [
     { status: 'approved', color: '#a4d1ae', label: 'מאושר' },
@@ -49,6 +49,50 @@ export class VehicleTimelineComponent implements OnInit {
   hoverCardVisible: boolean = false;
   hoveredRide: RenderableRide | null = null;
   hoverCardPosition: { x: number; y: number } = { x: 0, y: 0 };
+  hoverCardSide: 'right' | 'left' = 'right'; // ← new: used to render arrow/direction
+  private currentHoveredElement: HTMLElement | null = null;
+
+  // store stable bound handlers so we can remove them later
+  private boundOnScroll = (ev?: Event) => {
+    if (this.hoverCardVisible) {
+      this.hoverCardVisible = false;
+      this.hoveredRide = null;
+      this.currentHoveredElement = null;
+    }
+  };
+
+  private boundOnDocumentMouseMove = (event: MouseEvent) => {
+    if (!this.hoverCardVisible || !this.currentHoveredElement) return;
+
+    const blockRect = this.currentHoveredElement.getBoundingClientRect();
+    const mouseX = event.clientX;
+    const mouseY = event.clientY;
+
+    const isOnBlock =
+      mouseX >= blockRect.left &&
+      mouseX <= blockRect.right &&
+      mouseY >= blockRect.top &&
+      mouseY <= blockRect.bottom;
+
+    const cardElement = document.querySelector(
+      '.hover-card'
+    ) as HTMLElement | null;
+    let isOnCard = false;
+    if (cardElement) {
+      const cardRect = cardElement.getBoundingClientRect();
+      isOnCard =
+        mouseX >= cardRect.left &&
+        mouseX <= cardRect.right &&
+        mouseY >= cardRect.top &&
+        mouseY <= cardRect.bottom;
+    }
+
+    if (!isOnBlock && !isOnCard) {
+      this.hoverCardVisible = false;
+      this.hoveredRide = null;
+      this.currentHoveredElement = null;
+    }
+  };
 
   constructor(
     private route: ActivatedRoute,
@@ -79,7 +123,10 @@ export class VehicleTimelineComponent implements OnInit {
       if (today.getDay() === 6) {
         initialDesiredDate = new Date(today);
         initialDesiredDate.setDate(today.getDate() + 1);
-        console.log('📅 Today is Saturday, moving to next Sunday:', initialDesiredDate);
+        console.log(
+          '📅 Today is Saturday, moving to next Sunday:',
+          initialDesiredDate
+        );
       } else {
         initialDesiredDate = new Date(today);
         console.log('📅 Defaulting to today’s week:', initialDesiredDate);
@@ -97,66 +144,112 @@ export class VehicleTimelineComponent implements OnInit {
     if (this.vehicleId) {
       this.loadVehicleTimeline(this.currentWeekStart);
     }
+
+    // attach listeners once
+    window.addEventListener('scroll', this.boundOnScroll, true);
+    document.addEventListener('mousemove', this.boundOnDocumentMouseMove);
   }
 
+  ngOnDestroy(): void {
+    // remove listeners to avoid leaks
+    window.removeEventListener('scroll', this.boundOnScroll, true);
+    document.removeEventListener('mousemove', this.boundOnDocumentMouseMove);
+  }
+
+  // helper: get calendar container bounds (in viewport coords)
+  private getCalendarContainerRect(): DOMRect | null {
+    const el = document.querySelector(
+      '.timeline-page-wrapper'
+    ) as HTMLElement | null;
+    return el ? el.getBoundingClientRect() : null;
+  }
 
 onRideHover(event: MouseEvent, ride: RenderableRide): void {
-  this.hoveredRide = ride;
-  this.hoverCardVisible = true;
+    this.hoveredRide = ride;
+    this.hoverCardVisible = true;
 
-  const target = event.currentTarget as HTMLElement; // The ride-block
-  const rect = target.getBoundingClientRect(); // ride-block's position relative to viewport
+    const target = event.currentTarget as HTMLElement;
+    this.currentHoveredElement = target;
 
-  const container = document.querySelector('.timeline-page-wrapper') as HTMLElement;
-  if (!container) return;
-  const containerRect = container.getBoundingClientRect();
+    const rect = target.getBoundingClientRect();
 
-  let x = rect.right - containerRect.left + this.CARD_OFFSET;
-  
-  let y = rect.top - containerRect.top;
+    // Card dimensions
+    const cardWidth = 320;
+    const cardHeight = 280;
+    const gap = 8; // Small gap between block and card
+    const minTopPadding = 80; // Minimum distance from top of viewport (to avoid navbar)
 
-  y += window.scrollY;
+    // Get timeline-body container bounds
+    const timelineBody = document.querySelector('.timeline-body') as HTMLElement | null;
+    const containerRect = timelineBody ? timelineBody.getBoundingClientRect() : null;
+    
+    if (!containerRect) {
+      return;
+    }
 
-  const containerContentWidth = container.clientWidth;
-  if (x + this.HOVER_CARD_WIDTH > containerContentWidth) {
-    x = rect.left - containerRect.left - this.HOVER_CARD_WIDTH - this.CARD_OFFSET;
+    // Container bounds
+    const cLeft = containerRect.left;
+    const cRight = containerRect.right;
+    const cTop = containerRect.top;
+    const cBottom = containerRect.bottom;
+
+    // Viewport bounds with navbar protection
+    const viewportTop = minTopPadding;
+    const viewportBottom = window.innerHeight;
+    const viewportLeft = 0;
+    const viewportRight = window.innerWidth;
+
+    // Use the most restrictive bounds (container AND viewport)
+    // For top: use the MAXIMUM to ensure card never goes above navbar
+    const effectiveTop = Math.max(cTop, viewportTop);
+    const effectiveBottom = Math.min(cBottom, viewportBottom);
+    const effectiveLeft = Math.max(cLeft, viewportLeft);
+    const effectiveRight = Math.min(cRight, viewportRight);
+
+    // HORIZONTAL: Try right first, then left
+    let x: number;
+    const rightPosition = rect.right + gap;
+    const leftPosition = rect.left - cardWidth - gap;
+
+    if (rightPosition + cardWidth <= effectiveRight) {
+      // Fits on the right
+      this.hoverCardSide = 'right';
+      x = rightPosition;
+    } else if (leftPosition >= effectiveLeft) {
+      // Fits on the left
+      this.hoverCardSide = 'left';
+      x = leftPosition;
+    } else {
+      // Doesn't fit on either side, clamp to effective bounds
+      this.hoverCardSide = 'right';
+      x = Math.max(effectiveLeft, Math.min(rightPosition, effectiveRight - cardWidth));
+    }
+
+    // VERTICAL: Start by aligning with block top
+    let y = rect.top;
+    
+    // CRITICAL: Ensure card NEVER goes above the effective top (navbar + padding)
+    if (y < effectiveTop) {
+      y = effectiveTop;
+    }
+    
+    // If card would overflow bottom, move it up BUT never above effectiveTop
+    if (y + cardHeight > effectiveBottom) {
+      y = Math.max(effectiveTop, effectiveBottom - cardHeight);
+    }
+    
+    // Final safety check: absolutely ensure we're not above the navbar
+    y = Math.max(y, effectiveTop);
+
+    this.hoverCardPosition.x = Math.round(x);
+    this.hoverCardPosition.y = Math.round(y);
   }
-  
-  const timelineBody = container.querySelector('.timeline-body') as HTMLElement;
-  const timelineContentHeight = timelineBody ? timelineBody.scrollHeight + timelineBody.offsetTop : container.scrollHeight;
-
-  if (y + this.HOVER_CARD_HEIGHT > timelineContentHeight) {
-    y = timelineContentHeight - this.HOVER_CARD_HEIGHT - this.CARD_OFFSET;
-  }
-  
-  y = Math.max(timelineBody ? timelineBody.offsetTop : 0, y);
-
-
-  this.hoverCardPosition = { x, y };
-}
-
 
   onRideLeave(): void {
-    console.log('👋 Leaving ride block');
-    setTimeout(() => {
-      if (!this.isHoveringOverCard()) {
-        this.hoverCardVisible = false;
-        this.hoveredRide = null;
-      }
-    }, 100);
-  }
-
-  onCloseHoverCard(): void {
-    console.log('❌ Closing hover card');
     this.hoverCardVisible = false;
     this.hoveredRide = null;
+    this.currentHoveredElement = null;
   }
-
- private isHoveringOverCard(): boolean {
-  const card = document.querySelector('.hover-card');
-  return card ? card.matches(':hover') : false;
-}
-
 
   onRideClick(ride: RenderableRide): void {
     console.log('🖱️ Clicked ride:', ride);
@@ -245,7 +338,9 @@ onRideHover(event: MouseEvent, ride: RenderableRide): void {
             user_id: ride.user_id,
           });
 
-          console.log(`📌 Added ride to ${dayKey}: top=${top}, height=${height}`);
+          console.log(
+            `📌 Added ride to ${dayKey}: top=${top}, height=${height}`
+          );
         }
 
         loopDay.setDate(loopDay.getDate() + 1);
@@ -333,7 +428,12 @@ onRideHover(event: MouseEvent, ride: RenderableRide): void {
     this.currentWeekStart = this.getStartOfWeek(newDate);
     this.weekEnd = this.getWeekEnd(this.currentWeekStart);
 
-    console.log('⏭️ Navigating weeks:', this.currentWeekStart, '→', this.weekEnd);
+    console.log(
+      '⏭️ Navigating weeks:',
+      this.currentWeekStart,
+      '→',
+      this.weekEnd
+    );
 
     this.loadVehicleTimeline(this.currentWeekStart);
     this.updateUrlQueryParams();
@@ -362,16 +462,16 @@ onRideHover(event: MouseEvent, ride: RenderableRide): void {
   trackRide(index: number, ride: RenderableRide): string {
     return `${ride.user_id}-${ride.start_datetime}`;
   }
-  
+
   getStatusLabel(status: string): string {
-  const statusMap: { [key: string]: string } = {
-    'approved': 'מאושר',
-    'pending': 'ממתין לאישור',
-    'in_progress': 'בביצוע',
-    'rejected': 'נדחה',
-    'completed': 'הושלם',
-    'cancelled': 'בוטל'
-  };
-  return statusMap[status?.toLowerCase()] || status;
-}
+    const statusMap: { [key: string]: string } = {
+      approved: 'מאושר',
+      pending: 'ממתין לאישור',
+      in_progress: 'בביצוע',
+      rejected: 'נדחה',
+      completed: 'הושלם',
+      cancelled: 'בוטל',
+    };
+    return statusMap[status?.toLowerCase()] || status;
+  }
 }
