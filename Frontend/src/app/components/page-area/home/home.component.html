@@ -298,3 +298,10 @@
 
   </div>
 </div>
+
+<app-guidelines-modal
+  [show]="showGuidelines"
+  [rideId]="createdRideId ?? 'mock-ride'"
+  [userId]="getUserIdFromAuthService() ?? 'mock-user'"
+  (confirmed)="onGuidelinesConfirmed($event)">
+</app-guidelines-modal>

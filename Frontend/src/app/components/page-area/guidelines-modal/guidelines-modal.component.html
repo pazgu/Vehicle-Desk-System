@@ -1,0 +1,34 @@
+<div class="overlay" *ngIf="show">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="guidelinesTitle">
+    <div class="header">
+      <h2 id="guidelinesTitle">הנחיות שימוש ברכב</h2>
+    </div>
+
+    <div class="content">
+      <ul class="bullets">
+        <li>הנסיעה מותרת לשימוש עובד/ת בלבד מעל גיל 18.</li>
+        <li>יש להחזיר את הרכב בזמן, נקי, ובדלק/טעינה כנדרש.</li>
+        <li>חל איסור להסיע נוסעים ללא אישור מנהל.</li>
+        <li>כל עבירת תנועה באחריות הנהג/ת.</li>
+        <li>במקרה תקלה/תאונה יש לדווח מיד למנהל המערכת.</li>
+        <!-- טקסט ארוך/דמה – גלילה עובדת -->
+        <p class="long">
+          טקסט לדוגמה… טקסט לדוגמה… טקסט לדוגמה… טקסט לדוגמה… טקסט לדוגמה…
+          טקסט לדוגמה… טקסט לדוגמה… טקסט לדוגמה… טקסט לדוגמה… טקסט לדוגמה…
+          טקסט לדוגמה… טקסט לדוגמה… טקסט לדוגמה… טקסט לדוגמה… טקסט לדוגמה…
+        </p>
+      </ul>
+    </div>
+
+    <div class="ack">
+      <label class="check">
+        <input type="checkbox" [(ngModel)]="isChecked" />
+        אני מאשר/ת שקראתי ומקבל/ת את התנאים
+      </label>
+
+      <button class="confirm-btn" [disabled]="!isChecked" (click)="onConfirm()">
+        המשך
+      </button>
+    </div>
+  </div>
+</div>

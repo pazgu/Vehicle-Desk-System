@@ -1,0 +1,30 @@
+/* מסך חוסם */
+.overlay{
+  position: fixed; inset: 0; background: rgba(0,0,0,.45);
+  display: flex; align-items: center; justify-content: center; z-index: 9999;
+}
+.modal{
+  width: min(800px, 92vw); max-height: min(85vh, 900px);
+  background: #fff; border-radius: 16px; display: flex; flex-direction: column;
+  box-shadow: 0 10px 30px rgba(0,0,0,.2);
+}
+.header{ padding: 18px 20px; border-bottom: 1px solid #eee; }
+.header h2{ margin: 0; font-size: 1.25rem; }
+
+.content{
+  padding: 14px 20px; overflow: auto; flex: 1 1 auto;
+}
+.bullets{ margin: 0; padding-inline-start: 18px; }
+.bullets li{ margin: 8px 0; }
+.long{ margin-top: 16px; line-height: 1.5; color: #444; }
+
+.ack{
+  padding: 16px 20px; border-top: 1px solid #eee;
+  display: flex; gap: 14px; align-items: center; justify-content: space-between;
+  flex-wrap: wrap;
+}
+.check{ display: flex; gap: 10px; align-items: center; }
+.confirm-btn{
+  padding: 10px 16px; border: none; border-radius: 10px; cursor: pointer;
+}
+.confirm-btn[disabled]{ opacity: .5; cursor: not-allowed; }
