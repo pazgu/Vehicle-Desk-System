@@ -31,9 +31,11 @@ export class VehicleTimelineComponent implements OnInit {
 
   currentWeekStart: Date;
   weekEnd: Date;
-
   private HOUR_SLOT_HEIGHT = 40;
-  private VERTICAL_GAP_PX = 4;
+  private VERTICAL_GAP_PX = 4;
+  private HOVER_CARD_WIDTH = 350; 
+  private HOVER_CARD_HEIGHT = 350; 
+  private CARD_OFFSET = 12;
 
   statusLegend = [
     { status: 'approved', color: '#a4d1ae', label: 'מאושר' },
@@ -96,34 +98,42 @@ export class VehicleTimelineComponent implements OnInit {
       this.loadVehicleTimeline(this.currentWeekStart);
     }
   }
+
+
 onRideHover(event: MouseEvent, ride: RenderableRide): void {
   this.hoveredRide = ride;
   this.hoverCardVisible = true;
 
-  const target = event.currentTarget as HTMLElement;
-  const rect = target.getBoundingClientRect(); // gives ride-block's position
+  const target = event.currentTarget as HTMLElement; // The ride-block
+  const rect = target.getBoundingClientRect(); // ride-block's position relative to viewport
 
-  const cardWidth = 320;
-  const offset = 12;
+  const container = document.querySelector('.timeline-page-wrapper') as HTMLElement;
+  if (!container) return;
+  const containerRect = container.getBoundingClientRect();
 
-  // Default: show to the right of the block
-  let x = rect.right + offset;
-  let y = rect.top;
+  let x = rect.right - containerRect.left + this.CARD_OFFSET;
+  
+  let y = rect.top - containerRect.top;
 
-  // Flip to left side if overflowing screen
-  if (x + cardWidth > window.innerWidth) {
-    x = rect.left - cardWidth - offset;
+  y += window.scrollY;
+
+  const containerContentWidth = container.clientWidth;
+  if (x + this.HOVER_CARD_WIDTH > containerContentWidth) {
+    x = rect.left - containerRect.left - this.HOVER_CARD_WIDTH - this.CARD_OFFSET;
   }
+  
+  const timelineBody = container.querySelector('.timeline-body') as HTMLElement;
+  const timelineContentHeight = timelineBody ? timelineBody.scrollHeight + timelineBody.offsetTop : container.scrollHeight;
 
-  // Clamp vertically if card goes below viewport
-  const cardHeight = 220;
-  if (y + cardHeight > window.innerHeight) {
-    y = window.innerHeight - cardHeight - offset;
+  if (y + this.HOVER_CARD_HEIGHT > timelineContentHeight) {
+    y = timelineContentHeight - this.HOVER_CARD_HEIGHT - this.CARD_OFFSET;
   }
+  
+  y = Math.max(timelineBody ? timelineBody.offsetTop : 0, y);
+
 
   this.hoverCardPosition = { x, y };
 }
-
 
 
   onRideLeave(): void {
