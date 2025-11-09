@@ -501,8 +501,6 @@ def get_vehicle_types(db: Session = Depends(get_db)):
     return [t[0] for t in types]
 
 
-
-
 @router.post("/api/forgot-password", status_code=fastapi_status.HTTP_200_OK)
 async def forgot_password(
     request: ForgotPasswordRequest,
@@ -646,7 +644,7 @@ def check_feedback_needed(
 
     if not ride:
         return {"showPage": False, "message": "No rides need feedback"}
-    
+
     return {
         "showPage": True,
         "ride_id": str(ride.id),
@@ -677,4 +675,3 @@ def get_employees_by_department(user_id: UUID, db: Session = Depends(get_db)):
         }
         for emp in employees
     ]
-
