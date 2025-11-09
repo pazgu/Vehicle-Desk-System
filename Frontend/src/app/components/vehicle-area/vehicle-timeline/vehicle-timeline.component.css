@@ -169,6 +169,9 @@
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
   border: 1px solid rgba(0, 0, 0, 0.05);
+  position: relative; /* Ensure this is set for .hover-card to be absolute to it */
+  overflow-y: auto; /* Assuming this is the scrollable container for vertical scroll */
+
 }
 
 /* Hour Labels Column */
@@ -365,19 +368,6 @@ padding-top: 5%;
   transform: scale(1.03);
 }
 
-.hover-card {
-  background: rgba(255, 255, 255, 0.98);
-  position:fixed;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-  border: 1px solid rgba(148, 34, 34, 0.1);
-  backdrop-filter: blur(10px);
-  min-width: 300px;
-  max-width: 350px;
-  overflow: hidden;
-  z-index: 1000;
-  pointer-events: all; 
-}
 
 
 .hover-card-header {
@@ -504,9 +494,9 @@ padding-top: 5%;
   font-style: italic;
 }
 
-/* Hover Card Styles */
 .hover-card {
   background: rgba(255, 255, 255, 0.98);
+  position: absolute; 
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   border: 1px solid rgba(148, 34, 34, 0.1);
@@ -514,7 +504,8 @@ padding-top: 5%;
   min-width: 300px;
   max-width: 350px;
   overflow: hidden;
-  z-index: 1000;
+  z-index: 50; 
+  pointer-events: all; 
 }
 
 .ride-hint {
