@@ -1,4 +1,3 @@
-
 .timeline-page-wrapper {
   background: linear-gradient(135deg, #f8f6f6 0%, #f0eaea 100%);
   border-radius: 20px;
@@ -169,10 +168,6 @@
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
   border: 1px solid rgba(0, 0, 0, 0.05);
-  /**/
-  position: relative;
-  overflow-y: auto; 
-
 }
 
 /* Hour Labels Column */
@@ -369,7 +364,25 @@ padding-top: 5%;
   transform: scale(1.03);
 }
 
+.hover-card {
+  position: fixed;
+  z-index: 9999;
+  width: 320px;
+  max-width: calc(100vw - 48px);
+  pointer-events: auto;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.12s ease;
+}
 
+/* if the calendar width is smaller than the card make card shrink */
+@media (max-width: 720px) {
+  .hover-card {
+    width: calc(100vw - 48px);
+  }
+}
 
 .hover-card-header {
   background: linear-gradient(145deg, #f9f9f9 0%, #f0f0f0 100%);
@@ -495,9 +508,9 @@ padding-top: 5%;
   font-style: italic;
 }
 
+/* Hover Card Styles */
 .hover-card {
   background: rgba(255, 255, 255, 0.98);
-  position: absolute; 
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   border: 1px solid rgba(148, 34, 34, 0.1);
@@ -505,8 +518,7 @@ padding-top: 5%;
   min-width: 300px;
   max-width: 350px;
   overflow: hidden;
-  z-index: 50; 
-  pointer-events: all; 
+  z-index: 1000;
 }
 
 .ride-hint {
@@ -547,8 +559,3 @@ visibility: visible; /* Show the element */
   background: none;
   transition: background-color 0.2s ease, transform 0.15s ease;
 }
-
-.back-btn:hover {
-  transform: scale(1.03);
-}
-
