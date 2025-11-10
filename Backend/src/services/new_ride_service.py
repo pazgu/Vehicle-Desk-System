@@ -57,6 +57,15 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate, license_chec
             detail="A reason must be provided when requesting an off-road vehicle."
         )
 
+    duration_days = (ride.end_datetime - ride.start_datetime).days + 1
+    
+    if duration_days >= 4:
+        if not ride.extended_ride_reason or not ride.extended_ride_reason.strip():
+            raise HTTPException(
+                status_code=400,
+                detail="נסיעות של 4 ימים ומעלה דורשות הסבר"
+            )
+
     # Determine who is the rider
     rider_id = ride.user_id
 
@@ -74,6 +83,7 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate, license_chec
         estimated_distance_km=ride.estimated_distance_km,
         actual_distance_km=ride.actual_distance_km,
         four_by_four_reason=ride.four_by_four_reason,
+        extended_ride_reason=ride.extended_ride_reason,
         status=RideStatus.pending,
         license_check_passed=license_check_passed,  
         submitted_at=datetime.now(timezone.utc),
