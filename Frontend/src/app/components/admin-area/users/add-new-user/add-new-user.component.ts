@@ -53,10 +53,7 @@ export class AddNewUserComponent implements OnInit {
       role: ['', Validators.required],
       has_government_license: [false],
       department_id: [''], 
-      license_expiry_date: ['', [
-        Validators.required,
-        this.dateRangeValidator(today, maxDateStr)
-      ]],
+      license_expiry_date: ['', [this.dateRangeValidator(today, maxDateStr)]],
       password: ['', [
         Validators.required,
         Validators.minLength(8),
