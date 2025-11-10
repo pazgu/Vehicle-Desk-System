@@ -1157,7 +1157,6 @@ onBeforeUnload(e: BeforeUnloadEvent) {
 
   // keep these (they show fuel guidance + your socket event):
   this.loadFuelType(formData.vehicle_id);
-  this.showFuelTypeMessage();
   this.socketService.sendMessage('new_ride_request', { ...createdRide, user_id });
 
   // OPEN THE GUIDELINES MODAL
@@ -1198,7 +1197,6 @@ onBeforeUnload(e: BeforeUnloadEvent) {
   this.orderSubmitted = true;
 
   this.loadFuelType(formData.vehicle_id);
-  this.showFuelTypeMessage();
 
   // ✨ OPEN THE GUIDELINES MODAL
   this.createdRideId =
@@ -1232,17 +1230,7 @@ onBeforeUnload(e: BeforeUnloadEvent) {
         }
 
     }
-    private showFuelTypeMessage(): void {
-        if (localStorage.getItem('role') == 'employee') {
-            if (this.vehicleFuelType === 'electric') {
-                this.toastService.showPersistent('אנא ודא כי הרכב טעון לפני ההחזרה.', 'neutral');
-            } else if (this.vehicleFuelType === 'hybrid') {
-                this.toastService.showPersistent('אנא ודא כי יש מספיק דלק וטעינה לפני ההחזרה.', 'neutral');
-            } else if (this.vehicleFuelType === 'gasoline') {
-                this.toastService.showPersistent('נא להחזיר את הרכב נקי ומתודלק', 'neutral');
-            }
-        }
-    }
+   
     get f() {
         return {
             ride_period: this.rideForm.get('ride_period') as FormControl,
