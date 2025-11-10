@@ -29,7 +29,6 @@ def increment_completed_trip_stat(db: Session, user_id: int, ride_start_datetime
         db.add(stat)
 
 def archive_last_month_stats(db: Session):
-
     today = date.today()
     first_day_of_current_month = date(today.year, today.month, 1)
 

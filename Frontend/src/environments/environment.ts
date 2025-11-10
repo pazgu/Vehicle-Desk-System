@@ -19,6 +19,7 @@ export const environment = {
     vehiclesTypes:'http://localhost:8000/api/vehicle-types',
     ridesSupposedToStartUrl:'http://localhost:8000/api/rides_supposed-to-start',
     noShowStatsUrl: 'http://localhost:8000/api/statistics/no-show',
+    userRidesForExport: 'http://localhost:8000/api/analytics/user-rides',
 
   };
   

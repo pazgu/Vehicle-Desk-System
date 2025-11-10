@@ -14,6 +14,3 @@ class MonthlyEmployeeTripStats(Base):
     completed_trip_count = Column(Integer, nullable=False, default=0)
     last_updated = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
     is_archived = Column(Boolean, nullable=False, default=False)
-
-
-# kkk;l;

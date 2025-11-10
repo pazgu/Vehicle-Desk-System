@@ -26,7 +26,7 @@
       <button [class.active]="activeTabIndex === 2" (click)="activeTabIndex = 2">
         שימוש חודשי ברכבים
       </button>
-      <button>
+      <button [class.active]="activeTabIndex === 3" (click)="activeTabIndex = 3">
         הזמנות לפי משתמש
       </button>
       <button [class.active]="activeTabIndex === 4" (click)="activeTabIndex = 4">
@@ -120,12 +120,13 @@
             </div>
           </div>
         </p-tabPanel>
-        <!-- No‑Show Analytics Tab -->
+        
         <p-tabPanel header=" " [headerStyle]="{ display: 'none' }">
           <div>
 
 
-
+        <h3 class="section-heading">הזמנות לפי משתמש</h3>
+<user-orders-export></user-orders-export>
             <ng-template #noDataTemplate>
               <div class="no-data-state">
 <div class="no-data-icon"><i class="pi pi-clipboard"></i></div>
