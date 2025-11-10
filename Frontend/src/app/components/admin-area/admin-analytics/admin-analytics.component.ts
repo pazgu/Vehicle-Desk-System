@@ -925,7 +925,7 @@ pdfMake.createPdf(docDefinition).download(`${title}-${safeTimestamp}.pdf`);
     const isVehicleTab = this.activeTabIndex === 0;
     const isRideTab = this.activeTabIndex === 1;
     const isTopUsedTab = this.activeTabIndex === 2;
-    const isNoShowTab = this.activeTabIndex === 3;
+    const isNoShowTab = this.activeTabIndex === 4;
 
 
     const chartData = isVehicleTab
@@ -1091,7 +1091,7 @@ pdfMake.createPdf(docDefinition).download(`${title}-${safeTimestamp}.pdf`);
     const isVehicleTab = this.activeTabIndex === 0;
     const isRideTab = this.activeTabIndex === 1;
     const isTopUsedTab = this.activeTabIndex === 2;
-    const isNoShowTab = this.activeTabIndex === 3;
+    const isNoShowTab = this.activeTabIndex === 4;
 
     if (isNoShowTab && this.filteredNoShowUsers.length === 0) {
       this.showExportWarningTemporarily();
