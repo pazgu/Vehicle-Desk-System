@@ -173,7 +173,7 @@ export class AuditLogsComponent implements OnInit {
   const allStops = [start, stop, ...(extraStops || []), destination];
 
   return allStops
-    .filter(Boolean) // remove null/undefined
+    .filter(Boolean) 
     .map(id => this.getCityName(id))
     .join(' ← ');
 }

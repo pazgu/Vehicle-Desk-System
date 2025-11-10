@@ -4,9 +4,9 @@
 
 
     <div class="export-buttons">
-      <button (click)="exportCSV()"><i class="pi pi-folder"></i> ייצוא CSV</button>
-      <button (click)="exportPDF()"><i class="pi pi-file-pdf"></i> ייצוא PDF</button>
-      <button (click)="exportExcel()"><i class="pi pi-file-excel"></i> ייצוא Excel</button>
+      <button *ngIf="activeTabIndex!=3" (click)="exportCSV()"><i class="pi pi-folder" ></i> ייצוא CSV</button>
+      <button *ngIf="activeTabIndex!=3" (click)="exportPDF()"><i class="pi pi-file-pdf"></i> ייצוא PDF</button>
+      <button *ngIf="activeTabIndex!=3" (click)="exportExcel()"><i class="pi pi-file-excel"></i> ייצוא Excel</button>
 
       <div class="export-warning" *ngIf="noShowExportWarningVisible">
         אין נתוני אי-הגעה לייצוא כרגע.
@@ -27,7 +27,7 @@
         שימוש חודשי ברכבים
       </button>
       <button [class.active]="activeTabIndex === 3" (click)="activeTabIndex = 3">
-        הזמנות לפי משתמש
+        נסיעות לפי משתמש
       </button>
       <button [class.active]="activeTabIndex === 4" (click)="activeTabIndex = 4">
         אי-הגעות</button>
@@ -125,7 +125,7 @@
           <div>
 
 
-        <h3 class="section-heading">הזמנות לפי משתמש</h3>
+        <h3 class="section-heading">נסיעות לפי משתמש</h3>
 <user-orders-export></user-orders-export>
             <ng-template #noDataTemplate>
               <div class="no-data-state">

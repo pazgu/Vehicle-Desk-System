@@ -24,7 +24,7 @@ import { StatisticsService } from '../../../services/statistics.service';
 import { UserService } from '../../../services/user_service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { style } from '@angular/animations';
-import { UserOrdersExportComponent } from '../../user-orders-export/user-orders-export.component';
+import { UserOrdersExportComponent } from '../user-orders-export/user-orders-export.component';
 
 pdfMake.vfs = pdfFonts.vfs;
 
