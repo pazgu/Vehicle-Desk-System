@@ -16,6 +16,10 @@ import { ValidationErrors } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { formatDate } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
+import { HostListener } from '@angular/core';
+import { GuidelinesModalComponent } from '../../page-area/guidelines-modal/guidelines-modal.component';
+import { AcknowledgmentService, RideAcknowledgmentPayload } from '../../../services/acknowledgment.service';
+
 
 interface PendingVehicle { vehicle_id: string; date: string; period: string; start_time?: string; end_time?: string; }
 interface Vehicle { id: string; plate_number: string; type: string; fuel_type: string; status: string; freeze_reason?: string | null; last_used_at?: string; mileage: number; image_url: string; vehicle_model: string; }
@@ -25,7 +29,7 @@ interface Employee { id: string; full_name: string; }
 @Component({
     selector: 'app-new-ride',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, HttpClientModule, NgSelectModule, ButtonModule],
+    imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, HttpClientModule, NgSelectModule, ButtonModule ,GuidelinesModalComponent],
     templateUrl: './home.component.html',
     styleUrls: ['./home.component.css']
 })
@@ -51,6 +55,10 @@ export class NewRideComponent implements OnInit {
     quarterHours = ['00', '15', '30', '45'];
     formReady = false;
     orderSubmitted = false;
+    showGuidelines = false;
+    pendingConfirmation = false;
+    createdRideId: string | null = null;
+
 
     constructor(
         private fb: FormBuilder,
@@ -64,6 +72,8 @@ export class NewRideComponent implements OnInit {
         private UserService: UserService,
         private AuthService: AuthService,
         private cdr: ChangeDetectorRef,
+        private acknowledgmentService: AcknowledgmentService,
+
     ) { }
 
     ngOnInit(): void {
@@ -113,6 +123,15 @@ export class NewRideComponent implements OnInit {
         }
         return false;
     }
+
+    @HostListener('window:beforeunload', ['$event'])
+onBeforeUnload(e: BeforeUnloadEvent) {
+  if (this.showGuidelines) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+}
+
 
     rideDateValidator(): ValidatorFn {
         return (control: AbstractControl): ValidationErrors | null => {
@@ -995,6 +1014,37 @@ export class NewRideComponent implements OnInit {
         this.resetOrderForm();
         this.initializeComponent();
     }
+
+    onGuidelinesConfirmed(ev: { rideId: string; userId: string; timestamp: string }) {
+  // mock save to “server”
+  const payload: RideAcknowledgmentPayload = {
+    ride_id: ev.rideId || (this.createdRideId ?? 'mock-ride'),
+    user_id: ev.userId || (this.getUserIdFromAuthService() ?? 'mock-user'),
+    confirmed: true,
+    acknowledged_at: ev.timestamp,
+    signature_data_url: null
+  };
+
+  this.pendingConfirmation = true;
+  this.acknowledgmentService.saveAcknowledgment(payload).subscribe({
+    next: () => {
+      this.pendingConfirmation = false;
+      this.showGuidelines = false;   // close modal
+      // optional: small toast
+      this.toastService.show('אישור נקלט. נסיעה נעימה! 🚗', 'success');
+      // do NOT reload page; keep user where they are
+      // you can optionally reset the form:
+      // this.resetOrderForm();
+    },
+    error: () => {
+      this.pendingConfirmation = false;
+      // per requirement: show error but do not block user (mock configurable)
+      this.toastService.show('נרשם שגוי בלוג שרת (לא חוסם).', 'error');
+      this.showGuidelines = false;
+    }
+  });
+}
+
     submit(confirmedWarning = false): void {
         const carControl = this.rideForm.get('car');
         const selectedCarId = carControl?.value;
@@ -1101,16 +1151,24 @@ export class NewRideComponent implements OnInit {
         if (role == 'employee') {
             this.rideService.createRide(formData, user_id).subscribe({
                 next: (createdRide) => {
-                    this.toastService.show('הבקשה נשלחה בהצלחה! ✅', 'success');
-                    this.orderSubmitted = true;
-                    this.loadFuelType(formData.vehicle_id);
-                    this.showFuelTypeMessage();
-                    this.socketService.sendMessage('new_ride_request', {
-                        ...createdRide,
-                        user_id
-                    });
+  // keep your success toast if you want:
+  this.toastService.show('הבקשה נשלחה בהצלחה! ✅', 'success');
+  this.orderSubmitted = true;
 
-                },
+  // keep these (they show fuel guidance + your socket event):
+  this.loadFuelType(formData.vehicle_id);
+  this.showFuelTypeMessage();
+  this.socketService.sendMessage('new_ride_request', { ...createdRide, user_id });
+
+  // OPEN THE GUIDELINES MODAL
+  this.createdRideId =
+    createdRide?.id ??
+    createdRide?.ride_id ??
+    createdRide?.data?.id ??
+    'mock-ride';
+  this.showGuidelines = true;
+},
+
                 error: (err) => {
                     const errorMessage = err.error?.detail || err.message || 'שגיאה לא ידועה';
 
@@ -1135,13 +1193,22 @@ export class NewRideComponent implements OnInit {
         else {
             if (role == 'supervisor') {
                 this.rideService.createSupervisorRide(formData, user_id).subscribe({
-                    next: () => {
-                        this.toastService.show('הבקשה נשלחה בהצלחה! ✅', 'success');
-                        this.orderSubmitted = true;
-                        this.loadFuelType(formData.vehicle_id);
-                        this.showFuelTypeMessage();
+                    next: (createdRide) => {
+  this.toastService.show('הבקשה נשלחה בהצלחה! ✅', 'success');
+  this.orderSubmitted = true;
 
-                    },
+  this.loadFuelType(formData.vehicle_id);
+  this.showFuelTypeMessage();
+
+  // ✨ OPEN THE GUIDELINES MODAL
+  this.createdRideId =
+    createdRide?.id ??
+    createdRide?.ride_id ??
+    createdRide?.data?.id ??
+    'mock-ride';
+  this.showGuidelines = true;
+},
+
                     error: (err) => {
                         const errorMessage = err.error?.detail || err.message || 'שגיאה לא ידועה';
                         if (errorMessage.includes('currently blocked')) {

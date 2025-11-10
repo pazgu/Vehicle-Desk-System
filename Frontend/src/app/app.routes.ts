@@ -28,80 +28,163 @@ import { EditRideComponent } from './ride-area/edit-ride/edit-ride.component';
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
-  { path: 'home', component: NewRideComponent, canActivate: [ProtectedRouteGuard] },
-  { path: 'new-ride', component: AllRidesComponent, canActivate: [ProtectedRouteGuard] },
-  { path: 'all-rides', component: AllRidesComponent, canActivate: [ProtectedRouteGuard] },
-
-//   {
-//   path: 'ride/edit/:id',
-//   loadComponent: () => import('./ride-area/edit-ride/edit-ride.component').then(m => m.EditRideComponent),
-//   canActivate: [ProtectedRouteGuard]
-// },
-  { path: 'ride/edit/:id', component:EditRideComponent, canActivate: [ProtectedRouteGuard] },
-  { path: 'supervisor-dashboard', component: DashboardAllOrdersComponent, canActivate: [ProtectedRouteGuard] },
-  { path: 'order-card/:ride_id', component: OrderCardComponent, canActivate: [ProtectedRouteGuard] },
-  { path: 'notifications', component: NotificationsComponent, canActivate: [ProtectedRouteGuard] },
-  { path: '', component: RedirectByRoleComponent, pathMatch: 'full' },
-  
-  { path: 'user-data-edit/:user_id', component: UserDataEditComponent,canActivate: [ProtectedRouteGuard] }, // Moved lower
-  { path: 'user-card/:user_id', component: UserCardComponent,canActivate: [ProtectedRouteGuard] }, // Moved lower
-  { path: 'user-data', component: UserDataComponent,canActivate: [ProtectedRouteGuard] }, 
-  { path: 'vehicle-details/:id', component: VehicleCardItemComponent,canActivate: [ProtectedRouteGuard] },
-  { path: 'vehicle-dashboard', component: VehicleDashboardComponent,canActivate: [ProtectedRouteGuard] },
-  { path: 'vehicle-dashboard/new-vehicle', component: AddVehicleComponent,canActivate: [ProtectedRouteGuard]},
-  { path: 'department-data', component: DepartmentDataComponent, canActivate: [ProtectedRouteGuard]},
-
-  { path: 'ride-completion-form/:ride_id', component: RideCompletionFormComponent, canActivate: [ProtectedRouteGuard]
- },
-  { path: 'audit-logs', component: AuditLogsComponent,canActivate: [ProtectedRouteGuard] },
-  { path: 'forgot-password', component: ForgotPasswordComponent },
-  { path: 'reset-password/:token', component: ResetPasswordComponent,  canActivate: [ProtectedRouteGuard]
- },
-  { path: 'archived-vehicles', component: ArchivedVehiclesComponent,  canActivate: [ProtectedRouteGuard]
- },
   {
-  path: 'admin/analytics',
-  component: AdminAnalyticsComponent,
-  canActivate: [ProtectedRouteGuard]
-},
+    path: 'home',
+    component: NewRideComponent,
+    canActivate: [ProtectedRouteGuard],
+  },
+  {
+    path: 'new-ride',
+    component: AllRidesComponent,
+    canActivate: [ProtectedRouteGuard],
+  },
+  {
+    path: 'all-rides',
+    component: AllRidesComponent,
+    canActivate: [ProtectedRouteGuard],
+  },
 
-{
-  path: 'ride/details/:id',
-  loadComponent: () => import('./ride-area/ride-details/ride-details.component').then(m => m.RideDetailsComponent),
-    canActivate: [ProtectedRouteGuard]
+  //   {
+  //   path: 'ride/edit/:id',
+  //   loadComponent: () => import('./ride-area/edit-ride/edit-ride.component').then(m => m.EditRideComponent),
+  //   canActivate: [ProtectedRouteGuard]
+  // },
+  {
+    path: 'ride/edit/:id',
+    component: EditRideComponent,
+    canActivate: [ProtectedRouteGuard],
+  },
+  {
+    path: 'supervisor-dashboard',
+    component: DashboardAllOrdersComponent,
+    canActivate: [ProtectedRouteGuard],
+  },
+  {
+    path: 'order-card/:ride_id',
+    component: OrderCardComponent,
+    canActivate: [ProtectedRouteGuard],
+  },
+  {
+    path: 'notifications',
+    component: NotificationsComponent,
+    canActivate: [ProtectedRouteGuard],
+  },
+  { path: '', component: RedirectByRoleComponent, pathMatch: 'full' },
 
-},
-{
-  path: 'inspector/inspection',
-  loadComponent: () =>
-    import('./inspector-area/vehicle-inspection/vehicle-inspection.component').then(m => m.VehicleInspectionComponent),
-  canActivate: [ProtectedRouteGuard]
-},
+  {
+    path: 'user-data-edit/:user_id',
+    component: UserDataEditComponent,
+    canActivate: [ProtectedRouteGuard],
+  }, // Moved lower
+  {
+    path: 'user-card/:user_id',
+    component: UserCardComponent,
+    canActivate: [ProtectedRouteGuard],
+  }, // Moved lower
+  {
+    path: 'user-data',
+    component: UserDataComponent,
+    canActivate: [ProtectedRouteGuard],
+  },
+  {
+    path: 'vehicle-details/:id',
+    component: VehicleCardItemComponent,
+    canActivate: [ProtectedRouteGuard],
+  },
+  {
+    path: 'vehicle-dashboard',
+    component: VehicleDashboardComponent,
+    canActivate: [ProtectedRouteGuard],
+  },
+  {
+    path: 'vehicle-dashboard/new-vehicle',
+    component: AddVehicleComponent,
+    canActivate: [ProtectedRouteGuard],
+  },
+  {
+    path: 'department-data',
+    component: DepartmentDataComponent,
+    canActivate: [ProtectedRouteGuard],
+  },
 
-{
-  path: 'admin/critical-issues',
-  loadComponent: () =>
-    import('./components/admin-area/admin-inspections/admin-inspections.component')
-      .then(m => m.AdminInspectionsComponent),
-  canActivate: [ProtectedRouteGuard]
-},
+  {
+    path: 'ride-completion-form/:ride_id',
+    component: RideCompletionFormComponent,
+    canActivate: [ProtectedRouteGuard],
+  },
+  {
+    path: 'audit-logs',
+    component: AuditLogsComponent,
+    canActivate: [ProtectedRouteGuard],
+  },
+  { path: 'forgot-password', component: ForgotPasswordComponent },
+  {
+    path: 'reset-password/:token',
+    component: ResetPasswordComponent,
+    canActivate: [ProtectedRouteGuard],
+  },
+  {
+    path: 'archived-vehicles',
+    component: ArchivedVehiclesComponent,
+    canActivate: [ProtectedRouteGuard],
+  },
+  {
+    path: 'admin/analytics',
+    component: AdminAnalyticsComponent,
+    canActivate: [ProtectedRouteGuard],
+  },
+  {
+    path: 'admin/guidelines',
+    loadComponent: () =>
+      import(
+        './components/admin-area/admin-guidelines/admin-guidelines.component'
+      ).then((m) => m.AdminGuidelinesComponent),
+    canActivate: [ProtectedRouteGuard],
+  },
 
-{
-  path: 'vehicle-details/:id/timeline',
-  loadComponent: () => import('./components/vehicle-area/vehicle-timeline/vehicle-timeline.component')
-    .then(m => m.VehicleTimelineComponent),
-  canActivate: [ProtectedRouteGuard]
-},
+  {
+    path: 'ride/details/:id',
+    loadComponent: () =>
+      import('./ride-area/ride-details/ride-details.component').then(
+        (m) => m.RideDetailsComponent
+      ),
+    canActivate: [ProtectedRouteGuard],
+  },
+  {
+    path: 'inspector/inspection',
+    loadComponent: () =>
+      import(
+        './inspector-area/vehicle-inspection/vehicle-inspection.component'
+      ).then((m) => m.VehicleInspectionComponent),
+    canActivate: [ProtectedRouteGuard],
+  },
 
-{
-  path: 'admin/add-new-user',
-  loadComponent: () =>
-    import('./components/admin-area/users/add-new-user/add-new-user.component').then(
-      m => m.AddNewUserComponent
-    ),
-  canActivate: [ProtectedRouteGuard], // assuming this is your existing guard
-},
+  {
+    path: 'admin/critical-issues',
+    loadComponent: () =>
+      import(
+        './components/admin-area/admin-inspections/admin-inspections.component'
+      ).then((m) => m.AdminInspectionsComponent),
+    canActivate: [ProtectedRouteGuard],
+  },
 
-  { path: '**', component: Page404Component }
+  {
+    path: 'vehicle-details/:id/timeline',
+    loadComponent: () =>
+      import(
+        './components/vehicle-area/vehicle-timeline/vehicle-timeline.component'
+      ).then((m) => m.VehicleTimelineComponent),
+    canActivate: [ProtectedRouteGuard],
+  },
+
+  {
+    path: 'admin/add-new-user',
+    loadComponent: () =>
+      import(
+        './components/admin-area/users/add-new-user/add-new-user.component'
+      ).then((m) => m.AddNewUserComponent),
+    canActivate: [ProtectedRouteGuard], // assuming this is your existing guard
+  },
+
+  { path: '**', component: Page404Component },
 ];
-
