@@ -61,6 +61,9 @@
  <div class="dropdown-content-mobile">
   <ul>
     <li>
+    <a [routerLink]="['/notifications']" class="nav-link" href="#">התראות</a>
+    </li>
+    <li>
       <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/vehicle-dashboard']" class="nav-link" href="#">רכבים </a>
     </li>
     <li>
@@ -134,13 +137,7 @@
     <!-- employee routes -->
     <a *ngIf="(role$ | async) === 'employee'" [routerLink]="['/all-rides']" class="nav-link" href="#">ההזמנות שלי</a>
 
-    <!-- inspector routes -->
-    <!-- <a *ngIf="(role$ | async) === 'inspector'" [routerLink]="['/inspector/vehicles']" class="nav-link">סטטוס רכבים |</a> -->
-    <a *ngIf="(role$ | async) === 'inspector'" [routerLink]="['/inspector/inspection']" class="nav-link">בדיקת רכבים יומית</a>
-
-
-      
-
+   <a *ngIf="(role$ | async) === 'inspector'" [routerLink]="['/inspector/inspection']" class="nav-link">בדיקת רכבים יומית</a>
     <a routerLink="/notifications">
         <img src="/assets/images/bell-icon.png" alt="Notifications" />
           <span

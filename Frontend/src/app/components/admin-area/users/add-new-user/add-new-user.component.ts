@@ -49,8 +49,7 @@ export class AddNewUserComponent implements OnInit {
       last_name: ['', Validators.required],
       username: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      phone: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
-      role: ['', Validators.required],
+      phone: ['', [Validators.required, Validators.pattern(/^05\d{8}$/)]],
       has_government_license: [false],
       department_id: [''], 
       license_expiry_date: ['', [
@@ -74,11 +73,9 @@ export class AddNewUserComponent implements OnInit {
   updateDepartmentValidation(role: string): void {
     const departmentControl = this.addUserForm.get('department_id');
     
-    if (role === 'inspector') {
-      // Inspectors don't require a department
+    if (role !='employee') {
       departmentControl?.clearValidators();
     } else {
-      // Other roles require a department
       departmentControl?.setValidators([Validators.required]);
     }
     
@@ -176,7 +173,10 @@ export class AddNewUserComponent implements OnInit {
 
   isDepartmentRequired(): boolean {
     const role = this.addUserForm.get('role')?.value;
-    return role !== 'inspector';
+    if(role=='employee'){
+      return true
+    }
+    return false
   }
   
   hasGovlicenseButNoFile(): boolean {

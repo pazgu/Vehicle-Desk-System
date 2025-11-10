@@ -2,20 +2,17 @@
   display: block;
   min-height: 100vh;
 
-  /* full-bleed background */
-  background-image: url('/assets/images/vehicle-dashboard-bg.png'); /* no leading slash */
+  background-image: url('/assets/images/vehicle-dashboard-bg.png'); 
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  /* background-attachment: fixed; */ /* optional; comment out if it jitters on mobile */
 }
 
-/* optional: soft overlay for readability */
 :host::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(255, 255, 255, 0.6); /* tweak opacity if you want */
+  background: rgba(255, 255, 255, 0.6); 
   pointer-events: none;
 }
 
@@ -38,7 +35,6 @@
   gap: 20px;
 }
 
-/* Cool Department Cards Styling - Red Theme */
 
 .departments-container {
     max-width: 1200px;

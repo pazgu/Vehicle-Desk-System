@@ -45,7 +45,7 @@ def create_user_by_admin(user_data: UserCreate, changed_by, db: Session):
         db.refresh(new_user)
         
         # Handle supervisor role
-        if user_data.role == UserRole.supervisor:
+        if user_data.role == UserRole.supervisor and user_data.department_id:
             department = db.query(Department).filter(Department.id == user_data.department_id).first()
             if not department:
                 db.rollback()

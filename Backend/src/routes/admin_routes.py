@@ -54,7 +54,7 @@ from ..services.user_notification import send_admin_odometer_notification
 from ..services.vehicle_service import (
     archive_vehicle_by_id,
     get_available_vehicles_for_ride_by_id,
-    delete_vehicle_by_id
+    delete_vehicle
 )
 
 # Schemas
@@ -149,7 +149,7 @@ async def edit_user_by_id_route(
     role: str = Form(...),
     department_id: str = Form(...),
     has_government_license: str = Form(...),
-    license_file: UploadFile = File(None),
+    license_file: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
     payload: dict = Depends(token_check),
     license_expiry_date: Optional[str] = Form(None),
@@ -189,11 +189,6 @@ async def edit_user_by_id_route(
                 user.license_file_url = f"/{filename}"
             except Exception as e:
                 raise HTTPException(status_code=500, detail=f"Failed to save license file: {e}")
-        elif not user.license_file_url and not license_file:
-            raise HTTPException(
-                status_code=400, 
-                detail="License file is required when enabling government license."
-            )
         elif user.license_file_url and license_file:
             raise HTTPException(
                 status_code=403,
@@ -388,7 +383,7 @@ async def add_user_as_admin(
     email: str = Form(...),
     phone: str = Form(None),
     role: str = Form(...),
-    department_id: str = Form(...),
+    department_id: Optional[str] = Form(None),
     password: str = Form(...),
     has_government_license: bool = Form(...),
     license_file: UploadFile = File(None),
@@ -402,7 +397,7 @@ async def add_user_as_admin(
 
     if current_user.role != UserRole.admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required.")
-  
+    
     license_file_url = None
     if has_government_license and license_file:
         contents = await license_file.read()
@@ -426,6 +421,7 @@ async def add_user_as_admin(
 
    
     result = create_user_by_admin(user_data, changed_by, db)
+
     
     
     return result
@@ -740,15 +736,22 @@ def force_license_check(db: Session = Depends(get_db)):
 
 
 @router.delete("/vehicles/{vehicle_id}")
-def delete_vehicle(
-    request: Request,  
+async def delete_vehicle_route(
+    request: Request,
     vehicle_id: UUID,
     db: Session = Depends(get_db),
     token: str = Depends(oauth2_scheme)
 ):
-    user = get_current_user(request)
+    user = get_current_user(request)  # this expects the real Request
     role_check(["admin"], token)
-    return delete_vehicle_by_id(vehicle_id, db, user.employee_id)  # ✅ not user.id
+
+    # Pass db and user_id to your async delete function
+    result = await delete_vehicle(vehicle_id, db, user.employee_id)
+
+    if "error" in result:
+        raise HTTPException(status_code=400, detail=result["error"])
+
+    return result
 
 @router.post("/vehicles/{vehicle_id}/archive")
 def archive_vehicle(
@@ -1115,7 +1118,7 @@ def manual_mileage_edit(
     if request.new_mileage < vehicle.mileage:
         raise HTTPException(
             status_code=400,
-            detail=f"New mileage ({request.new_mileage}) cannot be less than current mileage ({vehicle.mileage})"
+            detail=f"קריאת הקילומטרים החדשה ({request.new_mileage}) אינה יכולה להיות פחות מזו לפניה ({vehicle.mileage})"
         )
 
     vehicle.mileage = request.new_mileage
