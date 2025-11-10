@@ -1,0 +1,94 @@
+.wrap {
+  max-width: 800px;
+  margin: 24px auto;
+  padding: 16px;
+  background: #fff;
+  border: 2px solid #942222; /* 🔥 red Bookit border */
+  border-radius: 12px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.title-row input {
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  min-width: 240px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: start;
+}
+
+.item textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  resize: vertical;
+}
+
+.add {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px dashed #bbb;
+  background: #fafafa;
+  cursor: pointer;
+}
+.add:hover {
+  background: #f3f3f3;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+  gap: 8px;
+}
+
+.primary {
+  background: #103e76;
+  color: #fff;
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+
+.primary:hover {
+  filter: brightness(0.95);
+}
+
+.danger {
+  background: #942222;
+  color: #fff;
+  border: 0;
+  border-radius: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.danger:hover {
+  filter: brightness(0.95);
+}

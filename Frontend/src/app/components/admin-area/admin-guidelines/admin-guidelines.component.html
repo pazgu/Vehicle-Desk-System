@@ -1,0 +1,26 @@
+<div class="wrap" [formGroup]="form">
+  <div class="head">
+    <h2>עריכת הנחיות נסיעה</h2>
+    <div class="title-row">
+      <label>כותרת</label>
+      <input type="text" formControlName="title" />
+    </div>
+  </div>
+
+  <div class="list" formArrayName="items">
+    <div
+      class="item"
+      *ngFor="let g of items.controls; let i = index; trackBy: trackById"
+      [formGroupName]="i"
+    >
+      <textarea formControlName="text" rows="2" placeholder="כתוב/י הנחיה..."></textarea>
+      <button type="button" class="danger" (click)="removeItem(i)">מחק</button>
+    </div>
+
+    <button type="button" class="add" (click)="addItem()">+ הוסף נקודה</button>
+  </div>
+
+  <div class="actions">
+    <button type="button" class="primary" (click)="save()">שמור</button>
+  </div>
+</div>
