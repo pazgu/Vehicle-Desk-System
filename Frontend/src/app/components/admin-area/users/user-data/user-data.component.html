@@ -51,18 +51,16 @@
             <tr *ngFor="let user of pagedUsers" (click)="goToUserCard(user.employee_id)" class="clickable-row"
               [ngClass]="{'blocked-user-row': user.is_blocked}">
               <td>
-                <div class="column-name">
-                  <small *ngIf="hasExpiredLicense(user)" class="expired" [title]="getLicenseWarningMessage(user)">
+                  <small *ngIf="hasExpiredLicense(user)" class="expired">
                     <i class="pi pi-exclamation-triangle"></i>
                   </small>
-                  <small *ngIf="hasNoLicense(user)" class="no-license" [title]="getLicenseWarningMessage(user)">
+                  <small *ngIf="hasNoLicense(user)" class="no-license">
                     <i class="pi pi-exclamation-circle"></i>
                   </small>
                   <small *ngIf="user.is_blocked" class="blocked-indicator">
                     <i class="pi pi-ban"></i>
                   </small>
                   <span [ngClass]="{'blocked-text': user.is_blocked}">{{ user.first_name }} {{ user.last_name }}</span>
-                </div>
               </td>
 
               <td class="column-role" [ngClass]="{'blocked-text': user.is_blocked}">{{ user.role }}</td>

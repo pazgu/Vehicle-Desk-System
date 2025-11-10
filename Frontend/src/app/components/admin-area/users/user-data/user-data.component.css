@@ -316,28 +316,79 @@ position: absolute;
   align-items: center;
 }
 
+.column-name small {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 4px;
+  cursor: default; 
+  position: relative;
+}
+
+.column-name small i {
+  font-size: 0.9em; 
+}
+
 .expired {
   color: red;
-  font-size: 1.4em;
-  text-align: center;
-  position: relative; /* required for absolute tooltip positioning */
-  cursor: help; /* optional: shows a question mark cursor */
+  position: relative;
+}
+
+.expired i {
+  color: #ffc107;
 }
 
 .expired:hover::after {
   content: "רישיון פג תוקף";
   position: absolute;
-  top: -25px;  /* adjust as needed */
-  right: 50%;
-  transform: translateX(50%);
+  top: -32px;
+  left: 50%;
+  transform: translateX(-50%);
   background: #fff3cd;
-  color: #000;
-  padding: 4px 8px;
-  border: 1px solid #f5c2c7;
+  color: #856404;
+  padding: 5px 10px;
+  border: 1px solid #ffeaa7;
   border-radius: 4px;
   white-space: nowrap;
-  font-size: 0.46em;
+  font-size: 0.75rem;
   z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  pointer-events: none;
+  font-weight: normal;
+}
+.no-license {
+  color: #ff6f00;
+  position: relative;
+}
+
+.no-license i {
+  color: #ff6f00;
+}
+
+.no-license:hover::after {
+  content: "אין רישיון ממשלתי";
+  position: absolute;
+  top: -32px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff3e0;
+  color: #e65100;
+  padding: 5px 10px;
+  border: 1px solid #ffcc02;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-size: 0.75rem;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  pointer-events: none;
+  font-weight: normal;
+}
+.blocked-indicator {
+  color: #dc3545;
+}
+
+.blocked-indicator i {
+  color: #dc3545;
 }
 
 .modal-overlay {
@@ -407,12 +458,6 @@ button.cancel {
   font-style: italic;
 }
 
-.blocked-indicator {
-  color: #dc3545;
-  font-weight: bold;
-  margin-left: 5px;
-}
-
 .unblock {
   color: #28a745;
   border: none;
@@ -472,12 +517,6 @@ button.delete:disabled {
 button.modify:disabled:hover,
 button.delete:disabled:hover {
   background-color: #6c757d;
-}
-
-.expired {
-  color: #ffc107;
-  font-weight: bold;
-  margin-left: 5px;
 }
 
 .modal-content h2 {
@@ -594,17 +633,6 @@ button.delete:disabled:hover {
   align-items: center;
 }
 
-.expired .pi-exclamation-triangle {
-  color: #ffc107;
-  font-size: 1.2em;
-}
-
-.blocked-indicator .pi-ban {
-  color: #dc3545;
-  font-size: 1.1em;
-  margin-left: 5px;
-}
-
 .modify .pi-pencil {
   color: #007bff;
   font-size: 1.1em;
@@ -639,55 +667,4 @@ button.delete:disabled:hover {
 
 .unblock:hover .pi-check-circle {
   color: #1e7e34;
-}
-
-.expired {
-  position: relative;
-  cursor: help;
-}
-
-.expired:hover::after {
-  content: "רישיון פג תוקף";
-  position: absolute;
-  top: -25px;
-  right: 50%;
-  transform: translateX(50%);
-  background: #fff3cd;
-  color: #856404;
-  padding: 4px 8px;
-  border: 1px solid #ffeaa7;
-  border-radius: 4px;
-  white-space: nowrap;
-  font-size: 0.8em;
-  z-index: 1000;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-.no-license {
-  color: #ff6f00;
-  font-weight: bold;
-  margin-left: 5px;
-  position: relative;
-  cursor: help;
-}
-
-.no-license .pi-exclamation-circle {
-  color: #ff6f00;
-  font-size: 1.6em;
-}
-
-.no-license:hover::after {
-  content: "אין רישיון ממשלתי";
-  position: absolute;
-  top: -25px;
-  right: 50%;
-  transform: translateX(50%);
-  background: #fff3e0;
-  color: #e65100;
-  padding: 4px 8px;
-  border: 1px solid #ffcc02;
-  border-radius: 4px;
-  white-space: nowrap;
-  font-size: 1.2em;
-  z-index: 1000;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
