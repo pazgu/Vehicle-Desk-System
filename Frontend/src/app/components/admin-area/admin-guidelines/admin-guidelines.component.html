@@ -10,10 +10,13 @@
   <div class="list" formArrayName="items">
     <div
       class="item"
-      *ngFor="let g of items.controls; let i = index; trackBy: trackById"
-      [formGroupName]="i"
+      *ngFor="let ctrl of items.controls; let i = index; trackBy: trackByIndex"
     >
-      <textarea formControlName="text" rows="2" placeholder="כתוב/י הנחיה..."></textarea>
+      <textarea
+        [formControlName]="i"
+        rows="2"
+        placeholder="כתוב/י הנחיה..."
+      ></textarea>
       <button type="button" class="danger" (click)="removeItem(i)">מחק</button>
     </div>
 
@@ -21,6 +24,6 @@
   </div>
 
   <div class="actions">
-    <button type="button" class="primary" (click)="save()">שמור</button>
+    <button type="button" class="primary" (click)="save()"  [disabled]="form.invalid || !hasChanges()">שמור</button>
   </div>
 </div>

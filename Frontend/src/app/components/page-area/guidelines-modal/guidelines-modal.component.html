@@ -5,13 +5,11 @@
       <h2 id="guidelinesTitle">הנחיות שימוש ברכב</h2>
     </div>
 
-    <div class="content">
+    <div class="content" *ngIf="doc$ | async as doc">
       <ul class="bullets">
-        <li><span class="num">1</span>הנסיעה מותרת לשימוש עובד/ת בלבד מעל גיל 18.</li>
-        <li><span class="num">2</span>יש להחזיר את הרכב בזמן, נקי, ובדלק/טעינה כנדרש.</li>
-        <li><span class="num">3</span>חל איסור להסיע נוסעים ללא אישור מנהל.</li>
-        <li><span class="num">4</span>כל עבירת תנועה באחריות הנהג/ת.</li>
-        <li><span class="num">5</span>במקרה תקלה/תאונה יש לדווח מיד למנהל המערכת.</li>
+        <li *ngFor="let item of doc.items; index as i">
+          <span class="num">{{ i + 1 }}</span>{{ item }}
+        </li>
       </ul>
 
       <div class="notice">
@@ -24,8 +22,12 @@
     <div class="ack">
       <label class="check">
         <input type="checkbox" [(ngModel)]="isChecked" />
-        אני מאשר/ת שקראתי ומקבל/ת את התנאים
+        <span>אני מאשר/ת שקראתי ומקבל/ת את התנאים</span>
       </label>
 
       <button class="confirm-btn" [disabled]="!isChecked" (click)="onConfirm()">
-          המשך←
+        המשך←
+      </button>
+    </div>
+  </div>
+</div>
