@@ -51,25 +51,18 @@ export class AdminAnalyticsComponent implements OnInit {
   frozenVehicles = <VehicleOutItem[]>[];
   selectedVehicleType: string = '';
   selectedRideStatus: string = '';
-  // Initialization flags
   vehicleChartInitialized = false;
   rideChartInitialized = false;
-  isMonthlyView = true; // monthly = default
+  isMonthlyView = true;
   showChart = true;
-
-  selectedMonth = (new Date().getMonth() + 1).toString(); // default = current month
-  selectedYear = new Date().getFullYear().toString(); // default = current year
-
+  selectedMonth = (new Date().getMonth() + 1).toString(); 
+  selectedYear = new Date().getFullYear().toString(); 
   monthlyChartData: any;
   monthlyChartOptions: any;
   allTimeChartData: any;
   allTimeChartOptions: any;
-
-  // 🆕 No-show chart + summary + table
-
   totalNoShows: number = 0;
   topNoShowUsers: TopNoShowUser[] = [];
-
   noShowFromDate?: string;
   noShowToDate?: string;
 
@@ -77,9 +70,6 @@ export class AdminAnalyticsComponent implements OnInit {
   filterCritical: boolean = false;
   allNoShowUsers: TopNoShowUser[] = [];
   filteredNoShowUsers: TopNoShowUser[] = [];
-
-
-
 
   topUsedVehiclesData: any;
   topUsedVehiclesOptions: any;
@@ -93,11 +83,10 @@ export class AdminAnalyticsComponent implements OnInit {
   
 
 
-  // 🆕 ADD these two properties for department caching
-  private departmentsMap = new Map<string, string>(); // To store department ID -> Name
-  private departmentsLoaded: boolean = false;        // To track if departments are loaded
+  private departmentsMap = new Map<string, string>(); 
+  private departmentsLoaded: boolean = false;       
 
-  vehicleTypes: string[] = []; // כבר קיים
+  vehicleTypes: string[] = []; 
   rideStatuses: string[] = []
 
   months = [
