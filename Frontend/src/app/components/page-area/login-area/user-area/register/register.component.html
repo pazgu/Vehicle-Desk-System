@@ -25,7 +25,6 @@
         <input type="text" formControlName="username">
         <small *ngIf="f['username'].touched && f['username'].errors?.['required']" style="color:red;">יש להזין שם משתמש</small>
         <small *ngIf="f['username'].errors?.['minlength']" style="color:red;">לפחות 3 תווים</small>
-        <small *ngIf="f['username'].errors?.['pattern']" style="color:red;">אותיות בלבד</small>
       </div>
 
       <div>

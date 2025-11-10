@@ -5,7 +5,6 @@ from ..models.user_model import User
 from ..services.auth_service import create_access_token
 from ..utils.auth import verify_password
 from ..utils.database import get_db
-from ..utils.mock_data import mock_users_db, get_user_by_username
 
 def login_user(username: str, password: str, db: Session = Depends(get_db)):
     # Try to fetch the user by username or email
@@ -33,22 +32,3 @@ def login_user(username: str, password: str, db: Session = Depends(get_db)):
         "token_type": "bearer",
         "department_id": str(user.department_id),  # UUID as string
     }
-
-
-# def login(db: Session, username: str, password: str):
-#     user = db.query(User).filter(User.username == username).first()  # Look up the user by username
-#     if user is None:
-#         raise HTTPException(status_code=401, detail="Incorrect username or password.")
-    
-#     # Verify the password using the hashed password stored in the database
-#     if not verify_password(password, user.password):
-#         raise HTTPException(status_code=401, detail="Incorrect username or password.")
-    
-#     # If password is correct, generate the access token
-#     access_token_data = create_access_token(
-#         user_id=str(user.id),
-#         username=user.username,
-#         role=user.role
-#     )
-
-#     return { "access_token": access_token_data["token"], "expires_at": access_token_data["expires_at"] }
