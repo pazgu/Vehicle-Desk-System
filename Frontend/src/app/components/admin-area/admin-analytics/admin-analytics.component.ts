@@ -13,7 +13,6 @@ import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
 import * as XLSX from 'xlsx-js-style';
 import { cloneDeep, toInteger } from 'lodash';
-
 import { VehicleService } from '../../../services/vehicle.service';
 import { FreezeReason, VehicleOutItem } from '../../../models/vehicle-dashboard-item/vehicle-out-item.module';
 import { ToastService } from '../../../services/toast.service';
@@ -686,7 +685,7 @@ onFilterChange(type: 'onePlus' | 'critical') {
     const isVehicleTab = this.activeTabIndex === 0;
     const isRideTab = this.activeTabIndex === 1;
     const isTopUsedTab = this.activeTabIndex === 2;
-    const isNoShowTab = this.activeTabIndex === 3;
+    const isNoShowTab = this.activeTabIndex === 4;
 
     if (isNoShowTab && this.filteredNoShowUsers.length === 0) {
       this.showExportWarningTemporarily();
@@ -831,59 +830,82 @@ onFilterChange(type: 'onePlus' | 'critical') {
       }
     }
 
-
-
     const docDefinition: any = {
+  pageOrientation: isNoShowTab ? 'landscape' : 'portrait',
+  pageSize: 'A4',
 
-      content: [
-        { text: title, style: 'header' },
-        { text: `Created: ${timestamp}`, style: 'subheader' },
-        ...(isVehicleTab ? [{ text: `Vehicle Types: ${this.selectedVehicleType == '' ? 'All' : this.selectedVehicleType}`, style: 'summaryHeader' }] : []),
-        {
-          table: {
-            headerRows: 1,
-            widths: isNoShowTab
-              ? ['*', '*', '*', '*', '*', '*', '*']
-              : isTopUsedTab
-                ? ['*', '*', '*']
-                : ['*', '*'],
-            body: body
-          },
-          layout: {
-
-            fillColor: (rowIndex: number) => rowIndex === 0 ? '#f2f2f2' : null
+  content: [
+    { text: title, style: 'header' },
+    { text: `Created: ${timestamp}`, style: 'subheader' },
+    ...(isVehicleTab
+      ? [
+          {
+            text: `Vehicle Types: ${
+              this.selectedVehicleType === '' ? 'All' : this.selectedVehicleType
+            }`,
+            style: 'summaryHeader'
           }
-        }
-      ],
-      styles: {
-        header: {
-          fontSize: 18,
-          bold: true,
-          margin: [0, 0, 0, 10],
-          alignment: 'center'
-        },
-        subheader: {
-          fontSize: 12,
-          margin: [0, 0, 0, 20],
-          alignment: 'center'
-        },
-        summaryHeader: {
-          fontSize: 14,
-          bold: true,
-          margin: [0, 10, 0, 5]
-        },
-        tableHeader: {
-          fontSize: 12,
-          bold: true,
-          alignment: 'center'
-        }
+        ]
+      : []),
+    {
+      table: {
+        headerRows: 1,
+        // Better column sizing for No-Show table
+        widths: isNoShowTab
+          ? ['auto', '*', 'auto', '*', 'auto', 'auto', 'auto']
+          : isTopUsedTab
+          ? ['*', '*', '*']
+          : ['*', '*'],
+        body: body
       },
-      defaultStyle: {
-        fontSize: 11
+      layout: {
+        fillColor: (rowIndex: number) => (rowIndex === 0 ? '#f2f2f2' : null),
+        // Add light horizontal lines for clarity
+        hLineWidth: (i: number, node: any) => (i === 0 || i === node.table.body.length ? 1 : 0.5),
+        vLineWidth: (i: number, node: any) => (i === 0 || i === node.table.widths.length ? 1 : 0.5),
+        hLineColor: () => '#ccc',
+        vLineColor: () => '#ccc'
       }
-    };
+    }
+  ],
 
-    pdfMake.createPdf(docDefinition).download(`${title}-${safeTimestamp}.pdf`);
+  styles: {
+    header: {
+      fontSize: 18,
+      bold: true,
+      margin: [0, 0, 0, 10],
+      alignment: 'center'
+    },
+    subheader: {
+      fontSize: 11,
+      margin: [0, 0, 0, 15],
+      alignment: 'center'
+    },
+    summaryHeader: {
+      fontSize: 13,
+      bold: true,
+      margin: [0, 10, 0, 8]
+    },
+    tableHeader: {
+      fontSize: 10,
+      bold: true,
+      alignment: 'center'
+    },
+    tableCell: {
+      fontSize: 9,
+      margin: [2, 2, 2, 2],
+      alignment: 'center'
+    }
+  },
+
+  defaultStyle: {
+    fontSize: 9,
+    alignment: 'center'
+  }
+};
+
+pdfMake.createPdf(docDefinition).download(`${title}-${safeTimestamp}.pdf`);
+
   }
 
   trackByUserId(index: number, user: any): any {
