@@ -1,6 +1,8 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { GuidelinesService, GuidelinesDoc } from '../../../services/guidelines.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-guidelines-modal',
@@ -17,6 +19,16 @@ export class GuidelinesModalComponent {
   @Output() closed = new EventEmitter<void>(); // לא נשתמש לסגירה בלי אישור (נשאיר למקרה עתידי)
 
   isChecked = false;
+
+  doc$!: Observable<GuidelinesDoc | null>;
+
+   constructor(private guidelines: GuidelinesService) {}
+
+  ngOnInit() {
+    this.doc$ = this.guidelines.doc$; // already loaded by service ctor + get()
+    // ensure we have fresh data (mock will return quickly)
+    this.guidelines.get().subscribe();
+  }
 
   onConfirm() {
     if (!this.isChecked) return;

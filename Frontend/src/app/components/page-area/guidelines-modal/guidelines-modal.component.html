@@ -1,23 +1,24 @@
 <div class="overlay" *ngIf="show">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="guidelinesTitle">
     <div class="header">
+      <div class="header-accent"></div>
       <h2 id="guidelinesTitle">הנחיות שימוש ברכב</h2>
     </div>
 
     <div class="content">
       <ul class="bullets">
-        <li>הנסיעה מותרת לשימוש עובד/ת בלבד מעל גיל 18.</li>
-        <li>יש להחזיר את הרכב בזמן, נקי, ובדלק/טעינה כנדרש.</li>
-        <li>חל איסור להסיע נוסעים ללא אישור מנהל.</li>
-        <li>כל עבירת תנועה באחריות הנהג/ת.</li>
-        <li>במקרה תקלה/תאונה יש לדווח מיד למנהל המערכת.</li>
-        <!-- טקסט ארוך/דמה – גלילה עובדת -->
-        <p class="long">
-          טקסט לדוגמה… טקסט לדוגמה… טקסט לדוגמה… טקסט לדוגמה… טקסט לדוגמה…
-          טקסט לדוגמה… טקסט לדוגמה… טקסט לדוגמה… טקסט לדוגמה… טקסט לדוגמה…
-          טקסט לדוגמה… טקסט לדוגמה… טקסט לדוגמה… טקסט לדוגמה… טקסט לדוגמה…
-        </p>
+        <li><span class="num">1</span>הנסיעה מותרת לשימוש עובד/ת בלבד מעל גיל 18.</li>
+        <li><span class="num">2</span>יש להחזיר את הרכב בזמן, נקי, ובדלק/טעינה כנדרש.</li>
+        <li><span class="num">3</span>חל איסור להסיע נוסעים ללא אישור מנהל.</li>
+        <li><span class="num">4</span>כל עבירת תנועה באחריות הנהג/ת.</li>
+        <li><span class="num">5</span>במקרה תקלה/תאונה יש לדווח מיד למנהל המערכת.</li>
       </ul>
+
+      <div class="notice">
+        <div class="notice-header">הודעה חשובה</div>
+        שימו לב: הזמנת רכב מהווה התחייבות. ביטול הזמנה יש לבצע לפחות 24 שעות מראש. 
+        אי עמידה בתנאים עלולה להוביל להגבלת הגישה למערכת. במקרה חירום ניתן לפנות למוקד התמיכה 24/7.
+      </div>
     </div>
 
     <div class="ack">
@@ -27,8 +28,4 @@
       </label>
 
       <button class="confirm-btn" [disabled]="!isChecked" (click)="onConfirm()">
-        המשך
-      </button>
-    </div>
-  </div>
-</div>
+          המשך←
