@@ -668,3 +668,162 @@ button.delete:disabled:hover {
 .unblock:hover .pi-check-circle {
   color: #1e7e34;
 }
+
+.column-name,
+.column-role,
+.column-department {
+  text-align: right !important;
+  vertical-align: middle;
+}
+
+tbody tr td:nth-child(1),
+tbody tr td:nth-child(2),
+tbody tr td:nth-child(3) {
+  text-align: right !important;
+  padding-right: 20px;
+  vertical-align: middle;
+}
+
+thead tr th:nth-child(1),
+thead tr th:nth-child(2),
+thead tr th:nth-child(3) {
+  text-align: right !important;
+  padding-right: 20px;
+}
+
+thead tr th:nth-child(1),
+thead tr th:nth-child(2),
+thead tr th:nth-child(3) {
+  text-align: right !important;
+  padding-right: 20px;
+}
+
+tbody tr td:nth-child(1),
+tbody tr td:nth-child(2),
+tbody tr td:nth-child(3) {
+  text-align: right !important;
+  padding-right: 20px;
+  vertical-align: middle;
+}
+
+thead tr th:nth-child(1),
+thead tr th:nth-child(2),
+thead tr th:nth-child(3) {
+  text-align: right !important;
+  padding-right: 20px;
+}
+
+tbody tr td:nth-child(1),
+tbody tr td:nth-child(2),
+tbody tr td:nth-child(3) {
+  text-align: right !important;
+  padding-right: 20px;
+  vertical-align: middle;
+}
+
+thead tr th:nth-child(1),
+thead tr th:nth-child(2),
+thead tr th:nth-child(3) {
+  text-align: right !important;
+  padding-right: 20px;
+}
+
+tbody tr td:nth-child(1),
+tbody tr td:nth-child(2),
+tbody tr td:nth-child(3) {
+  text-align: right !important;
+  padding-right: 20px;
+  vertical-align: middle;
+}
+
+thead tr th:nth-child(1),
+thead tr th:nth-child(2),
+thead tr th:nth-child(3) {
+  text-align: right !important;
+  padding-right: 20px;
+}
+
+tbody tr td:nth-child(1),
+tbody tr td:nth-child(2),
+tbody tr td:nth-child(3) {
+  text-align: right !important;
+  padding-right: 20px;
+  vertical-align: middle;
+}
+
+thead tr th:nth-child(1),
+thead tr th:nth-child(2),
+thead tr th:nth-child(3) {
+  text-align: right !important;
+  padding-right: 20px;
+}
+
+tbody tr td:nth-child(1),
+tbody tr td:nth-child(2),
+tbody tr td:nth-child(3) {
+  text-align: right !important;
+  padding-right: 20px;
+  vertical-align: middle;
+}
+
+thead tr th:nth-child(1),
+thead tr th:nth-child(2),
+thead tr th:nth-child(3) {
+  text-align: right !important;
+  padding-right: 20px;
+}
+
+tbody tr td:nth-child(1),
+tbody tr td:nth-child(2),
+tbody tr td:nth-child(3) {
+  text-align: right !important;
+  padding-right: 20px;
+  vertical-align: middle;
+}
+
+thead tr th:nth-child(1),
+thead tr th:nth-child(2),
+thead tr th:nth-child(3) {
+  text-align: right !important;
+  padding-right: 20px;
+}
+
+tbody tr td:nth-child(1),
+tbody tr td:nth-child(2),
+tbody tr td:nth-child(3) {
+  text-align: right !important;
+  padding-right: 20px;
+  vertical-align: middle;
+}
+
+thead tr th:nth-child(1),
+thead tr th:nth-child(2),
+thead tr th:nth-child(3) {
+  text-align: right !important;
+  padding-right: 20px;
+}
+
+tbody tr td:nth-child(1),
+tbody tr td:nth-child(2),
+tbody tr td:nth-child(3) {
+  text-align: right !important;
+  padding-right: 20px;
+  vertical-align: middle;
+}
+
+tbody tr td:nth-child(2) {
+  padding-right: 30px; 
+}
+
+tbody tr td:nth-child(1) {
+  white-space: nowrap;
+}
+
+tbody tr td:nth-child(1) small {
+  display: inline;
+  margin-left: 5px;
+}
+
+thead tr th:nth-child(2) {
+  padding-right: 30px; 
+}
