@@ -277,7 +277,6 @@ async def start_ride(db: Session, ride_id: UUID):
         raise HTTPException(status_code=400, detail="Vehicle is not available")
 
 
-    # 1️⃣ Update vehicle status
     update_vehicle_status(
         vehicle_id=vehicle.id,
         new_status=VehicleStatus.in_use,
