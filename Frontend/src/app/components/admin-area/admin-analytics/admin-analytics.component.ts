@@ -12,7 +12,7 @@ import { saveAs } from 'file-saver';
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
 import * as XLSX from 'xlsx-js-style';
-import { cloneDeep, toInteger } from 'lodash';
+import { cloneDeep } from 'lodash';
 import { VehicleService } from '../../../services/vehicle.service';
 import {
   FreezeReason,
@@ -23,9 +23,8 @@ import { TopNoShowUser } from '../../../models/no-show-stats.model';
 import { StatisticsService } from '../../../services/statistics.service';
 import { UserService } from '../../../services/user_service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { style } from '@angular/animations';
 import { UserOrdersExportComponent } from '../user-orders-export/user-orders-export.component';
-
+import { NoShowsComponent } from '../no-shows/no-shows.component';
 pdfMake.vfs = pdfFonts.vfs;
 
 @Component({
@@ -38,6 +37,7 @@ pdfMake.vfs = pdfFonts.vfs;
     TabViewModule,
     DropdownModule,
     UserOrdersExportComponent,
+    NoShowsComponent
   ],
   templateUrl: './admin-analytics.component.html',
   styleUrls: ['./admin-analytics.component.css'],
@@ -124,7 +124,7 @@ export class AdminAnalyticsComponent implements OnInit {
     this.loadRideChart();
     this.loadFrozenVehicles();
     this.loadNoShowStatistics();
-    this.loadDepartments(); // <--- Call this to load departments and then no-show stats
+    this.loadDepartments();
     this.loadVehicleTypes();
     this.loadRideStatuses();
 
@@ -170,7 +170,12 @@ export class AdminAnalyticsComponent implements OnInit {
         },
       });
   }
-
+onMonthOrYearChange() {
+    this.updateQueryParams({
+      month: this.selectedMonth,
+      year: this.selectedYear,
+    });
+  }
   loadRideStatuses() {
     this.http
       .get<{ ride_statuses: string[] }>(`${environment.apiUrl}/ride/statuses`)
@@ -193,23 +198,6 @@ export class AdminAnalyticsComponent implements OnInit {
     this.loadRideChart();
   }
 
-  // Add these methods to your AdminAnalyticsComponent class
-
-  onFilterOnePlusChange() {
-    if (this.filterOnePlus) {
-      this.filterCritical = false; // Uncheck critical when one-plus is selected
-    }
-    this.applyNoShowFilter();
-  }
-
-  onFilterCriticalChange() {
-    if (this.filterCritical) {
-      this.filterOnePlus = false; // Uncheck one-plus when critical is selected
-    }
-    this.applyNoShowFilter();
-  }
-
-  // 🆕 פונקציה חדשה ליצירת אפשרויות הDropdown
   getVehicleTypeOptions() {
     const options = [{ label: 'כל הסוגים', value: '' }];
 
@@ -233,22 +221,7 @@ export class AdminAnalyticsComponent implements OnInit {
     }
   }
 
-  onMonthOrYearChange() {
-    this.updateQueryParams({
-      month: this.selectedMonth,
-      year: this.selectedYear,
-    });
-  }
-
-  onFilterChange(type: 'onePlus' | 'critical') {
-    if (type === 'onePlus' && this.filterOnePlus) {
-      this.filterCritical = false;
-    }
-    if (type === 'critical' && this.filterCritical) {
-      this.filterOnePlus = false;
-    }
-    this.applyNoShowFilter();
-  }
+ 
 
   private countFreezeReasons(frozenVehicles: VehicleOutItem[]) {
     const freezeReasonCounts: Record<FreezeReason, number> = {
@@ -314,9 +287,7 @@ export class AdminAnalyticsComponent implements OnInit {
       this.vehicleChartData.labels[0] === 'אין נתונים'
     );
   }
-  get isEmptyNoShowData(): boolean {
-    return this.filteredNoShowUsers.length === 0;
-  }
+
   get isMonthlyNoData(): boolean {
     return (
       !this.monthlyStatsChartData ||
@@ -682,9 +653,6 @@ export class AdminAnalyticsComponent implements OnInit {
     });
   }
 
-  goToUserDetails(userId: string) {
-    this.router.navigate(['/user-card', userId]);
-  }
   resolveDepartment(departmentId: string): string {
     return this.departmentsMap.get(departmentId) || 'מחלקה לא ידועה';
   }
@@ -967,13 +935,6 @@ export class AdminAnalyticsComponent implements OnInit {
   }
 
   isTableLoading = false;
-
-  onTableKeydown(event: KeyboardEvent, user: any): void {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      this.goToUserDetails(user.user_id);
-    }
-  }
 
   public exportExcel(): void {
     const isVehicleTab = this.activeTabIndex === 0;
