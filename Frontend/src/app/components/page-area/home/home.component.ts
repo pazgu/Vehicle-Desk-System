@@ -886,12 +886,12 @@ onBeforeUnload(e: BeforeUnloadEvent) {
     getVehicleTypes(): string[] {
         return [...new Set(this.allCars.map(car => car.type))];
     }
-    // isDuringInspectorClosure(startTime: string): boolean {
-    //     const startMinutes = this.timeToMinutes(startTime);
-    //     const startRange = this.timeToMinutes('11:15');
-    //     const endRange = this.timeToMinutes('12:15');
-    //     return startMinutes >= startRange && startMinutes <= endRange;
-    // }
+    isDuringInspectorClosure(startTime: string): boolean {
+        const startMinutes = this.timeToMinutes(startTime);
+        const startRange = this.timeToMinutes('11:15');
+        const endRange = this.timeToMinutes('12:15');
+        return startMinutes >= startRange && startMinutes <= endRange;
+    }
     confirmInspectorWarning(): void {
         this.showInspectorWarningModal = false;
         this.submit(true);
@@ -1128,10 +1128,10 @@ onBeforeUnload(e: BeforeUnloadEvent) {
             this.toastService.show('שעת הסיום חייבת להיות אחרי שעת ההתחלה', 'error');
             return;
         }
-        // if (!confirmedWarning && ridePeriod === 'morning' && this.isDuringInspectorClosure(startTime)) {
-        //     this.showInspectorWarningModal = true;
-        //     return;
-        // }
+        if (!confirmedWarning && ridePeriod === 'morning' && this.isDuringInspectorClosure(startTime)) {
+            this.showInspectorWarningModal = true;
+            return;
+        }
         const user_id = this.getUserIdFromAuthService();
         if (!user_id) {
             this.toastService.show('שגיאת זיהוי משתמש - התחבר מחדש', 'error');
