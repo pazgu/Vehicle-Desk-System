@@ -279,8 +279,4 @@ export class OrderCardComponent implements OnInit {
       .map(id => this.getCityName(id))
       .join(' ← ');
   }
-
-
-
-
 }
