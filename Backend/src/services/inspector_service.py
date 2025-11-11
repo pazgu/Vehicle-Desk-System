@@ -46,12 +46,16 @@ async def create_inspection(data: VehicleInspectionSchema, db: Session):
             if not inspection.no_items_left:
                 issues.append("נשארו חפצים ברכב")
 
+            plate_number = vehicle.plate_number  
+            inspection_date_str = inspection.inspection_date.strftime("%d/%m/%Y %H:%M")
+
             if len(issues) == 1:
-                message = f"שים לב: {issues[0]}."
+                message = f"שים לב ברכב {plate_number} בתאריך {inspection_date_str}: {issues[0]}."
             elif len(issues) > 1:
-                message = "נמצאו מספר ליקויים ברכב שהחזרת. אנא צור קשר עם זלמן."
+                message = f"נמצאו מספר ליקויים ברכב {plate_number} בתאריך {inspection_date_str}. אנא צור קשר עם זלמן."
             else:
                 message = None  
+
 
             if message:
                 title = "תוצאות בדיקת הרכב"
