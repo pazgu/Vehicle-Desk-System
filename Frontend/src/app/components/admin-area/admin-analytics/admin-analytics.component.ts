@@ -13,16 +13,18 @@ import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
 import * as XLSX from 'xlsx-js-style';
 import { cloneDeep, toInteger } from 'lodash';
-
 import { VehicleService } from '../../../services/vehicle.service';
-import { FreezeReason, VehicleOutItem } from '../../../models/vehicle-dashboard-item/vehicle-out-item.module';
+import {
+  FreezeReason,
+  VehicleOutItem,
+} from '../../../models/vehicle-dashboard-item/vehicle-out-item.module';
 import { ToastService } from '../../../services/toast.service';
 import { TopNoShowUser } from '../../../models/no-show-stats.model';
 import { StatisticsService } from '../../../services/statistics.service';
 import { UserService } from '../../../services/user_service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { style } from '@angular/animations';
-
+import { UserOrdersExportComponent } from '../user-orders-export/user-orders-export.component';
 
 pdfMake.vfs = pdfFonts.vfs;
 
@@ -34,43 +36,35 @@ pdfMake.vfs = pdfFonts.vfs;
     FormsModule,
     ChartModule,
     TabViewModule,
-    DropdownModule
+    DropdownModule,
+    UserOrdersExportComponent,
   ],
   templateUrl: './admin-analytics.component.html',
   styleUrls: ['./admin-analytics.component.css'],
 })
-
 export class AdminAnalyticsComponent implements OnInit {
-
   vehicleChartData: any;
   vehicleChartOptions: any;
   rideChartData: any;
   rideChartOptions: any;
   selectedSortOption = 'countDesc';
-  noShowSortOption = 'countDesc'
+  noShowSortOption = 'countDesc';
   activeTabIndex = 0;
   frozenVehicles = <VehicleOutItem[]>[];
   selectedVehicleType: string = '';
   selectedRideStatus: string = '';
-  // Initialization flags
   vehicleChartInitialized = false;
   rideChartInitialized = false;
-  isMonthlyView = true; // monthly = default
+  isMonthlyView = true;
   showChart = true;
-
-  selectedMonth = (new Date().getMonth() + 1).toString(); // default = current month
-  selectedYear = new Date().getFullYear().toString(); // default = current year
-
+  selectedMonth = (new Date().getMonth() + 1).toString();
+  selectedYear = new Date().getFullYear().toString();
   monthlyChartData: any;
   monthlyChartOptions: any;
   allTimeChartData: any;
   allTimeChartOptions: any;
-
-  // 🆕 No-show chart + summary + table
-
   totalNoShows: number = 0;
   topNoShowUsers: TopNoShowUser[] = [];
-
   noShowFromDate?: string;
   noShowToDate?: string;
 
@@ -78,9 +72,6 @@ export class AdminAnalyticsComponent implements OnInit {
   filterCritical: boolean = false;
   allNoShowUsers: TopNoShowUser[] = [];
   filteredNoShowUsers: TopNoShowUser[] = [];
-
-
-
 
   topUsedVehiclesData: any;
   topUsedVehiclesOptions: any;
@@ -91,15 +82,12 @@ export class AdminAnalyticsComponent implements OnInit {
   allTimeStatsChartOptions: any;
   uniqueNoShowUsers: number = 0;
   noShowExportWarningVisible: boolean = false;
-  
 
+  private departmentsMap = new Map<string, string>();
+  private departmentsLoaded: boolean = false;
 
-  // 🆕 ADD these two properties for department caching
-  private departmentsMap = new Map<string, string>(); // To store department ID -> Name
-  private departmentsLoaded: boolean = false;        // To track if departments are loaded
-
-  vehicleTypes: string[] = []; // כבר קיים
-  rideStatuses: string[] = []
+  vehicleTypes: string[] = [];
+  rideStatuses: string[] = [];
 
   months = [
     { value: '1', label: 'ינואר' },
@@ -116,11 +104,20 @@ export class AdminAnalyticsComponent implements OnInit {
     { value: '12', label: 'דצמבר' },
   ];
 
-  years = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - i).toString());
+  years = Array.from({ length: 5 }, (_, i) =>
+    (new Date().getFullYear() - i).toString()
+  );
 
-
-  constructor(private http: HttpClient, private socketService: SocketService, private vehicleService: VehicleService, private toastService: ToastService
-    , private statisticsService: StatisticsService, private userService: UserService, private router: Router, private route: ActivatedRoute) { }
+  constructor(
+    private http: HttpClient,
+    private socketService: SocketService,
+    private vehicleService: VehicleService,
+    private toastService: ToastService,
+    private statisticsService: StatisticsService,
+    private userService: UserService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit() {
     this.loadVehicleChart();
@@ -136,9 +133,8 @@ export class AdminAnalyticsComponent implements OnInit {
 
     this.socketService.rideStatusUpdated$.subscribe(() => {
       this.loadRideChart();
-
     });
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.subscribe((params) => {
       // Read query params if they exist, else keep defaults
       this.noShowSortOption = params['noShowSort'] || 'countAsc';
       this.selectedSortOption = params['selectedSort'] || 'countAsc';
@@ -159,32 +155,33 @@ export class AdminAnalyticsComponent implements OnInit {
       this.loadRideChart();
       this.loadVehicleChart();
       this.loadFrozenVehicles();
-
     });
   }
 
-
-  // 🔄 פונקציה מעודכנת
   loadVehicleTypes() {
-    this.http.get<{ vehicle_types: string[] }>(`${environment.apiUrl}/vehicles/types`).subscribe({
-      next: (res) => {
-        this.vehicleTypes = res.vehicle_types;
-      },
-      error: (err) => {
-        this.toastService.show('אירעה שגיאה בטעינת סוגי רכבים', 'error');
-      }
-    });
+    this.http
+      .get<{ vehicle_types: string[] }>(`${environment.apiUrl}/vehicles/types`)
+      .subscribe({
+        next: (res) => {
+          this.vehicleTypes = res.vehicle_types;
+        },
+        error: (err) => {
+          this.toastService.show('אירעה שגיאה בטעינת סוגי רכבים', 'error');
+        },
+      });
   }
 
   loadRideStatuses() {
-    this.http.get<{ ride_statuses: string[] }>(`${environment.apiUrl}/ride/statuses`).subscribe({
-      next: (res) => {
-        this.rideStatuses = res.ride_statuses;
-      },
-      error: (err) => {
-        this.toastService.show('אירעה שגיאה בטעינת סטטוסי נסיעות', 'error');
-      }
-    });
+    this.http
+      .get<{ ride_statuses: string[] }>(`${environment.apiUrl}/ride/statuses`)
+      .subscribe({
+        next: (res) => {
+          this.rideStatuses = res.ride_statuses;
+        },
+        error: (err) => {
+          this.toastService.show('אירעה שגיאה בטעינת סטטוסי נסיעות', 'error');
+        },
+      });
   }
 
   // 🆕 פונקציה חדשה לטיפול בשינוי הפילטר
@@ -192,35 +189,31 @@ export class AdminAnalyticsComponent implements OnInit {
     this.loadVehicleChart(); // טען מחדש את הגרף עם הפילטר החדש
   }
 
-
-
   onRideStatusFilterChange() {
     this.loadRideChart();
   }
 
   // Add these methods to your AdminAnalyticsComponent class
 
-onFilterOnePlusChange() {
-  if (this.filterOnePlus) {
-    this.filterCritical = false; // Uncheck critical when one-plus is selected
+  onFilterOnePlusChange() {
+    if (this.filterOnePlus) {
+      this.filterCritical = false; // Uncheck critical when one-plus is selected
+    }
+    this.applyNoShowFilter();
   }
-  this.applyNoShowFilter();
-}
 
-onFilterCriticalChange() {
-  if (this.filterCritical) {
-    this.filterOnePlus = false; // Uncheck one-plus when critical is selected
+  onFilterCriticalChange() {
+    if (this.filterCritical) {
+      this.filterOnePlus = false; // Uncheck one-plus when critical is selected
+    }
+    this.applyNoShowFilter();
   }
-  this.applyNoShowFilter();
-}
 
   // 🆕 פונקציה חדשה ליצירת אפשרויות הDropdown
   getVehicleTypeOptions() {
-    const options = [
-      { label: 'כל הסוגים', value: '' }
-    ];
+    const options = [{ label: 'כל הסוגים', value: '' }];
 
-    this.vehicleTypes.forEach(type => {
+    this.vehicleTypes.forEach((type) => {
       if (type && type.trim() !== '') {
         options.push({ label: type, value: type });
       }
@@ -240,26 +233,22 @@ onFilterCriticalChange() {
     }
   }
 
-
-
-
   onMonthOrYearChange() {
     this.updateQueryParams({
       month: this.selectedMonth,
-      year: this.selectedYear
+      year: this.selectedYear,
     });
-
   }
 
-onFilterChange(type: 'onePlus' | 'critical') {
-  if (type === 'onePlus' && this.filterOnePlus) {
-    this.filterCritical = false;
+  onFilterChange(type: 'onePlus' | 'critical') {
+    if (type === 'onePlus' && this.filterOnePlus) {
+      this.filterCritical = false;
+    }
+    if (type === 'critical' && this.filterCritical) {
+      this.filterOnePlus = false;
+    }
+    this.applyNoShowFilter();
   }
-  if (type === 'critical' && this.filterCritical) {
-    this.filterOnePlus = false;
-  }
-  this.applyNoShowFilter();
-}
 
   private countFreezeReasons(frozenVehicles: VehicleOutItem[]) {
     const freezeReasonCounts: Record<FreezeReason, number> = {
@@ -268,7 +257,7 @@ onFilterChange(type: 'onePlus' | 'critical') {
       [FreezeReason.personal]: 0,
     };
 
-    frozenVehicles.forEach(vehicle => {
+    frozenVehicles.forEach((vehicle) => {
       if (vehicle.freeze_reason) {
         const reason = vehicle.freeze_reason as FreezeReason;
         freezeReasonCounts[reason]++;
@@ -278,19 +267,20 @@ onFilterChange(type: 'onePlus' | 'critical') {
     return freezeReasonCounts;
   }
   private loadFrozenVehicles(): void {
-    this.vehicleService.getAllVehiclesByStatus('frozen').subscribe((vehicles) => {
-      this.frozenVehicles = vehicles;
-    });
+    this.vehicleService
+      .getAllVehiclesByStatus('frozen')
+      .subscribe((vehicles) => {
+        this.frozenVehicles = vehicles;
+      });
   }
   getFreezeReasonHebrew(reason: FreezeReason): string {
     const reasonMap: { [key in FreezeReason]: string } = {
       accident: 'תאונה',
       maintenance: 'תחזוקה',
-      personal: 'שימוש אישי'
+      personal: 'שימוש אישי',
     };
     return reasonMap[reason] || reason;
   }
-
 
   // 🔄 פונקציה מעודכנת עם פילטר
   private loadVehicleChart() {
@@ -300,38 +290,47 @@ onFilterChange(type: 'onePlus' | 'critical') {
       url += `?type=${encodeURIComponent(this.selectedVehicleType)}`;
     }
 
-    this.http.get<{ status: string; count: number }[]>(url)
-      .subscribe({
-        next: (data) => {
-          this.updateVehicleChart(data);
-          this.vehicleChartInitialized = true;
-        },
-        error: (error) => {
-          this.toastService.show('אירעה שגיאה בטעינת נתוני רכבים', 'error');
-          this.vehicleChartInitialized = true;
-        }
-      });
+    this.http.get<{ status: string; count: number }[]>(url).subscribe({
+      next: (data) => {
+        this.updateVehicleChart(data);
+        this.vehicleChartInitialized = true;
+      },
+      error: (error) => {
+        this.toastService.show('אירעה שגיאה בטעינת נתוני רכבים', 'error');
+        this.vehicleChartInitialized = true;
+      },
+    });
   }
 
   get isNoData(): boolean {
-    return this.rideChartData?.labels?.length === 1 && this.rideChartData.labels[0] === 'אין נתונים';
+    return (
+      this.rideChartData?.labels?.length === 1 &&
+      this.rideChartData.labels[0] === 'אין נתונים'
+    );
   }
   get isVehicleNoData(): boolean {
-    return this.vehicleChartData?.labels?.length === 1 && this.vehicleChartData.labels[0] === 'אין נתונים';
+    return (
+      this.vehicleChartData?.labels?.length === 1 &&
+      this.vehicleChartData.labels[0] === 'אין נתונים'
+    );
   }
   get isEmptyNoShowData(): boolean {
-    return this.filteredNoShowUsers.length === 0
+    return this.filteredNoShowUsers.length === 0;
   }
   get isMonthlyNoData(): boolean {
-    return !this.monthlyStatsChartData ||
+    return (
+      !this.monthlyStatsChartData ||
       !this.monthlyStatsChartData.labels ||
-      this.monthlyStatsChartData.labels.length === 0;
+      this.monthlyStatsChartData.labels.length === 0
+    );
   }
 
   get isAllTimeNoData(): boolean {
-    return !this.allTimeStatsChartData ||
+    return (
+      !this.allTimeStatsChartData ||
       !this.allTimeStatsChartData.labels ||
-      this.allTimeStatsChartData.labels.length === 0;
+      this.allTimeStatsChartData.labels.length === 0
+    );
   }
 
   private loadRideChart() {
@@ -339,44 +338,44 @@ onFilterChange(type: 'onePlus' | 'critical') {
     if (this.selectedRideStatus && this.selectedRideStatus.trim() !== '') {
       url += `?status=${encodeURIComponent(this.selectedRideStatus)}`;
     }
-    this.http.get<{ status: string; count: number }[]>(url)
-      .subscribe({
-        next: (data) => {
-
-          if (!data || data.length === 0) {
-            this.rideChartData = {
-              labels: ['אין נתונים'],
-              datasets: [{
+    this.http.get<{ status: string; count: number }[]>(url).subscribe({
+      next: (data) => {
+        if (!data || data.length === 0) {
+          this.rideChartData = {
+            labels: ['אין נתונים'],
+            datasets: [
+              {
                 data: [1],
                 backgroundColor: ['#E0E0E0'],
                 hoverBackgroundColor: ['#F0F0F0'],
-
-              }]
-            };
-          } else {
-            this.updateRideChart(data);
-          }
-          this.rideChartInitialized = true;
-        },
-        error: (error) => {
-          console.error('❌ Error loading ride data:', error);
-          this.rideChartInitialized = true;
-          this.rideChartData = {
-            labels: ['שגיאה בטעינת נתונים'],
-            datasets: [{
+              },
+            ],
+          };
+        } else {
+          this.updateRideChart(data);
+        }
+        this.rideChartInitialized = true;
+      },
+      error: (error) => {
+        console.error('❌ Error loading ride data:', error);
+        this.rideChartInitialized = true;
+        this.rideChartData = {
+          labels: ['שגיאה בטעינת נתונים'],
+          datasets: [
+            {
               data: [1],
               backgroundColor: ['#FF5252'],
-              hoverBackgroundColor: ['#FF7777']
-            }]
-          };
-        }
-      });
+              hoverBackgroundColor: ['#FF7777'],
+            },
+          ],
+        };
+      },
+    });
   }
 
-
   private updateVehicleChart(data: { status: string; count: number }[]) {
-    const labels = data.map(d => this.getHebrewLabel(d.status));
-    const values = data.map(d => d.count);
+    const labels = data.map((d) => this.getHebrewLabel(d.status));
+    const values = data.map((d) => d.count);
     const total = values.reduce((sum, val) => sum + val, 0);
 
     const updatedLabels = labels.map((label, i) => {
@@ -385,7 +384,7 @@ onFilterChange(type: 'onePlus' | 'critical') {
       return `${label} – ${count} רכבים (${percent}%)`;
     });
 
-    const backgroundColors = data.map(d => {
+    const backgroundColors = data.map((d) => {
       switch (d.status) {
         case 'available':
           return '#66BB6A'; // green
@@ -398,7 +397,7 @@ onFilterChange(type: 'onePlus' | 'critical') {
       }
     });
 
-    const hoverColors = data.map(d => {
+    const hoverColors = data.map((d) => {
       switch (d.status) {
         case 'available':
           return '#81C784'; // lighter green
@@ -413,11 +412,13 @@ onFilterChange(type: 'onePlus' | 'critical') {
 
     const newVehicleChartData = {
       labels: updatedLabels,
-      datasets: [{
-        data: [...values],
-        backgroundColor: backgroundColors,
-        hoverBackgroundColor: hoverColors
-      }]
+      datasets: [
+        {
+          data: [...values],
+          backgroundColor: backgroundColors,
+          hoverBackgroundColor: hoverColors,
+        },
+      ],
     };
 
     this.vehicleChartData = { ...newVehicleChartData };
@@ -430,19 +431,26 @@ onFilterChange(type: 'onePlus' | 'critical') {
               const label = context.label || '';
 
               if (label.toLowerCase().includes('מוקפא')) {
-                const freezeReasonCounts = this.countFreezeReasons(this.frozenVehicles);
+                const freezeReasonCounts = this.countFreezeReasons(
+                  this.frozenVehicles
+                );
 
                 const reasonsText = Object.entries(freezeReasonCounts)
                   .filter(([_, count]) => count > 0)
-                  .map(([reason, count]) => `${this.getFreezeReasonHebrew(reason as FreezeReason)}: ${count}`)
+                  .map(
+                    ([reason, count]) =>
+                      `${this.getFreezeReasonHebrew(
+                        reason as FreezeReason
+                      )}: ${count}`
+                  )
                   .join(', ');
 
                 return `${label}:\nסיבות הקפאה: ${reasonsText}`;
               }
 
               return `${label}:`;
-            }
-          }
+            },
+          },
         },
         legend: {
           position: 'right',
@@ -450,27 +458,24 @@ onFilterChange(type: 'onePlus' | 'critical') {
             color: '#495057',
             font: {
               size: 14,
-              family: 'Arial, sans-serif'
+              family: 'Arial, sans-serif',
             },
-            usePointStyle: true
-          }
-        }
+            usePointStyle: true,
+          },
+        },
       },
       responsive: true,
       maintainAspectRatio: false,
-      locale: 'he-IL'
+      locale: 'he-IL',
     };
-
   }
 
   private updateRideChart(data: { status: string; count: number }[]) {
-
-
-    const labels = data.map(d => {
+    const labels = data.map((d) => {
       const hebrewLabel = this.getRideStatusHebrew(d.status);
       return hebrewLabel;
     });
-    const values = data.map(d => d.count);
+    const values = data.map((d) => d.count);
     const total = values.reduce((sum, val) => sum + val, 0);
     const updatedLabels = labels.map((label, i) => {
       const count = values[i];
@@ -480,11 +485,27 @@ onFilterChange(type: 'onePlus' | 'critical') {
 
     const newrideChartData = {
       labels: updatedLabels,
-      datasets: [{
-        data: [...values],
-        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'],
-        hoverBackgroundColor: ['#FF6384CC', '#36A2EBCC', '#FFCE56CC', '#4BC0C0CC', '#9966FFCC', '#FF9F40CC']
-      }]
+      datasets: [
+        {
+          data: [...values],
+          backgroundColor: [
+            '#FF6384',
+            '#36A2EB',
+            '#FFCE56',
+            '#4BC0C0',
+            '#9966FF',
+            '#FF9F40',
+          ],
+          hoverBackgroundColor: [
+            '#FF6384CC',
+            '#36A2EBCC',
+            '#FFCE56CC',
+            '#4BC0C0CC',
+            '#9966FFCC',
+            '#FF9F40CC',
+          ],
+        },
+      ],
     };
 
     this.rideChartData = { ...newrideChartData };
@@ -497,38 +518,55 @@ onFilterChange(type: 'onePlus' | 'critical') {
             color: '#495057',
             font: {
               size: 14,
-              family: 'Arial, sans-serif'
+              family: 'Arial, sans-serif',
             },
-            usePointStyle: true
-          }
-        }
+            usePointStyle: true,
+          },
+        },
       },
       responsive: true,
       maintainAspectRatio: false,
-      locale: 'he-IL' // Hebrew locale
+      locale: 'he-IL', // Hebrew locale
     };
-
   }
-
-
 
   onSortChange() {
     const sortFunctionsR = {
-      countAsc: (a: { status: string; count: number }, b: { status: string; count: number }) => a.count - b.count,
-      countDesc: (a: { status: string; count: number }, b: { status: string; count: number }) => b.count - a.count,
-      alphabetical: (a: { status: string; count: number }, b: { status: string; count: number }) => a.status.localeCompare(b.status),
-      default: () => 0
+      countAsc: (
+        a: { status: string; count: number },
+        b: { status: string; count: number }
+      ) => a.count - b.count,
+      countDesc: (
+        a: { status: string; count: number },
+        b: { status: string; count: number }
+      ) => b.count - a.count,
+      alphabetical: (
+        a: { status: string; count: number },
+        b: { status: string; count: number }
+      ) => a.status.localeCompare(b.status),
+      default: () => 0,
     };
 
     const sortFunctionsV = {
-      countAsc: (a: { status: string; count: number }, b: { status: string; count: number }) => a.count - b.count,
-      countDesc: (a: { status: string; count: number }, b: { status: string; count: number }) => b.count - a.count,
-      alphabetical: (a: { status: string; count: number }, b: { status: string; count: number }) => a.status.localeCompare(b.status),
-      default: () => 0
+      countAsc: (
+        a: { status: string; count: number },
+        b: { status: string; count: number }
+      ) => a.count - b.count,
+      countDesc: (
+        a: { status: string; count: number },
+        b: { status: string; count: number }
+      ) => b.count - a.count,
+      alphabetical: (
+        a: { status: string; count: number },
+        b: { status: string; count: number }
+      ) => a.status.localeCompare(b.status),
+      default: () => 0,
     };
 
-    const sortFnR = sortFunctionsR[this.selectedSortOption as keyof typeof sortFunctionsR];
-    const sortFnV = sortFunctionsV[this.selectedSortOption as keyof typeof sortFunctionsV];
+    const sortFnR =
+      sortFunctionsR[this.selectedSortOption as keyof typeof sortFunctionsR];
+    const sortFnV =
+      sortFunctionsV[this.selectedSortOption as keyof typeof sortFunctionsV];
 
     if (this.activeTabIndex === 0) {
       // עדכון עם פילטר הרכב
@@ -536,20 +574,29 @@ onFilterChange(type: 'onePlus' | 'critical') {
       if (this.selectedVehicleType && this.selectedVehicleType.trim() !== '') {
         url += `?type=${encodeURIComponent(this.selectedVehicleType)}`;
       }
-      this.http.get<{ status: string; count: number }[]>(url)
-        .subscribe(data => {
-          const sortedDataV = this.selectedSortOption === 'default' ? data : [...data].sort(sortFnV);
+      this.http
+        .get<{ status: string; count: number }[]>(url)
+        .subscribe((data) => {
+          const sortedDataV =
+            this.selectedSortOption === 'default'
+              ? data
+              : [...data].sort(sortFnV);
           this.updateVehicleChart(sortedDataV);
         });
     } else {
-      this.http.get<{ status: string; count: number }[]>(`${environment.apiUrl}/analytics/ride-status-summary`)
-        .subscribe(data => {
-          const sortedDataR = this.selectedSortOption === 'default' ? data : [...data].sort(sortFnR);
+      this.http
+        .get<{ status: string; count: number }[]>(
+          `${environment.apiUrl}/analytics/ride-status-summary`
+        )
+        .subscribe((data) => {
+          const sortedDataR =
+            this.selectedSortOption === 'default'
+              ? data
+              : [...data].sort(sortFnR);
           this.updateRideChart(sortedDataR);
         });
     }
     this.updateQueryParams({ selectedSort: this.selectedSortOption });
-
   }
   updateQueryParams(params: any) {
     this.router.navigate([], {
@@ -567,56 +614,55 @@ onFilterChange(type: 'onePlus' | 'critical') {
     const formattedFromDate = this.noShowFromDate || undefined;
     const formattedToDate = this.noShowToDate || undefined;
 
+    this.statisticsService
+      .getTopNoShowUsers(formattedFromDate, formattedToDate)
+      .subscribe({
+        next: (noShowData) => {
+          this.totalNoShows = noShowData.total_no_show_events;
+          this.uniqueNoShowUsers = noShowData.unique_no_show_users;
+          this.topNoShowUsers = noShowData.top_no_show_users;
+          const mappedUsers = noShowData.top_no_show_users.map((user) => ({
+            ...user,
+            email: user.email || 'unknown@example.com',
+            role: user.role || 'לא ידוע',
+            employee_id: user.user_id,
+            no_show_count: user.count,
+          }));
 
-    this.statisticsService.getTopNoShowUsers(formattedFromDate, formattedToDate).subscribe({
-      next: (noShowData) => {
-        this.totalNoShows = noShowData.total_no_show_events;
-        this.uniqueNoShowUsers = noShowData.unique_no_show_users;
-        this.topNoShowUsers = noShowData.top_no_show_users;
-        const mappedUsers = noShowData.top_no_show_users.map(user => ({
-          ...user,
-          email: user.email || 'unknown@example.com',
-          role: user.role || 'לא ידוע',
-          employee_id: user.user_id,
-          no_show_count: user.count
-        }));
+          this.topNoShowUsers = mappedUsers;
 
-        this.topNoShowUsers = mappedUsers;
+          this.allNoShowUsers = mappedUsers;
+          this.applyNoShowFilter(); // Apply default filter/sort
+        },
+        error: (err) => {
+          console.error('❌ Failed to load no-show statistics:', err);
+          this.toastService.show('אירעה שגיאה בטעינת נתוני אי-הגעה.', 'error');
 
-
-        this.allNoShowUsers = mappedUsers;
-        this.applyNoShowFilter(); // Apply default filter/sort
-
-      },
-      error: (err) => {
-        console.error('❌ Failed to load no-show statistics:', err);
-        this.toastService.show('אירעה שגיאה בטעינת נתוני אי-הגעה.', 'error');
-
-        // Reset values on error
-        this.topNoShowUsers = [];
-        this.totalNoShows = 0;
-        this.uniqueNoShowUsers = 0;
-      }
-    });
+          // Reset values on error
+          this.topNoShowUsers = [];
+          this.totalNoShows = 0;
+          this.uniqueNoShowUsers = 0;
+        },
+      });
   }
 
   getHebrewLabel(status: string): string {
     const statusMap: { [key: string]: string } = {
-      'available': 'זמין',
-      'in_use': 'בשימוש',
-      'frozen': 'מוקפא'
+      available: 'זמין',
+      in_use: 'בשימוש',
+      frozen: 'מוקפא',
     };
     return statusMap[status] || status;
   }
 
   getRideStatusHebrew(status: string): string {
     const statusMap: { [key: string]: string } = {
-      'pending': 'ממתין',
-      'approved': 'מאושר',
-      'rejected': 'נדחה',
-      'in_progress': 'בתהליך',
-      'completed': 'הושלם',
-      'cancelled_due_to_no_show': 'בוטלה-נסיעה לא בוצעה'
+      pending: 'ממתין',
+      approved: 'מאושר',
+      rejected: 'נדחה',
+      in_progress: 'בתהליך',
+      completed: 'הושלם',
+      cancelled_due_to_no_show: 'בוטלה-נסיעה לא בוצעה',
     };
     return statusMap[status] || status;
   }
@@ -624,7 +670,7 @@ onFilterChange(type: 'onePlus' | 'critical') {
   private loadDepartments(): void {
     this.userService.getDepartments().subscribe({
       next: (departments) => {
-        departments.forEach(dep => this.departmentsMap.set(dep.id, dep.name));
+        departments.forEach((dep) => this.departmentsMap.set(dep.id, dep.name));
         this.departmentsLoaded = true;
         this.loadNoShowStatistics();
       },
@@ -632,10 +678,9 @@ onFilterChange(type: 'onePlus' | 'critical') {
         this.toastService.show('אירעה שגיאה בטעינת נתוני מחלקות.', 'error');
         this.departmentsLoaded = false;
         this.loadNoShowStatistics();
-      }
+      },
     });
   }
-
 
   goToUserDetails(userId: string) {
     this.router.navigate(['/user-card', userId]);
@@ -644,23 +689,26 @@ onFilterChange(type: 'onePlus' | 'critical') {
     return this.departmentsMap.get(departmentId) || 'מחלקה לא ידועה';
   }
 
-
   applyNoShowFilter() {
     let filtered = this.allNoShowUsers;
 
     if (this.filterOnePlus) {
-      filtered = filtered.filter(u => (u.no_show_count ?? 0) >= 1 && (u.no_show_count ?? 0) <= 2);
+      filtered = filtered.filter(
+        (u) => (u.no_show_count ?? 0) >= 1 && (u.no_show_count ?? 0) <= 2
+      );
     }
 
     if (this.filterCritical) {
-      filtered = filtered.filter(u => (u.no_show_count ?? 0) >= 3);
+      filtered = filtered.filter((u) => (u.no_show_count ?? 0) >= 3);
     }
-    if (!['countAsc', 'countDesc', 'nameAsc', 'nameDesc'].includes(this.noShowSortOption)) {
+    if (
+      !['countAsc', 'countDesc', 'nameAsc', 'nameDesc'].includes(
+        this.noShowSortOption
+      )
+    ) {
       this.noShowSortOption = 'countAsc';
-
     }
     this.updateQueryParams({ noShowSort: this.noShowSortOption });
-
 
     this.filteredNoShowUsers = this.sortUsers(filtered);
   }
@@ -680,13 +728,11 @@ onFilterChange(type: 'onePlus' | 'critical') {
     }
   }
 
-
-
   public exportPDF(): void {
     const isVehicleTab = this.activeTabIndex === 0;
     const isRideTab = this.activeTabIndex === 1;
     const isTopUsedTab = this.activeTabIndex === 2;
-    const isNoShowTab = this.activeTabIndex === 3;
+    const isNoShowTab = this.activeTabIndex === 4;
 
     if (isNoShowTab && this.filteredNoShowUsers.length === 0) {
       this.showExportWarningTemporarily();
@@ -702,19 +748,17 @@ onFilterChange(type: 'onePlus' | 'critical') {
       chartData = isVehicleTab
         ? this.vehicleChartData
         : isRideTab
-          ? this.rideChartData
-          : this.topUsedVehiclesData;
+        ? this.rideChartData
+        : this.topUsedVehiclesData;
 
       title = isVehicleTab
         ? 'Vehicle Status Summary'
         : isRideTab
-          ? 'Ride Status Summary'
-          : this.isMonthlyView
-            ? 'Monthly Vehicle Usage'
-            : 'Top Used Vehicles';
-
+        ? 'Ride Status Summary'
+        : this.isMonthlyView
+        ? 'Monthly Vehicle Usage'
+        : 'Top Used Vehicles';
     }
-
 
     const timestamp = new Date().toLocaleString();
     const safeTimestamp = timestamp.replace(/[/:]/g, '-');
@@ -730,10 +774,10 @@ onFilterChange(type: 'onePlus' | 'critical') {
         { text: 'Department', style: 'tableHeader' },
         { text: 'Role', style: 'tableHeader' },
         { text: 'No-Show Count', style: 'tableHeader' },
-        { text: 'Status', style: 'tableHeader' }
+        { text: 'Status', style: 'tableHeader' },
       ]);
 
-      this.filteredNoShowUsers.forEach(user => {
+      this.filteredNoShowUsers.forEach((user) => {
         const count = user.no_show_count ?? 0;
         let status = '';
         let bgColor = '';
@@ -752,14 +796,19 @@ onFilterChange(type: 'onePlus' | 'critical') {
         body.push([
           { text: user.name || 'Unknown', fillColor: bgColor },
           { text: user.email || 'unknown@example.com', fillColor: bgColor },
-          { text: user.employee_id || user.user_id || 'N/A', fillColor: bgColor },
-          { text: this.resolveDepartment(user.department_id || ''), fillColor: bgColor },
+          {
+            text: user.employee_id || user.user_id || 'N/A',
+            fillColor: bgColor,
+          },
+          {
+            text: this.resolveDepartment(user.department_id || ''),
+            fillColor: bgColor,
+          },
           { text: user.role || 'לא ידוע', fillColor: bgColor },
           { text: count.toString(), fillColor: bgColor },
-          { text: status, fillColor: bgColor }
+          { text: status, fillColor: bgColor },
         ]);
       });
-
     } else if (isTopUsedTab) {
       const labels = chartData.labels;
       const data = chartData.datasets[0].data;
@@ -767,7 +816,7 @@ onFilterChange(type: 'onePlus' | 'critical') {
       body.push([
         { text: 'Vehicle', style: 'tableHeader' },
         { text: 'Ride Count', style: 'tableHeader' },
-        { text: 'Usage Level', style: 'tableHeader' }
+        { text: 'Usage Level', style: 'tableHeader' },
       ]);
 
       for (let i = 0; i < labels.length; i++) {
@@ -789,7 +838,7 @@ onFilterChange(type: 'onePlus' | 'critical') {
         body.push([
           { text: labels[i], fillColor: bgColor },
           { text: count.toString(), fillColor: bgColor },
-          { text: usageLabel, fillColor: bgColor }
+          { text: usageLabel, fillColor: bgColor },
         ]);
       }
     } else {
@@ -800,7 +849,7 @@ onFilterChange(type: 'onePlus' | 'critical') {
 
       body.push([
         { text: 'Status', style: 'tableHeader' },
-        { text: 'Count', style: 'tableHeader' }
+        { text: 'Count', style: 'tableHeader' },
       ]);
 
       for (let i = 0; i < statusKeys.length; i++) {
@@ -810,77 +859,104 @@ onFilterChange(type: 'onePlus' | 'critical') {
         let bgColor = '';
 
         if (isVehicleTab) {
-          if (hebrew.includes('זמין')) bgColor = '#C8E6C9';     // light green
+          if (hebrew.includes('זמין')) bgColor = '#C8E6C9'; // light green
           else if (hebrew.includes('מוקפא')) bgColor = '#FFCDD2'; // light red
           else if (hebrew.includes('בשימוש')) bgColor = '#FFE0B2'; // light orange
         }
 
         if (isRideTab) {
-          if (hebrew.includes('ממתין')) bgColor = '#FFF9C4';    // yellow
-          else if (hebrew.includes('מאושר')) bgColor = '#C8E6C9';  // green
-          else if (hebrew.includes('הושלם')) bgColor = '#BBDEFB';  // blue
-          else if (hebrew.includes('בוטל')) bgColor = '#F8BBD0';    // pink
-          else if (hebrew.includes('נדחה')) bgColor = '#FFCDD2';    // red
-          else if (hebrew.includes('בתהליך')) bgColor = '#D1C4E9';  // purple
+          if (hebrew.includes('ממתין')) bgColor = '#FFF9C4'; // yellow
+          else if (hebrew.includes('מאושר')) bgColor = '#C8E6C9'; // green
+          else if (hebrew.includes('הושלם')) bgColor = '#BBDEFB'; // blue
+          else if (hebrew.includes('בוטל')) bgColor = '#F8BBD0'; // pink
+          else if (hebrew.includes('נדחה')) bgColor = '#FFCDD2'; // red
+          else if (hebrew.includes('בתהליך')) bgColor = '#D1C4E9'; // purple
         }
 
         body.push([
           { text: eng, fillColor: bgColor },
-          { text: value.toString(), fillColor: bgColor }
+          { text: value.toString(), fillColor: bgColor },
         ]);
       }
     }
 
-
-
     const docDefinition: any = {
+      pageOrientation: isNoShowTab ? 'landscape' : 'portrait',
+      pageSize: 'A4',
 
       content: [
         { text: title, style: 'header' },
         { text: `Created: ${timestamp}`, style: 'subheader' },
-        ...(isVehicleTab ? [{ text: `Vehicle Types: ${this.selectedVehicleType == '' ? 'All' : this.selectedVehicleType}`, style: 'summaryHeader' }] : []),
+        ...(isVehicleTab
+          ? [
+              {
+                text: `Vehicle Types: ${
+                  this.selectedVehicleType === ''
+                    ? 'All'
+                    : this.selectedVehicleType
+                }`,
+                style: 'summaryHeader',
+              },
+            ]
+          : []),
         {
           table: {
             headerRows: 1,
+            // Better column sizing for No-Show table
             widths: isNoShowTab
-              ? ['*', '*', '*', '*', '*', '*', '*']
+              ? ['auto', '*', 'auto', '*', 'auto', 'auto', 'auto']
               : isTopUsedTab
-                ? ['*', '*', '*']
-                : ['*', '*'],
-            body: body
+              ? ['*', '*', '*']
+              : ['*', '*'],
+            body: body,
           },
           layout: {
-
-            fillColor: (rowIndex: number) => rowIndex === 0 ? '#f2f2f2' : null
-          }
-        }
+            fillColor: (rowIndex: number) =>
+              rowIndex === 0 ? '#f2f2f2' : null,
+            // Add light horizontal lines for clarity
+            hLineWidth: (i: number, node: any) =>
+              i === 0 || i === node.table.body.length ? 1 : 0.5,
+            vLineWidth: (i: number, node: any) =>
+              i === 0 || i === node.table.widths.length ? 1 : 0.5,
+            hLineColor: () => '#ccc',
+            vLineColor: () => '#ccc',
+          },
+        },
       ],
+
       styles: {
         header: {
           fontSize: 18,
           bold: true,
           margin: [0, 0, 0, 10],
-          alignment: 'center'
+          alignment: 'center',
         },
         subheader: {
-          fontSize: 12,
-          margin: [0, 0, 0, 20],
-          alignment: 'center'
+          fontSize: 11,
+          margin: [0, 0, 0, 15],
+          alignment: 'center',
         },
         summaryHeader: {
-          fontSize: 14,
+          fontSize: 13,
           bold: true,
-          margin: [0, 10, 0, 5]
+          margin: [0, 10, 0, 8],
         },
         tableHeader: {
-          fontSize: 12,
+          fontSize: 10,
           bold: true,
-          alignment: 'center'
-        }
+          alignment: 'center',
+        },
+        tableCell: {
+          fontSize: 9,
+          margin: [2, 2, 2, 2],
+          alignment: 'center',
+        },
       },
+
       defaultStyle: {
-        fontSize: 11
-      }
+        fontSize: 9,
+        alignment: 'center',
+      },
     };
 
     pdfMake.createPdf(docDefinition).download(`${title}-${safeTimestamp}.pdf`);
@@ -903,28 +979,27 @@ onFilterChange(type: 'onePlus' | 'critical') {
     const isVehicleTab = this.activeTabIndex === 0;
     const isRideTab = this.activeTabIndex === 1;
     const isTopUsedTab = this.activeTabIndex === 2;
-    const isNoShowTab = this.activeTabIndex === 3;
-
+    const isNoShowTab = this.activeTabIndex === 4;
 
     const chartData = isVehicleTab
       ? this.vehicleChartData
       : isRideTab
-        ? this.rideChartData
-        : this.topUsedVehiclesData;
+      ? this.rideChartData
+      : this.topUsedVehiclesData;
 
     const title = isVehicleTab
       ? this.selectedVehicleType !== ''
         ? `סטטוס רכבים (${this.selectedVehicleType})`
         : 'סטטוס רכבים (כל הסוגים)'
       : isRideTab
-        ? 'Ride Status Summary'
-        : 'Top Used Vehicles';
+      ? 'Ride Status Summary'
+      : 'Top Used Vehicles';
 
     const timestamp = new Date().toISOString().substring(0, 10);
     let data: any[] = [];
 
     if (isNoShowTab) {
-      data = this.filteredNoShowUsers.map(user => {
+      data = this.filteredNoShowUsers.map((user) => {
         const count = user.no_show_count ?? 0;
         let status = '';
         if (count >= 3) status = 'Critical';
@@ -933,12 +1008,12 @@ onFilterChange(type: 'onePlus' | 'critical') {
 
         return {
           'User Name': user.name || 'Unknown',
-          'Email': user.email || 'unknown@example.com',
+          Email: user.email || 'unknown@example.com',
           'Employee ID': user.employee_id || user.user_id || 'N/A',
-          'Department': this.resolveDepartment(user.department_id || ''),
-          'Role': user.role || 'לא ידוע',
+          Department: this.resolveDepartment(user.department_id || ''),
+          Role: user.role || 'לא ידוע',
           'No-Show Count': count,
-          'Status': status
+          Status: status,
         };
       });
     } else if (isTopUsedTab) {
@@ -956,13 +1031,13 @@ onFilterChange(type: 'onePlus' | 'critical') {
         return {
           Vehicle: label,
           'Ride Count': count,
-          'Usage Level': usageLevel
+          'Usage Level': usageLevel,
         };
       });
     } else {
       data = chartData.labels.map((label: string, i: number) => ({
         'Formatted Status': label,
-        'Count': chartData.datasets[0].data[i]
+        Count: chartData.datasets[0].data[i],
       }));
     }
 
@@ -970,8 +1045,6 @@ onFilterChange(type: 'onePlus' | 'critical') {
       this.showExportWarningTemporarily();
       return;
     }
-
-
 
     const worksheet = XLSX.utils.json_to_sheet(data);
     const range = XLSX.utils.decode_range(worksheet['!ref']!);
@@ -981,18 +1054,18 @@ onFilterChange(type: 'onePlus' | 'critical') {
         const count = Number(worksheet[`F${row + 1}`]?.v);
         let fillColor = 'FFFFFFFF';
 
-        if (count >= 3) fillColor = 'FFFFCDD2';     // Critical = red
+        if (count >= 3) fillColor = 'FFFFCDD2'; // Critical = red
         else if (count >= 1) fillColor = 'FFFFFFCC'; // Warning = yellow
-        else fillColor = 'FFBBDEFB';                // Good = blue
+        else fillColor = 'FFBBDEFB'; // Good = blue
 
-        ['A', 'B', 'C', 'D', 'E', 'F', 'G'].forEach(col => {
+        ['A', 'B', 'C', 'D', 'E', 'F', 'G'].forEach((col) => {
           const cell = worksheet[`${col}${row + 1}`];
           if (cell) {
             cell.s = {
               fill: {
                 patternType: 'solid',
-                fgColor: { rgb: fillColor }
-              }
+                fgColor: { rgb: fillColor },
+              },
             };
           }
         });
@@ -1000,16 +1073,21 @@ onFilterChange(type: 'onePlus' | 'critical') {
     } else if (isTopUsedTab) {
       for (let row = 1; row <= range.e.r; row++) {
         const rideCount = Number(worksheet[`B${row + 1}`]?.v);
-        let fillColor = rideCount > 10 ? 'FFFFCDD2' : rideCount >= 5 ? 'FFFFFFCC' : 'FFBBDEFB';
+        let fillColor =
+          rideCount > 10
+            ? 'FFFFCDD2'
+            : rideCount >= 5
+            ? 'FFFFFFCC'
+            : 'FFBBDEFB';
 
-        ['A', 'B', 'C'].forEach(col => {
+        ['A', 'B', 'C'].forEach((col) => {
           const cell = worksheet[`${col}${row + 1}`];
           if (cell) {
             cell.s = {
               fill: {
                 patternType: 'solid',
-                fgColor: { rgb: fillColor }
-              }
+                fgColor: { rgb: fillColor },
+              },
             };
           }
         });
@@ -1025,21 +1103,21 @@ onFilterChange(type: 'onePlus' | 'critical') {
         else if (label.includes('בשימוש')) fillColor = 'FFFFE0B2'; // light orange
 
         // Ride Status tab
-        if (label.includes('ממתין')) fillColor = 'FFFFF9C4';      // yellow
-        else if (label.includes('מאושר')) fillColor = 'FFC8E6C9';  // green
-        else if (label.includes('הושלם')) fillColor = 'FFBBDEFB';  // blue
-        else if (label.includes('בוטל')) fillColor = 'FFF8BBD0';    // pink
-        else if (label.includes('נדחה')) fillColor = 'FFFFCDD2';    // red
-        else if (label.includes('בתהליך')) fillColor = 'FFD1C4E9';  // purple
+        if (label.includes('ממתין')) fillColor = 'FFFFF9C4'; // yellow
+        else if (label.includes('מאושר')) fillColor = 'FFC8E6C9'; // green
+        else if (label.includes('הושלם')) fillColor = 'FFBBDEFB'; // blue
+        else if (label.includes('בוטל')) fillColor = 'FFF8BBD0'; // pink
+        else if (label.includes('נדחה')) fillColor = 'FFFFCDD2'; // red
+        else if (label.includes('בתהליך')) fillColor = 'FFD1C4E9'; // purple
 
-        ['A', 'B'].forEach(col => {
+        ['A', 'B'].forEach((col) => {
           const cell = worksheet[`${col}${row + 1}`];
           if (cell) {
             cell.s = {
               fill: {
                 patternType: 'solid',
-                fgColor: { rgb: fillColor }
-              }
+                fgColor: { rgb: fillColor },
+              },
             };
           }
         });
@@ -1052,24 +1130,21 @@ onFilterChange(type: 'onePlus' | 'critical') {
     const excelBuffer: any = XLSX.write(workbook, {
       bookType: 'xlsx',
       type: 'array',
-      cellStyles: true
+      cellStyles: true,
     });
 
     const blob = new Blob([excelBuffer], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8'
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8',
     });
 
     saveAs(blob, `${title}__${timestamp}.xlsx`);
   }
 
-
-
-
   public exportCSV(): void {
     const isVehicleTab = this.activeTabIndex === 0;
     const isRideTab = this.activeTabIndex === 1;
     const isTopUsedTab = this.activeTabIndex === 2;
-    const isNoShowTab = this.activeTabIndex === 3;
+    const isNoShowTab = this.activeTabIndex === 4;
 
     if (isNoShowTab && this.filteredNoShowUsers.length === 0) {
       this.showExportWarningTemporarily();
@@ -1081,26 +1156,26 @@ onFilterChange(type: 'onePlus' | 'critical') {
       chartData = isVehicleTab
         ? this.vehicleChartData
         : isRideTab
-          ? this.rideChartData
-          : this.topUsedVehiclesData;
+        ? this.rideChartData
+        : this.topUsedVehiclesData;
     }
     const title = isNoShowTab
       ? 'טבלת נעדרים'
       : isVehicleTab
-        ? this.selectedVehicleType !== ''
-          ? `סטטוס רכבים (${this.selectedVehicleType})`
-          : 'סטטוס רכבים (כל הסוגים)'
-        : isRideTab
-          ? 'סטטוס נסיעות'
-          : this.isMonthlyView
-            ? 'שימוש חודשי ברכבים'
-            : 'רכבים בשימוש גבוה';
+      ? this.selectedVehicleType !== ''
+        ? `סטטוס רכבים (${this.selectedVehicleType})`
+        : 'סטטוס רכבים (כל הסוגים)'
+      : isRideTab
+      ? 'סטטוס נסיעות'
+      : this.isMonthlyView
+      ? 'שימוש חודשי ברכבים'
+      : 'רכבים בשימוש גבוה';
 
     const timestamp = new Date().toISOString().substring(0, 10);
     let data: any[] = [];
 
     if (isNoShowTab) {
-      data = this.filteredNoShowUsers.map(user => {
+      data = this.filteredNoShowUsers.map((user) => {
         const count = user.no_show_count ?? 0;
         let status = '';
 
@@ -1109,13 +1184,13 @@ onFilterChange(type: 'onePlus' | 'critical') {
         else status = 'תקין';
 
         return {
-          'שם': user.name || 'לא ידוע',
-          'אימייל': user.email || 'unknown@example.com',
+          שם: user.name || 'לא ידוע',
+          אימייל: user.email || 'unknown@example.com',
           'מזהה עובד': user.employee_id || user.user_id || 'N/A',
-          'מחלקה': this.resolveDepartment(user.department_id || ''),
-          'תפקיד': user.role || 'לא ידוע',
+          מחלקה: this.resolveDepartment(user.department_id || ''),
+          תפקיד: user.role || 'לא ידוע',
           'כמות אי-הגעות': count,
-          'סטטוס': status
+          סטטוס: status,
         };
       });
     } else if (isTopUsedTab) {
@@ -1131,15 +1206,15 @@ onFilterChange(type: 'onePlus' | 'critical') {
         else usageLevel = 'טוב';
 
         return {
-          'רכב': label,
+          רכב: label,
           'כמות נסיעות': count,
-          'רמת שימוש': usageLevel
+          'רמת שימוש': usageLevel,
         };
       });
     } else {
       data = chartData.labels.map((label: string, i: number) => ({
-        'סטטוס': label,
-        'כמות': chartData.datasets[0].data[i]
+        סטטוס: label,
+        כמות: chartData.datasets[0].data[i],
       }));
     }
 
@@ -1151,17 +1226,16 @@ onFilterChange(type: 'onePlus' | 'critical') {
 
   private getEnglishLabel(status: string): string {
     const statusMap: { [key: string]: string } = {
-      'available': 'Available',
-      'in_use': 'In Use',
-      'frozen': 'Frozen',
-      'pending': 'Pending',
-      'approved': 'Approved',
-      'rejected': 'Rejected',
-      'in_progress': 'In Progress',
-      'completed': 'Completed',
-      'cancelled': 'Cancelled',
-      'cancelled_due_to_no_show': 'Cancelled - No Show'
-
+      available: 'Available',
+      in_use: 'In Use',
+      frozen: 'Frozen',
+      pending: 'Pending',
+      approved: 'Approved',
+      rejected: 'Rejected',
+      in_progress: 'In Progress',
+      completed: 'Completed',
+      cancelled: 'Cancelled',
+      cancelled_due_to_no_show: 'Cancelled - No Show',
     };
     return statusMap[status] || status;
   }
@@ -1173,8 +1247,6 @@ onFilterChange(type: 'onePlus' | 'critical') {
     }, 4000); // ⏱️ 4 seconds
   }
 
-
-
   private reloadChart() {
     this.showChart = false;
     setTimeout(() => {
@@ -1182,132 +1254,99 @@ onFilterChange(type: 'onePlus' | 'critical') {
     }, 0);
   }
 
-
   private reverseHebrewLabel(hebrewLabel: string): string {
     const reverseMap: { [key: string]: string } = {
-      'זמין': 'available',
-      'בשימוש': 'in_use',
-      'מוקפא': 'frozen',
-      'ממתין': 'pending',
-      'מאושר': 'approved',
-      'נדחה': 'rejected',
-      'בתהליך': 'in_progress',
-      'הושלם': 'completed',
+      זמין: 'available',
+      בשימוש: 'in_use',
+      מוקפא: 'frozen',
+      ממתין: 'pending',
+      מאושר: 'approved',
+      נדחה: 'rejected',
+      בתהליך: 'in_progress',
+      הושלם: 'completed',
       'בוטלה-נסיעה לא בוצעה': 'cancelled_due_to_no_show',
-
     };
     return reverseMap[hebrewLabel] || hebrewLabel;
   }
 
   public loadTopUsedVehiclesChart() {
-    this.http.get<{
-      month: number;
-      stats: { plate_number: string; vehicle_model: string; total_rides: number, total_km: number }[];
-      year: number;
-    }>(
-      `${environment.apiUrl}/vehicles/usage-stats?range=month&year=${this.selectedYear}&month=${this.selectedMonth}`
-    ).subscribe({
-      next: data => {
-        const labels = data.stats.map(v => ` ${v.plate_number} – ${v.vehicle_model}`);
-        const counts = data.stats.map(v => Number.isFinite(v.total_rides) ? v.total_rides : 0);
-        const kilometers = data.stats.map(v => v.total_km); // array like [82.68]
+    this.http
+      .get<{
+        month: number;
+        stats: {
+          plate_number: string;
+          vehicle_model: string;
+          total_rides: number;
+          total_km: number;
+        }[];
+        year: number;
+      }>(
+        `${environment.apiUrl}/vehicles/usage-stats?range=month&year=${this.selectedYear}&month=${this.selectedMonth}`
+      )
+      .subscribe({
+        next: (data) => {
+          const labels = data.stats.map(
+            (v) => ` ${v.plate_number} – ${v.vehicle_model}`
+          );
+          const counts = data.stats.map((v) =>
+            Number.isFinite(v.total_rides) ? v.total_rides : 0
+          );
+          const kilometers = data.stats.map((v) => v.total_km); // array like [82.68]
 
-        const backgroundColors = counts.map(count => {
-          if (count > 10) return '#FF5252';
-          if (count >= 5) return '#FFC107';
-          return '#42A5F5';
-        });
+          const backgroundColors = counts.map((count) => {
+            if (count > 10) return '#FF5252';
+            if (count >= 5) return '#FFC107';
+            return '#42A5F5';
+          });
 
-        const hoverColors = backgroundColors.map(color => color + 'CC');
+          const hoverColors = backgroundColors.map((color) => color + 'CC');
 
-        const usageLevels = counts.map(count => {
-          if (count > 10) return 'שימוש גבוה';
-          if (count >= 5) return 'שימוש בינוני';
-          return 'שימוש טוב';
-        });
+          const usageLevels = counts.map((count) => {
+            if (count > 10) return 'שימוש גבוה';
+            if (count >= 5) return 'שימוש בינוני';
+            return 'שימוש טוב';
+          });
 
-        this.monthlyChartData = {
-          labels,
-          datasets: [{
-            label: 'מספר נסיעות',
-            data: counts,
-            backgroundColor: backgroundColors,
-            hoverBackgroundColor: hoverColors,
-
-          }]
-        };
-
-        this.monthlyChartOptions = {
-          type: 'bar',
-          indexAxis: 'y',
-          plugins: {
-            tooltip: {
-              callbacks: {
-                label: (context: any) => {
-                  const label = context.chart.data.labels[context.dataIndex];
-                  const value = context.raw;
-                  const usage = usageLevels[context.dataIndex];
-                  const km = kilometers[context.dataIndex];
-
-                  return `${label}: ${value} נסיעות (${usage}) | ${km} ק"מ`;
-                }
-              }
-            },
-            legend: { display: false }
-          },
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            x: {
-              title: { display: true, text: 'כמות נסיעות' },
-              ticks: {
-                stepSize: 1,
-                beginAtZero: true,
-                precision: 0
-              }
-            },
-            y: {
-              title: { display: true, text: 'רכב' },
-              ticks: {
-                // beginAtZero: true,
-                // stepSize: 1,
-                // precision: 0,
-                callback: (value: any, index: number, ticks: any) => ticks.length - index
-
-              }
-            }
-          }
-        };
-
-        // ✅ Assign final chart config
-        this.topUsedVehiclesData = { ...cloneDeep(this.monthlyChartData) };
-        this.topUsedVehiclesOptions = { ...cloneDeep(this.monthlyChartOptions) };
-        this.monthlyStatsChartData = { ...this.monthlyChartData };
-        this.monthlyStatsChartOptions = { ...this.monthlyChartOptions };
-      },
-      error: err => {
-        console.error('❌ Error fetching top used vehicles:', err);
-      }
-    });
-  }
-
-  private loadAllTimeTopUsedVehiclesChart() {
-    this.http.get(`${environment.apiUrl}/vehicles/usage-stats?range=all`).subscribe({
-      next: (res: any) => {
-        const stats = res?.stats || [];
-
-        if (!stats.length) {
-          this.allTimeChartData = {
-            labels: ['אין נתונים'],
-            datasets: [{ data: [1], backgroundColor: ['#E0E0E0'] }]
+          this.monthlyChartData = {
+            labels,
+            datasets: [
+              {
+                label: 'מספר נסיעות',
+                data: counts,
+                backgroundColor: backgroundColors,
+                hoverBackgroundColor: hoverColors,
+              },
+            ],
           };
 
-          this.allTimeChartOptions = {
-            plugins: { legend: { display: false } },
+          this.monthlyChartOptions = {
+            type: 'bar',
+            indexAxis: 'y',
+            plugins: {
+              tooltip: {
+                callbacks: {
+                  label: (context: any) => {
+                    const label = context.chart.data.labels[context.dataIndex];
+                    const value = context.raw;
+                    const usage = usageLevels[context.dataIndex];
+                    const km = kilometers[context.dataIndex];
+
+                    return `${label}: ${value} נסיעות (${usage}) | ${km} ק"מ`;
+                  },
+                },
+              },
+              legend: { display: false },
+            },
+            responsive: true,
+            maintainAspectRatio: false,
             scales: {
               x: {
                 title: { display: true, text: 'כמות נסיעות' },
-                ticks: { stepSize: 1, beginAtZero: true, precision: 0 }
+                ticks: {
+                  stepSize: 1,
+                  beginAtZero: true,
+                  precision: 0,
+                },
               },
               y: {
                 title: { display: true, text: 'רכב' },
@@ -1315,89 +1354,146 @@ onFilterChange(type: 'onePlus' | 'critical') {
                   // beginAtZero: true,
                   // stepSize: 1,
                   // precision: 0,
-                  callback: (value: any, index: number, ticks: any) => ticks.length - index
-                }
-              }
+                  callback: (value: any, index: number, ticks: any) =>
+                    ticks.length - index,
+                },
+              },
             },
-            locale: 'he-IL'
+          };
+
+          // ✅ Assign final chart config
+          this.topUsedVehiclesData = { ...cloneDeep(this.monthlyChartData) };
+          this.topUsedVehiclesOptions = {
+            ...cloneDeep(this.monthlyChartOptions),
+          };
+          this.monthlyStatsChartData = { ...this.monthlyChartData };
+          this.monthlyStatsChartOptions = { ...this.monthlyChartOptions };
+        },
+        error: (err) => {
+          console.error('❌ Error fetching top used vehicles:', err);
+        },
+      });
+  }
+
+  private loadAllTimeTopUsedVehiclesChart() {
+    this.http
+      .get(`${environment.apiUrl}/vehicles/usage-stats?range=all`)
+      .subscribe({
+        next: (res: any) => {
+          const stats = res?.stats || [];
+
+          if (!stats.length) {
+            this.allTimeChartData = {
+              labels: ['אין נתונים'],
+              datasets: [{ data: [1], backgroundColor: ['#E0E0E0'] }],
+            };
+
+            this.allTimeChartOptions = {
+              plugins: { legend: { display: false } },
+              scales: {
+                x: {
+                  title: { display: true, text: 'כמות נסיעות' },
+                  ticks: { stepSize: 1, beginAtZero: true, precision: 0 },
+                },
+                y: {
+                  title: { display: true, text: 'רכב' },
+                  ticks: {
+                    // beginAtZero: true,
+                    // stepSize: 1,
+                    // precision: 0,
+                    callback: (value: any, index: number, ticks: any) =>
+                      ticks.length - index,
+                  },
+                },
+              },
+              locale: 'he-IL',
+            };
+
+            this.topUsedVehiclesData = { ...cloneDeep(this.allTimeChartData) };
+            this.topUsedVehiclesOptions = {
+              ...cloneDeep(this.allTimeChartOptions),
+            };
+            this.allTimeStatsChartData = {
+              ...cloneDeep(this.allTimeChartData),
+            };
+            this.allTimeStatsChartOptions = {
+              ...cloneDeep(this.allTimeChartOptions),
+            };
+            return;
+          }
+
+          const labels = stats.map(
+            (s: any) => `${s.plate_number} ${s.vehicle_model}`
+          );
+          const data = stats.map((s: any) => s.total_rides);
+          const kilometers = stats.map((a: { total_km: number }) => a.total_km);
+          // Ensure data is numeric
+          const counts = stats.map((v: { total_rides: number }) =>
+            Number.isFinite(v.total_rides) ? v.total_rides : 0
+          );
+
+          const backgroundColors = counts.map((count: number) => {
+            if (count > 10) return '#FF5252';
+            if (count >= 5) return '#FFC107';
+            return '#42A5F5';
+          });
+
+          this.allTimeChartData = {
+            labels,
+            datasets: [
+              {
+                label: 'Total Rides',
+                data: counts,
+                backgroundColor: backgroundColors,
+              },
+            ],
+          };
+
+          this.allTimeChartOptions = {
+            indexAxis: 'y',
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: (ctx: any) => {
+                    const km = kilometers[ctx.dataIndex];
+                    return `${ctx.parsed.x} נסיעות | ${km} ק"מ`;
+                  },
+                },
+              },
+            },
+            scales: {
+              x: {
+                title: { display: true, text: 'כמות הנסיעות' },
+                ticks: { beginAtZero: true, stepSize: 1, precision: 0 },
+              },
+              y: {
+                title: { display: true, text: 'רכב' },
+                ticks: {
+                  autoSkip: false, // ensures all labels show
+
+                  // stepSize: 1,
+                  // precision: 0,
+                  callback: (value: any, index: number, ticks: any) =>
+                    ticks.length - index,
+                },
+              },
+            },
+            locale: 'he-IL',
           };
 
           this.topUsedVehiclesData = { ...cloneDeep(this.allTimeChartData) };
-          this.topUsedVehiclesOptions = { ...cloneDeep(this.allTimeChartOptions) };
+          this.topUsedVehiclesOptions = {
+            ...cloneDeep(this.allTimeChartOptions),
+          };
           this.allTimeStatsChartData = { ...cloneDeep(this.allTimeChartData) };
-          this.allTimeStatsChartOptions = { ...cloneDeep(this.allTimeChartOptions) };
-          return;
-        }
-
-        const labels = stats.map((s: any) => `${s.plate_number} ${s.vehicle_model}`);
-        const data = stats.map((s: any) => s.total_rides);
-        const kilometers = stats.map((a: { total_km: number }) => a.total_km);
-        // Ensure data is numeric
-        const counts = stats.map((v: { total_rides: number }) =>
-          Number.isFinite(v.total_rides) ? v.total_rides : 0
-        );
-
-        const backgroundColors = counts.map((count: number) => {
-          if (count > 10) return '#FF5252';
-          if (count >= 5) return '#FFC107';
-          return '#42A5F5';
-        });
-
-
-        this.allTimeChartData = {
-          labels,
-          datasets: [{
-            label: 'Total Rides',
-            data: counts,
-            backgroundColor: backgroundColors
-          }]
-        };
-
-
-
-        this.allTimeChartOptions = {
-          indexAxis: 'y',
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: (ctx: any) => {
-                  const km = kilometers[ctx.dataIndex];
-                  return `${ctx.parsed.x} נסיעות | ${km} ק"מ`;
-                }
-              }
-            }
-          },
-          scales: {
-            x: {
-              title: { display: true, text: 'כמות הנסיעות' },
-              ticks: { beginAtZero: true, stepSize: 1, precision: 0 }
-            },
-            y: {
-              title: { display: true, text: 'רכב' },
-              ticks: {
-                autoSkip: false, // ensures all labels show
-
-                // stepSize: 1,
-                // precision: 0,
-                callback: (value: any, index: number, ticks: any) => ticks.length - index
-              }
-            }
-          },
-          locale: 'he-IL'
-        };
-
-        this.topUsedVehiclesData = { ...cloneDeep(this.allTimeChartData) };
-        this.topUsedVehiclesOptions = { ...cloneDeep(this.allTimeChartOptions) };
-        this.allTimeStatsChartData = { ...cloneDeep(this.allTimeChartData) };
-        this.allTimeStatsChartOptions = { ...cloneDeep(this.allTimeChartOptions) };
-      },
-      error: (err: any) => {
-        console.error("❌ Error fetching all-time used vehicles:", err);
-      }
-    });
+          this.allTimeStatsChartOptions = {
+            ...cloneDeep(this.allTimeChartOptions),
+          };
+        },
+        error: (err: any) => {
+          console.error('❌ Error fetching all-time used vehicles:', err);
+        },
+      });
   }
-
-
 }
-

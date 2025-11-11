@@ -1,0 +1,51 @@
+<div class="user-orders-container">
+  <div class="filters">
+    <label>
+סינון      <select [(ngModel)]="viewMode" (change)="onFilterChange()">
+        <option value="monthly">חודשי</option>
+        <option value="yearly">שנתי</option>
+      </select>
+    </label>
+
+    <label *ngIf="viewMode === 'monthly'">
+      חודש:
+      <select [(ngModel)]="selectedMonth" (change)="onFilterChange()">
+        <option *ngFor="let m of months" [value]="m.value">{{ m.label }}</option>
+      </select>
+    </label>
+
+    <label *ngIf="viewMode === 'yearly'">
+      שנה
+      <select [(ngModel)]="selectedYear" (change)="onFilterChange()">
+        <option *ngFor="let y of years" [value]="y">{{ y }}</option>
+      </select>
+    </label>
+</div>
+      
+  <div class="sorting-buttons">
+  <button
+    [class.active]="sortOption === 'name_asc'"
+    (click)="sortOption='name_asc'; onSortChange()"
+  >
+    לפי שם 
+  </button>
+  <button
+    [class.active]="sortOption === 'orders_desc'"
+    (click)="sortOption='orders_desc'; onSortChange()"
+  >
+    הזמנות יורדות
+  </button>
+  <button
+    [class.active]="sortOption === 'orders_asc'"
+    (click)="sortOption='orders_asc'; onSortChange()"
+  >
+    הזמנות עולות
+  </button>
+  
+</div>
+
+
+<button class="export-btn" (click)="exportToExcel()" [disabled]="isExporting || userOrders.length === 0">
+    {{ isExporting ? 'Exporting...' : 'ייצוא ל Excel' }}
+  </button>
+</div>

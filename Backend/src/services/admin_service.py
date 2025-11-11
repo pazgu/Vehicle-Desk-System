@@ -2,26 +2,27 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from uuid import UUID
-
+from src.models.monthly_employee_trip_stats_model import MonthlyEmployeeTripStats
+from typing import Optional, List
+from sqlalchemy import func, and_, or_
 from src.models.user_model import User, UserRole
+from datetime import date
+
 
 
 def delete_user_by_id(user_id: UUID, current_user: User, db: Session):
-    # בדיקת הרשאות
     if current_user.role != UserRole.admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="❌ You do not have permission to perform this action"
         )
 
-    # מניעת מחיקת עצמו
     if str(user_id) == str(current_user.employee_id):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="⚠️ You cannot delete yourself"
         )
 
-    # בדיקה אם המשתמש קיים
     user_to_delete = db.query(User).filter(User.employee_id == user_id).first()
     if not user_to_delete:
         raise HTTPException(
@@ -30,13 +31,11 @@ def delete_user_by_id(user_id: UUID, current_user: User, db: Session):
         )
 
     try:
-        # הגדרת user_id עבור הלוגים אם יש טריגר audit
         db.execute(
             text("SET session.audit.user_id = :user_id"),
             {"user_id": str(current_user.employee_id)}
         )
 
-        # שליפת כל טבלאות ועמודות עם FK ל-users.employee_id או users.user_id
         fk_query = text("""
             SELECT
                 tc.table_schema,
@@ -59,7 +58,6 @@ def delete_user_by_id(user_id: UUID, current_user: User, db: Session):
 
         fk_rows = db.execute(fk_query).fetchall()
 
-        # קיבוץ לפי טבלה
         from collections import defaultdict
         table_columns = defaultdict(list)  # {table_name: [columns]}
         for row in fk_rows:
@@ -100,10 +98,10 @@ def delete_user_by_id(user_id: UUID, current_user: User, db: Session):
         )
 
     finally:
-        # איפוס ה-session audit
         db.execute(text("SET session.audit.user_id = DEFAULT"))
 
     return {
         "message": "✅ User deleted successfully",
         "user_id": str(user_id)
     }
+
