@@ -5,7 +5,7 @@
   <form [formGroup]="addUserForm" (ngSubmit)="submit()">
     <div class="form-group">
       <label>שם פרטי</label>
-      <input type="text" formControlName="first_name" />
+      <input type="text" formControlName=cle"first_name" />
        <small *ngIf="addUserForm.get('first_name')?.touched && addUserForm.get('first_name')?.invalid" class="error">
     שדה חובה
   </small>
