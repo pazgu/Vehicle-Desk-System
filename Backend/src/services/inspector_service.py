@@ -1,3 +1,4 @@
+from ..models.vehicle_model import Vehicle
 from src.services.inspection_alert_service import handle_inspection_alert  # תתאימי את הנתיב
 import asyncio
 from datetime import datetime, timezone
@@ -10,10 +11,10 @@ from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 from ..services.user_notification import create_system_notification
 from ..utils.socket_manager import sio
 
+
 async def create_inspection(data: VehicleInspectionSchema, db: Session):
     print('inspection data', data)
     try:
-        
         inspection = VehicleInspection(
             inspection_date=datetime.now(timezone.utc),
             inspected_by=data.inspected_by,
@@ -28,6 +29,55 @@ async def create_inspection(data: VehicleInspectionSchema, db: Session):
         db.add(inspection)
         db.commit()
         db.refresh(inspection)
+
+        vehicle = db.query(Vehicle).filter(Vehicle.id == data.vehicle_id).first()
+        if not vehicle or not vehicle.last_user_id:
+            print("No last_user_id found for vehicle, skipping notification.")
+            return inspection
+
+        last_user_id = vehicle.last_user_id
+
+        if last_user_id:
+            issues = []
+            if not inspection.clean:
+                issues.append("הרכב הוחזר מלוכלך")
+            if not inspection.fuel_checked:
+                issues.append("הרכב הוחזר ללא תדלוק")
+            if not inspection.no_items_left:
+                issues.append("נשארו חפצים ברכב")
+
+            if len(issues) == 1:
+                message = f"שים לב: {issues[0]}."
+            elif len(issues) > 1:
+                message = "נמצאו מספר ליקויים ברכב שהחזרת. אנא צור קשר עם זלמן."
+            else:
+                message = None  
+
+            if message:
+                title = "תוצאות בדיקת הרכב"
+                notification = create_system_notification(
+                    user_id=last_user_id,
+                    title=title,
+                    message=message,
+                    vehicle_id=data.vehicle_id
+                )
+                db.add(notification)
+                db.commit()
+                db.refresh(notification)
+
+                try:
+                    await sio.emit("new_notification", {
+                        "id": str(notification.id),
+                        "user_id": str(notification.user_id),
+                        "title": notification.title,
+                        "message": notification.message,
+                        "notification_type": notification.notification_type.value,
+                        "sent_at": notification.sent_at.isoformat(),
+                        "vehicle_id": str(data.vehicle_id),
+                        "seen": False
+                    })
+                except Exception as socket_error:
+                    print(f"❌ Socket emission failed: {socket_error}")
 
         try:
             await sio.emit("new_inspection", {
@@ -49,4 +99,4 @@ async def create_inspection(data: VehicleInspectionSchema, db: Session):
     except Exception as e:
         db.rollback()
         print(f"Failed on vehicle_id={data.vehicle_id}: {e}")
-        raise HTTPException(status_code=500, detail="אירעה שגיאה בעת שמירת בדיקת הרכב.")
+        raise HTTPException(status_code=500, detail="אירעה שגיאה בעת שמירת בדיקת הרכב.")    
