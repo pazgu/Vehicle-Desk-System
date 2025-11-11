@@ -702,9 +702,9 @@ def confirm_requirements(
         "confirmed_at": confirmation.confirmed_at
     }
 
-@router.get("/api/latest-requirement", response_model=RideRequirementOut)
+@router.get("/api/latest-requirement", response_model=Optional[RideRequirementOut])
 def get_latest_ride_requirement(db: Session = Depends(get_db)):
     requirement = get_latest_requirement(db)
     if not requirement:
-        raise HTTPException(status_code=404, detail="No ride requirements found.")
+        return None
     return requirement

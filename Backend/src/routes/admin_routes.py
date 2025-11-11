@@ -1163,7 +1163,7 @@ def delete_department_endpoint(
 def get_requirements(db: Session = Depends(get_db), _: dict = Depends(get_current_user)):
     requirement = get_latest_requirement(db)
     if not requirement:
-        raise HTTPException(status_code=404, detail="No ride requirements found")
+        return None
     return requirement
 
 
@@ -1178,7 +1178,7 @@ def update_requirements(
     return updated
 
 
-@router.put("/update-requirements", response_model=RideRequirementOut)
+@router.put("/update-requirements", response_model=Optional[RideRequirementOut])
 def update_requirements(
     data: RideRequirementUpdate,
     db: Session = Depends(get_db),
