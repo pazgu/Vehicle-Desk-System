@@ -20,6 +20,7 @@ export const environment = {
     ridesSupposedToStartUrl:'http://localhost:8000/api/rides_supposed-to-start',
     noShowStatsUrl: 'http://localhost:8000/api/statistics/no-show',
     userRidesForExport: 'http://localhost:8000/api/analytics/user-rides',
-
+    latestRequirementURL:'http://localhost:8000/api/latest-requirement',
+    addReqConfirmationURL:'http://localhost:8000/api/confirm-requirements'
   };
   

@@ -22,7 +22,8 @@ from fastapi.security import OAuth2PasswordBearer
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import and_, or_, desc, func, text
 from sqlalchemy.orm import Session, aliased
-
+from src.schemas.ride_requirements_schema import RideRequirementOut, RideRequirementUpdate
+from src.services.ride_requirements import get_latest_requirement,create_requirement
 # Utils
 from ..utils.auth import get_current_user, token_check, role_check
 from ..utils.database import get_db
@@ -1155,3 +1156,46 @@ def delete_department_endpoint(
     payload: dict = Depends(token_check)
 ):
     return delete_department(db, dept_id, payload)
+
+
+
+@router.get("/get-requirements", response_model=RideRequirementOut)
+def get_requirements(db: Session = Depends(get_db), _: dict = Depends(get_current_user)):
+    requirement = get_latest_requirement(db)
+    if not requirement:
+        raise HTTPException(status_code=404, detail="No ride requirements found")
+    return requirement
+
+
+@router.post("/add-requirements", response_model=RideRequirementOut)
+def update_requirements(
+    data: RideRequirementUpdate,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+    data.updated_by = current_user.employee_id
+    updated = create_requirement(db, data)
+    return updated
+
+
+@router.put("/update-requirements", response_model=RideRequirementOut)
+def update_requirements(
+    data: RideRequirementUpdate,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+    """Update the existing requirements (edit title/items)."""
+    existing = get_latest_requirement(db)
+    if not existing:
+        raise HTTPException(status_code=404, detail="No requirements found to update.")
+
+    existing.title = data.title
+    existing.items = data.items
+    existing.updated_by = current_user.employee_id
+    existing.updated_at = datetime.utcnow()
+
+    db.commit()
+    db.refresh(existing)
+    return existing
+
+
