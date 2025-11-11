@@ -20,14 +20,16 @@ import {
 } from '../../../models/vehicle-dashboard-item/vehicle-out-item.module';
 import { ToastService } from '../../../services/toast.service';
 import { TopNoShowUser } from '../../../models/no-show-stats.model';
-import { StatisticsService } from '../../../services/statistics.service';
 import { UserService } from '../../../services/user_service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UserOrdersExportComponent } from '../user-orders-export/user-orders-export.component';
 import { NoShowsComponent } from '../no-shows/no-shows.component';
 pdfMake.vfs = pdfFonts.vfs;
+import { ViewChild } from '@angular/core';
+
 
 @Component({
+  
   selector: 'app-admin-analytics',
   standalone: true,
   imports: [
@@ -42,7 +44,10 @@ pdfMake.vfs = pdfFonts.vfs;
   templateUrl: './admin-analytics.component.html',
   styleUrls: ['./admin-analytics.component.css'],
 })
+
 export class AdminAnalyticsComponent implements OnInit {
+    @ViewChild(NoShowsComponent) noShowsComponent!: NoShowsComponent;
+
   vehicleChartData: any;
   vehicleChartOptions: any;
   rideChartData: any;
@@ -65,13 +70,12 @@ export class AdminAnalyticsComponent implements OnInit {
   allTimeChartOptions: any;
   totalNoShows: number = 0;
   topNoShowUsers: TopNoShowUser[] = [];
-  noShowFromDate?: string;
-  noShowToDate?: string;
+  
+  private departmentsMap = new Map<string, string>();
 
   filterOnePlus: boolean = false;
   filterCritical: boolean = false;
   allNoShowUsers: TopNoShowUser[] = [];
-  filteredNoShowUsers: TopNoShowUser[] = [];
 
   topUsedVehiclesData: any;
   topUsedVehiclesOptions: any;
@@ -83,8 +87,6 @@ export class AdminAnalyticsComponent implements OnInit {
   uniqueNoShowUsers: number = 0;
   noShowExportWarningVisible: boolean = false;
 
-  private departmentsMap = new Map<string, string>();
-  private departmentsLoaded: boolean = false;
 
   vehicleTypes: string[] = [];
   rideStatuses: string[] = [];
@@ -113,8 +115,6 @@ export class AdminAnalyticsComponent implements OnInit {
     private socketService: SocketService,
     private vehicleService: VehicleService,
     private toastService: ToastService,
-    private statisticsService: StatisticsService,
-    private userService: UserService,
     private router: Router,
     private route: ActivatedRoute
   ) {}
@@ -123,8 +123,9 @@ export class AdminAnalyticsComponent implements OnInit {
     this.loadVehicleChart();
     this.loadRideChart();
     this.loadFrozenVehicles();
-    this.loadNoShowStatistics();
-    this.loadDepartments();
+this.noShowsComponent.loadNoShowStatistics();
+    this.noShowsComponent.loadDepartments();
+this.noShowsComponent.filteredNoShowUsers = [] as TopNoShowUser[];
     this.loadVehicleTypes();
     this.loadRideStatuses();
 
@@ -170,6 +171,10 @@ export class AdminAnalyticsComponent implements OnInit {
         },
       });
   }
+   refreshNoShows() {
+    if (this.noShowsComponent) {
+      this.noShowsComponent.loadNoShowStatistics();
+    }}
 onMonthOrYearChange() {
     this.updateQueryParams({
       month: this.selectedMonth,
@@ -581,42 +586,6 @@ onMonthOrYearChange() {
     this.activeTabIndex = index;
   }
 
-  public loadNoShowStatistics(): void {
-    const formattedFromDate = this.noShowFromDate || undefined;
-    const formattedToDate = this.noShowToDate || undefined;
-
-    this.statisticsService
-      .getTopNoShowUsers(formattedFromDate, formattedToDate)
-      .subscribe({
-        next: (noShowData) => {
-          this.totalNoShows = noShowData.total_no_show_events;
-          this.uniqueNoShowUsers = noShowData.unique_no_show_users;
-          this.topNoShowUsers = noShowData.top_no_show_users;
-          const mappedUsers = noShowData.top_no_show_users.map((user) => ({
-            ...user,
-            email: user.email || 'unknown@example.com',
-            role: user.role || 'לא ידוע',
-            employee_id: user.user_id,
-            no_show_count: user.count,
-          }));
-
-          this.topNoShowUsers = mappedUsers;
-
-          this.allNoShowUsers = mappedUsers;
-          this.applyNoShowFilter(); // Apply default filter/sort
-        },
-        error: (err) => {
-          console.error('❌ Failed to load no-show statistics:', err);
-          this.toastService.show('אירעה שגיאה בטעינת נתוני אי-הגעה.', 'error');
-
-          // Reset values on error
-          this.topNoShowUsers = [];
-          this.totalNoShows = 0;
-          this.uniqueNoShowUsers = 0;
-        },
-      });
-  }
-
   getHebrewLabel(status: string): string {
     const statusMap: { [key: string]: string } = {
       available: 'זמין',
@@ -638,20 +607,7 @@ onMonthOrYearChange() {
     return statusMap[status] || status;
   }
 
-  private loadDepartments(): void {
-    this.userService.getDepartments().subscribe({
-      next: (departments) => {
-        departments.forEach((dep) => this.departmentsMap.set(dep.id, dep.name));
-        this.departmentsLoaded = true;
-        this.loadNoShowStatistics();
-      },
-      error: () => {
-        this.toastService.show('אירעה שגיאה בטעינת נתוני מחלקות.', 'error');
-        this.departmentsLoaded = false;
-        this.loadNoShowStatistics();
-      },
-    });
-  }
+ 
 
   resolveDepartment(departmentId: string): string {
     return this.departmentsMap.get(departmentId) || 'מחלקה לא ידועה';
@@ -678,7 +634,7 @@ onMonthOrYearChange() {
     }
     this.updateQueryParams({ noShowSort: this.noShowSortOption });
 
-    this.filteredNoShowUsers = this.sortUsers(filtered);
+    this.noShowsComponent.filteredNoShowUsers = this.sortUsers(filtered);
   }
 
   sortUsers(users: any[]) {
@@ -702,7 +658,7 @@ onMonthOrYearChange() {
     const isTopUsedTab = this.activeTabIndex === 2;
     const isNoShowTab = this.activeTabIndex === 4;
 
-    if (isNoShowTab && this.filteredNoShowUsers.length === 0) {
+    if (isNoShowTab && this.noShowsComponent.filteredNoShowUsers.length === 0) {
       this.showExportWarningTemporarily();
       return;
     }
@@ -745,7 +701,7 @@ onMonthOrYearChange() {
         { text: 'Status', style: 'tableHeader' },
       ]);
 
-      this.filteredNoShowUsers.forEach((user) => {
+      this.noShowsComponent.filteredNoShowUsers.forEach((user) => {
         const count = user.no_show_count ?? 0;
         let status = '';
         let bgColor = '';
@@ -948,19 +904,22 @@ onMonthOrYearChange() {
       ? this.rideChartData
       : this.topUsedVehiclesData;
 
-    const title = isVehicleTab
-      ? this.selectedVehicleType !== ''
-        ? `סטטוס רכבים (${this.selectedVehicleType})`
-        : 'סטטוס רכבים (כל הסוגים)'
-      : isRideTab
-      ? 'Ride Status Summary'
-      : 'Top Used Vehicles';
+  const title = isNoShowTab
+  ? 'טבלת אי-הגעות'
+  : isVehicleTab
+  ? this.selectedVehicleType !== ''
+    ? `סטטוס רכבים (${this.selectedVehicleType})`
+    : 'סטטוס רכבים (כל הסוגים)'
+  : isRideTab
+  ? 'סטטוס נסיעות'
+  : 'רכבים בשימוש גבוה';
+
 
     const timestamp = new Date().toISOString().substring(0, 10);
     let data: any[] = [];
 
     if (isNoShowTab) {
-      data = this.filteredNoShowUsers.map((user) => {
+      data = this.noShowsComponent.filteredNoShowUsers.map((user) => {
         const count = user.no_show_count ?? 0;
         let status = '';
         if (count >= 3) status = 'Critical';
@@ -1002,7 +961,7 @@ onMonthOrYearChange() {
       }));
     }
 
-    if (isNoShowTab && this.filteredNoShowUsers.length === 0) {
+    if (isNoShowTab && this.noShowsComponent.filteredNoShowUsers.length === 0) {
       this.showExportWarningTemporarily();
       return;
     }
@@ -1107,7 +1066,7 @@ onMonthOrYearChange() {
     const isTopUsedTab = this.activeTabIndex === 2;
     const isNoShowTab = this.activeTabIndex === 4;
 
-    if (isNoShowTab && this.filteredNoShowUsers.length === 0) {
+    if (isNoShowTab && this.noShowsComponent.filteredNoShowUsers.length === 0) {
       this.showExportWarningTemporarily();
       return;
     }
@@ -1121,7 +1080,7 @@ onMonthOrYearChange() {
         : this.topUsedVehiclesData;
     }
     const title = isNoShowTab
-      ? 'טבלת נעדרים'
+      ? 'טבלת אי-הגעות'
       : isVehicleTab
       ? this.selectedVehicleType !== ''
         ? `סטטוס רכבים (${this.selectedVehicleType})`
@@ -1136,7 +1095,7 @@ onMonthOrYearChange() {
     let data: any[] = [];
 
     if (isNoShowTab) {
-      data = this.filteredNoShowUsers.map((user) => {
+      data = this.noShowsComponent.filteredNoShowUsers.map((user) => {
         const count = user.no_show_count ?? 0;
         let status = '';
 
