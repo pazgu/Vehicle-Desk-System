@@ -213,7 +213,8 @@ onBeforeUnload(e: BeforeUnloadEvent) {
             stop: ['', Validators.required],
             extraStops: this.fb.array([], this.sameStopAndDestinationValidator()),
             destination: [null],
-            four_by_four_reason: ['']
+            four_by_four_reason: [''],
+            extended_ride_reason: ['']
         }, {
             validators: [
                 this.futureDateTimeValidator(),
@@ -316,6 +317,13 @@ onBeforeUnload(e: BeforeUnloadEvent) {
                     }
                 };
             }
+            if (endDate.getTime() < startDate.getTime()) {
+                return {
+                    'sameDateNightRide': {
+                        message: 'תאריך הסיום חייב להיות אחרי תאריך ההתחלה.'
+                    }
+                };
+            }
             return null;
         };
     }
@@ -360,7 +368,7 @@ onBeforeUnload(e: BeforeUnloadEvent) {
             const end = new Date(endDate);
             const diffInMs = end.getTime() - start.getTime();
             const diffInDays = diffInMs / (1000 * 60 * 60 * 24) + 1;
-            return diffInDays >= 3;
+            return diffInDays >= 4;
         }
         return false;
     }
@@ -423,9 +431,14 @@ onBeforeUnload(e: BeforeUnloadEvent) {
         });
         this.rideForm.get('ride_date')?.valueChanges.subscribe(() => {
             this.updateAvailableCars();
+            this.updateExtendedRideReasonValidation();
+        });
+        this.rideForm.get('ride_date_night_end')?.valueChanges.subscribe(() => {
+            this.updateExtendedRideReasonValidation();
         });
         this.rideForm.get('ride_period')?.valueChanges.subscribe(() => {
             this.updateAvailableCars();
+            this.updateExtendedRideReasonValidation();
         });
         this.setupDistanceCalculationSubscriptions();
         this.rideForm.get('vehicle_type')?.valueChanges.subscribe(value => {
@@ -435,6 +448,17 @@ onBeforeUnload(e: BeforeUnloadEvent) {
         this.rideForm.get('stop')?.valueChanges.subscribe(() => {
             this.extraStops.updateValueAndValidity();
         });
+    }
+    private updateExtendedRideReasonValidation(): void {
+        const extendedReasonControl = this.rideForm.get('extended_ride_reason');
+        
+        if (this.isExtendedRequest) {
+            extendedReasonControl?.setValidators([Validators.required]);
+        } else {
+            extendedReasonControl?.clearValidators();
+            extendedReasonControl?.setValue('');
+        }
+        extendedReasonControl?.updateValueAndValidity();
     }
     private setupDistanceCalculationSubscriptions(): void {
         this.rideForm.get('stop')?.valueChanges.subscribe(() => {
@@ -609,16 +633,9 @@ onBeforeUnload(e: BeforeUnloadEvent) {
     }
     private updateAvailableCars(): void {
         const selectedType = this.rideForm.get('vehicle_type')?.value;
-        this.availableCars = this.allCars.filter(car =>
-            car.type === selectedType
-            // &&(car as any).can_order !== false &&
-            // !this.isPendingVehicle(car.id)
-        );
-        console.log('Available cars after type filter:', this.availableCars);
-        console.log('all cars:', this.allCars)
+        this.availableCars = this.allCars.filter(car => car.type === selectedType);
         const carControl = this.rideForm.get('car');
         if (this.availableCars.length === 1) {
-            console.log('Only one available car, auto-selecting:', this.availableCars[0]);
             const onlyCar = this.availableCars[0];
             carControl?.setValue(onlyCar.id);
             carControl?.markAsTouched();
@@ -823,13 +840,6 @@ onBeforeUnload(e: BeforeUnloadEvent) {
         const date = new Date();
         return date.toISOString().split('T')[0];
     }
-    // validYearRangeValidator(minYear: number, maxYear: number): ValidatorFn {
-    //     return (control: AbstractControl) => {
-    //         if (!control.value) return null;
-    //         const selectedYear = new Date(control.value).getFullYear();
-    //         return selectedYear >= minYear && selectedYear <= maxYear ? null : { invalidYear: true };
-    //     };
-    // }
     onPeriodChange(value: string): void {
         const nightEndControl = this.rideForm.get('ride_date_night_end');
         const rideDateControl = this.rideForm.get('ride_date');
@@ -896,7 +906,7 @@ onBeforeUnload(e: BeforeUnloadEvent) {
             next: (user) => {
                 if ('has_government_license' in user) {
                     const hasLicense = user.has_government_license;
-                    const expiryDateStr = user.license_expiry_date; // Assuming it's a string like "2025-07-01"
+                    const expiryDateStr = user.license_expiry_date;
 
                     if (hasLicense) {
                         let isExpired = false;
@@ -904,8 +914,6 @@ onBeforeUnload(e: BeforeUnloadEvent) {
                         if (expiryDateStr) {
                             const expiryDate = new Date(expiryDateStr);
                             const today = new Date();
-
-                            // Remove time for accurate day comparison
                             expiryDate.setHours(0, 0, 0, 0);
                             today.setHours(0, 0, 0, 0);
 
@@ -921,7 +929,7 @@ onBeforeUnload(e: BeforeUnloadEvent) {
                             );
                             this.disableRequest = true;
                         } else {
-                            this.disableRequest = false; // ✅ License valid
+                            this.disableRequest = false;
                         }
 
                     } else {
@@ -1006,7 +1014,8 @@ onBeforeUnload(e: BeforeUnloadEvent) {
             vehicle_type: '',
             car: '',
             stop: '',
-            four_by_four_reason: ''
+            four_by_four_reason: '',
+            extended_ride_reason: ''
         });
     }
 
@@ -1060,12 +1069,23 @@ onBeforeUnload(e: BeforeUnloadEvent) {
                 reasonControl.setErrors(null);
             }
         }
+        const extendedReasonControl = this.rideForm.get('extended_ride_reason');
+        if (this.isExtendedRequest && (!extendedReasonControl?.value || extendedReasonControl.value.trim() === '')) {
+            extendedReasonControl?.setErrors({ required: true });
+            extendedReasonControl?.markAsTouched();
+            this.toastService.show('נא לפרט את הסיבה לנסיעה ממושכת', 'error');
+            return;
+        } else {
+            if (extendedReasonControl?.hasError('required') && !this.isExtendedRequest) {
+                extendedReasonControl.setErrors(null);
+            }
+        }
         if (this.disableRequest) {
-            this.toastService.show('לא ניתן לשלוח בקשה: למשתמש שנבחר אין רישיון ממשלתי תקףץ לעדכון פרטים יש ליצור קשר עם המנהל.', 'error');
+            this.toastService.show('לא ניתן לשלוח בקשה: למשתמש שנבחר אין רישיון ממשלתי תקף. לעדכון פרטים יש ליצור קשר עם המנהל.', 'error');
             return;
         }
-        const extraStopsControl = this.rideForm.get('extraStops');
 
+        const extraStopsControl = this.rideForm.get('extraStops');
         if (extraStopsControl?.errors?.['consecutiveDuplicateStops']) {
             this.toastService.show('תחנות עוקבות לא יכולות להיות זהות.', 'error');
             extraStopsControl.markAsTouched();
@@ -1110,6 +1130,7 @@ onBeforeUnload(e: BeforeUnloadEvent) {
         }
         if (!confirmedWarning && ridePeriod === 'morning' && this.isDuringInspectorClosure(startTime)) {
             this.showInspectorWarningModal = true;
+            return;
         }
         const user_id = this.getUserIdFromAuthService();
         if (!user_id) {
@@ -1145,6 +1166,7 @@ onBeforeUnload(e: BeforeUnloadEvent) {
             estimated_distance_km: Number(distance),
             actual_distance_km: Number(this.estimated_distance_with_buffer),
             four_by_four_reason: this.rideForm.get('four_by_four_reason')?.value,
+            extended_ride_reason: this.rideForm.get('extended_ride_reason')?.value || null,
             is_extended_request: this.isExtendedRequest,
         };
         const role = localStorage.getItem('role');
@@ -1249,7 +1271,8 @@ onBeforeUnload(e: BeforeUnloadEvent) {
             start_location: this.rideForm.get('start_location') as FormControl,
             stop: this.rideForm.get('stop') as FormControl,
             extra_stops: this.rideForm.get('extraStops') as FormArray,
-            destination: this.rideForm.get('destination') as FormControl
+            destination: this.rideForm.get('destination') as FormControl,
+            extended_ride_reason: this.rideForm.get('extended_ride_reason') as FormControl
         };
     }
     goBack(): void {

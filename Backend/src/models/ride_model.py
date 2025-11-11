@@ -52,6 +52,7 @@ class Ride(Base):
     feedback_submitted= Column(Boolean, default=False) 
     rejection_reason = Column(Text, nullable=True)
     completion_date = Column(DateTime, nullable=True)
+    extended_ride_reason = Column(Text, nullable=True)
 
     
     no_show_events = relationship("NoShowEvent", back_populates="ride")

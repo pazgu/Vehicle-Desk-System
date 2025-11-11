@@ -44,7 +44,6 @@ export class LoginComponent implements OnInit {
         '',
         [
           Validators.required,
-          Validators.pattern(/^[A-Za-z֐-׿]+$/), // Hebrew + English letters
           Validators.minLength(3),
           Validators.maxLength(20)
         ]

@@ -104,17 +104,21 @@ def identity_check(user_id: str, token: str):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         token_user_id = payload.get("sub")
+        user_role = payload.get("role")
 
         if not token_user_id:
             raise HTTPException(status_code=401, detail="Invalid token: Missing user_id")
 
-        if token_user_id != user_id:
+        # Correct "owner or admin" check
+        if token_user_id != user_id and user_role != "admin":
             raise HTTPException(
                 status_code=403,
                 detail="You cannot access another user's orders"
             )
 
-    except jwt.PyJWTError:
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
 
