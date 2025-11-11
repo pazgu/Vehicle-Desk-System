@@ -332,6 +332,7 @@ position: absolute;
 .expired {
   color: red;
   position: relative;
+
 }
 
 .expired i {
