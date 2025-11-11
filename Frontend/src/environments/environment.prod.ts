@@ -16,6 +16,13 @@ export const environment = {
     vehicleStatsUrl: 'http://localhost:8000/api/vehicles/usage-stats',
     vehiclesTypes:'http://localhost:8000/api/vehicles/types',
     ridesSupposedToStartUrl:'http://localhost:8000/api/rides_supposed-to-start',
-    userRidesForExport: 'http://localhost:8000/api/analytics/user-rides',
+    latestRequirementURL:'http://localhost:8000/api/latest-requirement',
+    addReqConfirmationURL:'http://localhost:8000/api/confirm-requirements',
+
+
+
+
+
+
   };
   

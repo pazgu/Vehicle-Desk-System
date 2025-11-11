@@ -75,9 +75,20 @@
     <li>
     <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/department-data']" class="nav-link" href="#"> נתוני מחלקות </a>
     </li>
+    
     <li>
     <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/admin/critical-issues']" class="nav-link" href="#">דוחות </a>
     </li>
+
+    <li>
+  <a *ngIf="(role$ | async) === 'admin'"
+     [routerLink]="['/admin/guidelines']"
+     class="nav-link"
+     href="#">
+     הנחיות נסיעה
+  </a>
+</li>
+
     <li>
     <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/admin/analytics']" class="nav-link" href="#">סטטיסטיקות</a>
     </li>
@@ -123,7 +134,11 @@
       <div class="dropdown-content">
         <a [routerLink]="['/user-data']" class="nav-link" href="#"> נתוני עובדים </a>
         <a [routerLink]="['/department-data']" class="nav-link" href="#"> נתוני מחלקות </a>
+        <a [routerLink]="['/admin/guidelines']" class="nav-link" href="#"> הנחיות נסיעה </a>
+
       </div>
+
+
     </div>
     <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/admin/critical-issues']" class="nav-link" href="#">חריגות  |</a>
     <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/admin/analytics']" class="nav-link" href="#">סטטיסטיקות</a>

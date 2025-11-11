@@ -10,11 +10,8 @@
       <label>שם משתמש</label>
       <input type="text" formControlName="username" />
      <small *ngIf="f['username'].invalid && (f['username'].dirty || formSubmitted)" style="color:red;">
-  יש להזין שם משתמש
-</small>
-<small *ngIf="f['username'].errors?.['pattern'] && (f['username'].dirty || formSubmitted)" style="color:red;">
-  שם המשתמש יכול לכול אותיות בלבד (עברית או אנגלית)
-</small>
+      יש להזין שם משתמש
+    </small>
 
 <label>סיסמה</label>
 <div class="password-container">

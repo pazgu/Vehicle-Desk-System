@@ -16,6 +16,10 @@ import { ValidationErrors } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { formatDate } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
+import { HostListener } from '@angular/core';
+import { GuidelinesModalComponent } from '../../page-area/guidelines-modal/guidelines-modal.component';
+import { AcknowledgmentService, RideAcknowledgmentPayload } from '../../../services/acknowledgment.service';
+
 
 interface PendingVehicle { vehicle_id: string; date: string; period: string; start_time?: string; end_time?: string; }
 interface Vehicle { id: string; plate_number: string; type: string; fuel_type: string; status: string; freeze_reason?: string | null; last_used_at?: string; mileage: number; image_url: string; vehicle_model: string; }
@@ -25,7 +29,7 @@ interface Employee { id: string; full_name: string; }
 @Component({
     selector: 'app-new-ride',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, HttpClientModule, NgSelectModule, ButtonModule],
+    imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, HttpClientModule, NgSelectModule, ButtonModule ,GuidelinesModalComponent],
     templateUrl: './home.component.html',
     styleUrls: ['./home.component.css']
 })
@@ -51,6 +55,10 @@ export class NewRideComponent implements OnInit {
     quarterHours = ['00', '15', '30', '45'];
     formReady = false;
     orderSubmitted = false;
+    showGuidelines = false;
+    pendingConfirmation = false;
+    createdRideId: string | null = null;
+
 
     constructor(
         private fb: FormBuilder,
@@ -64,6 +72,8 @@ export class NewRideComponent implements OnInit {
         private UserService: UserService,
         private AuthService: AuthService,
         private cdr: ChangeDetectorRef,
+        private acknowledgmentService: AcknowledgmentService,
+
     ) { }
 
     ngOnInit(): void {
@@ -113,6 +123,15 @@ export class NewRideComponent implements OnInit {
         }
         return false;
     }
+
+    @HostListener('window:beforeunload', ['$event'])
+onBeforeUnload(e: BeforeUnloadEvent) {
+  if (this.showGuidelines) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+}
+
 
     rideDateValidator(): ValidatorFn {
         return (control: AbstractControl): ValidationErrors | null => {
@@ -194,7 +213,8 @@ export class NewRideComponent implements OnInit {
             stop: ['', Validators.required],
             extraStops: this.fb.array([], this.sameStopAndDestinationValidator()),
             destination: [null],
-            four_by_four_reason: ['']
+            four_by_four_reason: [''],
+            extended_ride_reason: ['']
         }, {
             validators: [
                 this.futureDateTimeValidator(),
@@ -297,6 +317,13 @@ export class NewRideComponent implements OnInit {
                     }
                 };
             }
+            if (endDate.getTime() < startDate.getTime()) {
+                return {
+                    'sameDateNightRide': {
+                        message: 'תאריך הסיום חייב להיות אחרי תאריך ההתחלה.'
+                    }
+                };
+            }
             return null;
         };
     }
@@ -341,7 +368,7 @@ export class NewRideComponent implements OnInit {
             const end = new Date(endDate);
             const diffInMs = end.getTime() - start.getTime();
             const diffInDays = diffInMs / (1000 * 60 * 60 * 24) + 1;
-            return diffInDays >= 3;
+            return diffInDays >= 4;
         }
         return false;
     }
@@ -404,9 +431,14 @@ export class NewRideComponent implements OnInit {
         });
         this.rideForm.get('ride_date')?.valueChanges.subscribe(() => {
             this.updateAvailableCars();
+            this.updateExtendedRideReasonValidation();
+        });
+        this.rideForm.get('ride_date_night_end')?.valueChanges.subscribe(() => {
+            this.updateExtendedRideReasonValidation();
         });
         this.rideForm.get('ride_period')?.valueChanges.subscribe(() => {
             this.updateAvailableCars();
+            this.updateExtendedRideReasonValidation();
         });
         this.setupDistanceCalculationSubscriptions();
         this.rideForm.get('vehicle_type')?.valueChanges.subscribe(value => {
@@ -416,6 +448,17 @@ export class NewRideComponent implements OnInit {
         this.rideForm.get('stop')?.valueChanges.subscribe(() => {
             this.extraStops.updateValueAndValidity();
         });
+    }
+    private updateExtendedRideReasonValidation(): void {
+        const extendedReasonControl = this.rideForm.get('extended_ride_reason');
+        
+        if (this.isExtendedRequest) {
+            extendedReasonControl?.setValidators([Validators.required]);
+        } else {
+            extendedReasonControl?.clearValidators();
+            extendedReasonControl?.setValue('');
+        }
+        extendedReasonControl?.updateValueAndValidity();
     }
     private setupDistanceCalculationSubscriptions(): void {
         this.rideForm.get('stop')?.valueChanges.subscribe(() => {
@@ -590,16 +633,9 @@ export class NewRideComponent implements OnInit {
     }
     private updateAvailableCars(): void {
         const selectedType = this.rideForm.get('vehicle_type')?.value;
-        this.availableCars = this.allCars.filter(car =>
-            car.type === selectedType
-            // &&(car as any).can_order !== false &&
-            // !this.isPendingVehicle(car.id)
-        );
-        console.log('Available cars after type filter:', this.availableCars);
-        console.log('all cars:', this.allCars)
+        this.availableCars = this.allCars.filter(car => car.type === selectedType);
         const carControl = this.rideForm.get('car');
         if (this.availableCars.length === 1) {
-            console.log('Only one available car, auto-selecting:', this.availableCars[0]);
             const onlyCar = this.availableCars[0];
             carControl?.setValue(onlyCar.id);
             carControl?.markAsTouched();
@@ -804,13 +840,6 @@ export class NewRideComponent implements OnInit {
         const date = new Date();
         return date.toISOString().split('T')[0];
     }
-    // validYearRangeValidator(minYear: number, maxYear: number): ValidatorFn {
-    //     return (control: AbstractControl) => {
-    //         if (!control.value) return null;
-    //         const selectedYear = new Date(control.value).getFullYear();
-    //         return selectedYear >= minYear && selectedYear <= maxYear ? null : { invalidYear: true };
-    //     };
-    // }
     onPeriodChange(value: string): void {
         const nightEndControl = this.rideForm.get('ride_date_night_end');
         const rideDateControl = this.rideForm.get('ride_date');
@@ -877,7 +906,7 @@ export class NewRideComponent implements OnInit {
             next: (user) => {
                 if ('has_government_license' in user) {
                     const hasLicense = user.has_government_license;
-                    const expiryDateStr = user.license_expiry_date; // Assuming it's a string like "2025-07-01"
+                    const expiryDateStr = user.license_expiry_date;
 
                     if (hasLicense) {
                         let isExpired = false;
@@ -885,8 +914,6 @@ export class NewRideComponent implements OnInit {
                         if (expiryDateStr) {
                             const expiryDate = new Date(expiryDateStr);
                             const today = new Date();
-
-                            // Remove time for accurate day comparison
                             expiryDate.setHours(0, 0, 0, 0);
                             today.setHours(0, 0, 0, 0);
 
@@ -902,7 +929,7 @@ export class NewRideComponent implements OnInit {
                             );
                             this.disableRequest = true;
                         } else {
-                            this.disableRequest = false; // ✅ License valid
+                            this.disableRequest = false;
                         }
 
                     } else {
@@ -987,7 +1014,8 @@ export class NewRideComponent implements OnInit {
             vehicle_type: '',
             car: '',
             stop: '',
-            four_by_four_reason: ''
+            four_by_four_reason: '',
+            extended_ride_reason: ''
         });
     }
 
@@ -995,6 +1023,37 @@ export class NewRideComponent implements OnInit {
         this.resetOrderForm();
         this.initializeComponent();
     }
+
+    onGuidelinesConfirmed(ev: { rideId: string; userId: string; timestamp: string }) {
+  // mock save to “server”
+  const payload: RideAcknowledgmentPayload = {
+    ride_id: ev.rideId || (this.createdRideId ?? 'mock-ride'),
+    user_id: ev.userId || (this.getUserIdFromAuthService() ?? 'mock-user'),
+    confirmed: true,
+    acknowledged_at: ev.timestamp,
+    signature_data_url: null
+  };
+
+  this.pendingConfirmation = true;
+  this.acknowledgmentService.saveAcknowledgment(payload).subscribe({
+    next: () => {
+      this.pendingConfirmation = false;
+      this.showGuidelines = false;   // close modal
+      // optional: small toast
+      this.toastService.show('אישור נקלט. נסיעה נעימה! 🚗', 'success');
+      // do NOT reload page; keep user where they are
+      // you can optionally reset the form:
+      // this.resetOrderForm();
+    },
+    error: () => {
+      this.pendingConfirmation = false;
+      // per requirement: show error but do not block user (mock configurable)
+      this.toastService.show('נרשם שגוי בלוג שרת (לא חוסם).', 'error');
+      this.showGuidelines = false;
+    }
+  });
+}
+
     submit(confirmedWarning = false): void {
         const carControl = this.rideForm.get('car');
         const selectedCarId = carControl?.value;
@@ -1010,12 +1069,23 @@ export class NewRideComponent implements OnInit {
                 reasonControl.setErrors(null);
             }
         }
+        const extendedReasonControl = this.rideForm.get('extended_ride_reason');
+        if (this.isExtendedRequest && (!extendedReasonControl?.value || extendedReasonControl.value.trim() === '')) {
+            extendedReasonControl?.setErrors({ required: true });
+            extendedReasonControl?.markAsTouched();
+            this.toastService.show('נא לפרט את הסיבה לנסיעה ממושכת', 'error');
+            return;
+        } else {
+            if (extendedReasonControl?.hasError('required') && !this.isExtendedRequest) {
+                extendedReasonControl.setErrors(null);
+            }
+        }
         if (this.disableRequest) {
-            this.toastService.show('לא ניתן לשלוח בקשה: למשתמש שנבחר אין רישיון ממשלתי תקףץ לעדכון פרטים יש ליצור קשר עם המנהל.', 'error');
+            this.toastService.show('לא ניתן לשלוח בקשה: למשתמש שנבחר אין רישיון ממשלתי תקף. לעדכון פרטים יש ליצור קשר עם המנהל.', 'error');
             return;
         }
-        const extraStopsControl = this.rideForm.get('extraStops');
 
+        const extraStopsControl = this.rideForm.get('extraStops');
         if (extraStopsControl?.errors?.['consecutiveDuplicateStops']) {
             this.toastService.show('תחנות עוקבות לא יכולות להיות זהות.', 'error');
             extraStopsControl.markAsTouched();
@@ -1060,6 +1130,7 @@ export class NewRideComponent implements OnInit {
         }
         if (!confirmedWarning && ridePeriod === 'morning' && this.isDuringInspectorClosure(startTime)) {
             this.showInspectorWarningModal = true;
+            return;
         }
         const user_id = this.getUserIdFromAuthService();
         if (!user_id) {
@@ -1095,22 +1166,30 @@ export class NewRideComponent implements OnInit {
             estimated_distance_km: Number(distance),
             actual_distance_km: Number(this.estimated_distance_with_buffer),
             four_by_four_reason: this.rideForm.get('four_by_four_reason')?.value,
+            extended_ride_reason: this.rideForm.get('extended_ride_reason')?.value || null,
             is_extended_request: this.isExtendedRequest,
         };
         const role = localStorage.getItem('role');
         if (role == 'employee') {
             this.rideService.createRide(formData, user_id).subscribe({
                 next: (createdRide) => {
-                    this.toastService.show('הבקשה נשלחה בהצלחה! ✅', 'success');
-                    this.orderSubmitted = true;
-                    this.loadFuelType(formData.vehicle_id);
-                    this.showFuelTypeMessage();
-                    this.socketService.sendMessage('new_ride_request', {
-                        ...createdRide,
-                        user_id
-                    });
+  // keep your success toast if you want:
+  this.toastService.show('הבקשה נשלחה בהצלחה! ✅', 'success');
+  this.orderSubmitted = true;
 
-                },
+  // keep these (they show fuel guidance + your socket event):
+  this.loadFuelType(formData.vehicle_id);
+  this.socketService.sendMessage('new_ride_request', { ...createdRide, user_id });
+
+  // OPEN THE GUIDELINES MODAL
+  this.createdRideId =
+    createdRide?.id ??
+    createdRide?.ride_id ??
+    createdRide?.data?.id ??
+    'mock-ride';
+  this.showGuidelines = true;
+},
+
                 error: (err) => {
                     const errorMessage = err.error?.detail || err.message || 'שגיאה לא ידועה';
 
@@ -1135,13 +1214,21 @@ export class NewRideComponent implements OnInit {
         else {
             if (role == 'supervisor') {
                 this.rideService.createSupervisorRide(formData, user_id).subscribe({
-                    next: () => {
-                        this.toastService.show('הבקשה נשלחה בהצלחה! ✅', 'success');
-                        this.orderSubmitted = true;
-                        this.loadFuelType(formData.vehicle_id);
-                        this.showFuelTypeMessage();
+                    next: (createdRide) => {
+  this.toastService.show('הבקשה נשלחה בהצלחה! ✅', 'success');
+  this.orderSubmitted = true;
 
-                    },
+  this.loadFuelType(formData.vehicle_id);
+
+  // ✨ OPEN THE GUIDELINES MODAL
+  this.createdRideId =
+    createdRide?.id ??
+    createdRide?.ride_id ??
+    createdRide?.data?.id ??
+    'mock-ride';
+  this.showGuidelines = true;
+},
+
                     error: (err) => {
                         const errorMessage = err.error?.detail || err.message || 'שגיאה לא ידועה';
                         if (errorMessage.includes('currently blocked')) {
@@ -1165,17 +1252,7 @@ export class NewRideComponent implements OnInit {
         }
 
     }
-    private showFuelTypeMessage(): void {
-        if (localStorage.getItem('role') == 'employee') {
-            if (this.vehicleFuelType === 'electric') {
-                this.toastService.showPersistent('אנא ודא כי הרכב טעון לפני ההחזרה.', 'neutral');
-            } else if (this.vehicleFuelType === 'hybrid') {
-                this.toastService.showPersistent('אנא ודא כי יש מספיק דלק וטעינה לפני ההחזרה.', 'neutral');
-            } else if (this.vehicleFuelType === 'gasoline') {
-                this.toastService.showPersistent('נא להחזיר את הרכב נקי ומתודלק', 'neutral');
-            }
-        }
-    }
+   
     get f() {
         return {
             ride_period: this.rideForm.get('ride_period') as FormControl,
@@ -1194,7 +1271,8 @@ export class NewRideComponent implements OnInit {
             start_location: this.rideForm.get('start_location') as FormControl,
             stop: this.rideForm.get('stop') as FormControl,
             extra_stops: this.rideForm.get('extraStops') as FormArray,
-            destination: this.rideForm.get('destination') as FormControl
+            destination: this.rideForm.get('destination') as FormControl,
+            extended_ride_reason: this.rideForm.get('extended_ride_reason') as FormControl
         };
     }
     goBack(): void {

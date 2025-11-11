@@ -152,6 +152,24 @@
                 </small>
               </div>
             </div>
+            <div class="form-field-group" *ngIf="isExtendedRequest" style="margin-top: 24px; width: 100%;">
+              <label style="font-weight: 600;">סיבה לנסיעה ממושכת (4 ימים ומעלה)</label>
+              <textarea 
+                formControlName="extended_ride_reason" 
+                placeholder="אנא פרט.י את הסיבה לנסיעה ממושכת "
+                class="vehicle-type-info"
+                rows="3"
+                style="width: 100%; margin-top: 8px;">
+              </textarea>
+              <small 
+                *ngIf="f.extended_ride_reason?.touched && f.extended_ride_reason?.errors?.['required']" 
+                class="error-text">
+                חובה לפרט את הסיבה לנסיעה ממושכת
+              </small>
+              <small class="info-text" style="color: #666; font-size: 0.85em; margin-top: 4px; display: block;">
+                * נסיעה ממושכת מעל 4 ימים דורשת אישור מיוחד ממנהלך
+              </small>
+            </div>
 
             <div class="form-field-group">
               <label>תחנה</label>
@@ -297,3 +315,10 @@
 
   </div>
 </div>
+
+<app-guidelines-modal
+  [show]="showGuidelines"
+  [rideId]="createdRideId ?? 'mock-ride'"
+  [userId]="getUserIdFromAuthService() ?? 'mock-user'"
+  (confirmed)="onGuidelinesConfirmed($event)">
+</app-guidelines-modal>

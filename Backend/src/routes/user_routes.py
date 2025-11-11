@@ -13,6 +13,11 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import text, cast
 from sqlalchemy.orm import Session, aliased
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+
+from ..schemas.ride_requirements_schema import RideRequirementOut
+from ..services.ride_requirements import get_latest_requirement
+from ..schemas.ride_requirements_confirm import RideRequirementConfirmationIn
+from ..services.ride_requirements_confirmation import create_or_update_confirmation
 from apscheduler.jobstores.base import JobLookupError
 
 # Utils
@@ -675,3 +680,31 @@ def get_employees_by_department(user_id: UUID, db: Session = Depends(get_db)):
         }
         for emp in employees
     ]
+
+
+
+@router.post("/api/confirm-requirements")
+def confirm_requirements(
+    data: RideRequirementConfirmationIn,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+    confirmation = create_or_update_confirmation(
+        db=db,
+        ride_id=data.ride_id,
+        user_id=current_user.employee_id,
+        confirmed=data.confirmed
+    )
+    return {
+        "ride_id": confirmation.ride_id,
+        "user_id": confirmation.user_id,
+        "confirmed": confirmation.confirmed,
+        "confirmed_at": confirmation.confirmed_at
+    }
+
+@router.get("/api/latest-requirement", response_model=RideRequirementOut)
+def get_latest_ride_requirement(db: Session = Depends(get_db)):
+    requirement = get_latest_requirement(db)
+    if not requirement:
+        raise HTTPException(status_code=404, detail="No ride requirements found.")
+    return requirement
