@@ -11,10 +11,10 @@
 
 
 .card-container {
-  max-width: 600px; /* Reduce the width of the card */
-  margin: 1rem auto; /* Center the card with smaller margins */
+  max-width: 600px; 
+  margin: 1rem auto; 
   margin-top: 0;
-  padding: 0.5rem; /* Reduce padding */
+  padding: 0.5rem; 
   background-color: #f8f9fa;
 }
 :host ::ng-deep .p-button:disabled {
@@ -269,11 +269,4 @@
       margin-bottom: 0.25rem;
     }
     
-    /* :host ::ng-deep .card-actions {
-      flex-direction: column;
-    }
-    
-    :host ::ng-deep .card-actions .p-button {
-      width: 100%;
-    } */
   }
