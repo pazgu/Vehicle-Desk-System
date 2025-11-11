@@ -7,7 +7,7 @@
       <label>שם פרטי</label>
       <input type="text" formControlName="first_name" />
        <small *ngIf="addUserForm.get('first_name')?.touched && addUserForm.get('first_name')?.invalid" class="error">
-    שדה חובה
+    חובה להזין שם פרטי
   </small>
     </div>
 
@@ -15,7 +15,7 @@
       <label>שם משפחה</label>
       <input type="text" formControlName="last_name" />
       <small *ngIf="addUserForm.get('last_name')?.touched && addUserForm.get('last_name')?.invalid" class="error">
-        שדה חובה
+        חובה להזין שם משפחה 
       </small>
     </div>
 
@@ -23,7 +23,7 @@
       <label>שם משתמש</label>
       <input type="text" formControlName="username" />
       <small *ngIf="addUserForm.get('username')?.touched && addUserForm.get('username')?.invalid" class="error">
-        שדה חובה
+        חובה להזין שם משתמש
       </small>
     </div>
 
@@ -42,7 +42,7 @@
       <label>טלפון</label>
       <input type="text" formControlName="phone" />
       <small *ngIf="addUserForm.get('phone')?.touched && addUserForm.get('phone')?.hasError('required')" class="error">
-        חובה להזין טלפון
+        חובה להזין מספר טלפון
       </small>
       <small *ngIf="addUserForm.get('phone')?.touched && addUserForm.get('phone')?.hasError('pattern')" class="error">
         הטלפון חייב להכיל 10 ספרות ולהתחיל ב-05
