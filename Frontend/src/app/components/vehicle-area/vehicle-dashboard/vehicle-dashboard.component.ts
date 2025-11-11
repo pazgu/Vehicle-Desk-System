@@ -21,14 +21,13 @@ import { Vehicle } from '../../../models/vehicle.model';
 })
 export class VehicleDashboardComponent implements OnInit {
   vehicles: VehicleInItem[] = [];
-  
+
   mostUsedVehicles: VehicleInItem[] = [];
   showingMostUsed: boolean = false;
 
   inactiveVehicles: Vehicle[] = [];
   showInactive: boolean = false;
 
-  selectedType: string = '';
   statusFilter: string = '';
   typeFilter: string = '';
   showFilters: boolean = false;
@@ -38,11 +37,6 @@ export class VehicleDashboardComponent implements OnInit {
   showMileageUpload: boolean = false;
 
   topUsedVehiclesMap: Record<string, number> = {};
-  vehicleUsageData: {
-    plate_number: string;
-    vehicle_model: string;
-    ride_count: number;
-  }[] = [];
 
   userRole: string | null = null;
 
@@ -62,9 +56,6 @@ export class VehicleDashboardComponent implements OnInit {
     private toastService: ToastService
   ) {}
 
-
-
-
   ngOnInit(): void {
     this.getUserRole();
     this.loadQueryParams();
@@ -80,15 +71,8 @@ export class VehicleDashboardComponent implements OnInit {
           (v) => v.id === vehicleData.id
         );
         if (!alreadyExists) {
-          const departmentName = this.departmentMap.get(
-            vehicleData.department_id || ''
-          );
-          const vehicleWithDepartmentName: VehicleInItem = {
-            ...vehicleData,
-            department:
-              departmentName ||
-              (vehicleData.department_id ? 'מחלקה לא ידועה' : null),
-          };
+          const vehicleWithDepartmentName =
+            this.mapVehicleDepartment(vehicleData);
           this.vehicles.unshift(vehicleWithDepartmentName);
         }
       }
@@ -131,12 +115,7 @@ export class VehicleDashboardComponent implements OnInit {
     this.vehicleService.getAllVehicles().subscribe(
       (data) => {
         this.vehicles = Array.isArray(data)
-          ? data.map((vehicle) => ({
-              ...vehicle,
-              department:
-                this.departmentMap.get(vehicle.department_id || '') ||
-                (vehicle.department_id ? 'מחלקה לא ידועה' : 'לא משוייך למחלקה'),
-            }))
+          ? data.map((vehicle) => this.mapVehicleDepartment(vehicle))
           : [];
         this.mostUsedVehicles = [];
         this.showingMostUsed = false;
@@ -154,7 +133,6 @@ export class VehicleDashboardComponent implements OnInit {
       >(`${environment.apiUrl}/analytics/top-used-vehicles`)
       .subscribe({
         next: (data) => {
-          this.vehicleUsageData = data;
           this.topUsedVehiclesMap = {};
           data.forEach((vehicle) => {
             this.topUsedVehiclesMap[vehicle.plate_number] = vehicle.ride_count;
@@ -209,12 +187,6 @@ export class VehicleDashboardComponent implements OnInit {
     }
   }
 
-  getUsageBarWidth(plateNumber: string): number {
-    const count = this.getVehicleUsageCount(plateNumber);
-    const maxRides = 15;
-    return Math.min((count / maxRides) * 100, 100);
-  }
-
   onMostUsedChange(): void {
     if (this.showingMostUsed) {
       this.showInactive = false;
@@ -229,12 +201,7 @@ export class VehicleDashboardComponent implements OnInit {
       this.vehicleService.getAllVehicles().subscribe(
         (allVehicles) => {
           const vehiclesWithNames = Array.isArray(allVehicles)
-            ? allVehicles.map((vehicle) => ({
-                ...vehicle,
-                department:
-                  this.departmentMap.get(vehicle.department_id || '') ||
-                  (vehicle.department_id ? 'מחלקה לא ידועה' : 'ללא מחלקה'),
-              }))
+            ? allVehicles.map((v) => this.mapVehicleDepartment(v))
             : [];
           this.vehicles = vehiclesWithNames;
 
@@ -314,8 +281,6 @@ export class VehicleDashboardComponent implements OnInit {
   }
 
   isInactive(lastUsedAt: string | null | undefined): boolean {
-    console.log('called with', lastUsedAt);
-
     if (!lastUsedAt) {
       return true;
     }
@@ -324,7 +289,6 @@ export class VehicleDashboardComponent implements OnInit {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-    console.log('returning for', lastUsedAt);
     return lastUsedDate < sevenDaysAgo;
   }
 
@@ -364,18 +328,13 @@ export class VehicleDashboardComponent implements OnInit {
     });
   }
 
-  translateStatus(status: string | null | undefined): string {
-    if (!status) return '';
-    switch (status.toLowerCase()) {
-      case 'available':
-        return 'זמין';
-      case 'in_use':
-        return 'בשימוש';
-      case 'frozen':
-        return 'מוקפא';
-      default:
-        return status;
-    }
+  private mapVehicleDepartment(vehicle: any): any {
+    return {
+      ...vehicle,
+      department:
+        this.departmentMap.get(vehicle.department_id || '') ||
+        (vehicle.department_id ? 'מחלקה לא ידועה' : 'לא משוייך למחלקה'),
+    };
   }
 
   get filteredVehicles() {
@@ -385,10 +344,6 @@ export class VehicleDashboardComponent implements OnInit {
     if (!baseList) return [];
 
     let filtered = [...baseList];
-    console.log(
-      'Filtering vehicles from base list of length:',
-      baseList.length
-    );
 
     if (this.statusFilter) {
       switch (this.statusFilter) {
@@ -435,11 +390,16 @@ export class VehicleDashboardComponent implements OnInit {
 
   loadQueryParams(): void {
     this.route.queryParams.subscribe((params) => {
-      this.statusFilter = this.translateToHebrew(
+      this.statusFilter = this.translate(
         params['status'] || '',
-        'status'
+        'status',
+        'toHebrew'
       );
-      this.typeFilter = this.translateToHebrew(params['type'] || '', 'type');
+      this.typeFilter = this.translate(
+        params['type'] || '',
+        'type',
+        'toHebrew'
+      );
       this.showInactive = params['showInactive'] === 'true';
       this.showingMostUsed = params['showingMostUsed'] === 'true';
     });
@@ -449,12 +409,17 @@ export class VehicleDashboardComponent implements OnInit {
     const queryParams: any = {};
 
     if (this.statusFilter)
-      queryParams['status'] = this.translateToEnglish(
+      queryParams['status'] = this.translate(
         this.statusFilter,
-        'status'
+        'status',
+        'toEnglish'
       );
     if (this.typeFilter)
-      queryParams['type'] = this.translateToEnglish(this.typeFilter, 'type');
+      queryParams['type'] = this.translate(
+        this.typeFilter,
+        'type',
+        'toEnglish'
+      );
     if (this.showInactive) queryParams['showInactive'] = 'true';
     if (this.showingMostUsed) queryParams['showingMostUsed'] = 'true';
 
@@ -464,27 +429,26 @@ export class VehicleDashboardComponent implements OnInit {
       queryParamsHandling: 'replace',
     });
   }
-  translateToEnglish(value: string, type: 'status' | 'type'): string {
-    if (type === 'status') {
-      const statusMap: { [key: string]: string } = {
-        זמין: 'available',
-        בשימוש: 'in_use',
-        מוקפא: 'frozen',
-      };
-      return statusMap[value] || value;
-    }
 
-    return value;
-  }
-
-  translateToHebrew(value: string, type: 'status' | 'type'): string {
+  translate(
+    value: string,
+    type: 'status' | 'type',
+    direction: 'toEnglish' | 'toHebrew'
+  ): string {
     if (type === 'status') {
       const statusMap: { [key: string]: string } = {
         available: 'זמין',
         in_use: 'בשימוש',
         frozen: 'מוקפא',
       };
-      return statusMap[value] || value;
+
+      if (direction === 'toHebrew') {
+        return statusMap[value] || value;
+      } else {
+        return (
+          Object.keys(statusMap).find((k) => statusMap[k] === value) || value
+        );
+      }
     }
 
     return value;
