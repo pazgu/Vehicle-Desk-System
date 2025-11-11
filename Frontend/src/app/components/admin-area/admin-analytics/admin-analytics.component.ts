@@ -20,16 +20,13 @@ import {
 } from '../../../models/vehicle-dashboard-item/vehicle-out-item.module';
 import { ToastService } from '../../../services/toast.service';
 import { TopNoShowUser } from '../../../models/no-show-stats.model';
-import { UserService } from '../../../services/user_service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UserOrdersExportComponent } from '../user-orders-export/user-orders-export.component';
 import { NoShowsComponent } from '../no-shows/no-shows.component';
 pdfMake.vfs = pdfFonts.vfs;
 import { ViewChild } from '@angular/core';
 
-
 @Component({
-  
   selector: 'app-admin-analytics',
   standalone: true,
   imports: [
@@ -39,14 +36,13 @@ import { ViewChild } from '@angular/core';
     TabViewModule,
     DropdownModule,
     UserOrdersExportComponent,
-    NoShowsComponent
+    NoShowsComponent,
   ],
   templateUrl: './admin-analytics.component.html',
   styleUrls: ['./admin-analytics.component.css'],
 })
-
 export class AdminAnalyticsComponent implements OnInit {
-    @ViewChild(NoShowsComponent) noShowsComponent!: NoShowsComponent;
+  @ViewChild(NoShowsComponent) noShowsComponent!: NoShowsComponent;
 
   vehicleChartData: any;
   vehicleChartOptions: any;
@@ -69,28 +65,20 @@ export class AdminAnalyticsComponent implements OnInit {
   allTimeChartData: any;
   allTimeChartOptions: any;
   totalNoShows: number = 0;
-  topNoShowUsers: TopNoShowUser[] = [];
-  
   private departmentsMap = new Map<string, string>();
-
   filterOnePlus: boolean = false;
   filterCritical: boolean = false;
   allNoShowUsers: TopNoShowUser[] = [];
-
   topUsedVehiclesData: any;
   topUsedVehiclesOptions: any;
   monthlyStatsChartData: any;
   monthlyStatsChartOptions: any;
-
   allTimeStatsChartData: any;
   allTimeStatsChartOptions: any;
   uniqueNoShowUsers: number = 0;
   noShowExportWarningVisible: boolean = false;
-
-
   vehicleTypes: string[] = [];
   rideStatuses: string[] = [];
-
   months = [
     { value: '1', label: 'ינואר' },
     { value: '2', label: 'פברואר' },
@@ -123,28 +111,15 @@ export class AdminAnalyticsComponent implements OnInit {
     this.loadVehicleChart();
     this.loadRideChart();
     this.loadFrozenVehicles();
-this.noShowsComponent.loadNoShowStatistics();
+    this.noShowsComponent.loadNoShowStatistics();
     this.noShowsComponent.loadDepartments();
-this.noShowsComponent.filteredNoShowUsers = [] as TopNoShowUser[];
+    this.noShowsComponent.filteredNoShowUsers = [] as TopNoShowUser[];
     this.loadVehicleTypes();
     this.loadRideStatuses();
-
     this.loadTopUsedVehiclesChart();
     this.loadAllTimeTopUsedVehiclesChart();
-
     this.socketService.rideStatusUpdated$.subscribe(() => {
       this.loadRideChart();
-    });
-    this.route.queryParams.subscribe((params) => {
-      // Read query params if they exist, else keep defaults
-      this.noShowSortOption = params['noShowSort'] || 'countAsc';
-      this.selectedSortOption = params['selectedSort'] || 'countAsc';
-      if (params['month']) {
-        this.selectedMonth = String(+params['month']); // convert string to number
-      }
-      if (params['year']) {
-        this.selectedYear = String(+params['year']); // convert string to number
-      }
     });
 
     this.socketService.vehicleStatusUpdated$.subscribe(() => {
@@ -171,11 +146,8 @@ this.noShowsComponent.filteredNoShowUsers = [] as TopNoShowUser[];
         },
       });
   }
-   refreshNoShows() {
-    if (this.noShowsComponent) {
-      this.noShowsComponent.loadNoShowStatistics();
-    }}
-onMonthOrYearChange() {
+  
+  onMonthOrYearChange() {
     this.updateQueryParams({
       month: this.selectedMonth,
       year: this.selectedYear,
@@ -194,9 +166,8 @@ onMonthOrYearChange() {
       });
   }
 
-  // 🆕 פונקציה חדשה לטיפול בשינוי הפילטר
   onVehicleTypeFilterChange() {
-    this.loadVehicleChart(); // טען מחדש את הגרף עם הפילטר החדש
+    this.loadVehicleChart(); 
   }
 
   onRideStatusFilterChange() {
@@ -225,8 +196,6 @@ onMonthOrYearChange() {
       this.reloadChart();
     }
   }
-
- 
 
   private countFreezeReasons(frozenVehicles: VehicleOutItem[]) {
     const freezeReasonCounts: Record<FreezeReason, number> = {
@@ -607,50 +576,10 @@ onMonthOrYearChange() {
     return statusMap[status] || status;
   }
 
- 
-
   resolveDepartment(departmentId: string): string {
     return this.departmentsMap.get(departmentId) || 'מחלקה לא ידועה';
   }
 
-  applyNoShowFilter() {
-    let filtered = this.allNoShowUsers;
-
-    if (this.filterOnePlus) {
-      filtered = filtered.filter(
-        (u) => (u.no_show_count ?? 0) >= 1 && (u.no_show_count ?? 0) <= 2
-      );
-    }
-
-    if (this.filterCritical) {
-      filtered = filtered.filter((u) => (u.no_show_count ?? 0) >= 3);
-    }
-    if (
-      !['countAsc', 'countDesc', 'nameAsc', 'nameDesc'].includes(
-        this.noShowSortOption
-      )
-    ) {
-      this.noShowSortOption = 'countAsc';
-    }
-    this.updateQueryParams({ noShowSort: this.noShowSortOption });
-
-    this.noShowsComponent.filteredNoShowUsers = this.sortUsers(filtered);
-  }
-
-  sortUsers(users: any[]) {
-    switch (this.noShowSortOption) {
-      case 'countAsc':
-        return users.sort((a, b) => a.no_show_count - b.no_show_count);
-      case 'countDesc':
-        return users.sort((a, b) => b.no_show_count - a.no_show_count);
-      case 'nameAsc':
-        return users.sort((a, b) => a.name.localeCompare(b.name));
-      case 'nameDesc':
-        return users.sort((a, b) => b.name.localeCompare(a.name));
-      default:
-        return users;
-    }
-  }
 
   public exportPDF(): void {
     const isVehicleTab = this.activeTabIndex === 0;
@@ -904,16 +833,15 @@ onMonthOrYearChange() {
       ? this.rideChartData
       : this.topUsedVehiclesData;
 
-  const title = isNoShowTab
-  ? 'טבלת אי-הגעות'
-  : isVehicleTab
-  ? this.selectedVehicleType !== ''
-    ? `סטטוס רכבים (${this.selectedVehicleType})`
-    : 'סטטוס רכבים (כל הסוגים)'
-  : isRideTab
-  ? 'סטטוס נסיעות'
-  : 'רכבים בשימוש גבוה';
-
+    const title = isNoShowTab
+      ? 'טבלת אי-הגעות'
+      : isVehicleTab
+      ? this.selectedVehicleType !== ''
+        ? `סטטוס רכבים (${this.selectedVehicleType})`
+        : 'סטטוס רכבים (כל הסוגים)'
+      : isRideTab
+      ? 'סטטוס נסיעות'
+      : 'רכבים בשימוש גבוה';
 
     const timestamp = new Date().toISOString().substring(0, 10);
     let data: any[] = [];
@@ -1138,7 +1066,6 @@ onMonthOrYearChange() {
       }));
     }
 
-    // Add BOM for proper UTF-8 encoding (for Hebrew support)
     const csv = '\uFEFF' + Papa.unparse(data);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     saveAs(blob, `${title}-${timestamp}.csv`);
@@ -1318,9 +1245,6 @@ onMonthOrYearChange() {
                 y: {
                   title: { display: true, text: 'רכב' },
                   ticks: {
-                    // beginAtZero: true,
-                    // stepSize: 1,
-                    // precision: 0,
                     callback: (value: any, index: number, ticks: any) =>
                       ticks.length - index,
                   },
