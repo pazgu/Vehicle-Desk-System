@@ -9,7 +9,7 @@
 }
 
 .page-container {
-  max-width: 83%;
+  max-width: 82%;
   margin: 0 auto;
   background-color: rgb(255, 255, 255);
   border-radius: 14px;
@@ -95,7 +95,7 @@
   max-width: fit-content;
   background-color: rgb(249, 245, 245);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.276);
-  margin-right: -145px;
+  margin-right: -150px;
   margin-top: -90px;
 }
 
