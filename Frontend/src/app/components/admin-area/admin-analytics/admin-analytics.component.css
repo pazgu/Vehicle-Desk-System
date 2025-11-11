@@ -2,10 +2,9 @@
 *,
 *::before,
 *::after {
-  box-sizing: border-box;        /* keep this */
+  box-sizing: border-box;        
 }
 
-/* Put background only on the page, not on every element */
 html, body {
   background: white;
   margin: 0;
@@ -78,37 +77,6 @@ body {
   100% { background-position: 200% 0; }
 }
 
-
-
-.sort-container label {
-  color: #4a5568;
-  font-weight: 700;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
-}
-
-.sort-container select {
-  padding: 0.75rem 1.2rem;
-  border-radius: 12px;
-  border: 2px solid rgba(234, 102, 102, 0.2);
-  font-size: 0.9rem;
-  font-family: 'Alef', sans-serif;
-  font-weight: 600;
-  background: linear-gradient(145deg, #ffffff, #f8fafc);
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.06),
-    0 1px 0 rgba(255, 255, 255, 0.9) inset;
-  min-width: 160px;
-  cursor: pointer;
-}
-
-.sort-container{
-  margin-top: 20px;
-  margin-bottom: 20px;
-}
-
-
-
-
 .export-buttons {
   display: flex;
   justify-content: center;
@@ -166,7 +134,6 @@ body {
   transform: translateY(-1px);
 }
 
-/* Tab Buttons - Compact */
 .tab-buttons {
   display: flex;
   justify-content: center;
@@ -251,7 +218,6 @@ body {
   transform: translateY(-1px);
 }
 
-/* Chart Container - Much Smaller */
 .chart-container {
   width: 100%;
   max-width: 400px;
@@ -261,7 +227,6 @@ body {
   overflow: hidden;
 }
 
-/* PrimeNG TabView Override */
 .p-tabview .p-tabview-panels {
   background: transparent !important;
   border: none !important;
@@ -272,7 +237,6 @@ body {
   display: none !important;
 }
 
-/* Section Headings - Much Smaller */
 .section-heading {
   font-family: 'Alef', sans-serif;
   font-size: 1.1rem;
@@ -300,7 +264,6 @@ body {
   border-radius: 2px;
 }
 
-/* Chart Styling - Much Smaller and Controlled */
 .p-chart {
   transition: all 0.3s ease;
   border-radius: 10px;
@@ -324,7 +287,6 @@ body {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
 }
 
-/* Date Filter Container - Compact */
 .date-filter-container {
   display: flex;
   align-items: center;
@@ -367,7 +329,6 @@ body {
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
 }
 
-/* Filter and Toggle Buttons - Compact */
 .filter-button,
 .toggle-view-button {
   background: linear-gradient(145deg, #003366, #004488);
@@ -418,7 +379,6 @@ body {
   margin-bottom: 1rem;
 }
 
-/* Usage Legend - Compact */
 .usage-legend {
   display: flex;
   justify-content: center;
@@ -484,7 +444,6 @@ body {
   background: linear-gradient(145deg, #FF5252, #D32F2F);
 }
 
-/* Responsive Design */
 @media (max-width: 1024px) {
   .analytics-container {
     padding: 1rem;
@@ -644,174 +603,8 @@ body {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
-/* Summary Cards - Enhanced */
-.summary-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2.5rem;
-  direction: rtl;
-}
-
-.summary-cards .card {
-  background: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  text-align: center;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-.warning-row:hover {
-  background: linear-gradient(135deg, #fef5e7 0%, #feebc8 100%) !important;
-  box-shadow: 0 4px 12px rgba(221, 107, 32, 0.15);
-}
-
-.summary-cards .card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #942222, #dc2626);
-}
 
 
-
-.summary-cards .card-icon {
-  margin-bottom: 1rem;
-  display: block;
-}
-
-.summary-cards .card-icon i {
-  font-size: 2.5rem;
-  color: #942222;
-}
-
-.summary-cards .card-content {
-  font-family: 'Alef', sans-serif;
-}
-
-.summary-cards .card-number {
-  font-size: 2.2rem;
-  font-weight: 800;
-  color: #942222;
-  margin-bottom: 0.5rem;
-  text-shadow: 0 2px 4px rgba(148, 34, 34, 0.1);
-}
-
-.summary-cards .card-label {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #4a5568;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.summary-cards .card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-}
-
-/* No-Show Users Table - Enhanced Red Theme */
-.styled-table {
-  width: 100%;
-  margin: 2rem 0;
-  font-family: 'Alef', sans-serif;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  direction: rtl;
-  position: relative;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
-}
-
-/* Table Header Styling - Red Theme */
-.styled-table thead {
-background: linear-gradient(135deg, #942222, #c53030); /* Red gradient */
-border-bottom: none;
-}
-
-
-.styled-table th {
-padding: 1.2rem 2rem;
-text-align: center;
-font-weight: 700;
-font-size: 1rem;
-color: white; /* Make text white for contrast */
-text-transform: uppercase;
-letter-spacing: 1px;
-position: relative;
-background: transparent;
-border: none;
-}
-
-
-
-/* Table Data Styling - Enhanced */
-.styled-table td {
-padding: 1rem 2rem;
-text-align: center;
-border: none;
-font-size: 0.95rem;
-font-weight: 500;
-color: #5c3535; /* A dark, reddish-brown for better contrast */
-position: relative;
-}
-
-/* Special styling for different columns
-.styled-table .user-id {
-  font-weight: 800;
-  color: #942222;
-  font-size: 1.1rem;
-  font-family: 'Courier New', monospace;
-  background: linear-gradient(135deg, rgba(148, 34, 34, 0.05), rgba(148, 34, 34, 0.02));
-  border-radius: 8px;
-  position: relative;
-}
-
-.styled-table .user-id::before {
-  content: '#';
-  color: rgba(148, 34, 34, 0.6);
-  margin-left: 0.3rem;
-  font-weight: 400;
-}
-
-.styled-table .user-name {
-  font-weight: 700;
-  color: #1a202c;
-  font-size: 1.05rem;
-}
-
-.styled-table .user-department {
-  color: #4a5568;
-  font-style: italic;
-  font-weight: 500;
-  background: linear-gradient(135deg, rgba(74, 85, 104, 0.05), rgba(74, 85, 104, 0.02));
-  border-radius: 6px;
-  padding: 0.5rem;
-} */
-
-
-
-/* Enhanced hover effects for individual cells */
-
-
-/* Table container for better presentation */
-.table-container {
-  overflow-x: auto;
-  border-radius: 12px;
-  position: relative;
-  background: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-
-/* No Data State Styling */
 .no-data-state {
   display: flex;
   flex-direction: column;
@@ -844,111 +637,8 @@ position: relative;
   margin: 20px;
 }
 
-/* Responsive design enhancements */
-@media (max-width: 768px) {
-  .styled-table th,
-  .styled-table td {
-    padding: 1rem 1.2rem;
-    font-size: 0.9rem;
-  }
-  
-  .styled-table th {
-    font-size: 0.85rem;
-    letter-spacing: 1px;
-  }
-  
-  .styled-table .no-show-count {
-    font-size: 1.1rem;
-  }
-  
-  .summary-cards {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-  
-  .summary-cards .card {
-    padding: 1.5rem;
-  }
-  
-  .summary-cards .card-number {
-    font-size: 1.8rem;
-  }
-}
 
-@media (max-width: 480px) {
-  .styled-table {
-    font-size: 0.8rem;
-  }
-  
-  .styled-table th,
-  .styled-table td {
-    padding: 0.8rem 1rem;
-  }
-  
-  .styled-table th {
-    font-size: 0.75rem;
-    padding: 1.2rem 1rem;
-  }
-  
-  .styled-table .no-show-count::before {
-    display: none;
-  }
-  
-  .summary-cards .card-icon {
-    font-size: 2rem;
-  }
-  
-  .summary-cards .card-number {
-    font-size: 1.6rem;
-  }
-}
 
-/* Loading state for table */
-.table-loading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 250px;
-  background: linear-gradient(135deg, rgba(148, 34, 34, 0.05), rgba(255, 255, 255, 0.8));
-  border-radius: 20px;
-  backdrop-filter: blur(15px);
-  margin: 2rem 0;
-  border: 2px solid rgba(148, 34, 34, 0.1);
-}
-
-.table-loading::after {
-  content: '';
-  width: 50px;
-  height: 50px;
-  border: 5px solid rgba(148, 34, 34, 0.3);
-  border-top: 5px solid #942222;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Additional subtle animations */
-.styled-table tbody tr::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(148, 34, 34, 0.03), rgba(185, 28, 28, 0.02));
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  pointer-events: none;
-  border-radius: 12px;
-}
-
-/* .styled-table tbody tr:hover {
-background: linear-gradient(135deg, #ffebee 0%, #ffe0e0 100%) !important;
-} */
 
 .critical-row {
   background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%) !important;

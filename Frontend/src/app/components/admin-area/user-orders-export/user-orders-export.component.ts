@@ -71,11 +71,7 @@ export class UserOrdersExportComponent implements OnInit {
       const userOrdersPromises = users.map(async (user: any) => {
         const rides = await this.myRidesService.getAllOrders(user.employee_id).toPromise();
 
-        // Debug: Log first ride to see the structure
-        if (rides && rides.length > 0) {
-          console.log('Sample ride data:', rides[0]);
-          console.log('Year filter:', year, 'Month filter:', month);
-        }
+       
 
         const filtered = rides.filter((ride: any) => {
           // Check status (try different possible field names and values)
@@ -88,13 +84,11 @@ export class UserOrdersExportComponent implements OnInit {
           );
           
           if (!isCompleted) {
-            console.log('Filtered out - status:', status);
             return false;
           }
           
           const dateValue = ride.start_datetime || ride.end_datetime || ride.submitted_at;
 if (!dateValue) {
-  console.log('Filtered out - no date', ride);
   return false;
 }
 
@@ -102,14 +96,11 @@ if (!dateValue) {
           const d = new Date(dateValue);
           const matchesYear = d.getFullYear() === year;
           const matchesMonth = !month || d.getMonth() + 1 === month;
-          
-          console.log('Date check:', dateValue, 'Year:', d.getFullYear(), 'Month:', d.getMonth() + 1, 'Matches:', matchesYear && matchesMonth);
-          
+                  
           return matchesYear && matchesMonth;
         });
 
-        console.log(`User ${user.username}: ${filtered.length} completed orders`);
-
+    
         return {
           username: user.username || 'N/A',
           email: user.email || 'N/A',
