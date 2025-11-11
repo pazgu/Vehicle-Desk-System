@@ -1091,7 +1091,7 @@ export class AdminAnalyticsComponent implements OnInit {
     this.noShowExportWarningVisible = true;
     setTimeout(() => {
       this.noShowExportWarningVisible = false;
-    }, 4000); // ⏱️ 4 seconds
+    }, 4000); 
   }
 
   private reloadChart() {
@@ -1198,9 +1198,6 @@ export class AdminAnalyticsComponent implements OnInit {
               y: {
                 title: { display: true, text: 'רכב' },
                 ticks: {
-                  // beginAtZero: true,
-                  // stepSize: 1,
-                  // precision: 0,
                   callback: (value: any, index: number, ticks: any) =>
                     ticks.length - index,
                 },
@@ -1314,10 +1311,8 @@ export class AdminAnalyticsComponent implements OnInit {
               y: {
                 title: { display: true, text: 'רכב' },
                 ticks: {
-                  autoSkip: false, // ensures all labels show
+                  autoSkip: false, 
 
-                  // stepSize: 1,
-                  // precision: 0,
                   callback: (value: any, index: number, ticks: any) =>
                     ticks.length - index,
                 },
