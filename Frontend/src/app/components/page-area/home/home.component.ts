@@ -886,12 +886,12 @@ onBeforeUnload(e: BeforeUnloadEvent) {
     getVehicleTypes(): string[] {
         return [...new Set(this.allCars.map(car => car.type))];
     }
-    isDuringInspectorClosure(startTime: string): boolean {
-        const startMinutes = this.timeToMinutes(startTime);
-        const startRange = this.timeToMinutes('11:15');
-        const endRange = this.timeToMinutes('12:15');
-        return startMinutes >= startRange && startMinutes <= endRange;
-    }
+    // isDuringInspectorClosure(startTime: string): boolean {
+    //     const startMinutes = this.timeToMinutes(startTime);
+    //     const startRange = this.timeToMinutes('11:15');
+    //     const endRange = this.timeToMinutes('12:15');
+    //     return startMinutes >= startRange && startMinutes <= endRange;
+    // }
     confirmInspectorWarning(): void {
         this.showInspectorWarningModal = false;
         this.submit(true);
