@@ -220,7 +220,8 @@ onBeforeUnload(e: BeforeUnloadEvent) {
                 this.futureDateTimeValidator(),
                 this.tripDurationValidator(),
                 this.sameDayValidator(),
-                this.sameDateNightRideValidator()
+                this.sameDateNightRideValidator(),
+                this.inspectorClosureTimeValidator()
             ]
         });
         this.cityService.getCity('תל אביב').subscribe((city) => {
@@ -836,6 +837,43 @@ onBeforeUnload(e: BeforeUnloadEvent) {
             return dateStr;
         }
     }
+
+    inspectorClosureTimeValidator(): ValidatorFn {
+        return (control: AbstractControl): ValidationErrors | null => {
+            const formGroup = control as FormGroup;
+            const startHour = formGroup.get('start_hour')?.value;
+            const startMinute = formGroup.get('start_minute')?.value;
+            const endHour = formGroup.get('end_hour')?.value;
+            const endMinute = formGroup.get('end_minute')?.value;
+            if (!startHour || !startMinute || !endHour || !endMinute) {
+                return null;
+            }
+            const startTime = `${startHour}:${startMinute}`;
+            const endTime = `${endHour}:${endMinute}`;
+            const isInClosureRange = (time: string): boolean => {
+                const timeInMinutes = this.timeToMinutes(time);
+                const closureStart = this.timeToMinutes('11:15');
+                const closureEnd = this.timeToMinutes('12:15');
+                return timeInMinutes >= closureStart && timeInMinutes <= closureEnd;
+            };
+            if (isInClosureRange(startTime)) {
+                return { 
+                    inspectorClosureTime: { 
+                        message: 'שגיאה: זמן תחילת הנסיעה לא יכול להיות בין השעות 11:15 ל-12:15 (שעות סגירת מפקח)'
+                    } 
+                };
+            }
+            if (isInClosureRange(endTime)) {
+                return { 
+                    inspectorClosureTime: { 
+                        message: 'שגיאה: זמן סיום הנסיעה לא יכול להיות בין השעות 11:15 ל-12:15 (שעות סגירת מפקח)'
+                    } 
+                };
+            }
+            return null;
+        };
+    }
+
     calculateMinDate(): string {
         const date = new Date();
         return date.toISOString().split('T')[0];
@@ -1060,6 +1098,13 @@ onBeforeUnload(e: BeforeUnloadEvent) {
         const selectedCar = this.allCars.find(car => car.id === selectedCarId);
         const selectedCarType = selectedCar?.type?.toLowerCase() || '';
         const reasonControl = this.rideForm.get('four_by_four_reason');
+         if (this.rideForm.errors?.['inspectorClosureTime']) {
+            this.toastService.show(
+                'לא ניתן לשלוח בקשה: זמני הנסיעה חופפים לשעות סגירת המפקח (11:15-12:15)',
+                'error'
+            );
+            return;
+        }
         if ((selectedCarType.includes('4x4') || selectedCarType.includes('jeep') || selectedCarType.includes('van')) && (!reasonControl?.value || reasonControl.value.trim() === '')) {
             reasonControl?.setErrors({ required: true });
             reasonControl?.markAsTouched();

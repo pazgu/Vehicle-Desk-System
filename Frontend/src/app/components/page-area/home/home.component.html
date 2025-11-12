@@ -111,14 +111,6 @@
                   class="time-select custom-hour-dropdown" [searchable]="false" [clearable]="false">
                 </ng-select>
               </div>
-              <small *ngIf="rideForm.errors?.['futureDateTime']" class="error-text">
-                {{ rideForm.errors?.['futureDateTime']?.['message'] }}
-              </small>
-              <small
-                *ngIf="rideForm.get('ride_period')?.value === 'morning' && f.start_time.touched && f.start_time.errors?.['required']"
-                class="error-text">
-                חובה למלא את שדה זה
-              </small>
             </div>
 
             <div class="form-field-group">
@@ -131,9 +123,26 @@
                   class="time-select custom-hour-dropdown" [searchable]="false" [clearable]="false">
                 </ng-select>
               </div>
-              <small
-                *ngIf="rideForm.get('ride_period')?.value === 'morning' && f.end_time.touched && f.end_time.errors?.['required']"
-                class="error-text">
+            </div>
+          </div>
+          
+          <div class="time-fields-container">
+            <div class="info-text-container">
+              <small class="info-text">
+                * לא ניתן להזמין נסיעות בשעות 11:15-12:15 (שעות סגירת מפקח)
+              </small>
+            </div>
+            <div class="error-messages-container">
+              <small *ngIf="rideForm.errors?.['futureDateTime']" class="error-text">
+                {{ rideForm.errors?.['futureDateTime']?.['message'] }}
+              </small>
+              <small *ngIf="rideForm.errors?.['inspectorClosureTime']" class="error-text">
+                {{ rideForm.errors?.['inspectorClosureTime']?.['message'] }}
+              </small>
+              <small *ngIf="f.start_time.touched && f.start_time.errors?.['required']" class="error-text">
+                חובה למלא את שדה זה
+              </small>
+              <small *ngIf="f.end_time.touched && f.end_time.errors?.['required']" class="error-text second-error">
                 חובה למלא את שדה זה
               </small>
             </div>
