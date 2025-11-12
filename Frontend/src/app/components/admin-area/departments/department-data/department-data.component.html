@@ -2,7 +2,7 @@
   <h2>נתוני מחלקות</h2>
   <button (click)="toggleNewDepartmentMode()" 
           [class]="isNewDepartmentMode ? 'closed-button' : 'add-department-button'">
-    {{ isNewDepartmentMode ? 'סגור חלון ' : '+ הוסף מחלקה חדשה' }}
+    {{ isNewDepartmentMode ? 'סגור חלון ' : '  הוסף מחלקה חדשה +' }}
   </button>
   
   <div *ngIf="isNewDepartmentMode" class="new-department-form">
