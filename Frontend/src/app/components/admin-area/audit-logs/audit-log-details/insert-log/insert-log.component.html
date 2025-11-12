@@ -1,0 +1,177 @@
+<div *ngIf="log" class="dalta-card insert-data">
+  <h4>נתונים חדשים</h4>
+
+  <!-- User -->
+  <div *ngIf="log.entity_type === 'User'" class="entity-fields">
+    <div class="field-row" *ngFor="let field of [
+      {label: 'תפקיד', value: translateUserRole(log.change_data.role)},
+      {label: 'אימייל', value: log.change_data.email},
+      {label: 'טלפון', value: log.change_data.phone || '-'},
+      {label: 'שם משתמש', value: log.change_data.username},
+      {label: 'שם פרטי', value: log.change_data.first_name},
+      {label: 'שם משפחה', value: log.change_data.last_name},
+      {label: 'מזהה עובד', value: log.change_data.employee_id},
+      {label: 'מחלקה', value: getDeptName(log.change_data.department_id)},
+      {label: 'רישיון ממשלתי', value: log.change_data.has_government_license ? 'כן' : 'לא'}
+    ]">
+      <div class="field-label">{{ field.label }}</div>
+      <div class="field-value">{{ field.value }}</div>
+    </div>
+
+    <div class="field-row">
+      <div class="field-label">קובץ רישיון</div>
+      <div class="field-value">
+        <ng-container *ngIf="log.change_data.license_file_url; else noLicenseFile">
+          <a [href]="log.change_data.license_file_url" target="_blank">קובץ רישיון</a>
+        </ng-container>
+        <ng-template #noLicenseFile>לא קיים</ng-template>
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field-label">תוקף רישיון</div>
+      <div class="field-value">
+        <ng-container *ngIf="log.change_data.license_expiry_date; else noExpiryDate">
+          {{ log.change_data.license_expiry_date | date:'dd/MM/yyyy' }}
+        </ng-container>
+        <ng-template #noExpiryDate>לא קיים</ng-template>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vehicle -->
+  <div *ngIf="log.entity_type === 'Vehicle'" class="entity-fields">
+    <div *ngIf="log.change_data?.image_url" class="vehicle-image-row">
+      <img [src]="log.change_data.image_url" alt="תמונת רכב"
+        style="cursor: pointer; max-height: 120px; margin-bottom: 1rem;"
+        (click)="vehicleRedirect(log.entity_id)" />
+    </div>
+    <div class="field-row"><div class="field-label">מספר רישוי</div><div class="field-value">{{ log.change_data.plate_number }}</div></div>
+    <div class="field-row"><div class="field-label">סוג רכב</div><div class="field-value">{{ log.change_data.type }}</div></div>
+    <div class="field-row"><div class="field-label">סטטוס</div><div class="field-value">{{ translateVehicleStatus(log.change_data.status) }}</div></div>
+    <div class="field-row"><div class="field-label">סוג דלק</div><div class="field-value">{{ translateFuelType(log.change_data.fuel_type) }}</div></div>
+    <div class="field-row"><div class="field-label">מודל רכב</div><div class="field-value">{{ log.change_data.vehicle_model }}</div></div>
+    <div class="field-row"><div class="field-label">מחלקה</div><div class="field-value">{{ getDeptName(log.change_data.department_id) }}</div></div>
+    <div class="field-row"><div class="field-label">ק"מ נוכחי</div><div class="field-value">{{ log.change_data.mileage }}</div></div>
+    <div class="field-row"><div class="field-label">תאריך סיום ליסינג</div><div class="field-value">{{ log.change_data.lease_expiry | date:'dd/MM/yyyy' }}</div></div>
+    <div class="field-row"><div class="field-label">סיבת הקפאה</div><div class="field-value">{{ translateFreezeReason(log.change_data.freeze_reason) || '-' }}</div></div>
+    <div class="field-row"><div class="field-label">פרטי הקפאה</div><div class="field-value">{{ log.change_data.freeze_details || '-' }}</div></div>
+    <div class="field-row"><div class="field-label">שימוש אחרון</div><div class="field-value">{{ log.change_data.last_used_at ? (log.change_data.last_used_at | date:'dd/MM/yyyy HH:mm') : '-' }}</div></div>
+  </div>
+
+  <!-- Ride -->
+  <div *ngIf="log.entity_type === 'Ride'" class="entity-fields">
+
+                <div class="field-row" *ngIf="log.change_data.id">
+                  <div class="field-label">{{ getRideFieldLabel('id') }}</div>
+                  <div class="field-value">{{ log.change_data.id }}</div>
+                </div>
+
+                <div class="field-row"
+                  *ngIf="log.change_data.start_location || log.change_data.stop || log.change_data.destination || log.change_data.extra_stops">
+                  <div class="field-label">מסלול</div>
+                  <div class="field-value">{{ formatRoute(log.change_data) }}</div>
+                </div>
+
+                <ng-container *ngIf="log.change_data.user_id">
+                  <div class="field-row">
+                    <div class="field-label">{{ getRideFieldLabel('user_id') }}</div>
+                    <div class="field-value">{{ getUserFullName(log.change_data.user_id) }}</div>
+                  </div>
+                </ng-container>
+
+                <ng-container *ngIf="log.change_data.vehicle_id">
+                  <div class="field-row">
+                    <div class="field-label">מספר לוחית רישוי</div>
+                    <div class="field-value">{{ getPlateNumberById(log.change_data.vehicle_id) }}</div>
+                  </div>
+                  <div class="field-row">
+                    <div class="field-label">דגם רכב</div>
+                    <div class="field-value">{{ getVehicleModelById(log.change_data.vehicle_id) }}</div>
+                  </div>
+                </ng-container>
+
+                <ng-container *ngIf="'four_by_four_reasonn' in log.change_data">
+                  <div class="field-row">
+                    <div class="field-label">{{ getRideFieldLabel('four_by_four_reasonn') }}</div>
+                    <div class="field-value">
+                      {{ log.change_data.four_by_four_reasonn || '-' }}
+                    </div>
+                  </div>
+                </ng-container>
+
+                <ng-container *ngIf="'start_datetime' in log.change_data">
+                  <div class="field-row">
+                    <div class="field-label">{{ getRideFieldLabel('start_datetime') }}</div>
+                    <div class="field-value">
+                      {{ log.change_data.start_datetime | date:'dd/MM/yyyy HH:mm' }}
+                    </div>
+                  </div>
+                </ng-container>
+
+                <ng-container *ngIf="'end_datetime' in log.change_data">
+                  <div class="field-row">
+                    <div class="field-label">{{ getRideFieldLabel('end_datetime') }}</div>
+                    <div class="field-value">
+                      {{ log.change_data.end_datetime | date:'dd/MM/yyyy HH:mm' }}
+                    </div>
+                  </div>
+                </ng-container>
+
+                <ng-container *ngIf="'submitted_at' in log.change_data">
+                  <div class="field-row">
+                    <div class="field-label">{{ getRideFieldLabel('submitted_at') }}</div>
+                    <div class="field-value">
+                      {{ log.change_data.submitted_at | date:'dd/MM/yyyy HH:mm' }}
+                    </div>
+                  </div>
+                </ng-container>
+
+                <ng-container *ngFor="let key of objectKeys(log.change_data)">
+                  <ng-container *ngIf="
+      !['id', 'start_location', 'stop', 'destination', 'extra_stops', 'user_id', 'vehicle_id', 'override_user_id',
+      'actual_pickup_time', 'feedback_submitted', 'rejection_reason', 'completion_date', 'isArchive', 'emergency_event', 'four_by_four_reasonn',
+      'start_datetime', 'end_datetime', 'submitted_at'].includes(key) && log.change_data[key]
+    ">
+                    <div class="field-row">
+                      <div class="field-label">{{ getRideFieldLabel(key) }}</div>
+                      <div class="field-value" [ngClass]="
+            key === 'license_check_passed' || key === 'isArchive'
+                ? (log.change_data[key] ? 'boolean-yes' : 'boolean-no')
+                : ''
+        ">
+                        <ng-container [ngSwitch]="key">
+                          <ng-container *ngSwitchCase="'status'">
+                            {{ translateRideStatus(log.change_data[key]) }}
+                          </ng-container>
+                          <ng-container *ngSwitchCase="'ride_type'">
+                            {{ translateRideType(log.change_data[key]) }}
+                          </ng-container>
+                          <ng-container *ngSwitchDefault>
+                            <ng-container [ngSwitch]="true">
+                              <ng-container *ngSwitchCase="log.change_data[key] === true">כן</ng-container>
+                              <ng-container *ngSwitchCase="log.change_data[key] === false">לא</ng-container>
+                              <ng-container *ngSwitchCase="log.change_data[key] === null">-</ng-container>
+                              <ng-container *ngSwitchDefault>
+                                <ng-container *ngIf="key.endsWith('datetime') || key.endsWith('at'); else plainValue">
+                                  {{ log.change_data[key] | date:'dd/MM/yyyy HH:mm' }}
+                                </ng-container>
+                                <ng-template #plainValue>{{ log.change_data[key] }}</ng-template>
+                              </ng-container>
+                            </ng-container>
+                          </ng-container>
+                        </ng-container>
+                      </div>
+                    </div>
+                  </ng-container>
+                </ng-container>
+              
+  </div>
+
+  <!-- Department -->
+  <div *ngIf="log.entity_type === 'Department'" class="entity-fields">
+    <div class="field-row"><div class="field-label">מזהה מחלקה</div><div class="field-value">{{ log.change_data.id }}</div></div>
+    <div class="field-row"><div class="field-label">שם מחלקה</div><div class="field-value">{{ log.change_data.name }}</div></div>
+    <div class="field-row"><div class="field-label">שם מנהל מחלקה</div><div class="field-value">{{ getUsername(log.change_data.supervisor_id) }}</div></div>
+  </div>
+</div>
