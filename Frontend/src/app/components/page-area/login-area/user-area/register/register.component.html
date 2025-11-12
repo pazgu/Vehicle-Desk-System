@@ -39,7 +39,7 @@
             <label>מספר טלפון</label>
             <input type="tel" formControlName="phone">
             <small *ngIf="f['phone'].touched && f['phone'].errors?.['required']" style="color:red;">יש להזין מספר טלפון</small>
-            <small *ngIf="f['phone'].errors?.['pattern']" style="color:red;">הטלפון חייב להכיל 10 ספרות ולהתחיל ב-05</small>
+            <small *ngIf="f['phone'].errors?.['pattern']" style="color:red;">טלפון חייב להכיל 10 ספרות ולהתחיל ב-05</small>
         </div>
 
       <div>
