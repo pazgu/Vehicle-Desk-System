@@ -162,7 +162,6 @@ export class VehicleStatusComponent {
       .subscribe({
         next: (res) => {
           this.vehicleTypes = res.vehicle_types;
-          console.log('types', this.vehicleTypes);
         },
         error: (err) => {
           this.toastService.show('אירעה שגיאה בטעינת סוגי רכבים', 'error');

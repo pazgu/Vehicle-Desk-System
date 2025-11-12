@@ -43,7 +43,6 @@ export class AdminAnalyticsComponent implements OnInit {
 
   selectedSortOption = 'countDesc';
   activeTabIndex = 0;
-
   selectedMonth = (new Date().getMonth() + 1).toString();
   selectedYear = new Date().getFullYear().toString();
   private departmentsMap = new Map<string, string>();
@@ -52,10 +51,11 @@ export class AdminAnalyticsComponent implements OnInit {
     (new Date().getFullYear() - i).toString()
   );
 
-  constructor(private router: Router, private route: ActivatedRoute) {}
-
-  ngOnInit() {
-    this.vehicleUsageComponent.loadAllTimeTopUsedVehiclesChart();
+  ngOnInit() {}
+  ngAfterViewInit() {
+        setTimeout(() => {
+      this.activeTabIndex = 0;})
+        
   }
 
   resolveDepartment(departmentId: string): string {
