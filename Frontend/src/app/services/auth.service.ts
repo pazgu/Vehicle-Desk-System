@@ -107,4 +107,8 @@ export class AuthService {
       new_password: newPassword
     });
   }
+  isAuthenticated(): boolean {
+    return !!localStorage.getItem('access_token');
+  }
+
 }
