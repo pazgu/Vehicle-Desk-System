@@ -1,0 +1,24 @@
+
+.p-chart {
+  transition: all 0.3s ease;
+  border-radius: 10px;
+  overflow: hidden;
+  width: 100% !important;
+  height: 200px !important;
+  margin: 0 auto;
+  padding: 0;
+}
+
+.p-chart canvas {
+  max-width: 100% !important;
+  max-height: 200px !important;
+  width: 100% !important;
+  height: 200px !important;
+  object-fit: contain;
+}
+
+.p-chart:hover {
+  transform: scale(1.005);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
