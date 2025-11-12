@@ -142,9 +142,6 @@ export class NoShowsComponent {
     this.router.navigate(['/user-card', userId]);
   }
   
-  resolveDepartment(departmentId: string): string {
-    return this.departmentsMap.get(departmentId) || 'מחלקה לא ידועה';
-  }
   public loadDepartments(): void {
     this.userService.getDepartments().subscribe({
       next: (departments) => {

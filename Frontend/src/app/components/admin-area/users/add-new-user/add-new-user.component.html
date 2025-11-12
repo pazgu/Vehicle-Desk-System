@@ -60,11 +60,11 @@
       </small>
     </div>
 
-    <div class="form-group">
+    <div class="form-group" *ngIf="shouldShowDepartment()">
       <label>מחלקה {{ isDepartmentRequired() ? '*' : '(אופציונלי)' }}</label>
       <select formControlName="department_id">
-        <option value="" disabled selected>
-          {{ isDepartmentRequired() ? 'בחר מחלקה' : 'בחר מחלקה (אופציונלי)' }}
+        <option value="" [disabled]="isDepartmentRequired()">
+          {{ isDepartmentRequired() ? 'בחר מחלקה' : 'ללא מחלקה' }}
         </option>
         <option *ngFor="let d of departments" [value]="d.id">{{ d.name }}</option>
       </select>

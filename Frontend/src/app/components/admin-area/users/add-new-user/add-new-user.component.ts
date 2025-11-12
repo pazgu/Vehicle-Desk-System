@@ -71,10 +71,13 @@ export class AddNewUserComponent implements OnInit {
   updateDepartmentValidation(role: string): void {
     const departmentControl = this.addUserForm.get('department_id');
     
-    if (role !='employee') {
+    if (role === 'employee') {
+      departmentControl?.setValidators([Validators.required]);
+    } else if (role === 'supervisor') {
       departmentControl?.clearValidators();
     } else {
-      departmentControl?.setValidators([Validators.required]);
+      departmentControl?.clearValidators();
+      departmentControl?.setValue('');
     }
     
     departmentControl?.updateValueAndValidity();
@@ -152,10 +155,12 @@ export class AddNewUserComponent implements OnInit {
   fetchDepartments(): void {
     this.http.get<any[]>('http://localhost:8000/api/departments').subscribe({
       next: (data) => {
-        this.departments = data.map(dep => ({
-          ...dep,
-          name: dep.name
-        }));
+        this.departments = data
+          .filter(dep => dep.name.toLowerCase() !== 'unassigned')
+          .map(dep => ({
+            ...dep,
+            name: dep.name
+          }));
       },
       error: (err: any) => {
         console.error('Failed to fetch departments', err);
@@ -171,10 +176,11 @@ export class AddNewUserComponent implements OnInit {
 
   isDepartmentRequired(): boolean {
     const role = this.addUserForm.get('role')?.value;
-    if(role=='employee'){
-      return true
-    }
-    return false
+    return role === 'employee';
+  }
+  shouldShowDepartment(): boolean {
+    const role = this.addUserForm.get('role')?.value;
+    return role === 'employee' || role === 'supervisor';
   }
   
   hasGovlicenseButNoFile(): boolean {
