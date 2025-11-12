@@ -1,0 +1,39 @@
+<div class="filter-controls">
+  <button class="filter-btn" (click)="toggleFilters()">
+    <i class="pi pi-filter"></i>
+    <span>סינון</span>
+  </button>
+
+  <div *ngIf="showFilters" class="filters-panel">
+    <div class="filters-grid">
+      <select class="filter-select" [(ngModel)]="statusFilter" (change)="onStatusFilterChange()">
+        <option value="">כל הסטטוסים</option>
+        <option value="זמין">זמין</option>
+        <option value="בשימוש">בשימוש</option>
+        <option value="מוקפא">מוקפא</option>
+      </select>
+
+      <select class="filter-select" [(ngModel)]="typeFilter" (change)="onTypeFilterChange()">
+        <option value="">כל הסוגים</option>
+        <option *ngFor="let type of vehicleTypes" [value]="type.original">
+          {{ type.original }}
+        </option>
+      </select>
+    </div>
+
+    <div class="filters-checkboxes">
+      <label class="checkbox-label" *ngIf="userRole === 'admin' || userRole === 'manager'">
+        <input type="checkbox" [(ngModel)]="showingMostUsed" (change)="onMostUsedChange()" />
+        <span>הצג כלי רכב הכי בשימוש החודש</span>
+      </label>
+
+      <label class="checkbox-label">
+        <input type="checkbox" [(ngModel)]="showInactive" (change)="onInactiveChange()" />
+        <span>הצג כלי רכב לא פעילים</span>
+        <i class="pi pi-exclamation-triangle"></i>
+      </label>
+    </div>
+
+
+  </div>
+</div>
