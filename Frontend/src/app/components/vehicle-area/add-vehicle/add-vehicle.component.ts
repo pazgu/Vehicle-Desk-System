@@ -16,8 +16,11 @@ import { ToastService } from '../../../services/toast.service';
 })
 export class AddVehicleComponent implements OnInit {
   vehicleForm!: FormGroup;
-  // Define the type for departments to match the mapped structure: { value: string | null, name: string }
   departments: { value: string | null, name: string }[] = [];
+  imagePreview: string | null = null; 
+  imageVerified = false;             
+
+
 
   constructor(private fb: FormBuilder,
     private http: HttpClient,
@@ -41,11 +44,29 @@ export class AddVehicleComponent implements OnInit {
       // Since department_id is Optional[UUID] = None on the backend,
       // it doesn't need Validators.required on the frontend here.
       department_id: [null],
-      image_url: ['', [Validators.required, Validators.maxLength(2048)]],
+      image_url: ['', [
+  Validators.required,
+  Validators.maxLength(2048),
+  this.imageUrlValidator()
+]],
+
       lease_expiry: ['', Validators.required]
     });
     this.fetchDepartments();
+
+    this.vehicleForm.get('image_url')?.valueChanges.subscribe(() => {
+  this.imagePreview = null;
+  this.imageVerified = false;
+  const ctrl = this.vehicleForm.get('image_url');
+  // remove only the urlLoadFailed flag if present (keep other errors)
+  if (ctrl?.hasError('urlLoadFailed')) {
+    const { urlLoadFailed, ...rest } = ctrl.errors || {};
+    ctrl.setErrors(Object.keys(rest).length ? rest : null);
   }
+});
+
+  }
+  
 
   fetchDepartments(): void {
     // The backend returns { id: string, name: string }[]
@@ -78,6 +99,13 @@ export class AddVehicleComponent implements OnInit {
   submitForm() {
     // Mark all controls as touched to trigger validation messages visually for the user
     this.vehicleForm.markAllAsTouched();
+
+    if (!this.imageVerified) {
+  this.toastService.show('קישור התמונה חייב להיות תקין ונטען בהצלחה', 'error');
+  this.vehicleForm.get('image_url')?.markAsTouched();
+  return;
+}
+
 
     if (this.vehicleForm.valid) {
       const vehicleData = this.vehicleForm.value;
@@ -115,4 +143,83 @@ export class AddVehicleComponent implements OnInit {
   goBack() {
     this.router.navigate(['/vehicle-dashboard']);
   }
+
+ private imageUrlValidator() {
+  return (control: any) => {
+    const raw = (control?.value || '').trim();
+    if (!raw) return null; // required handles empty
+
+    // must be a real, parseable URL
+    let url: URL;
+    try {
+      url = new URL(raw);
+    } catch {
+      return { urlInvalid: true };
+    }
+
+    // protocol http/https only
+    if (!(url.protocol === 'http:' || url.protocol === 'https:')) {
+      return { urlProtocol: true };
+    }
+
+    // must have hostname (and not localhost if you don’t want it)
+    if (!url.hostname || url.hostname.indexOf('.') === -1) {
+      return { urlHostname: true };
+    }
+
+    // must have a pathname with valid image extension
+    const pathname = url.pathname || '';
+    const hasImageExt = /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(pathname);
+    if (!hasImageExt) {
+      return { urlImageExt: true };
+    }
+
+    // no spaces anywhere
+    if (/\s/.test(raw)) {
+      return { urlSpaces: true };
+    }
+
+    // length guard (also enforced by maxLength)
+    if (raw.length > 2048) {
+      return { maxlength: true };
+    }
+
+    return null;
+  };
+}
+
+
+onImageUrlBlur() {
+  const ctrl = this.vehicleForm.get('image_url');
+  const url = (ctrl?.value || '').trim();
+
+  // if basic validators fail, don’t try loading
+  if (ctrl?.invalid) {
+    this.imagePreview = null;
+    this.imageVerified = false;
+    return;
+  }
+
+  const img = new Image();
+  img.onload = () => {
+    this.imagePreview = url;
+    this.imageVerified = true;
+    // clear only urlLoadFailed if it exists
+    const errs = ctrl?.errors || {};
+    if (errs['urlLoadFailed']) {
+      const { urlLoadFailed, ...rest } = errs;
+      ctrl?.setErrors(Object.keys(rest).length ? rest : null);
+    }
+  };
+  img.onerror = () => {
+    this.imagePreview = null;
+    this.imageVerified = false;
+    const current = ctrl?.errors || {};
+    ctrl?.setErrors({ ...current, urlLoadFailed: true });
+  };
+  img.src = url;
+}
+
+
+
 }

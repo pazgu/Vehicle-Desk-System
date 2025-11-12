@@ -3,8 +3,26 @@
     padding: 2rem 0;
     position: relative;
     z-index: 10;
+    background-repeat: repeat;        
+    background-size: 520px auto;       
+    background-position: top center;
+  background-color: rgb(255, 255, 255);
 }
 
+.page-wrapper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.5); /* tweak 0.35–0.6 to taste */
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* keep the card above the veil */
+.vehicle-form-container {
+  position: relative;
+  z-index: 2;
+}
 .vehicle-form-container {
   max-width: 750px;
   margin: 0 auto;
@@ -16,7 +34,7 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
   padding: 2rem 2.5rem;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  border: 3px solid #942222;
   position: relative;
   z-index: 5;
   overflow: hidden;
@@ -81,8 +99,9 @@ h2{
     text-align: center;
     color: #942222;
     font-size: 2rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0;
     text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
 }
 
 label {
@@ -151,22 +170,25 @@ button[type="submit"]:hover::before {
 }
 
 .back-btn {
+  position: absolute;
   width: 130px;
   height: 40px;
+  left: 0;         
+  top: 0;
   color: #942222;
   font-family: var(--font-family-alef);
   font-size: 20px;
   font-weight: bold;
   padding: 1px 2px;
-  border: 2px solid #942222;
+  border: none; 
   border-radius: 20px;
   cursor: pointer;
   transition: all 0.3s ease;
   background: rgba(255, 255, 255, 0.9);
 }
 
+
 .back-btn:hover {
-  transform: scale(1.03);
   background: #942222;
   color: white;
   box-shadow: 0 4px 12px rgba(148, 34, 34, 0.3);
@@ -182,13 +204,14 @@ button[type="submit"]:hover::before {
 
 
 .vehicle-wrapper-header {
+  position: relative;
   display: flex;
-  align-items: left;
-  width: 100%;
-  max-width: 900px;
-  padding-bottom: 1rem;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
   border-bottom: 2px solid #cfcece;
-  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  min-height: 50px;
 }
 
 /* 🌥️ Realistic soft air vibe */
