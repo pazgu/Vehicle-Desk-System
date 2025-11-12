@@ -10,7 +10,8 @@
   <div class="list" formArrayName="items">
     <div
       class="item"
-      *ngFor="let ctrl of items.controls; let i = index; trackBy: trackByIndex"
+      *ngFor="let ctrl of items.controls; let i = index; trackBy: trackByControl"
+
     >
       <textarea
         [formControlName]="i"
