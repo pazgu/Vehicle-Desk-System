@@ -1,1 +1,14 @@
-<p>vehicle-status works!</p>
+<div class="filter-container" style="margin-bottom: 1rem;">
+              <label for="vehicleType" style="margin-right: 0.5rem;">מיין לפי סוג רכב:</label>
+              <select id="vehicleType" [(ngModel)]="selectedVehicleType" (change)="onVehicleTypeFilterChange()"
+                class="form-control" style="display: inline-block; width: auto;">
+                <option value="">הכל</option>
+                <option *ngFor="let type of vehicleTypes" [value]="type">{{ type }}</option>
+              </select>
+            </div>
+            <div *ngIf="isVehicleNoData;" class="no-data-message">
+              אין נתונים להצגה
+            </div>
+            <p-chart *ngIf="vehicleChartInitialized && vehicleChartData&&!isVehicleNoData" type="pie"
+              [data]="vehicleChartData" [options]="vehicleChartOptions"></p-chart>
+      
