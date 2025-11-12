@@ -8,7 +8,7 @@
         <label>שם פרטי</label>
         <input type="text" formControlName="first_name">
         <small *ngIf="f['first_name'].touched && f['first_name'].errors?.['required']" style="color:red;">יש להזין שם פרטי</small>
-        <small *ngIf="f['first_name'].errors?.['minlength']" style="color:red;">לפחות 3 תווים</small>
+        <small *ngIf="f['first_name'].errors?.['minlength']" style="color:red;">לפחות 2 תווים</small>
         <small *ngIf="f['first_name'].errors?.['pattern']" style="color:red;">אותיות בלבד</small>
       </div>
 
@@ -16,7 +16,7 @@
         <label>שם משפחה</label>
         <input type="text" formControlName="last_name">
         <small *ngIf="f['last_name'].touched && f['last_name'].errors?.['required']" style="color:red;">יש להזין שם משפחה</small>
-        <small *ngIf="f['last_name'].errors?.['minlength']" style="color:red;">לפחות 3 תווים</small>
+        <small *ngIf="f['last_name'].errors?.['minlength']" style="color:red;">לפחות 2 תווים</small>
         <small *ngIf="f['last_name'].errors?.['pattern']" style="color:red;">אותיות בלבד</small>
       </div>
 
@@ -34,13 +34,15 @@
         <small *ngIf="f['email'].errors?.['email']" style="color:red;">יש להזין כתובת אימייל חוקית</small>
       </div>
 
+      
 
-       <div>
-        <label>מספר טלפון</label>
-        <input type="phone" formControlName="phone">
-        <small *ngIf="f['phone'].touched && f['phone'].errors?.['required']" style="color:red;">יש להזין מספר טלפון</small>
-        <small *ngIf="f['phone'].errors?.['phone']" style="color:red;">יש להזין מספר טלפן תקין</small>
-      </div>
+
+        <div>
+            <label>מספר טלפון</label>
+            <input type="tel" formControlName="phone">
+            <small *ngIf="f['phone'].touched && f['phone'].errors?.['required']" style="color:red;">יש להזין מספר טלפון</small>
+            <small *ngIf="f['phone'].errors?.['pattern']" style="color:red;">טלפון חייב להכיל 10 ספרות ולהתחיל ב-05</small>
+        </div>
 
       <div>
         <label>סיסמה</label>

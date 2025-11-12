@@ -1,0 +1,76 @@
+<div>
+            
+            <div class="filter-controls">
+         <div style="display: flex; flex-direction: column; gap:5px;">
+  <label>
+    <input
+      type="checkbox"
+      [(ngModel)]="filterOnePlus"
+      (change)="onFilterChange('onePlus')"
+    />
+    הצג משתמשים עם 1-2 אי-הגעות
+  </label>
+  <label>
+    <input
+      type="checkbox"
+      [(ngModel)]="filterCritical"
+      (change)="onFilterChange('critical')"
+    />
+    הצג משתמשים עם 3+ אי-הגעות (קריטי)
+  </label>
+</div>
+              <div class="sort-container">
+                <label>מיין לפי: </label>
+                <select [(ngModel)]="noShowSortOption" (change)="applyNoShowFilter()">
+                  <option value="countAsc">כמות אי-הגעות ↑</option>
+                  <option value="countDesc">כמות אי-הגעות ↓</option>
+                  <option value="nameAsc">שם - א-ת</option>
+                  <option value="nameDesc">שם - ת-א</option>
+                </select>
+              </div>
+            </div>
+            <div class="summary-cards">
+              <div class="card">
+<div class="card-icon"><i class="pi pi-chart-bar"></i></div>
+                <div class="card-content">
+                  <div class="card-number">{{ totalNoShows }}</div>
+                  <div class="card-label">סה"כ אי-הגעות</div>
+                </div>
+              </div>
+              <div class="card">
+<div class="card-icon"><i class="pi pi-users"></i></div>
+                <div class="card-content">
+                  <div class="card-number">{{ uniqueNoShowUsers }}</div>
+                  <div class="card-label">סה"כ משתמשים שלא הגיעו </div>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="isEmptyNoShowData" class="no-data-message">
+              אין נתונים להצגה
+            </div>
+            
+            <div class="table-container" *ngIf="!isEmptyNoShowData">
+              <table class="styled-table">
+                <thead>
+                  <tr>
+                    <th>שם</th>
+                    <th>אימייל</th>
+                    <th>תפקיד</th>
+                    <th>כמות אי-הגעות</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let user of filteredNoShowUsers" (click)="goToUserDetails(user.employee_id!)" [ngClass]="{ 
+      'critical-row': (user.no_show_count ?? 0) >= 3, 
+      'warning-row': (user.no_show_count ?? 0) === 2 
+    }">
+                    <td>{{ user.name }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.role }}</td>
+                    <td>{{ user.no_show_count }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>

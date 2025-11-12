@@ -1,74 +1,13 @@
-<!-- 🌬️ Soft Background + Car Rows -->
-<div class="animated-bg">
-  <div class="car-row row-1">
-    <span class="car-wrapper">
-      <span class="car-smoke"></span>
-      <span class="car">🚗</span>
-    </span>
-    <span class="car-wrapper">
-      <span class="car-smoke"></span>
-      <span class="car">🚗</span>
-    </span>
-    <span class="car-wrapper">
-      <span class="car-smoke"></span>
-      <span class="car">🚗</span>
-    </span>
-  </div>
 
-  <div class="car-row row-2">
-    <span class="car-wrapper">
-      <span class="car-smoke"></span>
-      <span class="car">🚗</span>
-    </span>
-    <span class="car-wrapper">
-      <span class="car-smoke"></span>
-      <span class="car">🏎️</span>
-    </span>
-    <span class="car-wrapper">
-      <span class="car-smoke"></span>
-      <span class="car">🚗</span>
-    </span>
-  </div>
 
-  <div class="car-row row-3">
-    <span class="car-wrapper">
-      <span class="car-smoke"></span>
-      <span class="car">🚗</span>
-    </span>
-    <span class="car-wrapper">
-      <span class="car-smoke"></span>
-      <span class="car">🏎️</span>
-    </span>
-    <span class="car-wrapper">
-      <span class="car-smoke"></span>
-      <span class="car">🚗</span>
-    </span>
-  </div>
-
-  <div class="car-row row-4">
-    <span class="car-wrapper">
-      <span class="car-smoke"></span>
-      <span class="car">🚗</span>
-    </span>
-    <span class="car-wrapper">
-      <span class="car-smoke"></span>
-      <span class="car">🚗</span>
-    </span>
-    <span class="car-wrapper">
-      <span class="car-smoke"></span>
-      <span class="car">🚗</span>
-    </span>
-  </div>
-</div>
-
-<div class="page-wrapper">
-  <div class="vehicle-form-container">
+<div class="page-wrapper">             
+<div class="vehicle-form-container">
+  <div class="vehicle-wrapper-header">
+    <button class="back-btn" (click)="goBack()"> חזור ←</button>
     <h2>הוסף רכב חדש</h2>
+  </div>
+  
 
-    <div class="vehicle-wrapper-header">
-      <button class="back-btn" (click)="goBack()"> חזור ←</button>
-    </div>
-    <br />
 
     <form (ngSubmit)="submitForm()" [formGroup]="vehicleForm" novalidate>
 
@@ -124,18 +63,42 @@
       
 
       <label>תמונה (URL)</label>
-      <input formControlName="image_url" type="text" />
+      <input formControlName="image_url" type="text" (blur)="onImageUrlBlur()" />
+
       <div class="error" *ngIf="vehicleForm.get('image_url')?.touched && vehicleForm.get('image_url')?.invalid">
-        כתובת תמונה נדרשת
-      </div>
+  <ng-container *ngIf="vehicleForm.get('image_url')?.hasError('required')">
+    כתובת תמונה נדרשת
+  </ng-container>
+  <ng-container *ngIf="vehicleForm.get('image_url')?.hasError('urlInvalid')">
+    כתובת ה-URL אינה תקינה
+  </ng-container>
+  <ng-container *ngIf="vehicleForm.get('image_url')?.hasError('urlProtocol')">
+    יש להזין קישור שמתחיל ב- http:// או https://
+  </ng-container>
+  <ng-container *ngIf="vehicleForm.get('image_url')?.hasError('urlHostname')">
+    יש להזין דומיין תקין (למשל example.com)
+  </ng-container>
+  <ng-container *ngIf="vehicleForm.get('image_url')?.hasError('urlImageExt')">
+    הקישור חייב להסתיים בסיומת תמונה תקפה (png/jpg/jpeg/gif/webp/bmp/svg)
+  </ng-container>
+  <ng-container *ngIf="vehicleForm.get('image_url')?.hasError('urlSpaces')">
+    ה-URL אינו יכול להכיל רווחים
+  </ng-container>
+  <ng-container *ngIf="vehicleForm.get('image_url')?.hasError('urlLoadFailed')">
+    לא הצלחנו לטעון את התמונה מהקישור שסופק
+  </ng-container>
+</div>
+
+
 <img
-  *ngIf="vehicleForm.get('image_url')?.value"
-  [src]="vehicleForm.get('image_url')?.value"
+  *ngIf="imagePreview"
+  [src]="imagePreview"
   alt="תצוגת תמונה"
   class="vehicle-image"
 />
 
-      <button type="submit">שלח</button>
+
+      <button type="submit" [disabled]="vehicleForm.invalid || !imageVerified">שלח</button>
     </form>
   </div>
 </div>

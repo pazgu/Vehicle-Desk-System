@@ -42,7 +42,7 @@ async def create_inspection(data: VehicleInspectionSchema, db: Session):
             if not inspection.clean:
                 issues.append("הרכב הוחזר מלוכלך")
             if not inspection.fuel_checked:
-                issues.append("הרכב הוחזר ללא תדלוק")
+                issues.append("הרכב הוחזר לא מתודלק")
             if not inspection.no_items_left:
                 issues.append("נשארו חפצים ברכב")
 
