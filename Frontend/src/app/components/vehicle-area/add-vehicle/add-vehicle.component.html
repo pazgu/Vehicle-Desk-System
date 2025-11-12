@@ -61,14 +61,14 @@
   </div>
 </div>
 
-<div class="page-wrapper">
-  <div class="vehicle-form-container">
+<div class="page-wrapper">             
+<div class="vehicle-form-container">
+  <div class="vehicle-wrapper-header">
+    <button class="back-btn" (click)="goBack()"> חזור ←</button>
     <h2>הוסף רכב חדש</h2>
+  </div>
+  
 
-    <div class="vehicle-wrapper-header">
-      <button class="back-btn" (click)="goBack()"> חזור ←</button>
-    </div>
-    <br />
 
     <form (ngSubmit)="submitForm()" [formGroup]="vehicleForm" novalidate>
 
