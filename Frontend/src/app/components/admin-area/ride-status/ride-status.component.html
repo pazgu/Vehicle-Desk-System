@@ -1,1 +1,8 @@
-<p>ride-status works!</p>
+<div>
+    <div *ngIf="isNoData;" class="no-data-message">
+              אין נתונים להצגה
+    </div>
+            <p-chart *ngIf="rideChartInitialized && rideChartData && !isNoData" type="pie" [data]="rideChartData"
+              [options]="rideChartOptions">
+            </p-chart>
+</div>

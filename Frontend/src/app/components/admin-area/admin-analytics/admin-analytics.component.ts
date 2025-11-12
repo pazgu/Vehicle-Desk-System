@@ -12,7 +12,6 @@ import { saveAs } from 'file-saver';
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
 import * as XLSX from 'xlsx-js-style';
-import { cloneDeep } from 'lodash';
 import { VehicleService } from '../../../services/vehicle.service';
 import {
   FreezeReason,
@@ -24,6 +23,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { UserOrdersExportComponent } from '../user-orders-export/user-orders-export.component';
 import { NoShowsComponent } from '../no-shows/no-shows.component';
 import { VehicleUsageComponent } from '../vehicle-usage/vehicle-usage.component';
+import { RideStatusComponent } from '../ride-status/ride-status.component';
 pdfMake.vfs = pdfFonts.vfs;
 
 @Component({
@@ -37,7 +37,8 @@ pdfMake.vfs = pdfFonts.vfs;
     DropdownModule,
     UserOrdersExportComponent,
     NoShowsComponent,
-    VehicleUsageComponent
+    VehicleUsageComponent,
+    RideStatusComponent
   ],
   templateUrl: './admin-analytics.component.html',
   styleUrls: ['./admin-analytics.component.css'],
@@ -45,27 +46,22 @@ pdfMake.vfs = pdfFonts.vfs;
 export class AdminAnalyticsComponent implements OnInit {
   @ViewChild(NoShowsComponent) noShowsComponent!: NoShowsComponent;
   @ViewChild(VehicleUsageComponent) vehicleUsageComponent!: VehicleUsageComponent;
+  @ViewChild(RideStatusComponent) rideStatusComponent!: RideStatusComponent;
 
   vehicleChartData: any;
   vehicleChartOptions: any;
-  rideChartData: any;
-  rideChartOptions: any;
   selectedSortOption = 'countDesc';
-  noShowSortOption = 'countDesc';
   activeTabIndex = 0;
   frozenVehicles = <VehicleOutItem[]>[];
   selectedVehicleType: string = '';
-  selectedRideStatus: string = '';
   vehicleChartInitialized = false;
-  rideChartInitialized = false;
   selectedMonth = (new Date().getMonth() + 1).toString();
   selectedYear = new Date().getFullYear().toString();
   private departmentsMap = new Map<string, string>();
-  filterOnePlus: boolean = false;
-  filterCritical: boolean = false;
   noShowExportWarningVisible: boolean = false;
   vehicleTypes: string[] = [];
   rideStatuses: string[] = [];
+  
 
 
   years = Array.from({ length: 5 }, (_, i) =>
@@ -83,15 +79,13 @@ export class AdminAnalyticsComponent implements OnInit {
 
   ngOnInit() {
     this.loadVehicleChart();
-    this.loadRideChart();
+  
     this.loadFrozenVehicles();
     this.noShowsComponent.filteredNoShowUsers = [] as TopNoShowUser[];
     this.loadVehicleTypes();
     this.loadRideStatuses();
     this.vehicleUsageComponent.loadAllTimeTopUsedVehiclesChart();
-    this.socketService.rideStatusUpdated$.subscribe(() => {
-      this.loadRideChart();
-    });
+  
 
     this.socketService.vehicleStatusUpdated$.subscribe(() => {
       this.loadVehicleChart();
@@ -99,7 +93,6 @@ export class AdminAnalyticsComponent implements OnInit {
     });
 
     this.socketService.deleteRequests$.subscribe(() => {
-      this.loadRideChart();
       this.loadVehicleChart();
       this.loadFrozenVehicles();
     });
@@ -141,9 +134,7 @@ export class AdminAnalyticsComponent implements OnInit {
     this.loadVehicleChart();
   }
 
-  onRideStatusFilterChange() {
-    this.loadRideChart();
-  }
+
 
   getVehicleTypeOptions() {
     const options = [{ label: 'כל הסוגים', value: '' }];
@@ -208,57 +199,12 @@ export class AdminAnalyticsComponent implements OnInit {
     });
   }
 
-  get isNoData(): boolean {
-    return (
-      this.rideChartData?.labels?.length === 1 &&
-      this.rideChartData.labels[0] === 'אין נתונים'
-    );
-  }
+  
   get isVehicleNoData(): boolean {
     return (
       this.vehicleChartData?.labels?.length === 1 &&
       this.vehicleChartData.labels[0] === 'אין נתונים'
     );
-  }
-
-  private loadRideChart() {
-    let url = `${environment.apiUrl}/analytics/ride-status-summary`;
-    if (this.selectedRideStatus && this.selectedRideStatus.trim() !== '') {
-      url += `?status=${encodeURIComponent(this.selectedRideStatus)}`;
-    }
-    this.http.get<{ status: string; count: number }[]>(url).subscribe({
-      next: (data) => {
-        if (!data || data.length === 0) {
-          this.rideChartData = {
-            labels: ['אין נתונים'],
-            datasets: [
-              {
-                data: [1],
-                backgroundColor: ['#E0E0E0'],
-                hoverBackgroundColor: ['#F0F0F0'],
-              },
-            ],
-          };
-        } else {
-          this.updateRideChart(data);
-        }
-        this.rideChartInitialized = true;
-      },
-      error: (error) => {
-        console.error('❌ Error loading ride data:', error);
-        this.rideChartInitialized = true;
-        this.rideChartData = {
-          labels: ['שגיאה בטעינת נתונים'],
-          datasets: [
-            {
-              data: [1],
-              backgroundColor: ['#FF5252'],
-              hoverBackgroundColor: ['#FF7777'],
-            },
-          ],
-        };
-      },
-    });
   }
 
   private updateVehicleChart(data: { status: string; count: number }[]) {
@@ -358,66 +304,6 @@ export class AdminAnalyticsComponent implements OnInit {
     };
   }
 
-  private updateRideChart(data: { status: string; count: number }[]) {
-    const labels = data.map((d) => {
-      const hebrewLabel = this.getRideStatusHebrew(d.status);
-      return hebrewLabel;
-    });
-    const values = data.map((d) => d.count);
-    const total = values.reduce((sum, val) => sum + val, 0);
-    const updatedLabels = labels.map((label, i) => {
-      const count = values[i];
-      const percent = ((count / total) * 100).toFixed(1);
-      return `${label} – ${count} נסיעות (${percent}%)`;
-    });
-
-    const newrideChartData = {
-      labels: updatedLabels,
-      datasets: [
-        {
-          data: [...values],
-          backgroundColor: [
-            '#FF6384',
-            '#36A2EB',
-            '#FFCE56',
-            '#4BC0C0',
-            '#9966FF',
-            '#FF9F40',
-          ],
-          hoverBackgroundColor: [
-            '#FF6384CC',
-            '#36A2EBCC',
-            '#FFCE56CC',
-            '#4BC0C0CC',
-            '#9966FFCC',
-            '#FF9F40CC',
-          ],
-        },
-      ],
-    };
-
-    this.rideChartData = { ...newrideChartData };
-
-    this.rideChartOptions = {
-      plugins: {
-        legend: {
-          position: 'right',
-          labels: {
-            color: '#495057',
-            font: {
-              size: 14,
-              family: 'Arial, sans-serif',
-            },
-            usePointStyle: true,
-          },
-        },
-      },
-      responsive: true,
-      maintainAspectRatio: false,
-      locale: 'he-IL', // Hebrew locale
-    };
-  }
-
   onSortChange() {
     const sortFunctionsR = {
       countAsc: (
@@ -481,7 +367,7 @@ export class AdminAnalyticsComponent implements OnInit {
             this.selectedSortOption === 'default'
               ? data
               : [...data].sort(sortFnR);
-          this.updateRideChart(sortedDataR);
+          this.rideStatusComponent.updateRideChart(sortedDataR);
         });
     }
     this.updateQueryParams({ selectedSort: this.selectedSortOption });
@@ -503,18 +389,6 @@ export class AdminAnalyticsComponent implements OnInit {
       available: 'זמין',
       in_use: 'בשימוש',
       frozen: 'מוקפא',
-    };
-    return statusMap[status] || status;
-  }
-
-  getRideStatusHebrew(status: string): string {
-    const statusMap: { [key: string]: string } = {
-      pending: 'ממתין',
-      approved: 'מאושר',
-      rejected: 'נדחה',
-      in_progress: 'בתהליך',
-      completed: 'הושלם',
-      cancelled_due_to_no_show: 'בוטלה-נסיעה לא בוצעה',
     };
     return statusMap[status] || status;
   }
@@ -543,7 +417,7 @@ export class AdminAnalyticsComponent implements OnInit {
       chartData = isVehicleTab
         ? this.vehicleChartData
         : isRideTab
-        ? this.rideChartData
+        ? this.rideStatusComponent.rideChartData
         : this.vehicleUsageComponent.topUsedVehiclesData;
 
       title = isVehicleTab
@@ -772,7 +646,7 @@ export class AdminAnalyticsComponent implements OnInit {
     const chartData = isVehicleTab
       ? this.vehicleChartData
       : isRideTab
-      ? this.rideChartData
+      ? this.rideStatusComponent.rideChartData
       : this.vehicleUsageComponent.topUsedVehiclesData;
 
     const title = isNoShowTab
@@ -946,7 +820,7 @@ export class AdminAnalyticsComponent implements OnInit {
       chartData = isVehicleTab
         ? this.vehicleChartData
         : isRideTab
-        ? this.rideChartData
+        ? this.rideStatusComponent.rideChartData
         : this.vehicleUsageComponent.topUsedVehiclesData;
     }
     const title = isNoShowTab

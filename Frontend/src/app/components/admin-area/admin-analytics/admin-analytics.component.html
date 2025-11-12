@@ -66,11 +66,8 @@
         <p-tabPanel header=" " [headerStyle]="{ display: 'none' }">
           <div>
             <h3 class="section-heading">פילוח סטטוס נסיעות</h3>
-            <div *ngIf="isNoData;" class="no-data-message">
-              אין נתונים להצגה
-            </div>
-            <p-chart *ngIf="rideChartInitialized && rideChartData && !isNoData" type="pie" [data]="rideChartData"
-              [options]="rideChartOptions"></p-chart>
+            <ride-status></ride-status>
+           
           </div>
         </p-tabPanel>
 
@@ -80,10 +77,7 @@
 
         <p-tabPanel header=" " [headerStyle]="{ display: 'none' }">
               <h3 class="section-heading">שימוש ברכבים</h3>
-
                       <vehicle-usage></vehicle-usage>
-
-        
         </p-tabPanel>
         
 
