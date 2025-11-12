@@ -129,7 +129,7 @@
           <div class="time-fields-container">
             <div class="info-text-container">
               <small class="info-text">
-                * לא ניתן להזמין נסיעות בשעות 11:15-12:15 (שעות סגירת מפקח)
+                * לא ניתן להזמין נסיעות בשעות 11:15-12:15 (מנהל רכבים לא זמין)
               </small>
             </div>
             <div class="error-messages-container">
@@ -140,10 +140,10 @@
                 {{ rideForm.errors?.['inspectorClosureTime']?.['message'] }}
               </small>
               <small *ngIf="f.start_time.touched && f.start_time.errors?.['required']" class="error-text">
-                חובה למלא את שדה זה
+                חובה למלא שדה זה
               </small>
               <small *ngIf="f.end_time.touched && f.end_time.errors?.['required']" class="error-text second-error">
-                חובה למלא את שדה זה
+                חובה למלא שדה זה
               </small>
             </div>
           </div>
