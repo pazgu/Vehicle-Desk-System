@@ -36,20 +36,8 @@
         <p-tabPanel header=" " [headerStyle]="{ display: 'none' }">
           <div>
             <h3 class="section-heading">פילוח סטטוס רכבים</h3>
-            <div class="filter-container" style="margin-bottom: 1rem;">
-              <label for="vehicleType" style="margin-right: 0.5rem;">מיין לפי סוג רכב:</label>
-              <select id="vehicleType" [(ngModel)]="selectedVehicleType" (change)="onVehicleTypeFilterChange()"
-                class="form-control" style="display: inline-block; width: auto;">
-                <option value="">הכל</option>
-                <option *ngFor="let type of vehicleTypes" [value]="type">{{ type }}</option>
-              </select>
+            <vehicle-status></vehicle-status>
             </div>
-            <div *ngIf="isVehicleNoData;" class="no-data-message">
-              אין נתונים להצגה
-            </div>
-            <p-chart *ngIf="vehicleChartInitialized && vehicleChartData&&!isVehicleNoData" type="pie"
-              [data]="vehicleChartData" [options]="vehicleChartOptions"></p-chart>
-          </div>
         </p-tabPanel>
 
 
@@ -85,10 +73,7 @@
         <h3 class="section-heading">נסיעות לפי משתמש</h3>
             <user-orders-export></user-orders-export>
             <ng-template #noDataTemplate>
-            <div class="no-data-state">
-                <div class="no-data-icon"><i class="pi pi-clipboard"></i></div>
-            <div class="no-data-message">אין נתונים להצגה בטווח התאריכים הנבחר</div>
-            </div>
+            
       </ng-template>
     </div>
         </p-tabPanel>
