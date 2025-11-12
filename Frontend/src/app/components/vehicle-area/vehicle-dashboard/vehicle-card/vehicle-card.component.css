@@ -27,7 +27,7 @@
   border: 1.5px solid #a8c7af !important;
 }
 
-:host ::ng-deep .p-card.vehicle-card.card-inuse {
+:host ::ng-deep .p-card.vehicle-card.card-in_use {
   background: #f5efdd !important;
   border: 1.5px solid #d9cdab !important;
 }
@@ -61,6 +61,7 @@
   font-family: "Inter", "Segoe UI", sans-serif;
   font-size: 0.7rem;
   font-weight: 600;
+  margin-right: 10px;
   box-shadow: 0 1px 3px rgba(59, 130, 246, 0.25);
   transition: all 0.2s ease;
 }
@@ -105,7 +106,6 @@
   flex: 1 1 auto;    
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
 }
 
 :host ::ng-deep .p-card.vehicle-card .card-footer {

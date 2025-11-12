@@ -127,30 +127,32 @@ export class FilterPanelComponent implements OnInit, OnChanges {
           : [];
 
         // Step 3: fetch most used stats and enrich with full vehicle data
-        this.vehicleService.getMostUsedVehiclesThisMonth(year, month).subscribe({
-          next: (response) => {
-            const enrichedStats = response.stats
-              .map((stat: any) => {
-                const match = vehiclesWithDepts.find(
-                  (v) => v.id === stat.vehicle_id
-                );
-                if (match) {
-                  return {
-                    ...match,
-                    ride_count: stat.total_rides,
-                  };
-                }
-                return null;
-              })
-              .filter((v) => v !== null) as VehicleInItem[];
+        this.vehicleService
+          .getMostUsedVehiclesThisMonth(year, month)
+          .subscribe({
+            next: (response) => {
+              const enrichedStats = response.stats
+                .map((stat: any) => {
+                  const match = vehiclesWithDepts.find(
+                    (v) => v.id === stat.vehicle_id
+                  );
+                  if (match) {
+                    return {
+                      ...match,
+                      ride_count: stat.total_rides,
+                    };
+                  }
+                  return null;
+                })
+                .filter((v) => v !== null) as VehicleInItem[];
 
-            this.mostUsedVehicles = enrichedStats;
-            this.applyFilters();
-          },
-          error: (err) => {
-            console.error('❌ Error loading most used vehicles:', err);
-          },
-        });
+              this.mostUsedVehicles = enrichedStats;
+              this.applyFilters();
+            },
+            error: (err) => {
+              console.error('❌ Error loading most used vehicles:', err);
+            },
+          });
       },
       (error) => {
         console.error('❌ Error loading all vehicles:', error);
@@ -258,5 +260,3 @@ export class FilterPanelComponent implements OnInit, OnChanges {
     }
   }
 }
-
-

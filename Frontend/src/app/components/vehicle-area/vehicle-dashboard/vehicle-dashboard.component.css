@@ -9,7 +9,7 @@
 }
 
 .dashboard-container {
-  max-width: 1400px;
+  max-width: 1300px;
   margin: 0 auto;
   padding: 0 2.5rem;
 }
@@ -17,8 +17,9 @@
 .dashboard-header {
   background: #ffffff;
   border-radius: 16px;
+  width: 90%;
+  margin: 0 auto 4rem auto;
   padding: 1.5rem 2.5rem;
-  margin-bottom: 4rem;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
 }
 
@@ -129,10 +130,9 @@
 .vehicles-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 3rem;
+  gap:3rem 2rem;
   margin: 2.5rem;
 }
-
 
 .empty-state {
   text-align: center;
@@ -235,15 +235,17 @@
   }
 }
 
-
 .status-indicators {
+  position: fixed !important;
+  top: 200px; 
+  right: 5px; 
+  width: 100px;
+  z-index: 99999; 
   background: #f9fafb;
   border-radius: 8px;
-  padding: 1rem;
-  z-index: 100;
-  width: 100px;
-  right: -12px;
-  position: fixed;
+  padding: 0.75rem;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  pointer-events: auto;
 }
 
 .status-legend-title {

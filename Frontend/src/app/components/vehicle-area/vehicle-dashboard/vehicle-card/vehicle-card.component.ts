@@ -7,7 +7,6 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
-import { VehicleInItem } from '../../../../models/vehicle-dashboard-item/vehicle-in-use-item.module';
 import { VehicleUsageStatsComponent } from '../vehicle-usage-stats/vehicle-usage-stats.component';
 
 @Component({
@@ -29,7 +28,7 @@ export class VehicleCardComponent {
     const statusClass = this.vehicle?.status
       ? `card-${this.vehicle.status}`
       : 'card-available';
-    return `vehicle-card ${statusClass}`; // will be applied to rendered .p-card element
+    return `vehicle-card ${statusClass}`; 
   }
 
   isInactive(lastUsedAt: string | null | undefined): boolean {
