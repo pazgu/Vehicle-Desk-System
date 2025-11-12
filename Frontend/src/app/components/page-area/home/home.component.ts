@@ -859,14 +859,14 @@ onBeforeUnload(e: BeforeUnloadEvent) {
             if (isInClosureRange(startTime)) {
                 return { 
                     inspectorClosureTime: { 
-                        message: 'שגיאה: זמן תחילת הנסיעה לא יכול להיות בין השעות 11:15 ל-12:15 (שעות סגירת מפקח)'
+                        message: 'שגיאה: זמן תחילת הנסיעה לא יכול להיות בין השעות 11:15 ל-12:15 (מנהל רכבים בהפסקה)'
                     } 
                 };
             }
             if (isInClosureRange(endTime)) {
                 return { 
                     inspectorClosureTime: { 
-                        message: 'שגיאה: זמן סיום הנסיעה לא יכול להיות בין השעות 11:15 ל-12:15 (שעות סגירת מפקח)'
+                        message: 'שגיאה: זמן סיום הנסיעה לא יכול להיות בין השעות 11:15 ל-12:15 (מנהל רכבים בהפסקה)'
                     } 
                 };
             }
@@ -1100,7 +1100,7 @@ onBeforeUnload(e: BeforeUnloadEvent) {
         const reasonControl = this.rideForm.get('four_by_four_reason');
          if (this.rideForm.errors?.['inspectorClosureTime']) {
             this.toastService.show(
-                'לא ניתן לשלוח בקשה: זמני הנסיעה חופפים לשעות סגירת המפקח (11:15-12:15)',
+                'לא ניתן לשלוח בקשה: זמני הנסיעה חופפים לזמני הפסקה של מנהל רכבים (11:15-12:15)',
                 'error'
             );
             return;
