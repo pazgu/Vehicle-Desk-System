@@ -63,10 +63,15 @@ export class AdminGuidelinesComponent implements OnInit {
   }
 
   removeItem(index: number) {
-    this.items.removeAt(index);
-  }
+  if (index < 0 || index >= this.items.length) return;
+  this.items.removeAt(index);
+}
 
-  trackByIndex = (index: number) => index;
+
+  trackByControl = (_: number, ctrl: FormControl<string>) => ctrl;
+
+  
+
 
   // ✅ Compare form state to detect unsaved changes
   hasChanges(): boolean {
