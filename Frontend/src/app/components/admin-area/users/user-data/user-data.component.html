@@ -147,12 +147,34 @@
                 חובה להזין מספר ימים חיובי.
               </div>
             </div>
+            <div class="form-group">
+              <label for="blockReason">סיבת החסימה:</label>
+              <textarea 
+                id="blockReason" 
+                formControlName="blockReason" 
+                class="form-control" 
+                placeholder="הזן את הסיבה לחסימת משתמש זה (חובה)"
+                rows="4"
+                style="resize: vertical; min-height: 80px;"></textarea>
+              <div *ngIf="blockUserForm.get('blockReason')?.invalid && blockUserForm.get('blockReason')?.touched"
+                class="text-danger">
+                <span *ngIf="blockUserForm.get('blockReason')?.errors?.['required']">
+                  חובה למלא את סיבת החסימה.
+                </span>
+                <span *ngIf="blockUserForm.get('blockReason')?.errors?.['minlength']">
+                  הסיבה חייבת להכיל לפחות 5 תווים.
+                </span>
+                <span *ngIf="blockUserForm.get('blockReason')?.errors?.['whitespace']">
+                  הסיבה אינה יכולה להכיל רק רווחים.
+                </span>
+              </div>
+            </div>
 
             <div class="modal-buttons">
-              <button type="submit" class="btn btn-primary" [disabled]="blockUserForm.invalid" (click)="confirmBlockUser()">
-                כן
+              <button type="submit" class="btn btn-primary" [disabled]="blockUserForm.invalid || isSubmitting">
+                {{ isSubmitting ? 'מבצע חסימה...' : 'כן' }}
               </button>
-              <button type="button" class="btn btn-secondary" (click)="closeBlockUserModal()">
+              <button type="button" class="btn btn-secondary" (click)="closeBlockUserModal()" [disabled]="isSubmitting">
                 ביטול
               </button>
             </div>
@@ -166,10 +188,10 @@
           <p>האם אתה בטוח שברצונך לשחרר את חסימת המשתמש <strong>{{ selectedUserForBlock?.first_name }} {{
               selectedUserForBlock?.last_name }}</strong>?</p>
           <div class="modal-buttons">
-            <button type="button" class="btn btn-primary" (click)="confirmUnblockUser()">
-              כן
+            <button type="button" class="btn btn-primary" (click)="confirmUnblockUser()" [disabled]="isSubmitting">
+              {{ isSubmitting ? 'משחרר...' : 'כן' }}
             </button>
-            <button type="button" class="btn btn-secondary" (click)="closeUnblockConfirmationModal()">
+            <button type="button" class="btn btn-secondary" (click)="closeUnblockConfirmationModal()" [disabled]="isSubmitting">
               לא
             </button>
           </div>

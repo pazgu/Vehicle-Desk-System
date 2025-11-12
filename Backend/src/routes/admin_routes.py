@@ -147,15 +147,16 @@ async def edit_user_by_id_route(
     username: str = Form(...),
     email: str = Form(...),
     phone: str = Form(...),
-    role: str = Form(...),
-    department_id: str = Form(...),
+    role: Optional[str] = Form(None),
+    department_id: Optional[str] = Form(None),
     has_government_license: str = Form(...),
     license_file: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
     payload: dict = Depends(token_check),
     license_expiry_date: Optional[str] = Form(None),
     is_blocked: Optional[bool] = Form(False),
-    block_expires_at: Optional[str] = Form(None)
+    block_expires_at: Optional[str] = Form(None),
+    block_reason: Optional[str] = Form(None)
 ):
     user_id_from_token = payload.get("user_id") or payload.get("sub")
     user_role_from_token = payload.get("role")
@@ -208,45 +209,52 @@ async def edit_user_by_id_route(
     user.username = username
     user.email = email
     user.phone = phone
-
-    # --- Department ID and Role Logic ---
-    try:
-        new_role = UserRole(role) # Convert incoming string 'role' to UserRole enum
-    except ValueError:
-        raise HTTPException(status_code=400, detail=f"Invalid role provided: {role}. Must be one of: {', '.join([r.value for r in UserRole])}")
-
-    user.role = new_role # Assign the validated role
-
-    if new_role == UserRole.admin:
-        user.department_id = None
+    user.has_government_license = has_gov_license
+    user.is_blocked = is_blocked
+    if is_blocked:
+        if not block_reason or len(block_reason.strip()) < 5:
+            raise HTTPException(
+                status_code=400,
+                detail="Block reason is required when blocking a user (at least 5 characters)."
+            )
+        user.block_reason = block_reason.strip()
     else:
-        if not department_id or not department_id.strip():
-            raise HTTPException(status_code=400, detail=f"Department ID is required for role '{new_role}'.")
+        user.block_reason = None
+        user.block_expires_at = None
+
+    if block_expires_at:
         try:
-            user.department_id = UUID(department_id) # Convert string to UUID
-        except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid department ID format. Must be a valid UUID.")
-    # --- End Department ID Logic ---
-
-    user.has_government_license = has_gov_license # Apply this if it's the final decision point
-
-    # --- ADD THESE LINES TO UPDATE IS_BLOCKED AND BLOCK_EXPIRES_AT ---
-    user.is_blocked = is_blocked # Assign the boolean value directly
-
-    if block_expires_at: # If a date string was provided (not empty string or None)
-        try:
-            # Parse the string into a datetime object
-            # Frontend sends YYYY-MM-DDTHH:MM (from toISOString().slice(0, 16))
             user.block_expires_at = datetime.strptime(block_expires_at, "%Y-%m-%dT%H:%M")
         except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid date-time format for block_expires_at. Expected YYYY-MM-DDTHH:MM.")
-    else:
-        user.block_expires_at = None # Set to None if no date string was provided (to unblock or clear expiry)
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid date-time format for block_expires_at. Expected YYYY-MM-DDTHH:MM."
+            )
+    if not is_blocked and role and role != user.role.value:
+        try:
+            new_role = UserRole(role)
+        except ValueError:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid role provided: {role}. Must be one of: {', '.join([r.value for r in UserRole])}"
+            )
+        user.role = new_role
 
-
+        if new_role == UserRole.admin:
+            user.department_id = None
+        else:
+            if not department_id or not department_id.strip():
+                raise HTTPException(status_code=400, detail=f"Department ID is required for role '{new_role}'.")
+            try:
+                user.department_id = UUID(department_id)
+            except ValueError:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid department ID format. Must be a valid UUID."
+                )
     try:
         db.commit()
-    except Exception as e:
+    except Exception:
         db.rollback()
         raise HTTPException(status_code=500, detail="Failed to update user due to a database error.")
 
@@ -256,7 +264,8 @@ async def edit_user_by_id_route(
     await sio.emit('user_block_status_updated', {
         "id": str(user.employee_id),
         "is_blocked": user.is_blocked,
-        "block_expires_at": user.block_expires_at.isoformat() if user.block_expires_at else None
+        "block_expires_at": user.block_expires_at.isoformat() if user.block_expires_at else None,
+        "block_reason": user.block_reason or None
     })
 
     await sio.emit('user_license_updated', {
