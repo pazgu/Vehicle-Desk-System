@@ -60,9 +60,10 @@
  <button class="navbar-toggle" onclick="toggleMenu()">☰</button>
  <div class="dropdown-content-mobile">
   <ul>
-    <li>
-    <a [routerLink]="['/notifications']" class="nav-link" href="#">התראות</a>
-    </li>
+    <li *ngIf="isLoggedIn && !isAuthPage">
+  <a [routerLink]="['/notifications']" class="nav-link" href="#">התראות</a>
+</li>
+
     <li>
       <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/vehicle-dashboard']" class="nav-link" href="#">רכבים </a>
     </li>
@@ -153,15 +154,16 @@
     <a *ngIf="(role$ | async) === 'employee'" [routerLink]="['/all-rides']" class="nav-link" href="#">ההזמנות שלי</a>
 
    <a *ngIf="(role$ | async) === 'inspector'" [routerLink]="['/inspector/inspection']" class="nav-link">בדיקת רכבים יומית</a>
-    <a routerLink="/notifications">
-        <img src="/assets/images/bell-icon.png" alt="Notifications" />
-          <span
-        class="badge"
-        *ngIf="(unreadCount$ | async) as count"
-        [hidden]="count === 0">
-        {{ count }}
-      </span>
-    </a>
+    <a *ngIf="isLoggedIn && !isAuthPage" routerLink="/notifications">
+    <img src="/assets/images/bell-icon.png" alt="Notifications" />
+    <span
+      class="badge"
+      *ngIf="(unreadCount$ | async) as count"
+      [hidden]="count === 0">
+      {{ count }}
+    </span>
+</a>
+
     </div> 
   </div>
 

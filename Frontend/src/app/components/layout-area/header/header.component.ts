@@ -116,4 +116,10 @@ checkFeedbackNeeded(): void {
     this.rideIdToComplete = null;
     this.showFeedbackModal = false;
   }
+
+  get isAuthPage(): boolean {
+  const url = this.router.url;
+  return url.startsWith('/login') || url.startsWith('/register') || url.startsWith('/reset-password');
+}
+
 }

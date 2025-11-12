@@ -93,6 +93,12 @@
       <small *ngIf="addUserForm.get('password')?.touched && addUserForm.get('password')?.hasError('pattern')" class="error">
         הסיסמה חייבת להכיל לפחות אות גדולה אחת באנגלית
       </small>
+
+      <small *ngIf="addUserForm.get('password')?.touched && addUserForm.get('password')?.hasError('minlength')" class="error">
+  הסיסמה חייבת להיות באורך של לפחות 8 תווים
+</small>
+
+
     </div>
 
     <div class="form-group">
