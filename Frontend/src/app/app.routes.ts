@@ -24,10 +24,13 @@ import { AddVehicleComponent } from './components/vehicle-area/add-vehicle/add-v
 import { ArchivedVehiclesComponent } from './components/vehicle-area/archived-vehicles/archived-vehicles.component';
 import { DepartmentDataComponent } from './components/admin-area/departments/department-data/department-data.component';
 import { EditRideComponent } from './ride-area/edit-ride/edit-ride.component';
+import { LoginRedirectGuard } from './components/auth-area/login-redirect/login-redirect.component';
+
 
 export const routes: Routes = [
-  { path: 'login', component: LoginComponent },
-  { path: 'register', component: RegisterComponent },
+  { path: 'login', component: LoginComponent, canActivate: [LoginRedirectGuard] },
+  { path: 'register', component: RegisterComponent, canActivate: [LoginRedirectGuard] },
+
   {
     path: 'home',
     component: NewRideComponent,
