@@ -1,14 +1,14 @@
-
 <div class="dashboard-wrapper">
   <div class="dashboard-container">
-    
     <div class="dashboard-header">
       <div class="header-content">
         <div class="title-section">
           <h1 class="dashboard-title">ניהול רכבים</h1>
-          <p class="dashboard-subtitle">{{ filteredVehicles.length }}  רכבים במערכת</p>
+          <p class="dashboard-subtitle">
+            {{ filteredVehicles.length }} רכבים במערכת
+          </p>
         </div>
-        
+
         <div class="action-buttons">
           <button
             *ngIf="userRole === 'admin' || userRole === 'manager'"
@@ -16,16 +16,16 @@
             (click)="showMileageUpload = !showMileageUpload"
             [class.active]="showMileageUpload"
           >
-            <i class="pi pi-upload"></i>
             <span>העלאת קילומטרז'</span>
+            <i class="pi pi-upload"></i>
           </button>
 
           <button
             class="btn btn-secondary"
             (click)="navigateToArchivedVehicles()"
           >
-            <i class="pi pi-folder-open"></i>
             <span>ארכיון</span>
+            <i class="pi pi-folder-open"></i>
           </button>
 
           <button
@@ -33,52 +33,50 @@
             class="btn btn-primary"
             (click)="navigateToNewVehicle()"
           >
-            <i class="pi pi-plus"></i>
             <span>רכב חדש</span>
+            <i class="pi pi-plus"></i>
           </button>
         </div>
       </div>
 
-      <app-mileage-upload 
-      *ngIf="showMileageUpload"
-      [showMileageUpload]="showMileageUpload"
-    ></app-mileage-upload>
+      <app-mileage-upload
+        *ngIf="showMileageUpload"
+        [showMileageUpload]="showMileageUpload"
+      ></app-mileage-upload>
 
-    <app-filter-panel
-      [allVehicles]="vehicles"
-      [userRole]="userRole"
-      [departmentMap]="departmentMap"
-      (filteredVehiclesChange)="onFilteredVehiclesChange($event)"
-      (updateQueryParams)="updateQueryParams()"
-    ></app-filter-panel>
+      <app-filter-panel
+        [allVehicles]="vehicles"
+        [userRole]="userRole"
+        [departmentMap]="departmentMap"
+        (filteredVehiclesChange)="filteredVehicles = $event"
+        (updateQueryParams)="updateQueryParams()"
+      ></app-filter-panel>
 
-    <div class="status-indicators">
-      <div class="status-legend-title">מקרא:</div>
-      <div class="status-box">
-        <div class="status-item">
-          <span class="status-indicator available"></span>
-          <span>זמין</span>
+      <div class="status-indicators">
+        <div class="status-legend-title">מקרא צבעים:</div>
+        <div class="status-box">
+          <div class="status-item">
+            <span class="status-indicator available"></span>
+            <span>זמין</span>
+          </div>
+          <div class="status-item">
+            <span class="status-indicator in-use"></span>
+            <span>בשימוש</span>
+          </div>
+          <div class="status-item">
+            <span class="status-indicator frozen"></span>
+            <span>מוקפא</span>
+          </div>
+          <div class="inactive">לא פעיל</div>
         </div>
-        <div class="status-item">
-          <span class="status-indicator in-use"></span>
-          <span>בשימוש</span>
-        </div>
-        <div class="status-item">
-          <span class="status-indicator frozen"></span>
-          <span>מוקפא</span>
-        </div>
-        <div class="inactive">לא פעיל</div>
       </div>
     </div>
-    </div>
-
-    
 
     <div class="vehicles-grid">
       <app-vehicle-card
         *ngFor="let vehicle of filteredVehicles"
         [vehicle]="vehicle"
-        [showingMostUsed]="filterPanel?.getShowingMostUsed() || false"
+        [showingMostUsed]="filterPanel.getShowingMostUsed() || false"
         (cardClick)="goToVehicleDetails($event)"
       ></app-vehicle-card>
     </div>
@@ -90,6 +88,5 @@
       <h3>אין כלי רכב להצגה</h3>
       <p>לא נמצאו כלי רכב התואמים את הסינון שנבחר</p>
     </div>
-
   </div>
 </div>

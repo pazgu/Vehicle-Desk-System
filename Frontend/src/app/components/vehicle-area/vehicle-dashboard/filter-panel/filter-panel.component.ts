@@ -113,30 +113,49 @@ export class FilterPanelComponent implements OnInit, OnChanges {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth() + 1;
 
-    this.vehicleService.getMostUsedVehiclesThisMonth(year, month).subscribe({
-      next: (response) => {
-        const enrichedStats = response.stats
-          .map((stat: any) => {
-            const match = this.allVehicles.find(
-              (v) => v.id === stat.vehicle_id
-            );
-            if (match) {
-              return {
-                ...match,
-                ride_count: stat.total_rides,
-              };
-            }
-            return null;
-          })
-          .filter((v) => v !== null) as VehicleInItem[];
+    // Step 1: ensure we have all vehicles first
+    this.vehicleService.getAllVehicles().subscribe(
+      (allVehicles) => {
+        // Step 2: map departments for all vehicles
+        const vehiclesWithDepts = Array.isArray(allVehicles)
+          ? allVehicles.map((v) => ({
+              ...v,
+              department:
+                this.departmentMap.get(v.department_id || '') ||
+                (v.department_id ? 'מחלקה לא ידועה' : 'לא משוייך למחלקה'),
+            }))
+          : [];
 
-        this.mostUsedVehicles = enrichedStats;
-        this.applyFilters();
+        // Step 3: fetch most used stats and enrich with full vehicle data
+        this.vehicleService.getMostUsedVehiclesThisMonth(year, month).subscribe({
+          next: (response) => {
+            const enrichedStats = response.stats
+              .map((stat: any) => {
+                const match = vehiclesWithDepts.find(
+                  (v) => v.id === stat.vehicle_id
+                );
+                if (match) {
+                  return {
+                    ...match,
+                    ride_count: stat.total_rides,
+                  };
+                }
+                return null;
+              })
+              .filter((v) => v !== null) as VehicleInItem[];
+
+            this.mostUsedVehicles = enrichedStats;
+            this.applyFilters();
+          },
+          error: (err) => {
+            console.error('❌ Error loading most used vehicles:', err);
+          },
+        });
       },
-      error: (err) => {
-        console.error('❌ Error loading most used vehicles:', err);
-      },
-    });
+      (error) => {
+        console.error('❌ Error loading all vehicles:', error);
+      }
+    );
   }
 
   loadInactiveVehicles(): void {
@@ -239,3 +258,5 @@ export class FilterPanelComponent implements OnInit, OnChanges {
     }
   }
 }
+
+

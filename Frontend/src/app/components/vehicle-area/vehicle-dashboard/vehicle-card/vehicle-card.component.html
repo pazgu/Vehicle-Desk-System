@@ -1,10 +1,32 @@
 <app-vehicle-usage-stats></app-vehicle-usage-stats>
 <p-card [styleClass]="getCardClass()" (click)="onCardClick()">
+  <div
+    class="usage-indicator"
+    [style.background-color]="getUsageBarColor(vehicle.plate_number)"
+  ></div>
+  <span
+    class="usage-number"
+    *ngIf="getVehicleUsageCount(vehicle.plate_number) > 0"
+  >
+    {{ getVehicleUsageCount(vehicle.plate_number) }} נסיעות</span
+  >
+
+
+  <div *ngIf="isInactive(vehicle.last_used_at)" class="inactive-badge">
+    לא פעיל
+  </div>
+
   <div style="text-align: center; margin-bottom: 0.8rem">
     <img
       [src]="vehicle.image_url || '/assets/images/default-vehicle.png'"
       alt="{{ vehicle.vehicle_model }}"
-      style="width: 90%; height: auto; object-fit: cover; border-radius: 8px; margin-bottom: 30px;"
+      style="
+        width: 90%;
+        height: auto;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-bottom: 30px;
+      "
     />
   </div>
 
@@ -26,18 +48,6 @@
       {{ vehicle.department || "לא משוייך למחלקה" }}
     </span>
 
-    <div
-      *ngIf="getUsageLevel(vehicle.plate_number) !== 'hide'"
-      class="usage-line"
-    >
-      <div
-        class="usage-indicator"
-        [style.background-color]="getUsageBarColor(vehicle.plate_number)"
-      ></div>
-      <span class="usage-number">{{
-        getVehicleUsageCount(vehicle.plate_number)
-      }}</span>
-    </div>
 
     <div *ngIf="showingMostUsed && vehicle.ride_count !== undefined">
       <p style="margin: 0.5rem 0 0 0; color: #942222; font-weight: bold">

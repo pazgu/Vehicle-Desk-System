@@ -105,9 +105,6 @@
   accent-color: #942222;
 }
 
-.checkbox-label span {
-  flex: 1;
-}
 
 .checkbox-label .pi-exclamation-triangle {
   color: #f59e0b;

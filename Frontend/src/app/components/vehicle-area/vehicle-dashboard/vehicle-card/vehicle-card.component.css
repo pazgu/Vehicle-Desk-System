@@ -118,7 +118,7 @@
   width: 90%;
   height: auto;         
   object-fit: contain;
-  margin: 0.5rem auto 0;
+  margin: 2rem auto 0;
 }
 
 @media (max-width: 420px) {
