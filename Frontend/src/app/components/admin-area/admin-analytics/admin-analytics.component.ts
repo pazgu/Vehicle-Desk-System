@@ -81,12 +81,9 @@ export class AdminAnalyticsComponent implements OnInit {
     this.loadVehicleChart();
   
     this.loadFrozenVehicles();
-    this.noShowsComponent.filteredNoShowUsers = [] as TopNoShowUser[];
     this.loadVehicleTypes();
     this.loadRideStatuses();
     this.vehicleUsageComponent.loadAllTimeTopUsedVehiclesChart();
-  
-
     this.socketService.vehicleStatusUpdated$.subscribe(() => {
       this.loadVehicleChart();
       this.loadFrozenVehicles();
@@ -104,6 +101,7 @@ export class AdminAnalyticsComponent implements OnInit {
       .subscribe({
         next: (res) => {
           this.vehicleTypes = res.vehicle_types;
+          console.log("types", this.vehicleTypes)
         },
         error: (err) => {
           this.toastService.show('אירעה שגיאה בטעינת סוגי רכבים', 'error');
@@ -133,8 +131,6 @@ export class AdminAnalyticsComponent implements OnInit {
   onVehicleTypeFilterChange() {
     this.loadVehicleChart();
   }
-
-
 
   getVehicleTypeOptions() {
     const options = [{ label: 'כל הסוגים', value: '' }];

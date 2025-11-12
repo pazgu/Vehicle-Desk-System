@@ -33,10 +33,6 @@
 
     <div>
       <p-tabView [(activeIndex)]="activeTabIndex">
-
-
-
-
         <p-tabPanel header=" " [headerStyle]="{ display: 'none' }">
           <div>
             <h3 class="section-heading">פילוח סטטוס רכבים</h3>
@@ -48,7 +44,6 @@
                 <option *ngFor="let type of vehicleTypes" [value]="type">{{ type }}</option>
               </select>
             </div>
-
             <div *ngIf="isVehicleNoData;" class="no-data-message">
               אין נתונים להצגה
             </div>
