@@ -6,7 +6,6 @@ import enum
 from sqlalchemy.orm import relationship
 
 class UserRole(str, enum.Enum):
-    anonymous = "anonymous"
     employee = 'employee'
     supervisor = 'supervisor'
     admin = 'admin'
