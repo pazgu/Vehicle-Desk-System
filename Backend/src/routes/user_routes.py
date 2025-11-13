@@ -213,11 +213,15 @@ async def create_order(
         # schedule_ride_reminder_email(new_ride.id, new_ride.start_datetime)
         warning_flag = is_time_in_blocked_window(new_ride.start_datetime)
         department_id = get_user_department(user_id=user_id, db=db)
+        requester_name = get_user_name(db, user_id)              # מי שלח את הבקשה
+        ride_passenger_name = get_user_name(db, new_ride.user_id)  # מי שהנסיעה מיועדת לו
+
 
         await sio.emit("new_ride_request", {
             "ride_id": str(new_ride.id),
             "user_id": str(user_id),
-            "employee_name": new_ride.username,
+            "employee_name": ride_passenger_name,  # הנוסע בפועל
+            "requested_by_name": requester_name,  # מי שלח את הבקשה
             "status": new_ride.status,
             "destination": new_ride.stop,
             "end_datetime": str(new_ride.end_datetime),
@@ -260,12 +264,32 @@ async def create_order(
             #         use_retries=True
             #     )
             # )
+            # שליחת הודעה לנוסע אם מישהו אחר הזמין לו את הנסיעה
+            if new_ride.user_id != user_id:
+                passenger_notification = create_system_notification(
+                    user_id=new_ride.user_id,
+                    title="נסיעה הוזמנה עבורך",
+                    message=f"העובד/ת {requester_name} הזמין/ה עבורך נסיעה חדשה.",
+                    order_id=new_ride.id
+                )
+                await sio.emit("new_notification", {
+        "id": str(passenger_notification.id),
+        "user_id": str(passenger_notification.user_id),
+        "title": passenger_notification.title,
+        "message": passenger_notification.message,
+        "notification_type": passenger_notification.notification_type.value,
+        "sent_at": passenger_notification.sent_at.isoformat(),
+        "order_id": str(passenger_notification.order_id) if passenger_notification.order_id else None,
+        "order_status": new_ride.status
+    })
+
             supervisor_notification = create_system_notification(
                 user_id=supervisor_id,
                 title="בקשת נסיעה חדשה",
-                message=f"העובד/ת {employee_name} שלח/ה בקשה חדשה",
+                message=f"העובד/ת {requester_name} הזמין/ה לך נסיעה חדשה  ",
                 order_id=new_ride.id
             )
+           
             await sio.emit("new_notification", {
                 "id": str(supervisor_notification.id),
                 "user_id": str(supervisor_notification.user_id),
@@ -275,7 +299,8 @@ async def create_order(
                 "sent_at": supervisor_notification.sent_at.isoformat(),
                 "order_id": str(supervisor_notification.order_id) if supervisor_notification.order_id else None,
                 "order_status": new_ride.status,
-                "is_extended_request": is_extended
+                "is_extended_request": is_extended,
+                "employee_name": employee_name
             })
         else:
             logger.warning(f"No supervisor found for user ID {user_id} — skipping supervisor notification and email.")
