@@ -50,27 +50,24 @@ export class RegisterComponent implements OnInit {
     this.showPassword = !this.showPassword;
   }
 
-fetchDepartments(): void {
-  this.http.get<any[]>('http://localhost:8000/api/departments').subscribe({
-    next: (data) => {
-      this.departments = data.filter(dept => dept.name !== 'Unassigned');
-    },
-    error: (err) => {
-      console.error('Failed to fetch departments', err);
-      this.toastService.show('שגיאה בטעינת מחלקות', 'error');
-      this.departments = [];
-    }
-  });
-}
+  fetchDepartments(): void {
+    this.http.get<any[]>('http://localhost:8000/api/departments').subscribe({
+      next: (data) => {
+        this.departments = data;
+      },
+      error: () => {
+        this.toastService.show('שגיאה בטעינת מחלקות', 'error');
+        this.departments = [];
+
+      }
+    });
+  }
 
   get f() {
     return this.registerForm.controls;
   }
 
 register(): void {
-  console.log('Register function called!');
-  console.log('Form valid:', this.registerForm.valid);
-  console.log('Form errors:', this.registerForm.errors);
   this.errorMessage = null;
 
   if (this.registerForm.invalid) {
@@ -89,7 +86,6 @@ register(): void {
       return;
     }
     
-    console.log('About to show toast');
     this.toastService.show('יש למלא את כל השדות כנדרש ולוודא תקינות', 'error');
     return;
   }
@@ -136,7 +132,7 @@ register(): void {
     },
 
     error: (err) => {
-      console.error('Registration failed:', err);
+
 
       if (err.status === 0) {
         this.toastService.show('השרת אינו זמין כרגע. נסה שוב מאוחר יותר', 'error');
@@ -180,7 +176,7 @@ register(): void {
         this.toastService.show('שגיאה בפרטי ההרשמה. אנא בדוק את הקלט ונסה שוב', 'error');
 
       } else {
-        const errorText = err.error?.detail || 'שגיאה כללית בהרשמה';
+        const errorText = 'שגיאה כללית בהרשמה';
         this.toastService.show(errorText, 'error');
       }
     }
