@@ -213,11 +213,14 @@ async def create_order(
         # schedule_ride_reminder_email(new_ride.id, new_ride.start_datetime)
         warning_flag = is_time_in_blocked_window(new_ride.start_datetime)
         department_id = get_user_department(user_id=user_id, db=db)
+        requester_name = get_user_name(db, user_id)             
+        ride_passenger_name = get_user_name(db, new_ride.user_id)  
 
         await sio.emit("new_ride_request", {
             "ride_id": str(new_ride.id),
             "user_id": str(user_id),
-            "employee_name": new_ride.username,
+            "employee_name": ride_passenger_name,  
+            "requested_by_name": requester_name,  
             "status": new_ride.status,
             "destination": new_ride.stop,
             "end_datetime": str(new_ride.end_datetime),
@@ -250,22 +253,32 @@ async def create_order(
                 "estimated_distance_km": new_ride.estimated_distance_km,
                 "status": new_ride.status,
             }
-            # asyncio.create_task(
-            #     email_service.send_ride_creation_email(
-            #         ride_id=new_ride.id,
-            #         recipient_id=supervisor_id,
-            #         db=db,
-            #         ride_details=ride_details_for_email,
-            #         email_type="new_ride_request_to_supervisor",
-            #         use_retries=True
-            #     )
-            # )
+         
+            if new_ride.user_id != user_id:
+                passenger_notification = create_system_notification(
+                    user_id=new_ride.user_id,
+                    title="נסיעה הוזמנה עבורך",
+                    message=f"העובד/ת {requester_name} הזמין/ה עבורך נסיעה חדשה.",
+                    order_id=new_ride.id
+                )
+                await sio.emit("new_notification", {
+        "id": str(passenger_notification.id),
+        "user_id": str(passenger_notification.user_id),
+        "title": passenger_notification.title,
+        "message": passenger_notification.message,
+        "notification_type": passenger_notification.notification_type.value,
+        "sent_at": passenger_notification.sent_at.isoformat(),
+        "order_id": str(passenger_notification.order_id) if passenger_notification.order_id else None,
+        "order_status": new_ride.status
+    })
+
             supervisor_notification = create_system_notification(
                 user_id=supervisor_id,
                 title="בקשת נסיעה חדשה",
-                message=f"העובד/ת {employee_name} שלח/ה בקשה חדשה",
+                message=f"העובד/ת {requester_name} הזמין/ה עבורך נסיעה חדשה  ",
                 order_id=new_ride.id
             )
+           
             await sio.emit("new_notification", {
                 "id": str(supervisor_notification.id),
                 "user_id": str(supervisor_notification.user_id),
@@ -275,7 +288,8 @@ async def create_order(
                 "sent_at": supervisor_notification.sent_at.isoformat(),
                 "order_id": str(supervisor_notification.order_id) if supervisor_notification.order_id else None,
                 "order_status": new_ride.status,
-                "is_extended_request": is_extended
+                "is_extended_request": is_extended,
+                "employee_name": employee_name
             })
         else:
             logger.warning(f"No supervisor found for user ID {user_id} — skipping supervisor notification and email.")
@@ -289,17 +303,12 @@ async def create_order(
 
 @router.get("/api/rides_supposed-to-start")
 def check_started_approved_rides(db: Session = Depends(get_db)):
-    # Use timezone-aware or naive depending on your DB!
-    now = datetime.now(timezone.utc)  # ✅ naive
-    # OR
-    # now = datetime.now(timezone.utc) # ✅ aware
-    
+    now = datetime.now(timezone.utc) 
     rides = db.query(Ride).filter(
         Ride.status == RideStatus.approved,
         Ride.start_datetime <= now,
         now <= Ride.start_datetime + text("interval '2 hours'")
     ).all()
-
 
     return {"rides_supposed_to_start": [ride.id for ride in rides]}
 

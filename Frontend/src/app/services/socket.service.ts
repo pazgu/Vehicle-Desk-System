@@ -83,6 +83,8 @@ this.socket.on('order_deleted', (data: any) => {
     this.socket.on('new_notification', (data: any) => {
   const userId = localStorage.getItem('employee_id');
 
+  
+
   // Make sure both exist and compare them
   if (data.user_id && userId && data.user_id.toString() === userId.toString()) {
     this.notifications$.next(data);
