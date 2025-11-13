@@ -45,9 +45,6 @@ export class AuthInterceptor implements HttpInterceptor {
           this.router.navigate(['/login']);
         } else if (err.status === 403) {
           this.toastService.show('אין לך הרשאות לגשת למשאב זה.', 'error'); // ✅ also convert this one
-        } else {
-            const msg = err.error?.detail || err.error?.message || `Request failed (${err.status})`;
-            this.toastService.show(msg, 'error');
         }
 
         return throwError(() => err);
