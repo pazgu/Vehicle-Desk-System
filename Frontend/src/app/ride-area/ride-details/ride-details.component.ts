@@ -98,7 +98,7 @@ isRideLongerThanOneDay(): boolean {
 }
 
   getCityName(cityId: string): string {
-  return this.cityMap[cityId] || 'לא ידוע';
+  return this.cityMap[cityId] || 'תל אביב';
 }
 
 
