@@ -77,21 +77,6 @@ async def create_order(
         schedule_ride_start(new_ride.id, new_ride.start_datetime)
         schedule_ride_reminder_email(new_ride.id, new_ride.start_datetime)
         warning_flag = is_time_in_blocked_window(new_ride.start_datetime)
-        department_id = get_user_department(user_id=user_id, db=db)
-
-        await sio.emit("new_ride_request", {
-            "ride_id": str(new_ride.id),
-            "user_id": str(user_id),
-            "employee_name": new_ride.username,
-            "status": new_ride.status,
-            "destination": new_ride.stop,
-            "end_datetime": str(new_ride.end_datetime),
-            "date_and_time": str(new_ride.start_datetime),
-            "vehicle_id": str(new_ride.vehicle_id),
-            "requested_vehicle_model": new_ride.vehicle_model,
-            "department_id": str(department_id),
-            "distance": new_ride.estimated_distance_km,
-        })
 
         return {
             **RideResponse.model_validate(new_ride).dict(),

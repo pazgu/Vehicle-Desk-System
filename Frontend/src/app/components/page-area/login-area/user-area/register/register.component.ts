@@ -50,19 +50,18 @@ export class RegisterComponent implements OnInit {
     this.showPassword = !this.showPassword;
   }
 
-  fetchDepartments(): void {
-    this.http.get<any[]>('http://localhost:8000/api/departments').subscribe({
-      next: (data) => {
-        this.departments = data;
-      },
-      error: (err) => {
-        console.error('Failed to fetch departments', err);
-        this.toastService.show('שגיאה בטעינת מחלקות', 'error');
-        this.departments = [];
-
-      }
-    });
-  }
+fetchDepartments(): void {
+  this.http.get<any[]>('http://localhost:8000/api/departments').subscribe({
+    next: (data) => {
+      this.departments = data.filter(dept => dept.name !== 'Unassigned');
+    },
+    error: (err) => {
+      console.error('Failed to fetch departments', err);
+      this.toastService.show('שגיאה בטעינת מחלקות', 'error');
+      this.departments = [];
+    }
+  });
+}
 
   get f() {
     return this.registerForm.controls;

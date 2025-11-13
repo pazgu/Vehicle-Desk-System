@@ -1,0 +1,42 @@
+<div *ngIf="showMileageUpload" class="mileage-upload-section">
+  <h3>העלאת דוח קילומטרז׳</h3>
+
+  <div>
+    <input
+      type="file"
+      id="mileageFile"
+      accept=".xlsx,.xls,.csv"
+      (change)="onFileSelected($event)"
+      style="display: none"
+    />
+    <label for="mileageFile" class="custom-file-button">
+      בחר קובץ
+    </label>
+    <span class="file-name" *ngIf="selectedFile">{{ selectedFile.name }}</span>
+  </div>
+
+  <button
+    class="submit-button"
+    [disabled]="!selectedFile || isLoading"
+    (click)="uploadMileageReport()"
+  >
+    {{ isLoading ? 'מעלה...' : 'העלה דוח' }}
+  </button>
+
+  <div *ngIf="uploadSuccess" class="upload-success">
+    <i class="pi pi-check-circle"></i>
+    הדוח הועלה בהצלחה!
+  </div>
+
+  <div *ngIf="uploadError" class="upload-error">
+    <i class="pi pi-times-circle"></i>
+    {{ uploadError }}
+  </div>
+
+  <div *ngIf="uploadSummary" class="upload-summary">
+    <p>כלי רכב שעודכנו: {{ uploadSummary.vehiclesUpdated }}</p>
+    <ul *ngIf="uploadSummary.warnings.length > 0">
+      <li *ngFor="let warning of uploadSummary.warnings">{{ warning }}</li>
+    </ul>
+  </div>
+</div>
