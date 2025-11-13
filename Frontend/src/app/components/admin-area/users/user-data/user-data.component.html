@@ -47,29 +47,52 @@
             </tr>
             <tr *ngFor="let user of pagedUsers" (click)="goToUserCard(user.employee_id)" class="clickable-row"
               [ngClass]="{'blocked-user-row': user.is_blocked}">
-            <td>
-  <span [ngClass]="{'blocked-text': user.is_blocked}">{{ user.first_name }} {{ user.last_name }}</span>
+            <td class="column-name">
+  <div class="user-name-wrapper">
+    <!-- Truncated name with tooltip -->
+    <span
+  class="user-name-text"
+  [ngClass]="{ 'blocked-text': user.is_blocked }"
+  [attr.data-full-name]="user.first_name + ' ' + user.last_name"
+   [title]="user.first_name + ' ' + user.last_name"
+>
+  {{ user.first_name }} {{ user.last_name }}
+</span>
 
-  <small *ngIf="hasExpiredLicense(user)" class="expired">
-    <svg width="35" height="30" viewBox="3 -5 24 24" xmlns="http://www.w3.org/2000/svg">
-\      <rect x="2" y="6" width="20" height="12" rx="1" fill="none" stroke="#ef4444" stroke-width="1.5"/>
-      <rect x="4" y="8" width="5" height="5" rx="0.5" fill="none" stroke="#ef4444" stroke-width="1"/>
-      <line x1="10" y1="9" x2="19" y2="9" stroke="#ef4444" stroke-width="1" stroke-linecap="round"/>
-      <line x1="10" y1="12" x2="16" y2="12" stroke="#ef4444" stroke-width="1" stroke-linecap="round"/>
-      </svg>                  
-  </small>
 
-  <small *ngIf="hasNoLicense(user)" class="no-license">
-    <svg width="35" height="30" viewBox="3 -5 24 24" xmlns="http://www.w3.org/2000/svg">
-      <rect x="2" y="6" width="20" height="12" rx="1" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="2,2"/>
-      <text x="12" y="16" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#9ca3af">?</text>
-    </svg>
-  </small>
-  
-  <small *ngIf="user.is_blocked" class="blocked-indicator">
-    <i class="pi pi-ban"></i>
-  </small>
+    <!-- Icons stay on the side, not affected by truncation -->
+    <span class="user-icons">
+      <small
+        *ngIf="hasExpiredLicense(user)"
+        class="expired"
+        [title]="getLicenseWarningMessage(user)"
+      >
+        <svg width="35" height="30" viewBox="3 -5 24 24" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="6" width="20" height="12" rx="1" fill="none" stroke="#ef4444" stroke-width="1.5" />
+          <rect x="4" y="8" width="5" height="5" rx="0.5" fill="none" stroke="#ef4444" stroke-width="1" />
+          <line x1="10" y1="9" x2="19" y2="9" stroke="#ef4444" stroke-width="1" stroke-linecap="round" />
+          <line x1="10" y1="12" x2="16" y2="12" stroke="#ef4444" stroke-width="1" stroke-linecap="round" />
+        </svg>
+      </small>
+
+      <small
+        *ngIf="hasNoLicense(user)"
+        class="no-license"
+        [title]="getLicenseWarningMessage(user)"
+      >
+        <svg width="35" height="30" viewBox="3 -5 24 24" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="6" width="20" height="12" rx="1" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="2,2" />
+          <text x="12" y="16" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#9ca3af">?</text>
+        </svg>
+      </small>
+
+      <small *ngIf="user.is_blocked" class="blocked-indicator">
+        <i class="pi pi-ban"></i>
+      </small>
+    </span>
+  </div>
 </td>
+
               <td class="column-role" [ngClass]="{'blocked-text': user.is_blocked}">{{ user.role }}</td>
               <td class="column-department" [ngClass]="{'blocked-text': user.is_blocked}">
                 {{ getDepartmentName(user) }}

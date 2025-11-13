@@ -828,3 +828,79 @@ tbody tr td:nth-child(1) small {
 thead tr th:nth-child(2) {
   padding-right: 30px; 
 }
+/* Make sure the name column has a reasonable max width */
+.column-name {
+  max-width: 220px;
+  position: relative; /* ADD THIS - needed for proper tooltip positioning */
+}
+
+/* Wrapper to keep name + icons in one line */
+.user-name-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* The actual name text that will get truncated - SINGLE DEFINITION */
+.user-name-text {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Icons stay to the side, not squished by the name */
+.user-icons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* Styled tooltip that appears on hover - BELOW the name */
+.user-name-text:hover::after {
+  content: attr(data-full-name);
+  position: absolute;
+  top: calc(100% + 10px); /* Changed from bottom to top - shows BELOW */
+  right: 0;
+  background: #942222;
+  color: #ffffff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  white-space: nowrap;
+  font-size: 0.9rem;
+  font-weight: 500;
+  z-index: 10000;
+  box-shadow: 0 4px 12px rgba(148, 34, 34, 0.3);
+  pointer-events: none;
+  animation: tooltipFadeIn 0.2s ease-in;
+}
+
+/* Arrow pointing UP to the name */
+.user-name-text:hover::before {
+  content: "";
+  position: absolute;
+  top: calc(100% + 4px); /* Changed from bottom to top */
+  right: 20px;
+  border-width: 6px;
+  border-style: solid;
+  border-color: transparent transparent #942222 transparent; /* Arrow pointing UP */
+  z-index: 10001;
+  pointer-events: none;
+  animation: tooltipFadeIn 0.2s ease-in;
+}
+
+/* Smooth fade-in animation */
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px); /* Changed direction */
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
