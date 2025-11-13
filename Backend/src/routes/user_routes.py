@@ -213,15 +213,14 @@ async def create_order(
         # schedule_ride_reminder_email(new_ride.id, new_ride.start_datetime)
         warning_flag = is_time_in_blocked_window(new_ride.start_datetime)
         department_id = get_user_department(user_id=user_id, db=db)
-        requester_name = get_user_name(db, user_id)              # מי שלח את הבקשה
-        ride_passenger_name = get_user_name(db, new_ride.user_id)  # מי שהנסיעה מיועדת לו
-
+        requester_name = get_user_name(db, user_id)             
+        ride_passenger_name = get_user_name(db, new_ride.user_id)  
 
         await sio.emit("new_ride_request", {
             "ride_id": str(new_ride.id),
             "user_id": str(user_id),
-            "employee_name": ride_passenger_name,  # הנוסע בפועל
-            "requested_by_name": requester_name,  # מי שלח את הבקשה
+            "employee_name": ride_passenger_name,  
+            "requested_by_name": requester_name,  
             "status": new_ride.status,
             "destination": new_ride.stop,
             "end_datetime": str(new_ride.end_datetime),
@@ -254,17 +253,7 @@ async def create_order(
                 "estimated_distance_km": new_ride.estimated_distance_km,
                 "status": new_ride.status,
             }
-            # asyncio.create_task(
-            #     email_service.send_ride_creation_email(
-            #         ride_id=new_ride.id,
-            #         recipient_id=supervisor_id,
-            #         db=db,
-            #         ride_details=ride_details_for_email,
-            #         email_type="new_ride_request_to_supervisor",
-            #         use_retries=True
-            #     )
-            # )
-            # שליחת הודעה לנוסע אם מישהו אחר הזמין לו את הנסיעה
+         
             if new_ride.user_id != user_id:
                 passenger_notification = create_system_notification(
                     user_id=new_ride.user_id,
@@ -286,7 +275,7 @@ async def create_order(
             supervisor_notification = create_system_notification(
                 user_id=supervisor_id,
                 title="בקשת נסיעה חדשה",
-                message=f"העובד/ת {requester_name} הזמין/ה לך נסיעה חדשה  ",
+                message=f"העובד/ת {requester_name} הזמין/ה עבורך נסיעה חדשה  ",
                 order_id=new_ride.id
             )
            
@@ -314,17 +303,12 @@ async def create_order(
 
 @router.get("/api/rides_supposed-to-start")
 def check_started_approved_rides(db: Session = Depends(get_db)):
-    # Use timezone-aware or naive depending on your DB!
-    now = datetime.now(timezone.utc)  # ✅ naive
-    # OR
-    # now = datetime.now(timezone.utc) # ✅ aware
-    
+    now = datetime.now(timezone.utc) 
     rides = db.query(Ride).filter(
         Ride.status == RideStatus.approved,
         Ride.start_datetime <= now,
         now <= Ride.start_datetime + text("interval '2 hours'")
     ).all()
-
 
     return {"rides_supposed_to_start": [ride.id for ride in rides]}
 
