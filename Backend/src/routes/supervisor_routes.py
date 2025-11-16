@@ -15,7 +15,7 @@ from ..utils.socket_manager import sio
 from ..utils.time_utils import is_time_in_blocked_window
 
 # Services
-from ..services.new_ride_service import create_supervisor_ride
+from ..services.new_ride_service import create_supervisor_ride,check_department_assignment
 from ..services.ride_reminder_service import schedule_ride_reminder_email
 from ..services.supervisor_dashboard_service import (
     get_department_orders,
@@ -71,6 +71,7 @@ async def create_order(
 ):
     role_check(allowed_roles=["supervisor", "admin"], token=token)
     identity_check(user_id=str(user_id), token=token)
+    check_department_assignment(db, user_id)
 
     try:
         new_ride = await create_supervisor_ride(db, user_id, ride_request)
