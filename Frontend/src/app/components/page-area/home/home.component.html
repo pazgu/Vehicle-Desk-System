@@ -45,14 +45,18 @@
             <small *ngIf="showStep1Error" class="error-text">יש לבחור עובד מהמחלקה כדי להמשיך</small>
           </div>
           <div class="button-container">
-            <button class="submit-btn" (click)="handleStep1Next()">הבא</button>
+            <button class="submit-btn" (click)="handleStep1Next()"
+              [disabled]="disableDueToDepartment || disableRequest"
+              [class.disabled-button]="disableDueToDepartment || disableRequest">
+              הבא
+            </button>
           </div>
         </div>
 
         <div *ngIf="step === 2">
-          <div class="request-backdrop" *ngIf="step === 2 && disableRequest"></div>
+          <div class="request-backdrop" *ngIf="step === 2 && (disableRequest || disableDueToDepartment)"></div>
 
-          <div class="disable-request" *ngIf="disableRequest">
+          <div class="disable-request" *ngIf="disableRequest && !disableDueToDepartment">
             <p>העובד אינו מחזיק ברישיון ממשלתי תקף ולא ניתן להזמין עבורו נסיעה</p>
             <small>לעדכון פרטי רישיון יש ליצור קשר עם המנהל</small>
           </div>
@@ -276,7 +280,10 @@
 
 
           <div class="button-container">
-            <button type="submit" class="submit-btn" (click)="submit()">שלח</button>
+            <button type="submit" class="submit-btn" (click)="submit()"
+              [disabled]="disableDueToDepartment || disableRequest"
+              [class.disabled-button]="disableDueToDepartment || disableRequest">
+              שלח</button>
           </div>
         </div>
       </form>
