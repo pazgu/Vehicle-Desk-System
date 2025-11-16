@@ -170,13 +170,11 @@ export class UserDataEditComponent implements OnInit {
       const deptControl = this.userForm.get('department_id');
       
       if (role === 'employee') {
-        // Employee - מחלקה חובה
         deptControl?.setValidators([Validators.required]);
       } else {
-        // Admin, Inspector, Supervisor - מחלקה אופציונלית או לא קיימת
         deptControl?.clearValidators();
         if (role === 'admin' || role === 'inspector') {
-          deptControl?.setValue(''); // נקה את הערך לגמרי
+          deptControl?.setValue('');
         }
       }
       
