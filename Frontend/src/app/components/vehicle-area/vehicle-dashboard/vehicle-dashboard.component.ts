@@ -1,4 +1,3 @@
-
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -52,9 +51,12 @@ export class VehicleDashboardComponent implements OnInit {
 
     this.socketService.newVehicle$.subscribe((vehicleData) => {
       if (vehicleData && vehicleData.id) {
-        const alreadyExists = this.vehicles.some((v) => v.id === vehicleData.id);
+        const alreadyExists = this.vehicles.some(
+          (v) => v.id === vehicleData.id
+        );
         if (!alreadyExists) {
-          const vehicleWithDepartmentName = this.mapVehicleDepartment(vehicleData);
+          const vehicleWithDepartmentName =
+            this.mapVehicleDepartment(vehicleData);
           this.vehicles.unshift(vehicleWithDepartmentName);
         }
       }
@@ -64,7 +66,9 @@ export class VehicleDashboardComponent implements OnInit {
   async fetchAndMapDepartments(): Promise<void> {
     try {
       const departments = await this.http
-        .get<{ id: string; name: string }[]>(`${environment.apiUrl}/departments`)
+        .get<{ id: string; name: string }[]>(
+          `${environment.apiUrl}/departments`
+        )
         .toPromise();
       if (departments) {
         departments.forEach((dept) => {
@@ -124,17 +128,25 @@ export class VehicleDashboardComponent implements OnInit {
 
   loadQueryParams(): void {
     this.route.queryParams.subscribe((params) => {
-      const statusFilter = this.translate(params['status'] || '', 'status', 'toHebrew');
-      const typeFilter = this.translate(params['type'] || '', 'type', 'toHebrew');
+      const statusFilter = this.translate(
+        params['status'] || '',
+        'status',
+        'toHebrew'
+      );
+      const typeFilter = this.translate(
+        params['type'] || '',
+        'type',
+        'toHebrew'
+      );
       const showInactive = params['showInactive'] === 'true';
-      const showingMostUsed = params['showingMostUsed'] === 'true';
+      const sortByMostUsed = params['sortByMostUsed'] === 'true';
 
       if (this.filterPanel) {
         this.filterPanel.setFiltersFromParams(
           statusFilter,
           typeFilter,
           showInactive,
-          showingMostUsed
+          sortByMostUsed
         );
       }
     });
@@ -148,14 +160,18 @@ export class VehicleDashboardComponent implements OnInit {
     const statusFilter = this.filterPanel.getStatusFilter();
     const typeFilter = this.filterPanel.getTypeFilter();
     const showInactive = this.filterPanel.getShowInactive();
-    const showingMostUsed = this.filterPanel.getShowingMostUsed();
+    const sortByMostUsed = this.filterPanel.getSortByMostUsed();
 
     if (statusFilter)
-      queryParams['status'] = this.translate(statusFilter, 'status', 'toEnglish');
+      queryParams['status'] = this.translate(
+        statusFilter,
+        'status',
+        'toEnglish'
+      );
     if (typeFilter)
       queryParams['type'] = this.translate(typeFilter, 'type', 'toEnglish');
     if (showInactive) queryParams['showInactive'] = 'true';
-    if (showingMostUsed) queryParams['showingMostUsed'] = 'true';
+    if (sortByMostUsed) queryParams['sortByMostUsed'] = 'true';
 
     this.router.navigate([], {
       relativeTo: this.route,
@@ -179,7 +195,9 @@ export class VehicleDashboardComponent implements OnInit {
       if (direction === 'toHebrew') {
         return statusMap[value] || value;
       } else {
-        return Object.keys(statusMap).find((k) => statusMap[k] === value) || value;
+        return (
+          Object.keys(statusMap).find((k) => statusMap[k] === value) || value
+        );
       }
     }
 

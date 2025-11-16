@@ -33,12 +33,12 @@ export class FilterPanelComponent implements OnInit, OnChanges {
   statusFilter: string = '';
   typeFilter: string = '';
   showFilters: boolean = false;
-  showingMostUsed: boolean = false;
+  sortByMostUsed: boolean = false;
   showInactive: boolean = false;
 
   vehicleTypes: { original: string; translated: string }[] = [];
-  mostUsedVehicles: VehicleInItem[] = [];
   inactiveVehicles: Vehicle[] = [];
+  vehicleUsageData: Map<string, number> = new Map();
 
   constructor(
     private vehicleService: VehicleService,
@@ -47,6 +47,7 @@ export class FilterPanelComponent implements OnInit, OnChanges {
 
   ngOnInit(): void {
     this.fetchVehicleTypes();
+    this.loadVehicleUsageData();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -84,22 +85,8 @@ export class FilterPanelComponent implements OnInit, OnChanges {
     this.showFilters = !this.showFilters;
   }
 
-  onMostUsedChange() {
-    if (this.showingMostUsed) {
-      this.showInactive = false;
-      this.mostUsedVehicles = [];
-      this.loadMostUsedVehicles();
-    } else {
-      this.mostUsedVehicles = [];
-      this.applyFilters();
-    }
-    this.updateQueryParams.emit();
-  }
-
   onInactiveChange() {
     if (this.showInactive) {
-      this.showingMostUsed = false;
-      this.mostUsedVehicles = [];
       this.loadInactiveVehicles();
     } else {
       this.inactiveVehicles = [];
@@ -108,56 +95,33 @@ export class FilterPanelComponent implements OnInit, OnChanges {
     this.updateQueryParams.emit();
   }
 
-  loadMostUsedVehicles(): void {
+  onSortByMostUsedChange() {
+    if (this.sortByMostUsed) {
+      this.loadVehicleUsageData();
+    } else {
+      this.applyFilters();
+    }
+    this.updateQueryParams.emit();
+  }
+
+  loadVehicleUsageData(): void {
     const currentDate = new Date();
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth() + 1;
 
-    // Step 1: ensure we have all vehicles first
-    this.vehicleService.getAllVehicles().subscribe(
-      (allVehicles) => {
-        // Step 2: map departments for all vehicles
-        const vehiclesWithDepts = Array.isArray(allVehicles)
-          ? allVehicles.map((v) => ({
-              ...v,
-              department:
-                this.departmentMap.get(v.department_id || '') ||
-                (v.department_id ? 'מחלקה לא ידועה' : 'לא משוייך למחלקה'),
-            }))
-          : [];
+    this.vehicleService.getMostUsedVehiclesThisMonth(year, month).subscribe({
+      next: (response) => {
+        this.vehicleUsageData.clear();
+        response.stats.forEach((stat: any) => {
+          this.vehicleUsageData.set(stat.vehicle_id, stat.total_rides);
+        });
 
-        // Step 3: fetch most used stats and enrich with full vehicle data
-        this.vehicleService
-          .getMostUsedVehiclesThisMonth(year, month)
-          .subscribe({
-            next: (response) => {
-              const enrichedStats = response.stats
-                .map((stat: any) => {
-                  const match = vehiclesWithDepts.find(
-                    (v) => v.id === stat.vehicle_id
-                  );
-                  if (match) {
-                    return {
-                      ...match,
-                      ride_count: stat.total_rides,
-                    };
-                  }
-                  return null;
-                })
-                .filter((v) => v !== null) as VehicleInItem[];
-
-              this.mostUsedVehicles = enrichedStats;
-              this.applyFilters();
-            },
-            error: (err) => {
-              console.error('❌ Error loading most used vehicles:', err);
-            },
-          });
+        this.applyFilters();
       },
-      (error) => {
-        console.error('❌ Error loading all vehicles:', error);
-      }
-    );
+      error: (err) => {
+        console.error('❌ Error loading vehicle usage data:', err);
+      },
+    });
   }
 
   loadInactiveVehicles(): void {
@@ -175,9 +139,7 @@ export class FilterPanelComponent implements OnInit, OnChanges {
   }
 
   applyFilters(): void {
-    const baseList = this.showingMostUsed
-      ? this.mostUsedVehicles
-      : this.allVehicles;
+    const baseList = this.allVehicles;
 
     if (!baseList || baseList.length === 0) {
       this.filteredVehiclesChange.emit([]);
@@ -218,9 +180,17 @@ export class FilterPanelComponent implements OnInit, OnChanges {
       });
     }
 
-    const sorted = [...filtered].sort((a, b) =>
-      a.status.localeCompare(b.status)
-    );
+    let sorted: VehicleInItem[];
+
+    if (this.sortByMostUsed) {
+      sorted = [...filtered].sort((a, b) => {
+        const countA = this.vehicleUsageData.get(a.id) || 0;
+        const countB = this.vehicleUsageData.get(b.id) || 0;
+        return countB - countA;
+      });
+    } else {
+      sorted = [...filtered].sort((a, b) => a.status.localeCompare(b.status));
+    }
     this.filteredVehiclesChange.emit(sorted);
   }
 
@@ -236,25 +206,25 @@ export class FilterPanelComponent implements OnInit, OnChanges {
     return this.showInactive;
   }
 
-  getShowingMostUsed(): boolean {
-    return this.showingMostUsed;
+  getSortByMostUsed(): boolean {
+    return this.sortByMostUsed;
   }
 
   setFiltersFromParams(
     status: string,
     type: string,
     inactive: boolean,
-    mostUsed: boolean
+    sortByMostUsed: boolean = false
   ): void {
     this.statusFilter = status;
     this.typeFilter = type;
     this.showInactive = inactive;
-    this.showingMostUsed = mostUsed;
+    this.sortByMostUsed = sortByMostUsed;
 
-    if (this.showingMostUsed) {
-      this.loadMostUsedVehicles();
-    } else if (this.showInactive) {
+    if (this.showInactive) {
       this.loadInactiveVehicles();
+    } else if (this.sortByMostUsed) {
+      this.loadVehicleUsageData();
     } else {
       this.applyFilters();
     }
