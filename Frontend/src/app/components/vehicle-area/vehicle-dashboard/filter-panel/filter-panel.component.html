@@ -27,6 +27,11 @@
         <span>הצג כלי רכב הכי בשימוש החודש</span>
       </label>
 
+          <label class="checkbox-label" *ngIf="userRole === 'admin' || userRole === 'manager'">
+        <input type="checkbox" [(ngModel)]="sortByMostUsed" (change)="onSortByMostUsedChange()" />
+        <span>מיין לפי כלי רכב הכי בשימוש</span>
+      </label>
+
       <label class="checkbox-label">
         <input type="checkbox" [(ngModel)]="showInactive" (change)="onInactiveChange()" />
         <span>הצג כלי רכב לא פעילים</span>
