@@ -101,6 +101,27 @@ isRideLongerThanOneDay(): boolean {
   return this.cityMap[cityId] || 'תל אביב';
 }
 
+   getHebrewFuelType(fuel: string | null | undefined): string {
+    if (!fuel) return 'לא ידוע';
+
+    const value = fuel.toString().toLowerCase();
+
+    switch (value) {
+      case 'electric':
+        return 'חשמלי';
+      case 'hybrid':
+        return 'היברידי';
+      case 'gasoline':
+        return 'בנזין';
+      default:
+        return 'לא ידוע';
+    }
+  }
+
+
+
+
+
 
   goBack(): void {
   this.router.navigate(['/all-rides']);
