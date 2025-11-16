@@ -76,9 +76,8 @@
       <app-vehicle-card
         *ngFor="let vehicle of filteredVehicles"
         [vehicle]="vehicle"
-        [showingMostUsed]="filterPanel.getShowingMostUsed() || false"
         (cardClick)="goToVehicleDetails($event)"
-      ></app-vehicle-card>
+      ></app-vehicle-card>   
     </div>
 
     <div class="empty-state" *ngIf="filteredVehicles.length === 0">
