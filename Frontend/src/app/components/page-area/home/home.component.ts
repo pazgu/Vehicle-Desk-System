@@ -58,6 +58,8 @@ export class NewRideComponent implements OnInit {
     showGuidelines = false;
     pendingConfirmation = false;
     createdRideId: string | null = null;
+    disableDueToDepartment: boolean = false;
+    departmentCheckCompleted: boolean = false;
 
 
     constructor(
@@ -82,6 +84,7 @@ export class NewRideComponent implements OnInit {
         if (initialTargetType === 'self') {
             const currentUserId = this.getUserIdFromAuthService();
             if (currentUserId) {
+                this.checkUserDepartment(currentUserId);
                 this.checkGovernmentLicence(currentUserId);
             } else {
                 console.warn('Current user ID not found in AuthService during ngOnInit. Disabling request.');
@@ -255,6 +258,35 @@ onBeforeUnload(e: BeforeUnloadEvent) {
                 );
             }
         });
+        this.socketService.usersDepartment$.subscribe(update => {
+            const { id, department_id } = update;
+            const selectedUserId =
+                this.rideForm.get('target_type')?.value === 'self'
+                    ? this.getUserIdFromAuthService()
+                    : this.rideForm.get('target_employee_id')?.value;
+            
+            if (id !== selectedUserId) return;
+            
+            const isAssigned = department_id && 
+                            department_id !== 'UNASSIGNED' && 
+                            department_id.trim() !== '';
+            
+            if (isAssigned) {
+                this.disableDueToDepartment = false;
+                console.log('✅ User assigned to department via socket');
+                if (!this.disableRequest) {
+                    this.toastService.show('המשתמש שויך למחלקה בהצלחה', 'success');
+                }
+            } else {
+                this.disableDueToDepartment = true;
+                this.disableRequest = true;
+                console.warn('🚫 User not assigned to department via socket');
+                this.toastService.showPersistent(
+                    'לא ניתן לשלוח בקשה: אינך משויך למחלקה. יש ליצור קשר עם המנהל להשמה במחלקה.',
+                    'error'
+                );
+            }
+        });
     }
     tripDurationValidator(): ValidatorFn {
         return (control: AbstractControl): ValidationErrors | null => {
@@ -411,6 +443,7 @@ onBeforeUnload(e: BeforeUnloadEvent) {
             } else {
                 const currentUserId = this.getUserIdFromAuthService();
                 if (currentUserId) {
+                    this.checkUserDepartment(currentUserId);
                     this.checkGovernmentLicence(currentUserId);
                 } else {
                     console.warn('Current user ID not found in AuthService (target_type subscription). Disabling request.');
@@ -422,9 +455,11 @@ onBeforeUnload(e: BeforeUnloadEvent) {
         this.rideForm.get('target_employee_id')?.valueChanges.subscribe(employeeId => {
             const targetType = this.rideForm.get('target_type')?.value;
             if (targetType === 'other' && employeeId) {
+                this.checkUserDepartment(employeeId);
                 this.checkGovernmentLicence(employeeId);
             } else if (!employeeId) {
                 this.disableRequest = false;
+                this.disableDueToDepartment = false;
             }
         });
         this.rideForm.get('ride_period')?.valueChanges.subscribe(value => {
@@ -503,6 +538,10 @@ onBeforeUnload(e: BeforeUnloadEvent) {
         const targetEmployeeId = this.rideForm.get('target_employee_id')?.value;
         if (!targetType || (targetType === 'other' && !targetEmployeeId)) {
             this.showStep1Error = true;
+            return;
+        }
+        if (this.disableDueToDepartment) {
+            this.toastService.showPersistent('לא ניתן להמשיך: המשתמש שנבחר אינו משויך למחלקה. יש ליצור קשר עם המנהל להשמה במחלקה.','error');
             return;
         }
         if (this.disableRequest) {
@@ -993,6 +1032,43 @@ onBeforeUnload(e: BeforeUnloadEvent) {
 
     }
 
+    checkUserDepartment(userId: string): void {
+        if (!userId) {
+            this.disableDueToDepartment = false;
+            this.departmentCheckCompleted = true;
+            return;
+        }
+        
+        this.UserService.getUserById(userId).subscribe({
+            next: (user) => {
+                const isUnassignedUser = user.is_unassigned_user === true;
+                const departmentId = user.department_id;
+                const isUnassigned = isUnassignedUser || !departmentId || departmentId === null;
+                
+                if (isUnassigned) {
+                    this.toastService.showPersistent(
+                        'לא ניתן לשלוח בקשה: אינך משויך למחלקה. יש ליצור קשר עם המנהל להשמה במחלקה.',
+                        'error'
+                    );
+                    this.disableDueToDepartment = true;
+                    this.disableRequest = true;
+                } else {
+                    this.disableDueToDepartment = false;
+                }
+                
+                this.departmentCheckCompleted = true;
+                this.cdr.detectChanges();
+            },
+            error: (err) => {
+                console.error('Failed to fetch user department:', err);
+                this.toastService.show('שגיאה בבדיקת שיוך למחלקה', 'error');
+                this.disableDueToDepartment = true;
+                this.disableRequest = true;
+                this.departmentCheckCompleted = true;
+                this.cdr.detectChanges();
+            }
+        });
+    }
 
     futureDateTimeValidator(): ValidatorFn {
         return (formGroup: AbstractControl): ValidationErrors | null => {
@@ -1031,6 +1107,8 @@ onBeforeUnload(e: BeforeUnloadEvent) {
         this.extraStops.clear();
         this.showStep1Error = false;
         this.disableRequest = false;
+        this.disableDueToDepartment = false;
+        this.departmentCheckCompleted = false;
         this.fetchedDistance = null;
         this.estimated_distance_with_buffer = null;
 
@@ -1093,6 +1171,14 @@ onBeforeUnload(e: BeforeUnloadEvent) {
 }
 
     submit(confirmedWarning = false): void {
+        if (this.disableDueToDepartment) {
+            this.toastService.showPersistent('לא ניתן לשלוח בקשה: אינך משויך למחלקה. יש ליצור קשר עם המנהל להשמה במחלקה.','error');
+            return;
+        }
+        if (this.disableRequest) {
+            this.toastService.showPersistent('לא ניתן לשלוח בקשה: למשתמש שנבחר אין רישיון ממשלתי תקף. לעדכון פרטים יש ליצור קשר עם המנהל.','error');
+            return;
+        }
         const carControl = this.rideForm.get('car');
         const selectedCarId = carControl?.value;
         const selectedCar = this.allCars.find(car => car.id === selectedCarId);
@@ -1124,10 +1210,6 @@ onBeforeUnload(e: BeforeUnloadEvent) {
             if (extendedReasonControl?.hasError('required') && !this.isExtendedRequest) {
                 extendedReasonControl.setErrors(null);
             }
-        }
-        if (this.disableRequest) {
-            this.toastService.show('לא ניתן לשלוח בקשה: למשתמש שנבחר אין רישיון ממשלתי תקף. לעדכון פרטים יש ליצור קשר עם המנהל.', 'error');
-            return;
         }
 
         const extraStopsControl = this.rideForm.get('extraStops');
@@ -1249,6 +1331,8 @@ onBeforeUnload(e: BeforeUnloadEvent) {
                         this.toastService.show('לא הוזן תוקף לרישיון המשתמש. יש ליצור קשר עם המנהל.', 'error');
                     } else if (errorMessage.includes('משתמש לא נמצא')) {
                         this.toastService.show('שגיאת זיהוי משתמש - התחבר מחדש', 'error');
+                    } else if (errorMessage.includes('אינו משויך למחלקה') || errorMessage.includes('not assigned to')) {
+                        this.toastService.show('לא ניתן ליצור נסיעה: אינך משויך למחלקה. יש ליצור קשר עם המנהל.', 'error');
                     } else {
                         this.toastService.show('שגיאה בשליחת הבקשה', 'error');
                     }
@@ -1287,6 +1371,8 @@ onBeforeUnload(e: BeforeUnloadEvent) {
                             this.toastService.show('לא הוזן תוקף לרישיון המשתמש. יש ליצור קשר עם המנהל.', 'error');
                         } else if (errorMessage.includes('משתמש לא נמצא')) {
                             this.toastService.show('שגיאת זיהוי משתמש - התחבר מחדש', 'error');
+                        } else if (errorMessage.includes('אינו משויך למחלקה') || errorMessage.includes('not assigned to')) {
+                            this.toastService.show('לא ניתן ליצור נסיעה: אינך משויך למחלקה. יש ליצור קשר עם המנהל.', 'error');
                         } else {
                             this.toastService.show('שגיאה בשליחת הבקשה', 'error');
                         }
