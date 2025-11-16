@@ -158,11 +158,11 @@ position: absolute;
 
 /* שורות לפי תפקיד */
 .role-supervisor td {
-  background-color: #f8e6e8; /* ורוד בהיר מאוד עבור Supervisor */
+  background-color: #f8e6e8; 
 }
 
 .role-employee td {
-  background-color: #ffffff; /* לבן עבור Employee */
+  background-color: #ffffff; 
 }
 
 /* שורות ריקות */
@@ -174,7 +174,7 @@ position: absolute;
 
 /* הוספת אפקט hover לשורות */
 .user-table tbody tr:hover td {
-  background-color: #f0e1e2; /* ורוד מעט כהה יותר בה Hover */
+  background-color: #f0e1e2; 
 }
 .clickable-row {
   cursor: pointer;
@@ -182,11 +182,11 @@ position: absolute;
 
 .modify-buttons {
   display: flex;
-  flex-direction: row; /* Important for RTL layout */
+  flex-direction: row; 
   gap: 0.7rem;
   justify-content: flex-start;
   align-items: center;
-  direction: rtl; /* Ensures RTL button order */
+  direction: rtl; 
   margin-right: 25px;
 }
 
@@ -828,20 +828,18 @@ tbody tr td:nth-child(1) small {
 thead tr th:nth-child(2) {
   padding-right: 30px; 
 }
-/* Make sure the name column has a reasonable max width */
+
 .column-name {
   max-width: 220px;
   position: relative; /* ADD THIS - needed for proper tooltip positioning */
 }
 
-/* Wrapper to keep name + icons in one line */
 .user-name-wrapper {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-/* The actual name text that will get truncated - SINGLE DEFINITION */
 .user-name-text {
   position: relative;
   flex: 1;
@@ -852,7 +850,6 @@ thead tr th:nth-child(2) {
   text-overflow: ellipsis;
 }
 
-/* Icons stay to the side, not squished by the name */
 .user-icons {
   display: flex;
   align-items: center;
@@ -860,11 +857,10 @@ thead tr th:nth-child(2) {
   flex-shrink: 0;
 }
 
-/* Styled tooltip that appears on hover - BELOW the name */
 .user-name-text:hover::after {
   content: attr(data-full-name);
   position: absolute;
-  top: calc(100% + 10px); /* Changed from bottom to top - shows BELOW */
+  top: calc(100% + 10px);
   right: 0;
   background: #942222;
   color: #ffffff;
@@ -879,25 +875,23 @@ thead tr th:nth-child(2) {
   animation: tooltipFadeIn 0.2s ease-in;
 }
 
-/* Arrow pointing UP to the name */
 .user-name-text:hover::before {
   content: "";
   position: absolute;
-  top: calc(100% + 4px); /* Changed from bottom to top */
+  top: calc(100% + 4px); 
   right: 20px;
   border-width: 6px;
   border-style: solid;
-  border-color: transparent transparent #942222 transparent; /* Arrow pointing UP */
+  border-color: transparent transparent #942222 transparent; 
   z-index: 10001;
   pointer-events: none;
   animation: tooltipFadeIn 0.2s ease-in;
 }
 
-/* Smooth fade-in animation */
 @keyframes tooltipFadeIn {
   from {
     opacity: 0;
-    transform: translateY(-5px); /* Changed direction */
+    transform: translateY(-5px); 
   }
   to {
     opacity: 1;
