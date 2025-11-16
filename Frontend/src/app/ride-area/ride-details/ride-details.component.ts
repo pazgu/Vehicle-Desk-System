@@ -101,7 +101,6 @@ isRideLongerThanOneDay(): boolean {
   return this.cityMap[cityId] || 'תל אביב';
 }
 
-
   goBack(): void {
   this.router.navigate(['/all-rides']);
 }
