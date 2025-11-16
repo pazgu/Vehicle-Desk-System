@@ -230,7 +230,7 @@ async def edit_user_by_id_route(
                 status_code=400,
                 detail="Invalid date-time format for block_expires_at. Expected YYYY-MM-DDTHH:MM."
             )
-    if not is_blocked and role and role != user.role.value:
+    if not is_blocked and role:
         try:
             new_role = UserRole(role)
         except ValueError:
@@ -240,13 +240,26 @@ async def edit_user_by_id_route(
             )
         user.role = new_role
 
-        if new_role == UserRole.admin:
+        if new_role == UserRole.admin or new_role == UserRole.inspector:
             user.department_id = None
+        elif new_role == UserRole.supervisor:
+            if department_id:
+                try:
+                    user.department_id = UUID(department_id)
+                    user.is_unassigned_user = False
+                except ValueError:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Invalid department ID format. Must be a valid UUID."
+                    )
+            else:
+                user.department_id = None
         else:
             if not department_id or not department_id.strip():
                 raise HTTPException(status_code=400, detail=f"Department ID is required for role '{new_role}'.")
             try:
                 user.department_id = UUID(department_id)
+                user.is_unassigned_user = False
             except ValueError:
                 raise HTTPException(
                     status_code=400,
