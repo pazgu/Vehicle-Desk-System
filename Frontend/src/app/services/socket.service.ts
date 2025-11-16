@@ -9,9 +9,9 @@ import { NotificationService } from './notification';
 export class SocketService {
 
   private socket!: Socket;
-   usersLicense$ = new Subject<any>();
-  // ✅ Will remind you to replace this with actual backend URL
-  private readonly SOCKET_URL = environment.socketUrl; // ✅ now uses env
+  usersLicense$ = new Subject<any>();
+  usersDepartment$ = new Subject<any>();
+  private readonly SOCKET_URL = environment.socketUrl;
 
   public notifications$ = new BehaviorSubject<any>(null);
   public rideRequests$ = new BehaviorSubject<any>(null);
@@ -132,6 +132,9 @@ this.socket.on('order_deleted', (data: any) => {
     this.socket.on('user_license_updated', (data) => {
       this.usersLicense$.next(data);
     });
+this.socket.on('user_department_updated', (data) => {
+  this.usersDepartment$.next(data);
+});
 this.socket.on('user_block_status_updated', (data: any) => {
 
   const normalized = {
