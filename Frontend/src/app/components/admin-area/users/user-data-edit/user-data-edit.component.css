@@ -256,3 +256,22 @@ label {
   font-style: italic; /* Emphasize that no file is selected */
   padding-left: 5px; /* A little indent */
 }
+
+
+.required-asterisk {
+  color: red;
+  margin-left: 4px;
+}
+
+.optional-label {
+  color: #999;
+  font-size: 0.85em;
+  margin-right: 4px;
+}
+
+.error-message {
+  color: red;
+  font-size: 0.85rem;
+  margin-top: 4px;
+  display: block;
+}

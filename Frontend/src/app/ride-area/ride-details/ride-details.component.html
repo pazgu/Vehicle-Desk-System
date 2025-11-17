@@ -63,16 +63,7 @@
     <span class="detail-value">{{ getCityName(ride?.destination) }}</span>
   </div>
 
-
   <div class="detail-row">
-    <span class="detail-label">סוג דלק:</span>
-    <span class="detail-value">{{ getHebrewFuelType(ride?.vehicle) }}</span>
-  </div>
-
-
-
-
-    <div class="detail-row">
   <span class="detail-label">רכב שנבחר:</span>
   <span class="detail-value">
     <ng-container *ngIf="ride?.vehicle_model; else fallbackVehicle">
@@ -84,10 +75,6 @@
     </ng-template>
   </span>
 </div>
-
-
-
-
 
   <div class="detail-row">
     <span class="detail-label">סטטוס:</span>

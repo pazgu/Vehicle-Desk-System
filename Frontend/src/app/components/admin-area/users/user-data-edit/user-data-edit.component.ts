@@ -54,6 +54,7 @@ export class UserDataEditComponent implements OnInit {
     this.loadRoles();
     this.setupFormSubscriptions();
     this.setupSocketSubscriptions();
+    this.setupRoleBasedValidation();
   }
 
   ngOnDestroy(): void {
@@ -123,7 +124,7 @@ export class UserDataEditComponent implements OnInit {
       username: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       role: ['', Validators.required],
-      department_id: ['', Validators.required],
+      department_id: [''],
       has_government_license: [false],
       license_file_url: [''],
       license_expiry_date: [''],
@@ -139,7 +140,9 @@ export class UserDataEditComponent implements OnInit {
   fetchDepartments(): void {
     this.http.get<any[]>('http://localhost:8000/api/departments').subscribe({
       next: (data) => {
-        this.departments = data;
+        this.departments = data.filter(dept => 
+          dept.name.toLowerCase() !== 'unassigned'
+        );
       },
       error: (err) => {
         console.error('Failed to fetch departments', err);
@@ -161,6 +164,24 @@ export class UserDataEditComponent implements OnInit {
       }
 
     });
+  }
+  setupRoleBasedValidation(): void {
+    const roleSub = this.userForm.get('role')?.valueChanges.subscribe((role: string) => {
+      const deptControl = this.userForm.get('department_id');
+      
+      if (role === 'employee') {
+        deptControl?.setValidators([Validators.required]);
+      } else {
+        deptControl?.clearValidators();
+        if (role === 'admin' || role === 'inspector') {
+          deptControl?.setValue('');
+        }
+      }
+      
+      deptControl?.updateValueAndValidity();
+    });
+    
+    if (roleSub) this.subs.push(roleSub);
   }
 
   loadUserData(): void {
@@ -240,7 +261,9 @@ export class UserDataEditComponent implements OnInit {
       formData.append('username', formValues.username);
       formData.append('email', formValues.email);
       formData.append('role', formValues.role);
-      formData.append('department_id', formValues.department_id);
+      if (formValues.department_id) {
+        formData.append('department_id', formValues.department_id);
+      }
       formData.append('phone', formValues.phone);
 
       const hasLicenseControl = this.userForm.get('has_government_license');

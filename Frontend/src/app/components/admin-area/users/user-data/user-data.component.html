@@ -49,7 +49,6 @@
               [ngClass]="{'blocked-user-row': user.is_blocked}">
             <td class="column-name">
   <div class="user-name-wrapper">
-    <!-- Truncated name with tooltip -->
     <span
   class="user-name-text"
   [ngClass]="{ 'blocked-text': user.is_blocked }"
@@ -59,8 +58,6 @@
   {{ user.first_name }} {{ user.last_name }}
 </span>
 
-
-    <!-- Icons stay on the side, not affected by truncation -->
     <span class="user-icons">
       <small
         *ngIf="hasExpiredLicense(user)"
