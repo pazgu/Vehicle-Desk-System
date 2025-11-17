@@ -37,10 +37,11 @@
     <span class="detail-value">{{ ride?.estimated_distance }} ק״מ</span>
   </div>
 
-  <div class="detail-row">
-    <span class="detail-label">מיקום התחלה:</span>
+    <div class="detail-row">
+    <span class="detail-label">נקודת התחלה:</span>
     <span class="detail-value">{{ getCityName(ride?.start_location) }}</span>
   </div>
+
 
   <div class="detail-row">
     <span class="detail-label">תחנה:</span>
@@ -57,18 +58,23 @@
     </span>
   </div>
 
-  <div class="detail-row">
-    <span class="detail-label">יעד:</span>
+    <div class="detail-row">
+    <span class="detail-label">נקודת סיום:</span>
     <span class="detail-value">{{ getCityName(ride?.destination) }}</span>
   </div>
 
-
   <div class="detail-row">
-    <span class="detail-label">רכב שנבחר:</span>
-    <span class="detail-value">{{ ride?.vehicle || 'לא זמין' }}</span>
-  </div>
+  <span class="detail-label">רכב שנבחר:</span>
+  <span class="detail-value">
+    <ng-container *ngIf="ride?.vehicle_model; else fallbackVehicle">
+      {{ ride?.vehicle_model }}
+    </ng-container>
 
-
+    <ng-template #fallbackVehicle>
+      {{ ride?.vehicle || 'לא זמין' }}
+    </ng-template>
+  </span>
+</div>
 
   <div class="detail-row">
     <span class="detail-label">סטטוס:</span>
