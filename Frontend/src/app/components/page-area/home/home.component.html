@@ -45,11 +45,15 @@
             <small *ngIf="showStep1Error" class="error-text">יש לבחור עובד מהמחלקה כדי להמשיך</small>
           </div>
           <div class="button-container">
-            <button class="submit-btn" (click)="handleStep1Next()"
-              [disabled]="disableDueToDepartment || disableRequest"
-              [class.disabled-button]="disableDueToDepartment || disableRequest">
-              הבא
-            </button>
+            <button
+  type="button"
+  class="submit-btn"
+  (click)="handleStep1Next()"
+  [disabled]="disableDueToDepartment || disableRequest"
+  [class.disabled-button]="disableDueToDepartment || disableRequest">
+  הבא
+</button>
+
           </div>
         </div>
 
@@ -334,7 +338,11 @@
 
 <app-guidelines-modal
   [show]="showGuidelines"
-  [rideId]="createdRideId ?? 'mock-ride'"
-  [userId]="getUserIdFromAuthService() ?? 'mock-user'"
+  [rideId]="createdRideId ?? ''"
+  [userId]="currentUserId ?? ''"
   (confirmed)="onGuidelinesConfirmed($event)">
 </app-guidelines-modal>
+
+
+
+
