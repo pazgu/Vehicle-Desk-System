@@ -16,17 +16,23 @@
 <div *ngIf="!formSubmitted && !noVehiclesAvailable">
 <div class="search-container" style="margin: 16px; width: 400px;position: relative;">
   <input
-    type="text"
-    placeholder="חפש לפי לוחית רישוי"
-    [(ngModel)]="searchTerm"
-    class="search-input"
-  />
+  type="text"
+  placeholder="חפש לפי לוחית רישוי"
+  [(ngModel)]="searchTerm"
+  (ngModelChange)="onSearchTermChange()"
+  class="search-input"
+/>
+
 </div>
-<div style="text-align: left; margin-right: 16px;margin-top: 10px; position: absolute; ">
+<div *ngIf="showScrollArrow"
+     style="text-align: left; margin-right: 16px; margin-top: 10px; position: absolute;">
   <button (click)="scrollToBottom()" style="background: none; border: none; cursor: pointer;">
-    <img src="/assets/images/arrows.png" style="width: 2.5 rem ;height: 3.5rem;" title="לך לכפתור שליחה"/>
+    <img src="/assets/images/arrows.png"
+         style="width: 2.5rem; height: 3.5rem;"
+         title="לך לכפתור שליחה" />
   </button>
 </div>
+
 <table class="vehicle-issues-table">
   <thead>
     <tr>
