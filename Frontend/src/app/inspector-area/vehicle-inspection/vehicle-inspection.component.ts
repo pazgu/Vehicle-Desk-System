@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpParams } from '@angular/common/http';
@@ -8,7 +8,7 @@ import { environment } from '../../../environments/environment';
 import { ToastService } from '../../services/toast.service';
 import { InspectionService } from '../../services/inspection.service';
 import { VehicleService } from '../../services/vehicle.service';
-import { forkJoin, of } from 'rxjs'; // Import forkJoin and of
+import { forkJoin, of } from 'rxjs'; 
 import { catchError, finalize } from 'rxjs/operators';
 
 interface Vehicle {
@@ -42,6 +42,8 @@ export class VehicleInspectionComponent implements OnInit {
   submitting = false;
   formSubmitted = false;
   noVehiclesAvailable = false;
+  showScrollArrow = false;
+
   @ViewChild('bottom') bottomRef!: ElementRef;
 
   scrollToBottom(): void {
@@ -78,6 +80,7 @@ fetchVehicles(): void {
       if (vehicles.length === 0) {
         this.noVehiclesAvailable = true;
         this.vehicleIssues = [];
+        this.showScrollArrow = false; 
       } else {
         this.noVehiclesAvailable = false;
        
@@ -91,6 +94,7 @@ fetchVehicles(): void {
         }));
       }
       this.loading = false;
+      setTimeout(() => this.updateArrowVisibility(), 0);
     },
     error: () => {
       this.toastService.show('שגיאה בטעינת רכבים', 'error');
@@ -98,7 +102,11 @@ fetchVehicles(): void {
     }
   });
 }
-  // ← הוסף את 2 הפונקציות האלה
+
+onSearchTermChange(): void {
+  setTimeout(() => this.updateArrowVisibility(), 0);
+}
+
 resetForm(): void {
   this.vehicleIssues.forEach(vehicle => {
     vehicle.dirty = false;
@@ -138,7 +146,7 @@ resetForm(): void {
       const payload = {
         inspected_by: localStorage.getItem('employee_id'),
         vehicle_id: v.vehicle_id,
-        is_clean: !v.dirty, // Invert logic for the new schema
+        is_clean: !v.dirty, 
         is_unfueled: v.fuel_checked,
         has_items_left: v.items_left,
         has_critical_issue: v.critical_issue,
@@ -197,4 +205,30 @@ resetForm(): void {
     }));
     this.searchTerm = '';
   }
+
+  updateArrowVisibility(): void {
+  if (this.formSubmitted || this.noVehiclesAvailable) {
+    this.showScrollArrow = false;
+    return;
+  }
+
+  if (!this.bottomRef) {
+    this.showScrollArrow = false;
+    return;
+  }
+
+  const rect = this.bottomRef.nativeElement.getBoundingClientRect();
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+  this.showScrollArrow = rect.bottom > viewportHeight - 20;
+}
+
+
+@HostListener('window:resize')
+@HostListener('window:scroll')
+@HostListener('window:load')
+onWindowEvent(): void {
+  this.updateArrowVisibility();
+}
+
+
 }
