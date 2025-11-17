@@ -24,7 +24,6 @@ body {
 
 .form-row {
   display: flex;
-  /* מרווח אחיד בין קבוצות שדות בתוך השורה */
   gap: 1rem;
   justify-content: flex-start;
   flex-wrap: wrap;
@@ -37,7 +36,6 @@ body {
   flex: 1;
 }
 
-
 .form-field-group label {
   font-weight: 500;
   margin-bottom: 6px;
@@ -45,10 +43,8 @@ body {
   color: #222;
   font-size: 1rem;
   font-weight: bold;
-
 }
 
-/* General styling for inputs and selects */
 input[type="time"],
 input[type="number"],
 input[type="text"],
@@ -71,7 +67,6 @@ form .column,
   flex-direction: unset;
 }
 
-
 form .addBtn,
 form .removeBtn {
   border: none;
@@ -85,24 +80,21 @@ form .removeBtn {
 }
 
 form .addBtn {
-  color: #dc3545; /* Red color like removeBtn */
-  align-self: flex-end; /* Align to the right */
-  margin-right: 0; /* Remove any right margin */
-  direction: rtl; /* Ensure RTL direction */
-   align-self: flex-start;  /* right side in RTL when parent is flex-direction: column */
-
+  color: #dc3545; 
+  align-self: flex-end; 
+  margin-right: 0; 
+  direction: rtl;
+   align-self: flex-start;  
 }
-
-
 
 form .addBtn:hover:not(:disabled) {
   text-decoration: underline;
 }
 
 form .removeBtn {
-  color: #942222;        /* darker red than add */
-  font-size: 0.9rem;     /* slightly bigger */
-  font-weight: bold;     /* make it stronger */
+  color: #942222;      
+  font-size: 0.9rem;     
+  font-weight: bold;    
   border: none;
   background: transparent;
   cursor: pointer;
@@ -110,32 +102,24 @@ form .removeBtn {
   align-items: center;
   gap: 4px;
   padding: 2px 4px;
-  text-decoration: none; /* no underline by default */
+  text-decoration: none; 
 }
 
-
 form .removeBtn:hover {
-color: #b30000;        /* even darker on hover */
+color: #b30000;       
 transform: scale(1.05);
 text-decoration: none;}
 
-/* ---------------------------------------------------- */
-/* Styles for the extra stops section - UPDATED */
-/* ---------------------------------------------------- */
 #extrastops {
   display: flex;
   flex-direction: column;
-  /* מרווח אחיד של 0.5rem בין כל האלמנטים בתוך המיכל */
   gap: 0.5rem;
-  /* הגדרה זו מתגברת על המרווח הגדול של .form-content */
   margin-top: -1rem;
-  
 }
 
 .extra-stop-item {
   display: flex;
   align-items: center;
-  /* מרווח נשלט כעת ע"י מיכל האב, לכן אין צורך במרווח פנימי */
   margin: 0;
   gap: 0.5rem;
 }
@@ -152,11 +136,9 @@ text-decoration: none;}
   white-space: nowrap;
 }
 
-
 .car-validation-message {
   display: inline-block;
   padding: 6px 10px;
-  margin-top: 4px;
   font-size: 0.7rem;
   border-radius: 6px;
   background-color: #f0fdcb;
@@ -182,7 +164,6 @@ text-decoration: none;}
   display: flex;
   font-size: 17px;
   border-radius: 6px;
-
 }
 
 ::ng-deep .ng-select .ng-select-container {
@@ -298,17 +279,6 @@ text-decoration: none;}
   z-index: 10;
 }
 
-h2 {
-  color: #942222;
-  text-align: right;
-  margin-bottom: 10px;
-}
-
-hr {
-  border: 1px solid #ccc;
-  margin-bottom: 20px;
-}
-
 .full-trip-display {
   display: flex;
   position: absolute;
@@ -357,12 +327,10 @@ hr {
   background-color: #942222;
   color: white;
   border: none;
-  align-self: flex-end;
   margin-top: auto;
   padding: 12px 24px;
   border-radius: 6px;
   cursor: pointer;
-  align-self: flex-start;
   margin-bottom: 0;
 }
 
@@ -391,8 +359,6 @@ hr {
   font-size: 0.75rem;
   margin-top: 0.25rem;
 }
-
-/* Original style for informational text (can remain or be removed if not used) */
 .distance-info {
   color: #888;
   font-size: 0.75rem;
@@ -405,7 +371,6 @@ hr {
   margin-top: 4px;
 }
 
-/* More specific styles for inputs in an invalid state */
 .form-field-group .ng-invalid.ng-touched {
   border-color: red;
 }
@@ -414,13 +379,6 @@ hr {
 .form-field-group select.ng-invalid.ng-touched {
   border-color: red;
 }
-
-/* .distance-info {
-  min-height: 18px;
-  font-size: 12px;
-  margin-top: 3px;
-  color: #333;
-} */
 
 .row .input-group {
   min-width: 0;
@@ -440,33 +398,6 @@ hr {
   .modal {
     margin-top: 60px;
   }
-}
-
-.back-btn {
-  width: 100px;
-  color: #942222;
-  font-family: var(--font-family-alef);
-  font-size: 16px;
-  font-weight: bold;
-  padding: 1px 2px;
-  border: none;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.15s ease;
-  margin-top: 24px;
-  margin-left: 0px;
-  margin-right: 600px;
-  background: none;
-}
-
-.back-btn:hover {
-  transform: scale(1.03);
-}
-
-.back-btn-container {
-  display: flex;
-  justify-content: flex-end;
-  padding: 1rem;
 }
 
 .inspector-overlay {
@@ -698,7 +629,6 @@ hr {
   margin: 0 0 20px 0;
 }
 
-/* Styling for ng-select to match the original select design */
 ::ng-deep .styled-select.ng-select .ng-select-container {
   padding: 10px !important;
   background-color: #e7c1c1 !important;
@@ -767,7 +697,6 @@ hr {
   color: white;
 }
 
-/* Style for "no results found" message */
 ::ng-deep .styled-select.ng-select .ng-option.ng-option-disabled {
   background-color: #e7c1c1;
   color: #666;
@@ -776,7 +705,6 @@ hr {
   padding: 15px;
 }
 
-/* Additional override for any global ng-select styling */
 ::ng-deep .ng-dropdown-panel {
   box-shadow: none !important;
   border: none !important;
@@ -784,7 +712,6 @@ hr {
   outline: none !important;
 }
 
-/* remove any border/shadow from the outer ng-select wrapper */
 ::ng-deep .styled-select.ng-select {
   border: none !important;
   box-shadow: none !important;
@@ -792,11 +719,8 @@ hr {
 
 ::ng-deep .styled-select.ng-select.ng-select-focused .ng-select-container {
   border: 1px solid #d3b1b1 !important;
-  /* keep your pink border */
   box-shadow: none !important;
-  /* kill the grey glow */
   outline: none !important;
-  /* kill the grey rim */
 }
 
 ::ng-deep .styled-select.ng-select .ng-select-container:focus,
@@ -806,7 +730,6 @@ hr {
   outline: none !important;
 }
 
-/* הודעת הצלחה */
 .success-container {
   display: flex;
   justify-content: center;
@@ -859,17 +782,18 @@ hr {
   transform: scale(0.97);
 }
  
-.addBtn.disabled-button {
+.disabled-button {
   opacity: 0.5;
   cursor: not-allowed;
-  background-color: #cccccc;
 }
 
+.addBtn.disabled-button {
+  background-color: #cccccc;
+}
 .addBtn.disabled-button:hover {
   background-color: #cccccc;
   transform: none;
 }
-
 .pi-lock {
   color: #666;
 }
