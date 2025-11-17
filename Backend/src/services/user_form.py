@@ -16,7 +16,6 @@ from ..schemas.form_schema import CompletionFormData
 
 from ..utils.socket_manager import sio
 from .user_notification import create_system_notification_with_db, get_user_name
-from .monthly_trip_counts import increment_completed_trip_stat
 
 from ..services.admin_rides_service import update_monthly_usage_stats
 from ..services.user_notification import emit_new_notification
@@ -206,7 +205,6 @@ async def process_completion_form(db: Session, user: User, form_data: Completion
         ride.status = RideStatus.completed
         ride.completion_date = datetime.now(timezone.utc)
         update_monthly_usage_stats(db=db, ride=ride)
-        increment_completed_trip_stat(db, ride.user_id, ride.start_datetime)
 
         # Update vehicle status
         vehicle = db.query(Vehicle).filter_by(id=ride.vehicle_id).first()

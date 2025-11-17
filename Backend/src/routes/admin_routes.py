@@ -50,7 +50,6 @@ from src.services.audit_service import get_all_audit_logs
 from src.services.license_service import upload_license_file_service, check_expired_licenses
 from src.services.user_data import get_user_by_id, get_all_users
 from ..services.admin_rides_service import get_critical_trip_issues, get_current_month_vehicle_usage, get_vehicle_usage_stats
-from ..services.monthly_trip_counts import archive_last_month_stats
 from ..services.user_notification import send_admin_odometer_notification
 from ..services.vehicle_service import (
     archive_vehicle_by_id,
@@ -590,12 +589,6 @@ def get_today_inspections(
 
     return response_data
 
-
-# This function will be called later by another function with a GET route.
-@router.post("/stats/archive-last-month")
-def archive_last_month_endpoint(db: Session = Depends(get_db)):
-    archive_last_month_stats(db)
-    return {"detail": "Archiving completed successfully"}
 
 
 @router.get("/analytics/vehicle-status-summary")
