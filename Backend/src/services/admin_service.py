@@ -2,7 +2,6 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from uuid import UUID
-from src.models.monthly_employee_trip_stats_model import MonthlyEmployeeTripStats
 from typing import Optional, List
 from sqlalchemy import func, and_, or_
 from src.models.user_model import User, UserRole
