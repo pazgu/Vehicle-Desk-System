@@ -17,7 +17,6 @@ import {
   createInspectorClosureTimeValidator,
 } from './validators';
 
-// ---- extra stops vs stop validator (was in component) ----
 function createSameStopAndDestinationValidator(form: FormGroup): ValidatorFn {
   return (control: any): ValidationErrors | null => {
     const extraStopsArray = control as FormArray;
@@ -35,13 +34,11 @@ function createSameStopAndDestinationValidator(form: FormGroup): ValidatorFn {
       return null;
     }
 
-    // first extra stop cannot equal main stop
     if (destinationId === extraStopIds[0]) {
       return {
         duplicateExtraStops: { message: 'תחנות עוקבות לא יכולות להיות זהות.' },
       };
     } else {
-      // extra stop 0 and 1 cannot be equal to each other
       if (extraStopIds[0] === extraStopIds[1]) {
         return {
           consecutiveDuplicateStops: {
@@ -96,14 +93,12 @@ export function buildRideForm(fb: FormBuilder): FormGroup {
     }
   );
 
-  // attach the extra-stops vs stop validator
   const extraStopsArray = form.get('extraStops') as FormArray;
   extraStopsArray.setValidators(createSameStopAndDestinationValidator(form));
 
   return form;
 }
 
-// ---- reset logic (was in resetOrderForm) ----
 export function resetRideForm(form: FormGroup): void {
   form.reset();
 
@@ -134,7 +129,6 @@ export function resetRideForm(form: FormGroup): void {
   });
 }
 
-// (optional) small helper to expose typed controls if you want
 export function getRideFormControls(form: FormGroup) {
   return {
     ride_period: form.get('ride_period') as FormControl,

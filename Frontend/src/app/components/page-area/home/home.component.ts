@@ -484,7 +484,6 @@ private setDefaultStartAndDestination(): void {
   const endDateTime = buildDateTime(rideDate, endHour, endMinute);
 
   if (period !== 'morning') {
-    // night / extended
     if (distance && rideDateNight && vehicleType) {
       const isoDate = toIsoDate(rideDate);
       this.loadVehicles(distance, isoDate, vehicleType, startDateTime, endDateTime);
@@ -494,7 +493,6 @@ private setDefaultStartAndDestination(): void {
       this.rideForm.get('car')?.setValue(null);
     }
   } else {
-    // morning
     if (distance && rideDate && vehicleType) {
       const isoDate = toIsoDate(rideDate);
       this.loadVehicles(distance, isoDate, vehicleType, startDateTime, endDateTime);
@@ -527,7 +525,6 @@ private setDefaultStartAndDestination(): void {
     this.pendingVehicles
   );
 }
-
 
     onTimeInput(event: Event, controlName: string): void {
   const input = event.target as HTMLInputElement;
@@ -567,7 +564,7 @@ private setDefaultStartAndDestination(): void {
 
   if (value === 'night') {
     nightEndControl?.setValidators([Validators.required]);
-    rideDateControl?.clearValidators(); // handled by extended logic
+    rideDateControl?.clearValidators(); 
   } else {
     nightEndControl?.clearValidators();
     nightEndControl?.setValue('');

@@ -13,8 +13,6 @@ export function createRideDateValidator(): ValidatorFn {
     if (!value) return null;
 
     const selectedDate = new Date(value);
-
-    // invalid like 31.2 etc.
     if (isNaN(selectedDate.getTime())) {
       return { invalidDate: true };
     }
@@ -35,9 +33,6 @@ export function createRideDateValidator(): ValidatorFn {
   };
 }
 
-/**
- * Form-group level: night trips multiple days (currently no hard limit, but kept for future logic)
- */
 export function createTripDurationValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const formGroup = control as FormGroup;
@@ -53,15 +48,10 @@ export function createTripDurationValidator(): ValidatorFn {
     const endDate = new Date(nightEndDate);
     const timeDiff = endDate.getTime() - startDate.getTime();
     const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
-
-    // currently no validation – just a hook if you want to enforce max days
     return null;
   };
 }
 
-/**
- * Form-group level: same-day morning logic placeholder (kept for future use)
- */
 export function createSameDayValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const formGroup = control as FormGroup;
@@ -71,15 +61,10 @@ export function createSameDayValidator(): ValidatorFn {
     if (ridePeriod !== 'morning' || !rideDate) {
       return null;
     }
-
-    // currently no extra errors – hook for future rules (e.g., must be today)
     return null;
   };
 }
 
-/**
- * Form-group level: night rides must be between different dates, end after start.
- */
 export function createSameDateNightRideValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const formGroup = control as FormGroup;
@@ -117,8 +102,6 @@ export function createSameDateNightRideValidator(): ValidatorFn {
   };
 }
 
-
-
 export function createFutureDateTimeValidator(): ValidatorFn {
   return (formGroup: AbstractControl): ValidationErrors | null => {
     const rideDateControl = formGroup.get('ride_date');
@@ -153,7 +136,6 @@ export function createFutureDateTimeValidator(): ValidatorFn {
     return null;
   };
 }
-
 
 export function createInspectorClosureTimeValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
@@ -199,9 +181,6 @@ export function createInspectorClosureTimeValidator(): ValidatorFn {
   };
 }
 
-/**
- * Standalone validator for quarter-hour step (if you use it on controls directly)
- */
 export function timeStepValidator(
   control: AbstractControl
 ): ValidationErrors | null {

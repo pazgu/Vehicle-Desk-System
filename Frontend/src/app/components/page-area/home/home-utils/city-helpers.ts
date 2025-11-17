@@ -21,7 +21,6 @@ export function getSelectedStopNameFromList(
   return city ? city.name : 'לא נבחרה תחנה';
 }
 
-/** Map extra stop IDs to their names */
 export function getExtraStopNamesFromList(
   stopIds: string[] | null | undefined,
   cities: City[]

@@ -26,7 +26,6 @@ export interface Vehicle {
   vehicle_model: string;
 }
 
-/** Map raw vehicles from API into UI-safe vehicles */
 export function normalizeVehiclesResponse(raw: any[]): Vehicle[] {
   if (!Array.isArray(raw)) return [];
 
@@ -38,7 +37,6 @@ export function normalizeVehiclesResponse(raw: any[]): Vehicle[] {
   }));
 }
 
-/** Normalize pending vehicles API shape into a clean array */
 export function normalizePendingVehiclesResponse(response: any): PendingVehicle[] {
   let pendingData: any[] = [];
 
@@ -62,7 +60,6 @@ export function normalizePendingVehiclesResponse(response: any): PendingVehicle[
     .filter((item) => item.vehicle_id && item.date && item.period);
 }
 
-/** Filter cars by selected type */
 export function filterAvailableCars(
   allCars: Vehicle[],
   selectedType: string | null | undefined
@@ -91,12 +88,9 @@ export function syncCarControlWithAvailableCars(
   } else {
     const selectedCar = carControl.value;
 
-    // if current selected car is not in the list anymore – clear it
     if (selectedCar && !availableCars.some((car) => car.id === selectedCar)) {
       carControl.setValue(null);
     }
-
-    // if there are no cars at all – mark as required
     if (availableCars.length === 0) {
       if (selectedCar !== null) {
         carControl.setValue(null);
@@ -142,8 +136,6 @@ export function isVehiclePendingForRide(
       pv.vehicle_id === vehicleId && normalizedPendingDate === normalizedRideDate;
 
     if (!basicMatch) return false;
-
-    // if no times are stored, we just know "this day + this vehicle" is pending
     if (!pv.start_time || !pv.end_time) {
       return true;
     }
