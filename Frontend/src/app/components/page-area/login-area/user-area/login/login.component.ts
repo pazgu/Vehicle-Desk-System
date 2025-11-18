@@ -39,24 +39,12 @@ export class LoginComponent implements OnInit {
   
   
   ngOnInit(): void {
-    this.loginForm = this.fb.group({
-      username: [
-        '',
-        [
-          Validators.required,
-          Validators.minLength(3),
-          Validators.maxLength(20)
-        ]
-      ],
-      password: [
-        '',
-        [
-          Validators.required,
-          Validators.minLength(6)
-        ]
-      ]
-    });
-  }
+  this.loginForm = this.fb.group({
+    username: [''],
+    password: ['']
+  });
+}
+
   togglePassword() {
     this.showPassword = !this.showPassword;
   }
@@ -68,61 +56,73 @@ onLogin(): void {
   this.formSubmitted = true;
   this.errorMessage = null;
 
-  // ✅ Trigger form validation first
-  this.loginForm.markAllAsTouched();
+  const { username, password } = this.loginForm.value;
 
-  // ✅ Show toast if form is invalid
-  if (this.loginForm.invalid) {
-    this.toastService.show('יש למלא את כל השדות כנדרש', 'error');
+
+  if (!username && !password) {
+    this.toastService.show('יש להזין שם משתמש וסיסמה', 'error');
     return;
   }
 
-  const loginData = this.loginForm.value;
+  if (!username) {
+    this.toastService.show('יש להזין שם משתמש', 'error');
+    return;
+  }
+
+  if (!password) {
+    this.toastService.show('יש להזין סיסמה', 'error');
+    return;
+  }
+
+  const loginData = { username, password };
   const loginUrl = environment.loginUrl;
+
   this.http.post<any>(loginUrl, loginData).subscribe({
     next: (response) => {
- const token = response.access_token;
-localStorage.setItem('access_token', token);
+      const token = response.access_token;
+      localStorage.setItem('access_token', token);
 
-// Decode token payload
-const tokenParts = token.split('.');
-if (tokenParts.length === 3) {
-  const payload = JSON.parse(atob(tokenParts[1]));
-  localStorage.setItem('user_id', payload.user_id); //JOIN ROOM 
-  localStorage.setItem('employee_id', payload.sub);
-  localStorage.setItem('username', payload.username);
-  localStorage.setItem('first_name', payload.first_name);
-  localStorage.setItem('last_name', payload.last_name);
-  localStorage.setItem('role', payload.role);
-  localStorage.setItem('department_id', payload.department_id);
+      const tokenParts = token.split('.');
+      if (tokenParts.length === 3) {
+        const payload = JSON.parse(atob(tokenParts[1]));
+        localStorage.setItem('user_id', payload.user_id);
+        localStorage.setItem('employee_id', payload.sub);
+        localStorage.setItem('username', payload.username);
+        localStorage.setItem('first_name', payload.first_name);
+        localStorage.setItem('last_name', payload.last_name);
+        localStorage.setItem('role', payload.role);
+        localStorage.setItem('department_id', payload.department_id);
 
-  // Update AuthService state
-  this.authService.setFullName(payload.first_name, payload.last_name);
-  this.authService.setLoginState(true);
-  this.authService.setRole(payload.role);
+        this.authService.setFullName(payload.first_name, payload.last_name);
+        this.authService.setLoginState(true);
+        this.authService.setRole(payload.role);
 
-  const role = payload.role;
+        const role = payload.role;
 
-  if (role === 'admin') {
-    this.router.navigate(['/admin/critical-issues']);
-  } else if (role === 'supervisor') {
-    this.router.navigate(['/supervisor-dashboard']);
- } else if (role === 'inspector') {
-  this.router.navigate(['/inspector/inspection']);
-}
- else {
-    this.router.navigate(['/home']);
-  }
-} else {
-  this.toastService.show('שגיאה בעיבוד פרטי ההתחברות', 'error');
-}
-
-
+        if (role === 'admin') {
+          this.router.navigate(['/admin/critical-issues']);
+        } else if (role === 'supervisor') {
+          this.router.navigate(['/supervisor-dashboard']);
+        } else if (role === 'inspector') {
+          this.router.navigate(['/inspector/inspection']);
+        } else {
+          this.router.navigate(['/home']);
+        }
+      } else {
+        this.toastService.show('שגיאה בעיבוד פרטי ההתחברות', 'error');
+      }
     },
     error: (err) => {
       console.error('Login failed:', err);
+
+      if (err.status === 400 || err.status === 401) {
+        this.toastService.show('שם משתמש וסיסמה לא נכונים. אנא נסה שוב', 'error');
+      } else {
+        this.toastService.show('אירעה שגיאה בהתחברות. אנא נסה שוב מאוחר יותר', 'error');
+      }
     }
   });
 }
+
 
 }
