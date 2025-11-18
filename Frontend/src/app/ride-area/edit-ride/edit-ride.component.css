@@ -327,3 +327,35 @@ form .removeBtn:hover {
   margin-left: 5px;
   font-size: 14px;
 }
+.new-form-button {
+  background-color: #8b0000;
+  color: white;
+  border: none;
+  padding: 0.5rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  margin: 1rem auto;
+  display: block;
+  transition: background 0.2s ease;
+}
+.new-form-button:hover {
+  background-color: #a00000;
+}
+.new-form-button:active {
+  transform: scale(0.97);
+}
+.addBtn.disabled-button {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #cccccc;
+  color: #666;
+}
+.addBtn.disabled-button:hover {
+  background-color: #cccccc;
+  transform: none;
+}
+.addBtn.disabled-button .pi-ban {
+  color: #999;
+}

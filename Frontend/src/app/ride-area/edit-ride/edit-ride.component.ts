@@ -9,7 +9,7 @@ import { VehicleService } from '../../services/vehicle.service';
 import { SocketService } from '../../services/socket.service';
 import { Subscription } from 'rxjs';
 import { CityService } from '../../services/city.service';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators'; // ⭐️ ADDED: Operators for better performance
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 interface City { id: string; name: string; }
 
@@ -253,6 +253,7 @@ export class EditRideComponent implements OnInit {
       }
       fourByFourControl?.updateValueAndValidity();
       this.filterAvailableVehicles();
+      this.rideForm.get('car')?.setValue('');
     });
     this.vehicleService.getAllVehicles().subscribe({
       next: (vehicles) => {
@@ -286,7 +287,7 @@ export class EditRideComponent implements OnInit {
       destination: ['', Validators.required],
       extraStops: this.fb.array([]),
       extended_ride_reason: [''],
-      four_by_four_reason: [''] 
+      four_by_four_reason: ['']
     });
 
     this.rideForm.get('vehicle_type')?.valueChanges.subscribe(value => {
@@ -350,14 +351,12 @@ export class EditRideComponent implements OnInit {
         const isApproved = ride.status && ride.status.toLowerCase() === 'approved';
         
         if (!isSupervisor) {
-          // Regular users can only edit pending orders
           if (!isPending) {
             this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
             this.router.navigate(['/home']);
             return;
           }
         } else {
-          // Supervisors can edit pending or approved orders, but check time limit for approved
           if (!isPending && !isApproved) {
             this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
             this.router.navigate(['/home']);
@@ -365,7 +364,6 @@ export class EditRideComponent implements OnInit {
           }
           
           if (isApproved) {
-            // Check if it's within 2 hours of ride time
             const rideDateTime = new Date(ride.start_datetime);
             const now = new Date();
             const timeDifferenceHours = (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
@@ -500,18 +498,14 @@ export class EditRideComponent implements OnInit {
     });
   }
 
-  // ⭐️ IMPROVED: Single, consistent normalization function for all city inputs
   private getCityId(value: any): string | null {
     if (!value) return null;
-    // If it's already a UUID, return it
     if (typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value.trim())) {
       return value;
     }
-    // If it's an object with an id, return the id
     if (typeof value === 'object' && value.id) {
       return value.id;
     }
-    // If it's a string name, find the corresponding ID
     const city = this.cities.find(c => c.name === value);
     return city?.id || null;
   }
@@ -537,7 +531,6 @@ export class EditRideComponent implements OnInit {
   }
 
   private setupDistanceCalculationSubscriptions(): void {
-    // ⭐️ FIXED: Use debounceTime to avoid multiple rapid API calls
     this.rideForm.get('stop')?.valueChanges.pipe(debounceTime(300), distinctUntilChanged()).subscribe(() => {
       this.calculateRouteDistance();
     });
@@ -551,7 +544,6 @@ export class EditRideComponent implements OnInit {
     });
   }
 
-  // ⭐️ FIXED: Call the consistent normalization function before fetching
   private calculateRouteDistance(): void {
     const startRaw = this.rideForm.get('start_location')?.value;
     const stopRaw = this.rideForm.get('stop')?.value;
@@ -563,10 +555,8 @@ export class EditRideComponent implements OnInit {
       .map(ctrl => this.getCityId(ctrl.get('stop')?.value))
       .filter((id): id is string => !!id);
 
-    // ✅ FIXED: Add the destination to the route calculation as the final stop
     const destinationId = this.getCityId(this.rideForm.get('destination')?.value);
 
-    // ✅ NEW: Consolidate all stops into one array
     const allStops = [...extraStopIds, stopId, destinationId].filter((id): id is string => !!id);
 
     if (!startId || allStops.length === 0) {
@@ -606,20 +596,10 @@ export class EditRideComponent implements OnInit {
   submit(): void {
     if (this.rideForm.invalid) {
       this.rideForm.markAllAsTouched();
-      this.toastService.show('יש להשלים את כל שדות הטופס כנדרש', 'error');
+      this.toastService.show('יש להשלים את כל השדות החובה', 'error');
       return;
     }
-    const requiredFields = ['ride_type', 'ride_date', 'start_time', 'end_time', 'estimated_distance_km', 'vehicle_type', 'car','start_location', 'stop', 'destination'];
-    const missingFields = requiredFields.filter(field => {
-      const value = this.rideForm.get(field)?.value;
-      return !value || (typeof value === 'string' && value.trim() === '');
-    });
 
-    if (missingFields.length > 0) {
-      this.rideForm.markAllAsTouched();
-      this.toastService.show('נא למלא את כל השדות הנדרשים', 'error');
-      return;
-    }
     const carControl = this.rideForm.get('car');
     const vehicleType = this.rideForm.get('vehicle_type')?.value;
     
@@ -669,7 +649,6 @@ export class EditRideComponent implements OnInit {
     const start_datetime = `${rideDate}T${startTime}`;
     const end_datetime = `${nightEndDate || rideDate}T${endTime}`;
 
-    // ⭐️ FIXED: Use the consistent normalization function for all location fields
     const startUUID = this.getCityId(this.rideForm.get('start_location')?.value);
     const stopUUID = this.getCityId(this.rideForm.get('stop')?.value);
     const extraStopsUUIDs = this.extraStops.controls
@@ -713,7 +692,7 @@ export class EditRideComponent implements OnInit {
       start_location: startUUID,
       stop: stopUUID,
       extra_stops: extraStopsUUIDs,
-      destination: this.getCityId(this.rideForm.get('destination')?.value), // ⭐️ FIXED: Normalize destination
+      destination: this.getCityId(this.rideForm.get('destination')?.value),
       status: this.status,
       submitted_at: this.submittedAt,
       is_day_ride: this.isDayRide,
@@ -726,7 +705,7 @@ export class EditRideComponent implements OnInit {
     this.rideService.updateRide(this.rideId, payload).subscribe({
       next: () => {
         this.toastService.show('ההזמנה עודכנה בהצלחה ✅', 'success');
-        this.router.navigate(['/home']);
+        this.router.navigate(['/all-rides']);
       },
       error: (err) => {
         console.error('Update error:', err);
@@ -737,7 +716,7 @@ export class EditRideComponent implements OnInit {
   }
 
   close(): void {
-    this.router.navigate(['/home']);
+    this.router.navigate(['/all-rides']);
   }
 
   getFieldError(fieldName: string): string {
