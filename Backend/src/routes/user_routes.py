@@ -30,7 +30,7 @@ from ..utils.time_utils import is_time_in_blocked_window
 
 # Services
 from ..services import register_service, login_service
-from ..services.new_ride_service import check_license_validity, create_ride
+from ..services.new_ride_service import check_license_validity, create_ride ,check_department_assignment
 from ..services.user_rides_service import get_future_rides, get_past_rides, get_all_rides, get_ride_by_id, get_archived_rides, cancel_order_in_db
 from ..services.register_service import get_departments
 from ..services.user_notification import get_user_notifications, send_notification_async, create_system_notification, get_supervisor_id, get_user_name
@@ -196,6 +196,7 @@ async def create_order(
 ):
     role_check(allowed_roles=["employee", "admin"], token=token)
     identity_check(user_id=str(user_id), token=token)
+    check_department_assignment(db, user_id)
 
     check_license_validity(db, user_id, ride_request.start_datetime)
 

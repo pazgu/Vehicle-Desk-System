@@ -1,16 +1,14 @@
 :host {
   display: block;
-  min-height: 100vh; /* ensures full page coverage */
+  min-height: 100vh; 
   background-image: url('/assets/images/vehicle-dashboard-bg.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   font-family: var(--font-family-alef);
-  padding: 1.5rem; /* optional if you want spacing */
+  padding: 1.5rem; 
 }
 
-
-/* Labels and Inputs */
 label {
   display: block;
   font-size: 18px;
@@ -29,13 +27,11 @@ input[type="text"] {
   font-family: var(--font-family-alef);
 }
 
-/* Checkboxes inline */
 input[type="checkbox"] {
   margin-left: 0.5rem;
   transform: scale(1.2);
 }
 
-/* Textarea styling */
 textarea {
   resize: vertical;
   min-height: 80px;
@@ -68,8 +64,6 @@ textarea {
   transition: width 0.3s ease, background-color 0.3s ease;
 }
 
-
-/* Vehicle Issues Table */
 .vehicle-issues-table {
   width: 100%;
   max-width: 800px;
@@ -105,7 +99,6 @@ textarea {
   color:rgb(128, 0, 0);
 }
 
-/* Custom Checkbox */
 .vehicle-issues-table input[type="checkbox"] {
   width: 20px;
   height: 20px;
@@ -137,7 +130,6 @@ textarea {
   position: relative;
 }
 
-/* Submit Button */
 .cute-red-button {
   background-color: #8b101d;
   color: white;
@@ -183,7 +175,8 @@ textarea {
 
 .new-form-button:active {
   transform: scale(0.97);
-}/* הודעת הצלחה */
+}
+
 .success-container {
   display: flex;
   justify-content: center;
@@ -236,7 +229,6 @@ textarea {
   transform: translateY(0);
 }
 
-/* הודעת אין רכבים זמינים */
 .no-vehicles-container {
   display: flex;
   justify-content: center;
@@ -262,10 +254,10 @@ textarea {
 }
 
 .no-vehicles-message p {
-  color: #343a40; /* כהה יותר */
+  color: #343a40; 
   font-size: 1.1rem;
   margin-bottom: 2rem;
-  font-weight: 600; /* עוד יותר מודגש */
+  font-weight: 600; 
 }
 .refresh-button {
   background: linear-gradient(135deg, #8b0000 0%, #b22222 100%);
@@ -287,4 +279,40 @@ textarea {
 
 .refresh-button:active {
   transform: translateY(0);
+}
+
+.scroll-arrow-container {
+  position: fixed;
+  bottom: 80px;
+  right: 24px;
+  z-index: 1000;
+}
+
+.scroll-arrow-button {
+  background: linear-gradient(135deg, #8b0000 0%, #b22222 100%);
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 2px 8px rgba(139, 0, 0, 0.25);
+  transition: all 0.3s ease;
+}
+
+.scroll-arrow-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(139, 0, 0, 0.35);
+}
+
+.scroll-arrow-button:active {
+  transform: translateY(0);
+}
+
+.scroll-arrow-button svg {
+  width: 20px;
+  height: 20px;
 }

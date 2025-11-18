@@ -41,6 +41,7 @@ class UserResponse(BaseModel):
     phone: Optional[str] = None 
     is_blocked: bool = False
     block_expires_at: Optional[datetime] = None
+    is_unassigned_user: Optional[bool] = False
     class Config:
         from_attributes = True
         

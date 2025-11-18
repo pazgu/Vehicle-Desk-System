@@ -120,3 +120,8 @@ button:hover {
   cursor: pointer;
   color: #555;
 }
+.error-border {
+  border: 2px solid #942222 !important;
+}
+
+

@@ -50,7 +50,6 @@ from src.services.audit_service import get_all_audit_logs
 from src.services.license_service import upload_license_file_service, check_expired_licenses
 from src.services.user_data import get_user_by_id, get_all_users
 from ..services.admin_rides_service import get_critical_trip_issues, get_current_month_vehicle_usage, get_vehicle_usage_stats
-from ..services.monthly_trip_counts import archive_last_month_stats
 from ..services.user_notification import send_admin_odometer_notification
 from ..services.vehicle_service import (
     archive_vehicle_by_id,
@@ -230,7 +229,7 @@ async def edit_user_by_id_route(
                 status_code=400,
                 detail="Invalid date-time format for block_expires_at. Expected YYYY-MM-DDTHH:MM."
             )
-    if not is_blocked and role and role != user.role.value:
+    if not is_blocked and role:
         try:
             new_role = UserRole(role)
         except ValueError:
@@ -240,13 +239,26 @@ async def edit_user_by_id_route(
             )
         user.role = new_role
 
-        if new_role == UserRole.admin:
+        if new_role == UserRole.admin or new_role == UserRole.inspector:
             user.department_id = None
+        elif new_role == UserRole.supervisor:
+            if department_id:
+                try:
+                    user.department_id = UUID(department_id)
+                    user.is_unassigned_user = False
+                except ValueError:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Invalid department ID format. Must be a valid UUID."
+                    )
+            else:
+                user.department_id = None
         else:
             if not department_id or not department_id.strip():
                 raise HTTPException(status_code=400, detail=f"Department ID is required for role '{new_role}'.")
             try:
                 user.department_id = UUID(department_id)
+                user.is_unassigned_user = False
             except ValueError:
                 raise HTTPException(
                     status_code=400,
@@ -577,12 +589,6 @@ def get_today_inspections(
 
     return response_data
 
-
-# This function will be called later by another function with a GET route.
-@router.post("/stats/archive-last-month")
-def archive_last_month_endpoint(db: Session = Depends(get_db)):
-    archive_last_month_stats(db)
-    return {"detail": "Archiving completed successfully"}
 
 
 @router.get("/analytics/vehicle-status-summary")

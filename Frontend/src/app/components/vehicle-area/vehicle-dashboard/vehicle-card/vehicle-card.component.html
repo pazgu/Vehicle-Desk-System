@@ -16,7 +16,7 @@
     לא פעיל
   </div>
 
-  <div style="text-align: center; margin-bottom: 0.8rem">
+  <div style="text-align: center; margin-top: 2rem; margin-bottom: 0.2rem">
     <img
       [src]="vehicle.image_url || '/assets/images/default-vehicle.png'"
       alt="{{ vehicle.vehicle_model }}"
@@ -30,24 +30,16 @@
     />
   </div>
 
-  <div style="display: flex; flex-direction: column; gap: 0.4rem">
-    <h3 style="margin: 10px; font-size: 1.1rem; color: #2c3e50">
-      {{ vehicle.vehicle_model }}
-    </h3>
-    <p style="margin-right: 13px; color: #7f8c8d; font-size: 0.95rem">
-      <strong>מספר רכב:</strong> {{ vehicle.plate_number }}
-    </p>
-    <p style="margin-right: 13px; color: #7f8c8d; font-size: 0.95rem">
-      <strong>סוג:</strong> {{ vehicle.type }}
-    </p>
+ <div style="display: flex; flex-direction: column; flex: 1;">
+  <h3>{{ vehicle.vehicle_model }}</h3>
+  <p><strong>מספר רכב:</strong> {{ vehicle.plate_number }}</p>
+  <p><strong>סוג:</strong> {{ vehicle.type }}</p>
+</div>
 
-    <span
-      class="department-tag"
-      [ngClass]="{ 'no-department-tag': !vehicle.department_id }"
-    >
-      {{ vehicle.department || "לא משוייך למחלקה" }}
-    </span>
-
-
-  </div>
+<span
+  class="department-tag"
+  [ngClass]="{ 'no-department-tag': !vehicle.department_id }"
+>
+  {{ vehicle.department || "לא משוייך למחלקה" }}
+</span>
 </p-card>
