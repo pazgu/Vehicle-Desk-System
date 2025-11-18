@@ -81,14 +81,4 @@
     </div>
   </div>
 
-  <div class="filters-checkboxes" *ngIf="rideViewMode !== 'future'">
-    <label class="checkbox-label">
-      <input
-        type="checkbox"
-        [(ngModel)]="showOldOrders"
-        (change)="onShowOldOrdersChange()"
-      />
-      <span>הצג גם הזמנות מלפני חודש</span>
-    </label>
-  </div>
 </div>

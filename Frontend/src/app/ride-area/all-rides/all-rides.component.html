@@ -1,19 +1,19 @@
 <div class="all-rides-container" dir="rtl">
+  
+  <app-exceeded-warning-banner [allOrders]="orders">
+  </app-exceeded-warning-banner>
   <div class="page-header">
     <div class="quota-header-wrapper">
       <app-quota-indicator [allOrders]="orders"></app-quota-indicator>
     </div>
-    
+
     <h1>כל הנסיעות שלי</h1>
-    
+
     <button class="back-button" (click)="goBack()">
       חזור
       <i class="pi pi-arrow-left"></i>
     </button>
   </div>
-
-  <app-exceeded-warning-banner [allOrders]="orders">
-  </app-exceeded-warning-banner>
 
   <app-ride-filter-panel
     [allOrders]="orders"
@@ -23,12 +23,12 @@
     [startDate]="startDate"
     [endDate]="endDate"
     [showFilters]="showFilters"
-    [showOldOrders]="showOldOrders"
     [minDate]="minDate"
     [maxDate]="maxDate"
     (filteredOrdersChanged)="onFilteredOrdersChanged($event)"
   >
   </app-ride-filter-panel>
+
 
   <div *ngIf="loading" class="loading-spinner">
     <i

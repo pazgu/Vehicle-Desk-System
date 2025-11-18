@@ -17,7 +17,6 @@ export class FilterPanelComponent implements OnChanges {
   @Input() startDate: string = '';
   @Input() endDate: string = '';
   @Input() showFilters: boolean = false;
-  @Input() showOldOrders: boolean = false;
   @Input() minDate: string = '';
   @Input() maxDate: string = '';
 
@@ -27,7 +26,7 @@ export class FilterPanelComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['allOrders'] || changes['rideViewMode'] || changes['sortBy'] || 
-        changes['statusFilter'] || changes['startDate'] || changes['endDate'] || changes['showOldOrders']) {
+        changes['statusFilter'] || changes['startDate'] || changes['endDate']) {
       this.applyFiltersAndSort();
     }
   }
@@ -53,9 +52,6 @@ export class FilterPanelComponent implements OnChanges {
     this.applyFiltersAndSort();
   }
 
-  onShowOldOrdersChange(): void {
-    this.applyFiltersAndSort();
-  }
 
   validateDate(type: 'start' | 'end'): void {
     const value = type === 'start' ? this.startDate : this.endDate;
@@ -118,9 +114,6 @@ export class FilterPanelComponent implements OnChanges {
       });
     }
 
-    if (this.showOldOrders && !this.startDate && !this.endDate) {
-      filtered = filtered.filter(order => this.parseDate(order.date) >= oneMonthAgo);
-    }
 
     switch (this.sortBy) {
       case 'status':
