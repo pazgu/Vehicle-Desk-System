@@ -5,10 +5,7 @@ from src.models.base import Base
 import enum
 import uuid
 
-# class VehicleType(str, enum.Enum):
-#     small = "small"
-#     large = "large"
-#     van = "van"
+
 
 class FuelType(str, enum.Enum):
     electric = "electric"
@@ -24,6 +21,7 @@ class FreezeReason(str, enum.Enum):
     accident = "accident"
     maintenance = "maintenance"
     personal = "personal"
+    expired = "expired"
 
 class Vehicle(Base):
     __tablename__ = "vehicles"
