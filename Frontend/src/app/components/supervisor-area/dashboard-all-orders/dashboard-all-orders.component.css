@@ -1,18 +1,24 @@
-.all-rides-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem 1.5rem;
-  font-family: "Alef", sans-serif;
+:host {
+  display: block;
+  min-height: calc(100vh - 55px);
+  padding: 25px;
   direction: rtl;
-  position: relative;
+  font-family: sans-serif;
+
+   background-image: url('/assets/images/vehicle-dashboard-bg.png');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center center;
+  overflow: hidden; 
 }
 
-.page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 2rem;
-  position: relative;
+.page-wrapper {
+  background-color: rgb(245, 241, 241);
+  padding: 10px;
+  border-radius: 12px;
+  max-width: 1050px;
+  margin: 0 auto;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 h1 {
