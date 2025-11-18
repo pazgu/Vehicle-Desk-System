@@ -253,10 +253,6 @@ export class AllRidesComponent implements OnInit {
       this.orders = [...this.orders.slice(0, index), updatedOrder, ...this.orders.slice(index + 1)];
     }
 
-    const role = localStorage.getItem('role');
-    if (role === 'supervisor') {
-      this.toastService.show('✅ יש בקשה שעודכנה בהצלחה', 'success');
-    }
   }
 
   private handleStatusUpdate(updatedStatus: any): void {
