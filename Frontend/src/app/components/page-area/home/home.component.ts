@@ -254,6 +254,7 @@ onBeforeUnload(e: BeforeUnloadEvent) {
 });
         this.rideForm.get('target_employee_id')?.valueChanges.subscribe(employeeId => {
             const targetType = this.rideForm.get('target_type')?.value;
+            this.toastService.clearAll();
             if (targetType === 'other' && employeeId) {
                 this.checkUserDepartment(employeeId);
                 this.checkGovernmentLicence(employeeId);
