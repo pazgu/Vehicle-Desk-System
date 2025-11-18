@@ -11,6 +11,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { LoginService } from '../../../../../services/login.service';
+import { environment } from '../../../../../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -74,7 +75,6 @@ onLogin(): void {
   }
 
   const loginData = this.loginForm.value;
-  const loginUrl = environment.loginUrl;
  this.loginService.login(loginData).subscribe({
       next: (response) => {
       const token = response.access_token;
