@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -9,6 +8,7 @@ import { AuthService } from '../../../../../services/auth.service';
 import { ToastService } from '../../../../../services/toast.service';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { DepartmentService } from '../../../../../services/department_service';
 @Component({
   selector: 'app-register',
   standalone: true,
@@ -24,7 +24,7 @@ export class RegisterComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private http: HttpClient,
+    private departmentService: DepartmentService,
     private authService: AuthService,
     private toastService: ToastService,
     private router: Router
@@ -51,14 +51,13 @@ export class RegisterComponent implements OnInit {
   }
 
   fetchDepartments(): void {
-    this.http.get<any[]>('http://localhost:8000/api/departments').subscribe({
+    this.departmentService.getDepartments().subscribe({
       next: (data) => {
         this.departments = data;
       },
       error: () => {
         this.toastService.show('שגיאה בטעינת מחלקות', 'error');
         this.departments = [];
-
       }
     });
   }
