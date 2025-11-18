@@ -1,0 +1,85 @@
+.quota-float {
+  position: fixed;
+  top: 100px;
+  right: 7px;
+  z-index: 1000;
+}
+
+.free-quota-indicator {
+  min-width: 250px;
+  max-width: 320px;
+  padding: 0.8rem 1rem;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  font-family: "Alef", sans-serif;
+}
+
+.free-quota-indicator.exceeded {
+  border-color: rgba(148, 34, 34, 0.25);
+  box-shadow: 0 2px 12px rgba(148, 34, 34, 0.12);
+}
+
+.fq-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.fq-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #222;
+}
+
+.fq-count {
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #942222;
+}
+
+.fq-segments {
+  --fq-total: 6;
+  display: grid;
+  grid-template-columns: repeat(var(--fq-total), 1fr);
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.fq-segment {
+  height: 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(148, 34, 34, 0.1);
+  transition: transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.fq-segment.filled {
+  background: #942222;
+  border-color: #942222;
+}
+
+.fq-segment:hover {
+  transform: translateY(-1px);
+}
+
+.fq-hint {
+  margin-top: 0.45rem;
+  font-size: 0.85rem;
+  color: #942222;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .quota-float {
+    top: 110px;
+    right: 12px;
+  }
+  .free-quota-indicator {
+    min-width: 220px;
+    padding: 0.7rem 0.9rem;
+  }
+}

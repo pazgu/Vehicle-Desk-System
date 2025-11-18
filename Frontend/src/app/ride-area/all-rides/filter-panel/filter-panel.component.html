@@ -1,0 +1,85 @@
+<div class="ride-filter-buttons">
+  <button
+    [ngClass]="{ active: rideViewMode === 'future' }"
+    (click)="onRideViewModeChange('future')"
+  >
+    הצג נסיעות עתידיות
+  </button>
+  <button
+    [ngClass]="{ active: rideViewMode === 'past' }"
+    (click)="onRideViewModeChange('past')"
+  >
+    הצג נסיעות קודמות
+  </button>
+  <button
+    [ngClass]="{ active: rideViewMode === 'all' }"
+    (click)="onRideViewModeChange('all')"
+  >
+    הצג הכל
+  </button>
+</div>
+
+<div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; direction: rtl;">
+  <div>
+    <label for="sort">מיין לפי: </label>
+    <select id="sort" [(ngModel)]="sortBy" (change)="onSortChange()">
+      <option value="recent">נוסף לאחרונה</option>
+      <option value="date">תאריך</option>
+      <option value="status">סטטוס</option>
+    </select>
+  </div>
+
+  <button class="filter" (click)="toggleFiltersVisibility()">
+    {{ showFilters ? "הסתר סינון" : "הצג סינון" }}
+  </button>
+</div>
+
+<div
+  *ngIf="showFilters"
+  style="margin-bottom: 1.5rem; background: #f7f7f7; padding: 1rem; border-radius: 8px;"
+>
+  <div style="margin-bottom: 1rem">
+    <label for="statusFilter">סטטוס:</label>
+    <select
+      id="statusFilter"
+      [(ngModel)]="statusFilter"
+      (change)="onStatusFilterChange()"
+    >
+      <option value="">הצג הכל</option>
+      <option value="approved">מאושר</option>
+      <option value="pending">ממתין</option>
+      <option value="cancelled_due_to_no_show">בוטלה-נסיעה לא יצאה</option>
+      <option value="rejected">נדחה</option>
+    </select>
+  </div>
+
+  <div style="display: flex; gap: 1rem">
+    החל מ:
+    <input
+      id="startDate"
+      type="date"
+      [(ngModel)]="startDate"
+      [min]="minDate"
+      [max]="maxDate"
+      (change)="validateDate('start'); onDateChange()"
+    />
+    עד:
+    <input
+      id="endDate"
+      type="date"
+      [(ngModel)]="endDate"
+      [min]="minDate"
+      [max]="maxDate"
+      (change)="validateDate('end'); onDateChange()"
+    />
+
+    <label *ngIf="rideViewMode !== 'future'">
+      <input
+        type="checkbox"
+        [(ngModel)]="showOldOrders"
+        (change)="onShowOldOrdersChange()"
+      />
+      הצג גם הזמנות מלפני חודש
+    </label>
+  </div>
+</div>

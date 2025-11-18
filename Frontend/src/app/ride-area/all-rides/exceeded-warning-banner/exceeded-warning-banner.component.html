@@ -1,0 +1,18 @@
+<div
+  class="exceeded-rides-warming"
+  *ngIf="exceeded && warningVisible"
+>
+  <h2>⚠️שים לב⚠️</h2>
+  <p>
+    בחודש האחרון ביצעת מעל 6 הזמנות רכב פרטי. <br />
+    על פי התקנון מכאן תצטרך לשלם עצמאית על נסיעות פרטיות נוספות לחודש זה
+  </p>
+  <button (click)="hideWarning()">הסתר</button>
+</div>
+
+<div
+  class="floating-warning-container"
+  *ngIf="!warningVisible && exceeded"
+>
+  <button (click)="showWarning()">⚠️</button>
+</div>

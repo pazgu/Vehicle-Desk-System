@@ -1,0 +1,33 @@
+.ride-filter-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  margin-top: -10px;
+}
+
+.ride-filter-buttons button {
+  font-size: 14px;
+  font-weight: 500;
+  padding: 6px 14px;
+  border: none;
+  background-color: transparent;
+  color: #811313;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.ride-filter-buttons button.active {
+  background-color: #942222;
+  color: white;
+  font-weight: bold;
+}
+
+.filter {
+  font-size: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #811313;
+}
