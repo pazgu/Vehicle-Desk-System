@@ -1,28 +1,20 @@
-:host {
-  display: block;
-  min-height: calc(100vh - 55px);
-  padding: 25px;
-  direction: rtl;
-  font-family: sans-serif;
-
-   background-image: url('/assets/images/vehicle-dashboard-bg.png');
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center center;
-  overflow: hidden; /* so overlay stays contained */
-}
-
-/* Page Wrapper */
-.page-wrapper {
-  background-color: rgb(245, 241, 241);
-  padding: 10px;
-  border-radius: 12px;
-  max-width: 1050px;
+.all-rides-container {
+  max-width: 1200px;
   margin: 0 auto;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 2rem 1.5rem;
+  font-family: "Alef", sans-serif;
+  direction: rtl;
+  position: relative;
 }
 
-/* Header */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
 h1 {
   color: #942222;
 }
@@ -35,7 +27,6 @@ button {
     cursor: pointer;
     color: #811313;
   }
-/* Table styling */
 :host ::ng-deep .p-datatable {
   width: 90%;
   margin: 0 auto;
@@ -67,7 +58,6 @@ button {
   cursor: pointer;
 }
 
-/* Row color by status */
 :host ::ng-deep tr.row-approved {
   background-color: #dcf1e1;
   color: #155724;
@@ -98,7 +88,6 @@ button {
   color: #02010a84;
 }
 
-/* Status chip */
 .status-text {
   padding: 0.3rem 0.6rem;
   border-radius: 0.5rem;
@@ -159,7 +148,6 @@ button {
 }
 
 
-/* Responsive adjustments */
 @media screen and (max-width: 640px) {
   :host ::ng-deep .p-paginator {
     flex-wrap: wrap;
@@ -194,8 +182,8 @@ button {
   font-weight: bold;
 }
 :host ::ng-deep .p-paginator .p-paginator-disabled {
-  opacity: 0.5; /* Reduce opacity for inactive arrows */
-  cursor: not-allowed; /* Optional: Make sure inactive arrows can't be clicked */
+  opacity: 0.5; 
+  cursor: not-allowed;
 }
 button:disabled {
   opacity: 0.5;
@@ -243,7 +231,7 @@ button:disabled {
   background-color: rgb(249, 245, 245);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   margin-bottom: 1.5rem;
-  margin-left: auto; /* Pushes it to the left in RTL layout */
+  margin-left: auto;
 }
 
 .status-box {
@@ -274,23 +262,23 @@ button:disabled {
 
 .status-indicator.approved {
   background-color:#a4d1ae;
-  border: #329c4b 1.6px solid; /* Green border */
+  border: #329c4b 1.6px solid; 
 }
 .status-indicator.pending {
-  background-color: #f5e2a8; /* Yellow */
-  border: #ab8c31 1.6px solid; /* Yellow border */
+  background-color: #f5e2a8;
+  border: #ab8c31 1.6px solid;
 }
 .status-indicator.rejected {
-  background-color: #f1b5b5; /* Red */
-  border: #c16a73 1.6px solid; /* Red border */
+  background-color: #f1b5b5; 
+  border: #c16a73 1.6px solid;
 }
 .status-indicator.cancelled {
-  background-color: #f6c0c084; /* Gray */
-  border: #c87676 1.6px solid; /* Gray border */
+  background-color: #f6c0c084;
+  border: #c87676 1.6px solid; 
 }
 .status-indicator.completed {
-  background-color: #b7dbf3; /* Blue */
-  border: #17a2b8 1.6px solid; /* Blue border */
+  background-color: #b7dbf3; 
+  border: #17a2b8 1.6px solid; 
 }
 .in-progress-row {
   background: linear-gradient(45deg, #27ae60 25%, #2ecc71 25%, #2ecc71 50%, #27ae60 50%, #27ae60 75%, #2ecc71 75%);

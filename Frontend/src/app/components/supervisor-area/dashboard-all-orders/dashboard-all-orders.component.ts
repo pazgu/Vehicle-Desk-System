@@ -39,7 +39,6 @@ export class DashboardAllOrdersComponent implements OnInit {
   showOldOrders: boolean = false;
   sortBy: string = 'submitted_at';
 
-  // 🆕 פלג לשגיאה בתאריכים
   dateError: boolean = false;
 
   constructor(private router: Router,private route:ActivatedRoute, private orderService: OrderService,private toastService:ToastService,  private socketService: SocketService ) {}
@@ -72,18 +71,17 @@ this.route.queryParams.subscribe(params => {
       if (index !== -1) {
         const updatedOrder: RideDashboardItem = {
           ride_id: updatedRide.id,
-          employee_name: updatedRide.employee_name, // make sure this is in your updatedRide
-          requested_vehicle_model: updatedRide.requested_vehicle_model || '', // or map from vehicle_id if needed
+          employee_name: updatedRide.employee_name,
+          requested_vehicle_model: updatedRide.requested_vehicle_model || '',
           date_and_time: updatedRide.start_datetime,
           end_datetime: updatedRide.end_datetime || updatedRide.end_time,
           distance: updatedRide.estimated_distance_km,
           status: updatedRide.status.toLowerCase(),
-          destination: updatedRide.destination || '', // adjust based on your data
-          submitted_at: updatedRide.submitted_at || new Date().toISOString() // use actual value here!
+          destination: updatedRide.destination || '', 
+          submitted_at: updatedRide.submitted_at || new Date().toISOString() 
 
         };
 
-        // Replace with a new array to trigger change detection:
         this.orders = [
           ...this.orders.slice(0, index),
           updatedOrder,
@@ -95,7 +93,7 @@ this.route.queryParams.subscribe(params => {
 
   this.socketService.deleteRequests$.subscribe((deletedRide) => {
 
-  const index = this.orders.findIndex(o => o.ride_id === deletedRide.order_id); // <-- FIXED here
+  const index = this.orders.findIndex(o => o.ride_id === deletedRide.order_id);
 
   if (index !== -1) {
     this.orders = [
@@ -105,7 +103,7 @@ this.route.queryParams.subscribe(params => {
   } 
 });
 this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
-  if (!updatedStatus) return; // ignore the initial null emission
+  if (!updatedStatus) return;
   if (updatedStatus) {
 
     const index = this.orders.findIndex(o => o.ride_id === updatedStatus.ride_id);
@@ -118,7 +116,6 @@ this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
       status: newStatus  
     };
 
-    // ✅ Replace the array
     this.orders = updatedOrders;
     this.orders = [...this.orders]
      
@@ -309,7 +306,7 @@ updateQueryParams() {
     this.showOldOrders = false;
     this.sortBy = 'date_and_time';
     this.currentPage = 1;
-     this.dateError = false; // 🆕 מאפס גם את השגיאה
+     this.dateError = false; 
   }
 
   onPageChange(event: any) {
@@ -345,16 +342,13 @@ updateQueryParams() {
   }
 
   getDurationIndicator(trip: RideDashboardItem): string {
-    // אם אין תאריך סיום, זו נסיעה יומית
     if (!trip.end_datetime) {
       return 'יום';
     }
     
-    // אם יש תאריך סיום, נבדוק אם הנסיעה חוצה חצות
     const startDate = new Date(trip.date_and_time);
     const endDate = new Date(trip.end_datetime);
     
-    // בדיקה אם התאריכים שונים (חוצה חצות)
     const startDay = startDate.getDate();
     const endDay = endDate.getDate();
     const startMonth = startDate.getMonth();
@@ -362,12 +356,10 @@ updateQueryParams() {
     const startYear = startDate.getFullYear();
     const endYear = endDate.getFullYear();
     
-    // אם התאריך שונה, זו נסיעה שחוצה חצות
     if (startDay !== endDay || startMonth !== endMonth || startYear !== endYear) {
       return 'יום+';
     }
     
-    // אם התאריכים זהים, זו נסיעה יומית
     return 'יום';
   }
 }
