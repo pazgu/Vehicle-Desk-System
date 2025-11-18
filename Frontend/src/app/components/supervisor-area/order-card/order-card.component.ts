@@ -122,6 +122,8 @@ export class OrderCardComponent implements OnInit {
             licenseCheckPassed: response.license_check_passed,
             submittedAt: response.submitted_at,
             emergencyEvent: response.emergency_event,
+            four_by_four_reason: response.four_by_four_reason ?? null, 
+            extended_ride_reason: response.extended_ride_reason ?? null    
           };
         },
         error: (error) => {

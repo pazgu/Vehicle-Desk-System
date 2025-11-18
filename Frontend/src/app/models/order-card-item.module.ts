@@ -16,4 +16,6 @@ export interface OrderCardItem {
   submitted_at: string;
   emergency_event: string;
   freeze_details?: string;
+  four_by_four_reason: string | null;
+  extended_ride_reason?: string | null;
 }

@@ -3,11 +3,10 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastService } from '../../../../services/toast.service';
-import { NewUserPayload, UserService } from '../../../../services/user_service';
+import { UserService } from '../../../../services/user_service';
+import { DepartmentService } from '../../../../services/department_service';
 import { MatIconModule } from '@angular/material/icon';
-import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-add-new-user',
@@ -34,7 +33,6 @@ export class AddNewUserComponent implements OnInit {
     private fb: FormBuilder,
     private userService: UserService,
     private toast: ToastService,
-    private http: HttpClient,
     private router: Router
   ) {}
 
@@ -153,7 +151,7 @@ export class AddNewUserComponent implements OnInit {
   }
 
   fetchDepartments(): void {
-    this.http.get<any[]>('http://localhost:8000/api/departments').subscribe({
+    this.userService.getDepartments().subscribe({
       next: (data) => {
         this.departments = data
           .filter(dep => dep.name.toLowerCase() !== 'unassigned')
