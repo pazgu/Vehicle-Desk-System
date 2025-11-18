@@ -1,0 +1,26 @@
+<div class="quota-float" dir="rtl">
+  <div
+    class="free-quota-indicator"
+    [class.exceeded]="freeQuotaExceeded"
+    aria-label="מכסת הזמנות חינמיות"
+  >
+    <div class="fq-header">
+      <span class="fq-title">מכסת הזמנות חינמיות</span>
+      <span class="fq-count">{{ freeQuotaUsed }}/{{ freeQuotaTotal }}</span>
+    </div>
+
+    <div class="fq-segments" [style.--fq-total]="freeQuotaTotal">
+      <div
+        class="fq-segment"
+        *ngFor="let i of quotaSegments; let idx = index"
+        [class.filled]="idx < freeQuotaUsed"
+        [attr.title]="'פריט ' + (idx + 1) + ' מתוך ' + freeQuotaTotal"
+      ></div>
+    </div>
+
+    <div class="fq-hint" *ngIf="freeQuotaExceeded">
+      הגעת למכסה — הזמנות נוספות בתשלום
+    </div>
+  </div>
+  <small> * רק 6 נסיעות בחודש הן על חשבון המערכת </small>
+</div>

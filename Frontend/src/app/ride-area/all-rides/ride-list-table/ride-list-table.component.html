@@ -1,0 +1,131 @@
+<div *ngIf="!loading && filteredOrders.length === 0" class="no-orders-message">
+  לא נמצאו נסיעות עבור המשתמש הנוכחי
+  <button class="new-ride-btn" (click)="onNewRide()">+ הזמן נסיעה חדשה</button>
+</div>
+
+<div *ngIf="filteredOrders.length > 0">
+  <div class="orders-header-row">
+    <div class="icon-cell">סטטוס</div>
+    <div class="cell">תאריך</div>
+    <div class="cell">שעה</div>
+    <div class="cell">סוג</div>
+    <div class="cell">מרחק</div>
+    <div class="cell actions-cell">פעולות</div>
+  </div>
+
+  <div
+    class="orders-data-row"
+    *ngFor="let order of pagedOrders"
+    [id]="order.ride_id"
+    (click)="onViewRide(order)"
+    [ngClass]="[
+      getStatusClass(order.status),
+      isPastOrder(order) ? 'past-order' : '',
+      isPaidOrder(order) ? 'paid-order' : '',
+      isCompletedOrder(order) ? 'completed-order' : '',
+      order.ride_id === highlightedOrderId ? 'highlight highlight-background' : '',
+      order.hasStarted ? 'ride-started' : ''
+    ]"
+    [title]="isPaidOrder(order) ? 'הזמנה זו בתשלום עצמי - מעל 6 הזמנות החודש' : ''"
+    style="cursor: pointer"
+  >
+    <div class="icon-cell">
+      <span
+        class="pi"
+        [ngClass]="{
+          'pi-verified': !order.hasStarted && order.status.toLowerCase() === 'approved',
+          'pi-clock': !order.hasStarted && order.status.toLowerCase() === 'pending',
+          'pi-times-circle': !order.hasStarted && order.status.toLowerCase() === 'rejected',
+          'pi-list-check': !order.hasStarted && order.status.toLowerCase() === 'completed',
+          'pi-forward': !order.hasStarted && order.status.toLowerCase() === 'in_progress'
+        }"
+        [title]="getStatusTooltip(order.status)"
+        style="font-size: 1.3rem"
+      >
+      </span>
+      <img
+        *ngIf="order.hasStarted && order.status.toLowerCase() === 'approved'"
+        src="assets/images/timed-clock.gif"
+        alt="Started"
+        class="started-gif-icon"
+      />
+      <img
+        *ngIf="order.status.toLowerCase() === 'cancelled_due_to_no_show'"
+        src="assets/images/cancelled_no_show.png"
+        alt="Cancelled due to No Show"
+        class="cancelled-no-show-icon"
+      />
+    </div>
+
+    <div class="cell">{{ order.date }}</div>
+    <div class="cell">{{ order.time }}</div>
+    <div class="cell">
+      {{ order.type }}
+      <span *ngIf="isPaidOrder(order)" style="color: #ffc107; font-weight: bold; margin-right: 8px">💲</span>
+    </div>
+    <div class="cell">{{ order.distance }}</div>
+
+    <div class="cell actions-cell">
+      <div class="modify-buttons">
+        <button
+          class="modify"
+          (click)="canEdit(order) ? onEditRide(order, $event) : null"
+          [disabled]="!canEdit(order)"
+          [style.opacity]="canEdit(order) ? '1' : '0.5'"
+          [style.cursor]="canEdit(order) ? 'pointer' : 'not-allowed'"
+        >
+          <i class="pi pi-pencil"></i>
+        </button>
+
+        <button
+          class="delete"
+          [disabled]="!canDelete(order)"
+          [style.opacity]="canDelete(order) ? '1' : '0.5'"
+          (click)="canDelete(order) ? onDeleteRide(order, $event) : null"
+          [style.cursor]="canDelete(order) ? 'pointer' : 'not-allowed'"
+        >
+          <i class="pi pi-trash"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="ride-type-icon">
+      <i title="נסיעה של יותר מיום" *ngIf="checkIfOverOneDay(order)">
+        <svg width="25" height="25" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2" />
+          <path d="M3 10H21" stroke="currentColor" stroke-width="2" />
+          <path d="M8 2V6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          <path d="M16 2V6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          <text x="12" y="15" text-anchor="middle" dominant-baseline="central" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="700" font-style="normal" fill="currentColor">+1</text>
+        </svg>
+      </i>
+      <i title="נסיעה של יום" *ngIf="!checkIfOverOneDay(order)">
+        <svg width="25" height="25" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2" />
+          <path d="M3 10H21" stroke="currentColor" stroke-width="2" />
+          <path d="M8 2V6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          <path d="M16 2V6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          <text x="12" y="15" text-anchor="middle" dominant-baseline="central" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="700" font-style="normal" fill="currentColor">1</text>
+        </svg>
+      </i>
+    </div>
+  </div>
+
+  <div class="pagination-controls">
+    <button (click)="prevPage()" [disabled]="currentPage === 1">
+      <span class="icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z" />
+        </svg>
+      </span>
+    </button>
+    <span>עמוד {{ currentPage }} מתוך {{ totalPages }}</span>
+    <button (click)="nextPage()" [disabled]="currentPage === totalPages">
+      <span class="icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+        </svg>
+      </span>
+    </button>
+  </div>
+</div>

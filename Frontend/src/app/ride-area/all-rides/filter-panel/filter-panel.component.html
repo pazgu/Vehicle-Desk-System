@@ -1,0 +1,84 @@
+<!-- ride-filter-panel.component.html -->
+<div class="ride-filter-buttons">
+  <button
+    [ngClass]="{ active: rideViewMode === 'future' }"
+    (click)="onRideViewModeChange('future')"
+  >
+    הצג נסיעות עתידיות
+  </button>
+  <button
+    [ngClass]="{ active: rideViewMode === 'past' }"
+    (click)="onRideViewModeChange('past')"
+  >
+    הצג נסיעות קודמות
+  </button>
+  <button
+    [ngClass]="{ active: rideViewMode === 'all' }"
+    (click)="onRideViewModeChange('all')"
+  >
+    הצג הכל
+  </button>
+</div>
+
+<div class="filter-controls-bar">
+  <div class="sort-control">
+    <label for="sort">מיין לפי: </label>
+    <select id="sort" class="filter-select" [(ngModel)]="sortBy" (change)="onSortChange()">
+      <option value="recent">נוסף לאחרונה</option>
+      <option value="date">תאריך</option>
+      <option value="status">סטטוס</option>
+    </select>
+  </div>
+
+  <button class="filter-btn" (click)="toggleFiltersVisibility()">
+    <i class="pi pi-filter"></i>
+    <span>{{ showFilters ? "הסתר סינון" : "הצג סינון" }}</span>
+  </button>
+</div>
+
+<div *ngIf="showFilters" class="filters-panel">
+  <div class="filters-row">
+    <div class="filter-group">
+      <label for="statusFilter">סטטוס:</label>
+      <select
+        id="statusFilter"
+        class="filter-select"
+        [(ngModel)]="statusFilter"
+        (change)="onStatusFilterChange()"
+      >
+        <option value="">כל הסטטוסים</option>
+        <option value="approved">מאושר</option>
+        <option value="pending">ממתין</option>
+        <option value="cancelled_due_to_no_show">בוטלה-נסיעה לא יצאה</option>
+        <option value="rejected">נדחה</option>
+      </select>
+    </div>
+
+    <div class="date-input-group">
+      <label for="startDate">החל מ:</label>
+      <input
+        id="startDate"
+        type="date"
+        class="filter-date"
+        [(ngModel)]="startDate"
+        [min]="minDate"
+        [max]="maxDate"
+        (change)="validateDate('start'); onDateChange()"
+      />
+    </div>
+
+    <div class="date-input-group">
+      <label for="endDate">עד:</label>
+      <input
+        id="endDate"
+        type="date"
+        class="filter-date"
+        [(ngModel)]="endDate"
+        [min]="minDate"
+        [max]="maxDate"
+        (change)="validateDate('end'); onDateChange()"
+      />
+    </div>
+  </div>
+
+</div>
