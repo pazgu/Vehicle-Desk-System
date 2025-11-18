@@ -129,7 +129,6 @@ export class AdminInspectionsComponent implements OnInit {
         }));
       },
       error: (err: any) => {
-        // this.toastService.show('שגיאה בטעינת רשימת משתמשים', 'error');
         this.users = [];
       }
     });
