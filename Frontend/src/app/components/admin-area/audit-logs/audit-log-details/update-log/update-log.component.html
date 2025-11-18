@@ -17,7 +17,7 @@
                         {{ row.oldValue === true ? 'כן' : row.oldValue === false ? 'לא' : (row.oldValue ?? '-') }}
                       </ng-container>
                       <ng-template #oldValueContent>
-                        <ng-container *ngIf="row.label.includes('זמן') || row.label.includes('תאריך'); else plainOld">
+                        <ng-container *ngIf="row.label.includes('זמן') || row.label.includes('תאריך')|| row.label.includes('שימוש'); else plainOld">
                           {{ row.oldValue ? (row.oldValue | date:'dd/MM/yyyy HH:mm') : '-' }}
                         </ng-container>
                         <ng-template #plainOld>
@@ -37,7 +37,7 @@
                         {{ row.newValue === true ? 'כן' : row.newValue === false ? 'לא' : (row.newValue ?? '-') }}
                       </ng-container>
                       <ng-template #newValueContent>
-                        <ng-container *ngIf="row.label.includes('זמן') || row.label.includes('תאריך'); else plainNew">
+                        <ng-container *ngIf="row.label.includes('זמן') || row.label.includes('תאריך')|| row.label.includes('שימוש'); else plainNew">
                           {{ row.newValue ? (row.newValue | date:'dd/MM/yyyy HH:mm') : '-' }}
                         </ng-container>
                         <ng-template #plainNew>
