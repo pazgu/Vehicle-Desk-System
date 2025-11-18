@@ -9,7 +9,7 @@ import { Location } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../components/page-area/confirm-dialog/confirm-dialog.component';
 import { HttpErrorResponse } from '@angular/common/http';
-import { StartedRide, StartedRidesResponse } from '../../models/ride.model';
+import { StartedRidesResponse } from '../../models/ride.model';
 import { ButtonModule } from 'primeng/button';
 
 @Component({
@@ -73,17 +73,15 @@ get freeQuotaExceeded(): boolean {
   ngOnInit(): void {
     const userId = localStorage.getItem('employee_id');
  if (this.exceededMaxRides()) {
-    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const today = new Date().toISOString().split('T')[0];
     const lastShownDate = localStorage.getItem('exceededWarningDate');
 
     if (lastShownDate !== today) {
-      // Show warning only if it wasn't shown today
       this.warningVisible = true;
       localStorage.setItem('exceededWarningDate', today);
     }
   }
     this.route.queryParams.subscribe(params => {
-      // Restore component state from URL params
       this.rideViewMode = (params['mode'] as 'all' | 'future' | 'past') || 'all';
       this.sortBy = params['sort'] || 'recent';
       this.statusFilter = params['status'] || '';
@@ -108,11 +106,9 @@ get freeQuotaExceeded(): boolean {
         }, 500);
       }
 
-      // Fetch rides based on the restored state (from URL or defaults)
       this.fetchRides();
     });
 
-    // Socket listeners (unchanged)
     this.socketService.rideRequests$.subscribe((newRide) => {
       if (newRide) {
         this.fetchRides();
@@ -217,7 +213,6 @@ get freeQuotaExceeded(): boolean {
 
   }
 
-  // --- New / Modified Methods for URL Sync ---
 
   private formatDateForInput(date: Date): string {
     return date.toISOString().split('T')[0];
@@ -281,18 +276,15 @@ get freeQuotaExceeded(): boolean {
   }
 
 
-  // This is the core method to update the URL with current filter states
   private updateUrlQueryParams(): void {
     const queryParams: Params = {
-      // Explicitly set parameters to null if they are at their default,
-      // so the router removes them from the URL.
       mode: this.rideViewMode === 'all' ? null : this.rideViewMode,
       sort: this.sortBy === 'recent' ? null : this.sortBy,
       status: this.statusFilter === '' ? null : this.statusFilter,
       start_date: this.startDate === '' ? null : this.startDate,
       end_date: this.endDate === '' ? null : this.endDate,
-      filters: this.showFilters === false ? null : true, // Only include if true
-      old_orders: this.showOldOrders === false ? null : true, // Only include if true
+      filters: this.showFilters === false ? null : true,
+      old_orders: this.showOldOrders === false ? null : true,
     };
 
  
@@ -488,8 +480,6 @@ get freeQuotaExceeded(): boolean {
         });
     }
 
-    // Apply 'showOldOrders' logic in the client-side filtering (if needed)
-    // ONLY apply if startDate and endDate are not already set by the specific date filter
     if (this.showOldOrders && !this.startDate && !this.endDate) {
         filtered = filtered.filter(order => {
             const orderDate = this.parseDate(order.date);
@@ -573,7 +563,6 @@ get freeQuotaExceeded(): boolean {
     const userRole = localStorage.getItem('role');
     const isSupervisor = userRole === 'supervisor';
     
-    // For regular users - only pending orders can be edited
     const isPending = order.status.toLowerCase() === 'pending';
     const isFuture = this.parseDate(order.date) >= new Date();
     
@@ -581,14 +570,12 @@ get freeQuotaExceeded(): boolean {
       return isPending && isFuture;
     }
     
-    // For supervisors - allow editing approved orders until 2 hours before ride time
     const isEditableStatus = ['pending', 'approved'].includes(order.status.toLowerCase());
     
     if (!isEditableStatus || !isFuture) {
       return false;
     }
     
-    // Calculate if it's more than 2 hours before the ride
     const rideDateTime = new Date(`${order.date.split('.').reverse().join('-')}T${order.time}:00`);
     const now = new Date();
     const timeDifferenceHours = (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
@@ -600,7 +587,6 @@ get freeQuotaExceeded(): boolean {
     const userRole = localStorage.getItem('role');
     const isSupervisor = userRole === 'supervisor';
     
-    // For regular users - only pending orders can be deleted
     const isPending = order.status.toLowerCase() === 'pending';
     const isFuture = this.parseDate(order.date) >= new Date();
     
@@ -608,14 +594,12 @@ get freeQuotaExceeded(): boolean {
       return isPending && isFuture;
     }
     
-    // For supervisors - allow deleting approved orders until 2 hours before ride time
     const isDeletableStatus = ['pending', 'approved'].includes(order.status.toLowerCase());
     
     if (!isDeletableStatus || !isFuture) {
       return false;
     }
     
-    // Calculate if it's more than 2 hours before the ride
     const rideDateTime = new Date(`${order.date.split('.').reverse().join('-')}T${order.time}:00`);
     const now = new Date();
     const timeDifferenceHours = (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
@@ -633,7 +617,6 @@ get freeQuotaExceeded(): boolean {
       return;
     }
 
-    // For regular users - only pending status allowed
     if (!isSupervisor) {
       const isPending = order.status.toLowerCase() === 'pending';
       if (!isPending) {
@@ -641,7 +624,6 @@ get freeQuotaExceeded(): boolean {
         return;
       }
     } else {
-      // For supervisors - check if it's within the 2-hour window
       const isEditableStatus = ['pending', 'approved'].includes(order.status.toLowerCase());
       if (!isEditableStatus) {
         this.toastService.show('אפשר לערוך רק הזמנות במצב "ממתין" או "מאושר" ❌', 'error');
@@ -676,7 +658,6 @@ get freeQuotaExceeded(): boolean {
       return;
     }
 
-    // For regular users - only pending status allowed
     if (!isSupervisor) {
       const isPending = order.status.toLowerCase() === 'pending';
       if (!isPending) {
@@ -684,7 +665,6 @@ get freeQuotaExceeded(): boolean {
         return;
       }
     } else {
-      // For supervisors - check if it's within the 2-hour window
       const isDeletableStatus = ['pending', 'approved'].includes(order.status.toLowerCase());
       if (!isDeletableStatus) {
         this.toastService.show('אפשר לבטל רק הזמנות במצב "ממתין" או "מאושר" ❌', 'error');
@@ -706,7 +686,6 @@ get freeQuotaExceeded(): boolean {
       return;
     }
 
-    // Create proper dialog data
     const dialogData: ConfirmDialogData = {
       title: 'ביטול הזמנה',
       message: `?האם אתה בטוח שברצונך לבטל את ההזמנה\n\nתאריך: ${order.date}\nשעה: ${order.time}\nסוג: ${order.type}`,
@@ -731,7 +710,6 @@ get freeQuotaExceeded(): boolean {
           this.socketService.deleteRequests$.subscribe((deletedRide) => {
          
           });
-          // Remove the order from local state immediately
           this.fetchRides();
           const index = this.orders.findIndex(o => o.ride_id === order.ride_id);
           if (index !== -1) {
@@ -740,7 +718,6 @@ get freeQuotaExceeded(): boolean {
               ...this.orders.slice(index + 1)
             ];
           }
-          // Also refresh from server to ensure consistency
         },
         error: (error) => {
           console.error('Error deleting order:', error);
@@ -771,7 +748,6 @@ checkIfOverOneDay(order: any): boolean {
   console.log('Order Start Date:', orderStartDate);
   console.log('Order End Date:', orderEndDate);
 
-  // Extract only the date part (ignoring time)
   const startDay = orderStartDate.toISOString().split('T')[0];
   const endDay = orderEndDate.toISOString().split('T')[0];
 

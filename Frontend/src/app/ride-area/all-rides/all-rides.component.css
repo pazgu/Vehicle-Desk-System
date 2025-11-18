@@ -2,133 +2,82 @@
   background-color: white;
   padding: 0.8rem 2.1rem;
   border-radius: 12px;
-  width: 720px;
-  margin: 0.6rem auto;
+  width: 740px;
+  margin: 1rem auto;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   direction: rtl;
   font-family: sans-serif;
   min-height: 380px;
-  max-height: 500px; 
-  overflow-y: auto;
-  overflow-x: hidden;
+  max-height: 500px;
 }
 
 .page-container {
-  min-height: calc(100vh - 57px); 
-  padding: 5px 0 0 0; 
+  min-height: calc(100vh - 57px);
+  padding: 5px 0 0 0;
   margin: 0 auto;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  background-image: url('/assets/images/all_rides.jpg');
+  background-image: url("/assets/images/all_rides.jpg");
   background-color: #fbe6c9;
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center center;
   width: 100%;
 }
-.table-header {
-  background-color: #811313; /* navy blue */
+
+.orders-header-row {
+  background-color: #811313;
   color: white;
+  align-items: center;
+  display: flex;
   font-weight: bold;
+  padding: 0.75rem;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.orders-data-row {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+  padding: 0.75rem;
+  transition: border 0.5s ease-in-out;
+}
+
+.cell {
+  flex: 1;
   text-align: center;
-  font-size: 0.6rem;
-  width: 672px;
 }
 
-.table-header th {
-  padding: 0.8rem 4.105rem;
-  border-bottom: 2px solid #811313;
-  cursor: default;
-  user-select: none;
-}
-.orders-title {
-  font-size: 22px;
-  font-weight: bold;
-  color: #811313;
-  text-align: right;
-  margin: 0.8rem 0;
-}
-
-  .filter-controls {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    margin-bottom: 1rem;
-    font-family: sans-serif;
-    gap: 0.5rem;
-  }
-  
-  .filter-controls select {
-    padding: 0.25rem 0.5rem;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-  }
-  
-  
-  .orders-table {
-    border-radius: 12px;
-    overflow: hidden;
-  }
-  
-  .orders-header-row {
-    background-color: #811313;
-    color: white;
-    display: flex;
-    font-weight: bold;
-    padding: 10px;
-    border-top-left-radius: 12px;
-    border-top-right-radius: 12px;
-  }
-  
-  .orders-data-row {
-    display: flex;
-    align-items: center;
-    border-bottom: 1px solid #ddd;
-    padding: 0.75rem;
-    transition: border 0.5s ease-in-out;
-
-  }
-  
-  .cell {
-    flex: 1;
-    text-align: center;
-  }
-
-  .orders-header-row .icon-cell {
-    font-weight: bold;
-    color: white;
-  }
-  .past-order {
+.past-order {
   opacity: 0.6;
   background-color: #e0e0e0 !important;
   color: #333 !important;
 }
-.completed-order{
+.completed-order {
   opacity: 0.6;
   color: #333 !important;
 }
 
-  .icon-cell {
-    width: 2.1rem;
-    text-align: center;
-    font-size: 1.1rem;
-    margin-left: 0.5rem;
-  }
-  
+.icon-cell {
+  width: 2.1rem;
+  text-align: center;
+  font-size: 1.1rem;
+  margin-left: 0.5rem;
+}
 
 .pagination-controls {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 20px;
+  margin: 20px;
 }
 
 .pagination-controls button {
+  background: #f0f0f0;
+  border: 1px solid #ccc;
   border-radius: 50%;
-  width: 20px;
-  height: 20px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -139,6 +88,7 @@
 }
 
 .pagination-controls button:hover:not(:disabled) {
+  background-color: #e6e6e6;
   transform: translateY(-2px);
 }
 
@@ -163,21 +113,20 @@
   font-weight: 500;
 }
 
-
 .ride-started {
-  background-color: white !important; /* Or any style you want */
+  background-color: white !important;
   color: black;
 }
 .started-gif-icon {
-  width: 20px;  /* adjust as needed */
-  height: 20px; /* adjust as needed */
-  margin-left: 4px; /* space from main icon */
+  width: 20px;
+  height: 20px;
+  margin-left: 4px;
   vertical-align: middle;
 }
-.cancelled-no-show-icon{
-    width: 24px;  /* adjust as needed */
-  height: 24px; /* adjust as needed */
-  margin-left: 4px; /* space from main icon */
+.cancelled-no-show-icon {
+  width: 24px;
+  height: 24px;
+  margin-left: 4px;
   vertical-align: middle;
 }
 
@@ -187,53 +136,47 @@
 
 .ride-type-icon {
   position: absolute;
-  right: -28px;          /* move outside the right edge */
-  top: 50%;              /* vertical center */
+  right: -28px;
+  top: 50%;
   transform: translateY(-50%);
   font-size: 1.3rem;
   color: #811313;
 }
 
+.status-cancelled-no-show {
+  background-color: #ffe1e184;
+}
 
-.status-cancelled-no-show{
- background-color: #ffe1e184;
-}  
-button {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    margin: 0 1rem;
-    cursor: pointer;
-    color: #811313;
-  }
-  .filter{
-    font-size: 16px;
-  }
-  button:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-  td {
-    vertical-align: middle;
-  }
-  
-  .status-text {
-    margin-left: 0.5rem;
-  }
-  
-  .status-green {
-    background-color: #e8f5e8 ; /* soft green */
-  }
-  
-  .status-yellow {
-    background-color: #fff8e174; /* soft yellow */
-  }
-  
-  .status-red {
-    background-color: #f8d7da; /* soft red */
-  }
+.filter {
+  font-size: 16px;
+}
 
-  .status_in_progress {
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+td {
+  vertical-align: middle;
+}
+
+.status-text {
+  margin-left: 0.5rem;
+}
+
+.status-green {
+  background-color: #e8f5e8;
+}
+
+.status-yellow {
+  background-color: #fff8e174;
+}
+
+.status-red {
+  background-color: #f8d7da;
+}
+
+.status_in_progress {
   background: linear-gradient(
     -45deg,
     rgba(74, 144, 226, 0.15) 25%,
@@ -266,32 +209,31 @@ button {
   }
 }
 
-  h1{
-    color: #811313;
-  }
+h1 {
+  color: #811313;
+}
 
 .no-orders-message {
   background-color: #942222;
   color: white;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   font-size: 22px;
   font-weight: bold;
   text-align: center;
   padding: 28px 30px;
   border-radius: 12px;
   margin: 20px auto 10px auto;
-  max-width: 650px; /* was 520px, now a bit larger */
+  max-width: 650px;
 }
-
 
 .new-ride-btn {
   margin-top: 10px;
   background-color: white;
   color: #942222;
   border: none;
-  padding: 14px 32px; /* Increased padding */
+  padding: 14px 32px;
   border-radius: 10px;
-  font-size: 20px; /* Bigger text */
+  font-size: 20px;
   font-weight: bold;
   cursor: pointer;
   transition: 0.2s;
@@ -309,14 +251,15 @@ button {
   padding: 6px 12px;
 }
 
-  button {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    margin: 0 1rem;
-    cursor: pointer;
-    color: #811313;
-  }
+button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  margin: 0 1rem;
+  cursor: pointer;
+  color: #811313;
+}
+
 .ride-filter-buttons {
   display: flex;
   justify-content: center;
@@ -343,12 +286,9 @@ button {
   font-weight: bold;
 }
 
-
-
-
 @keyframes backgroundFade {
   0% {
-    background-color: #8b3a44; /* dark wine red */
+    background-color: #8b3a44;
   }
   30% {
     background-color: #a24a58;
@@ -366,16 +306,15 @@ button {
 }
 
 .highlight {
-  /* Optional: fade background too */
   animation: highlightFade 5s ease-in-out forwards;
-}/* Minimalistic warning message - overlay style *//* Minimalistic warning message - overlay style */
+}
 .exceeded-rides-warming {
   position: fixed;
   top: 20px;
   right: 20px;
   background: linear-gradient(135deg, #942222 0%, #81131371 100%);
   color: white;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   border-radius: 8px;
   padding: 12px 16px;
   max-width: 280px;
@@ -410,7 +349,7 @@ button {
   font-weight: bold;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
 }
 
 .exceeded-rides-warming button:hover {
@@ -418,7 +357,6 @@ button {
   transform: translateY(-1px);
 }
 
-/* Show warning again button - small floating icon */
 button[ng-click="showWarning()"] {
   position: fixed !important;
   top: 20px !important;
@@ -440,8 +378,7 @@ button[ng-click="showWarning()"] {
   justify-content: center !important;
   margin: 0 !important;
   float: none !important;
-    box-shadow: #811313 0px 2px 8px rgba(129, 19, 19, 0.3);
-
+  box-shadow: #811313 0px 2px 8px rgba(129, 19, 19, 0.3);
 }
 
 button[ng-click="showWarning()"]:hover {
@@ -455,11 +392,8 @@ button[ng-click="showWarning()"]:hover {
   z-index: 1000 !important;
   box-shadow: #811313 0px 2px 8px rgba(129, 19, 19, 0.3);
   animation: appear 0.5s ease-out;
-
-
 }
 
-/* Slide in animation */
 @keyframes slideInFromRight {
   from {
     transform: translateX(100%);
@@ -480,7 +414,6 @@ button[ng-click="showWarning()"]:hover {
     opacity: 1;
   }
 }
-/* Mobile responsive */
 @media (max-width: 768px) {
   .exceeded-rides-warming {
     top: 15px;
@@ -489,11 +422,11 @@ button[ng-click="showWarning()"]:hover {
     max-width: none;
     padding: 10px 14px;
   }
-  
+
   .exceeded-rides-warming h2 {
     font-size: 14px;
   }
-  
+
   .exceeded-rides-warming p {
     font-size: 12px;
   }
@@ -507,7 +440,6 @@ button[ng-click="showWarning()"]:hover {
     margin: 0 !important;
   }
 }
-/* Animations */
 @keyframes warningPulse {
   0% {
     box-shadow: 0 4px 15px rgba(129, 19, 19, 0.3);
@@ -518,7 +450,9 @@ button[ng-click="showWarning()"]:hover {
 }
 
 @keyframes warningBounce {
-  0%, 50%, 100% {
+  0%,
+  50%,
+  100% {
     transform: translateY(0);
   }
   25% {
@@ -529,22 +463,21 @@ button[ng-click="showWarning()"]:hover {
   }
 }
 
-/* Responsive design */
 @media (max-width: 768px) {
   .exceeded-rides-warming {
     margin: 15px 10px;
     padding: 18px 20px;
     max-width: calc(100% - 20px);
   }
-  
+
   .exceeded-rides-warming h2 {
     font-size: 20px;
   }
-  
+
   .exceeded-rides-warming p {
     font-size: 14px;
   }
-  
+
   button[ng-click="showWarning()"] {
     top: 70px;
     right: 15px;
@@ -563,18 +496,17 @@ button[ng-click="showWarning()"]:hover {
 
 .modify-buttons {
   display: flex;
-  flex-direction: row; /* Important for RTL layout */
+  flex-direction: row;
   gap: 0.2rem;
   justify-content: flex-end;
   align-items: center;
-  direction: rtl; /* Ensures RTL button order */
+  direction: rtl;
   margin-left: 10px;
 }
 
-/* General style for all modify buttons */
 .modify-buttons button.modify {
   padding: 0.3rem 0.4rem;
-  color: #4a90e2; /* Blue color for edit icon */
+  color: #4a90e2;
   background-color: transparent;
   border: 1px solid rgba(74, 144, 226, 0.3);
   border-radius: 6px;
@@ -585,10 +517,10 @@ button[ng-click="showWarning()"]:hover {
   align-items: center;
   justify-content: center;
 }
-  
+
 .delete {
   padding: 0.4rem 0.5rem;
-  color: #e74c3c; /* Red color for delete icon */
+  color: #e74c3c;
   background-color: transparent;
   border: 1px solid rgba(231, 76, 60, 0.3);
   border-radius: 6px;
@@ -599,13 +531,12 @@ button[ng-click="showWarning()"]:hover {
   align-items: center;
   justify-content: center;
 }
-/* Hover effect */
 .modify-buttons button.modify:hover:not(:disabled) {
   background-color: rgba(74, 144, 226, 0.1);
   border-color: #4a90e2;
   color: #357abd;
 }
-#header-wrap{
+#header-wrap {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -618,7 +549,6 @@ button[ng-click="showWarning()"]:hover {
   background-color: #ffc7c7;
 }
 
-/* Disabled state styling */
 .modify-buttons button:disabled,
 .delete:disabled {
   opacity: 0.5;
@@ -650,70 +580,69 @@ button[ng-click="showWarning()"]:hover {
   border-radius: 20px;
   cursor: pointer;
   transition: background-color 0.2s ease, transform 0.15s ease;
-  margin-left:0px;
+  margin-left: 0px;
 }
 .back-btn:hover {
   transform: scale(1.03);
 }
-/* === Free Quota Indicator === */
 .quota-bar-row {
   display: flex;
-  justify-content: flex-end; /* push to the right (RTL-friendly) */
-  margin-top: .25rem;
-  margin-bottom: .75rem;
+  justify-content: flex-end;
+  margin-top: 0.25rem;
+  margin-bottom: 0.75rem;
 }
 
 .free-quota-indicator {
   min-width: 250px;
   max-width: 320px;
-  padding: .8rem 1rem;
+  padding: 0.8rem 1rem;
   background: #fff;
-  border: 1px solid rgba(0,0,0,.06);
+  border: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0,0,0,.06);
-  font-family: 'Alef', sans-serif;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  font-family: "Alef", sans-serif;
 }
 
 .free-quota-indicator.exceeded {
-  border-color: rgba(148,34,34,.25); /* #942222 with alpha */
-  box-shadow: 0 2px 12px rgba(148,34,34,.12);
+  border-color: rgba(148, 34, 34, 0.25);
+  box-shadow: 0 2px 12px rgba(148, 34, 34, 0.12);
 }
 
 .fq-header {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: .75rem;
-  margin-bottom: .5rem;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
 .fq-title {
   font-weight: 700;
-  font-size: .95rem;
+  font-size: 0.95rem;
   color: #222;
 }
 
 .fq-count {
   font-weight: 800;
-  font-size: .95rem;
-  color: #942222; /* your theme red */
+  font-size: 0.95rem;
+  color: #942222;
 }
 
-/* segmented bar */
 .fq-segments {
-  --fq-total: 6; /* fallback; overridden inline via [style.--fq-total] */
+  --fq-total: 6;
   display: grid;
   grid-template-columns: repeat(var(--fq-total), 1fr);
-  gap: .35rem;
+  gap: 0.35rem;
   align-items: center;
 }
 
 .fq-segment {
   height: 12px;
   border-radius: 999px;
-  border: 1px solid rgba(0,0,0,.08);
-  background: rgba(148,34,34,.10);
-  transition: transform .15s ease, background-color .15s ease, border-color .15s ease;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(148, 34, 34, 0.1);
+  transition: transform 0.15s ease, background-color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .fq-segment.filled {
@@ -726,126 +655,104 @@ button[ng-click="showWarning()"]:hover {
 }
 
 .fq-hint {
-  margin-top: .45rem;
-  font-size: .85rem;
+  margin-top: 0.45rem;
+  font-size: 0.85rem;
   color: #942222;
   font-weight: 600;
 }
 
-/* small screens */
 @media (max-width: 640px) {
   .free-quota-indicator {
     min-width: 200px;
-    padding: .7rem .85rem;
+    padding: 0.7rem 0.85rem;
   }
 }
 
-/* === Floating Quota Card (top-right) === */
 .quota-float {
   position: fixed;
-  top: 100px;          /* sits below your exceeded toast at top:20px */
+  top: 100px;
   right: 7px;
-  z-index: 1000;      /* above content, below modal dialogs */
+  z-index: 1000;
 }
 
-/* keep existing indicator look */
 .free-quota-indicator {
   min-width: 250px;
   max-width: 320px;
-  padding: .8rem 1rem;
+  padding: 0.8rem 1rem;
   background: #fff;
-  border: 1px solid rgba(0,0,0,.06);
+  border: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0,0,0,.06);
-  font-family: 'Alef', sans-serif;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  font-family: "Alef", sans-serif;
 }
 
 .free-quota-indicator.exceeded {
-  border-color: rgba(148,34,34,.25); /* #942222 with alpha */
-  box-shadow: 0 2px 12px rgba(148,34,34,.12);
+  border-color: rgba(148, 34, 34, 0.25);
+  box-shadow: 0 2px 12px rgba(148, 34, 34, 0.12);
 }
 
 .fq-header {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: .75rem;
-  margin-bottom: .5rem;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
-.fq-title { font-weight: 700; font-size: .95rem; color: #222; }
-.fq-count { font-weight: 800; font-size: .95rem; color: #942222; }
+.fq-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #222;
+}
+.fq-count {
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #942222;
+}
 
-/* segmented bar */
 .fq-segments {
   --fq-total: 6;
   display: grid;
   grid-template-columns: repeat(var(--fq-total), 1fr);
-  gap: .35rem;
+  gap: 0.35rem;
   align-items: center;
 }
 .fq-segment {
   height: 12px;
   border-radius: 999px;
-  border: 1px solid rgba(0,0,0,.08);
-  background: rgba(148,34,34,.10);
-  transition: transform .15s ease, background-color .15s ease, border-color .15s ease;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(148, 34, 34, 0.1);
+  transition: transform 0.15s ease, background-color 0.15s ease,
+    border-color 0.15s ease;
 }
-.fq-segment.filled { background: #942222; border-color: #942222; }
-.fq-segment:hover { transform: translateY(-1px); }
+.fq-segment.filled {
+  background: #942222;
+  border-color: #942222;
+}
+.fq-segment:hover {
+  transform: translateY(-1px);
+}
 
-.fq-hint { margin-top: .45rem; font-size: .85rem; color: #942222; font-weight: 600; }
+.fq-hint {
+  margin-top: 0.45rem;
+  font-size: 0.85rem;
+  color: #942222;
+  font-weight: 600;
+}
 
-/* mobile: tuck it a bit lower and smaller */
 @media (max-width: 768px) {
-  .quota-float { top: 110px; right: 12px; }
-  .free-quota-indicator { min-width: 220px; padding: .7rem .9rem; }
+  .quota-float {
+    top: 110px;
+    right: 12px;
+  }
+  .free-quota-indicator {
+    min-width: 220px;
+    padding: 0.7rem 0.9rem;
+  }
 }
 
-/* === Actions "cell" (CSS-only) ===
-   Treat .modify-buttons like a fixed-width flex cell inside the row.
-*/
-.orders-data-row .modify-buttons {
-  /* make it behave like a cell in the flex row */
-  flex: 0 0 92px;         /* width of the actions cell; tweak 84–110px if needed */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 6px;               /* space between edit & delete */
-  margin: 0;              /* override any earlier margins */
-  align-self: center;     /* vertically center within the row */
-  position: static;       /* ensure it’s not accidentally absolute */
-}
-
-/* neutralize your global button rule just for the two action buttons */
 .orders-data-row .modify-buttons button {
-  margin: 0;              /* keep them inside the cell bounds */
-  font-size: 1rem;        /* compact icon size */
-  width: 32px;            /* consistent touch target */
-  height: 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 0;
-  padding: 0;
-}
-
-/* keep their existing look but ensure no weird positioning */
-.orders-data-row .modify-buttons .modify,
-.orders-data-row .modify-buttons .delete {
-  position: static !important;
-}
-
-/* icon size inside the buttons */
-.orders-data-row .modify-buttons i {
-  font-size: 16px;
-}
-
-/* OPTIONAL: if your global `button { font-size:1.5rem; margin:0 1rem; }` is still too aggressive,
-   fence it off for the table area like this: */
-.orders-table button,
-.orders-header-row button,
-.orders-data-row button {
-  font-size: 1rem;
   margin: 0;
+  width: 32px;
+  height: 32px;
 }
