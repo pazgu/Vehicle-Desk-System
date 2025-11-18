@@ -21,6 +21,25 @@
 .cell {
   flex: 1;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-cell {
+  width: 70px;
+  min-width: 70px;
+  text-align: center;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.actions-cell {
+  width: 100px;
+  min-width: 100px;
+  flex: 0 0 100px;
 }
 
 .past-order {
@@ -32,13 +51,6 @@
 .completed-order {
   opacity: 0.6;
   color: #333 !important;
-}
-
-.icon-cell {
-  width: 2.1rem;
-  text-align: center;
-  font-size: 1.1rem;
-  margin-left: 0.5rem;
 }
 
 .pagination-controls {
@@ -228,11 +240,10 @@ button:disabled {
 .modify-buttons {
   display: flex;
   flex-direction: row;
-  gap: 0.2rem;
-  justify-content: flex-end;
+  gap: 0.5rem;
+  justify-content: center;
   align-items: center;
   direction: rtl;
-  margin-left: 10px;
 }
 
 .modify-buttons button.modify {
@@ -247,6 +258,8 @@ button:disabled {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 32px;
+  height: 32px;
 }
 
 .delete {
@@ -261,6 +274,8 @@ button:disabled {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 32px;
+  height: 32px;
 }
 
 .modify-buttons button.modify:hover:not(:disabled) {
@@ -287,10 +302,4 @@ button:disabled {
 .delete:disabled:hover {
   background-color: transparent;
   transform: none;
-}
-
-.orders-data-row .modify-buttons button {
-  margin: 0;
-  width: 32px;
-  height: 32px;
 }

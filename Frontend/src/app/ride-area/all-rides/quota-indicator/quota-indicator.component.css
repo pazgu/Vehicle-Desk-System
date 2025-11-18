@@ -1,12 +1,6 @@
-.quota-float {
-  position: fixed;
-  top: 100px;
-  right: 7px;
-  z-index: 1000;
-}
-
 .free-quota-indicator {
   min-width: 250px;
+  margin-top: 40px;
   max-width: 320px;
   padding: 0.8rem 1rem;
   background: #fff;
@@ -74,10 +68,6 @@
 }
 
 @media (max-width: 768px) {
-  .quota-float {
-    top: 110px;
-    right: 12px;
-  }
   .free-quota-indicator {
     min-width: 220px;
     padding: 0.7rem 0.9rem;

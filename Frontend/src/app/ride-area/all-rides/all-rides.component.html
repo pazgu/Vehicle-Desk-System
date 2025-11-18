@@ -1,20 +1,19 @@
 <div class="all-rides-container" dir="rtl">
-  <button class="back-button" (click)="goBack()">
-    <i class="pi pi-arrow-right"></i>
-    חזור
-  </button>
-
   <div class="page-header">
+    <div class="quota-header-wrapper">
+      <app-quota-indicator [allOrders]="orders"></app-quota-indicator>
+    </div>
+    
     <h1>כל הנסיעות שלי</h1>
+    
+    <button class="back-button" (click)="goBack()">
+      חזור
+      <i class="pi pi-arrow-left"></i>
+    </button>
   </div>
 
-  <app-exceeded-warning-banner 
-    [allOrders]="orders">
+  <app-exceeded-warning-banner [allOrders]="orders">
   </app-exceeded-warning-banner>
-
-  <app-quota-indicator 
-    [allOrders]="orders">
-  </app-quota-indicator>
 
   <app-ride-filter-panel
     [allOrders]="orders"
@@ -27,11 +26,15 @@
     [showOldOrders]="showOldOrders"
     [minDate]="minDate"
     [maxDate]="maxDate"
-    (filteredOrdersChanged)="onFilteredOrdersChanged($event)">
+    (filteredOrdersChanged)="onFilteredOrdersChanged($event)"
+  >
   </app-ride-filter-panel>
 
   <div *ngIf="loading" class="loading-spinner">
-    <i class="pi pi-spin pi-spinner" style="font-size: 2rem; color: #942222;"></i>
+    <i
+      class="pi pi-spin pi-spinner"
+      style="font-size: 2rem; color: #942222"
+    ></i>
     <p>טוען נסיעות...</p>
   </div>
 
@@ -45,6 +48,7 @@
     (viewRide)="onViewRide($event)"
     (editRide)="onEditRide($event)"
     (deleteRide)="onDeleteRide($event)"
-    (newRide)="goToNewRide()">
+    (newRide)="goToNewRide()"
+  >
   </app-ride-list-table>
 </div>
