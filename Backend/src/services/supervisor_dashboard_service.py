@@ -112,6 +112,8 @@ def get_department_specific_order(department_id: str, order_id: str, db: Session
         license_check_passed=order.license_check_passed,
         submitted_at=order.submitted_at,
         emergency_event=order.emergency_event,
+        four_by_four_reason=order.four_by_four_reason,
+        extended_ride_reason=order.extended_ride_reason,
     )
 
     return order_details
