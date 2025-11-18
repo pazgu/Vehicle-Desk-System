@@ -280,3 +280,39 @@ textarea {
 .refresh-button:active {
   transform: translateY(0);
 }
+
+.scroll-arrow-container {
+  position: fixed;
+  bottom: 80px;
+  right: 24px;
+  z-index: 1000;
+}
+
+.scroll-arrow-button {
+  background: linear-gradient(135deg, #8b0000 0%, #b22222 100%);
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 2px 8px rgba(139, 0, 0, 0.25);
+  transition: all 0.3s ease;
+}
+
+.scroll-arrow-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(139, 0, 0, 0.35);
+}
+
+.scroll-arrow-button:active {
+  transform: translateY(0);
+}
+
+.scroll-arrow-button svg {
+  width: 20px;
+  height: 20px;
+}

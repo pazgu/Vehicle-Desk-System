@@ -14,22 +14,22 @@
   </div>
 </div>
 <div *ngIf="!formSubmitted && !noVehiclesAvailable">
-<div class="search-container" style="margin: 16px; width: 400px;position: relative;">
+<div class="search-container" style="max-width: 800px; margin: 0 auto 1.5rem auto; text-align: center;">
   <input
-  type="text"
-  placeholder="חפש לפי לוחית רישוי"
-  [(ngModel)]="searchTerm"
-  (ngModelChange)="onSearchTermChange()"
-  class="search-input"
-/>
-
+    type="text"
+    placeholder="חפש לפי לוחית רישוי"
+    [(ngModel)]="searchTerm"
+    (ngModelChange)="onSearchTermChange()"
+    class="search-input"
+    style="width: 100%; max-width: 400px;"
+  />
 </div>
-<div *ngIf="showScrollArrow"
-     style="text-align: left; margin-right: 16px; margin-top: 10px; position: absolute;">
-  <button (click)="scrollToBottom()" style="background: none; border: none; cursor: pointer;">
-    <img src="/assets/images/arrows.png"
-         style="width: 2.5rem; height: 3.5rem;"
-         title="לך לכפתור שליחה" />
+
+<div *ngIf="showScrollArrow" class="scroll-arrow-container">
+  <button (click)="scrollToBottom()" class="scroll-arrow-button" title="לך לכפתור שליחה">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 5V19M12 19L19 12M12 19L5 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
   </button>
 </div>
 
