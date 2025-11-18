@@ -1,17 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../../../../services/auth.service';
-import { environment } from '../../../../../../environments/environment';
 import { ToastService } from '../../../../../services/toast.service';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
+import { LoginService } from '../../../../../services/login.service';
 
 @Component({
   selector: 'app-login',
@@ -28,7 +27,7 @@ export class LoginComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private http: HttpClient,
+    private loginService: LoginService,
     private router: Router,
     private authService: AuthService,
     private toastService: ToastService
@@ -74,11 +73,10 @@ onLogin(): void {
     return;
   }
 
-  const loginData = { username, password };
+  const loginData = this.loginForm.value;
   const loginUrl = environment.loginUrl;
-
-  this.http.post<any>(loginUrl, loginData).subscribe({
-    next: (response) => {
+ this.loginService.login(loginData).subscribe({
+      next: (response) => {
       const token = response.access_token;
       localStorage.setItem('access_token', token);
 
