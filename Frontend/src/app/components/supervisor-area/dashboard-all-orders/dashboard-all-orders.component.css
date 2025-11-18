@@ -1,38 +1,62 @@
-:host {
-  display: block;
-  min-height: calc(100vh - 55px);
-  padding: 25px;
-  direction: rtl;
-  font-family: sans-serif;
-
-   background-image: url('/assets/images/vehicle-dashboard-bg.png');
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center center;
-  overflow: hidden; 
+.page-container {
+  background-image: url("/assets/images/vehicle-dashboard-bg.png");
+  min-height: 100vh;
+  padding: 2rem 0;
 }
 
-.page-wrapper {
-  background-color: rgb(245, 241, 241);
-  padding: 10px;
-  border-radius: 12px;
-  max-width: 1050px;
+.orders-wrapper {
+  max-width: 1200px;
   margin: 0 auto;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 0.4rem 1.7rem;
+  font-family: "Alef", sans-serif;
+  direction: rtl;
+  position: relative;
 }
 
-h1 {
-  color: #942222;
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  position: relative;
+}
+.page-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #811313;
+  margin: 0 auto;
+  padding-bottom: 0.5rem;
+  border-bottom: 3px solid #942222;
+  display: inline-block;
+}
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: transparent;
+  color: #811313;
+  border: 1px solid #811313;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: "Alef", sans-serif;
+  position: absolute;
+  left: 0;
 }
 
-button {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    margin: 0 1rem;
-    cursor: pointer;
-    color: #811313;
-  }
+.back-button:hover {
+  background-color: #811313;
+  color: white;
+  transform: translateX(-2px);
+}
+
+.back-button i {
+  font-size: 1.1rem;
+}
+
 :host ::ng-deep .p-datatable {
   width: 90%;
   margin: 0 auto;
@@ -85,7 +109,7 @@ button {
 }
 
 :host ::ng-deep .row-completed {
-  background-color: #c9e6f9 ;
+  background-color: #c9e6f9;
   color: #171056;
 }
 
@@ -102,7 +126,6 @@ button {
   text-align: center;
   display: inline-block;
 }
-
 
 .pagination-controls {
   display: flex;
@@ -153,7 +176,6 @@ button {
   font-weight: 500;
 }
 
-
 @media screen and (max-width: 640px) {
   :host ::ng-deep .p-paginator {
     flex-wrap: wrap;
@@ -170,27 +192,139 @@ button {
     margin-bottom: 8px;
   }
 }
-.ride-filter-buttons button {
-  font-size: 14px;
-  font-weight: 500;
-  padding: 6px 14px;
-  border: none;
-  background-color: transparent;
-  color: #811313;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
+
+/*filters*/
+.filter-controls-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  direction: rtl;
 }
 
-.ride-filter-buttons button.active {
-  background-color: #942222;
-  color: white;
-  font-weight: bold;
+.sort-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
+
+.sort-control label {
+  font-size: 0.95rem;
+  color: #374151;
+  font-weight: 500;
+}
+
+.filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  color: #4b5563;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: "Alef", sans-serif;
+}
+
+.filter-btn:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.filter-btn i {
+  font-size: 1.1rem;
+}
+
+.filters-panel {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+  padding: 1.2rem;
+  margin-bottom: 1.5rem;
+  animation: slideDown 0.2s ease;
+}
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-group label {
+  font-size: 0.85rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+.filter-select {
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  font-size: 0.9rem;
+  background: #f9fafb;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: "Alef", sans-serif;
+}
+
+.filter-select:hover {
+  border-color: #942222;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #942222;
+  background: white;
+}
+.date-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.date-input-group label {
+  font-size: 0.85rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.filters-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.filter-date {
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  font-size: 0.9rem;
+  background: #f9fafb;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: "Alef", sans-serif;
+}
+
+.filter-date:hover {
+  border-color: #942222;
+}
+
+.filter-date:focus {
+  outline: none;
+  border-color: #942222;
+  background: white;
+}
+
 :host ::ng-deep .p-paginator .p-paginator-disabled {
-  opacity: 0.5; 
+  opacity: 0.5;
   cursor: not-allowed;
 }
+
 button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -225,7 +359,6 @@ button:disabled {
   white-space: nowrap;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
-
 
 .status-indicators {
   text-align: right;
@@ -267,27 +400,35 @@ button:disabled {
 }
 
 .status-indicator.approved {
-  background-color:#a4d1ae;
-  border: #329c4b 1.6px solid; 
+  background-color: #a4d1ae;
+  border: #329c4b 1.6px solid;
 }
 .status-indicator.pending {
   background-color: #f5e2a8;
   border: #ab8c31 1.6px solid;
 }
 .status-indicator.rejected {
-  background-color: #f1b5b5; 
+  background-color: #f1b5b5;
   border: #c16a73 1.6px solid;
 }
 .status-indicator.cancelled {
   background-color: #f6c0c084;
-  border: #c87676 1.6px solid; 
+  border: #c87676 1.6px solid;
 }
 .status-indicator.completed {
-  background-color: #b7dbf3; 
-  border: #17a2b8 1.6px solid; 
+  background-color: #b7dbf3;
+  border: #17a2b8 1.6px solid;
 }
 .in-progress-row {
-  background: linear-gradient(45deg, #27ae60 25%, #2ecc71 25%, #2ecc71 50%, #27ae60 50%, #27ae60 75%, #2ecc71 75%);
+  background: linear-gradient(
+    45deg,
+    #27ae60 25%,
+    #2ecc71 25%,
+    #2ecc71 50%,
+    #27ae60 50%,
+    #27ae60 75%,
+    #2ecc71 75%
+  );
   background-size: 20px 20px;
   animation: moveStripes 1s linear infinite;
 }

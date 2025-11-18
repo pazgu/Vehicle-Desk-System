@@ -11,6 +11,7 @@ import { RideDashboardItem } from '../../../models/ride-dashboard-item/ride-dash
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { SocketService } from '../../../services/socket.service';
 import { ToastService } from '../../../services/toast.service';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-dashboard-all-orders',
@@ -25,10 +26,9 @@ import { ToastService } from '../../../services/toast.service';
     MatTooltipModule,
   ],
   templateUrl: './dashboard-all-orders.component.html',
-  styleUrls: ['./dashboard-all-orders.component.css']
+  styleUrls: ['./dashboard-all-orders.component.css'],
 })
 export class DashboardAllOrdersComponent implements OnInit {
-
   orders: RideDashboardItem[] = [];
   rows: number = 5;
   currentPage: number = 1;
@@ -41,7 +41,14 @@ export class DashboardAllOrdersComponent implements OnInit {
 
   dateError: boolean = false;
 
-  constructor(private router: Router,private route:ActivatedRoute, private orderService: OrderService,private toastService:ToastService,  private socketService: SocketService ) {}
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private orderService: OrderService,
+    private toastService: ToastService,
+    private socketService: SocketService,
+    private location: Location
+  ) {}
 
   ngOnInit(): void {
     const departmentId = localStorage.getItem('department_id');
@@ -50,7 +57,7 @@ export class DashboardAllOrdersComponent implements OnInit {
     } else {
       console.error('Department ID not found in localStorage.');
     }
-this.route.queryParams.subscribe(params => {
+    this.route.queryParams.subscribe((params) => {
       if (params['sortBy']) this.sortBy = params['sortBy'];
       if (params['status']) this.statusFilter = params['status'];
       if (params['startDate']) this.startDate = params['startDate'];
@@ -58,16 +65,18 @@ this.route.queryParams.subscribe(params => {
     });
 
     this.socketService.rideRequests$.subscribe((newRide) => {
-      const role = localStorage.getItem('role')
+      const role = localStorage.getItem('role');
       if (newRide) {
         if (newRide.department_id == departmentId && role != 'admin') {
           this.orders = [newRide, ...this.orders];
-          if (role === 'supervisor') { this.toastService.show("התקבלה בקשה חדשה", "success"); }
+          if (role === 'supervisor') {
+            this.toastService.show('התקבלה בקשה חדשה', 'success');
+          }
         }
       }
     });
     this.socketService.orderUpdated$.subscribe((updatedRide) => {
-      const index = this.orders.findIndex(o => o.ride_id === updatedRide.id);
+      const index = this.orders.findIndex((o) => o.ride_id === updatedRide.id);
       if (index !== -1) {
         const updatedOrder: RideDashboardItem = {
           ride_id: updatedRide.id,
@@ -77,52 +86,54 @@ this.route.queryParams.subscribe(params => {
           end_datetime: updatedRide.end_datetime || updatedRide.end_time,
           distance: updatedRide.estimated_distance_km,
           status: updatedRide.status.toLowerCase(),
-          destination: updatedRide.destination || '', 
-          submitted_at: updatedRide.submitted_at || new Date().toISOString() 
-
+          destination: updatedRide.destination || '',
+          submitted_at: updatedRide.submitted_at || new Date().toISOString(),
         };
 
         this.orders = [
           ...this.orders.slice(0, index),
           updatedOrder,
-          ...this.orders.slice(index + 1)
+          ...this.orders.slice(index + 1),
         ];
-
       }
     });
 
-  this.socketService.deleteRequests$.subscribe((deletedRide) => {
+    this.socketService.deleteRequests$.subscribe((deletedRide) => {
+      const index = this.orders.findIndex(
+        (o) => o.ride_id === deletedRide.order_id
+      );
 
-  const index = this.orders.findIndex(o => o.ride_id === deletedRide.order_id);
+      if (index !== -1) {
+        this.orders = [
+          ...this.orders.slice(0, index),
+          ...this.orders.slice(index + 1),
+        ];
+      }
+    });
+    this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
+      if (!updatedStatus) return;
+      if (updatedStatus) {
+        const index = this.orders.findIndex(
+          (o) => o.ride_id === updatedStatus.ride_id
+        );
+        if (index !== -1) {
+          const newStatus = updatedStatus.new_status;
 
-  if (index !== -1) {
-    this.orders = [
-      ...this.orders.slice(0, index),
-      ...this.orders.slice(index + 1)
-    ];
-  } 
-});
-this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
-  if (!updatedStatus) return;
-  if (updatedStatus) {
+          const updatedOrders = [...this.orders];
+          updatedOrders[index] = {
+            ...updatedOrders[index],
+            status: newStatus,
+          };
 
-    const index = this.orders.findIndex(o => o.ride_id === updatedStatus.ride_id);
-    if (index !== -1) {
-      const newStatus=updatedStatus.new_status
-
-         const updatedOrders = [...this.orders];
-    updatedOrders[index] = {
-      ...updatedOrders[index],
-      status: newStatus  
-    };
-
-    this.orders = updatedOrders;
-    this.orders = [...this.orders]
-     
-    }
+          this.orders = updatedOrders;
+          this.orders = [...this.orders];
+        }
+      }
+    });
   }
-});
 
+  goBack(): void {
+    this.location.back();
   }
 
   ngOnDestroy(): void {
@@ -132,28 +143,27 @@ this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
   onFilterChange(): void {
     this.currentPage = 1;
   }
-updateQueryParams() {
+  updateQueryParams() {
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {
         sortBy: this.sortBy || null,
         status: this.statusFilter || null,
         startDate: this.startDate || null,
-        endDate: this.endDate || null
+        endDate: this.endDate || null,
       },
-      queryParamsHandling: 'merge'
+      queryParamsHandling: 'merge',
     });
-  }  
-   validateDates(): void {
-  if (this.startDate && this.endDate) {
-    const start = new Date(this.startDate);
-    const end = new Date(this.endDate);
-    this.dateError = start > end;
-  } else {
-    this.dateError = false;
   }
-}
-
+  validateDates(): void {
+    if (this.startDate && this.endDate) {
+      const start = new Date(this.startDate);
+      const end = new Date(this.endDate);
+      this.dateError = start > end;
+    } else {
+      this.dateError = false;
+    }
+  }
 
   loadOrders(departmentId: string | null): void {
     if (departmentId) {
@@ -176,22 +186,24 @@ updateQueryParams() {
     if (this.statusFilter) {
       switch (this.statusFilter) {
         case 'בהמתנה':
-          filtered = filtered.filter(order => order.status === 'pending');
+          filtered = filtered.filter((order) => order.status === 'pending');
           break;
         case 'מאושר':
-          filtered = filtered.filter(order => order.status === 'approved');
+          filtered = filtered.filter((order) => order.status === 'approved');
           break;
         case 'נדחה':
-          filtered = filtered.filter(order => order.status === 'rejected');
+          filtered = filtered.filter((order) => order.status === 'rejected');
           break;
         case 'בוצע':
-          filtered = filtered.filter(order => order.status === 'completed');
+          filtered = filtered.filter((order) => order.status === 'completed');
           break;
         case 'בתהליך':
-          filtered = filtered.filter(order => order.status === 'in_progress');
+          filtered = filtered.filter((order) => order.status === 'in_progress');
           break;
         case 'בוטל':
-          filtered = filtered.filter(order => order.status === 'cancelled_due_to_no_show');
+          filtered = filtered.filter(
+            (order) => order.status === 'cancelled_due_to_no_show'
+          );
           break;
         default:
           break;
@@ -199,13 +211,19 @@ updateQueryParams() {
     }
 
     if (this.startDate) {
-      filtered = filtered.filter(order => new Date(order.date_and_time) >= new Date(this.startDate));
+      filtered = filtered.filter(
+        (order) => new Date(order.date_and_time) >= new Date(this.startDate)
+      );
     }
 
     if (this.endDate) {
-      const endDateAtEndOfDay = this.endDate ? new Date(this.endDate + 'T23:59:59') : null;
+      const endDateAtEndOfDay = this.endDate
+        ? new Date(this.endDate + 'T23:59:59')
+        : null;
       if (endDateAtEndOfDay) {
-        filtered = filtered.filter(order => new Date(order.date_and_time) <= endDateAtEndOfDay);
+        filtered = filtered.filter(
+          (order) => new Date(order.date_and_time) <= endDateAtEndOfDay
+        );
       }
     }
 
@@ -213,15 +231,21 @@ updateQueryParams() {
       case 'status':
         return [...filtered].sort((a, b) => a.status.localeCompare(b.status));
       case 'date_and_time':
-        return [...filtered].sort((a, b) => new Date(a.date_and_time).getTime() - new Date(b.date_and_time).getTime());
+        return [...filtered].sort(
+          (a, b) =>
+            new Date(a.date_and_time).getTime() -
+            new Date(b.date_and_time).getTime()
+        );
       case 'submitted_at':
-        return [...filtered].sort((a, b) => new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime());
+        return [...filtered].sort(
+          (a, b) =>
+            new Date(b.submitted_at).getTime() -
+            new Date(a.submitted_at).getTime()
+        );
       default:
         return filtered;
-
     }
   }
-
 
   onRowSelect(trip: RideDashboardItem) {
     this.router.navigate(['/order-card', trip.ride_id]);
@@ -297,8 +321,6 @@ updateQueryParams() {
     return new Date(year, month - 1, day, hours, minutes);
   }
 
-
-
   resetFilters() {
     this.statusFilter = '';
     this.startDate = '';
@@ -306,7 +328,7 @@ updateQueryParams() {
     this.showOldOrders = false;
     this.sortBy = 'date_and_time';
     this.currentPage = 1;
-     this.dateError = false; 
+    this.dateError = false;
   }
 
   onPageChange(event: any) {
@@ -327,7 +349,9 @@ updateQueryParams() {
   }
 
   get totalPages() {
-    return this.filteredOrders.length > 0 ? Math.ceil(this.filteredOrders.length / this.rows) : 1;
+    return this.filteredOrders.length > 0
+      ? Math.ceil(this.filteredOrders.length / this.rows)
+      : 1;
   }
   copiedRideId: string | null = null;
 
@@ -345,21 +369,25 @@ updateQueryParams() {
     if (!trip.end_datetime) {
       return 'יום';
     }
-    
+
     const startDate = new Date(trip.date_and_time);
     const endDate = new Date(trip.end_datetime);
-    
+
     const startDay = startDate.getDate();
     const endDay = endDate.getDate();
     const startMonth = startDate.getMonth();
     const endMonth = endDate.getMonth();
     const startYear = startDate.getFullYear();
     const endYear = endDate.getFullYear();
-    
-    if (startDay !== endDay || startMonth !== endMonth || startYear !== endYear) {
+
+    if (
+      startDay !== endDay ||
+      startMonth !== endMonth ||
+      startYear !== endYear
+    ) {
       return 'יום+';
     }
-    
+
     return 'יום';
   }
 }
