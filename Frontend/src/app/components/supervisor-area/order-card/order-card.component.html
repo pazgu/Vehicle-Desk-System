@@ -42,6 +42,10 @@
         <div class="info-label">תאריך סיום:</div>
         <div class="info-value">{{ trip.endDateTime | date:'dd/MM/yyyy HH:mm' }}</div>
       </div>
+      <div *ngIf="trip?.extended_ride_reason != null" class="info-row">
+        <span class="info-label">סיבת הנסיעה:</span>
+        <span class="info-value">{{ trip?.extended_ride_reason }}</span>
+      </div>
 
       <div class="info-row">
         <div class="info-label">נקודת התחלה:</div>
@@ -69,9 +73,9 @@
         <div class="info-value-distance">{{ ceil(trip.actualDistanceKm) | number:'1.0-3' }} ק"מ</div>
       </div>
 
-      <div class="info-row" *ngIf="trip.fourByFourReason">
-        <div class="info-label">סיבת 4x4:</div>
-        <div class="info-value">{{ trip.fourByFourReason }}</div>
+      <div *ngIf="trip?.four_by_four_reason" class="info-row">
+        <span class="info-label">סיבת שימוש ברכב {{ trip?.vehicleType }}:</span>
+        <span class="info-value">{{ trip?.four_by_four_reason }}</span>
       </div>
 
 
