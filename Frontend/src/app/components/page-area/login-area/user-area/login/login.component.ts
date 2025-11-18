@@ -1,17 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../../../../services/auth.service';
-import { environment } from '../../../../../../environments/environment';
 import { ToastService } from '../../../../../services/toast.service';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
+import { LoginService } from '../../../../../services/login.service';
 
 @Component({
   selector: 'app-login',
@@ -28,7 +27,7 @@ export class LoginComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private http: HttpClient,
+    private loginService: LoginService,
     private router: Router,
     private authService: AuthService,
     private toastService: ToastService
@@ -68,27 +67,23 @@ onLogin(): void {
   this.formSubmitted = true;
   this.errorMessage = null;
 
-  // ✅ Trigger form validation first
   this.loginForm.markAllAsTouched();
 
-  // ✅ Show toast if form is invalid
   if (this.loginForm.invalid) {
     this.toastService.show('יש למלא את כל השדות כנדרש', 'error');
     return;
   }
 
   const loginData = this.loginForm.value;
-  const loginUrl = environment.loginUrl;
-  this.http.post<any>(loginUrl, loginData).subscribe({
+  this.loginService.login(loginData).subscribe({
     next: (response) => {
  const token = response.access_token;
 localStorage.setItem('access_token', token);
 
-// Decode token payload
 const tokenParts = token.split('.');
 if (tokenParts.length === 3) {
   const payload = JSON.parse(atob(tokenParts[1]));
-  localStorage.setItem('user_id', payload.user_id); //JOIN ROOM 
+  localStorage.setItem('user_id', payload.user_id);
   localStorage.setItem('employee_id', payload.sub);
   localStorage.setItem('username', payload.username);
   localStorage.setItem('first_name', payload.first_name);
@@ -96,7 +91,6 @@ if (tokenParts.length === 3) {
   localStorage.setItem('role', payload.role);
   localStorage.setItem('department_id', payload.department_id);
 
-  // Update AuthService state
   this.authService.setFullName(payload.first_name, payload.last_name);
   this.authService.setLoginState(true);
   this.authService.setRole(payload.role);
