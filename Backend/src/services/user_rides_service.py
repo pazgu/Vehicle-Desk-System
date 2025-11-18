@@ -150,6 +150,8 @@ def get_ride_by_id(db: Session, ride_id: UUID) -> RideSchema:
         Ride.submitted_at,
         Ride.user_id,
         Ride.extra_stops,
+        Ride.extended_ride_reason,
+        Ride.four_by_four_reason,
         Vehicle.fuel_type.label("vehicle"),
         Vehicle.type.label("vehicle_type"),
         Vehicle.vehicle_model.label("vehicle_model"),

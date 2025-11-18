@@ -1,8 +1,7 @@
 
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { environment } from '../../../../environments/environment';
+import { VehicleTimelineService } from '../../../services/vehicle-timeline';
 import { CommonModule, Location } from '@angular/common';
 
 interface RenderableRide {
@@ -49,10 +48,10 @@ export class VehicleTimelineComponent implements OnInit, OnDestroy {
   hoverCardVisible: boolean = false;
   hoveredRide: RenderableRide | null = null;
   hoverCardPosition: { x: number; y: number } = { x: 0, y: 0 };
-  hoverCardSide: 'right' | 'left' = 'right'; // ← new: used to render arrow/direction
+  hoverCardSide: 'right' | 'left' = 'right';
   private currentHoveredElement: HTMLElement | null = null;
 
-  // store stable bound handlers so we can remove them later
+  
   private boundOnScroll = (ev?: Event) => {
     if (this.hoverCardVisible) {
       this.hoverCardVisible = false;
@@ -97,7 +96,7 @@ export class VehicleTimelineComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private http: HttpClient,
+    private vehicleTimelineService: VehicleTimelineService,
     private location: Location
   ) {
     this.currentWeekStart = new Date();
@@ -145,18 +144,16 @@ export class VehicleTimelineComponent implements OnInit, OnDestroy {
       this.loadVehicleTimeline(this.currentWeekStart);
     }
 
-    // attach listeners once
+    
     window.addEventListener('scroll', this.boundOnScroll, true);
     document.addEventListener('mousemove', this.boundOnDocumentMouseMove);
   }
 
   ngOnDestroy(): void {
-    // remove listeners to avoid leaks
     window.removeEventListener('scroll', this.boundOnScroll, true);
     document.removeEventListener('mousemove', this.boundOnDocumentMouseMove);
   }
 
-  // helper: get calendar container bounds (in viewport coords)
   private getCalendarContainerRect(): DOMRect | null {
     const el = document.querySelector(
       '.timeline-page-wrapper'
@@ -173,13 +170,12 @@ onRideHover(event: MouseEvent, ride: RenderableRide): void {
 
     const rect = target.getBoundingClientRect();
 
-    // Card dimensions
     const cardWidth = 320;
     const cardHeight = 280;
-    const gap = 8; // Small gap between block and card
-    const minTopPadding = 80; // Minimum distance from top of viewport (to avoid navbar)
+    const gap = 8; 
+    const minTopPadding = 80; 
 
-    // Get timeline-body container bounds
+    
     const timelineBody = document.querySelector('.timeline-body') as HTMLElement | null;
     const containerRect = timelineBody ? timelineBody.getBoundingClientRect() : null;
     
@@ -187,58 +183,47 @@ onRideHover(event: MouseEvent, ride: RenderableRide): void {
       return;
     }
 
-    // Container bounds
+    
     const cLeft = containerRect.left;
     const cRight = containerRect.right;
     const cTop = containerRect.top;
     const cBottom = containerRect.bottom;
 
-    // Viewport bounds with navbar protection
     const viewportTop = minTopPadding;
     const viewportBottom = window.innerHeight;
     const viewportLeft = 0;
     const viewportRight = window.innerWidth;
 
-    // Use the most restrictive bounds (container AND viewport)
-    // For top: use the MAXIMUM to ensure card never goes above navbar
     const effectiveTop = Math.max(cTop, viewportTop);
     const effectiveBottom = Math.min(cBottom, viewportBottom);
     const effectiveLeft = Math.max(cLeft, viewportLeft);
     const effectiveRight = Math.min(cRight, viewportRight);
 
-    // HORIZONTAL: Try right first, then left
     let x: number;
     const rightPosition = rect.right + gap;
     const leftPosition = rect.left - cardWidth - gap;
 
     if (rightPosition + cardWidth <= effectiveRight) {
-      // Fits on the right
       this.hoverCardSide = 'right';
       x = rightPosition;
     } else if (leftPosition >= effectiveLeft) {
-      // Fits on the left
       this.hoverCardSide = 'left';
       x = leftPosition;
     } else {
-      // Doesn't fit on either side, clamp to effective bounds
       this.hoverCardSide = 'right';
       x = Math.max(effectiveLeft, Math.min(rightPosition, effectiveRight - cardWidth));
     }
 
-    // VERTICAL: Start by aligning with block top
     let y = rect.top;
     
-    // CRITICAL: Ensure card NEVER goes above the effective top (navbar + padding)
     if (y < effectiveTop) {
       y = effectiveTop;
     }
     
-    // If card would overflow bottom, move it up BUT never above effectiveTop
     if (y + cardHeight > effectiveBottom) {
       y = Math.max(effectiveTop, effectiveBottom - cardHeight);
     }
     
-    // Final safety check: absolutely ensure we're not above the navbar
     y = Math.max(y, effectiveTop);
 
     this.hoverCardPosition.x = Math.round(x);
@@ -255,7 +240,6 @@ onRideHover(event: MouseEvent, ride: RenderableRide): void {
     console.log('🖱️ Clicked ride:', ride);
   }
 
-  // --- API Calls ---
   loadVehicleTimeline(weekStart: Date): void {
     if (!this.vehicleId) {
       console.warn('⚠️ No vehicleId, skipping API call');
@@ -267,13 +251,9 @@ onRideHover(event: MouseEvent, ride: RenderableRide): void {
 
     console.log(`📡 Fetching timeline: ${from} → ${to}`);
 
-    const params = new HttpParams().set('from', from).set('to', to);
-
-    this.http
-      .get<any[]>(`${environment.apiUrl}/vehicles/${this.vehicleId}/timeline`, {
-        params,
-      })
-      .subscribe({
+    this.vehicleTimelineService
+  .getVehicleTimeline(this.vehicleId, from, to)
+  .subscribe({
         next: (data) => {
           console.log('✅ API response:', data);
           this.vehicleTimelineData = data;
@@ -349,7 +329,6 @@ onRideHover(event: MouseEvent, ride: RenderableRide): void {
     console.log('✅ Finished processing rides:', this.processedRides);
   }
 
-  // --- Date Helpers ---
   private formatDateToYYYYMMDD(date: Date): string {
     const year = date.getFullYear();
     const month = (date.getMonth() + 1).toString().padStart(2, '0');

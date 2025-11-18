@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from ..models.city_model import City
 from ..models.ride_model import Ride
 from ..models.user_model import User
+from ..models.vehicle_model import Vehicle
 from ..schemas.order_card_item import OrderCardItem
 from ..schemas.user_response_schema import UserUpdate
 
@@ -27,6 +28,26 @@ async def patch_order_in_db(order_id: UUID, patch_data: OrderCardItem, db: Sessi
     for key, value in data.items():
         setattr(order, key, value)
 
+    start = order.start_datetime
+    end = order.end_datetime
+    if start and end:
+        ride_days = (end - start).days
+        if ride_days >= 4:
+            if not getattr(order, "extended_ride_reason", None):
+                raise HTTPException(
+                    status_code=400,
+                    detail="יש לספק סיבה לנסיעה שעוברת 4 ימים"
+                )
+    vehicle = None
+    if order.vehicle_id:
+        vehicle = db.query(Vehicle).filter(Vehicle.id == order.vehicle_id).first()
+
+    if vehicle and vehicle.type and vehicle.type.upper() == "4X4":
+        if not getattr(order, "four_by_four_reason", None):
+            raise HTTPException(
+                status_code=400,
+                detail="יש למלא סיבה לבחירת רכב 4X4"
+            )
     db.commit()
     db.refresh(order)
 

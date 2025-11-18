@@ -3,8 +3,9 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { UserService } from '../../../../services/user_service';
+import { DepartmentService } from '../../../../services/department_service';
 import { ToastService } from '../../../../services/toast.service';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { RedirectByRoleComponent } from '../../../../services/redirect-by-role';
 import { Router } from '@angular/router';
@@ -40,8 +41,8 @@ export class UserDataEditComponent implements OnInit {
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private userService: UserService,
+    private departmentService: DepartmentService,
     private toastService: ToastService,
-    private http: HttpClient,
     private router: Router,
     private socketService: SocketService,
     private cdr: ChangeDetectorRef
@@ -138,9 +139,9 @@ export class UserDataEditComponent implements OnInit {
   }
 
   fetchDepartments(): void {
-    this.http.get<any[]>('http://localhost:8000/api/departments').subscribe({
+    this.departmentService.getDepartments().subscribe({
       next: (data) => {
-        this.departments = data.filter(dept => 
+        this.departments = data.filter((dept: any) => 
           dept.name.toLowerCase() !== 'unassigned'
         );
       },

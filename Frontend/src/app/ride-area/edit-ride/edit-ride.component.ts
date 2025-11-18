@@ -9,7 +9,7 @@ import { VehicleService } from '../../services/vehicle.service';
 import { SocketService } from '../../services/socket.service';
 import { Subscription } from 'rxjs';
 import { CityService } from '../../services/city.service';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators'; // ⭐️ ADDED: Operators for better performance
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 interface City { id: string; name: string; }
 
@@ -182,6 +182,18 @@ export class EditRideComponent implements OnInit {
     date.setDate(date.getDate() + daysAhead);
     return date.toISOString().split('T')[0];
   }
+  get isExtendedRequest(): boolean {
+    const startDate = this.rideForm.get('ride_date')?.value;
+    const endDate = this.rideForm.get('ride_date_night_end')?.value;
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      const diffInMs = end.getTime() - start.getTime();
+      const diffInDays = diffInMs / (1000 * 60 * 60 * 24) + 1;
+      return diffInDays >= 4;
+    }
+    return false;
+  }
 
   ngOnInit(): void {
     this.fetchCities();
@@ -204,6 +216,7 @@ export class EditRideComponent implements OnInit {
       this.updateMinEndDate();
       this.updateRideTypeNote();
       this.filterAvailableVehicles();
+      this.updateExtendedRideReasonValidation();
     });
 
     this.rideForm.get('ride_date_night_end')?.valueChanges.subscribe((endDate) => {
@@ -217,6 +230,7 @@ export class EditRideComponent implements OnInit {
       }
       this.updateRideTypeNote();
       this.updateFilteredEndTimes();
+      this.updateExtendedRideReasonValidation();
     });
 
     this.rideForm.get('end_time')?.valueChanges.subscribe(endTime => {
@@ -228,6 +242,18 @@ export class EditRideComponent implements OnInit {
     this.setupDistanceCalculationSubscriptions();
 
     this.rideForm.get('vehicle_type')?.valueChanges.subscribe(value => {
+      const fourByFourControl = this.rideForm.get('four_by_four_reason');
+      if (value && (value.toLowerCase().includes('4x4') || 
+                    value.toLowerCase().includes('jeep') || 
+                    value.toLowerCase().includes('van'))) {
+        fourByFourControl?.setValidators([Validators.required]);
+      } else {
+        fourByFourControl?.clearValidators();
+        fourByFourControl?.setValue('');
+      }
+      fourByFourControl?.updateValueAndValidity();
+      this.filterAvailableVehicles();
+      this.rideForm.get('car')?.setValue('');
     });
     this.vehicleService.getAllVehicles().subscribe({
       next: (vehicles) => {
@@ -255,11 +281,13 @@ export class EditRideComponent implements OnInit {
       estimated_distance_km: [null, [Validators.required, Validators.min(1)]],
       ride_type: ['', Validators.required],
       vehicle_type: ['', Validators.required],
-      car: [''],
+      car: ['', Validators.required],
       start_location: ['', Validators.required],
       stop: ['', Validators.required],
       destination: ['', Validators.required],
-      extraStops: this.fb.array([])
+      extraStops: this.fb.array([]),
+      extended_ride_reason: [''],
+      four_by_four_reason: ['']
     });
 
     this.rideForm.get('vehicle_type')?.valueChanges.subscribe(value => {
@@ -290,6 +318,17 @@ export class EditRideComponent implements OnInit {
 
     this.availableCars = filteredCars;
   }
+  private updateExtendedRideReasonValidation(): void {
+    const extendedReasonControl = this.rideForm.get('extended_ride_reason');
+    
+    if (this.isExtendedRequest) {
+      extendedReasonControl?.setValidators([Validators.required]);
+    } else {
+      extendedReasonControl?.clearValidators();
+      extendedReasonControl?.setValue('');
+    }
+    extendedReasonControl?.updateValueAndValidity();
+  }
 
   loadRide(): void {
     const user_id = localStorage.getItem('employee_id');
@@ -312,14 +351,12 @@ export class EditRideComponent implements OnInit {
         const isApproved = ride.status && ride.status.toLowerCase() === 'approved';
         
         if (!isSupervisor) {
-          // Regular users can only edit pending orders
           if (!isPending) {
             this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
             this.router.navigate(['/home']);
             return;
           }
         } else {
-          // Supervisors can edit pending or approved orders, but check time limit for approved
           if (!isPending && !isApproved) {
             this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
             this.router.navigate(['/home']);
@@ -327,7 +364,6 @@ export class EditRideComponent implements OnInit {
           }
           
           if (isApproved) {
-            // Check if it's within 2 hours of ride time
             const rideDateTime = new Date(ride.start_datetime);
             const now = new Date();
             const timeDifferenceHours = (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
@@ -375,7 +411,9 @@ export class EditRideComponent implements OnInit {
           vehicle_type: ride.vehicle_type,
           car: selectedVehicle.id,
           start_location: ride.start_location ?? 'מיקום התחלה לא ידוע',
-          destination: ride.destination ?? 'יעד לא ידוע'
+          destination: ride.destination ?? 'יעד לא ידוע',
+          extended_ride_reason: ride.extended_ride_reason || '',
+          four_by_four_reason: ride.four_by_four_reason || ''
         });
 
         if (ride.stop) {
@@ -460,18 +498,14 @@ export class EditRideComponent implements OnInit {
     });
   }
 
-  // ⭐️ IMPROVED: Single, consistent normalization function for all city inputs
   private getCityId(value: any): string | null {
     if (!value) return null;
-    // If it's already a UUID, return it
     if (typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value.trim())) {
       return value;
     }
-    // If it's an object with an id, return the id
     if (typeof value === 'object' && value.id) {
       return value.id;
     }
-    // If it's a string name, find the corresponding ID
     const city = this.cities.find(c => c.name === value);
     return city?.id || null;
   }
@@ -497,7 +531,6 @@ export class EditRideComponent implements OnInit {
   }
 
   private setupDistanceCalculationSubscriptions(): void {
-    // ⭐️ FIXED: Use debounceTime to avoid multiple rapid API calls
     this.rideForm.get('stop')?.valueChanges.pipe(debounceTime(300), distinctUntilChanged()).subscribe(() => {
       this.calculateRouteDistance();
     });
@@ -511,7 +544,6 @@ export class EditRideComponent implements OnInit {
     });
   }
 
-  // ⭐️ FIXED: Call the consistent normalization function before fetching
   private calculateRouteDistance(): void {
     const startRaw = this.rideForm.get('start_location')?.value;
     const stopRaw = this.rideForm.get('stop')?.value;
@@ -523,10 +555,8 @@ export class EditRideComponent implements OnInit {
       .map(ctrl => this.getCityId(ctrl.get('stop')?.value))
       .filter((id): id is string => !!id);
 
-    // ✅ FIXED: Add the destination to the route calculation as the final stop
     const destinationId = this.getCityId(this.rideForm.get('destination')?.value);
 
-    // ✅ NEW: Consolidate all stops into one array
     const allStops = [...extraStopIds, stopId, destinationId].filter((id): id is string => !!id);
 
     if (!startId || allStops.length === 0) {
@@ -564,15 +594,19 @@ export class EditRideComponent implements OnInit {
   }
 
   submit(): void {
-    const requiredFields = ['ride_type', 'ride_date', 'start_time', 'end_time', 'estimated_distance_km', 'vehicle_type', 'start_location', 'stop', 'destination'];
-    const missingFields = requiredFields.filter(field => {
-      const value = this.rideForm.get(field)?.value;
-      return !value || (typeof value === 'string' && value.trim() === '');
-    });
-
-    if (missingFields.length > 0) {
+    if (this.rideForm.invalid) {
       this.rideForm.markAllAsTouched();
-      this.toastService.show('נא למלא את כל השדות הנדרשים', 'error');
+      this.toastService.show('יש להשלים את כל השדות החובה', 'error');
+      return;
+    }
+
+    const carControl = this.rideForm.get('car');
+    const vehicleType = this.rideForm.get('vehicle_type')?.value;
+    
+    if (vehicleType && (!carControl?.value || carControl.value.trim() === '')) {
+      carControl?.setErrors({ required: true });
+      carControl?.markAsTouched();
+      this.toastService.show('יש לבחור רכב מהרשימה', 'error');
       return;
     }
 
@@ -615,7 +649,6 @@ export class EditRideComponent implements OnInit {
     const start_datetime = `${rideDate}T${startTime}`;
     const end_datetime = `${nightEndDate || rideDate}T${endTime}`;
 
-    // ⭐️ FIXED: Use the consistent normalization function for all location fields
     const startUUID = this.getCityId(this.rideForm.get('start_location')?.value);
     const stopUUID = this.getCityId(this.rideForm.get('stop')?.value);
     const extraStopsUUIDs = this.extraStops.controls
@@ -625,6 +658,27 @@ export class EditRideComponent implements OnInit {
     if (!startUUID || !stopUUID) {
       this.toastService.show('יש לבחור נקודת התחלה ונקודת עצירה תקפות', 'error');
       return;
+    }
+    const extendedReasonControl = this.rideForm.get('extended_ride_reason');
+      if (this.isExtendedRequest && (!extendedReasonControl?.value || extendedReasonControl.value.trim() === '')) {
+        extendedReasonControl?.setErrors({ required: true });
+        extendedReasonControl?.markAsTouched();
+        this.toastService.show('נא לפרט את הסיבה לנסיעה ממושכת', 'error');
+        return;
+      }
+    const fourByFourReasonControl = this.rideForm.get('four_by_four_reason');
+    if (vehicleType && (vehicleType.toLowerCase().includes('4x4') || 
+                        vehicleType.toLowerCase().includes('jeep') || 
+                        vehicleType.toLowerCase().includes('van')) &&
+        (!fourByFourReasonControl?.value || fourByFourReasonControl.value.trim() === '')) {
+      fourByFourReasonControl?.setErrors({ required: true });
+      fourByFourReasonControl?.markAsTouched();
+      this.toastService.show('נא למלא את הסיבה לשימוש ברכב 4X4 / Jeep / Van', 'error');
+      return;
+    } else {
+      if (fourByFourReasonControl?.hasError('required')) {
+        fourByFourReasonControl.setErrors(null);
+      }
     }
 
     const payload = {
@@ -638,26 +692,31 @@ export class EditRideComponent implements OnInit {
       start_location: startUUID,
       stop: stopUUID,
       extra_stops: extraStopsUUIDs,
-      destination: this.getCityId(this.rideForm.get('destination')?.value), // ⭐️ FIXED: Normalize destination
+      destination: this.getCityId(this.rideForm.get('destination')?.value),
       status: this.status,
       submitted_at: this.submittedAt,
       is_day_ride: this.isDayRide,
-      ride_note: this.rideTypeNote
+      ride_note: this.rideTypeNote,
+      extended_ride_reason: this.rideForm.get('extended_ride_reason')?.value || null,
+      is_extended_request: this.isExtendedRequest,
+      four_by_four_reason: this.rideForm.get('four_by_four_reason')?.value || null
     };
 
     this.rideService.updateRide(this.rideId, payload).subscribe({
       next: () => {
         this.toastService.show('ההזמנה עודכנה בהצלחה ✅', 'success');
-        this.router.navigate(['/home']);
+        this.router.navigate(['/all-rides']);
       },
-      error: () => {
-        this.toastService.show('שגיאה בעדכון ההזמנה', 'error');
+      error: (err) => {
+        console.error('Update error:', err);
+        const errorMessage = err.error?.detail || err.error?.message || 'שגיאה לא ידועה';
+        this.toastService.show(`שגיאה בעדכון ההזמנה: ${errorMessage}`, 'error');
       }
     });
   }
 
   close(): void {
-    this.router.navigate(['/home']);
+    this.router.navigate(['/all-rides']);
   }
 
   getFieldError(fieldName: string): string {
