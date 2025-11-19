@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnChanges } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
 })
 export class ExceededWarningBannerComponent implements OnInit, OnChanges {
   @Input() allOrders: any[] = [];
+  @Output() bannerClicked = new EventEmitter<void>();
 
   warningVisible = false;
   exceeded = false;
@@ -30,12 +31,20 @@ export class ExceededWarningBannerComponent implements OnInit, OnChanges {
     this.checkExceeded();
   }
 
-  hideWarning(): void {
+  hideWarning(event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
     this.warningVisible = false;
   }
 
   showWarning(): void {
     this.warningVisible = true;
+    this.bannerClicked.emit();
+  }
+
+  onBannerClick(): void {
+    this.bannerClicked.emit();
   }
 
   private checkExceeded(): void {

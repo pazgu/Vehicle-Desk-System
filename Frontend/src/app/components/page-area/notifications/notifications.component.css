@@ -2,6 +2,8 @@
   display: block;
   min-height: 100vh;
   background-color: white;
+    contain: layout paint;
+
 }
 
 .notification-page {
@@ -62,6 +64,9 @@
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  border: 1.5px solid transparent;
+
+
 }
 
 .notification::before {
@@ -80,23 +85,10 @@
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
 }
 
-.notification:hover::before {
-  opacity: 1;
-}
-
-.notification:active {
-  transform: translateY(0);
-}
-
 .notification.neutral {
   background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
   border: 1.5px solid rgba(0, 0, 0, 0.12);
   color: #4a4a4a;
-}
-
-.notification.neutral:hover {
-  border-color: rgba(0, 0, 0, 0.18);
-  background: linear-gradient(135deg, #f8f8f8 0%, #f0f0f0 100%);
 }
 
 .time {
@@ -253,21 +245,3 @@ body {
   padding: 1rem;
 }
 
-.wrapper::-webkit-scrollbar {
-  width: 8px;
-}
-
-.wrapper::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 4px;
-}
-
-.wrapper::-webkit-scrollbar-thumb {
-  background: rgba(148, 34, 34, 0.3);
-  border-radius: 4px;
-  transition: background 0.2s ease;
-}
-
-.wrapper::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 34, 34, 0.5);
-}
