@@ -20,6 +20,7 @@
   margin-bottom: 2rem;
   position: relative;
 }
+
 .page-header h1 {
   font-size: 2.5rem;
   font-weight: 700;
@@ -29,6 +30,7 @@
   border-bottom: 3px solid #942222;
   display: inline-block;
 }
+
 .back-button {
   display: flex;
   align-items: center;
@@ -57,143 +59,6 @@
   font-size: 1.1rem;
 }
 
-:host ::ng-deep .p-datatable {
-  width: 90%;
-  margin: 0 auto;
-  border-radius: 10px;
-  border: 5px solid #942222;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  text-align: right;
-  font-size: 14px;
-  direction: rtl;
-}
-
-:host ::ng-deep .p-datatable .p-datatable-thead > tr > th {
-  background-color: #942222;
-  color: white;
-  padding: 10px;
-  font-weight: bold;
-  text-align: right;
-}
-
-:host ::ng-deep .p-datatable .p-datatable-tbody > tr > td {
-  padding: 10px;
-  text-align: right;
-  border-bottom: 1px solid #e9ecef;
-}
-
-:host ::ng-deep .p-datatable .p-datatable-tbody > tr:hover {
-  background-color: #f0f0f0;
-  color: #942222;
-  cursor: pointer;
-}
-
-:host ::ng-deep tr.row-approved {
-  background-color: #dcf1e1;
-  color: #155724;
-}
-
-:host ::ng-deep .row-pending {
-  background-color: #fbf3da;
-  color: #856404;
-}
-
-:host ::ng-deep .row-rejected {
-  background-color: #f8e2e2;
-  color: #721c24;
-}
-
-:host ::ng-deep .row-cancelled {
-  background-color: #f0f0f0;
-  color: #6c757d;
-}
-
-:host ::ng-deep .row-completed {
-  background-color: #c9e6f9;
-  color: #171056;
-}
-
-:host ::ng-deep .row-cancelled-no-show {
-  background-color: #f6c0c084;
-  color: #02010a84;
-}
-
-.status-text {
-  padding: 0.3rem 0.6rem;
-  border-radius: 0.5rem;
-  color: white;
-  font-weight: bold;
-  text-align: center;
-  display: inline-block;
-}
-
-.pagination-controls {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 20px;
-  margin-top: 30px;
-}
-
-.pagination-controls button {
-  background: #f0f0f0;
-  border: 1px solid #ccc;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background-color 0.2s, transform 0.2s;
-  color: #666;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-}
-
-.pagination-controls button:hover:not(:disabled) {
-  background-color: #e6e6e6;
-  transform: translateY(-2px);
-}
-
-.pagination-controls button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.pagination-controls button .icon {
-  width: 24px;
-  height: 24px;
-}
-
-.pagination-controls button svg {
-  width: 100%;
-  height: 100%;
-}
-
-.pagination-controls span {
-  font-size: 1.1rem;
-  color: #555;
-  font-weight: 500;
-}
-
-@media screen and (max-width: 640px) {
-  :host ::ng-deep .p-paginator {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  :host ::ng-deep .p-paginator .p-dropdown {
-    margin-top: 8px;
-  }
-
-  :host ::ng-deep .p-paginator .p-paginator-current {
-    width: 100%;
-    text-align: center;
-    margin-bottom: 8px;
-  }
-}
-
-/*filters*/
 .filter-controls-bar {
   display: flex;
   align-items: center;
@@ -247,6 +112,7 @@
   margin-bottom: 1.5rem;
   animation: slideDown 0.2s ease;
 }
+
 .filter-group {
   display: flex;
   flex-direction: column;
@@ -258,6 +124,7 @@
   color: #6b7280;
   font-weight: 500;
 }
+
 .filter-select {
   padding: 0.65rem 0.85rem;
   border-radius: 8px;
@@ -279,6 +146,7 @@
   border-color: #942222;
   background: white;
 }
+
 .date-input-group {
   display: flex;
   flex-direction: column;
@@ -318,46 +186,6 @@
   outline: none;
   border-color: #942222;
   background: white;
-}
-
-:host ::ng-deep .p-paginator .p-paginator-disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.relative-cell {
-  position: relative;
-}
-
-.copy-button {
-  position: relative;
-  border: none;
-  background: none;
-  padding: 0;
-  cursor: pointer;
-}
-
-.copy-icon {
-  width: 1rem;
-  height: 1rem;
-}
-
-.copied-message {
-  position: absolute;
-  top: -1.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: black;
-  color: white;
-  font-size: 0.75rem;
-  padding: 2px 6px;
-  border-radius: 4px;
-  white-space: nowrap;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 .status-indicators {
@@ -403,35 +231,74 @@ button:disabled {
   background-color: #a4d1ae;
   border: #329c4b 1.6px solid;
 }
+
 .status-indicator.pending {
   background-color: #f5e2a8;
   border: #ab8c31 1.6px solid;
 }
+
 .status-indicator.rejected {
   background-color: #f1b5b5;
   border: #c16a73 1.6px solid;
 }
+
 .status-indicator.cancelled {
   background-color: #f6c0c084;
   border: #c87676 1.6px solid;
 }
+
 .status-indicator.completed {
   background-color: #b7dbf3;
   border: #17a2b8 1.6px solid;
 }
-.in-progress-row {
-  background: linear-gradient(
-    45deg,
-    #27ae60 25%,
-    #2ecc71 25%,
-    #2ecc71 50%,
-    #27ae60 50%,
-    #27ae60 75%,
-    #2ecc71 75%
-  );
-  background-size: 20px 20px;
-  animation: moveStripes 1s linear infinite;
+
+.orders-header-row {
+  background-color: #811313;
+  color: white;
+  align-items: center;
+  display: flex;
+  font-weight: bold;
+  padding: 0.75rem;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  max-width: 90%;
+  margin: 0 auto;
 }
+
+.orders-data-row {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+  padding: 0.75rem;
+  transition: background-color 0.2s ease, border 0.5s ease-in-out;
+  position: relative;
+  max-width: 90%;
+  margin: 0 auto;
+}
+
+.orders-data-row:hover {
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
+
+.cell {
+  flex: 1;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-cell {
+  width: 70px;
+  min-width: 70px;
+  text-align: center;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .duration-indicator-inline {
   background-color: #942222;
   color: white;
@@ -443,4 +310,142 @@ button:disabled {
   min-width: 30px;
   text-align: center;
   margin: 0 auto;
+}
+
+.copy-button {
+  position: relative;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.copy-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.copied-message {
+  position: absolute;
+  top: -1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: black;
+  color: white;
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.ride-id-text {
+  margin-right: 4px;
+}
+
+.row-approved {
+  background-color: #dcf1e1;
+  color: #155724;
+}
+
+.row-pending {
+  background-color: #fbf3da;
+  color: #856404;
+}
+
+.row-rejected {
+  background-color: #f8e2e2;
+  color: #721c24;
+}
+
+.row-cancelled {
+  background-color: #f0f0f0;
+  color: #6c757d;
+}
+
+.row-completed {
+  background-color: #c9e6f9;
+  color: #171056;
+}
+
+.row-cancelled-no-show {
+  background-color: #f6c0c084;
+  color: #02010a84;
+}
+
+.no-orders-message {
+  background-color: #942222;
+  color: white;
+  font-family: "Alef", sans-serif;
+  font-size: 22px;
+  font-weight: bold;
+  text-align: center;
+  padding: 28px 30px;
+  border-radius: 12px;
+  margin: 20px auto 10px auto;
+  max-width: 650px;
+}
+
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-top: 30px;
+}
+
+.pagination-controls button {
+  background: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+  color: #666;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.pagination-controls button:hover:not(:disabled) {
+  background-color: #e6e6e6;
+  transform: translateY(-2px);
+}
+
+.pagination-controls button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-controls button .icon {
+  width: 24px;
+  height: 24px;
+}
+
+.pagination-controls button svg {
+  width: 100%;
+  height: 100%;
+}
+
+.pagination-controls span {
+  font-size: 1.1rem;
+  color: #555;
+  font-weight: 500;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media screen and (max-width: 640px) {
+  .pagination-controls {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
 }

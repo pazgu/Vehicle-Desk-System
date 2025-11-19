@@ -18,8 +18,8 @@
           [(ngModel)]="sortBy"
           (change)="updateQueryParams()"
         >
-          <option value="submitted_at">נסיעות נוספו לאחרונה</option>
-          <option value="date_and_time">תאריך תחילת נסיעה</option>
+          <option value="submitted_at">נוסף לאחרונה</option>
+          <option value="date_and_time">תאריך</option>
           <option value="status">סטטוס</option>
         </select>
       </div>
@@ -102,65 +102,57 @@
       </div>
     </div>
 
-    <div style="position: relative">
-      <p-table
-        #table
-        [value]="trips"
-        [rows]="rows"
-        [totalRecords]="filteredOrders.length"
-        dir="rtl"
+    <div *ngIf="filteredOrders.length > 0">
+      <div class="orders-header-row">
+        <div class="icon-cell"></div>
+        <div class="cell">מזהה נסיעה</div>
+        <div class="cell">שם עובד</div>
+        <div class="cell">רכב</div>
+        <div class="cell">תאריך</div>
+        <div class="cell">מרחק (ק"מ)</div>
+        <div class="cell">סטטוס</div>
+      </div>
+
+      <div
+        class="orders-data-row"
+        *ngFor="let trip of trips"
+        (click)="onRowSelect(trip)"
+        [ngClass]="getRowClass(trip.status)"
+        style="cursor: pointer"
       >
-        <ng-template pTemplate="header">
-          <tr class="table-header">
-            <th></th>
-            <th>מזהה נסיעה</th>
-            <th>שם עובד</th>
-            <th>רכב</th>
-            <th>תאריך</th>
-            <th>מרחק (ק"מ)</th>
-            <th>סטטוס</th>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-trip let-ri="rowIndex">
-          <tr [ngClass]="getRowClass(trip.status)" (click)="onRowSelect(trip)">
-            <td>
-              <div class="duration-indicator-inline">
-                {{ getDurationIndicator(trip) }}
-              </div>
-            </td>
-            <td [matTooltip]="trip.ride_id">
-              <button
-                class="copy-button"
-                (click)="
-                  copyToClipboard(trip.ride_id); $event.stopPropagation()
-                "
-              >
-                <img class="copy-icon" src="/assets/images/copy.png" />
-                <span
-                  *ngIf="copiedRideId === trip.ride_id"
-                  class="copied-message"
-                  >Copied!</span
-                >
-              </button>
-              <span class="ride-id-text"
-                >{{ trip.ride_id.slice(0, 4) }}...</span
-              >
-            </td>
-            <td>{{ trip.employee_name }}</td>
-            <td>{{ trip.requested_vehicle_model }}</td>
-            <td>{{ trip.date_and_time | date : "dd/MM/yyyy HH:mm" }}</td>
-            <td>{{ trip.distance }}</td>
-            <td [ngClass]="getStatusClass(trip.status)">
-              {{ translateStatus(trip.status) }}
-            </td>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="emptymessage">
-          <tr>
-            <td colspan="7" style="text-align: center">לא נמצאו הזמנות</td>
-          </tr>
-        </ng-template>
-      </p-table>
+        <div class="icon-cell">
+          <div class="duration-indicator-inline">
+            {{ getDurationIndicator(trip) }}
+          </div>
+        </div>
+
+        <div class="cell">
+          <button
+            class="copy-button"
+            (click)="copyToClipboard(trip.ride_id); $event.stopPropagation()"
+          >
+            <img class="copy-icon" src="/assets/images/copy.png" />
+            <span *ngIf="copiedRideId === trip.ride_id" class="copied-message"
+              >Copied!</span
+            >
+          </button>
+          <span class="ride-id-text">{{ trip.ride_id.slice(0, 4) }}...</span>
+        </div>
+
+        <div class="cell">{{ trip.employee_name }}</div>
+        <div class="cell">{{ trip.requested_vehicle_model }}</div>
+        <div class="cell">
+          {{ trip.date_and_time | date : "dd/MM/yyyy HH:mm" }}
+        </div>
+        <div class="cell">{{ trip.distance }}</div>
+        <div class="cell" [ngClass]="getStatusClass(trip.status)">
+          {{ translateStatus(trip.status) }}
+        </div>
+      </div>
+
+      <div *ngIf="trips.length === 0" class="no-orders-message">
+        לא נמצאו הזמנות
+      </div>
     </div>
 
     <div class="pagination-controls">
