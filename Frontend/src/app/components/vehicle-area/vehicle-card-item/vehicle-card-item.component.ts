@@ -83,10 +83,9 @@ currentDate = new Date();
     }
   }
 
-  goBack(): void {
-          this.navigateRouter.navigate([`/vehicle-dashboard`]);
-
-  }
+    goBack(): void {
+        this.location.back();
+    }
 
   loadVehicleUsageData(): void {
    this.vehicleService.getTopUsedVehicles().subscribe({

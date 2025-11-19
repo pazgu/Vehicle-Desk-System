@@ -1,5 +1,7 @@
 <div class="wrapper">
-  <div class="notification-page">
+ <img src="/assets/images/notifIcon.png" *ngIf="pagedNotifications.length > 0" class="icon-img"/> 
+ <div class="notification-page">
+    
     <h2 class="title">הודעות</h2>
     <div *ngIf="pagedNotifications.length === 0" class="no-message">
       לא נמצאו הודעות עבורך
@@ -8,12 +10,7 @@
   class="notification" 
   *ngFor="let note of pagedNotifications" 
   (click)="handleNotificationClick(note)"
-  [ngClass]="[
-     'neutral',
-    note.title === 'Vehicle Lease Expiry' ? 'lease-alert' : '',
-    note.title === 'Inactive Vehicle' ? 'inactive-alert' : '',
-    note.is_extended_request ? 'extended-alert' : ''
-  ]">
+  [ngClass]="'neutral'">
 
       <div class="content">
        <span *ngIf="note.is_extended_request" title="שים לב-נסיעה ארוכה!"></span>        

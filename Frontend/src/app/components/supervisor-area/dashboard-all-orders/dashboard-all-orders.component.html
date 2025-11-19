@@ -1,32 +1,71 @@
-<div class="page-wrapper">
-  <div class="page-container">
-    <div class="orders-wrapper">
-      <h1 style="text-align: right;">כל ההזמנות</h1>
-      <br>
+<div class="page-container">
+  <div class="orders-wrapper">
+    <div class="page-header">
+      <h1>הזמנות המחלקה</h1>
 
-      <!-- Sort + Filter Toggle -->
-      <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; direction: rtl;">
-        <div>
+      <button class="back-button" (click)="goBack()">
+        חזור
+        <i class="pi pi-arrow-left"></i>
+      </button>
+    </div>
+
+    <div class="filter-controls-bar">
+      <div class="filter-left-section">
+        <div class="sort-control">
           <label for="sort">מיין לפי: </label>
-          <select id="sort" [(ngModel)]="sortBy" (change)="updateQueryParams()">
-              <option value="submitted_at">נסיעות נוספו לאחרונה</option>
-              <option value="date_and_time">תאריך תחילת נסיעה</option>
-              <option value="status">סטטוס</option>
-            </select>
+          <select
+            id="sort"
+            class="filter-select"
+            [(ngModel)]="sortBy"
+            (change)="updateQueryParams()"
+          >
+            <option value="submitted_at">נוסף לאחרונה</option>
+            <option value="date_and_time">תאריך</option>
+            <option value="status">סטטוס</option>
+          </select>
         </div>
 
-        <button class="filter" (click)="showFilters = !showFilters">
-          {{ showFilters ? 'הסתר סינון' : 'הצג סינון' }}
+        <button class="filter-btn" (click)="showFilters = !showFilters">
+          <i class="pi pi-filter"></i>
+          <span>{{ showFilters ? "הסתר סינון" : "הצג סינון" }}</span>
         </button>
       </div>
 
-      <!-- Filters Section -->
-      <div *ngIf="showFilters"
-        style="margin-bottom: 1.5rem; background: #f7f7f7; padding: 1rem; border-radius: 8px; direction: rtl;">
-        <div style="margin-bottom: 1rem;">
-          <label for="statusFilter">סטטוס:</label>
+      <div class="status-indicators-inline">
+        <div class="status-item">
+          <span class="status-indicator approved"></span>
+          <span>מאושר</span>
+        </div>
+        <div class="status-item">
+          <span class="status-indicator pending"></span>
+          <span>בהמתנה</span>
+        </div>
+        <div class="status-item">
+          <span class="status-indicator rejected"></span>
+          <span>נדחה</span>
+        </div>
+        <div class="status-item">
+          <span class="status-indicator cancelled"></span>
+          <span>בוטל</span>
+        </div>
+        <div class="status-item">
+          <span class="status-indicator completed"></span>
+          <span>בוצע</span>
+        </div>
+      </div>
+    </div>
 
-          <select id="statusFilter" [(ngModel)]="statusFilter" (ngModelChange)="onFilterChange()" (change)="updateQueryParams()">
+    <div *ngIf="showFilters" class="filters-panel">
+      <div class="filters-row">
+        <div class="filter-group">
+          <label for="statusFilter">סטטוס:</label>
+          <select
+            id="statusFilter"
+            class="filter-select"
+            [(ngModel)]="statusFilter"
+            (ngModelChange)="onFilterChange()"
+            (change)="updateQueryParams()"
+          >
             <option value="">הצג הכל</option>
             <option value="מאושר">מאושר</option>
             <option value="בהמתנה">בהמתנה</option>
@@ -35,128 +74,130 @@
             <option value="בוצע">בוצע</option>
           </select>
         </div>
-       
 
-        <div style="display: flex; gap: 1rem;">
-          <div>
-            <label for="startDate">מתאריך:</label>
-<input
-  id="startDate"
-  type="date"
-  [(ngModel)]="startDate"
-  (ngModelChange)="validateDates()"
-  (change)="updateQueryParams()"
-  [max]="endDate || null"
-/>
-          </div>
-          <div>
-            <label for="endDate">עד תאריך:</label>
-<input
-  id="endDate"
-  type="date"
-  [(ngModel)]="endDate"
-  (ngModelChange)="validateDates()"
-  (change)="updateQueryParams()"
-  [min]="startDate || null"
-/>
-          </div>
+        <div class="date-input-group">
+          <label for="startDate">מתאריך:</label>
+          <input
+            id="startDate"
+            type="date"
+            class="filter-date"
+            [(ngModel)]="startDate"
+            (ngModelChange)="validateDates()"
+            (change)="updateQueryParams()"
+            [max]="endDate || null"
+          />
+        </div>
+        <div class="date-input-group">
+          <label for="endDate">עד תאריך:</label>
+          <input
+            id="endDate"
+            type="date"
+            class="filter-date"
+            [(ngModel)]="endDate"
+            (ngModelChange)="validateDates()"
+            (change)="updateQueryParams()"
+            [min]="startDate || null"
+          />
         </div>
 
-        <div *ngIf="dateError" style="color:red; margin-top:5px;">
+        <div *ngIf="dateError" style="color: red; margin-top: 5px">
           תאריך ההתחלה לא יכול להיות אחרי תאריך הסיום
         </div>
-
       </div>
-
-
-
-
-      <div class="status-indicators">
-        <p style="margin-bottom: 0.75rem; font-weight: 600;">מקרא צבעים</p>
-        <div class="status-box">
-          <div class="status-item">
-            <span class="status-indicator approved"></span> מאושר
-          </div>
-          <div class="status-item">
-            <span class="status-indicator completed"></span> בוצע
-          </div>
-          <div class="status-item">
-            <span class="status-indicator pending"></span> בהמתנה
-          </div>
-          <div class="status-item">
-            <span class="status-indicator rejected"></span> נדחה
-          </div>
-          <div class="status-item">
-            <span class="status-indicator cancelled"></span>בוטלה-נסיעה לא יצאה
-          </div>
-
-        </div>
-      </div>
-
-
-
-
-    <div style="position: relative;">
-      <p-table #table [value]="trips" [rows]="rows" [totalRecords]="filteredOrders.length" dir="rtl">
-        <ng-template pTemplate="header">
-          <tr class="table-header">
-            <th></th> <th>מזהה נסיעה</th>
-            <th>שם עובד</th>
-            <th>רכב</th>
-            <th>תאריך</th>
-            <th>מרחק (ק"מ)</th>
-            <th>סטטוס</th>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-trip let-ri="rowIndex">
-          <tr [ngClass]="getRowClass(trip.status)" (click)="onRowSelect(trip)">
-            <td> <div class="duration-indicator-inline">
-                {{ getDurationIndicator(trip) }}
-              </div>
-            </td>
-            <td [matTooltip]="trip.ride_id">
-              <button class="copy-button" (click)="copyToClipboard(trip.ride_id);$event.stopPropagation()">
-                <img class="copy-icon" src="/assets/images/copy.png" />
-                <span *ngIf="copiedRideId === trip.ride_id" class="copied-message">Copied!</span>
-              </button>
-              <span class="ride-id-text">{{ trip.ride_id.slice(0, 4) }}...</span>
-            </td>
-            <td>{{ trip.employee_name }}</td>
-            <td>{{ trip.requested_vehicle_model }}</td>
-            <td>{{ trip.date_and_time | date:'dd/MM/yyyy HH:mm' }}</td>
-            <td>{{ trip.distance }}</td>
-            <td [ngClass]="getStatusClass(trip.status)">{{ translateStatus(trip.status) }}</td>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="emptymessage">
-          <tr>
-            <td colspan="7" style="text-align: center;">לא נמצאו הזמנות</td>
-          </tr>
-        </ng-template>
-      </p-table>
     </div>
 
+    <div class="table-wrapper" *ngIf="filteredOrders.length > 0">
+      <div class="orders-header-row">
+        <div class="icon-cell"></div>
+        <div class="cell">מזהה נסיעה</div>
+        <div class="cell">שם עובד</div>
+        <div class="cell">רכב</div>
+        <div class="cell">תאריך התחלה</div>
+        <div class="cell">שעת התחלה</div>
+        <div class="cell">מרחק (ק"מ)</div>
+        <div class="cell">סטטוס</div>
+      </div>
 
-  <div class="pagination-controls">
+      <div
+        class="orders-data-row"
+        *ngFor="let trip of trips"
+        (click)="onRowSelect(trip)"
+        [ngClass]="getRowClass(trip.status)"
+        style="cursor: pointer"
+      >
+        <div class="icon-cell">
+          <div class="duration-indicator-inline">
+            {{ getDurationIndicator(trip) }}
+          </div>
+        </div>
 
-    <button (click)="prevPage()" [disabled]="currentPage === 1">
-      <span class="icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <div class="cell">
+          <button
+            class="copy-button"
+            (click)="copyToClipboard(trip.ride_id); $event.stopPropagation()"
+          >
+            <img class="copy-icon" src="/assets/images/copy.png" />
+            <span *ngIf="copiedRideId === trip.ride_id" class="copied-message"
+              >Copied!</span
+            >
+          </button>
+          <span class="ride-id-text">{{ trip.ride_id.slice(0, 4) }}...</span>
+        </div>
 
-          <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z" />
-        </svg>
-      </span>
-    </button>
+        <div class="cell">{{ trip.employee_name }}</div>
+        <div class="cell">{{ trip.requested_vehicle_model }}</div>
+        <div class="cell">{{ getStartDate(trip.date_and_time) }}</div>
+        <div class="cell">{{ getStartTime(trip.date_and_time) }}</div>
+        <div class="cell">{{ trip.distance }}</div>
+        <div class="cell" [ngClass]="getStatusClass(trip.status)">
+          {{ translateStatus(trip.status) }}
+        </div>
+      </div>
+    </div>
 
-    <span>עמוד {{ currentPage }} מתוך {{ totalPages }}</span>
-    <button (click)="nextPage()" [disabled]="currentPage === totalPages">
-      <span class="icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
-        </svg>
-      </span>
-    </button>
-  </div>
+    <div *ngIf="filteredOrders.length === 0" class="empty-state-container">
+      <div class="empty-state-card">
+        <div class="empty-state-icon">
+          <i class="pi pi-inbox"></i>
+        </div>
+        <h3 class="empty-state-title">לא נמצאו נסיעות</h3>
+        <p class="empty-state-message">
+          לא נמצאו נסיעות התואמות את הסינון שבחרת.
+          <br />
+          נסה לשנות את הפילטרים או לבחור טווח תאריכים אחר.
+        </p>
+        <button class="reset-filters-btn" (click)="resetFilters()">
+          <i class="pi pi-refresh"></i>
+          אפס סינונים
+        </button>
+      </div>
+    </div>
 
+    <div class="pagination-controls" *ngIf="filteredOrders.length > 0">
+      <button (click)="prevPage()" [disabled]="currentPage === 1">
+        <span class="icon">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z" />
+          </svg>
+        </span>
+      </button>
+
+      <span>עמוד {{ currentPage }} מתוך {{ totalPages }}</span>
+      <button (click)="nextPage()" [disabled]="currentPage === totalPages">
+        <span class="icon">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+          </svg>
+        </span>
+      </button>
+    </div>
   </div>
 </div>

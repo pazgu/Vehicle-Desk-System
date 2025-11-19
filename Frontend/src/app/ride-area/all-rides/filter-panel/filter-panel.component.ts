@@ -52,7 +52,6 @@ export class FilterPanelComponent implements OnChanges {
     this.applyFiltersAndSort();
   }
 
-
   validateDate(type: 'start' | 'end'): void {
     const value = type === 'start' ? this.startDate : this.endDate;
     if (!this.isDateValid(value)) {
@@ -73,6 +72,17 @@ export class FilterPanelComponent implements OnChanges {
     return date >= min && date <= max;
   }
 
+  private translateStatusToEnglish(hebrewStatus: string): string {
+    const statusMap: { [key: string]: string } = {
+      'מאושר': 'approved',
+      'בהמתנה': 'pending',
+      'נדחה': 'rejected',
+      'בוטל': 'cancelled_due_to_no_show',
+      'בוצע': 'completed'
+    };
+    return statusMap[hebrewStatus] || hebrewStatus;
+  }
+
   private applyFiltersAndSort(): void {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -91,7 +101,8 @@ export class FilterPanelComponent implements OnChanges {
     }
 
     if (this.statusFilter) {
-      filtered = filtered.filter(order => order.status === this.statusFilter);
+      const englishStatus = this.translateStatusToEnglish(this.statusFilter);
+      filtered = filtered.filter(order => order.status === englishStatus);
     }
 
     if (this.startDate) {
@@ -113,7 +124,6 @@ export class FilterPanelComponent implements OnChanges {
         return orderDate <= end;
       });
     }
-
 
     switch (this.sortBy) {
       case 'status':

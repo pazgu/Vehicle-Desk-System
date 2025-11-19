@@ -12,10 +12,10 @@
       <div class="user-menu-container">
           <div class="user-icon-container">
             <a *ngIf="!isLoggedIn" routerLink="/login" routerLinkActive="active">
-              <img src="/assets/images/user-icon.png" alt="User Icon" />
+              <img src="/assets/images/user-icon.png" alt="User Icon"  class="user-icon"/>
             </a>
             <div *ngIf="isLoggedIn" class="user-icon-logged-in">
-              <img src="/assets/images/user-icon.png" alt="User Icon" />
+              <img src="/assets/images/user-icon.png" alt="User Icon" class="user-icon"/>
             </div>
           </div>
           <ul class="user-dropdown">

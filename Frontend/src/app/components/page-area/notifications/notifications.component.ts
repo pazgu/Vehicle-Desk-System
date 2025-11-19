@@ -23,7 +23,7 @@ import { Location } from '@angular/common';
 export class NotificationsComponent implements OnInit {
   notifications: (MyNotification & { timeAgo: string })[] = [];
   currentPage = 1;
-  notificationsPerPage = 5;
+  notificationsPerPage = 3;
 
   constructor(
     private notificationService: NotificationService,
@@ -280,6 +280,9 @@ export class NotificationsComponent implements OnInit {
           console.error('Failed to mark notification as seen:', err);
         }
       });
+    }
+    if (role !='admin' && notif.message.includes('לא הוחזר בזמן')){
+      return
     }
     if (role === 'admin' && notif.message.includes('בעיה חמורה')) {
       this.router.navigate(['/admin/critical-issues'], {

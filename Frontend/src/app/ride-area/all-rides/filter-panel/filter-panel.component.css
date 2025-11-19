@@ -1,4 +1,3 @@
-
 .ride-filter-buttons {
   display: flex;
   justify-content: center;
@@ -28,9 +27,16 @@
 .filter-controls-bar {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 1rem;
   margin-bottom: 1rem;
   direction: rtl;
+}
+
+.filter-left-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 .sort-control {
@@ -68,6 +74,58 @@
 
 .filter-btn i {
   font-size: 1.1rem;
+}
+
+.status-indicators-inline {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background: white;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+}
+
+.status-indicators-inline .status-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #4b5563;
+}
+
+.status-indicators-inline .status-indicator {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.status-indicators-inline .status-indicator.approved {
+  background-color: #c9e4cf;
+  border: #75a480 1.6px solid;
+}
+
+.status-indicators-inline .status-indicator.pending {
+  background-color: #efe5c7;
+  border: #c8b88a 1.6px solid;
+}
+
+.status-indicators-inline .status-indicator.rejected {
+  background-color: #ecc9c9;
+  border: #c97b83 1.6px solid;
+}
+
+.status-indicators-inline .status-indicator.cancelled {
+  background-color: #dfdddd;
+  border: #8d8d90 1.6px solid;
+}
+
+.status-indicators-inline .status-indicator.completed {
+  background-color: #c6e2f5;
+  border: #5babb8 1.6px solid;
 }
 
 .filters-panel {
@@ -202,7 +260,12 @@
 
   .filter-controls-bar {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
+  }
+
+  .status-indicators-inline {
+    justify-content: center;
+    flex-wrap: wrap;
   }
 
   .filters-row {
