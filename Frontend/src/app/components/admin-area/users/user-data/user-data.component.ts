@@ -39,7 +39,6 @@ export class UserDataComponent implements OnInit {
   departmentNames: { [key: string]: string } = {};
   supervisorToDeptName: { [key: string]: string } = {};
 
-  // --- New/Updated Properties for Blocking ---
   isBlockUserModalOpen: boolean = false;
   isUnblockConfirmationModalOpen: boolean = false;
   selectedUserForBlock: User | null = null;
@@ -175,12 +174,10 @@ private loadUsersAndDepartments(): void {
   }
 
  getDepartmentName(user: any): string {
-  // If supervisor, take the department they supervise
   if (user.role === 'supervisor' && user.employee_id in this.supervisorToDeptName) {
     return this.supervisorToDeptName[user.employee_id];
   }
 
-  // Otherwise, take from the user's department_id
   return this.departmentNames[user.department_id] || 'לא זמין';
 }
   hasNoLicense(user: User): boolean {
@@ -198,7 +195,6 @@ private loadUsersAndDepartments(): void {
     return '';
   }
 
-  // --- Modal Control Methods ---
   openBlockUserModal(user: User) {
     this.selectedUserForBlock = user;
     this.isBlockUserModalOpen = true;
@@ -220,8 +216,6 @@ private loadUsersAndDepartments(): void {
     this.isUnblockConfirmationModalOpen = false;
     this.selectedUserForBlock = null;
   }
-
-  // --- Block/Unblock Logic ---
 
   confirmBlockUser() {
     if (this.blockUserForm.invalid || !this.selectedUserForBlock) {
