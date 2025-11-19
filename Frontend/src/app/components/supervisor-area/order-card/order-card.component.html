@@ -49,6 +49,11 @@
         <div class="info-value">{{ getVehicleModel(trip.vehicleId) }}</div>
       </div>
 
+      <div *ngIf="trip?.four_by_four_reason" class="info-row">
+        <span class="info-label">סיבת שימוש ברכב {{ trip?.vehicleType }}:</span>
+        <span class="info-value">{{ trip?.four_by_four_reason }}</span>
+      </div>
+
       <div class="info-row">
         <div class="info-label">סוג נסיעה:</div>
         <div class="info-value">{{ translateRideType(trip.tripType) }}</div>
@@ -93,12 +98,6 @@
         <div class="info-label">מרחק אחרי סטייה:</div>
         <div class="info-value-distance">{{ ceil(trip.actualDistanceKm) | number:'1.0-3' }} ק"מ</div>
       </div>
-
-      <div *ngIf="trip?.four_by_four_reason" class="info-row">
-        <span class="info-label">סיבת שימוש ברכב {{ trip?.vehicleType }}:</span>
-        <span class="info-value">{{ trip?.four_by_four_reason }}</span>
-      </div>
-
 
       <div class="info-row">
         <div class="info-label">בדיקת רישיון:</div>
