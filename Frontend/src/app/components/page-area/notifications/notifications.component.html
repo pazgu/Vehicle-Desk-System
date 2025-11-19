@@ -13,10 +13,12 @@
   [ngClass]="'neutral'">
 
       <div class="content">
-       <span *ngIf="note.is_extended_request" title="שים לב-נסיעה ארוכה!">
-        🚨 
-       </span>
-        <img src="/assets/images/message.png" alt="Message Icon" class="message-icon" />
+       <span *ngIf="note.is_extended_request" title="שים לב-נסיעה ארוכה!"></span>        
+      <img 
+        [src]="note.seen ? './assets/images/opened.png' : './assets/images/unopened.png'"
+        alt="Notification Icon" 
+        class="message-icon" 
+        />
          <span class="text">{{ translateMessage(note.message) }}</span>
         <div class="time">{{ note.timeAgo }}</div>  
       </div>

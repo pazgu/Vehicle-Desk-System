@@ -63,7 +63,7 @@ from src.models import ride_model, vehicle_model
 from src.models.department_model import Department
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-# Set up logging
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -71,13 +71,12 @@ from dotenv import load_dotenv
 import os
 import socketio
 
-load_dotenv()  # Load environment variables  .env
+load_dotenv()
 FROM_CITY = os.getenv("FROM_CITY")
 FROM_CITY_NAME = os.getenv("FROM_CITY", "Unknown City")
-# BOOKIT_URL = os.getenv("BOOKIT_FRONTEND_URL", "http://localhost:4200")  
 
 async def get_email_service(
-    sio_server: Annotated[socketio.AsyncServer, Depends(lambda: sio)] # 'sio' is imported from ..utils.socket_manager
+    sio_server: Annotated[socketio.AsyncServer, Depends(lambda: sio)]
 ) -> EmailService:
     """
     Dependency injector for EmailService.
@@ -87,7 +86,6 @@ async def get_email_service(
 
 
 router = APIRouter()
-
 
 @router.post("/api/register")
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
@@ -101,12 +99,11 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
             detail=str(ve)
         )
     except Exception as e:
-        # Log the full traceback for debugging
         logger.error(f"Registration failed with error: {str(e)}")
         logger.error(traceback.format_exc())
         raise HTTPException(
             status_code=fastapi_status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Registration failed: {str(e)}"  # Return the actual error for debugging
+            detail=f"Registration failed: {str(e)}"
         )
     
 
@@ -211,7 +208,6 @@ async def create_order(
         )
 
         schedule_ride_start(new_ride.id, new_ride.start_datetime)
-        # schedule_ride_reminder_email(new_ride.id, new_ride.start_datetime)
         warning_flag = is_time_in_blocked_window(new_ride.start_datetime)
         department_id = get_user_department(user_id=user_id, db=db)
         requester_name = get_user_name(db, user_id)             
@@ -290,7 +286,9 @@ async def create_order(
                 "order_id": str(supervisor_notification.order_id) if supervisor_notification.order_id else None,
                 "order_status": new_ride.status,
                 "is_extended_request": is_extended,
-                "employee_name": employee_name
+                "employee_name": employee_name,
+                "vehicle_id": str(supervisor_notification.vehicle_id) if supervisor_notification.vehicle_id else None,
+                "seen": False
             })
         else:
             logger.warning(f"No supervisor found for user ID {user_id} — skipping supervisor notification and email.")
@@ -304,7 +302,8 @@ async def create_order(
 
 @router.get("/api/rides_supposed-to-start")
 def check_started_approved_rides(db: Session = Depends(get_db)):
-    now = datetime.now(timezone.utc) 
+    now = datetime.now(timezone.utc)
+    
     rides = db.query(Ride).filter(
         Ride.status == RideStatus.approved,
         Ride.start_datetime <= now,
@@ -331,12 +330,10 @@ async def patch_order(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # Update the order
     updated_order = await patch_order_in_db(order_id, patch_data, db, changed_by=str(current_user.employee_id))
     user = db.query(User).filter(User.employee_id == updated_order.user_id).first()
     vehicle = db.query(Vehicle).filter(Vehicle.id == updated_order.vehicle_id).first()
 
-    # Emit the updated order to the user's room
     order_data = {
     "id": str(updated_order.id),
     "user_id": str(updated_order.user_id),
@@ -372,8 +369,8 @@ async def send_notification_route(
     db: Session = Depends(get_db),
     token: str = Depends(oauth2_scheme)
 ):
-    role_check(["admin", "employee"], token)  # Adjust roles as needed
-    identity_check(str(user_id), token)       # Optional
+    role_check(["admin", "employee"], token)
+    identity_check(str(user_id), token)
 
     try:
         notification = await send_notification_async(
@@ -384,14 +381,14 @@ async def send_notification_route(
             notification_data.notification_type
         )
 
-        # Emit the notification to the user's Socket.IO room
         await sio.emit("new_notification", {
             "id": str(notification.id),
             "title": notification.title,
             "user_id":str(notification.user_id),
             "message": notification.message,
-            "notification_type": notification.notification_type.value,  # if enum
-            "sent_at": notification.sent_at.isoformat()
+            "notification_type": notification.notification_type.value,
+            "sent_at": notification.sent_at.isoformat(),
+            "seen": False
         })
 
         return {"message": "Notification sent successfully", "notification": notification}
@@ -419,12 +416,11 @@ async def delete_order(order_id: UUID, db: Session = Depends(get_db),current_use
         db.delete(ride)
         db.commit()
 
-        # Emit deletion event
         await sio.emit("order_deleted", {"order_id": str(order_id)})
         try:
             scheduler.remove_job(job_id=f"ride-start-{order_id}")
         except JobLookupError:
-            pass  # If the job doesn't exist, ignore
+            pass
 
         return {"message": "Order deleted successfully"}
     except Exception as e:
@@ -436,22 +432,18 @@ async def delete_order(order_id: UUID, db: Session = Depends(get_db),current_use
 def get_rides_with_locations(db: Session = Depends(get_db)):
     StopCity = aliased(City)
 
-    # Query rides with joined stop city
     rides_with_stop_cities = (
         db.query(Ride, StopCity)
         .join(StopCity, cast(Ride.stop, PG_UUID) == StopCity.id)
         .all()
     )
 
-    # Collect all extra_stop UUIDs from all rides
     all_extra_stop_ids = []
     for ride, _ in rides_with_stop_cities:
         if ride.extra_stops:
             all_extra_stop_ids.extend(ride.extra_stops)
-    # Remove duplicates
     all_extra_stop_ids = list(set(all_extra_stop_ids))
 
-    # Query all extra stop cities once
     extra_stop_cities = {}
     if all_extra_stop_ids:
         cities = db.query(City).filter(City.id.in_(all_extra_stop_ids)).all()
@@ -465,8 +457,8 @@ def get_rides_with_locations(db: Session = Depends(get_db)):
 
         rides.append({
             "id": str(ride.id),
-            "start_location_name": FROM_CITY,  # hardcoded
-            "destination_name": FROM_CITY_NAME,     # hardcoded
+            "start_location_name": FROM_CITY,
+            "destination_name": FROM_CITY_NAME,
             "stop_name": stop_city.name if stop_city else None,
             "extra_stops_names": extra_stop_names,
         })
@@ -519,7 +511,7 @@ def get_vehicle_types(db: Session = Depends(get_db)):
 @router.post("/api/forgot-password", status_code=fastapi_status.HTTP_200_OK)
 async def forgot_password(
     request: ForgotPasswordRequest,
-    response: Response, # Add the Response object to modify the status code on failure
+    response: Response,
     email_service: EmailService = Depends(get_email_service),
     db: Session = Depends(get_db)
 ):
@@ -531,7 +523,7 @@ async def forgot_password(
     token = create_reset_token(str(user.employee_id))
 
     frontend_url = os.getenv("BOOKIT_FRONTEND_URL", "http://localhost:4200")
-    reset_link = f"{frontend_url}/reset-password/{token}" # Using the correct path param format
+    reset_link = f"{frontend_url}/reset-password/{token}"
 
     subject = "🚗 Reset Your Password - Vehicle Desk System"
     context = { "username": user.first_name, "reset_link": reset_link }
@@ -545,20 +537,18 @@ async def forgot_password(
             detail="Failed to generate reset email content."
         )
 
-    # Call the service with use_retries=False for the initial attempt
     email_sent_successfully = await email_service.send_email_direct(
         to_email=user.email,
         subject=subject,
         html_content=email_html_content,
         user_id=user.employee_id,   
         email_type="forgot_password",
-        use_retries=False # Correct for an initial, real-time request
+        use_retries=False
     )
 
     if email_sent_successfully:
         return {"message": "Reset link has been sent"}
     else:
-        # --- CHANGE: Return a specific error with the ID needed for retry ---
         logger.error(f"Initial password reset email failed for {user.email}.")
         response.status_code = fastapi_status.HTTP_422_UNPROCESSABLE_ENTITY
         return {
@@ -604,7 +594,6 @@ def get_distance(
         if not from_city_obj:
             raise HTTPException(status_code=404, detail="From city not found")
 
-        # Resolve extra stops
         stop_objs = []
         for stop_id in extra_stops:
             stop = db.query(City).filter(City.id == stop_id).first()
@@ -612,12 +601,10 @@ def get_distance(
                 raise HTTPException(status_code=404, detail=f"Extra stop not found: {stop_id}")
             stop_objs.append(stop)
 
-        # Resolve destination city
         to_city_obj = db.query(City).filter(City.id == to_city).first()
         if not to_city_obj:
             raise HTTPException(status_code=404, detail="Destination city not found")
 
-        # Build full route with city objects
         route = [from_city_obj] + stop_objs + [to_city_obj]
 
         total_distance = 0

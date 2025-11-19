@@ -37,7 +37,6 @@
           <div class="form-field-group" *ngIf="rideForm.get('target_type')?.value === 'other'">
             <label>בחר עובד</label>
             <select formControlName="target_employee_id">
-              <option value="">בחר עובד</option>
               <option *ngFor="let emp of departmentEmployees" [value]="emp.id">
                 {{ emp.full_name }}
               </option>

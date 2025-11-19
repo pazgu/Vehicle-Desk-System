@@ -27,13 +27,12 @@ def get_user_notifications(db: Session, user_id: UUID):
     for notification, status, start_dt, end_dt in results:
         notif_dict = notification.__dict__.copy()
         notif_dict["order_status"] = status.value if status else None
-        
-        # Detect long ride (>2 days) for ride-related notifications
+
         is_extended = False
         if start_dt and end_dt:
             is_extended = (end_dt - start_dt) > timedelta(days=2)
         
-        notif_dict["is_extended_request"] = is_extended  # ✅ add flag
+        notif_dict["is_extended_request"] = is_extended  
         
         notifications.append(notif_dict)
       
@@ -56,6 +55,7 @@ async def send_notification_async(
         "notification_type": notification_type.value,
         "sent_at": new_notification.sent_at.isoformat(),
         "order_id": str(new_notification.order_id) if new_notification.order_id else None,
+        "seen": False
     }
 
     await sio.emit("new_notification", notif_data, room=str(user_id))
@@ -99,6 +99,7 @@ def create_system_notification(user_id, title, message, order_id=None,vehicle_id
             "order_id": str(notif.order_id) if notif.order_id else None,
             "vehicle_id": str(notif.vehicle_id) if notif.vehicle_id else None,
             "relevant_user_id": str(notif.relevant_user_id) if notif.relevant_user_id else None,
+            "seen": False
         }, room=str(user_id)))
 
         return notif
@@ -106,9 +107,6 @@ def create_system_notification(user_id, title, message, order_id=None,vehicle_id
         db.close()
 
 
-
-#this was created to be used in the completion form function since ->
-# using the original create_system_notification is problematic 
 def create_system_notification_with_db(db: Session, user_id, title, message, order_id=None,vehicle_id=None):
     notif = Notification(
         user_id=user_id,
@@ -120,7 +118,7 @@ def create_system_notification_with_db(db: Session, user_id, title, message, ord
         vehicle_id=vehicle_id
     )
     db.add(notif)
-    return notif  # don't commit here — let caller handle it
+    return notif
 
 async def send_admin_odometer_notification(vehicle_id: UUID, mileage: float):
     db = SessionLocal()
@@ -183,7 +181,6 @@ def get_supervisor_id(user_id: UUID, db: Session) -> UUID | None:
     if not user:
         return None
 
-    # הנחה: יש לך טבלה/מודל Department עם שדה supervisor_id
     department = db.query(Department).filter(Department.id == user.department_id).first()
     if not department:
         return None
@@ -215,7 +212,8 @@ async def emit_new_notification(
         "sent_at": notification.sent_at.isoformat(),
         "order_id": str(notification.order_id) if notification.order_id else None,
         "order_status": order_status.value if order_status else None,
-        "vehicle_id": str(vehicle_id) if vehicle_id else None
+        "vehicle_id": str(vehicle_id) if vehicle_id else None,
+        "seen": False
     }
 
     await sio.emit("new_notification", payload,room=str(notification.user_id))
