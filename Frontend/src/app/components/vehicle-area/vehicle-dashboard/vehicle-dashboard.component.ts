@@ -4,14 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { VehicleService } from '../../../services/vehicle.service';
 import { VehicleInItem } from '../../../models/vehicle-dashboard-item/vehicle-in-use-item.module';
 import { Router, ActivatedRoute } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../../environments/environment';
 import { SocketService } from '../../../services/socket.service';
 import { ToastService } from '../../../services/toast.service';
 import { FilterPanelComponent } from './filter-panel/filter-panel.component';
 import { MileageUploadComponent } from './mileage-upload/mileage-upload.component';
 import { VehicleCardComponent } from './vehicle-card/vehicle-card.component';
-
+import { firstValueFrom } from 'rxjs';
 @Component({
   selector: 'app-vehicle-dashboard',
   standalone: true,
@@ -38,7 +36,6 @@ export class VehicleDashboardComponent implements OnInit {
     private vehicleService: VehicleService,
     private router: Router,
     private route: ActivatedRoute,
-    private http: HttpClient,
     private socketService: SocketService,
     private toastService: ToastService
   ) {}
@@ -65,11 +62,9 @@ export class VehicleDashboardComponent implements OnInit {
 
   async fetchAndMapDepartments(): Promise<void> {
     try {
-      const departments = await this.http
-        .get<{ id: string; name: string }[]>(
-          `${environment.apiUrl}/departments`
-        )
-        .toPromise();
+      const departments = await firstValueFrom(
+        this.vehicleService.getAllDepartments()
+      );
       if (departments) {
         departments.forEach((dept) => {
           this.departmentMap.set(dept.id, dept.name);
