@@ -1,5 +1,5 @@
+<div class="page-wrapper">
 <div class="all-rides-container" dir="rtl">
-  
   <app-exceeded-warning-banner [allOrders]="orders">
   </app-exceeded-warning-banner>
   <div class="page-header">
@@ -7,7 +7,7 @@
       <app-quota-indicator [allOrders]="orders"></app-quota-indicator>
     </div>
 
-    <h1>כל הנסיעות שלי</h1>
+    <h1>הנסיעות שלי</h1>
 
     <button class="back-button" (click)="goBack()">
       חזור
@@ -28,7 +28,6 @@
     (filteredOrdersChanged)="onFilteredOrdersChanged($event)"
   >
   </app-ride-filter-panel>
-
 
   <div *ngIf="loading" class="loading-spinner">
     <i
@@ -51,4 +50,5 @@
     (newRide)="goToNewRide()"
   >
   </app-ride-list-table>
+</div>
 </div>
