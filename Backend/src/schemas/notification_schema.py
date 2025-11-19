@@ -19,6 +19,7 @@ class NotificationOut(BaseModel):
     order_status: Optional[str]
     vehicle_id: Optional[UUID]
     is_extended_request: Optional[bool] 
+    seen: bool
 
 
     

@@ -104,7 +104,6 @@ from ..utils.database import SessionLocal
 
 def create_user(user_data: UserCreate, db: Session, created_by_user_id: str = None):
     try:
-        # Check for existing user by username or email
         existing_user = db.query(User).filter(
             (User.username == user_data.username) |
             (User.email == user_data.email)
@@ -113,18 +112,11 @@ def create_user(user_data: UserCreate, db: Session, created_by_user_id: str = No
         if existing_user:
             raise ValueError("Username or email already exists")
 
-        # The validation check has been removed as per your request.
-        # This will now allow the creation of supervisors without a department.
-
-        # Convert department_id to UUID if it's a string
         department_id = user_data.department_id
 
-        # Set a temporary audit context FIRST
         if created_by_user_id:
-            # An admin is creating this user
             db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": created_by_user_id})
         else:
-            # For self-registration, we'll update this after we get the user ID
             db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": "00000000-0000-0000-0000-000000000000"})
 
         new_user = User(
@@ -142,14 +134,12 @@ def create_user(user_data: UserCreate, db: Session, created_by_user_id: str = No
         db.add(new_user)
         db.flush()
 
-        # If this was self-registration, now update the audit context with the real user ID
         if not created_by_user_id:
             db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(new_user.employee_id)})
 
         db.commit()
         db.refresh(new_user)
 
-        # Now fix the audit log that was created with the placeholder
         from ..models.audit_log_model import AuditLog
 
         if not created_by_user_id:
@@ -190,17 +180,14 @@ def create_user(user_data: UserCreate, db: Session, created_by_user_id: str = No
         raise
     
 def get_departments():
-    # Create a new session
     session = SessionLocal()
     
     try:
-        # Query all departments from the database
         departments = session.query(Department).all()
 
-        # Prepare the response as a list of dicts
         result = [{"id": dept.id, "name": dept.name, "supervisor_id": dept.supervisor_id} for dept in departments]
         return result
     
     finally:
-        session.close()  # Make sure to close the session
+        session.close()
 
