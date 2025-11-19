@@ -53,13 +53,11 @@ def schedule_ride_start(ride_id: str, start_datetime: datetime):
     run_time = start_datetime
     job_id = f"ride-start-{ride_id}"
 
-    # Avoid duplicates
     try:
         scheduler.remove_job(job_id)
     except JobLookupError:
         pass
 
-    # Use a sync wrapper to call the async function
     scheduler.add_job(
         lambda: asyncio.run(start_ride_with_new_session(ride_id)),
         'date',
@@ -82,18 +80,6 @@ async def start_ride_with_new_session(ride_id: str):
         if ride.status != RideStatus.approved:
             raise HTTPException(status_code=400, detail="Ride must be approved before starting")
 
-        # ride=res[0]
-        # vehicle=res[1]
-         # 3️⃣ Emit ride update
-        # await sio.emit("ride_status_updated", {
-        #     "ride_id": str(ride.id),
-        #     "new_status": ride.status.value
-        # })
-        # # 4️⃣ Emit vehicle update
-        # await sio.emit("vehicle_status_updated", {
-        #     "id": str(vehicle.id),
-        #     "status": vehicle.status.value
-        # })
         await sio.emit("ride_supposed_to_start", {
             "ride_id": str(ride.id)
         })
@@ -119,6 +105,7 @@ async def send_notif_to_inspector():
                     "message": notif.message,
                     "notification_type": notif.notification_type.value,
                     "sent_at": notif.sent_at.isoformat(),
+                    "seen": False
         })
     finally:
         db.close()
@@ -149,10 +136,8 @@ async def check_inactive_vehicles():
         now = datetime.now(timezone.utc)
         one_week_ago = now - timedelta(days=7)
 
-        # Get all vehicles
         all_vehicles = db.query(Vehicle).all()
 
-        # Get latest ride per vehicle (if any)
         recent_rides_subq = db.query(
             Ride.vehicle_id,
             func.max(Ride.end_datetime).label("last_ride")
@@ -160,7 +145,6 @@ async def check_inactive_vehicles():
             Ride.status == "completed"
         ).group_by(Ride.vehicle_id).subquery()
 
-        # Join vehicles to recent ride
         inactive_vehicles = db.query(Vehicle, recent_rides_subq.c.last_ride).outerjoin(
             recent_rides_subq, Vehicle.id == recent_rides_subq.c.vehicle_id
         ).filter(
@@ -179,7 +163,6 @@ async def check_inactive_vehicles():
             last_used_date = last_ride.date() if last_ride else "לא ידוע"
 
             for admin in admins:
-                # Check if already notified
                 exists = db.query(Notification).filter(
                     Notification.user_id == admin.employee_id,
                     Notification.vehicle_id == vehicle.id,
@@ -230,7 +213,6 @@ async def check_vehicle_lease_expiry():
         now = datetime.now(timezone.utc)
         three_months_later = now + timedelta(days=90)
 
-        # Join Vehicle -> Department
         vehicles_expiring = db.query(Vehicle).join(
             Department, Vehicle.department_id == Department.id
         ).filter(
@@ -290,7 +272,6 @@ async def check_vehicle_lease_expiry():
                         "plate_number": vehicle.plate_number
                     }, room=str(supervisor_id))
 
-            # Notify all admins too
             for admin in admins:
                 exists_admin = db.query(Notification).filter(
                     Notification.user_id == admin.employee_id,
@@ -453,7 +434,6 @@ async def check_and_notify_overdue_rides():
 
             elapsed = (now - ride_end).days
 
-            # -- Send to user (passenger) --
             exists_user_notif = db.query(Notification).filter(
                 Notification.user_id == user.employee_id,
                 Notification.vehicle_id == vehicle.id,
@@ -489,10 +469,10 @@ async def check_and_notify_overdue_rides():
                     "notification_type": user_notif.notification_type.value,
                     "sent_at": user_notif.sent_at.isoformat(),
                     "vehicle_id": str(vehicle.id),
-                    "plate_number": vehicle.plate_number
+                    "plate_number": vehicle.plate_number,
+                    "seen": False
                 }, room=str(user.employee_id))
 
-            # -- Send to admins --
             admins = db.query(User).filter(User.role == "admin").all()
             for admin in admins:
                 exists_admin = db.query(Notification).filter(
@@ -531,7 +511,8 @@ async def check_and_notify_overdue_rides():
                         "notification_type": admin_notif.notification_type.value,
                         "sent_at": admin_notif.sent_at.isoformat(),
                         "vehicle_id": str(vehicle.id),
-                        "plate_number": vehicle.plate_number
+                        "plate_number": vehicle.plate_number,
+                        "seen": False
                     }, room=str(admin.employee_id))
 
     finally:
@@ -546,9 +527,8 @@ async def delete_old_archived_vehicles():
     db: Session = SessionLocal()
     try:
         now = datetime.now(timezone.utc)
-        three_months_ago = now - timedelta(days=90) # Approximately 3 months
+        three_months_ago = now - timedelta(days=90)
 
-        # 1. Find vehicles to delete
         vehicles_to_delete = db.query(Vehicle).filter(
             and_(
                 Vehicle.is_archived == True,
@@ -587,9 +567,7 @@ async def delete_old_archived_vehicles():
                     db.delete(usage)
           
 
-            # Delete related Audit Logs (tbl: audit_logs, col: entity_id)
             audit_logs_to_delete = db.query(AuditLog).filter(
-                # Use and_ to combine multiple conditions properly
                 and_(
                     cast(AuditLog.entity_id, UUID) == vehicle.id,
                     AuditLog.entity_type == 'Vehicle'
@@ -633,7 +611,7 @@ import asyncio
 def periodic_check_overdue_rides():
     future = asyncio.run_coroutine_threadsafe(
         check_and_notify_overdue_rides(),
-        main_loop  # use your app's asyncio event loop
+        main_loop
     )
     try:
         future.result(timeout=10)
@@ -641,35 +619,16 @@ def periodic_check_overdue_rides():
         print(f"Overdue rides check failed: {e}")
 
 
-# def periodic_check():
-#     db = SessionLocal()
-#     try:
-#         user_ids = [user.id for user in db.query(User).all()]
-#     finally:
-#         db.close()
-#     for user_id in user_ids:  # Example user IDs
-#         future = asyncio.run_coroutine_threadsafe(
-#             notify_ride_needs_feedback(user_id),
-#             main_loop
-#         )
-#         try:
-#             result = future.result(timeout=5)
-#         except Exception as e:
-#             print('Coroutine error:', e)
-
-
-
 async def check_and_unblock_expired_users():
     """
     Unblock users whose block has expired, then emit a socket event per user.
     """
     db: Session = SessionLocal()
-    users_to_notify = []  # collect AFTER commit we will emit
+    users_to_notify = []  
 
     try:
         now = datetime.now(timezone.utc)
 
-        # Find users whose block has expired
         expired_blocks = db.query(User).filter(
             User.is_blocked == True,
             User.block_expires_at.isnot(None),
@@ -677,15 +636,13 @@ async def check_and_unblock_expired_users():
         ).all()
 
         if not expired_blocks:
-            return  # nothing to do
+            return
 
-        # Update users
         for user in expired_blocks:
             user.is_blocked = False
             user.block_expires_at = None
-            # keep only scalar data for emission to avoid detached ORM issues
             users_to_notify.append({
-                "id": str(user.employee_id),   # or str(user.id) if that's your primary
+                "id": str(user.employee_id),
                 "is_blocked": False,
                 "block_expires_at": None
             })
@@ -698,10 +655,8 @@ async def check_and_unblock_expired_users():
     finally:
         db.close()
 
-    # Emit AFTER commit (so clients reflect DB state)
     for payload in users_to_notify:
         try:
-            # If you want to target a room per user (recommended), pass room=str(employee_id)
             await sio.emit(
                 'user_block_status_updated',
                 {
@@ -782,7 +737,7 @@ async def check_ride_status_and_notify_user():
         rides_to_notify = db.query(Ride).filter(
             Ride.status.in_([RideStatus.pending, RideStatus.rejected]),
             Ride.end_datetime <= twenty_four_hours_later,
-            Ride.end_datetime >= now # Ensures we only check for future or current end times
+            Ride.end_datetime >= now
         ).all()
 
         if not rides_to_notify:
@@ -822,11 +777,10 @@ async def check_ride_status_and_notify_user():
                 if vehicle:
                     plate_number = vehicle.plate_number
 
-            # Check if a notification for this specific ride status update already exists
             existing_notif = db.query(Notification).filter(
                 Notification.user_id == user.employee_id,
                 Notification.order_id == ride.id, 
-                Notification.title.like(f"{notification_title_prefix}{status_hebrew}") # More specific title check
+                Notification.title.like(f"{notification_title_prefix}{status_hebrew}")
             ).first()
 
             if not existing_notif:
@@ -918,7 +872,6 @@ async def notify_ride_cancelled_due_to_no_show(ride_id: uuid.UUID):
             user_name_safe = user_name or "משתמש לא ידוע"
             destination_safe = destination_name or "יעד לא ידוע"
 
-            # Create notification for supervisor
             supervisor_notification = create_system_notification(
                 user_id=supervisor_id,
                 title="הודעה: הנסיעה בוטלה עקב אי התייצבות",
@@ -926,10 +879,8 @@ async def notify_ride_cancelled_due_to_no_show(ride_id: uuid.UUID):
                 order_id=ride.id
             )
 
-            # Emit notification to frontend
             await emit_new_notification(notification=supervisor_notification)
-            
-        # 🟢 2. Send notification to admin
+
         admins = db.query(User).filter(User.role == "admin").all()
         for admin in admins:
             admin_id = admin.employee_id
@@ -1033,7 +984,6 @@ async def check_and_notify_admin_about_no_shows():
                 ).first()
 
                 if not existing:
-                    # Create system notification for all admins
                     admins = db.query(User).filter(User.role == "admin").all()
                     for admin in admins:
                         admin_id = admin.employee_id
@@ -1100,11 +1050,10 @@ async def check_and_notify_admin_about_no_shows():
 
 
 
-@scheduler.scheduled_job('interval', minutes=1)  # every 1 minute
+@scheduler.scheduled_job('interval', minutes=1)
 def periodic_check():
     db = SessionLocal()
     try:
-        # Query all users who might need feedback
         user_ids = db.query(Ride.user_id).filter(
             Ride.end_datetime <= datetime.now(timezone.utc),
             Ride.feedback_submitted == False,
@@ -1154,7 +1103,7 @@ def periodic_check_inspector_notif():
 def periodic_delete_archived_vehicles():
     future = asyncio.run_coroutine_threadsafe(delete_old_archived_vehicles(), main_loop)
     try:
-        future.result(timeout=60) # Increased timeout to 60 seconds
+        future.result(timeout=60)
     except Exception as e:
         print(f"Error running delete_old_archived_vehicles: {e}")       
 
@@ -1196,7 +1145,6 @@ async def check_expired_government_licenses():
     today = date.today()
 
     try:
-        # שלוף משתמשים שהרישיון שלהם פג תוקף או שאין להם תאריך תפוגה, אבל עדיין מסומנים כאילו יש להם רישיון
         users_with_expired_license = db.query(User).filter(
             User.has_government_license == True,
             or_(
@@ -1211,7 +1159,6 @@ async def check_expired_government_licenses():
             print("No expired licenses found. Exiting.")
             return
 
-        # עדכן את השדה has_government_license
         for user in users_with_expired_license:
             print(f"Updating user {user.employee_id} - setting has_government_license to False")
             user.has_government_license = False
@@ -1219,7 +1166,6 @@ async def check_expired_government_licenses():
         db.commit()
         print("Committed license updates to DB")
 
-        # שלח התראות לאדמין על כל משתמש שרישיונו לא בתוקף
         admins = db.query(User).filter(User.role == "admin").all()
 
         for user in users_with_expired_license:
@@ -1230,7 +1176,6 @@ async def check_expired_government_licenses():
             print(f"User email: {user.email}")
             print(f"License expiry: {expiry}")
 
-            # בדיקת תקינות המייל לפני שליחה למשתמש
             if user.email and "@" in user.email and "." in user.email:
                 try:
                     # שלח מייל למשתמש עצמו
@@ -1279,18 +1224,15 @@ async def check_expired_government_licenses():
                         "relevant_user_id": str(user.employee_id)
                     }, room=str(user.employee_id))
                     
-                    print(f"✅ Socket notification sent to user {user.employee_id}")
+                    print(f" Socket notification sent to user {user.employee_id}")
 
                 except Exception as e:
-                    print(f"❌ Error sending email to user {user.employee_id}: {str(e)}")
-                    # המשך לאדמינים גם אם שליחה למשתמש נכשלה
+                    print(f" Error sending email to user {user.employee_id}: {str(e)}")
             else:
-                print(f"⚠️ Invalid email for user {user.employee_id}: {user.email}")
+                print(f" Invalid email for user {user.employee_id}: {user.email}")
 
-            # שלח התראות לאדמינים
             for admin in admins:
                 try:
-                    # בדיקה אם כבר קיימת התראה
                     exists = db.query(Notification).filter(
                         Notification.user_id == admin.employee_id,
                         Notification.title == "רישיון ממשלתי לא בתוקף",
@@ -1357,7 +1299,7 @@ async def check_expired_government_licenses():
 
                 except Exception as e:
                     print(f"❌ Error processing admin {admin.employee_id}: {str(e)}")
-                    continue  # המשך לאדמין הבא
+                    continue
 
     except Exception as e:
         db.rollback()

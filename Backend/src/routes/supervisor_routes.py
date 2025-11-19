@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 # Utils
 from ..utils.auth import identity_check, role_check, supervisor_check, token_check
-from ..utils.database import get_db  # or use: from src.utils.database import get_db
+from ..utils.database import get_db
 from ..utils.scheduler import schedule_ride_start
 from ..utils.socket_manager import sio
 from ..utils.time_utils import is_time_in_blocked_window
@@ -36,7 +36,7 @@ from ..schemas.vehicle_schema import FreezeVehicleRequest
 
 # Models
 from src.models.ride_model import Ride
-
+from src.models.notification_model import Notification
 router = APIRouter()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -131,3 +131,50 @@ async def start_ride_route(ride_id: UUID, db: Session = Depends(get_db)):
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
+
+@router.patch("/notifications/{notification_id}/mark-seen")
+async def mark_notification_seen(
+    notification_id: UUID,
+    db: Session = Depends(get_db),
+    payload: dict = Depends(token_check)
+):
+    user_id = payload.get("user_id") or payload.get("sub")
+
+    notification = db.query(Notification).filter(
+        Notification.id == notification_id,
+        Notification.user_id == user_id
+    ).first()
+
+    if not notification:
+        raise HTTPException(status_code=404, detail="Notification not found")
+
+    if notification.seen:
+        return {"message": "Notification already marked as seen"}
+
+    notification.seen = True
+    db.commit()
+
+    await sio.emit("notification_seen", {"notification_id": str(notification.id), "user_id": str(user_id)})
+
+    return {"message": "Notification marked as seen"}
+
+
+@router.patch("/notifications/mark-all-seen")
+async def mark_all_notifications_seen(
+    db: Session = Depends(get_db),
+    payload: dict = Depends(token_check)
+):
+    user_id = payload.get("user_id") or payload.get("sub")
+
+    updated_count = db.query(Notification).filter(
+        Notification.user_id == user_id,
+        Notification.seen == False
+    ).update({"seen": True})
+    
+    db.commit()
+
+    if updated_count > 0:
+        await sio.emit("notifications_marked_seen", {"user_id": str(user_id)})
+
+    return {"message": f"{updated_count} notifications marked as seen"}

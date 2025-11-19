@@ -158,5 +158,19 @@ updatemileage(vehicleId: string, mileage: number): Observable<any> {
 addVehicle(vehicleData: any): Observable<any> {
   return this.http.post(`${this.apiUrl}/add-vehicle`, vehicleData);
 }
+getTopUsedVehicles(): Observable<{ plate_number: string; vehicle_model: string; ride_count: number }[]> {
+  return this.http.get<{ plate_number: string; vehicle_model: string; ride_count: number }[]>(
+    `${this.apiUrl}/analytics/top-used-vehicles`
+  );
+}
 
+getAllOrders(): Observable<{ vehicle_id: string, date_and_time: string }[]> {
+  return this.http.get<{ vehicle_id: string, date_and_time: string }[]>(
+    `${this.apiUrl}/orders`
+  );
+}
+
+getDepartmentById(departmentId: string): Observable<any> {
+  return this.http.get<any>(`${this.apiUrl}/departments/${departmentId}`);
+}
 }
