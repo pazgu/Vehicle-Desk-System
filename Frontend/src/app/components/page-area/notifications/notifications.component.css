@@ -22,11 +22,10 @@
 .wrapper {
   background-image: url('/assets/images/notifications-bg.png');
   min-height: 100vh;
-  overflow-y: auto;
+  overflow-y: visible;
   padding: 40px 20px;
   background: transparent;
 }
-
 .title {
   font-size: 2rem;
   font-weight: 700;
