@@ -10,24 +10,49 @@
     </div>
 
     <div class="filter-controls-bar">
-      <div class="sort-control">
-        <label for="sort">מיין לפי: </label>
-        <select
-          id="sort"
-          class="filter-select"
-          [(ngModel)]="sortBy"
-          (change)="updateQueryParams()"
-        >
-          <option value="submitted_at">נוסף לאחרונה</option>
-          <option value="date_and_time">תאריך</option>
-          <option value="status">סטטוס</option>
-        </select>
+      <div class="filter-left-section">
+        <div class="sort-control">
+          <label for="sort">מיין לפי: </label>
+          <select
+            id="sort"
+            class="filter-select"
+            [(ngModel)]="sortBy"
+            (change)="updateQueryParams()"
+          >
+            <option value="submitted_at">נוסף לאחרונה</option>
+            <option value="date_and_time">תאריך</option>
+            <option value="status">סטטוס</option>
+          </select>
+        </div>
+
+        <button class="filter-btn" (click)="showFilters = !showFilters">
+          <i class="pi pi-filter"></i>
+          <span>{{ showFilters ? "הסתר סינון" : "הצג סינון" }}</span>
+        </button>
       </div>
 
-      <button class="filter-btn" (click)="showFilters = !showFilters">
-        <i class="pi pi-filter"></i>
-        <span>{{ showFilters ? "הסתר סינון" : "הצג סינון" }}</span>
-      </button>
+      <div class="status-indicators-inline">
+        <div class="status-item">
+          <span class="status-indicator approved"></span>
+          <span>מאושר</span>
+        </div>
+        <div class="status-item">
+          <span class="status-indicator completed"></span>
+          <span>בוצע</span>
+        </div>
+        <div class="status-item">
+          <span class="status-indicator pending"></span>
+          <span>בהמתנה</span>
+        </div>
+        <div class="status-item">
+          <span class="status-indicator rejected"></span>
+          <span>נדחה</span>
+        </div>
+        <div class="status-item">
+          <span class="status-indicator cancelled"></span>
+          <span>בוטל</span>
+        </div>
+      </div>
     </div>
 
     <div *ngIf="showFilters" class="filters-panel">
@@ -81,27 +106,6 @@
       </div>
     </div>
 
-    <div class="status-indicators">
-      <p style="margin-bottom: 0.75rem; font-weight: 600">מקרא צבעים</p>
-      <div class="status-box">
-        <div class="status-item">
-          <span class="status-indicator approved"></span> מאושר
-        </div>
-        <div class="status-item">
-          <span class="status-indicator completed"></span> בוצע
-        </div>
-        <div class="status-item">
-          <span class="status-indicator pending"></span> בהמתנה
-        </div>
-        <div class="status-item">
-          <span class="status-indicator rejected"></span> נדחה
-        </div>
-        <div class="status-item">
-          <span class="status-indicator cancelled"></span>בוטלה-נסיעה לא יצאה
-        </div>
-      </div>
-    </div>
-
     <div *ngIf="filteredOrders.length > 0">
       <div class="orders-header-row">
         <div class="icon-cell"></div>
@@ -149,13 +153,27 @@
           {{ translateStatus(trip.status) }}
         </div>
       </div>
+    </div>
 
-      <div *ngIf="trips.length === 0" class="no-orders-message">
-        לא נמצאו הזמנות
+    <div *ngIf="filteredOrders.length === 0" class="empty-state-container">
+      <div class="empty-state-card">
+        <div class="empty-state-icon">
+          <i class="pi pi-inbox"></i>
+        </div>
+        <h3 class="empty-state-title">לא נמצאו נסיעות</h3>
+        <p class="empty-state-message">
+          לא נמצאו נסיעות התואמות את הסינון שבחרת.
+          <br />
+          נסה לשנות את הפילטרים או לבחור טווח תאריכים אחר.
+        </p>
+        <button class="reset-filters-btn" (click)="resetFilters()">
+          <i class="pi pi-refresh"></i>
+          אפס סינונים
+        </button>
       </div>
     </div>
 
-    <div class="pagination-controls">
+    <div class="pagination-controls" *ngIf="filteredOrders.length > 0">
       <button (click)="prevPage()" [disabled]="currentPage === 1">
         <span class="icon">
           <svg
