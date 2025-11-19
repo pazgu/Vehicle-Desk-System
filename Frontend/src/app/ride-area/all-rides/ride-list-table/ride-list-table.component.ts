@@ -58,7 +58,7 @@ export class RideListTableComponent implements OnChanges {
       case 'approved': return 'אושר';
       case 'pending': return 'בהמתנה';
       case 'rejected': return 'נדחה';
-      case 'completed': return 'הושלם';
+      case 'completed': return 'בוצע';
       case 'in_progress': return 'בתהליך';
       case 'cancelled_due_to_no_show': return 'בוטל – אי הגעה';
       case 'reserved': return 'מוזמן';

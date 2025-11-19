@@ -1,6 +1,8 @@
 <div class="page-wrapper">
 <div class="all-rides-container" dir="rtl">
-  <app-exceeded-warning-banner [allOrders]="orders">
+  <app-exceeded-warning-banner 
+    [allOrders]="orders"
+    (bannerClicked)="scrollToTop()">
   </app-exceeded-warning-banner>
   <div class="page-header">
     <div class="quota-header-wrapper">
@@ -28,6 +30,7 @@
     (filteredOrdersChanged)="onFilteredOrdersChanged($event)"
   >
   </app-ride-filter-panel>
+
 
   <div *ngIf="loading" class="loading-spinner">
     <i
