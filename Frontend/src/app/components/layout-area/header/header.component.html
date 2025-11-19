@@ -39,10 +39,10 @@
       </a>
 
       <a *ngIf="(role$ | async) === 'employee'" [routerLink]="['/home']" title="להזמין נסיעה">
-        <img src="/assets/images/add-car.png" alt="Car" class="add-car" />
+        <img src="/assets/images/add-car.png" alt="Car" class="add-car" class="car-icon" />
       </a>
       <a *ngIf="(role$ | async) === 'supervisor'" [routerLink]="['/home']" title="להזמין נסיעה">
-        <img src="/assets/images/add-car.png" alt="Car" class="add-car" />
+        <img src="/assets/images/add-car.png" alt="Car" class="add-car" class="car-icon"/>
       </a>
 
     </div>    
@@ -155,7 +155,7 @@
 
    <a *ngIf="(role$ | async) === 'inspector'" [routerLink]="['/inspector/inspection']" class="nav-link">בדיקת רכבים יומית</a>
     <a *ngIf="isLoggedIn && !isAuthPage" routerLink="/notifications">
-    <img src="/assets/images/bell-icon.png" alt="Notifications" />
+    <img src="/assets/images/bell-icon.png" alt="Notifications" class="bell-icon" />
     <span
       class="badge"
       *ngIf="(unreadCount$ | async) as count"
