@@ -23,7 +23,7 @@ import { Location } from '@angular/common';
 export class NotificationsComponent implements OnInit {
   notifications: (MyNotification & { timeAgo: string })[] = [];
   currentPage = 1;
-  notificationsPerPage = 5;
+  notificationsPerPage = 3;
 
   constructor(
     private notificationService: NotificationService,
