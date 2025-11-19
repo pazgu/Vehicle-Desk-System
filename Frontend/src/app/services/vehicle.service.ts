@@ -173,4 +173,9 @@ getAllOrders(): Observable<{ vehicle_id: string, date_and_time: string }[]> {
 getDepartmentById(departmentId: string): Observable<any> {
   return this.http.get<any>(`${this.apiUrl}/departments/${departmentId}`);
 }
+getAllDepartments(): Observable<{ id: string; name: string }[]> {
+  return this.http.get<{ id: string; name: string }[]>(
+    `${this.apiUrl}/departments`
+  );
+}
 }
