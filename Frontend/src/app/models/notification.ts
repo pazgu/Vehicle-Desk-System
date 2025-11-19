@@ -4,10 +4,11 @@ export interface MyNotification {
     notification_type: string;
     title: string;
     message: string;
-    sent_at: string; // Keep this as-is from backend
+    sent_at: string;
     order_id:string;
     order_status:string;
     vehicle_id: string;
+    seen: boolean;
     is_extended_request?: boolean;
   }
   
