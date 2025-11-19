@@ -106,7 +106,8 @@ def create_user(user_data: UserCreate, db: Session, created_by_user_id: str = No
     try:
         existing_user = db.query(User).filter(
             (User.username == user_data.username) |
-            (User.email == user_data.email)
+            (User.email == user_data.email)|
+            (User.phone == user_data.phone)
         ).first()
 
         if existing_user:
