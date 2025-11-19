@@ -22,7 +22,12 @@
 <div class="filter-controls-bar">
   <div class="sort-control">
     <label for="sort">מיין לפי: </label>
-    <select id="sort" class="filter-select" [(ngModel)]="sortBy" (change)="onSortChange()">
+    <select
+      id="sort"
+      class="filter-select"
+      [(ngModel)]="sortBy"
+      (change)="onSortChange()"
+    >
       <option value="recent">נוסף לאחרונה</option>
       <option value="date">תאריך</option>
       <option value="status">סטטוס</option>
@@ -79,5 +84,4 @@
       />
     </div>
   </div>
-
 </div>

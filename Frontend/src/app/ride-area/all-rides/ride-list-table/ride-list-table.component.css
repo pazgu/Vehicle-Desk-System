@@ -20,6 +20,7 @@
 
 .cell {
   flex: 1;
+  width: 10px;
   text-align: center;
   display: flex;
   align-items: center;
@@ -49,8 +50,7 @@
 }
 
 .completed-order {
-  opacity: 0.6;
-  color: #333 !important;
+  background-color: #c9e6f9;
 }
 
 .pagination-controls {
@@ -144,7 +144,7 @@ button:disabled {
 }
 
 .status-yellow {
-  background-color: #fff8e174;
+  background-color: #fff8e1;
 }
 
 .status-red {

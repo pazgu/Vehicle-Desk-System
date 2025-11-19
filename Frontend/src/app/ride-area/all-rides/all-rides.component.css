@@ -1,7 +1,12 @@
+.page-wrapper {
+  background-image: url("/assets/images/vehicle-dashboard-bg.png");
+  min-height: 100vh;
+  padding: 2rem 0;
+}
 .all-rides-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem 1.5rem;
+  padding: 0.4rem 1.7rem;
   font-family: "Alef", sans-serif;
   direction: rtl;
   position: relative;
@@ -9,6 +14,7 @@
 
 .page-header {
   display: flex;
+  max-width: 1200px;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 2rem;
