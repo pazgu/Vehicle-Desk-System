@@ -1,0 +1,70 @@
+.entity-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+field-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #f8f9fa;
+}
+
+.field-row:last-child {
+  border-bottom: none;
+}
+
+.field-label {
+  color: #666;
+  font-size: 0.95rem;
+  font-weight: 500;
+  flex: 1;
+  min-width: 120px;
+}
+
+.field-value {
+  color: #333;
+  font-size: 0.95rem;
+  font-weight: 600;
+  flex: 2;
+  text-align: right;
+  background: #f8f9fa;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  margin-right: 1rem;
+  margin-top: 5px;
+  word-break: break-all;
+}
+
+.data-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #eee;
+  transition: all 0.3s ease;
+}
+
+.data-card:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.data-card h4 {
+  color: #555;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #f0f0f0;
+  font-weight: 500;
+}
+.delete-data {
+  border-right: 4px solid #b33c2f; 
+}
+
+.delete-data h4 {
+  color: #b33c2f; 
+}
+

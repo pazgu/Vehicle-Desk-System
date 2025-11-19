@@ -50,7 +50,6 @@ from src.services.audit_service import get_all_audit_logs
 from src.services.license_service import upload_license_file_service, check_expired_licenses
 from src.services.user_data import get_user_by_id, get_all_users
 from ..services.admin_rides_service import get_critical_trip_issues, get_current_month_vehicle_usage, get_vehicle_usage_stats
-from ..services.monthly_trip_counts import archive_last_month_stats
 from ..services.user_notification import send_admin_odometer_notification
 from ..services.vehicle_service import (
     archive_vehicle_by_id,
@@ -147,15 +146,16 @@ async def edit_user_by_id_route(
     username: str = Form(...),
     email: str = Form(...),
     phone: str = Form(...),
-    role: str = Form(...),
-    department_id: str = Form(...),
+    role: Optional[str] = Form(None),
+    department_id: Optional[str] = Form(None),
     has_government_license: str = Form(...),
     license_file: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
     payload: dict = Depends(token_check),
     license_expiry_date: Optional[str] = Form(None),
     is_blocked: Optional[bool] = Form(False),
-    block_expires_at: Optional[str] = Form(None)
+    block_expires_at: Optional[str] = Form(None),
+    block_reason: Optional[str] = Form(None)
 ):
     user_id_from_token = payload.get("user_id") or payload.get("sub")
     user_role_from_token = payload.get("role")
@@ -208,45 +208,65 @@ async def edit_user_by_id_route(
     user.username = username
     user.email = email
     user.phone = phone
-
-    # --- Department ID and Role Logic ---
-    try:
-        new_role = UserRole(role) # Convert incoming string 'role' to UserRole enum
-    except ValueError:
-        raise HTTPException(status_code=400, detail=f"Invalid role provided: {role}. Must be one of: {', '.join([r.value for r in UserRole])}")
-
-    user.role = new_role # Assign the validated role
-
-    if new_role == UserRole.admin:
-        user.department_id = None
+    user.has_government_license = has_gov_license
+    user.is_blocked = is_blocked
+    if is_blocked:
+        if not block_reason or len(block_reason.strip()) < 5:
+            raise HTTPException(
+                status_code=400,
+                detail="Block reason is required when blocking a user (at least 5 characters)."
+            )
+        user.block_reason = block_reason.strip()
     else:
-        if not department_id or not department_id.strip():
-            raise HTTPException(status_code=400, detail=f"Department ID is required for role '{new_role}'.")
+        user.block_reason = None
+        user.block_expires_at = None
+
+    if block_expires_at:
         try:
-            user.department_id = UUID(department_id) # Convert string to UUID
-        except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid department ID format. Must be a valid UUID.")
-    # --- End Department ID Logic ---
-
-    user.has_government_license = has_gov_license # Apply this if it's the final decision point
-
-    # --- ADD THESE LINES TO UPDATE IS_BLOCKED AND BLOCK_EXPIRES_AT ---
-    user.is_blocked = is_blocked # Assign the boolean value directly
-
-    if block_expires_at: # If a date string was provided (not empty string or None)
-        try:
-            # Parse the string into a datetime object
-            # Frontend sends YYYY-MM-DDTHH:MM (from toISOString().slice(0, 16))
             user.block_expires_at = datetime.strptime(block_expires_at, "%Y-%m-%dT%H:%M")
         except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid date-time format for block_expires_at. Expected YYYY-MM-DDTHH:MM.")
-    else:
-        user.block_expires_at = None # Set to None if no date string was provided (to unblock or clear expiry)
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid date-time format for block_expires_at. Expected YYYY-MM-DDTHH:MM."
+            )
+    if not is_blocked and role:
+        try:
+            new_role = UserRole(role)
+        except ValueError:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid role provided: {role}. Must be one of: {', '.join([r.value for r in UserRole])}"
+            )
+        user.role = new_role
 
-
+        if new_role == UserRole.admin or new_role == UserRole.inspector:
+            user.department_id = None
+        elif new_role == UserRole.supervisor:
+            if department_id:
+                try:
+                    user.department_id = UUID(department_id)
+                    user.is_unassigned_user = False
+                except ValueError:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Invalid department ID format. Must be a valid UUID."
+                    )
+            else:
+                user.department_id = None
+        else:
+            if not department_id or not department_id.strip():
+                raise HTTPException(status_code=400, detail=f"Department ID is required for role '{new_role}'.")
+            try:
+                user.department_id = UUID(department_id)
+                user.is_unassigned_user = False
+            except ValueError:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid department ID format. Must be a valid UUID."
+                )
     try:
         db.commit()
-    except Exception as e:
+    except Exception:
         db.rollback()
         raise HTTPException(status_code=500, detail="Failed to update user due to a database error.")
 
@@ -256,7 +276,8 @@ async def edit_user_by_id_route(
     await sio.emit('user_block_status_updated', {
         "id": str(user.employee_id),
         "is_blocked": user.is_blocked,
-        "block_expires_at": user.block_expires_at.isoformat() if user.block_expires_at else None
+        "block_expires_at": user.block_expires_at.isoformat() if user.block_expires_at else None,
+        "block_reason": user.block_reason or None
     })
 
     await sio.emit('user_license_updated', {
@@ -568,12 +589,6 @@ def get_today_inspections(
 
     return response_data
 
-
-# This function will be called later by another function with a GET route.
-@router.post("/stats/archive-last-month")
-def archive_last_month_endpoint(db: Session = Depends(get_db)):
-    archive_last_month_stats(db)
-    return {"detail": "Archiving completed successfully"}
 
 
 @router.get("/analytics/vehicle-status-summary")
@@ -1163,7 +1178,7 @@ def delete_department_endpoint(
 def get_requirements(db: Session = Depends(get_db), _: dict = Depends(get_current_user)):
     requirement = get_latest_requirement(db)
     if not requirement:
-        raise HTTPException(status_code=404, detail="No ride requirements found")
+        return None
     return requirement
 
 
@@ -1178,7 +1193,7 @@ def update_requirements(
     return updated
 
 
-@router.put("/update-requirements", response_model=RideRequirementOut)
+@router.put("/update-requirements", response_model=Optional[RideRequirementOut])
 def update_requirements(
     data: RideRequirementUpdate,
     db: Session = Depends(get_db),

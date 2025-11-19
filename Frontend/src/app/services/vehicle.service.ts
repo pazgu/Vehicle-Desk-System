@@ -155,5 +155,8 @@ updatemileage(vehicleId: string, mileage: number): Observable<any> {
   return this.http.patch(`${this.apiUrl}/vehicles/${vehicleId}/mileage`, body); 
 }
 
+addVehicle(vehicleData: any): Observable<any> {
+  return this.http.post(`${this.apiUrl}/add-vehicle`, vehicleData);
+}
 
 }

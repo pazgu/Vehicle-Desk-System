@@ -6,8 +6,8 @@
   background-position: center top;
   height: auto;
   padding-top: 40px;
+  padding-bottom: 5px;
   margin: 0;
-
 }
 
 .ride-card {
@@ -38,6 +38,28 @@
   padding: 12px 0;
   border-bottom: 1px solid #e0dcdc;
 }
+.detail-row.special-reason {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #e0dcdc;
+}
+
+.detail-row.special-reason .detail-label {
+  font-weight: bold;
+  font-family: var(--font-family-noto-serif);
+  font-size: 20px;
+  color: var(--text-rgb-130-123-123);
+  min-width: 160px;
+}
+
+.detail-row.special-reason .reason-text {
+  font-size: 20px;
+  font-family: var(--font-family-alef);
+  color: var(--text-rgb-29-27-32);
+  text-align: right;
+  flex: 1;
+}
 .start-ride-btn {
   width: 200px;
   height: 25px;
@@ -58,7 +80,6 @@
   background-color: #ca4848;
 }
 
-
 .detail-label {
   font-weight: bold;
   font-family: var(--font-family-noto-serif);
@@ -74,7 +95,6 @@
   text-align: right;
   flex: 1;
 }
-
 
 .cute-red-button {
   background-color: #942222; /* your theme red */
@@ -105,7 +125,6 @@
   justify-content: flex-end; 
   padding: 1rem;
 }
-
 
 .back-btn {
   width: 200px;

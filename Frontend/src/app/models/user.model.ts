@@ -34,5 +34,6 @@ export interface User {
   license_expiry_date: Date | null;
   is_blocked: boolean;
   block_expires_at?: Date | null; // Optional, if user is blocked
+  is_unassigned_user?: boolean;
 
 }

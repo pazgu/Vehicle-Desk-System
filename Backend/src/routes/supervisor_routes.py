@@ -15,7 +15,7 @@ from ..utils.socket_manager import sio
 from ..utils.time_utils import is_time_in_blocked_window
 
 # Services
-from ..services.new_ride_service import create_supervisor_ride
+from ..services.new_ride_service import create_supervisor_ride,check_department_assignment
 from ..services.ride_reminder_service import schedule_ride_reminder_email
 from ..services.supervisor_dashboard_service import (
     get_department_orders,
@@ -71,27 +71,13 @@ async def create_order(
 ):
     role_check(allowed_roles=["supervisor", "admin"], token=token)
     identity_check(user_id=str(user_id), token=token)
+    check_department_assignment(db, user_id)
 
     try:
         new_ride = await create_supervisor_ride(db, user_id, ride_request)
         schedule_ride_start(new_ride.id, new_ride.start_datetime)
         schedule_ride_reminder_email(new_ride.id, new_ride.start_datetime)
         warning_flag = is_time_in_blocked_window(new_ride.start_datetime)
-        department_id = get_user_department(user_id=user_id, db=db)
-
-        await sio.emit("new_ride_request", {
-            "ride_id": str(new_ride.id),
-            "user_id": str(user_id),
-            "employee_name": new_ride.username,
-            "status": new_ride.status,
-            "destination": new_ride.stop,
-            "end_datetime": str(new_ride.end_datetime),
-            "date_and_time": str(new_ride.start_datetime),
-            "vehicle_id": str(new_ride.vehicle_id),
-            "requested_vehicle_model": new_ride.vehicle_model,
-            "department_id": str(department_id),
-            "distance": new_ride.estimated_distance_km,
-        })
 
         return {
             **RideResponse.model_validate(new_ride).dict(),

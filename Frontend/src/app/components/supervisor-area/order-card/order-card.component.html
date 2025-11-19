@@ -4,12 +4,33 @@
     <span>טוען פרטי נסיעה...</span>
   </div>
 
-  <p-card *ngIf="trip" [styleClass]="'trip-card ' + getCardClass(trip?.status)"> <ng-template pTemplate="header">
-      <div class="card-header">
-        <h2>פרטי נסיעה מלאים</h2>
-        <p-tag [value]="translateStatus(trip.status)"></p-tag>
-      </div>
-    </ng-template>
+  <p-card *ngIf="trip" [styleClass]="'trip-card ' + getCardClass(trip?.status)"> 
+    <ng-template pTemplate="header">
+  <div class="card-header">
+
+    <div class="header-right">
+      <p-tag [value]="translateStatus(trip.status)"></p-tag>
+    </div>
+
+    <h2 class="header-title">פרטי נסיעה מלאים</h2>
+
+    <div class="header-left">
+      <button
+        type="button"
+        class="back-btn"
+        (click)="goBack()"
+      >
+        <span>חזרה לרשימה</span>
+<i class="pi pi-arrow-left"></i>
+
+      </button>
+    </div>
+
+  </div>
+</ng-template>
+
+
+
 
     <div class="card-content">
       
@@ -28,6 +49,11 @@
         <div class="info-value">{{ getVehicleModel(trip.vehicleId) }}</div>
       </div>
 
+      <div *ngIf="trip?.four_by_four_reason" class="info-row">
+        <span class="info-label">סיבת שימוש ברכב {{ trip?.vehicleType }}:</span>
+        <span class="info-value">{{ trip?.four_by_four_reason }}</span>
+      </div>
+
       <div class="info-row">
         <div class="info-label">סוג נסיעה:</div>
         <div class="info-value">{{ translateRideType(trip.tripType) }}</div>
@@ -41,6 +67,10 @@
       <div class="info-row">
         <div class="info-label">תאריך סיום:</div>
         <div class="info-value">{{ trip.endDateTime | date:'dd/MM/yyyy HH:mm' }}</div>
+      </div>
+      <div *ngIf="trip?.extended_ride_reason != null" class="info-row">
+        <span class="info-label">סיבת הנסיעה:</span>
+        <span class="info-value">{{ trip?.extended_ride_reason }}</span>
       </div>
 
       <div class="info-row">
@@ -69,12 +99,6 @@
         <div class="info-value-distance">{{ ceil(trip.actualDistanceKm) | number:'1.0-3' }} ק"מ</div>
       </div>
 
-      <div class="info-row" *ngIf="trip.fourByFourReason">
-        <div class="info-label">סיבת 4x4:</div>
-        <div class="info-value">{{ trip.fourByFourReason }}</div>
-      </div>
-
-
       <div class="info-row">
         <div class="info-label">בדיקת רישיון:</div>
         <div class="info-value">
@@ -89,13 +113,24 @@
     </div>
 
     <ng-template pTemplate="footer">
-      <div class="card-actions">
-        <p-button [disabled]="hasTripPassed()" class="approve" label=" אישור נסיעה " styleClass="p-button-success"
-          (click)="updateStatus('approved')"></p-button>
-        <p-button [disabled]="hasTripPassed()" class="reject" label="דחיית נסיעה" styleClass="p-button-danger"
-          (click)="updateStatus('rejected')"></p-button>
-        <p-button class="return" label="חזרה לרשימה" styleClass="p-button-secondary" (click)="goBack()"></p-button>
-      </div>
-    </ng-template>
+  <div class="card-actions">
+    <p-button
+      [disabled]="hasTripPassed()"
+      class="approve"
+      label=" אישור נסיעה "
+      styleClass="p-button-success"
+      (click)="updateStatus('approved')"
+    ></p-button>
+
+    <p-button
+      [disabled]="hasTripPassed()"
+      class="reject"
+      label="דחיית נסיעה"
+      styleClass="p-button-danger"
+      (click)="updateStatus('rejected')"
+    ></p-button>
+  </div>
+</ng-template>
+
   </p-card>
 </div>

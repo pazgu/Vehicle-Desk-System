@@ -31,7 +31,7 @@ import { VehicleService } from '../../../services/vehicle.service';
 export class OrderCardComponent implements OnInit {
   trip: any = null;
   order: OrderCardItem | null = null;
-  departmentId: string | null = null; // Retrieve from localStorage
+  departmentId: string | null = null; 
   loading = false;
   rideId!: string;
   cityMap: { [id: string]: string } = {};
@@ -51,6 +51,12 @@ export class OrderCardComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+
+     window.scrollTo({
+    top: 0,
+    left: 0,
+    behavior: 'auto', 
+  });
     this.departmentId = localStorage.getItem('department_id');
     if (!this.departmentId) {
       this.toastService.show('מחלקה לא נמצאה', 'error');
@@ -58,13 +64,12 @@ export class OrderCardComponent implements OnInit {
     }
     this.rideId = this.route.snapshot.paramMap.get('ride_id')!;
 
-    // Listen for route params
     this.route.params.subscribe((params) => {
       const orderIdParam = params['orderId'] || this.rideId;
 
       if (orderIdParam) {
         this.rideId = orderIdParam;
-        this.loadOrder(this.departmentId!, this.rideId); // Use departmentId from localStorage
+        this.loadOrder(this.departmentId!, this.rideId); 
       } else {
         this.toastService.show('Missing orderId', 'error');
       }
@@ -104,7 +109,6 @@ export class OrderCardComponent implements OnInit {
       )
       .subscribe({
         next: (response) => {
-          // Map the backend response to the frontend model
           this.trip = {
             id: response.id,
             userId: response.user_id,
@@ -122,6 +126,8 @@ export class OrderCardComponent implements OnInit {
             licenseCheckPassed: response.license_check_passed,
             submittedAt: response.submitted_at,
             emergencyEvent: response.emergency_event,
+            four_by_four_reason: response.four_by_four_reason ?? null, 
+            extended_ride_reason: response.extended_ride_reason ?? null    
           };
         },
         error: (error) => {
@@ -199,7 +205,6 @@ export class OrderCardComponent implements OnInit {
     const tripStart = new Date(this.trip.startDateTime);
     const now = new Date();
 
-    // Check if the trip start time is in the past
     return tripStart < now;
   }
 
@@ -279,8 +284,4 @@ export class OrderCardComponent implements OnInit {
       .map(id => this.getCityName(id))
       .join(' ← ');
   }
-
-
-
-
 }

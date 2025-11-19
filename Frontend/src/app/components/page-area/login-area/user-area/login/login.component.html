@@ -2,38 +2,35 @@
 <div class="page-container">
   <div class="login-box">
     <a routerLink="/home" routerLinkActive="active">
-      <div class="close-btn">✕</div>
+      
     </a>
     <h2>התחברות</h2>
 
     <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
       <label>שם משתמש</label>
-      <input type="text" formControlName="username" />
-     <small *ngIf="f['username'].invalid && (f['username'].dirty || formSubmitted)" style="color:red;">
-      יש להזין שם משתמש
-    </small>
+<input
+  type="text"
+  formControlName="username"
+  [class.error-border]="formSubmitted && loginForm && !loginForm.value.username"
+/>
 
+    
 <label>סיסמה</label>
 <div class="password-container">
   <input 
     [type]="showPassword ? 'text' : 'password'" 
     formControlName="password" 
     class="password-input"
+    [class.error-border]="formSubmitted && loginForm && !loginForm.value.password"
   />
   <mat-icon 
     class="show-password"
     (click)="togglePassword()">
     {{ showPassword ? 'visibility' : 'visibility_off' }}
   </mat-icon>
-  
 </div>
 
 
-
-
-<small *ngIf="f['password'].invalid && (f['password'].dirty || formSubmitted)" style="color:red;">
-  יש להזין סיסמה
-</small>
 <div style="display:flex; align-items:center; justify-content: center;"><a style="text-align: center; color: gray; text-decoration: none; cursor: pointer;"
      routerLink="/forgot-password">
     שכחת סיסמה?</a>

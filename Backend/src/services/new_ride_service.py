@@ -31,6 +31,11 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate, license_chec
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
+    if user.is_unassigned_user or not user.department_id:
+        raise HTTPException(
+            status_code=403,
+            detail="לא ניתן ליצור נסיעה: המשתמש אינו משויך למחלקה. יש ליצור קשר עם המנהל להשמה במחלקה."
+        )
     if user.role == "employee" and not user.has_government_license:
         raise HTTPException(
             status_code=403,
@@ -151,6 +156,12 @@ async def create_supervisor_ride(db: Session, user_id: UUID, ride: RideCreate):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
+    if user.is_unassigned_user or not user.department_id:
+        raise HTTPException(
+            status_code=403,
+            detail="לא ניתן ליצור נסיעה: המשתמש אינו משויך למחלקה. יש ליצור קשר עם המנהל להשמה במחלקה."
+        )
+    
     if user.role == "supervisor" and not user.has_government_license:
         raise HTTPException(
             status_code=403,
@@ -246,3 +257,17 @@ def check_license_validity(db: Session, user_id: UUID, ride_start: datetime):
         )
 
     return True
+
+def check_department_assignment(db: Session, user_id: UUID):
+    user = db.query(User).filter(User.employee_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="משתמש לא נמצא")
+    
+    if user.is_unassigned_user or not user.department_id:
+        raise HTTPException(
+            status_code=403,
+            detail="לא ניתן ליצור נסיעה: המשתמש אינו משויך למחלקה. יש ליצור קשר עם המנהל להשמה במחלקה."
+        )
+    
+    return True
+

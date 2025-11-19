@@ -35,7 +35,7 @@ from ..models.no_show_events import NoShowEvent
 from ..models.notification_model import Notification
 from ..models.ride_model import Ride, RideStatus
 from ..models.user_model import User
-from ..models.vehicle_model import Vehicle
+from ..models.vehicle_model import Vehicle,VehicleStatus,FreezeReason
 
 load_dotenv() 
 BOOKIT_URL = os.getenv("BOOKIT_FRONTEND_URL", "http://localhost:4200")
@@ -227,7 +227,6 @@ async def check_vehicle_lease_expiry():
 
         for vehicle, department in vehicles_expiring:
             supervisor_id = department.supervisor_id
-
             if supervisor_id:
                 exists = db.query(Notification).filter(
                     Notification.user_id == supervisor_id,
@@ -319,6 +318,40 @@ async def check_vehicle_lease_expiry():
 
     finally:
         db.close()
+
+
+async def check_expired_vehicle():
+    db = SessionLocal()
+
+    try:
+        expired_ids = freeze_expired_vehicles(db)
+    except Exception as e:
+        print("DB error:", e)
+        db.rollback()
+        db.close()
+        return
+
+    db.close()
+
+    for vid in expired_ids:
+        await sio.emit("vehicle_status_updated", {
+            "id": vid,
+            "status": "frozen"
+        })
+
+def freeze_expired_vehicles(db: Session):
+    now = datetime.now()
+    vehicles = db.query(Vehicle).filter(Vehicle.lease_expiry < now).all()
+    print("expired v:",vehicles)
+    if not vehicles:
+        return []
+
+    for v in vehicles:
+        v.status = VehicleStatus.frozen
+        v.freeze_reason = FreezeReason.expired
+
+    db.commit()
+    return [str(v.id) for v in vehicles]
 
 async def check_and_cancel_unstarted_rides():
     db: Session = SessionLocal()
@@ -1037,6 +1070,7 @@ def periodic_check():
 
 
 def periodic_check_vehicle():
+    future = asyncio.run_coroutine_threadsafe(check_expired_vehicle(), main_loop)
     future = asyncio.run_coroutine_threadsafe(check_inactive_vehicles(), main_loop)
     future = asyncio.run_coroutine_threadsafe(check_vehicle_lease_expiry(), main_loop)
     future.result(timeout=5)
@@ -1075,7 +1109,7 @@ def periodic_delete_archived_vehicles():
 
 
 
-scheduler.add_job(periodic_check_vehicle, 'interval', days=1)
+scheduler.add_job(periodic_check_vehicle, 'interval', minutes=1)
 
 scheduler.add_job(
     periodic_check_inspector_notif,

@@ -2,11 +2,11 @@
   min-height: 100vh;
   background: #ded7d7;
   padding: 2rem 0;
-  background-image: url('/assets/images/vehicle-dashboard-bg.png'); /* your new file name */
+  background-image: url('/assets/images/vehicle-dashboard-bg.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-attachment: fixed; /* optional, makes it stay fixed on scroll */
+  background-attachment: fixed; 
 
 }
 
@@ -29,7 +29,6 @@
 .back-btn:hover {
   transform: scale(1.03);
 }
-
 
 .page-container {
   max-width: 1100px;
@@ -191,7 +190,6 @@
   color: #942222;
 }
 
-
 .frozen-vehicle-row {
   background-color: #e2f0f8 !important;
 }
@@ -237,7 +235,6 @@
   animation: moveStripes 1s linear infinite;
 }
 
-
 .empty-state {
   color: #9d9d9d;
   font-size: 1.2rem;
@@ -246,7 +243,6 @@
   flex-shrink: 0;
 }
 
-/* Log Details Card Styling */
 .log-details-card {
   background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
   border-radius: 16px;
@@ -292,7 +288,6 @@
   border-radius: 2px;
 }
 
-/* Main Info Section */
 .main-info {
   background: white;
   border-radius: 12px;
@@ -330,7 +325,6 @@
   font-weight: 600;
 }
 
-/* Change Data Section */
 .change-section {
   margin-top: 2rem;
 }
@@ -369,38 +363,12 @@
   font-weight: 500;
 }
 
-.old-data h4 {
-  color: #e74c3c;
-}
-
-.old-data {
-  border-right: 4px solid #e74c3c;
-}
-
-.new-data h4 {
-  color: #27ae60;
-}
-
-.new-data {
-  border-right: 4px solid #27ae60;
-}
-
-.insert-data {
-  border-right: 4px solid #3498db;
-}
-
-.insert-data h4 {
-  color: #3498db;
-}
-
-/* Entity Fields Container */
 .entity-fields {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-/* Field styling */
 .field-row {
   display: flex;
   justify-content: space-between;
@@ -434,8 +402,6 @@
   word-break: break-all;
 }
 
-
-/* JSON formatting */
 .json-container {
   background: #2d3748;
   color: #e2e8f0;
@@ -454,7 +420,6 @@
   word-wrap: break-word;
 }
 
-/* Close button */
 .close-details-button {
   background: linear-gradient(135deg, #942222 0%, #b83c3c 100%);
   color: white;
@@ -504,13 +469,7 @@
     grid-template-columns: 1fr;
   }
 
-  .field-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-    padding: 1rem 0;
-  }
-
+ 
   .field-value {
     margin-right: 0;
     width: 100%;
@@ -700,7 +659,6 @@
   box-shadow: 0 0 0 3px rgba(148, 34, 34, 0.3);
 }
 
-
 .date-range-filter {
   display: flex;
   align-items: center;
@@ -714,49 +672,38 @@
 }
 
 .range-select {
-  /* Box model */
-  padding: 0.5rem 1rem; /* Reduced padding for a more compact look */
-  padding-left: 2rem; /* Add specific padding on the left for the arrow */
+  padding: 0.5rem 1rem; 
+  padding-left: 2rem; 
   border-radius: 8px; 
   border: 0.5px solid #942222;
-  
-  /* Typography */
   font-family: inherit;
   font-size: 1rem;
   color: #942222;
   font-weight: 500;
-  
-  /* Background & cursor */
   background-color: #f5f5f5;
   cursor: pointer;
-  
-  /* Appearance and transitions */
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-  /* small arrow image */
   background-image: url('data:image/svg+xml;utf8,<svg fill="%23942222" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
   background-repeat: no-repeat;
-  background-position: left 0.75rem center; /* Position the arrow closer to the edge */
-  background-size: 1em; /* Reduced the arrow size to 1em */
+  background-position: left 0.75rem center; 
+  background-size: 1em; 
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  
-  /* Right-to-left support */
-  direction: rtl; /* This is essential for Hebrew text */
+  direction: rtl; 
 }
 
-/* State-based styling */
 .range-select:hover {
   border-color: #942222;
-  box-shadow: 0 0 0 3px rgba(148, 34, 34, 0.2); /* Box shadow on hover */
+  box-shadow: 0 0 0 3px rgba(148, 34, 34, 0.2); 
 }
 
 .range-select:focus {
   outline: none;
-  border-color: #942222; /* Keep the border color change on focus for accessibility */
+  border-color: #942222; 
 }
 
-/* Styling for the options */
+
 .range-select option {
   direction: rtl;
 }
@@ -823,6 +770,8 @@
   border-radius: 8px;
   padding: 0.7rem 1.2rem;
   border: 1px solid #e0e0e0;
+  margin: 1rem 0;
+  margin-left: 0.5rem;
 }
 
 .export-buttons h3 {
@@ -830,19 +779,7 @@
   font-size: 1.1rem;
   color: #942222;
   font-weight: 600;
-}
-
-.export-button {
-  background-color: #f5f5f5;
-  color: #942222;
-  border: 1px solid #942222;
-  padding: 0.2rem 0.8rem;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 600;
-  transition: background-color 0.2s, color 0.2s, transform 0.1s;
-  margin: 0;
+  margin-bottom: 0.5rem;
 }
 
 .export-button:hover {
@@ -880,88 +817,6 @@ input[type="checkbox"] {
   vertical-align: middle;
 }
 
-/* --- Updated Audit Ride Table Design --- */
-
-/* Table styling */
-.audit-ride-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 1.5rem 0;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-  border-radius: 12px;
-  overflow: hidden;
-  direction: rtl;
-}
-
-.audit-ride-table th,
-.audit-ride-table td {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid #aeaeae;
-  text-align: right;
-  font-size: 1rem;
-}
-
-.audit-ride-table th {
-  background: #942222;
-  color: #fff;
-  font-weight: 700;
-  font-size: 1.05rem;
-}
-
-.audit-ride-table tr:last-child td {
-  border-bottom: none;
-}
-
-.audit-ride-table td {
-  background: #fafbfc;
-  transition: background 0.2s;
-  vertical-align: middle;
-}
-
-/* Boolean coloring */
-.boolean-yes {
-  color: #388e3c;
-  font-weight: bold;
-}
-
-.boolean-no {
-  color: #d32f2f;
-  font-weight: bold;
-}
-
-/* Responsive for small screens */
-@media (max-width: 600px) {
-  .audit-ride-table th,
-  .audit-ride-table td {
-    padding: 0.5rem;
-    font-size: 0.95rem;
-  }
-}
-
-/* Only color changed old/new cells */
-.old-value-cell {
-  background: #ffeaea !important; 
-  color: #b71c1c;
-  font-weight: bold;
-}
-
-.new-value-cell {
-  background: #eaffea !important; 
-  color: #1b5e20;
-  font-weight: bold;
-}
-
-/* Deleted Data Styles */
-
-.delete-data {
-  border-right: 4px solid #b33c2f; 
-}
-
-.delete-data h4 {
-  color: #b33c2f; 
-}
-
   .filters-row {
     display: flex;
     flex-wrap: wrap;
@@ -970,10 +825,6 @@ input[type="checkbox"] {
     margin-bottom: 1rem;
   }
 
-.filter-section {
-  display: flex;
-  align-items: center;
-}
 
 .problematic-only-filter {
   display: flex;
@@ -982,18 +833,6 @@ input[type="checkbox"] {
 }
 
 
-.export-buttons {
-  margin: 1rem 0;
-}
-
-.export-buttons h3 {
-  margin-bottom: 0.5rem;
-}
-
-.export-button {
-  margin-left: 0.5rem;
-}
-
 .filter-actions-row {
   display: flex;
   align-items: center;
@@ -1001,8 +840,7 @@ input[type="checkbox"] {
   margin-bottom: 1rem;
 }
 
-.collapse-btn,
-.exceeded-monthly-trip-quota-label {
+.collapse-btn{
   background: none;
   border: 1px solid #942222;
   font-size: 1rem;
@@ -1017,7 +855,7 @@ input[type="checkbox"] {
   height: 40px;
 }
 
-.collapse-btn:hover:hover {
+.collapse-btn:hover{
   background: #942222;
   color: white;
   transform: translateY(-2px);

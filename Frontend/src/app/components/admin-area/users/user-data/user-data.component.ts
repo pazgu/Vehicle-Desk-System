@@ -1,4 +1,3 @@
-// src/app/components/user-data/user-data.component.ts
 import { Component, OnInit } from '@angular/core';
 import { User } from '../../../../models/user.model';
 import { UserService } from '../../../../services/user_service';
@@ -61,11 +60,21 @@ export class UserDataComponent implements OnInit {
 
     this.blockUserForm = this.fb.group({
       blockDuration: [14, [Validators.required, Validators.min(1)]],
+      blockReason: ['', [
+        Validators.required,
+        Validators.minLength(5),
+        this.noWhitespaceValidator
+      ]]
     });
 
     this.loadUsersAndDepartments();
   }
 
+noWhitespaceValidator(control: any) {
+  const isWhitespace = (control.value || '').trim().length === 0;
+  const isValid = !isWhitespace;
+  return isValid ? null : { 'whitespace': true };
+}
 private loadUsersAndDepartments(): void {
   const users$ = this.userService.getAllUsers();
   const departments$ = this.userService.getDepartments();
@@ -193,7 +202,7 @@ private loadUsersAndDepartments(): void {
   openBlockUserModal(user: User) {
     this.selectedUserForBlock = user;
     this.isBlockUserModalOpen = true;
-    this.blockUserForm.reset({ blockDuration: 14 });
+    this.blockUserForm.reset({ blockDuration: 14, blockReason: '' });
   }
 
   closeBlockUserModal() {
@@ -222,20 +231,35 @@ private loadUsersAndDepartments(): void {
 
     this.isSubmitting = true;
     const blockDuration = this.blockUserForm.get('blockDuration')?.value;
+    const blockReason = this.blockUserForm.get('blockReason')?.value.trim();
     const now = new Date();
     const blockExpiresAt = new Date(now.setDate(now.getDate() + blockDuration));
 
-    const formData = this.createFormDataForUserUpdate(this.selectedUserForBlock, true, blockExpiresAt.toISOString().slice(0, 16));
+    const formData = this.createFormDataForUserUpdate(this.selectedUserForBlock, true, blockExpiresAt.toISOString().slice(0, 16),blockReason);
 
     this.userService.updateUser(this.selectedUserForBlock.employee_id, formData).subscribe({
       next: () => {
-        // Socket.IO will handle updating the UI for users table
-        // We'll rely on the socket event to close the modal and show toast
-        // this.loadUsers(); // Optional: if you don't use sockets for user list updates
+        this.isSubmitting = false;
+        this.toastservice.show(`המשתמש נחסם בהצלחה למשך ${blockDuration} ימים. הסיבה נרשמה ✅`, 'success');
+        this.closeBlockUserModal();
       },
       error: (err) => {
         this.isSubmitting = false;
-        this.toastservice.show('שגיאה בחסימת המשתמש ❌', 'error');
+        let errorMessage = 'שגיאה בחסימת המשתמש ❌';
+        if (err.status === 400) {
+          errorMessage = err.error?.detail || 'נתונים שגויים - יש לבדוק את השדות ולנסות שוב ❌';
+        } else if (err.status === 403) {
+          errorMessage = 'אין לך הרשאה לחסום משתמש זה ❌';
+        } else if (err.status === 404) {
+          errorMessage = 'המשתמש לא נמצא במערכת ❌';
+        } else if (err.status === 500) {
+          errorMessage = 'שגיאה בשרת או במסד הנתונים - נסה שוב מאוחר יותר ❌';
+        } else if (err.status === 0 || !err.status) {
+          errorMessage = 'אין חיבור לשרת - בדוק את החיבור לאינטרנט ❌';
+        } else if (err.error?.detail) {
+          errorMessage = err.error.detail;
+        }
+        this.toastservice.show(errorMessage, 'error');
         console.error('Error blocking user:', err);
       },
     });
@@ -248,13 +272,13 @@ private loadUsersAndDepartments(): void {
 
     this.isSubmitting = true;
 
-    const formData = this.createFormDataForUserUpdate(this.selectedUserForBlock, false, null);
+    const formData = this.createFormDataForUserUpdate(this.selectedUserForBlock, false, null, null);
 
     this.userService.updateUser(this.selectedUserForBlock.employee_id, formData).subscribe({
       next: () => {
-        // Socket.IO will handle updating the UI for users table
-        // We'll rely on the socket event to close the modal and show toast
-        // this.loadUsers(); // Optional: if you don't use sockets for user list updates
+        this.isSubmitting = false;
+        this.toastservice.show('חסימת המשתמש שוחררה בהצלחה ✅', 'success');
+        this.closeUnblockConfirmationModal();
       },
       error: (err) => {
         this.isSubmitting = false;
@@ -267,7 +291,8 @@ private loadUsersAndDepartments(): void {
   private createFormDataForUserUpdate(
     user: User,
     isBlocked: boolean,
-    blockExpiresAt: string | null
+    blockExpiresAt: string | null,
+    blockReason: string | null
   ): FormData {
     const formData = new FormData();
 
@@ -300,6 +325,11 @@ private loadUsersAndDepartments(): void {
       formData.append('block_expires_at', blockExpiresAt);
     } else {
       formData.append('block_expires_at', '');
+    }
+    if (blockReason) {
+      formData.append('block_reason', blockReason);
+    } else {
+      formData.append('block_reason', '');
     }
 
     return formData;

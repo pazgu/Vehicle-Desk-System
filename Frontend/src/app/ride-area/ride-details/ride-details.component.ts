@@ -57,9 +57,6 @@ export class RideDetailsComponent implements OnInit {
       this.toastService.show('שגיאה בטעינת פרטי הנסיעה', 'error');
     }
   });
-     // ✅ Socket: react to new ride request while on this page
-   
-  
   }
 canStartRide(): boolean {
   if (!this.ride) return false;
@@ -81,6 +78,25 @@ isRideLongerThanOneDay(): boolean {
   
   return endDay > startDay;
 }
+isExtendedRide(): boolean {
+  if (!this.ride?.start_datetime || !this.ride?.end_datetime) return false;
+  
+  const startDate = new Date(this.ride.start_datetime);
+  const endDate = new Date(this.ride.end_datetime);
+  
+  const diffInMs = endDate.getTime() - startDate.getTime();
+  const diffInDays = diffInMs / (1000 * 60 * 60 * 24) + 1;
+  
+  return diffInDays >= 4;
+}
+isSpecialVehicle(): boolean {
+  if (!this.ride?.vehicle_type) return false;
+  
+  const vehicleType = this.ride.vehicle_type.toLowerCase();
+  return vehicleType.includes('4x4') || 
+          vehicleType.includes('jeep') || 
+          vehicleType.includes('van');
+}
 
   startRide() {
   if (!this.ride) return;
@@ -98,9 +114,8 @@ isRideLongerThanOneDay(): boolean {
 }
 
   getCityName(cityId: string): string {
-  return this.cityMap[cityId] || 'לא ידוע';
+  return this.cityMap[cityId] || 'תל אביב';
 }
-
 
   goBack(): void {
   this.router.navigate(['/all-rides']);

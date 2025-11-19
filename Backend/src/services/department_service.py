@@ -95,6 +95,7 @@ def delete_department(db: Session, department_id: str, payload: dict):
                     user.department_id=None
             if(user.role==UserRole.employee):
                 user.department_id = unassigned_dept.id
+                user.is_unassigned_user = True
     db.delete(department)
     db.commit()
     db.execute(text("SET session.audit.user_id = DEFAULT"))

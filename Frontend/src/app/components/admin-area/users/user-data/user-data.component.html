@@ -45,23 +45,50 @@
             <tr *ngIf="pagedUsers.length === 0">
               <td colspan="5" class="no-results">לא נמצאו משתמשים תואמים</td>
             </tr>
-
-
-
             <tr *ngFor="let user of pagedUsers" (click)="goToUserCard(user.employee_id)" class="clickable-row"
               [ngClass]="{'blocked-user-row': user.is_blocked}">
-              <td>
-                  <small *ngIf="hasExpiredLicense(user)" class="expired">
-                    <i class="pi pi-exclamation-triangle"></i>
-                  </small>
-                  <small *ngIf="hasNoLicense(user)" class="no-license">
-                    <i class="pi pi-exclamation-circle"></i>
-                  </small>
-                  <small *ngIf="user.is_blocked" class="blocked-indicator">
-                    <i class="pi pi-ban"></i>
-                  </small>
-                  <span [ngClass]="{'blocked-text': user.is_blocked}">{{ user.first_name }} {{ user.last_name }}</span>
-              </td>
+            <td class="column-name">
+  <div class="user-name-wrapper">
+    <span
+  class="user-name-text"
+  [ngClass]="{ 'blocked-text': user.is_blocked }"
+  [attr.data-full-name]="user.first_name + ' ' + user.last_name"
+   [title]="user.first_name + ' ' + user.last_name"
+>
+  {{ user.first_name }} {{ user.last_name }}
+</span>
+
+    <span class="user-icons">
+      <small
+        *ngIf="hasExpiredLicense(user)"
+        class="expired"
+        [title]="getLicenseWarningMessage(user)"
+      >
+        <svg width="35" height="30" viewBox="3 -5 24 24" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="6" width="20" height="12" rx="1" fill="none" stroke="#ef4444" stroke-width="1.5" />
+          <rect x="4" y="8" width="5" height="5" rx="0.5" fill="none" stroke="#ef4444" stroke-width="1" />
+          <line x1="10" y1="9" x2="19" y2="9" stroke="#ef4444" stroke-width="1" stroke-linecap="round" />
+          <line x1="10" y1="12" x2="16" y2="12" stroke="#ef4444" stroke-width="1" stroke-linecap="round" />
+        </svg>
+      </small>
+
+      <small
+        *ngIf="hasNoLicense(user)"
+        class="no-license"
+        [title]="getLicenseWarningMessage(user)"
+      >
+        <svg width="35" height="30" viewBox="3 -5 24 24" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="6" width="20" height="12" rx="1" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="2,2" />
+          <text x="12" y="16" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#9ca3af">?</text>
+        </svg>
+      </small>
+
+      <small *ngIf="user.is_blocked" class="blocked-indicator">
+        <i class="pi pi-ban"></i>
+      </small>
+    </span>
+  </div>
+</td>
 
               <td class="column-role" [ngClass]="{'blocked-text': user.is_blocked}">{{ user.role }}</td>
               <td class="column-department" [ngClass]="{'blocked-text': user.is_blocked}">
@@ -140,12 +167,34 @@
                 חובה להזין מספר ימים חיובי.
               </div>
             </div>
+            <div class="form-group">
+              <label for="blockReason">סיבת החסימה:</label>
+              <textarea 
+                id="blockReason" 
+                formControlName="blockReason" 
+                class="form-control" 
+                placeholder="הזן את הסיבה לחסימת משתמש זה (חובה)"
+                rows="4"
+                style="resize: vertical; min-height: 80px;"></textarea>
+              <div *ngIf="blockUserForm.get('blockReason')?.invalid && blockUserForm.get('blockReason')?.touched"
+                class="text-danger">
+                <span *ngIf="blockUserForm.get('blockReason')?.errors?.['required']">
+                  חובה למלא את סיבת החסימה.
+                </span>
+                <span *ngIf="blockUserForm.get('blockReason')?.errors?.['minlength']">
+                  הסיבה חייבת להכיל לפחות 5 תווים.
+                </span>
+                <span *ngIf="blockUserForm.get('blockReason')?.errors?.['whitespace']">
+                  הסיבה אינה יכולה להכיל רק רווחים.
+                </span>
+              </div>
+            </div>
 
             <div class="modal-buttons">
-              <button type="submit" class="btn btn-primary" [disabled]="blockUserForm.invalid" (click)="confirmBlockUser()">
-                כן
+              <button type="submit" class="btn btn-primary" [disabled]="blockUserForm.invalid || isSubmitting">
+                {{ isSubmitting ? 'מבצע חסימה...' : 'כן' }}
               </button>
-              <button type="button" class="btn btn-secondary" (click)="closeBlockUserModal()">
+              <button type="button" class="btn btn-secondary" (click)="closeBlockUserModal()" [disabled]="isSubmitting">
                 ביטול
               </button>
             </div>
@@ -159,10 +208,10 @@
           <p>האם אתה בטוח שברצונך לשחרר את חסימת המשתמש <strong>{{ selectedUserForBlock?.first_name }} {{
               selectedUserForBlock?.last_name }}</strong>?</p>
           <div class="modal-buttons">
-            <button type="button" class="btn btn-primary" (click)="confirmUnblockUser()">
-              כן
+            <button type="button" class="btn btn-primary" (click)="confirmUnblockUser()" [disabled]="isSubmitting">
+              {{ isSubmitting ? 'משחרר...' : 'כן' }}
             </button>
-            <button type="button" class="btn btn-secondary" (click)="closeUnblockConfirmationModal()">
+            <button type="button" class="btn btn-secondary" (click)="closeUnblockConfirmationModal()" [disabled]="isSubmitting">
               לא
             </button>
           </div>
