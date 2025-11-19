@@ -46,11 +46,12 @@
 .past-order {
   opacity: 0.6;
   background-color: #e0e0e0 !important;
-  color: #333 !important;
+  color: #000000 !important;
 }
 
 .completed-order {
-  background-color: #c9e6f9;
+  background-color: #e0ecf4 !important;
+  color: #000000 !important;
 }
 
 .pagination-controls {

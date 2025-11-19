@@ -37,10 +37,6 @@
           <span>מאושר</span>
         </div>
         <div class="status-item">
-          <span class="status-indicator completed"></span>
-          <span>בוצע</span>
-        </div>
-        <div class="status-item">
           <span class="status-indicator pending"></span>
           <span>בהמתנה</span>
         </div>
@@ -51,6 +47,10 @@
         <div class="status-item">
           <span class="status-indicator cancelled"></span>
           <span>בוטל</span>
+        </div>
+        <div class="status-item">
+          <span class="status-indicator completed"></span>
+          <span>בוצע</span>
         </div>
       </div>
     </div>
@@ -106,7 +106,7 @@
       </div>
     </div>
 
-    <div *ngIf="filteredOrders.length > 0">
+    <div class="table-wrapper" *ngIf="filteredOrders.length > 0">
       <div class="orders-header-row">
         <div class="icon-cell"></div>
         <div class="cell">מזהה נסיעה</div>

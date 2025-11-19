@@ -5,6 +5,7 @@ import { RideService } from '../../services/ride.service';
 import { ToastService } from '../../services/toast.service';
 import { SocketService } from '../../services/socket.service';
 import { CityService } from '../../services/city.service';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-ride-details',
@@ -24,7 +25,8 @@ export class RideDetailsComponent implements OnInit {
     private toastService: ToastService,
     private router: Router,
     private socketService: SocketService,
-    private cityService: CityService  
+    private cityService: CityService,
+    private location: Location
   ) {}
 
   ngOnInit(): void {
@@ -34,7 +36,6 @@ export class RideDetailsComponent implements OnInit {
       return;
     }
 
-    // Load cities and build ID → Name map
     this.cityService.getCities().subscribe({
       next: (cities) => {
         this.cityMap = cities.reduce((map, city) => {
@@ -47,7 +48,6 @@ export class RideDetailsComponent implements OnInit {
       }
     });
 
-    // Load ride details
     this.rideService.getRideById(this.rideId).subscribe({
       next: (res) => {
         this.ride = res;
@@ -132,6 +132,6 @@ export class RideDetailsComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/all-rides']);
+      this.location.back();
   }
 }
