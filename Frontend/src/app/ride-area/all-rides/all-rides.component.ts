@@ -286,6 +286,10 @@ export class AllRidesComponent implements OnInit {
     this.router.navigate(['/ride/details', order.ride_id]);
   }
 
+  scrollToTop(): void {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  
   onEditRide(order: any): void {
     this.editOrder(order);
   }
