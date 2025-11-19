@@ -127,7 +127,7 @@
   gap: 6px;
   font-size: 13px;
   font-weight: 500;
-  color: #4b5563;
+  color: #353b43;
 }
 
 .status-indicators-inline .status-indicator {
@@ -258,21 +258,7 @@
   background: white;
 }
 
-.status-indicators {
-  display: none;
-}
 
-.status-box {
-  display: none;
-}
-
-.status-item {
-  display: none;
-}
-
-.status-indicator {
-  display: none;
-}
 
 .orders-header-row {
   background-color: #811313;
@@ -550,5 +536,9 @@ button:disabled {
   .status-indicators-inline {
     justify-content: center;
     flex-wrap: wrap;
+  }
+
+  .filters-row {
+    grid-template-columns: 1fr;
   }
 }
