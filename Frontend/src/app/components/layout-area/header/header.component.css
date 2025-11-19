@@ -109,6 +109,21 @@ body, html {
   margin-left: 5px;
 }
 
+ .bell-icon {
+  width: 30px !important;
+  height: 30px !important;
+  display: block;
+  margin-right: 5px;
+}
+
+
+ .car-icon {
+  width: 35px !important;
+  height: 35px !important;
+  display: block;
+  margin-right: 10px;
+}
+
   .media-dropdown{
     display: none;
     position: absolute;
