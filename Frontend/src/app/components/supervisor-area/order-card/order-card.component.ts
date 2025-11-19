@@ -13,6 +13,7 @@ import { CityService } from '../../../services/city.service';
 import { ToastService } from '../../../services/toast.service';
 import { HttpClient } from '@angular/common/http';
 import { VehicleService } from '../../../services/vehicle.service';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-order-card',
@@ -47,7 +48,8 @@ export class OrderCardComponent implements OnInit {
     private cityService: CityService,
     private toastService: ToastService,
     private http: HttpClient,
-    private vehicleService: VehicleService
+    private vehicleService: VehicleService,
+    private location: Location
   ) { }
 
   ngOnInit(): void {
@@ -159,9 +161,9 @@ export class OrderCardComponent implements OnInit {
       });
   }
 
-  goBack(): void {
-    this.router.navigate(['/supervisor-dashboard']);
-  }
+    goBack(): void {
+        this.location.back();
+    }
 
   getCardClass(status: string | null | undefined): string {
     if (!status) return '';
