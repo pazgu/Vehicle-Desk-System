@@ -112,7 +112,8 @@
         <div class="cell">מזהה נסיעה</div>
         <div class="cell">שם עובד</div>
         <div class="cell">רכב</div>
-        <div class="cell">תאריך</div>
+        <div class="cell">תאריך התחלה</div>
+        <div class="cell">שעת התחלה</div>
         <div class="cell">מרחק (ק"מ)</div>
         <div class="cell">סטטוס</div>
       </div>
@@ -145,9 +146,8 @@
 
         <div class="cell">{{ trip.employee_name }}</div>
         <div class="cell">{{ trip.requested_vehicle_model }}</div>
-        <div class="cell">
-          {{ trip.date_and_time | date : "dd/MM/yyyy HH:mm" }}
-        </div>
+        <div class="cell">{{ getStartDate(trip.date_and_time) }}</div>
+        <div class="cell">{{ getStartTime(trip.date_and_time) }}</div>
         <div class="cell">{{ trip.distance }}</div>
         <div class="cell" [ngClass]="getStatusClass(trip.status)">
           {{ translateStatus(trip.status) }}

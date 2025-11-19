@@ -66,9 +66,6 @@
   gap: 1rem;
   margin-bottom: 1rem;
   direction: rtl;
-  max-width: 95%;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 .filter-left-section {
@@ -172,10 +169,18 @@
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
   padding: 1.2rem;
   margin-bottom: 1.5rem;
-  max-width: 95%;
-  margin-left: auto;
-  margin-right: auto;
   animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .filter-group {
@@ -278,8 +283,6 @@
   padding: 0.75rem;
   border-top-left-radius: 12px;
   border-top-right-radius: 12px;
-  max-width: 95%;
-  margin: 0 auto;
 }
 
 .orders-data-row {
@@ -289,8 +292,6 @@
   padding: 0.75rem;
   transition: background-color 0.2s ease, border 0.5s ease-in-out;
   position: relative;
-  max-width: 95%;
-  margin: 0 auto;
 }
 
 .orders-data-row:hover {
@@ -364,33 +365,27 @@
 }
 
 .row-approved {
-  background-color: #dcf1e1;
-  color: #155724;
+  background-color: #e8f5e8;
 }
 
 .row-pending {
-  background-color: #fbf3da;
-  color: #856404;
+  background-color: #fff8e1;
 }
 
 .row-rejected {
-  background-color: #f8e2e2;
-  color: #721c24;
+  background-color: #f8d7da;
 }
 
 .row-cancelled {
-  background-color: #f0f0f0;
-  color: #6c757d;
+  background-color: #ffe1e184;
 }
 
 .row-completed {
   background-color: #c9e6f9;
-  color: #171056;
 }
 
 .row-cancelled-no-show {
   background-color: #dfdddd;
-  color: #5a5a5e;
 }
 
 .empty-state-container {
