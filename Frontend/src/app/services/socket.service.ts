@@ -76,14 +76,13 @@ this.socket.on('feedback_needed', (data) => {
 });
 
 this.socket.on('order_deleted', (data: any) => {
-  this.deleteRequests$.next(data); // ✅ Pushes to subscribers like HomeComponent
+  this.deleteRequests$.next(data); 
   
 });
 
     this.socket.on('new_notification', (data: any) => {
   const userId = localStorage.getItem('employee_id');
 
-  // Make sure both exist and compare them
   if (data.user_id && userId && data.user_id.toString() === userId.toString()) {
     this.notifications$.next(data);
 
@@ -138,7 +137,7 @@ this.socket.on('user_block_status_updated', (data: any) => {
     id: String(data.id),
     is_blocked: !!data.is_blocked,
     block_expires_at: data.block_expires_at
-      ? new Date(data.block_expires_at)     // <-- normalize here
+      ? new Date(data.block_expires_at)
       : null,
   };
 
@@ -159,13 +158,5 @@ this.socket.on('user_block_status_updated', (data: any) => {
   public sendMessage(eventName: string, data: any): void {
     this.socket.emit(eventName, data);
   }
-
-  //   public joinRoom(userId: string): void {
-  //   this.socket.emit('join', { room: userId });
-  //   console.log(`📡 Sent join request to room: ${userId}`);
-  // }
-
-  
-
 
 }

@@ -120,6 +120,7 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate, license_chec
             "sent_at": delegated_notification.sent_at.isoformat(),
             "order_id": str(delegated_notification.order_id) if delegated_notification.order_id else None,
             "order_status": new_ride.status,
+            "Seen": False
         })
 
     db.execute(text("SET session.audit.user_id = DEFAULT"))

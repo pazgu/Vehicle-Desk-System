@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Text, DateTime, Enum, ForeignKey
+from sqlalchemy import Column, Text, DateTime, Enum, ForeignKey, Boolean
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from src.models.base import Base
@@ -20,11 +20,11 @@ class Notification(Base):
     message = Column(Text, nullable=False)
     sent_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
     order_id = Column(UUID(as_uuid=True), ForeignKey("rides.id"), nullable=True)
-    vehicle_id = Column(UUID(as_uuid=True), ForeignKey("vehicles.id"), nullable=True)  # ✅
+    vehicle_id = Column(UUID(as_uuid=True), ForeignKey("vehicles.id"), nullable=True)
     relevant_user_id = Column(UUID(as_uuid=True), ForeignKey("users.employee_id"), nullable=True)
+    seen = Column(Boolean, nullable=False, default=False)
 
 
-    # Relationship to Ride (order)
     ride = relationship("Ride", back_populates="notifications", lazy="joined", uselist=False)
     
 
@@ -38,5 +38,6 @@ class Notification(Base):
             "notification_type": self.notification_type.value if self.notification_type else None,
             "sent_at": self.sent_at.isoformat() if self.sent_at else None,
             "order_id": str(self.order_id) if self.order_id else None,
-            "vehicle_id": str(self.vehicle_id) if self.vehicle_id else None
+            "vehicle_id": str(self.vehicle_id) if self.vehicle_id else None,
+            "seen": self.seen
         }
