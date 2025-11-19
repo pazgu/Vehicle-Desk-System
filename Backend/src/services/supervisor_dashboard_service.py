@@ -235,7 +235,8 @@ async def edit_order_status(department_id: str, order_id: str, new_status: str,u
         "notification_type": notification.notification_type.value,
         "sent_at": notification.sent_at.isoformat(),
         "order_id": str(notification.order_id) if notification.order_id else None,
-        "order_status": order.status
+        "order_status": order.status,
+        "Seen": False
     })
 
     return order, notification

@@ -160,7 +160,7 @@ register(): void {
         } else if (typeof details === 'string') {
           // Handle string-based error messages
           if (details.includes('already exists')) {
-            this.toastService.show('שם המשתמש או האימייל כבר קיימים במערכת', 'error');
+            this.toastService.show('שם המשתמש, מייל או מספר טלפון כבר קיימים במערכת', 'error');
             return;
           } else if (details.includes('Invalid email')) {
             this.toastService.show('כתובת האימייל שגויה. אנא הזן כתובת תקינה (למשל name@example.com)', 'error');
