@@ -315,3 +315,16 @@
   font-size: 0.75rem;
   color: #6b7280;
 }
+.vehicles-grid app-vehicle-card,
+.vehicles-grid .vehicle-card {
+  display: block;
+  transition: box-shadow 0.22s ease-out,
+              background-color 0.22s ease-out;
+}
+
+.vehicles-grid app-vehicle-card:hover,
+.vehicles-grid .vehicle-card:hover {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14);
+  background-color: #ffffff;
+}
+
