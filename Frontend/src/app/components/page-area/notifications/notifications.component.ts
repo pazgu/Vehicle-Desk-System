@@ -281,6 +281,9 @@ export class NotificationsComponent implements OnInit {
         }
       });
     }
+    if (role !='admin' && notif.message.includes('לא הוחזר בזמן')){
+      return
+    }
     if (role === 'admin' && notif.message.includes('בעיה חמורה')) {
       this.router.navigate(['/admin/critical-issues'], {
         queryParams: { highlight: '1' },
