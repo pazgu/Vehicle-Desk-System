@@ -43,7 +43,6 @@ export class AdminAnalyticsComponent implements OnInit {
 
   selectedSortOption = 'countDesc';
   activeTabIndex = 0;
-
   selectedMonth = (new Date().getMonth() + 1).toString();
   selectedYear = new Date().getFullYear().toString();
   private departmentsMap = new Map<string, string>();
@@ -52,10 +51,11 @@ export class AdminAnalyticsComponent implements OnInit {
     (new Date().getFullYear() - i).toString()
   );
 
-  constructor(private router: Router, private route: ActivatedRoute) {}
-
-  ngOnInit() {
-    this.vehicleUsageComponent.loadAllTimeTopUsedVehiclesChart();
+  ngOnInit() {}
+  ngAfterViewInit() {
+        setTimeout(() => {
+      this.activeTabIndex = 0;})
+        
   }
 
   resolveDepartment(departmentId: string): string {
@@ -75,7 +75,7 @@ export class AdminAnalyticsComponent implements OnInit {
     let chartData: any;
     let title: string;
     if (isNoShowTab) {
-      title = 'No-Show Users Report';
+      title = 'דיווח אי-הגעות';
     } else {
       chartData = isVehicleTab
         ? this.vehicleStatusComponent.vehicleChartData
@@ -84,12 +84,12 @@ export class AdminAnalyticsComponent implements OnInit {
         : this.vehicleUsageComponent.topUsedVehiclesData;
 
       title = isVehicleTab
-        ? 'Vehicle Status Summary'
+        ? 'סטטוס רכבים'
         : isRideTab
-        ? 'Ride Status Summary'
+        ? 'סטטוס נסיעות'
         : this.vehicleUsageComponent.isMonthlyView
-        ? 'Monthly Vehicle Usage'
-        : 'Top Used Vehicles';
+        ? 'שימוש חודשי ברכבים'
+        : 'רכבים בשימוש גבוה ';
     }
 
     const timestamp = new Date().toLocaleString();
