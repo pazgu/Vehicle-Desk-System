@@ -75,7 +75,7 @@ export class AdminAnalyticsComponent implements OnInit {
     let chartData: any;
     let title: string;
     if (isNoShowTab) {
-      title = 'No-Show Users Report';
+      title = 'דיווח אי-הגעות';
     } else {
       chartData = isVehicleTab
         ? this.vehicleStatusComponent.vehicleChartData
@@ -84,12 +84,12 @@ export class AdminAnalyticsComponent implements OnInit {
         : this.vehicleUsageComponent.topUsedVehiclesData;
 
       title = isVehicleTab
-        ? 'Vehicle Status Summary'
+        ? 'סטטוס רכבים'
         : isRideTab
-        ? 'Ride Status Summary'
+        ? 'סטטוס נסיעות'
         : this.vehicleUsageComponent.isMonthlyView
-        ? 'Monthly Vehicle Usage'
-        : 'Top Used Vehicles';
+        ? 'שימוש חודשי ברכבים'
+        : 'רכבים בשימוש גבוה ';
     }
 
     const timestamp = new Date().toLocaleString();
