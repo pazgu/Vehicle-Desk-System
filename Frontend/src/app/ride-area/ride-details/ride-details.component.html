@@ -1,89 +1,143 @@
-<div class="all-ride-details">
+<div class="ride-details-container" dir="rtl">
+  <div class="page-header">
+  <div class="header-spacer"></div>
 
-<div class="ride-card">
-  <button class="back-btn" (click)="goBack()">חזור לרשימה ←</button>
-  <h2 class="heading">פרטי הנסיעה</h2>
-  <button *ngIf="canStartRide()" class="start-ride-btn" (click)="startRide()">
-    🚗 התחל נסיעה
-  </button>
+  <h1>פרטי הנסיעה</h1>
 
-  <div class="detail-row">
-    <span class="detail-label">תאריך:</span>
-    <span class="detail-value">{{ ride?.start_datetime | date: 'dd/MM/yyyy' }}</span>
-  </div>
+  <button class="back-button" (click)="goBack()">
+  חזור
+  <i class="pi pi-arrow-left"></i>
+</button>
 
-  <div *ngIf="isRideLongerThanOneDay()" class="detail-row">
-    <span class="detail-label">תאריך סיום:</span>
-    <span class="detail-value">{{ ride?.end_datetime | date: 'dd/MM/yyyy' }}</span>
-  </div>
-
-  <div class="detail-row">
-    <span class="detail-label">שעת התחלה:</span>
-    <span class="detail-value">{{ ride?.start_datetime | date: 'HH:mm' }}</span>
-  </div>
-
-  <div class="detail-row">
-    <span class="detail-label">שעת סיום:</span>
-    <span class="detail-value">{{ ride?.end_datetime | date: 'HH:mm' }}</span>
-  </div>
-
-  <div class="detail-row">
-    <span class="detail-label">סוג נסיעה:</span>
-    <span class="detail-value">{{ ride?.ride_type === 'operational' ? 'מבצעית' : 'מנהלתית' }}</span>
-  </div>
-
-  <div class="detail-row">
-    <span class="detail-label">מרחק מוערך:</span>
-    <span class="detail-value">{{ ride?.estimated_distance_km }} ק״מ</span>
-  </div>
-
-  <div class="detail-row">
-    <span class="detail-label">מיקום התחלה:</span>
-    <span class="detail-value">{{ getCityName(ride?.start_location) }}</span>
-  </div>
-
-  <div class="detail-row">
-    <span class="detail-label">תחנה:</span>
-    <span class="detail-value">{{ getCityName(ride?.stop) }}</span>
-  </div>
-
-  <div *ngIf="ride?.extra_stops && ride.extra_stops.length > 0" class="detail-row">
-    <span class="detail-label">עצירות נוספות:</span>
-    <span class="detail-value">
-      <ng-container *ngFor="let stopId of ride.extra_stops; let last = last">
-        {{ getCityName(stopId) }}
-        <span *ngIf="!last"> ← </span>
-      </ng-container>
-    </span>
-  </div>
-
-  <div class="detail-row">
-    <span class="detail-label">יעד:</span>
-    <span class="detail-value">{{ getCityName(ride?.destination) }}</span>
-  </div>
-
-
-  <div class="detail-row">
-    <span class="detail-label">רכב שנבחר:</span>
-    <span class="detail-value">{{ ride?.vehicle || 'לא זמין' }}</span>
-  </div>
-
-
-
-  <div class="detail-row">
-    <span class="detail-label">סטטוס:</span>
-    <span class="detail-value" [ngClass]="{
-    'rejected-row': ride?.status === 'rejected',
-    'in-progress-row': ride?.status === 'in_progress'
-  }">
-      {{ ride?.status === 'pending' ? 'ממתין' :
-      ride?.status === 'approved' ? 'מאושר':
-      ride?.status === 'completed' ? 'הושלם' :
-      ride?.status === 'in_progress' ? 'בתהליך' :
-      ride?.status === 'rejected' ? 'נדחה' :
-      ride?.status === 'cancelled_due_to_no_show' ? 'בוטלה-נסיעה לא יצאה' : '' }}
-    </span>
-  </div>
 </div>
 
+
+  <div class="ride-details-card">
+    <!-- Start Ride Button -->
+    <button *ngIf="canStartRide()" class="start-ride-btn" (click)="startRide()">
+      <i class="pi pi-play-circle"></i>
+      התחל נסיעה
+    </button>
+
+    <!-- Status Badge -->
+    <div class="status-badge" [ngClass]="{
+      'status-pending': ride?.status === 'pending',
+      'status-approved': ride?.status === 'approved',
+      'status-completed': ride?.status === 'completed',
+      'status-in-progress': ride?.status === 'in_progress',
+      'status-rejected': ride?.status === 'rejected',
+      'status-cancelled': ride?.status === 'cancelled_due_to_no_show'
+    }">
+      {{ getStatusText(ride?.status) }}
+    </div>
+
+    <!-- Date & Time Section -->
+    <div class="details-section">
+      <div class="section-title">
+        <i class="pi pi-calendar"></i>
+        תאריך ושעה
+      </div>
+      
+      <div class="detail-item">
+        <span class="detail-label">תאריך התחלה:</span>
+        <span class="detail-value">{{ ride?.start_datetime | date: 'dd/MM/yyyy' }}</span>
+      </div>
+
+      <div *ngIf="isRideLongerThanOneDay()" class="detail-item">
+        <span class="detail-label">תאריך סיום:</span>
+        <span class="detail-value">{{ ride?.end_datetime | date: 'dd/MM/yyyy' }}</span>
+      </div>
+
+      <div class="detail-item">
+        <span class="detail-label">שעת התחלה:</span>
+        <span class="detail-value">{{ ride?.start_datetime | date: 'HH:mm' }}</span>
+      </div>
+
+      <div class="detail-item">
+        <span class="detail-label">שעת סיום:</span>
+        <span class="detail-value">{{ ride?.end_datetime | date: 'HH:mm' }}</span>
+      </div>
+    </div>
+
+    <!-- Extended Ride Reason -->
+    <div *ngIf="isExtendedRide() && ride?.extended_ride_reason" class="special-notice">
+      <i class="pi pi-info-circle"></i>
+      <div class="notice-content">
+        <strong>סיבה לנסיעה ממושכת:</strong>
+        <p>{{ ride?.extended_ride_reason }}</p>
+      </div>
+    </div>
+
+    <!-- Route Section -->
+    <div class="details-section">
+      <div class="section-title">
+        <i class="pi pi-map-marker"></i>
+        מסלול הנסיעה
+      </div>
+
+      <div class="detail-item">
+        <span class="detail-label">נקודת התחלה:</span>
+        <span class="detail-value">{{ getCityName(ride?.start_location) }}</span>
+      </div>
+
+      <div class="detail-item">
+        <span class="detail-label">תחנה:</span>
+        <span class="detail-value">{{ getCityName(ride?.stop) }}</span>
+      </div>
+
+      <div *ngIf="ride?.extra_stops && ride.extra_stops.length > 0" class="detail-item">
+        <span class="detail-label">עצירות נוספות:</span>
+        <span class="detail-value">
+          <ng-container *ngFor="let stopId of ride.extra_stops; let last = last">
+            {{ getCityName(stopId) }}
+            <span *ngIf="!last"> ← </span>
+          </ng-container>
+        </span>
+      </div>
+
+      <div class="detail-item">
+        <span class="detail-label">נקודת סיום:</span>
+        <span class="detail-value">{{ getCityName(ride?.destination) }}</span>
+      </div>
+
+      <div class="detail-item">
+        <span class="detail-label">מרחק מוערך:</span>
+        <span class="detail-value">{{ ride?.estimated_distance }} ק״מ</span>
+      </div>
+    </div>
+
+    <!-- Ride Type & Vehicle Section -->
+    <div class="details-section">
+      <div class="section-title">
+        <i class="pi pi-car"></i>
+        פרטי הנסיעה
+      </div>
+
+      <div class="detail-item">
+        <span class="detail-label">סוג נסיעה:</span>
+        <span class="detail-value">{{ ride?.ride_type === 'operational' ? 'מבצעית' : 'מנהלתית' }}</span>
+      </div>
+
+      <div class="detail-item">
+        <span class="detail-label">רכב שנבחר:</span>
+        <span class="detail-value">
+          <ng-container *ngIf="ride?.vehicle_model; else fallbackVehicle">
+            {{ ride?.vehicle_model }}
+          </ng-container>
+          <ng-template #fallbackVehicle>
+            {{ ride?.vehicle || 'לא זמין' }}
+          </ng-template>
+        </span>
+      </div>
+    </div>
+
+    <!-- Special Vehicle Reason -->
+    <div *ngIf="isSpecialVehicle() && ride?.four_by_four_reason" class="special-notice">
+      <i class="pi pi-info-circle"></i>
+      <div class="notice-content">
+        <strong>סיבת שימוש ברכב {{ ride?.vehicle_type }}:</strong>
+        <p>{{ ride?.four_by_four_reason }}</p>
+      </div>
+    </div>
+  </div>
 </div>

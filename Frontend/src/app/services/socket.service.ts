@@ -9,9 +9,9 @@ import { NotificationService } from './notification';
 export class SocketService {
 
   private socket!: Socket;
-   usersLicense$ = new Subject<any>();
-  // ✅ Will remind you to replace this with actual backend URL
-  private readonly SOCKET_URL = environment.socketUrl; // ✅ now uses env
+  usersLicense$ = new Subject<any>();
+  usersDepartment$ = new Subject<any>();
+  private readonly SOCKET_URL = environment.socketUrl;
 
   public notifications$ = new BehaviorSubject<any>(null);
   public rideRequests$ = new BehaviorSubject<any>(null);
@@ -76,14 +76,14 @@ this.socket.on('feedback_needed', (data) => {
 });
 
 this.socket.on('order_deleted', (data: any) => {
-  this.deleteRequests$.next(data); // ✅ Pushes to subscribers like HomeComponent
+  this.deleteRequests$.next(data); 
   
 });
 
     this.socket.on('new_notification', (data: any) => {
   const userId = localStorage.getItem('employee_id');
 
-  // Make sure both exist and compare them
+  
   if (data.user_id && userId && data.user_id.toString() === userId.toString()) {
     this.notifications$.next(data);
 
@@ -132,13 +132,16 @@ this.socket.on('order_deleted', (data: any) => {
     this.socket.on('user_license_updated', (data) => {
       this.usersLicense$.next(data);
     });
+this.socket.on('user_department_updated', (data) => {
+  this.usersDepartment$.next(data);
+});
 this.socket.on('user_block_status_updated', (data: any) => {
 
   const normalized = {
     id: String(data.id),
     is_blocked: !!data.is_blocked,
     block_expires_at: data.block_expires_at
-      ? new Date(data.block_expires_at)     // <-- normalize here
+      ? new Date(data.block_expires_at)
       : null,
   };
 
@@ -159,13 +162,5 @@ this.socket.on('user_block_status_updated', (data: any) => {
   public sendMessage(eventName: string, data: any): void {
     this.socket.emit(eventName, data);
   }
-
-  //   public joinRoom(userId: string): void {
-  //   this.socket.emit('join', { room: userId });
-  //   console.log(`📡 Sent join request to room: ${userId}`);
-  // }
-
-  
-
 
 }

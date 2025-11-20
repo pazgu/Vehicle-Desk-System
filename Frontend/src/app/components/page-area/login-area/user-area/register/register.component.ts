@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -9,6 +8,7 @@ import { AuthService } from '../../../../../services/auth.service';
 import { ToastService } from '../../../../../services/toast.service';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { DepartmentService } from '../../../../../services/department_service';
 @Component({
   selector: 'app-register',
   standalone: true,
@@ -24,7 +24,7 @@ export class RegisterComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private http: HttpClient,
+    private departmentService: DepartmentService,
     private authService: AuthService,
     private toastService: ToastService,
     private router: Router
@@ -51,15 +51,13 @@ export class RegisterComponent implements OnInit {
   }
 
   fetchDepartments(): void {
-    this.http.get<any[]>('http://localhost:8000/api/departments').subscribe({
+    this.departmentService.getDepartments().subscribe({
       next: (data) => {
         this.departments = data;
       },
-      error: (err) => {
-        console.error('Failed to fetch departments', err);
+      error: () => {
         this.toastService.show('שגיאה בטעינת מחלקות', 'error');
         this.departments = [];
-
       }
     });
   }
@@ -69,9 +67,6 @@ export class RegisterComponent implements OnInit {
   }
 
 register(): void {
-  console.log('Register function called!');
-  console.log('Form valid:', this.registerForm.valid);
-  console.log('Form errors:', this.registerForm.errors);
   this.errorMessage = null;
 
   if (this.registerForm.invalid) {
@@ -90,7 +85,6 @@ register(): void {
       return;
     }
     
-    console.log('About to show toast');
     this.toastService.show('יש למלא את כל השדות כנדרש ולוודא תקינות', 'error');
     return;
   }
@@ -137,7 +131,7 @@ register(): void {
     },
 
     error: (err) => {
-      console.error('Registration failed:', err);
+
 
       if (err.status === 0) {
         this.toastService.show('השרת אינו זמין כרגע. נסה שוב מאוחר יותר', 'error');
@@ -166,7 +160,7 @@ register(): void {
         } else if (typeof details === 'string') {
           // Handle string-based error messages
           if (details.includes('already exists')) {
-            this.toastService.show('שם המשתמש או האימייל כבר קיימים במערכת', 'error');
+            this.toastService.show('שם המשתמש, מייל או מספר טלפון כבר קיימים במערכת', 'error');
             return;
           } else if (details.includes('Invalid email')) {
             this.toastService.show('כתובת האימייל שגויה. אנא הזן כתובת תקינה (למשל name@example.com)', 'error');
@@ -181,7 +175,7 @@ register(): void {
         this.toastService.show('שגיאה בפרטי ההרשמה. אנא בדוק את הקלט ונסה שוב', 'error');
 
       } else {
-        const errorText = err.error?.detail || 'שגיאה כללית בהרשמה';
+        const errorText = 'שגיאה כללית בהרשמה';
         this.toastService.show(errorText, 'error');
       }
     }

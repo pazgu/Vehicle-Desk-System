@@ -50,7 +50,7 @@ def get_vehicle_km_driven_on_date(db: Session, vehicle_id: int, day: date) -> fl
 def get_vehicles_with_optional_status(
     db: Session,
     status: Optional[VehicleStatus] = None,
-    type: Optional[str] = None  # Renamed from vehicle_type
+    type: Optional[str] = None
 ) -> List[Vehicle]:
     query = db.query(Vehicle).filter(Vehicle.is_archived == False)
     
@@ -76,16 +76,22 @@ def get_available_vehicles_new_ride(
     end_time: Optional[datetime] = None,
     type: Optional[str] = None
 ) -> List[Vehicle]:
-    query = db.query(Vehicle).filter(Vehicle.is_archived == False,Vehicle.status== VehicleStatus.available)
+    now = datetime.utcnow()  
+
+    query = (
+        db.query(Vehicle)
+        .filter(
+            Vehicle.is_archived == False,
+            Vehicle.status == VehicleStatus.available,
+            Vehicle.lease_expiry > now       
+        )
+    )
 
     if type:
         query = query.filter(func.lower(Vehicle.type) == type.lower())
 
-    # Filter out vehicles that are already booked
     if start_time and end_time:
-        # Subquery to find vehicles with overlapping rides
-    
-        # Add 2 hours buffer
+
         end_time_with_buffer = end_time + timedelta(hours=2)
 
         overlapping_rides = db.query(Ride.vehicle_id).filter(
@@ -120,7 +126,7 @@ def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_re
         raise HTTPException(status_code=404, detail="Vehicle not found")
 
     try:
-        old_status = vehicle.status  # Save before updating
+        old_status = vehicle.status
         if new_status == VehicleStatus.frozen:
             if not freeze_reason:
                 raise HTTPException(status_code=400, detail="freeze_reason is required when setting status to 'frozen'")
@@ -132,7 +138,7 @@ def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_re
         db.commit()
         db.refresh(vehicle)
 
-        # 🔍 Try to find a supervisor from the same department (if any)
+        # Try to find a supervisor from the same department (if any)
         # --- Email Recipient Determination Logic ---
         # recipient_emails_set: set[str] = set() # Use a set to handle duplicates automatically
         # log_messages: List[str] = []
@@ -237,7 +243,6 @@ def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID) -> List[Ve
     end_datetime = ride.end_datetime
     ride_distance = ride.estimated_distance_km
 
-    # Subquery: Vehicles already taken during that period
     conflicting_vehicles_subquery = (
         db.query(Ride.vehicle_id)
         .filter(
@@ -252,7 +257,6 @@ def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID) -> List[Ve
         .subquery()
     )
 
-    # Initial vehicle candidates (available + time compatible)
     candidate_vehicles = (
         db.query(Vehicle)
         .filter(
@@ -262,7 +266,6 @@ def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID) -> List[Ve
         .all()
     )
 
-    # 💡 Extra Filter: Check daily distance cap
     today_start = datetime.combine(start_datetime.date(), datetime.min.time())
     today_end = today_start + timedelta(days=1)
 
@@ -273,15 +276,13 @@ def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID) -> List[Ve
             available_vehicles.append(vehicle)
             continue
 
-        # Total used distance by this vehicle today
         used_distance = db.query(func.coalesce(func.sum(Ride.actual_distance_km), 0)).filter(
             Ride.vehicle_id == vehicle.id,
             Ride.start_datetime >= today_start,
             Ride.start_datetime < today_end,
-            Ride.status.in_(["approved", "in_progress", "completed"])  # include completed if relevant
+            Ride.status.in_(["approved", "in_progress", "completed"]) 
         ).scalar()
 
-        # Check if this vehicle can handle the new ride
         if (vehicle.max_daily_distance_km - used_distance) >= ride_distance:
             available_vehicles.append(vehicle)
 
@@ -338,13 +339,12 @@ def get_available_vehicles_by_type_and_time(
     start_datetime: datetime,
     end_datetime: datetime,
 ) -> List[Vehicle]:
-    # שלב 1 - בחר רכבים לפי סוג וסטטוס זמין
+
     query = db.query(Vehicle).filter(
         Vehicle.type == vehicle_type,
         Vehicle.status == VehicleStatus.available,
     )
     
-    # שלב 2 - שלוף את כל הרכבים שיש להם נסיעה שמתנגשת עם טווח התאריכים המבוקש
     conflicting_rides_subquery = db.query(Ride.vehicle_id).filter(
         or_(
             and_(
@@ -352,10 +352,9 @@ def get_available_vehicles_by_type_and_time(
                 Ride.end_datetime >= start_datetime,
             )
         ),
-        Ride.status != "cancelled",  # ניתן להוסיף סינון לביטולים
+        Ride.status != "cancelled",
     ).subquery()
     
-    # שלב 3 - סנן את הרכבים עם נסיעות מתנגשות
     query = query.filter(~Vehicle.id.in_(conflicting_rides_subquery))
     
     vehicles = query.all()
@@ -377,7 +376,7 @@ async def delete_vehicle(vehicle_id: UUID, db: Session, user_id: UUID):
 
         rides = db.query(Ride).filter(Ride.vehicle_id == vehicle_id).all()
         ride_ids = [r.id for r in rides]
-        ride_users = list({r.user_id for r in rides if r.user_id})  # unique user IDs
+        ride_users = list({r.user_id for r in rides if r.user_id})  
 
         if ride_ids:
             db.query(NoShowEvent).filter(NoShowEvent.ride_id.in_(ride_ids)).delete(synchronize_session=False)
@@ -420,7 +419,6 @@ async def notify_users_vehicle_deleted(vehicle, user_ids: list[UUID]):
 
         db.commit()
 
-        # Emit notifications to connected users
         for notif in notifications:
             await sio.emit(
                 "new_notification",
@@ -438,10 +436,8 @@ async def get_inactive_vehicles():
         now = datetime.now(timezone.utc)
         one_week_ago = now - timedelta(days=7)
 
-        # Get all vehicles
         all_vehicles = db.query(Vehicle).all()
 
-        # Get latest ride per vehicle (if any)
         recent_rides_subq = db.query(
             Ride.vehicle_id,
             func.max(Ride.end_datetime).label("last_ride")
@@ -449,7 +445,6 @@ async def get_inactive_vehicles():
             Ride.status == "completed"
         ).group_by(Ride.vehicle_id).subquery()
 
-        # Join vehicles to recent ride
         inactive_vehicles = db.query(Vehicle, recent_rides_subq.c.last_ride).outerjoin(
             recent_rides_subq, Vehicle.id == recent_rides_subq.c.vehicle_id
         ).filter(
@@ -481,7 +476,6 @@ def archive_vehicle_by_id(vehicle_id: UUID, db: Session, user_id: UUID) -> Vehic
     if vehicle.is_archived:
         raise HTTPException(status_code=400, detail="Vehicle is already archived.")
 
-    # Check for related data (e.g., rides)
     has_related_data = db.execute(
         text("SELECT EXISTS (SELECT 1 FROM rides WHERE vehicle_id = :vehicle_id)"),
         {"vehicle_id": str(vehicle_id)}
@@ -496,7 +490,6 @@ def archive_vehicle_by_id(vehicle_id: UUID, db: Session, user_id: UUID) -> Vehic
     vehicle.archived_at = datetime.utcnow()
     db.commit()
 
-    # Manually insert audit log for reason visibility
     db.execute(
         text("""
             INSERT INTO audit_logs (

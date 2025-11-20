@@ -23,7 +23,7 @@ import { Location } from '@angular/common';
 export class NotificationsComponent implements OnInit {
   notifications: (MyNotification & { timeAgo: string })[] = [];
   currentPage = 1;
-  notificationsPerPage = 5;
+  notificationsPerPage = 3;
 
   constructor(
     private notificationService: NotificationService,
@@ -39,7 +39,15 @@ export class NotificationsComponent implements OnInit {
 
   ngOnInit(): void {
     const userId = localStorage.getItem('employee_id');
-    this.notificationService.unreadCount$.next(0);
+    this.notificationService.markAllNotificationsAsSeen().subscribe({
+      next: () => {
+        this.notificationService.unreadCount$.next(0);
+      },
+      error: (err) => {
+        console.error('Failed to mark notifications as seen:', err);
+      }
+    });
+
     const role = localStorage.getItem('role');
     if (role === 'admin') {
       this.notificationService.getNotifications().subscribe({
@@ -132,16 +140,13 @@ export class NotificationsComponent implements OnInit {
     } else {
       this.notificationService.getNotifications().subscribe({
         next: (data) => {
-          this.notifications = data.map((note) => {
-            const extended = note.is_extended_request;
-            return {
-              ...note,
-              timeAgo: formatDistanceToNow(new Date(note.sent_at), {
-                addSuffix: true,
-                locale: he,
-              }),
-            };
-          });
+          this.notifications = data.map((note) => ({
+            ...note,
+            timeAgo: formatDistanceToNow(new Date(note.sent_at), {
+              addSuffix: true,
+              locale: he,
+            }),
+          }));
         },
         error: (err) => {
           console.error('Failed to fetch notifications:', err);
@@ -233,7 +238,7 @@ export class NotificationsComponent implements OnInit {
   }
   getStatusClass(status?: string): string {
     if (!status) {
-      return 'neutral'; // fallback class
+      return 'neutral';
     }
     switch (status.toLowerCase()) {
       case 'approved':
@@ -249,7 +254,7 @@ export class NotificationsComponent implements OnInit {
 
   getStatusIcon(status?: string): string {
     if (!status) {
-      return '/assets/images/clock.png'; // fallback icon
+      return '/assets/images/clock.png';
     }
     switch (status.toLowerCase()) {
       case 'approved':
@@ -266,7 +271,19 @@ export class NotificationsComponent implements OnInit {
   handleNotificationClick(notif: MyNotification): void {
     const role = localStorage.getItem('role');
 
-    // If this is a critical vehicle inspection message and the user is admin:
+    if (!notif.seen) {
+      this.notificationService.markNotificationAsSeen(notif.id).subscribe({
+        next: () => {
+          notif.seen = true;
+        },
+        error: (err) => {
+          console.error('Failed to mark notification as seen:', err);
+        }
+      });
+    }
+    if (role !='admin' && notif.message.includes('לא הוחזר בזמן')){
+      return
+    }
     if (role === 'admin' && notif.message.includes('בעיה חמורה')) {
       this.router.navigate(['/admin/critical-issues'], {
         queryParams: { highlight: '1' },
@@ -284,5 +301,8 @@ export class NotificationsComponent implements OnInit {
 
   getInactiveAlerts(title: string): string {
     return title == 'Inactive Vehicle' ? 'inactive-alert' : '';
+  }
+  onImageError(event: any, note: MyNotification): void {
+    event.target.src = 'assets/images/message.png';
   }
 }

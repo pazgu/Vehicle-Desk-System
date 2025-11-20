@@ -4,8 +4,6 @@ import { VehicleService } from '../../../services/vehicle.service';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../../environments/environment';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../page-area/confirm-dialog/confirm-dialog.component';
 import { MatIconModule } from '@angular/material/icon';
@@ -37,7 +35,6 @@ currentDate = new Date();
     private navigateRouter: Router,
     private route: ActivatedRoute,
     private vehicleService: VehicleService,
-    private http: HttpClient,
     private dialog: MatDialog, 
     private toastService: ToastService,
     private location: Location
@@ -52,16 +49,13 @@ currentDate = new Date();
       this.vehicleService.getVehicleById(id).subscribe(vehicleData => {
         this.vehicle = vehicleData;
         this.vehicle.displayStatus = this.translateStatus(vehicleData.status);
-        // ✅ IMPORTANT: Check if vehicle is archived and update the display accordingly
         if (vehicleData.is_archived) {
-          // Override status display for archived vehicles
           this.vehicle.status = 'archived';
           this.vehicle.displayStatus = 'מארכב';
         }
 
-        // Department logic
         if (vehicleData.department_id) {
-          this.http.get<any>(`${environment.apiUrl}/departments/${vehicleData.department_id}`).subscribe({
+          this.vehicleService.getDepartmentById(vehicleData.department_id).subscribe({
             next: (dept) => {
               this.departmentName = dept.name;
             },
@@ -89,19 +83,14 @@ currentDate = new Date();
     }
   }
 
-  goBack(): void {
-          this.navigateRouter.navigate([`/vehicle-dashboard`]);
+    goBack(): void {
+        this.location.back();
+    }
 
-  }
-
-  // New method to load vehicle usage data from analytics
   loadVehicleUsageData(): void {
-    this.http.get<{ plate_number: string; vehicle_model: string; ride_count: number }[]>(
-      `${environment.apiUrl}/analytics/top-used-vehicles`
-    ).subscribe({
+   this.vehicleService.getTopUsedVehicles().subscribe({
       next: data => {
         this.vehicleUsageData = data;
-        // Create a map for quick lookup
         this.topUsedVehiclesMap = {};
         data.forEach(vehicle => {
           this.topUsedVehiclesMap[vehicle.plate_number] = vehicle.ride_count;
@@ -113,7 +102,7 @@ currentDate = new Date();
     });
   }
 confirmDeleteVehicle(vehicle: any) {
-  if (vehicle.status === 'in-use') return; // extra safety
+  if (vehicle.status === 'in-use') return;
 
   const dialogData: ConfirmDialogData = {
     title: 'מחיקת רכב',
@@ -142,7 +131,6 @@ confirmDeleteVehicle(vehicle: any) {
 }
 
   deleteVehicle(vehicleId: string) {
-    // call service later
     console.log('Delete vehicle ID:', vehicleId);
   }
   translateStatus(status: string | null | undefined): string {
@@ -223,7 +211,6 @@ saveMileage(): void {
     }
   }
 
-  // ✅ FIXED: Updated to use location.back() instead of hardcoded navigation
   updateVehicleStatus(newStatus: string, reason?: string): void {
     if (!this.vehicle?.id) return;
 
@@ -232,13 +219,11 @@ saveMileage(): void {
         this.vehicle.status = newStatus;
         this.vehicle.freeze_reason = newStatus === 'frozen' ? reason : null;
 
-        // Reset the dropdown and hide it if freezing
         if (newStatus === 'frozen') {
           this.freezeReason = '';
           this.isFreezeReasonFieldVisible = false;
         }
 
-        // ✅ FIXED: Use location.back() instead of hardcoded navigation
         this.location.back();
       },
       error: (err) => {
@@ -248,7 +233,6 @@ saveMileage(): void {
     });
   }
 
-  // Show the freeze reason input field
   showFreezeReasonField(): void {
     this.isFreezeReasonFieldVisible = true;
   }
@@ -274,7 +258,6 @@ saveMileage(): void {
 
   getUsageBarWidth(plateNumber: string): number {
     const count = this.getVehicleUsageCount(plateNumber);
-    // Scale to max 15 rides for 100% width
     const maxRides = 15;
     return Math.min((count / maxRides) * 100, 100);
   }
@@ -284,25 +267,22 @@ saveMileage(): void {
   }
 
   getAllRidesForCurrentVehicle(vehicleId: string): void {
-    this.http.get<{ vehicle_id: string, date_and_time: string }[]>(`${environment.apiUrl}/orders`).subscribe({
+    this.vehicleService.getAllOrders().subscribe({
       next: (rides) => {
 
         const count = rides.filter(ride => {
           if (ride.vehicle_id !== vehicleId) return false;
 
-          // Check if ride has a date field
           if (!ride.date_and_time) return false;
 
           const rideDate = new Date(ride.date_and_time);
           const currentDate = new Date();
 
-          // Check if ride is from current month and year
           return rideDate.getMonth() === currentDate.getMonth() &&
             rideDate.getFullYear() === currentDate.getFullYear();
         }).length;
 
 
-        // Store the count in the component property
         this.currentVehicleRideCount = count;
       },
       error: (err) => {
@@ -319,7 +299,6 @@ saveMileage(): void {
   }
 
   
-  // UPDATED: Archive confirmation
   confirmArchive(vehicle: any): void {
     const message = `תוקף חוזה ההשכרה של רכב ${vehicle.plate_number} פג והרכב מוקפא.\nלא ניתן למחוק את הרכב, אך ניתן לארכב אותו.\n\nהאם את/ה בטוח/ה שברצונך לארכב את הרכב?`;
 
@@ -351,7 +330,6 @@ saveMileage(): void {
     });
   }
 
-  // UPDATED: Unfreeze confirmation
   confirmUnfreeze(): void {
     const message = `האם את/ה בטוח/ה שברצונך לשחרר את הרכב ${this.vehicle.plate_number} מהקפאה?`;
 
@@ -372,7 +350,6 @@ saveMileage(): void {
     });
   }
 
-  // UPDATED: Freeze confirmation
   confirmFreeze(): void {
     if (!this.freezeReason.trim()) {
       alert('יש להזין סיבת הקפאה');
@@ -410,7 +387,6 @@ saveMileage(): void {
     const date = new Date(dateStr);
     const now = new Date();
 
-    // Remove time for comparison
     const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     const nowOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
@@ -427,7 +403,6 @@ saveMileage(): void {
       date.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
   }
 
-  // UPDATED: Method to restore vehicle from archive
   restoreVehicle(vehicle: any): void {
     const message = `האם את/ה בטוח/ה שברצונך לשחזר את הרכב ${vehicle.plate_number} מהארכיון ולהחזיר אותו לפעילות?`;
     
@@ -470,7 +445,6 @@ updateVehiclemileage(vehicle: any): void {
 }
 
 
-  // UPDATED: Method to permanently delete vehicle
   permanentlyDeleteVehicle(vehicle: any): void {
     const message = `⚠️ האם את/ה בטוח/ה שברצונך למחוק לצמיתות את הרכב ${vehicle.plate_number}?\n\nפעולה זו לא ניתנת לביטול ותמחק את כל הנתונים הקשורים לרכב!`;
     

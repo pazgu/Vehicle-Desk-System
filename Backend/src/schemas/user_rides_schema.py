@@ -36,6 +36,8 @@ class RideSchema(BaseModel):
     vehicle_type: str
     vehicle_model: str
     actual_pickup_time: Optional[datetime] = None
+    extended_ride_reason: Optional[str] = None
+    four_by_four_reason: Optional[str] = None
 
     class Config:
         from_attributes = True

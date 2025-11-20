@@ -79,6 +79,22 @@
             </small>
           </div>
         </div>
+        <div class="form-field-group" *ngIf="isExtendedRequest">
+          <label>סיבה לנסיעה ממושכת (4 ימים ומעלה) <span class="required">*</span></label>
+          <textarea formControlName="extended_ride_reason"
+                    class="styled-textarea"
+                    rows="3"
+                    placeholder="נא לפרט את הסיבה לנסיעה ממושכת..."
+                    [class.error-border]="rideForm.get('extended_ride_reason')?.invalid && rideForm.get('extended_ride_reason')?.touched">
+          </textarea>
+          <small class="error-text" *ngIf="rideForm.get('extended_ride_reason')?.invalid && rideForm.get('extended_ride_reason')?.touched">
+            חובה לפרט סיבה לנסיעה ממושכת
+          </small>
+          <small class="info-text">
+            <i class="pi pi-info-circle"></i>
+            נסיעות של 4 ימים ומעלה דורשות אישור מיוחד וסיבה מפורטת
+          </small>
+        </div>
 
         <div class="row">
           <div class="input-group">
@@ -93,7 +109,7 @@
           </div>
 
           <div class="input-group">
-            <label>בחר רכב</label>
+            <label>דגם רכב</label>
             <select formControlName="car" class="styled-select">
               <option value="">בחר רכב</option>
               <option *ngFor="let car of availableCars"
@@ -106,12 +122,28 @@
             <small class="info-text" *ngIf="rideForm.get('vehicle_type')?.value && availableCars.length === 0">
               אין רכבים זמינים מסוג זה לתאריך ושעות שנבחרו
             </small>
-            <small class="error-text" *ngIf="getFieldError('car')">
-              {{ getFieldError('car') }}
+            <small class="error-text" *ngIf="rideForm.get('car')?.touched && rideForm.get('car')?.errors?.['required']">
+              חובה לבחור רכב
             </small>
           </div>
         </div>
 
+        <div class="form-field-group" *ngIf="rideForm.get('vehicle_type')?.value && 
+                                            (rideForm.get('vehicle_type')?.value.toLowerCase().includes('4x4') || 
+                                             rideForm.get('vehicle_type')?.value.toLowerCase().includes('jeep') || 
+                                             rideForm.get('vehicle_type')?.value.toLowerCase().includes('van'))">
+          <label>סיבת שימוש ברכב {{ rideForm.get('vehicle_type')?.value }} <span class="required">*</span></label>
+          <textarea 
+            formControlName="four_by_four_reason" 
+            class="styled-textarea"
+            rows="3"
+            placeholder="נא לפרט את הסיבה לשימוש ברכב מיוחד..."
+            [class.error-border]="rideForm.get('four_by_four_reason')?.invalid && rideForm.get('four_by_four_reason')?.touched">
+          </textarea>
+          <small class="error-text" *ngIf="rideForm.get('four_by_four_reason')?.invalid && rideForm.get('four_by_four_reason')?.touched">
+            חובה למלא סיבה לשימוש ברכב {{ rideForm.get('vehicle_type')?.value }}
+          </small>
+        </div>
         <div class="row">
           <div class="input-group">
             <label>מרחק (ק"מ)</label>
@@ -172,8 +204,12 @@
           <button type="button"
         (click)="addExtraStop()"
         [disabled]="extraStops.length >= 2"
+        [class.disabled-button]="extraStops.length >= 2"
         class="addBtn">
-  <i class="pi pi-plus"></i> הוסף תחנה נוספת (אופציונלי - מקסימום 2)
+  <i [class.pi-plus]="extraStops.length < 2" 
+     [class.pi-ban]="extraStops.length >= 2"
+     class="pi"></i> 
+  {{ extraStops.length >= 2 ? 'הגעת למקסימום תחנות' : 'הוסף תחנה נוספת (אופציונלי - מקסימום 2)' }}
 </button>
 
           <small *ngIf="extraStops.errors?.['sameStopAsDestination']" class="error-text">

@@ -237,18 +237,6 @@ cursor: cell;
     animation-delay: 3s;
 }
 
-/* Red underline animation */
-.department-info h3::after {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background: linear-gradient(90deg, #ef4444, #dc2626);
-    transition: width 0.4s ease;
-    border-radius: 1px;
-}
 
 .department-info:hover h3::after {
     width: 60%;
@@ -427,10 +415,15 @@ cursor: cell;
 }
 
 .new-department-form button[type="submit"]:disabled {
-    opacity: 0.6;
+    background: #bfbfbf; /* soft gray tone */
+    color: #f8f8f8 !important;
     cursor: not-allowed;
     transform: none;
+    box-shadow: none;
+    border: none;
+    opacity: 1; /* remove transparency so it looks solid gray */
 }
+
 
 
 

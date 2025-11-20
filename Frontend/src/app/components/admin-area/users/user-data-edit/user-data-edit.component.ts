@@ -3,8 +3,9 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { UserService } from '../../../../services/user_service';
+import { DepartmentService } from '../../../../services/department_service';
 import { ToastService } from '../../../../services/toast.service';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { RedirectByRoleComponent } from '../../../../services/redirect-by-role';
 import { Router } from '@angular/router';
@@ -40,8 +41,8 @@ export class UserDataEditComponent implements OnInit {
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private userService: UserService,
+    private departmentService: DepartmentService,
     private toastService: ToastService,
-    private http: HttpClient,
     private router: Router,
     private socketService: SocketService,
     private cdr: ChangeDetectorRef
@@ -54,6 +55,7 @@ export class UserDataEditComponent implements OnInit {
     this.loadRoles();
     this.setupFormSubscriptions();
     this.setupSocketSubscriptions();
+    this.setupRoleBasedValidation();
   }
 
   ngOnDestroy(): void {
@@ -123,7 +125,7 @@ export class UserDataEditComponent implements OnInit {
       username: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       role: ['', Validators.required],
-      department_id: ['', Validators.required],
+      department_id: [''],
       has_government_license: [false],
       license_file_url: [''],
       license_expiry_date: [''],
@@ -137,9 +139,11 @@ export class UserDataEditComponent implements OnInit {
   }
 
   fetchDepartments(): void {
-    this.http.get<any[]>('http://localhost:8000/api/departments').subscribe({
+    this.departmentService.getDepartments().subscribe({
       next: (data) => {
-        this.departments = data;
+        this.departments = data.filter((dept: any) => 
+          dept.name.toLowerCase() !== 'unassigned'
+        );
       },
       error: (err) => {
         console.error('Failed to fetch departments', err);
@@ -161,6 +165,24 @@ export class UserDataEditComponent implements OnInit {
       }
 
     });
+  }
+  setupRoleBasedValidation(): void {
+    const roleSub = this.userForm.get('role')?.valueChanges.subscribe((role: string) => {
+      const deptControl = this.userForm.get('department_id');
+      
+      if (role === 'employee') {
+        deptControl?.setValidators([Validators.required]);
+      } else {
+        deptControl?.clearValidators();
+        if (role === 'admin' || role === 'inspector') {
+          deptControl?.setValue('');
+        }
+      }
+      
+      deptControl?.updateValueAndValidity();
+    });
+    
+    if (roleSub) this.subs.push(roleSub);
   }
 
   loadUserData(): void {
@@ -240,7 +262,9 @@ export class UserDataEditComponent implements OnInit {
       formData.append('username', formValues.username);
       formData.append('email', formValues.email);
       formData.append('role', formValues.role);
-      formData.append('department_id', formValues.department_id);
+      if (formValues.department_id) {
+        formData.append('department_id', formValues.department_id);
+      }
       formData.append('phone', formValues.phone);
 
       const hasLicenseControl = this.userForm.get('has_government_license');

@@ -86,14 +86,10 @@ if (url.includes('archived-vehicles') && role != 'admin') {
   return false;
 }
 
-if (url.includes('ride/details') && role != 'employee') {
+if (url.includes('ride/details') && (role != 'employee' && role!='supervisor')) {
   if(role=='admin'){
       this.router.navigate(['/admin/critical-issues']);
       return false
-  }
-  if(role=='supervisor'){
-    this.router.navigate(['/supervisor-dashboard']);
-    return false
   }
   if(role=='inspector'){
       this.router.navigate(['/inspector/inspection']);

@@ -24,6 +24,8 @@ class OrderCardItem(BaseModel):
     emergency_event: Optional[str] = None 
     extra_stops: Optional[List[UUID]] = None 
     rejection_reason: Optional[str] = None
+    extended_ride_reason: Optional[str] = None
+    four_by_four_reason: Optional[str] = None
 
 
     class Config:

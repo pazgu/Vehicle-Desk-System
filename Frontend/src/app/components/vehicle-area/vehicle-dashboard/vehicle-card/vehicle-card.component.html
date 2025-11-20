@@ -1,0 +1,45 @@
+<app-vehicle-usage-stats></app-vehicle-usage-stats>
+<p-card [styleClass]="getCardClass()" (click)="onCardClick()">
+  <div
+    class="usage-indicator"
+    [style.background-color]="getUsageBarColor(vehicle.plate_number)"
+  ></div>
+  <span
+    class="usage-number"
+    *ngIf="getVehicleUsageCount(vehicle.plate_number) > 0"
+  >
+    {{ getVehicleUsageCount(vehicle.plate_number) }} נסיעות</span
+  >
+
+
+  <div *ngIf="isInactive(vehicle.last_used_at)" class="inactive-badge">
+    לא פעיל
+  </div>
+
+  <div style="text-align: center; margin-top: 2rem; margin-bottom: 0.2rem">
+    <img
+      [src]="vehicle.image_url || '/assets/images/default-vehicle.png'"
+      alt="{{ vehicle.vehicle_model }}"
+      style="
+        width: 90%;
+        height: auto;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-bottom: 30px;
+      "
+    />
+  </div>
+
+ <div style="display: flex; flex-direction: column; flex: 1;">
+  <h3>{{ vehicle.vehicle_model }}</h3>
+  <p><strong>מספר רכב:</strong> {{ vehicle.plate_number }}</p>
+  <p><strong>סוג:</strong> {{ vehicle.type }}</p>
+</div>
+
+<span
+  class="department-tag"
+  [ngClass]="{ 'no-department-tag': !vehicle.department_id }"
+>
+  {{ vehicle.department || "לא משוייך למחלקה" }}
+</span>
+</p-card>

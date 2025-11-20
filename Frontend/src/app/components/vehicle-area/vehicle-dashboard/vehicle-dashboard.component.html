@@ -1,321 +1,95 @@
-<div class="page-wrapper">
-  <div class="page-container">
-    <div class="vehicles-wrapper">
-        <div class="header-title">
-          <h1 style="text-align: right">רכבי מחלקה</h1>
-          <button
-            class="filter archive-btn"
-            (click)="navigateToArchivedVehicles()"
-            title=" ארכיון רכבים"
-          >
-            <i class="pi pi-folder"></i>
-          </button>
-        </div>
-          <div class="add-vehicle-btn-div">
-            <button
-              class="add-vehicle-btn"
-              (click)="navigateToNewVehicle()"
-              *ngIf="userRole !== 'supervisor'"
-            >
-              הוסף רכב חדש +
-            </button>
-          </div>
-        <div class="show-filter">
-          <button class="filter" (click)="showFilters = !showFilters">
-            {{ showFilters ? "הסתר סינון" : "הצג סינון" }}
-          </button>
-        </div>
-
-        <div class="show-mileage-upload">
-          <button
-            class="show-upload"
-            (click)="showMileageUpload = !showMileageUpload"
-          >
-            {{
-              showMileageUpload ? "הסתר העלאת דוח" : 'הצג העלאת דוח ק"מ חודשי'
-            }}
-          </button>
-        </div>
-
-      <div
-        *ngIf="showingMostUsed"
-        style="
-          text-align: right;
-          font-weight: bold;
-          color: #922;
-          margin-top: 1rem;
-        "
-      >
-        מוצגים רכבים לפי כמות שימושים החודש
-      </div>
-
-      <div class="utility-sections-wrapper">
-        <div class="status-indicators">
-          <p style="margin-bottom: 0.75rem; font-weight: 600">מקרא צבעים</p>
-          <div class="status-box">
-            <div class="status-item">
-              <span class="status-indicator available"></span> זמין
-            </div>
-            <div class="status-item">
-              <span class="status-indicator in-use"></span> בשימוש
-            </div>
-            <div class="status-item">
-              <span class="status-indicator frozen"></span> מוקפא
-            </div>
-          </div>
-          <div
-            class="status-item"
-            style="
-              display: flex;
-              align-items: center;
-              gap: 5px;
-              margin-top: 0.75rem;
-            "
-          >
-            <div
-              class="inactive-badge"
-              style="position: static; transform: none; margin-top: 0"
-            >
-              לא פעיל
-            </div>
-          </div>
-
-          <small>לא היה בשימוש מעל שבוע</small>
-        </div>
-      </div>
-
-      <div
-        *ngIf="showFilters"
-        style="
-          margin-bottom: 1.5rem;
-          background-color: rgb(249, 245, 245);
-          border: 1px solid #ddd;
-          padding: 1rem;
-          border-radius: 8px;
-          direction: rtl;
-          margin-top: 1rem;
-          width: 600px;
-        "
-      >
-        <div style="margin-bottom: 1rem; gap: 1rem; display: flex">
-          <label for="statusFilter"> סטטוס:</label>
-          <select
-            class="statusFilter"
-            id="statusFilter"
-            [(ngModel)]="statusFilter"
-            (change)="updateQueryParams()"
-          >
-            <option value="">הצג הכל</option>
-            <option value="זמין">זמין</option>
-            <option value="בשימוש">בשימוש</option>
-            <option value="מוקפא">מוקפא</option>
-          </select>
-        </div>
-
-        <div style="margin-bottom: 1rem; gap: 1rem; display: flex">
-          <label for="typeFilter"> סוג:</label>
-          <select
-            class="typeFilter"
-            id="typeFilter"
-            [(ngModel)]="typeFilter"
-            (change)="updateQueryParams()"
-          >
-            <option value="">הצג הכל</option>
-            <option *ngFor="let type of vehicleTypes" [value]="type.original">
-              {{ type.original }}
-            </option>
-          </select>
-        </div>
-
-        <div
-          style="
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            direction: rtl;
-          "
-        >
-          <input
-            type="checkbox"
-            id="showInactive"
-            [(ngModel)]="showInactive"
-            (change)="onInactiveFilterChange()"
-            class="showInactive"
-            style="transform: scale(1.2); cursor: pointer"
-          />
-          <label for="showInactive" style="cursor: pointer">
-            הצג רק מכוניות שלא היו בשימוש מעל לשבוע
-            <i class="pi pi-exclamation-triangle"></i>
-          </label>
-        </div>
-
-        <div
-          style="
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            direction: rtl;
-          "
-        >
-          <input
-            class="showingMostUsed"
-            id="mostUsed"
-            type="checkbox"
-            [(ngModel)]="showingMostUsed"
-            (change)="onMostUsedChange()"
-            style="transform: scale(1.2); cursor: pointer"
-          />
-          <label for="mostUsed" style="cursor: pointer">
-            הצג את המכוניות שהיו בשימוש הכי הרבה החודש
-          </label>
-        </div>
-      </div>
-
-      <div
-        *ngIf="showMileageUpload"
-        class="mileage-upload-wrapper"
-        style="
-          margin-bottom: 1.5rem;
-          background-color: rgb(249, 245, 245);
-          border: 1px solid #ddd;
-          padding: 1rem;
-          border-radius: 8px;
-          direction: rtl;
-          margin-top: 1rem;
-          width: 600px;
-        "
-      >
-        <div class="mileage-upload-section">
-          <label>העלאת דוח ק"מ חודשי</label>
-
-          <div class="file-upload-container">
-            <input
-              type="file"
-              #fileInput
-              accept=".xlsx"
-              (change)="onFileSelected($event)"
-              style="display: none"
-            />
-            <button
-              type="button"
-              (click)="fileInput.click()"
-              class="custom-file-button"
-            >
-              בחר קובץ
-            </button>
-            <span class="file-name">
-              {{ selectedFile ? selectedFile.name : "לא נבחר קובץ" }}
-            </span>
-          </div>
-
-          <button
-            class="submit-button"
-            [disabled]="!selectedFile || isLoading"
-            (click)="uploadMileageReport()"
-          >
-            {{ isLoading ? "מעלה..." : "שלח דוח" }}
-          </button>
-        </div>
-        <div *ngIf="uploadSuccess" class="upload-success">
-          <i class="pi pi-check-circle"></i> הדוח הועלה בהצלחה!
-        </div>
-        <div *ngIf="uploadError" class="upload-error">
-          <i class="pi pi-times-circle"></i> שגיאה בהעלאת הדוח:
-          {{ uploadError }}
-        </div>
-        <div *ngIf="uploadSummary" class="upload-summary">
-          <h3>סיכום:</h3>
-          <p>
-            <strong>מספר רכבים שעודכנו:</strong>
-            {{ uploadSummary.vehiclesUpdated }}
+<div class="dashboard-wrapper">
+  <div class="dashboard-container">
+    <div class="dashboard-header">
+      <div class="header-content">
+        <div class="title-section">
+          <h1 class="dashboard-title">ניהול רכבים</h1>
+          <p class="dashboard-subtitle">
+            {{ filteredVehicles.length }} רכבים במערכת
           </p>
-          <div *ngIf="uploadSummary.warnings?.length">
-            <strong>אזהרות / שגיאות:</strong>
-            <ul>
-              <li *ngFor="let warning of uploadSummary.warnings">
-                {{ warning }}
-              </li>
-            </ul>
-          </div>
+        </div>
+
+        <div class="action-buttons">
+          <button
+            *ngIf="userRole === 'admin' || userRole === 'manager'"
+            class="btn btn-secondary"
+            (click)="showMileageUpload = !showMileageUpload"
+            [class.active]="showMileageUpload"
+          >
+            <span>העלאת קילומטרז'</span>
+            <i class="pi pi-upload"></i>
+          </button>
+
+          <button
+            class="btn btn-secondary"
+            (click)="navigateToArchivedVehicles()"
+          >
+            <span>ארכיון</span>
+            <i class="pi pi-folder-open"></i>
+          </button>
+
+          <button
+            *ngIf="userRole === 'admin'"
+            class="btn btn-primary"
+            (click)="navigateToNewVehicle()"
+          >
+            <span>רכב חדש</span>
+            <i class="pi pi-plus"></i>
+          </button>
         </div>
       </div>
 
-      <br />
+      <app-mileage-upload
+        *ngIf="showMileageUpload"
+        [showMileageUpload]="showMileageUpload"
+      ></app-mileage-upload>
 
-      <div class="vehicles-cards">
-        <p-card
-          *ngFor="let vehicle of filteredVehicles"
-          [styleClass]="'vehicle-card ' + getCardClass(vehicle.status)"
-          (click)="goToVehicleDetails(vehicle.id)"
-        >
-          <div *ngIf="isInactive(vehicle.last_used_at)" class="inactive-badge">
-            לא פעיל
+      <app-filter-panel
+        [allVehicles]="vehicles"
+        [userRole]="userRole"
+        [departmentMap]="departmentMap"
+        (filteredVehiclesChange)="filteredVehicles = $event"
+        (updateQueryParams)="updateQueryParams()"
+      ></app-filter-panel>
+
+      <div class="status-indicators">
+        <div class="status-legend-title">מקרא צבעים:</div>
+        <div class="status-box">
+          <div class="status-item">
+            <span class="status-indicator available"></span>
+            <span>זמין</span>
           </div>
-
-          <ng-template pTemplate="header">
-            <div class="usage-section">
-              <div class="usage-line">
-                <div
-                  class="usage-indicator"
-                  [style.background-color]="
-                    getUsageBarColor(vehicle.plate_number)
-                  "
-                ></div>
-                <span
-                  class="usage-number"
-                  *ngIf="getVehicleUsageCount(vehicle.plate_number) > 0"
-                >
-                  {{ getVehicleUsageCount(vehicle.plate_number) }} נסיעות</span
-                >
-              </div>
-            </div>
-
-            <img
-              *ngIf="vehicle.image_url"
-              [src]="vehicle.image_url"
-              alt="תמונה של הרכב"
-              style="width: 100%; max-width: 250px; margin-top: 10px"
-            />
-          </ng-template>
-
-          <h3>רכב: {{ vehicle.plate_number }}</h3>
-          <div *ngIf="vehicle.vehicle_model">
-            <strong>דגם:</strong> {{ vehicle.vehicle_model }}
+          <div class="status-item">
+            <span class="status-indicator in-use"></span>
+            <span>בשימוש</span>
           </div>
-
-          <div class="department-container">
-            <div
-              *ngIf="vehicle.department"
-              class="department-tag"
-              [ngClass]="{
-                'no-department-tag': vehicle.department === 'לא משוייך למחלקה'
-              }"
-            >
-              {{ vehicle.department }}
-            </div>
+          <div class="status-item">
+            <span class="status-indicator frozen"></span>
+            <span>מוקפא</span>
           </div>
+          <div class="status-item status-item-inactive">
+  <span class="inactive">לא פעיל</span>
+  <span class="status-note">לא היה בשימוש ליותר מ־7 ימים</span>
+</div>
 
-          <div *ngIf="vehicle.ride_count !== undefined">
-            <strong>שימושים החודש:</strong> {{ vehicle.ride_count }}
-          </div>
-
-          <div *ngIf="vehicle.last_used_at">
-            <strong>שימוש אחרון:</strong>
-            {{ vehicle.last_used_at | date : "shortDate" }}
-          </div>
-        </p-card>
+        </div>
       </div>
+    </div>
 
-      <div
-        *ngIf="filteredVehicles?.length === 0"
-        class="empty-state"
-        style="text-align: center; margin-top: 2rem"
-      >
-        <ng-container *ngIf="showInactive; else noVehicles">
-          כל הרכבים היו בשימוש בשבוע האחרון <i class="pi pi-check"></i>
-        </ng-container>
-        <ng-template #noVehicles> לא נמצאו רכבים </ng-template>
+    <div class="vehicles-grid">
+      <app-vehicle-card
+        *ngFor="let vehicle of filteredVehicles"
+        [vehicle]="vehicle"
+        (cardClick)="goToVehicleDetails($event)"
+      ></app-vehicle-card>   
+    </div>
+
+    <div class="empty-state" *ngIf="filteredVehicles.length === 0">
+      <div class="empty-icon">
+        <i class="pi pi-inbox"></i>
       </div>
+      <h3>אין כלי רכב להצגה</h3>
+      <p>לא נמצאו כלי רכב התואמים את הסינון שנבחר</p>
     </div>
   </div>
 </div>

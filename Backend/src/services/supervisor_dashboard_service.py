@@ -112,6 +112,8 @@ def get_department_specific_order(department_id: str, order_id: str, db: Session
         license_check_passed=order.license_check_passed,
         submitted_at=order.submitted_at,
         emergency_event=order.emergency_event,
+        four_by_four_reason=order.four_by_four_reason,
+        extended_ride_reason=order.extended_ride_reason,
     )
 
     return order_details
@@ -233,7 +235,8 @@ async def edit_order_status(department_id: str, order_id: str, new_status: str,u
         "notification_type": notification.notification_type.value,
         "sent_at": notification.sent_at.isoformat(),
         "order_id": str(notification.order_id) if notification.order_id else None,
-        "order_status": order.status
+        "order_status": order.status,
+        "Seen": False
     })
 
     return order, notification

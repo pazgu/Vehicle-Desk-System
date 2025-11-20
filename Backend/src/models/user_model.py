@@ -6,7 +6,6 @@ import enum
 from sqlalchemy.orm import relationship
 
 class UserRole(str, enum.Enum):
-    anonymous = "anonymous"
     employee = 'employee'
     supervisor = 'supervisor'
     admin = 'admin'
@@ -30,6 +29,7 @@ class User(Base):
     license_expiry_date = Column(Date, nullable=True)
     is_blocked = Column(Boolean, default=False, nullable=False)
     block_expires_at = Column(DateTime, nullable=True)
+    block_reason = Column(String, nullable=True)
     is_unassigned_user = Column(Boolean, default=False, nullable=False)
 
     

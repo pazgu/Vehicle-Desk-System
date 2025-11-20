@@ -1,0 +1,306 @@
+.orders-header-row {
+  background-color: #811313;
+  color: white;
+  align-items: center;
+  display: flex;
+  font-weight: bold;
+  padding: 0.75rem;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.orders-data-row {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+  padding: 0.75rem;
+  transition: border 0.5s ease-in-out;
+  position: relative;
+}
+
+.cell {
+  flex: 1;
+  width: 10px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-cell {
+  width: 70px;
+  min-width: 70px;
+  text-align: center;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.actions-cell {
+  width: 100px;
+  min-width: 100px;
+  flex: 0 0 100px;
+}
+
+.past-order {
+  opacity: 0.6;
+  background-color: #e0e0e0 !important;
+  color: #000000 !important;
+}
+
+.completed-order {
+  background-color: #e0ecf4 !important;
+  color: #000000 !important;
+}
+
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin: 20px;
+}
+
+.pagination-controls button {
+  background: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+  color: #666;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.pagination-controls button:hover:not(:disabled) {
+  background-color: #e6e6e6;
+  transform: translateY(-2px);
+}
+
+.pagination-controls button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-controls button .icon {
+  width: 24px;
+  height: 24px;
+}
+
+.pagination-controls button svg {
+  width: 100%;
+  height: 100%;
+}
+
+.pagination-controls span {
+  font-size: 1.1rem;
+  color: #555;
+  font-weight: 500;
+}
+
+.ride-started {
+  background-color: white !important;
+  color: black;
+}
+
+.started-gif-icon {
+  width: 20px;
+  height: 20px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+.cancelled-no-show-icon {
+  width: 24px;
+  height: 24px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+.ride-type-icon {
+  position: absolute;
+  right: -28px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.3rem;
+  color: #811313;
+}
+
+.status-cancelled-no-show {
+  background-color: #ffe1e184;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.status-green {
+  background-color: #e8f5e8;
+}
+
+.status-yellow {
+  background-color: #fff8e1;
+}
+
+.status-red {
+  background-color: #f8d7da;
+}
+
+.status_in_progress {
+  background: linear-gradient(
+    -45deg,
+    rgba(74, 144, 226, 0.15) 25%,
+    rgba(107, 163, 240, 0.15) 25%,
+    rgba(107, 163, 240, 0.15) 50%,
+    rgba(74, 144, 226, 0.15) 50%,
+    rgba(74, 144, 226, 0.15) 75%,
+    rgba(107, 163, 240, 0.15) 75%,
+    rgba(107, 163, 240, 0.15)
+  );
+  background-size: 20px 20px;
+  animation: moveStripes 1s linear infinite;
+}
+
+@keyframes moveStripes {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 20px 0;
+  }
+}
+
+.no-orders-message {
+  background-color: #942222;
+  color: white;
+  font-family: "Alef", sans-serif;
+  font-size: 22px;
+  font-weight: bold;
+  text-align: center;
+  padding: 28px 30px;
+  border-radius: 12px;
+  margin: 20px auto 10px auto;
+  max-width: 650px;
+}
+
+.new-ride-btn {
+  margin-top: 10px;
+  background-color: white;
+  color: #942222;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 10px;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.new-ride-btn:hover {
+  background-color: #f0f0f0;
+}
+
+@keyframes backgroundFade {
+  0% {
+    background-color: #8b3a44;
+  }
+  30% {
+    background-color: #a24a58;
+  }
+  50% {
+    background-color: #c37b87;
+  }
+  100% {
+    border-color: #d99ca6;
+  }
+}
+
+.highlight-background {
+  animation: backgroundFade 5s ease-in-out forwards;
+}
+
+.highlight {
+  animation: highlightFade 5s ease-in-out forwards;
+}
+
+@keyframes highlightFade {
+  0% {
+    background-color: #cbb7ef;
+  }
+  100% {
+    background-color: #dbcdf0;
+  }
+}
+
+.modify-buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+  direction: rtl;
+}
+
+.modify-buttons button.modify {
+  padding: 0.3rem 0.4rem;
+  color: #4a90e2;
+  background-color: transparent;
+  border: 1px solid rgba(74, 144, 226, 0.3);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.delete {
+  padding: 0.4rem 0.5rem;
+  color: #e74c3c;
+  background-color: transparent;
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.modify-buttons button.modify:hover:not(:disabled) {
+  background-color: rgba(74, 144, 226, 0.1);
+  border-color: #4a90e2;
+  color: #357abd;
+}
+
+.delete:hover:not(:disabled) {
+  background-color: rgba(231, 76, 60, 0.1);
+  border-color: #e74c3c;
+  color: #c0392b;
+}
+
+.modify-buttons button:disabled,
+.delete:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  color: #999;
+  border-color: rgba(153, 153, 153, 0.3);
+}
+
+.modify-buttons button:disabled:hover,
+.delete:disabled:hover {
+  background-color: transparent;
+  transform: none;
+}
