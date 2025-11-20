@@ -67,12 +67,14 @@ export class DashboardAllOrdersComponent implements OnInit {
     this.socketService.rideRequests$.subscribe((newRide) => {
       const role = localStorage.getItem('role');
       if (newRide) {
-        if (newRide.department_id == departmentId && role != 'admin') {
+        if(newRide.role ==='supervisor'){ 
+          if (newRide.department_id == departmentId && role != 'admin') {
           this.orders = [newRide, ...this.orders];
           if (role === 'supervisor') {
             this.toastService.show('התקבלה בקשה חדשה', 'success');
           }
-        }
+        }}
+       
       }
     });
     this.socketService.orderUpdated$.subscribe((updatedRide) => {

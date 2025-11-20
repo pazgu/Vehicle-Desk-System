@@ -11,6 +11,8 @@
     <div class="cell">סוג</div>
     <div class="cell">מרחק</div>
     <div class="cell actions-cell">פעולות</div>
+    <div class="cell actions-cell">אישור/דחייה</div>
+
   </div>
 
   <div
@@ -88,6 +90,20 @@
         </button>
       </div>
     </div>
+     <div class="cell actions-cell">
+      <div class="modify-buttons">
+        <button
+          class="status"
+          (click)="ChangeStatus(order.ride_id)"
+          [disabled]="!canChangeStatus(order)"
+          [style.opacity]="canChangeStatus(order) ? '1' : '0.5'"
+          [style.cursor]="canChangeStatus(order) ? 'pointer' : 'not-allowed'"
+        >
+          <img src="/assets/images/switch.png" class="switch"/>
+        </button>
+      </div>
+    </div>
+
 
     <div class="ride-type-icon">
       <i title="נסיעה של יותר מיום" *ngIf="checkIfOverOneDay(order)">
