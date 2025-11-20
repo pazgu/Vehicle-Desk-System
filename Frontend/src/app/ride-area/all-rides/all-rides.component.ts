@@ -284,6 +284,7 @@ export class AllRidesComponent implements OnInit {
       return;
     }
     this.router.navigate(['/ride/details', order.ride_id]);
+
   }
 
   scrollToTop(): void {

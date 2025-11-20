@@ -226,6 +226,7 @@ async def create_order(
             "requested_vehicle_model": getattr(new_ride, "vehicle_model", None),
             "department_id": str(department_id),
             "distance": new_ride.estimated_distance_km,
+            "role": user.role
         })
 
         supervisor_id = get_supervisor_id(user_id, db)

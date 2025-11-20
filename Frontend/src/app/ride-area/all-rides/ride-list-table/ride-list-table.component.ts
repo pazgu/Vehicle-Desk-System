@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-ride-list-table',
@@ -19,6 +20,8 @@ export class RideListTableComponent implements OnChanges {
   @Output() editRide = new EventEmitter<any>();
   @Output() deleteRide = new EventEmitter<any>();
   @Output() newRide = new EventEmitter<void>();
+  
+  constructor(private router:Router){}
 
   currentPage = 1;
   pagedOrders: any[] = [];
@@ -136,6 +139,36 @@ export class RideListTableComponent implements OnChanges {
     const timeDifferenceHours = (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
     return timeDifferenceHours > 2;
   }
+
+  ChangeStatus(id:string){
+      const userRole = localStorage.getItem('role');
+      if (userRole != 'supervisor'){
+        return
+      }
+      this.router.navigate(['/order-card', id])
+      
+  }
+
+canChangeStatus(order: any): boolean {
+  const userRole = localStorage.getItem('role');
+  if (userRole !== 'supervisor') return false;
+  // if (order.status !== 'available') return false;
+
+  const [day, month, year] = order.date.split('.');
+  const formattedDate = `${year}-${month}-${day}`; 
+
+  const combined = `${formattedDate}T${order.time}`;
+  const start = new Date(combined);
+
+  if (isNaN(start.getTime())) {
+    console.error("Invalid datetime:", combined);
+    return false;
+  }
+
+  return start.getTime() > Date.now();
+}
+
+
 
   canDelete(order: any): boolean {
     const userRole = localStorage.getItem('role');
