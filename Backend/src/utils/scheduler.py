@@ -34,7 +34,7 @@ from ..models.monthly_vehicle_usage_model import MonthlyVehicleUsage
 from ..models.no_show_events import NoShowEvent
 from ..models.notification_model import Notification
 from ..models.ride_model import Ride, RideStatus
-from ..models.user_model import User
+from ..models.user_model import User, UserRole
 from ..models.vehicle_model import Vehicle,VehicleStatus,FreezeReason
 
 load_dotenv() 
@@ -866,20 +866,21 @@ async def notify_ride_cancelled_due_to_no_show(ride_id: uuid.UUID):
         await emit_new_notification(
             notification=notification
         )
+        if(user.role != UserRole.supervisor):
 
-        supervisor_id=get_supervisor_id(user_id=user.employee_id,db=db)
-        if supervisor_id:
-            user_name_safe = user_name or "משתמש לא ידוע"
-            destination_safe = destination_name or "יעד לא ידוע"
+            supervisor_id=get_supervisor_id(user_id=user.employee_id,db=db)
+            if supervisor_id:
+                user_name_safe = user_name or "משתמש לא ידוע"
+                destination_safe = destination_name or "יעד לא ידוע"
 
-            supervisor_notification = create_system_notification(
-                user_id=supervisor_id,
-                title="הודעה: הנסיעה בוטלה עקב אי התייצבות",
-                message=f"הנסיעה של {user_name_safe} ליעד {destination_safe} בוטלה עקב אי התייצבות.",
-                order_id=ride.id
-            )
+                supervisor_notification = create_system_notification(
+                    user_id=supervisor_id,
+                    title="הודעה: הנסיעה בוטלה עקב אי התייצבות",
+                    message=f"הנסיעה של {user_name_safe} ליעד {destination_safe} בוטלה עקב אי התייצבות.",
+                    order_id=ride.id
+                )
 
-            await emit_new_notification(notification=supervisor_notification)
+                await emit_new_notification(notification=supervisor_notification)
 
         admins = db.query(User).filter(User.role == "admin").all()
         for admin in admins:
