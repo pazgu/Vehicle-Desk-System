@@ -57,9 +57,20 @@ import {
   getSelectedStopNameFromList,
   getExtraStopNamesFromList,
 } from './home-utils/city-helpers';
+import { MyRidesService } from '../../../services/myrides.service';
 
 
 interface Employee { id: string; full_name: string; }
+interface RebookData {
+  ride_id: string;            
+  start_datetime: string;
+  end_datetime: string;
+  start_location: any;         
+  destination: any;             
+  passengers_count?: number;
+  reason?: string;
+}
+
 
 @Component({
     selector: 'app-new-ride',
@@ -95,6 +106,9 @@ export class NewRideComponent implements OnInit {
     disableDueToDepartment: boolean = false;
     departmentCheckCompleted: boolean = false;
     currentUserId: string | null = null;
+    isRebookMode = false;
+    rebookOriginalRideId: string | null = null;
+
     constructor(
         private fb: FormBuilder,
         private router: Router,
@@ -107,12 +121,22 @@ export class NewRideComponent implements OnInit {
         private cdr: ChangeDetectorRef,
         private acknowledgmentService: AcknowledgmentService,
         private rideUserChecksService: RideUserChecksService,  
+        private myRidesService: MyRidesService,
+
+
     ) { }
 
    ngOnInit(): void {
   this.currentUserId = getUserIdFromToken(localStorage.getItem('access_token'));
   this.initializeComponent();
+  const nav = this.router.getCurrentNavigation();
+  const rebookData = nav?.extras?.state?.['rebookData'] as RebookData | undefined;
+
+  if (rebookData) {
+    this.applyRebookData(rebookData);  
+  }
   const initialTargetType = this.rideForm.get('target_type')?.value;
+  
 
   if (initialTargetType === 'self') {
     if (this.currentUserId) {
@@ -162,6 +186,8 @@ onBeforeUnload(e: BeforeUnloadEvent) {
         }
     }
 
+    
+
     private initializeComponent(): void {
   this.fetchVehicleTypes();
   this.minDate = calculateMinDate();
@@ -172,6 +198,31 @@ onBeforeUnload(e: BeforeUnloadEvent) {
   this.timeOptions = generateTimeOptions();
   setClosestQuarterHourTimeOnForm(this.rideForm, this.timeOptions);
 }
+
+
+private applyRebookData(data: RebookData): void {
+  // mark that we’re in rebook flow
+  this.isRebookMode = true;
+  this.rebookOriginalRideId = data.ride_id;
+
+  // pre-fill the form with original reservation details (except vehicle)
+  this.rideForm.patchValue({
+    start_location: data.start_location,
+    destination: data.destination,
+    passengers: data.passengers_count ?? this.rideForm.get('passengers')?.value,
+    reason: data.reason ?? this.rideForm.get('reason')?.value,
+    car: null, // force user to pick a new vehicle
+  });
+
+  // ⬇️ if/when you want to also pre-fill date & time from the backend,
+  // we can do it here with proper helpers like:
+  // start_date: this.toDateOnly(data.start_datetime),
+  // start_time: this.toTimeOnly(data.start_datetime),
+  // end_date: this.toDateOnly(data.end_datetime),
+  // end_time: this.toTimeOnly(data.end_datetime),
+}
+
+
 
     private initializeForm(): void {
   this.rideForm = buildRideForm(this.fb);
@@ -441,11 +492,17 @@ onBeforeUnload(e: BeforeUnloadEvent) {
             }
         });
     }
-    private updateAvailableCars(): void {
+  private updateAvailableCars(): void {
   const selectedType = this.rideForm.get('vehicle_type')?.value;
   const carControl = this.rideForm.get('car');
 
-  this.availableCars = filterAvailableCars(this.allCars, selectedType);
+  // 1) Base filtering by type
+  let filtered = filterAvailableCars(this.allCars, selectedType);
+
+  // 2) Extra safety: only truly 'available' vehicles
+  filtered = filtered.filter(car => car.status === 'available');
+
+  this.availableCars = filtered;
 
   syncCarControlWithAvailableCars(
     carControl,
@@ -453,6 +510,7 @@ onBeforeUnload(e: BeforeUnloadEvent) {
     (id: string) => this.isPendingVehicle(id)
   );
 }
+
 
 private setDefaultStartAndDestination(): void {
   this.cityService.getCity('תל אביב').subscribe((city) => {
@@ -826,4 +884,6 @@ if (distance && rideDate && vehicleType) {
         this.step = 1;
         this.showStep1Error = false;
     }
+
+    
 }

@@ -32,32 +32,42 @@
     style="cursor: pointer"
   >
     <div class="icon-cell">
-      <span
-        class="pi"
-        [ngClass]="{
-          'pi-verified': !order.hasStarted && order.status.toLowerCase() === 'approved',
-          'pi-clock': !order.hasStarted && order.status.toLowerCase() === 'pending',
-          'pi-times-circle': !order.hasStarted && order.status.toLowerCase() === 'rejected',
-          'pi-list-check': !order.hasStarted && order.status.toLowerCase() === 'completed',
-          'pi-forward': !order.hasStarted && order.status.toLowerCase() === 'in_progress'
-        }"
-        [title]="getStatusTooltip(order.status)"
-        style="font-size: 1.3rem"
-      >
-      </span>
-      <img
-        *ngIf="order.hasStarted && order.status.toLowerCase() === 'approved'"
-        src="assets/images/timed-clock.gif"
-        alt="Started"
-        class="started-gif-icon"
-      />
-      <img
-        *ngIf="order.status.toLowerCase() === 'cancelled_due_to_no_show'"
-        src="assets/images/cancelled_no_show.png"
-        alt="Cancelled due to No Show"
-        class="cancelled-no-show-icon"
-      />
-    </div>
+  <span
+    class="pi"
+    [ngClass]="{
+      'pi-verified': !order.hasStarted && order.status.toLowerCase() === 'approved',
+      'pi-clock': !order.hasStarted && order.status.toLowerCase() === 'pending',
+      'pi-times-circle': !order.hasStarted && order.status.toLowerCase() === 'rejected',
+      'pi-list-check': !order.hasStarted && order.status.toLowerCase() === 'completed',
+      'pi-forward': !order.hasStarted && order.status.toLowerCase() === 'in_progress'
+    }"
+    [title]="getStatusTooltip(order.status)"
+    style="font-size: 1.3rem"
+  >
+  </span>
+
+  <img
+    *ngIf="order.hasStarted && order.status.toLowerCase() === 'approved'"
+    src="assets/images/timed-clock.gif"
+    alt="Started"
+    class="started-gif-icon"
+  />
+
+  <img
+    *ngIf="order.status.toLowerCase() === 'cancelled_due_to_no_show'"
+    src="assets/images/cancelled_no_show.png"
+    alt="Cancelled due to No Show"
+    class="cancelled-no-show-icon"
+  />
+
+  <div
+    *ngIf="order.status?.toLowerCase() === 'cancelled' && order.cancel_reason"
+    class="cancel-reason-text"
+  >
+    {{ order.cancel_reason }}
+  </div>
+</div>
+
 
     <div class="cell">{{ order.date }}</div>
     <div class="cell">{{ order.time }}</div>
@@ -88,6 +98,14 @@
         >
           <i class="pi pi-trash"></i>
         </button>
+            <button
+      class="rebook"
+      *ngIf="canRebook(order)"
+      (click)="onRebook(order, $event)"
+    >
+      הזמן מחדש
+    </button>
+
       </div>
     </div>
      <div class="cell actions-cell">

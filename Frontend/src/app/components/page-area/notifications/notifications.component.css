@@ -244,3 +244,13 @@ body {
   padding: 1rem;
 }
 
+.notification.vehicle-freeze-banner {
+  border-right: 4px solid #d9534f;      
+  background: #fff3cd;                 
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.notification.vehicle-freeze-banner .text {
+  font-weight: 600;
+  color: #7a3b00; 
+}

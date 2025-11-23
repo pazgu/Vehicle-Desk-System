@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, formatDate } from '@angular/common';
 import { Router, ActivatedRoute, Params, RouterModule } from '@angular/router';
-import { MyRidesService } from '../../services/myrides.service';
+import { MyRidesService, RebookData } from '../../services/myrides.service';
 import { ToastService } from '../../services/toast.service';
 import { SocketService } from '../../services/socket.service';
 import { Location } from '@angular/common';
@@ -350,7 +350,9 @@ export class AllRidesComponent implements OnInit {
             start_datetime: order.start_datetime,
             end_datetime: order.end_datetime,
             submitted_at: order.submitted_at,
-            user_id: order.user_id
+            user_id: order.user_id,
+            cancel_reason: order.cancel_reason || order.cancellation_reason || null
+
           }));
           this.orders = mappedOrders;
           localStorage.setItem('user_orders', JSON.stringify(this.orders));
@@ -388,4 +390,25 @@ export class AllRidesComponent implements OnInit {
     date.setHours(12, 0, 0, 0);
     return date;
   }
+
+  onRebookRide(order: any): void {
+  if (!order?.ride_id) {
+    this.toastService.show('שגיאה בזיהוי ההזמנה לביצוע הזמנה מחדש', 'error');
+    return;
+  }
+
+  this.rideService.getRebookData(order.ride_id).subscribe({
+    next: (data: RebookData) => {
+      // navigate to New Ride page in "rebook mode"
+      this.router.navigate(['/home'], {
+        state: { rebookData: data }
+      });
+    },
+    error: (err) => {
+      console.error('Failed to load rebook data:', err);
+      this.toastService.show('שגיאה בטעינת פרטי ההזמנה לביצוע הזמנה מחדש ❌', 'error');
+    }
+  });
+}
+
 }
