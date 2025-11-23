@@ -7,7 +7,7 @@ import { environment } from '../../environments/environment';
   providedIn: 'root'
 })
 export class DepartmentService {
-  private apiUrl = environment.apiUrl; // Replace with actual base API URL
+  private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
@@ -17,7 +17,6 @@ export class DepartmentService {
     return this.http.post<any[]>(url, payload);
   }
 
-  // Renamed from editDepartment to updateDepartment to match the component's call
   updateDepartment(departmentId: string, name: string, supervisor_id: string): Observable<any> {
     const url = `${this.apiUrl}/departments/${departmentId}`;
     const updateData = { name, supervisor_id };
@@ -30,6 +29,13 @@ export class DepartmentService {
 
   getDepartments(): Observable<any> {
     return this.http.get(`${this.apiUrl}/departments`);
+  }
+getDepartmentsWithSupervisors(): Observable<any[]> {
+  return this.http.get<any[]>(`${this.apiUrl}/departments`); 
+}
+
+getSupervisors(): Observable<any[]> {
+  return this.http.get<any[]>(`${this.apiUrl}/users`); 
   }
 }
 
