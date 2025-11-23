@@ -2,8 +2,7 @@
   display: block;
   min-height: 85vh;
   background-color: white;
-    contain: layout paint;
-
+  contain: layout paint;
 }
 
 .notification-page {
@@ -15,16 +14,17 @@
     0 12px 30px rgba(0, 0, 0, 0.08);
   max-width: 950px;
   margin: 0 auto;
-  padding: 2.5rem 2.5rem;
+  padding: 2rem 2rem;
   backdrop-filter: blur(10px);
 }
 
 .wrapper {
   background-image: url('/assets/images/notifications-bg.png');
   min-height: 70vh;
-  max-height: 80vh;
+  max-height: 92vh;
+  margin-left:5vh;
   overflow-y: visible;
-  padding: 20px 10px;
+  padding: 10px 5px;
   background: transparent;
 }
 .title {
@@ -35,7 +35,7 @@
   margin-bottom: 2rem;
   letter-spacing: -0.02em;
   position: relative;
-  padding-bottom: 1rem;
+  padding-bottom: 0.5rem;
 }
 
 .title::after {
@@ -54,7 +54,7 @@
   display: flex;
   flex-direction: row;
   justify-content: center;
-  padding: 1.25rem 1.5rem;
+  padding: 1rem 1.5rem;
   border-radius: 12px;
   margin-bottom: 0.875rem;
   text-align: center;
