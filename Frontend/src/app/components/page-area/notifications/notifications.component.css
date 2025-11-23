@@ -1,6 +1,6 @@
 :host {
   display: block;
-  min-height: 100vh;
+  min-height: 85vh;
   background-color: white;
     contain: layout paint;
 
@@ -21,9 +21,10 @@
 
 .wrapper {
   background-image: url('/assets/images/notifications-bg.png');
-  min-height: 100vh;
+  min-height: 70vh;
+  max-height: 80vh;
   overflow-y: visible;
-  padding: 40px 20px;
+  padding: 20px 10px;
   background: transparent;
 }
 .title {
