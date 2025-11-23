@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { UserService } from '../../../../services/user_service';
 import {
   FormBuilder,
   FormGroup,
@@ -20,7 +19,6 @@ import { ToastService } from '../../../../services/toast.service';
 })
 export class DepartmentDataComponent implements OnInit {
   constructor(
-    private userService: UserService,
     private departmentService: DepartmentService,
     private fb: FormBuilder,
     private router: Router,
@@ -64,7 +62,7 @@ export class DepartmentDataComponent implements OnInit {
   }
 
   loadDepartments() {
-    this.userService.getDepartmentsWithSupervisors().subscribe({
+    this.departmentService.getDepartmentsWithSupervisors().subscribe({
       next: (departmentsdata) => {
         this.departments = departmentsdata;
       },
@@ -73,7 +71,7 @@ export class DepartmentDataComponent implements OnInit {
   }
 
   loadUsers() {
-    this.userService.getSupervisors().subscribe({
+    this.departmentService.getSupervisors().subscribe({
       next: (usersData) => (this.users = usersData),
       error: (err) => console.error('Error fetching supervisors:', err),
     });
