@@ -27,7 +27,7 @@ export class RideListTableComponent implements OnChanges {
 
   currentPage = 1;
   pagedOrders: any[] = [];
-
+  role = localStorage.getItem("role")
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['filteredOrders'] || changes['ordersPerPage']) {
       this.currentPage = 1;
