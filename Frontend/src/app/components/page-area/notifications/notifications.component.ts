@@ -225,7 +225,6 @@ export class NotificationsComponent implements OnInit {
 
   translateMessage(message: string): string {
     const lower = message.toLowerCase();
-
     if (lower.includes('נשלחה בהצלחה')) {
       return 'ההזמנה שלך נשלחה בהצלחה. תקבל/י התראה לאחר הבדיקה והאישור.';
     } else if (lower.includes('אושרה')) {

@@ -683,7 +683,7 @@ private setDefaultStartAndDestination(): void {
       next: () => {
         this.pendingConfirmation = false;
         this.showGuidelines = false;
-        this.toastService.show('אישור נקלט. נסיעה נעימה! 🚗', 'success');
+        this.toastService.show('אישור נקלט. נסיעה נעימה! ', 'success');
       },
       error: () => {
         this.pendingConfirmation = false;
@@ -768,7 +768,7 @@ if (distance && rideDate && vehicleType) {
         if (role === 'employee') {
             this.rideService.createRide(formData, user_id).subscribe({
                 next: (createdRide) => {
-                    this.toastService.show('הבקשה נשלחה בהצלחה! ✅', 'success');
+                    this.toastService.show('הבקשה נשלחה בהצלחה! ', 'success');
                     this.orderSubmitted = true;
 
                     this.loadFuelType(formData.vehicle_id);
@@ -790,7 +790,7 @@ if (distance && rideDate && vehicleType) {
         } else if (role === 'supervisor') {
             this.rideService.createSupervisorRide(formData, user_id).subscribe({
                 next: (createdRide) => {
-                    this.toastService.show('הבקשה נשלחה בהצלחה! ✅', 'success');
+                    this.toastService.show('הבקשה נשלחה בהצלחה! ', 'success');
                     this.orderSubmitted = true;
 
                     this.loadFuelType(formData.vehicle_id);
