@@ -65,7 +65,7 @@ getAllVehiclesForNewRide(distance: number, rideDate: string, vehicleType: string
 
   updateVehicleStatus(id: string, new_status: string, freeze_reason?: string): Observable<any> {
     const url = `${this.apiUrl}/vehicles-status/${id}`;
-    const body = { new_status, freeze_reason }; // Adjust field names to match backend expectations
+    const body = { new_status, freeze_reason }; 
     return this.http.patch<any>(url, body);
   }
 

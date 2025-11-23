@@ -11,7 +11,7 @@
     <div class="cell">סוג</div>
     <div class="cell">מרחק</div>
     <div class="cell actions-cell">פעולות</div>
-    <div class="cell actions-cell">אישור/דחייה</div>
+    <div *ngIf="role === 'supervisor'" class="cell actions-cell">אישור/דחייה</div>
 
   </div>
 
@@ -90,9 +90,9 @@
         </button>
       </div>
     </div>
-     <div class="cell actions-cell">
+     <div *ngIf="role === 'supervisor'" class="cell actions-cell">
       <div class="modify-buttons">
-        <button
+        <button 
           class="status"
           (click)="ChangeStatus(order.ride_id)"
           [disabled]="!canChangeStatus(order)"
