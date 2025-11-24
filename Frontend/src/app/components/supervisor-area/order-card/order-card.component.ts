@@ -150,6 +150,7 @@ export class OrderCardComponent implements OnInit {
       )
       .subscribe({
         next: (response) => {
+          
           this.toastService.show(`סטטוס עודכן בהצלחה`, 'success');
           setTimeout(() => {
             this.loadOrder(this.departmentId!, this.rideId);
