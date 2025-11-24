@@ -59,7 +59,6 @@ import {
   getSelectedStopNameFromList,
   getExtraStopNamesFromList,
 } from './home-utils/city-helpers';
-import { MyRidesService } from '../../../services/myrides.service';
 import { MatDialog } from '@angular/material/dialog';
 import {
   ConfirmDialogComponent,
@@ -130,7 +129,6 @@ export class NewRideComponent implements OnInit {
         private cdr: ChangeDetectorRef,
         private acknowledgmentService: AcknowledgmentService,
         private rideUserChecksService: RideUserChecksService,  
-        private myRidesService: MyRidesService,
         private dialog: MatDialog, 
 
     ) { }
