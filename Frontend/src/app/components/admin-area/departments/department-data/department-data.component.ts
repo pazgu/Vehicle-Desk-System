@@ -67,11 +67,13 @@ export class DepartmentDataComponent implements OnInit {
   }
 
   loadUsers() {
-    this.departmentService.getSupervisors().subscribe({
-      next: (usersData) => (this.users = usersData),
-      error: (err) => console.error('Error fetching supervisors:', err),
-    });
-  }
+  this.userService.getAllUsers().subscribe({
+    next: (usersData) => {
+      this.users = usersData.filter(user => user.role === 'supervisor');
+    },
+    error: (err) => console.error('Error fetching users:', err)
+  });
+}
 
   supervisorNames: { [id: string]: string } = {};
 

@@ -57,7 +57,7 @@
         <div class="department-supervisor">
           <p *ngIf="!isUnassignedDepartment(department)">
   <i class="pi pi-user"></i>
-  מפקח מחלקה : {{ supervisorNames[department.supervisor_id] || 'טוען...' }}
+  מפקח מחלקה : {{ supervisorNames[department.supervisor_id] || "לא נמצא" }}
 </p>
 
           <p *ngIf="isUnassignedDepartment(department)">
