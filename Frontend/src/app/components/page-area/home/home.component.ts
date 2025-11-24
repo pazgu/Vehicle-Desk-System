@@ -221,13 +221,6 @@ private applyRebookData(data: RebookData): void {
     reason: data.reason ?? this.rideForm.get('reason')?.value,
     car: null, // force user to pick a new vehicle
   });
-
-  // ⬇️ if/when you want to also pre-fill date & time from the backend,
-  // we can do it here with proper helpers like:
-  // start_date: this.toDateOnly(data.start_datetime),
-  // start_time: this.toTimeOnly(data.start_datetime),
-  // end_date: this.toDateOnly(data.end_datetime),
-  // end_time: this.toTimeOnly(data.end_datetime),
 }
 
 private isVehicleFrozenError(err: any): boolean {
