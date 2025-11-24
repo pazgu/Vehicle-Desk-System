@@ -287,18 +287,17 @@ export class NotificationsComponent implements OnInit {
       });
     }
 
-    // 🔴 1) Vehicle freeze → go to "הנסיעות שלי" (My Reservations)
+    // Vehicle freeze → go to "הנסיעות שלי" (My Reservations)
     if (this.isVehicleFreezeCancellation(notif)) {
       this.router.navigate(['/all-rides'], {
         queryParams: {
-          mode: 'future',           // show future rides (where the cancelled one was)
-          highlight: notif.order_id // let the table highlight that row if still present
+          mode: 'future',      
+          highlight: notif.order_id 
         },
       });
       return;
     }
 
-    // existing logic
     if (role != 'admin' && notif.message.includes('לא הוחזר בזמן')) {
       return;
     }
