@@ -87,11 +87,7 @@ export class NotificationsComponent implements OnInit {
               audio.play();
             }
 
-            if (newNotif.message.includes('נדחתה')) {
-              this.toastService.show(newNotif.message, 'error');
-            } else {
-              this.toastService.show(newNotif.message, 'success');
-            }
+           
           }
         }
       });
@@ -128,11 +124,7 @@ export class NotificationsComponent implements OnInit {
                 audio.play();
               }
 
-              if (newNotif.message.includes('נדחתה')) {
-                this.toastService.show(newNotif.message, 'error');
-              } else {
-                this.toastService.show(newNotif.message, 'success');
-              }
+            
             }
           });
         }
@@ -174,12 +166,7 @@ export class NotificationsComponent implements OnInit {
             const audio = new Audio('assets/sounds/notif.mp3');
             audio.play();
           }
-
-          if (newNotif.message.includes('נדחתה')) {
-            this.toastService.show(newNotif.message, 'error');
-          } else {
-            this.toastService.show(newNotif.message, 'success');
-          }
+        
         }
       }
     });
@@ -225,7 +212,6 @@ export class NotificationsComponent implements OnInit {
 
   translateMessage(message: string): string {
     const lower = message.toLowerCase();
-
     if (lower.includes('נשלחה בהצלחה')) {
       return 'ההזמנה שלך נשלחה בהצלחה. תקבל/י התראה לאחר הבדיקה והאישור.';
     } else if (lower.includes('אושרה')) {

@@ -44,7 +44,7 @@ export class AuthInterceptor implements HttpInterceptor {
           this.toastService.show('הסתיים תוקף ההתחברות שלך. התחבר מחדש', 'error'); 
           this.router.navigate(['/login']);
         } else if (err.status === 403) {
-          this.toastService.show('אין לך הרשאות לגשת למשאב זה.', 'error'); // ✅ also convert this one
+          this.toastService.show('אין לך הרשאות לגשת למשאב זה.', 'error');
         }
 
         return throwError(() => err);

@@ -95,20 +95,20 @@ export class AllRidesComponent implements OnInit {
     const isFuture = this.parseDate(order.date) >= new Date();
 
     if (!isFuture) {
-      this.toastService.show('אפשר לערוך רק הזמנות עתידיות ❌', 'error');
+      this.toastService.show('אפשר לערוך רק הזמנות עתידיות ', 'error');
       return;
     }
 
     if (!isSupervisor) {
       const isPending = order.status.toLowerCase() === 'pending';
       if (!isPending) {
-        this.toastService.show('אפשר לערוך רק הזמנות עתידיות במצב "ממתין" ❌', 'error');
+        this.toastService.show('אפשר לערוך רק הזמנות עתידיות במצב "ממתין" ', 'error');
         return;
       }
     } else {
       const isEditableStatus = ['pending', 'approved'].includes(order.status.toLowerCase());
       if (!isEditableStatus) {
-        this.toastService.show('אפשר לערוך רק הזמנות במצב "ממתין" או "מאושר" ❌', 'error');
+        this.toastService.show('אפשר לערוך רק הזמנות במצב "ממתין" או "מאושר" ', 'error');
         return;
       }
 
@@ -117,7 +117,7 @@ export class AllRidesComponent implements OnInit {
       const timeDifferenceHours = (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
       
       if (timeDifferenceHours <= 2) {
-        this.toastService.show('אפשר לערוך הזמנה עד שעתיים לפני זמן הנסיעה ❌', 'error');
+        this.toastService.show('אפשר לערוך הזמנה עד שעתיים לפני זמן הנסיעה ', 'error');
         return;
       }
     }
@@ -136,20 +136,20 @@ export class AllRidesComponent implements OnInit {
     const isFuture = this.parseDate(order.date) >= new Date();
 
     if (!isFuture) {
-      this.toastService.show('אפשר לבטל רק הזמנות עתידיות ❌', 'error');
+      this.toastService.show('אפשר לבטל רק הזמנות עתידיות ', 'error');
       return;
     }
 
     if (!isSupervisor) {
       const isPending = order.status.toLowerCase() === 'pending';
       if (!isPending) {
-        this.toastService.show('אפשר לבטל רק הזמנות עתידיות במצב "ממתין" ❌', 'error');
+        this.toastService.show('אפשר לבטל רק הזמנות עתידיות במצב "ממתין" ', 'error');
         return;
       }
     } else {
       const isDeletableStatus = ['pending', 'approved'].includes(order.status.toLowerCase());
       if (!isDeletableStatus) {
-        this.toastService.show('אפשר לבטל רק הזמנות במצב "ממתין" או "מאושר" ❌', 'error');
+        this.toastService.show('אפשר לבטל רק הזמנות במצב "ממתין" או "מאושר" ', 'error');
         return;
       }
 
@@ -158,7 +158,7 @@ export class AllRidesComponent implements OnInit {
       const timeDifferenceHours = (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
       
       if (timeDifferenceHours <= 2) {
-        this.toastService.show('אפשר לבטל הזמנה עד שעתיים לפני זמן הנסיעה ❌', 'error');
+        this.toastService.show('אפשר לבטל הזמנה עד שעתיים לפני זמן הנסיעה ', 'error');
         return;
       }
     }
@@ -188,7 +188,7 @@ export class AllRidesComponent implements OnInit {
 
       this.rideService.deleteOrder(order.ride_id).subscribe({
         next: () => {
-          this.toastService.show('ההזמנה בוטלה בהצלחה ✅', 'success');
+          this.toastService.show('ההזמנה בוטלה בהצלחה ', 'success');
           this.socketService.deleteRequests$.subscribe((deletedRide) => {
          
           });
@@ -203,7 +203,7 @@ export class AllRidesComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error deleting order:', error);
-          this.toastService.show('שגיאה בביטול ההזמנה ❌', 'error');
+          this.toastService.show('שגיאה בביטול ההזמנה ', 'error');
         }
       });
     });
@@ -376,7 +376,7 @@ export class AllRidesComponent implements OnInit {
           this.orders = [];
         } else {
           console.error('Error fetching orders:', err);
-          this.toastService.show('שגיאה בטעינת ההזמנות ❌', 'error');
+          this.toastService.show('שגיאה בטעינת ההזמנות ', 'error');
         }
       }
     });

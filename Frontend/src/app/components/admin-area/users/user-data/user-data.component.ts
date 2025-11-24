@@ -219,7 +219,7 @@ private loadUsersAndDepartments(): void {
 
   confirmBlockUser() {
     if (this.blockUserForm.invalid || !this.selectedUserForBlock) {
-      this.toastservice.show('יש למלא את כל השדות הנדרשים ✅', 'error');
+      this.toastservice.show('יש למלא את כל השדות הנדרשים ', 'error');
       return;
     }
 
@@ -234,22 +234,22 @@ private loadUsersAndDepartments(): void {
     this.userService.updateUser(this.selectedUserForBlock.employee_id, formData).subscribe({
       next: () => {
         this.isSubmitting = false;
-        this.toastservice.show(`המשתמש נחסם בהצלחה למשך ${blockDuration} ימים. הסיבה נרשמה ✅`, 'success');
+        this.toastservice.show(`המשתמש נחסם בהצלחה למשך ${blockDuration} ימים. הסיבה נרשמה `, 'success');
         this.closeBlockUserModal();
       },
       error: (err) => {
         this.isSubmitting = false;
-        let errorMessage = 'שגיאה בחסימת המשתמש ❌';
+        let errorMessage = 'שגיאה בחסימת המשתמש ';
         if (err.status === 400) {
-          errorMessage = err.error?.detail || 'נתונים שגויים - יש לבדוק את השדות ולנסות שוב ❌';
+          errorMessage = err.error?.detail || 'נתונים שגויים - יש לבדוק את השדות ולנסות שוב ';
         } else if (err.status === 403) {
-          errorMessage = 'אין לך הרשאה לחסום משתמש זה ❌';
+          errorMessage = 'אין לך הרשאה לחסום משתמש זה ';
         } else if (err.status === 404) {
-          errorMessage = 'המשתמש לא נמצא במערכת ❌';
+          errorMessage = 'המשתמש לא נמצא במערכת ';
         } else if (err.status === 500) {
-          errorMessage = 'שגיאה בשרת או במסד הנתונים - נסה שוב מאוחר יותר ❌';
+          errorMessage = 'שגיאה בשרת או במסד הנתונים - נסה שוב מאוחר יותר ';
         } else if (err.status === 0 || !err.status) {
-          errorMessage = 'אין חיבור לשרת - בדוק את החיבור לאינטרנט ❌';
+          errorMessage = 'אין חיבור לשרת - בדוק את החיבור לאינטרנט ';
         } else if (err.error?.detail) {
           errorMessage = err.error.detail;
         }
@@ -271,12 +271,12 @@ private loadUsersAndDepartments(): void {
     this.userService.updateUser(this.selectedUserForBlock.employee_id, formData).subscribe({
       next: () => {
         this.isSubmitting = false;
-        this.toastservice.show('חסימת המשתמש שוחררה בהצלחה ✅', 'success');
+        this.toastservice.show('חסימת המשתמש שוחררה בהצלחה ', 'success');
         this.closeUnblockConfirmationModal();
       },
       error: (err) => {
         this.isSubmitting = false;
-        this.toastservice.show('שגיאה בשחרור חסימת המשתמש ❌', 'error');
+        this.toastservice.show('שגיאה בשחרור חסימת המשתמש ', 'error');
         console.error('Error unblocking user:', err);
       },
     });
@@ -382,13 +382,13 @@ private loadUsersAndDepartments(): void {
 
       this.userService.deleteUser(userId).subscribe({
         next: () => {
-          this.toastservice.show('המשתמש נמחק בהצלחה ✅', 'success');
+          this.toastservice.show('המשתמש נמחק בהצלחה ', 'success');
           this.users = this.users.filter((u) => u.employee_id !== userId);
           this.filterLogs();
           this.socketservice.deleteUserRequests$.next(userId);
         },
         error: () => {
-          this.toastservice.show('שגיאה במחיקת המשתמש ❌', 'error');
+          this.toastservice.show('שגיאה במחיקת המשתמש ', 'error');
         },
       });
     });

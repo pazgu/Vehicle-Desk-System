@@ -206,7 +206,7 @@ translateRideType = translateRideType;
 
     this.socketService.notifications$.subscribe((notif) => {
       if (notif?.message?.includes('בעיה חמורה')) {
-        this.toastService.show('📢 בדיקה חדשה עם בעיה חמורה התקבלה', 'error');
+        this.toastService.show(' בדיקה חדשה עם בעיה חמורה התקבלה', 'error');
       }
     });
 
@@ -219,7 +219,7 @@ translateRideType = translateRideType;
         this.lastInspectionId = newInspection.inspection_id;
         this.cdr.detectChanges();
 
-        this.toastService.show('📢 התקבלה בדיקה חדשה');
+        this.toastService.show(' התקבלה בדיקה חדשה');
       }
     });
   }
