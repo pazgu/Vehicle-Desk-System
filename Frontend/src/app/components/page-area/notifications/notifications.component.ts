@@ -174,12 +174,7 @@ export class NotificationsComponent implements OnInit {
             const audio = new Audio('assets/sounds/notif.mp3');
             audio.play();
           }
-
-          if (newNotif.message.includes('נדחתה')) {
-            this.toastService.show(newNotif.message, 'error');
-          } else {
-            this.toastService.show(newNotif.message, 'success');
-          }
+        
         }
       }
     });

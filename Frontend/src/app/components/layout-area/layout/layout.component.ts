@@ -6,7 +6,6 @@ import { environment } from '../../../../environments/environment';
 import { HeaderComponent } from '../header/header.component';
 import { RouterModule } from '@angular/router';
 import { SocketService } from '../../../services/socket.service';
-import { ToastService } from '../../../services/toast.service';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
 
@@ -34,14 +33,10 @@ export class LayoutComponent implements OnInit,OnDestroy {
 
   constructor(
     private socketService: SocketService,
-    private toastService: ToastService,
     private http: HttpClient,
     private router: Router,
     private authService: AuthService
   ) {}
-
-
-  
 
   ngOnInit() {
 
