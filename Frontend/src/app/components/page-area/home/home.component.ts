@@ -58,6 +58,11 @@ import {
   getExtraStopNamesFromList,
 } from './home-utils/city-helpers';
 import { MyRidesService } from '../../../services/myrides.service';
+import { MatDialog } from '@angular/material/dialog';
+import {
+  ConfirmDialogComponent,
+  ConfirmDialogData,
+} from '../../page-area/confirm-dialog/confirm-dialog.component';
 
 
 interface Employee { id: string; full_name: string; }
@@ -122,7 +127,7 @@ export class NewRideComponent implements OnInit {
         private acknowledgmentService: AcknowledgmentService,
         private rideUserChecksService: RideUserChecksService,  
         private myRidesService: MyRidesService,
-
+        private dialog: MatDialog, 
 
     ) { }
 
@@ -222,6 +227,41 @@ private applyRebookData(data: RebookData): void {
   // end_time: this.toTimeOnly(data.end_datetime),
 }
 
+private isVehicleFrozenError(err: any): boolean {
+  const detail =
+    err?.error?.detail ||
+    err?.error?.message ||
+    (typeof err?.error === 'string' ? err.error : '');
+
+  if (typeof detail !== 'string') return false;
+
+  const lower = detail.toLowerCase();
+
+  return (
+    lower.includes('selected vehicle is currently unavailable') || 
+    lower.includes('vehicle is frozen') ||
+    lower.includes('הרכב אינו זמין') ||       
+    lower.includes('הרכב מוקפא')
+  );
+}
+
+private openVehicleFrozenDialog(): void {
+  const dialogData: ConfirmDialogData = {
+    title: 'הרכב שנבחר אינו זמין',
+    message:
+      'הרכב שבחרת מוקפא או אינו זמין כרגע. אנא בחר/י רכב אחר להזמנה.',
+    confirmText: 'הבנתי',
+    cancelText: 'סגור',
+    noRestoreText: '',
+    isDestructive: false,
+  };
+
+  this.dialog.open(ConfirmDialogComponent, {
+    width: '420px',
+    height: 'auto',
+    data: dialogData,
+  });
+}
 
 
     private initializeForm(): void {
@@ -839,11 +879,17 @@ if (distance && rideDate && vehicleType) {
                         'mock-ride';
                     this.showGuidelines = true;
                 },
-                error: (err) => {
-                    const translated = getRideSubmitErrorMessage(err);
-                    this.toastService.show(translated, 'error');
-                    console.error('Submit error:', err);
-                },
+                  error: (err) => {
+    if (this.isVehicleFrozenError(err)) {
+      this.openVehicleFrozenDialog();
+      return;
+    }
+
+    const translated = getRideSubmitErrorMessage(err);
+    this.toastService.show(translated, 'error');
+    console.error('Submit error:', err);
+  },
+
             });
         } else if (role === 'supervisor') {
             this.rideService.createSupervisorRide(formData, user_id).subscribe({
@@ -860,11 +906,17 @@ if (distance && rideDate && vehicleType) {
                         'mock-ride';
                     this.showGuidelines = true;
                 },
-                error: (err) => {
-                    const translated = getRideSubmitErrorMessage(err);
-                    this.toastService.show(translated, 'error');
-                    console.error('Submit error:', err);
-                },
+                  error: (err) => {
+    if (this.isVehicleFrozenError(err)) {
+      this.openVehicleFrozenDialog();
+      return;
+    }
+
+    const translated = getRideSubmitErrorMessage(err);
+    this.toastService.show(translated, 'error');
+    console.error('Submit error:', err);
+  },
+
             });
         }
     }
