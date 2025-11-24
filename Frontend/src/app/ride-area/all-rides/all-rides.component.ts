@@ -1,18 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, formatDate } from '@angular/common';
 import { Router, ActivatedRoute, Params, RouterModule } from '@angular/router';
-import { MyRidesService } from '../../services/myrides.service';
+import { MyRidesService, RebookData } from '../../services/myrides.service';
 import { ToastService } from '../../services/toast.service';
 import { SocketService } from '../../services/socket.service';
 import { Location } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../components/page-area/confirm-dialog/confirm-dialog.component';
-import { HttpErrorResponse } from '@angular/common/http';
 import { StartedRidesResponse } from '../../models/ride.model';
 import { FilterPanelComponent } from './filter-panel/filter-panel.component';
 import { QuotaIndicatorComponent } from './quota-indicator/quota-indicator.component';
 import { RideListTableComponent } from './ride-list-table/ride-list-table.component';
 import { ExceededWarningBannerComponent } from './exceeded-warning-banner/exceeded-warning-banner.component';
+import { HttpErrorResponse, HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Component({
   selector: 'app-home',
@@ -37,7 +37,8 @@ export class AllRidesComponent implements OnInit {
     private toastService: ToastService,
     private socketService: SocketService,
     private location: Location,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private http: HttpClient  
   ) {}
 
   loading: boolean = false;
@@ -54,6 +55,8 @@ export class AllRidesComponent implements OnInit {
   showOldOrders: boolean = false;
   minDate = '2025-01-01';
   maxDate = new Date(new Date().setMonth(new Date().getMonth() + 2)).toISOString().split('T')[0];
+  private apiBase = 'http://127.0.0.1:8000/api';
+
 
   get ordersPerPage(): number {
     return this.showFilters ? 3 : 4;
@@ -300,8 +303,57 @@ export class AllRidesComponent implements OnInit {
   }
 
   goToNewRide(): void {
+  const token = localStorage.getItem('access_token');
+
+  if (!token) {
     this.router.navigate(['/home']);
+    return;
   }
+
+  const headers = new HttpHeaders({
+    Authorization: `Bearer ${token}`,
+    Accept: 'application/json'
+  });
+
+  this.http.get<any>(`${this.apiBase}/user/me`, { headers }).subscribe({
+    next: (user) => {
+      const hasPendingRebook = user?.hasPendingRebook === true;
+
+      if (hasPendingRebook) {
+        const dialogData: ConfirmDialogData = {
+          title: 'יש להשלים הזמנה מחדש',
+          message:
+            'הנסיעה שלך בוטלה בגלל רכב שאינו זמין. לפני יצירת הזמנה חדשה, יש להשלים הזמנה מחדש באמצעות כפתור "הזמן מחדש" במסך "הנסיעות שלי".',
+          confirmText: 'עבור להנסיעות שלי',
+          cancelText: 'חזור',
+          noRestoreText: '',
+          isDestructive: false
+        };
+
+        const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+          width: '420px',
+          height: 'auto',
+          data: dialogData
+        });
+
+        dialogRef.afterClosed().subscribe((confirmed) => {
+          if (confirmed) {
+            this.router.navigate(['/all-rides'], {
+              queryParams: { mode: 'future' }
+            });
+          }
+        });
+      } else {
+        this.router.navigate(['/home']);
+      }
+    },
+    error: (err: HttpErrorResponse) => {
+      console.error('Failed to check hasPendingRebook:', err);
+      this.router.navigate(['/home']);
+    }
+  });
+}
+
 
   private formatDateForInput(date: Date): string {
     return date.toISOString().split('T')[0];
@@ -350,9 +402,12 @@ export class AllRidesComponent implements OnInit {
             start_datetime: order.start_datetime,
             end_datetime: order.end_datetime,
             submitted_at: order.submitted_at,
-            user_id: order.user_id
+            user_id: order.user_id,
+            cancel_reason: order.cancel_reason || order.cancellation_reason || null
+
           }));
           this.orders = mappedOrders;
+ 
           localStorage.setItem('user_orders', JSON.stringify(this.orders));
           
           this.rideService.checkStartedApprovedRides().subscribe({
@@ -388,4 +443,25 @@ export class AllRidesComponent implements OnInit {
     date.setHours(12, 0, 0, 0);
     return date;
   }
+
+  onRebookRide(order: any): void {
+  if (!order?.ride_id) {
+    this.toastService.show('שגיאה בזיהוי ההזמנה לביצוע הזמנה מחדש', 'error');
+    return;
+  }
+
+  this.rideService.getRebookData(order.ride_id).subscribe({
+    next: (data: RebookData) => {
+      // navigate to New Ride page in "rebook mode"
+      this.router.navigate(['/home'], {
+        state: { rebookData: data }
+      });
+    },
+    error: (err) => {
+      console.error('Failed to load rebook data:', err);
+      this.toastService.show('שגיאה בטעינת פרטי ההזמנה לביצוע הזמנה מחדש ❌', 'error');
+    }
+  });
+}
+
 }

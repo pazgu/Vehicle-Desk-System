@@ -59,9 +59,24 @@ import {
   getSelectedStopNameFromList,
   getExtraStopNamesFromList,
 } from './home-utils/city-helpers';
+import { MatDialog } from '@angular/material/dialog';
+import {
+  ConfirmDialogComponent,
+  ConfirmDialogData,
+} from '../../page-area/confirm-dialog/confirm-dialog.component';
 
 
 interface Employee { id: string; full_name: string; }
+interface RebookData {
+  ride_id: string;            
+  start_datetime: string;
+  end_datetime: string;
+  start_location: any;         
+  destination: any;             
+  passengers_count?: number;
+  reason?: string;
+}
+
 
 @Component({
     selector: 'app-new-ride',
@@ -98,6 +113,9 @@ export class NewRideComponent implements OnInit {
     disableDueToDepartment: boolean = false;
     departmentCheckCompleted: boolean = false;
     currentUserId: string | null = null;
+    isRebookMode = false;
+    rebookOriginalRideId: string | null = null;
+
     constructor(
         private fb: FormBuilder,
         private router: Router,
@@ -111,13 +129,22 @@ export class NewRideComponent implements OnInit {
         private cdr: ChangeDetectorRef,
         private acknowledgmentService: AcknowledgmentService,
         private rideUserChecksService: RideUserChecksService,  
+        private dialog: MatDialog, 
+
     ) { }
 
    ngOnInit(): void {
   this.currentUserId = getUserIdFromToken(localStorage.getItem('access_token'));
   this.initializeComponent();
+  const nav = this.router.getCurrentNavigation();
+  const rebookData = nav?.extras?.state?.['rebookData'] as RebookData | undefined;
+
+  if (rebookData) {
+    this.applyRebookData(rebookData);  
+  }
   this.loadUserOrders();
   const initialTargetType = this.rideForm.get('target_type')?.value;
+  
 
   if (initialTargetType === 'self') {
     if (this.currentUserId) {
@@ -167,6 +194,8 @@ onBeforeUnload(e: BeforeUnloadEvent) {
         }
     }
 
+    
+
     private initializeComponent(): void {
   this.fetchVehicleTypes();
   this.minDate = calculateMinDate();
@@ -177,6 +206,59 @@ onBeforeUnload(e: BeforeUnloadEvent) {
   this.timeOptions = generateTimeOptions();
   setClosestQuarterHourTimeOnForm(this.rideForm, this.timeOptions);
 }
+
+
+private applyRebookData(data: RebookData): void {
+  // mark that we’re in rebook flow
+  this.isRebookMode = true;
+  this.rebookOriginalRideId = data.ride_id;
+
+  // pre-fill the form with original reservation details (except vehicle)
+  this.rideForm.patchValue({
+    start_location: data.start_location,
+    destination: data.destination,
+    passengers: data.passengers_count ?? this.rideForm.get('passengers')?.value,
+    reason: data.reason ?? this.rideForm.get('reason')?.value,
+    car: null, // force user to pick a new vehicle
+  });
+}
+
+private isVehicleFrozenError(err: any): boolean {
+  const detail =
+    err?.error?.detail ||
+    err?.error?.message ||
+    (typeof err?.error === 'string' ? err.error : '');
+
+  if (typeof detail !== 'string') return false;
+
+  const lower = detail.toLowerCase();
+
+  return (
+    lower.includes('selected vehicle is currently unavailable') || 
+    lower.includes('vehicle is frozen') ||
+    lower.includes('הרכב אינו זמין') ||       
+    lower.includes('הרכב מוקפא')
+  );
+}
+
+private openVehicleFrozenDialog(): void {
+  const dialogData: ConfirmDialogData = {
+    title: 'הרכב שנבחר אינו זמין',
+    message:
+      'הרכב שבחרת מוקפא או אינו זמין כרגע. אנא בחר/י רכב אחר להזמנה.',
+    confirmText: 'הבנתי',
+    cancelText: 'סגור',
+    noRestoreText: '',
+    isDestructive: false,
+  };
+
+  this.dialog.open(ConfirmDialogComponent, {
+    width: '420px',
+    height: 'auto',
+    data: dialogData,
+  });
+}
+
 
     private loadUserOrders(): void {
         const userId = localStorage.getItem('employee_id');
@@ -495,11 +577,17 @@ onBeforeUnload(e: BeforeUnloadEvent) {
             }
         });
     }
-    private updateAvailableCars(): void {
+  private updateAvailableCars(): void {
   const selectedType = this.rideForm.get('vehicle_type')?.value;
   const carControl = this.rideForm.get('car');
 
-  this.availableCars = filterAvailableCars(this.allCars, selectedType);
+  // 1) Base filtering by type
+  let filtered = filterAvailableCars(this.allCars, selectedType);
+
+  // 2) Extra safety: only truly 'available' vehicles
+  filtered = filtered.filter(car => car.status === 'available');
+
+  this.availableCars = filtered;
 
   syncCarControlWithAvailableCars(
     carControl,
@@ -507,6 +595,7 @@ onBeforeUnload(e: BeforeUnloadEvent) {
     (id: string) => this.isPendingVehicle(id)
   );
 }
+
 
 private setDefaultStartAndDestination(): void {
   this.cityService.getCity('תל אביב').subscribe((city) => {
@@ -837,11 +926,17 @@ if (distance && rideDate && vehicleType) {
                         'mock-ride';
                     this.showGuidelines = true;
                 },
-                error: (err) => {
-                    const translated = getRideSubmitErrorMessage(err);
-                    this.toastService.show(translated, 'error');
-                    console.error('Submit error:', err);
-                },
+                  error: (err) => {
+    if (this.isVehicleFrozenError(err)) {
+      this.openVehicleFrozenDialog();
+      return;
+    }
+
+    const translated = getRideSubmitErrorMessage(err);
+    this.toastService.show(translated, 'error');
+    console.error('Submit error:', err);
+  },
+
             });
         } else if (role === 'supervisor') {
             this.rideService.createSupervisorRide(formData, user_id).subscribe({
@@ -860,11 +955,17 @@ if (distance && rideDate && vehicleType) {
                         'mock-ride';
                     this.showGuidelines = true;
                 },
-                error: (err) => {
-                    const translated = getRideSubmitErrorMessage(err);
-                    this.toastService.show(translated, 'error');
-                    console.error('Submit error:', err);
-                },
+                  error: (err) => {
+    if (this.isVehicleFrozenError(err)) {
+      this.openVehicleFrozenDialog();
+      return;
+    }
+
+    const translated = getRideSubmitErrorMessage(err);
+    this.toastService.show(translated, 'error');
+    console.error('Submit error:', err);
+  },
+
             });
         }
     }
@@ -884,4 +985,6 @@ if (distance && rideDate && vehicleType) {
         this.step = 1;
         this.showStep1Error = false;
     }
+
+    
 }
