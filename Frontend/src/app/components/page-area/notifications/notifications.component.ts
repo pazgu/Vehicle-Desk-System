@@ -87,11 +87,7 @@ export class NotificationsComponent implements OnInit {
               audio.play();
             }
 
-            if (newNotif.message.includes('נדחתה')) {
-              this.toastService.show(newNotif.message, 'error');
-            } else {
-              this.toastService.show(newNotif.message, 'success');
-            }
+           
           }
         }
       });
@@ -128,11 +124,7 @@ export class NotificationsComponent implements OnInit {
                 audio.play();
               }
 
-              if (newNotif.message.includes('נדחתה')) {
-                this.toastService.show(newNotif.message, 'error');
-              } else {
-                this.toastService.show(newNotif.message, 'success');
-              }
+            
             }
           });
         }
