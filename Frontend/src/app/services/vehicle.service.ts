@@ -178,4 +178,8 @@ getAllDepartments(): Observable<{ id: string; name: string }[]> {
     `${this.apiUrl}/departments`
   );
 }
+getMostUsedVehiclesAllTime(): Observable<{ stats: VehicleInItem[] }> {
+  const url = `${this.apiUrl}/vehicles/usage-stats-all-time`;
+  return this.http.get<{ stats: VehicleInItem[] }>(url);
+}
 }

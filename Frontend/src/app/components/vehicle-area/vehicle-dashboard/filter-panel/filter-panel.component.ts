@@ -34,11 +34,13 @@ export class FilterPanelComponent implements OnInit, OnChanges {
   typeFilter: string = '';
   showFilters: boolean = false;
   sortByMostUsed: boolean = false;
+  sortByMostUsedAllTime: boolean = false;
   showInactive: boolean = false;
 
   vehicleTypes: { original: string; translated: string }[] = [];
   inactiveVehicles: Vehicle[] = [];
   vehicleUsageData: Map<string, number> = new Map();
+  vehicleUsageDataAllTime: Map<string, number> = new Map();
 
   constructor(
     private vehicleService: VehicleService,
@@ -97,11 +99,37 @@ export class FilterPanelComponent implements OnInit, OnChanges {
 
   onSortByMostUsedChange() {
     if (this.sortByMostUsed) {
+      this.sortByMostUsedAllTime = false;
       this.loadVehicleUsageData();
     } else {
       this.applyFilters();
     }
     this.updateQueryParams.emit();
+  }
+
+  onSortByMostUsedAllTimeChange() {
+    if (this.sortByMostUsedAllTime) {
+      this.sortByMostUsed = false;
+      this.loadVehicleUsageDataAllTime();
+    } else {
+      this.applyFilters();
+    }
+    this.updateQueryParams.emit();
+  }
+
+    loadVehicleUsageDataAllTime(): void {
+    this.vehicleService.getMostUsedVehiclesAllTime().subscribe({
+      next: (response) => {
+        this.vehicleUsageDataAllTime.clear();
+        response.stats.forEach((stat: any) => {
+          this.vehicleUsageDataAllTime.set(stat.vehicle_id, stat.total_rides);
+        });
+        this.applyFilters();
+      },
+      error: (err) => {
+        console.error('❌ Error loading all-time vehicle usage data:', err);
+      },
+    });
   }
 
   loadVehicleUsageData(): void {
@@ -120,6 +148,22 @@ export class FilterPanelComponent implements OnInit, OnChanges {
       },
       error: (err) => {
         console.error('❌ Error loading vehicle usage data:', err);
+      },
+    });
+  }
+
+  loadVehicleUsageAllTimeData(): void {
+    this.vehicleService.getMostUsedVehiclesAllTime().subscribe({
+      next: (response) => {
+        this.vehicleUsageDataAllTime.clear();
+        response.stats.forEach((stat: any) => {
+          this.vehicleUsageDataAllTime.set(stat.vehicle_id, stat.total_rides);
+        });
+
+        this.applyFilters();
+      },
+      error: (err) => {
+        console.error('❌ Error loading all-time vehicle usage data:', err);
       },
     });
   }
@@ -182,7 +226,13 @@ export class FilterPanelComponent implements OnInit, OnChanges {
 
     let sorted: VehicleInItem[];
 
-    if (this.sortByMostUsed) {
+    if (this.sortByMostUsedAllTime) {
+      sorted = [...filtered].sort((a, b) => {
+        const countA = this.vehicleUsageDataAllTime.get(a.id) || 0;
+        const countB = this.vehicleUsageDataAllTime.get(b.id) || 0;
+        return countB - countA;
+      });
+    } else if (this.sortByMostUsed) {
       sorted = [...filtered].sort((a, b) => {
         const countA = this.vehicleUsageData.get(a.id) || 0;
         const countB = this.vehicleUsageData.get(b.id) || 0;
@@ -210,19 +260,27 @@ export class FilterPanelComponent implements OnInit, OnChanges {
     return this.sortByMostUsed;
   }
 
+  getSortByMostUsedAllTime(): boolean {
+    return this.sortByMostUsedAllTime;
+  }
+
   setFiltersFromParams(
     status: string,
     type: string,
     inactive: boolean,
-    sortByMostUsed: boolean = false
+    sortByMostUsed: boolean = false,
+    sortByMostUsedAllTime: boolean = false
   ): void {
     this.statusFilter = status;
     this.typeFilter = type;
     this.showInactive = inactive;
     this.sortByMostUsed = sortByMostUsed;
+    this.sortByMostUsedAllTime = sortByMostUsedAllTime;
 
     if (this.showInactive) {
       this.loadInactiveVehicles();
+    } else if (this.sortByMostUsedAllTime) {
+      this.loadVehicleUsageDataAllTime();
     } else if (this.sortByMostUsed) {
       this.loadVehicleUsageData();
     } else {
