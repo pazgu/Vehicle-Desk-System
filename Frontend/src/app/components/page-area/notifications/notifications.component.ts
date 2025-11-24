@@ -173,15 +173,15 @@ export class NotificationsComponent implements OnInit {
   }
 
   goToOrder(orderId: string): void {
-    const role = localStorage.getItem('role');
-    if (role === 'supervisor') {
-      this.router.navigate([`/order-card/${orderId}`]);
-    } else {
-      this.router.navigate(['/all-rides'], {
-        queryParams: { highlight: orderId },
-      });
-    }
+  const role = localStorage.getItem('role');
+
+  if (role === 'supervisor') {
+    this.router.navigate([`/order-card/${orderId}`]);
+  } else {
+    this.router.navigate([`/ride/details/${orderId}`]);
   }
+}
+
 
   goToVehicle(vehicleId: string): void {
     this.router.navigate([`/vehicle-details/${vehicleId}`]);
