@@ -10,7 +10,8 @@
   class="notification" 
   *ngFor="let note of pagedNotifications" 
   (click)="handleNotificationClick(note)"
-  [ngClass]="'neutral'">
+  [ngClass]="isVehicleFreezeCancellation(note) ? 'vehicle-freeze-banner' : 'neutral'">
+
 
       <div class="content">
        <span *ngIf="note.is_extended_request" title="שים לב-נסיעה ארוכה!"></span>        

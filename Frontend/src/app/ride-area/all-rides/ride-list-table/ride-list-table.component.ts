@@ -20,6 +20,8 @@ export class RideListTableComponent implements OnChanges {
   @Output() editRide = new EventEmitter<any>();
   @Output() deleteRide = new EventEmitter<any>();
   @Output() newRide = new EventEmitter<void>();
+  @Output() rebookRide = new EventEmitter<any>();
+
   
   constructor(private router:Router){}
 
@@ -56,18 +58,21 @@ export class RideListTableComponent implements OnChanges {
     }
   }
 
-  getStatusTooltip(status: string): string {
-    switch (status.toLowerCase()) {
-      case 'approved': return 'אושר';
-      case 'pending': return 'בהמתנה';
-      case 'rejected': return 'נדחה';
-      case 'completed': return 'בוצע';
-      case 'in_progress': return 'בתהליך';
-      case 'cancelled_due_to_no_show': return 'בוטל – אי הגעה';
-      case 'reserved': return 'מוזמן';
-      default: return 'סטטוס לא ידוע';
-    }
+ getStatusTooltip(status: string): string {
+  switch (status.toLowerCase()) {
+    case 'approved': return 'אושר';
+    case 'pending': return 'בהמתנה';
+    case 'rejected': return 'נדחה';
+    case 'completed': return 'בוצע';
+    case 'in_progress': return 'בתהליך';
+    case 'cancelled_due_to_no_show': return 'בוטל – אי הגעה';
+    case 'reserved': return 'מוזמן';
+    case 'cancelled': return 'בוטל';
+    case 'cancelled_vehicle_unavilable': return 'בוטל – הרכב לא זמין';
+    default: return 'סטטוס לא ידוע';
   }
+}
+
 
   getStatusClass(status: string): string {
     switch (status.toLowerCase()) {
@@ -77,6 +82,7 @@ export class RideListTableComponent implements OnChanges {
       case 'in_progress': return 'status_in_progress';
       case 'cancelled_due_to_no_show': return 'status-cancelled-no-show';
       case 'reserved': return 'status-reserved';
+      case 'cancelled': return 'status-cancelled'; 
       default: return '';
     }
   }
@@ -213,4 +219,20 @@ canChangeStatus(order: any): boolean {
     date.setHours(12, 0, 0, 0);
     return date;
   }
+
+  canRebook(order: any): boolean {
+  if (!order?.status) return false;
+
+  const status = order.status.toLowerCase();
+
+  return status === 'cancelled_vehicle_unavilable';
+}
+
+
+onRebook(order: any, event: Event): void {
+  event.stopPropagation();
+  this.rebookRide.emit(order);
+}
+
+
 }
