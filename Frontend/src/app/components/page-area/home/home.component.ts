@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators, AbstractControl, ReactiveFormsModul
 import { Router, RouterModule } from '@angular/router';
 import { ToastService } from '../../../services/toast.service';
 import { RideService } from '../../../services/ride.service';
+import { MyRidesService } from '../../../services/myrides.service';
 import { HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { VehicleService } from '../../../services/vehicle.service';
@@ -13,6 +14,7 @@ import { FuelType, FuelTypeResponse } from '../../../models/vehicle-dashboard-it
 import { ValidationErrors } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { ButtonModule } from 'primeng/button';
+import { QuotaIndicatorComponent } from '../../../ride-area/all-rides/quota-indicator/quota-indicator.component';
 import { HostListener } from '@angular/core';
 import { GuidelinesModalComponent } from '../../page-area/guidelines-modal/guidelines-modal.component';
 import { AcknowledgmentService, RideAcknowledgmentPayload } from '../../../services/acknowledgment.service';
@@ -64,7 +66,7 @@ interface Employee { id: string; full_name: string; }
 @Component({
     selector: 'app-new-ride',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, HttpClientModule, NgSelectModule, ButtonModule ,GuidelinesModalComponent],
+    imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, HttpClientModule, NgSelectModule, ButtonModule ,GuidelinesModalComponent, QuotaIndicatorComponent],
     templateUrl: './home.component.html',
     styleUrls: ['./home.component.css']
 })
@@ -83,6 +85,7 @@ export class NewRideComponent implements OnInit {
     isLoadingDistance = false;
     allCars: Vehicle[] = [];
     availableCars: Vehicle[] = [];
+    orders: any[] = [];
     vehicleTypes: string[] = [];
     pendingVehicles: PendingVehicle[] = [];
     disableRequest: boolean = false;
@@ -104,6 +107,7 @@ export class NewRideComponent implements OnInit {
         private socketService: SocketService,
         private location: Location,
         private cityService: CityService,
+        private myRidesService: MyRidesService,
         private cdr: ChangeDetectorRef,
         private acknowledgmentService: AcknowledgmentService,
         private rideUserChecksService: RideUserChecksService,  
@@ -112,6 +116,7 @@ export class NewRideComponent implements OnInit {
    ngOnInit(): void {
   this.currentUserId = getUserIdFromToken(localStorage.getItem('access_token'));
   this.initializeComponent();
+  this.loadUserOrders();
   const initialTargetType = this.rideForm.get('target_type')?.value;
 
   if (initialTargetType === 'self') {
@@ -171,6 +176,55 @@ onBeforeUnload(e: BeforeUnloadEvent) {
   this.loadPendingVehicles();
   this.timeOptions = generateTimeOptions();
   setClosestQuarterHourTimeOnForm(this.rideForm, this.timeOptions);
+}
+
+    private loadUserOrders(): void {
+        const userId = localStorage.getItem('employee_id');
+        if (!userId) {
+            this.orders = [];
+            return;
+        }
+        this.myRidesService.getAllOrders(userId, {}).subscribe({
+            next: (res: any) => {
+                if (Array.isArray(res)) {
+                    this.orders = res.map((order: any) => ({
+                        ride_id: order.ride_id,
+                        date: this.formatDateDisplay(order.start_datetime),
+                        time: this.formatTimeDisplay(order.start_datetime),
+                        type: order.vehicle,
+                        distance: order.estimated_distance,
+                        status: order.status.toLowerCase(),
+                        start_datetime: order.start_datetime,
+                        end_datetime: order.end_datetime,
+                        submitted_at: order.submitted_at,
+                        user_id: order.user_id
+                    }));
+                } else {
+                    this.orders = [];
+                }
+            },
+            error: (err: any) => {
+                console.error('Error loading orders for quota:', err);
+                this.orders = [];
+            }
+        });
+    }
+
+    private formatDateDisplay(datetime: string): string {
+        if (!datetime) return '';
+        const date = new Date(datetime);
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}.${month}.${year}`;
+    }
+
+    private formatTimeDisplay(datetime: string): string {
+        if (!datetime) return '';
+        const date = new Date(datetime);
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        return `${hours}:${minutes}`;
 }
 
     private initializeForm(): void {
@@ -774,6 +828,8 @@ if (distance && rideDate && vehicleType) {
                     this.loadFuelType(formData.vehicle_id);
                     this.socketService.sendMessage('new_ride_request', { ...createdRide, user_id });
 
+                    this.loadUserOrders();
+
                     this.createdRideId =
                         createdRide?.id ??
                         createdRide?.ride_id ??
@@ -794,6 +850,8 @@ if (distance && rideDate && vehicleType) {
                     this.orderSubmitted = true;
 
                     this.loadFuelType(formData.vehicle_id);
+
+                    this.loadUserOrders();
 
                     this.createdRideId =
                         createdRide?.id ??

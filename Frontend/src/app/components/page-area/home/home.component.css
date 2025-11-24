@@ -810,3 +810,11 @@ hr {
 .pi-lock {
   color: #666;
 }
+.quota-header-wrapper {
+  position: absolute;
+  right: 10px;
+  top: 40px;
+  z-index: 11;
+  max-width: 200px;
+  transform: scale(0.9);
+}
