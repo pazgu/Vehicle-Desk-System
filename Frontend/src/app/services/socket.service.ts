@@ -28,6 +28,7 @@ export class SocketService {
   public odometerNotif$=new BehaviorSubject<any>(null);
   public rideSupposedToStart$=new BehaviorSubject<any>(null);
   public usersBlockStatus$ = new Subject<{ id: string, is_blocked: boolean, block_expires_at: Date | null }>();
+  public reservationCanceledDueToVehicleFreeze$=new BehaviorSubject<any>(null);
 
   constructor(private notificationService: NotificationService) {
     this.connectToSocket(); // ✅ now always tries to connect (later you can add env check)
@@ -69,6 +70,12 @@ if (userId) {
 
 this.socket.on('user_deleted', (data: any) => {
   this.deleteUserRequests$.next(data);
+});
+
+
+this.socket.on('reservationCanceledDueToVehicleFreeze', (data: any) => {
+  this.reservationCanceledDueToVehicleFreeze$.next(data);
+  console.log("reservationCanceledDueToVehicleFreeze:",data)
 });
 
 this.socket.on('feedback_needed', (data) => {

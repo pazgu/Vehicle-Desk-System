@@ -14,6 +14,8 @@ from sqlalchemy import text, cast
 from sqlalchemy.orm import Session, aliased
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
+from ..schemas.rebook_ride import RebookRideRequest, RideRebookData
+
 from ..schemas.ride_requirements_schema import RideRequirementOut
 from ..services.ride_requirements import get_latest_requirement
 from ..schemas.ride_requirements_confirm import RideRequirementConfirmationIn
@@ -201,6 +203,11 @@ async def create_order(
         user = db.query(User).filter(User.employee_id == user_id).first()
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
+        if user.has_pending_rebook:
+            raise HTTPException(
+                status_code=400,
+                detail="You must complete your rebook before creating a new ride."
+            )
         license_check_passed = bool(getattr(user, "has_government_license", False))
 
         new_ride = await create_ride(
@@ -299,6 +306,48 @@ async def create_order(
     except Exception as e:
         print(f"An error occurred: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+
+@router.get("/reservations/{ride_id}/rebook-data", response_model=RideRebookData)
+async def get_rebook_data(
+    ride_id: UUID,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    ride = get_ride_by_id(db, ride_id)
+
+    if not ride:
+        raise HTTPException(status_code=404, detail="Ride not found")
+
+    return ride   
+
+
+
+@router.post("/reservations/rebook", response_model=RideResponse)
+async def rebook_ride(
+    data: RebookRideRequest,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    old_ride = get_ride_by_id(db, data.old_ride_id)
+    if not old_ride:
+        raise HTTPException(status_code=404, detail="Old ride not found")
+
+    if old_ride.user_id != user.id:
+        raise HTTPException(status_code=403, detail="Not your ride")
+
+    new_ride = await create_ride(
+        db=db,
+        user=user,
+        ride_data=data.new_ride
+    )
+
+    user.has_pending_rebook = False
+    db.commit()
+    db.refresh(user)
+
+    return new_ride
 
 
 @router.get("/api/rides_supposed-to-start")

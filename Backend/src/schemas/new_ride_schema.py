@@ -16,6 +16,11 @@ class RideStatus(str, Enum):
     in_progress = "in_progress"
     completed = "completed"
     cancelled = "cancelled"
+    cancelled_due_to_no_show = "cancelled_due_to_no_show"  
+    reserved = "reserved"
+    cancelled_vehicle_unavailable= "cancelled_vehicle_unavailable"
+
+
 
 class RideCreate(BaseModel):
     user_id: UUID
@@ -66,3 +71,5 @@ class RideResponse(BaseModel):
             datetime: lambda v: v.isoformat(),
             UUID: str
         }
+
+

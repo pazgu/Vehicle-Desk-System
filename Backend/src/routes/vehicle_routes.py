@@ -7,6 +7,8 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import text, func, or_
 from sqlalchemy.orm import Session
 
+from ..helpers.user_helpers import cancel_future_rides_for_vehicle
+
 # Utils
 from ..utils.auth import token_check, get_current_user, role_check
 from ..utils.database import get_db
@@ -115,7 +117,7 @@ def get_vehicle_fuel_type(vehicle_id: UUID, db: Session = Depends(get_db)):
     return {"vehicle_id": str(vehicle.id), "fuel_type": vehicle.fuel_type}
 
 
-@router.patch("/vehicles-status/{vehicle_id}") 
+@router.patch("/vehicles-status/{vehicle_id}")
 async def patch_vehicle_status(
     vehicle_id: UUID,
     status_update: VehicleStatusUpdate,
@@ -126,14 +128,45 @@ async def patch_vehicle_status(
     if not user_id:
         return {"error": "User ID not found in token"}, 401
     
-    res=update_vehicle_status(vehicle_id, status_update.new_status, status_update.freeze_reason, db, user_id)
-    new_status=res["new_status"]
+    res = update_vehicle_status(
+        vehicle_id,
+        status_update.new_status,
+        status_update.freeze_reason,
+        db,
+        user_id
+    )
+
+    new_status = res["new_status"]
+
     await sio.emit('vehicle_status_updated', {
-            "vehicle_id": str(vehicle_id),
-            "status": new_status,
-            "freeze_reason": res.get("freeze_reason", "")
+        "vehicle_id": str(vehicle_id),
+        "status": new_status,
+        "freeze_reason": res.get("freeze_reason", "")
     })
+
+    cancelled_result = None
+    if new_status == "frozen":   
+        cancelled_result =  cancel_future_rides_for_vehicle(vehicle_id, db,user_id)
+    
+    if cancelled_result is None:
+        cancelled_result = {"cancelled": [], "users": []}
+
+
+    await sio.emit('reservationCanceledDueToVehicleFreeze', {
+        "vehicle_id": str(vehicle_id),
+        "cancelled_rides": cancelled_result["cancelled"],
+        "affected_users": [str(u) for u in cancelled_result["users"]],
+        "status": new_status,
+        "freeze_reason": res.get("freeze_reason", "")
+    })
+
+
+    if cancelled_result:
+        res["cancelled_rides"] = cancelled_result["cancelled"]
+        res["affected_users"] = cancelled_result["users"]
+
     return res
+
 
 
 
