@@ -1,17 +1,13 @@
-<div class="page-container">
+<div class="page-container" dir="rtl">
   <div class="user-data-container">
     <div class="content">
-      <!-- כפתור חזרה -->
 <a class="edit-button" routerLink="/user-data-edit/{{user?.employee_id}}">
   עריכת משתמש
 </a>
-<!-- <a class="delete-button" (click)="deleteUser(user?.employee_id)">
-  מחיקת משתמש 🗑️
-</a> -->
 
       <a routerLink="/user-data" class="back-button"> חזרה לרשימה ← </a>
 
-      <!-- כותרת -->
+      <!-- Header -->
       <div class="header">
         <h2 class="header-title">פרטי משתמש</h2>
       </div>
@@ -45,47 +41,68 @@
           <span class="label">מספר טלפון:</span>
           <span class="value">{{ user?.phone || 'לא זמין' }}</span>
         </div>
-
         <div class="detail-row">
           <span class="label">רישיון ממשלתי:</span>
           <span class="value">{{ user?.has_government_license ? 'יש' : 'אין' }}</span>
         </div>
       </div>
-      <!-- No-Show Count -->
-      <div class="no-show-count" *ngIf="NoShowsData">
-        <span class="label"> אירועי היעדרות מנסיעות שהוזמנו:</span>
-      </div>
-
-      <!-- Recent No-Show Events Table -->
-      <div class="no-show-events" *ngIf="NoShowsData?.events && NoShowsData.events.length > 0; else noNoShows">
-        <table class="no-show-table" dir="rtl" style="width:100%; text-align: right;">
-          <thead>
-            <tr>
-              <th>תאריך</th>
-              <th>רכב</th>
-              <th>סיבה</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let event of NoShowsData.events">
-              <td>{{ event.occurred_at | date:'yyyy-MM-dd' }}</td>
-              <td>{{ event.plate_number }}</td>
-              <td>לא הגיע/ה</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <ng-template #noNoShows>
-        <p style="text-align: right;">לא נמצאו אירועי היעדרות אחרונים.</p>
-      </ng-template>
-
-      <!-- כפתור להצגת קובץ רישיון -->
-      <div class="detail-row" *ngIf="user?.license_file_url">
+      <!-- License File Button -->
+      <div class="detail-row license-file-row" *ngIf="user?.license_file_url">
         <span class="label">קובץ רישיון:</span>
         <span class="value">
           <button (click)="openLicenseInNewTab()">הצג קובץ/תמונה</button>
         </span>
+      </div>
+
+      <!-- No-Show Section -->
+      <div *ngIf="NoShowsData">
+        <div class="no-show-count">
+          <i class="pi pi-exclamation-triangle"></i>
+          אירועי היעדרות מנסיעות שהוזמנו
+        </div>
+        <div class="no-show-events" *ngIf="NoShowsData?.events && NoShowsData.events.length > 0; else noNoShows">
+          <table class="no-show-table">
+            <thead>
+              <tr>
+                <th>תאריך</th>
+                <th>רכב</th>
+                <th>סיבה</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let event of NoShowsData.events">
+                <td>{{ event.occurred_at | date:'dd/MM/yyyy' }}</td>
+                <td>{{ event.plate_number }}</td>
+                <td>לא הגיע/ה</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <ng-template #noNoShows>
+          <p class="no-shows-message">לא נמצאו אירועי היעדרות אחרונים.</p>
+        </ng-template>
+      </div>
+      <!-- Block Information -->
+      <div *ngIf="user?.is_blocked" class="block-section">
+        <h3 class="block-section-title">
+          <span class="icon">🚫</span>
+          פרטי חסימת משתמש
+        </h3>
+        <div class="block-details">
+          <div class="detail-row">
+            <span class="label">סטטוס:</span>
+            <span class="value status">חסום</span>
+          </div>
+          <div class="detail-row" *ngIf="user?.block_reason">
+            <span class="label">סיבת חסימה:</span>
+            <span class="value reason">{{ user?.block_reason }}</span>
+          </div>
+          <div class="detail-row" *ngIf="user?.block_expires_at">
+            <span class="label">תאריך סיום חסימה:</span>
+            <span class="value date">{{ user?.block_expires_at | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
