@@ -276,31 +276,6 @@ async def create_order(
         "order_id": str(passenger_notification.order_id) if passenger_notification.order_id else None,
         "order_status": new_ride.status
     })
-
-            supervisor_notification = create_system_notification(
-                user_id=supervisor_id,
-                title="בקשת נסיעה חדשה",
-                message=f"העובד/ת {requester_name} הזמין/ה עבורך נסיעה חדשה  ",
-                order_id=new_ride.id
-            )
-           
-            await sio.emit("new_notification", {
-                "id": str(supervisor_notification.id),
-                "user_id": str(supervisor_notification.user_id),
-                "title": supervisor_notification.title,
-                "message": supervisor_notification.message,
-                "notification_type": supervisor_notification.notification_type.value,
-                "sent_at": supervisor_notification.sent_at.isoformat(),
-                "order_id": str(supervisor_notification.order_id) if supervisor_notification.order_id else None,
-                "order_status": new_ride.status,
-                "is_extended_request": is_extended,
-                "employee_name": employee_name,
-                "vehicle_id": str(supervisor_notification.vehicle_id) if supervisor_notification.vehicle_id else None,
-                "seen": False
-            })
-        else:
-            logger.warning(f"No supervisor found for user ID {user_id} — skipping supervisor notification and email.")
-
         return new_ride
 
     except Exception as e:

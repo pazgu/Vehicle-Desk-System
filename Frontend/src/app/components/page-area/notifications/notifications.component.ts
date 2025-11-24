@@ -87,11 +87,7 @@ export class NotificationsComponent implements OnInit {
               audio.play();
             }
 
-            if (newNotif.message.includes('נדחתה')) {
-              this.toastService.show(newNotif.message, 'error');
-            } else {
-              this.toastService.show(newNotif.message, 'success');
-            }
+           
           }
         }
       });
@@ -128,11 +124,7 @@ export class NotificationsComponent implements OnInit {
                 audio.play();
               }
 
-              if (newNotif.message.includes('נדחתה')) {
-                this.toastService.show(newNotif.message, 'error');
-              } else {
-                this.toastService.show(newNotif.message, 'success');
-              }
+            
             }
           });
         }
@@ -154,47 +146,57 @@ export class NotificationsComponent implements OnInit {
       });
     }
     this.socketService.notifications$.subscribe((newNotif) => {
-      if (newNotif && newNotif.user_id == userId) {
-        const notifWithTimeAgo = {
-          ...newNotif,
-          timeAgo: formatDistanceToNow(new Date(newNotif.sent_at), {
-            addSuffix: true,
-            locale: he,
-          }),
-        };
+  if (newNotif && newNotif.user_id == userId) {
+    const notifWithTimeAgo = {
+      ...newNotif,
+      timeAgo: formatDistanceToNow(new Date(newNotif.sent_at), {
+        addSuffix: true,
+        locale: he,
+      }),
+    };
 
-        this.notifications = [notifWithTimeAgo, ...this.notifications];
-        this.cdr.detectChanges();
+    this.notifications = [notifWithTimeAgo, ...this.notifications];
+    this.cdr.detectChanges();
 
-        if (this.router.url != '/notifications') {
-          if (
-            newNotif.message.includes('בעיה חמורה') ||
-            newNotif.notification_type === 'critical'
-          ) {
-            const audio = new Audio('assets/sounds/notif.mp3');
-            audio.play();
-          }
-
-          if (newNotif.message.includes('נדחתה')) {
-            this.toastService.show(newNotif.message, 'error');
-          } else {
-            this.toastService.show(newNotif.message, 'success');
-          }
-        }
+    if (this.router.url != '/notifications') {
+      // special case: reservation cancelled due to vehicle freeze
+      if (this.isVehicleFreezeCancellation(newNotif)) {
+        this.toastService.show(
+          'הנסיעה שלך בוטלה כי הרכב יצא משימוש (תקלת מוסך / תאונה). אנא הזמן/י נסיעה חדשה.',
+          'error'
+        );
+        return;
       }
-    });
+
+      if (
+        newNotif.message?.includes('בעיה חמורה') ||
+        newNotif.notification_type === 'critical'
+      ) {
+        const audio = new Audio('assets/sounds/notif.mp3');
+        audio.play();
+      }
+
+      if (newNotif.message?.includes('נדחתה')) {
+        this.toastService.show(newNotif.message, 'error');
+      } else {
+        this.toastService.show(newNotif.message || '', 'success');
+      }
+    }
+  }
+});
+
   }
 
   goToOrder(orderId: string): void {
-    const role = localStorage.getItem('role');
-    if (role === 'supervisor') {
-      this.router.navigate([`/order-card/${orderId}`]);
-    } else {
-      this.router.navigate(['/all-rides'], {
-        queryParams: { highlight: orderId },
-      });
-    }
+  const role = localStorage.getItem('role');
+
+  if (role === 'supervisor') {
+    this.router.navigate([`/order-card/${orderId}`]);
+  } else {
+    this.router.navigate([`/ride/details/${orderId}`]);
   }
+}
+
 
   goToVehicle(vehicleId: string): void {
     this.router.navigate([`/vehicle-details/${vehicleId}`]);
@@ -223,10 +225,12 @@ export class NotificationsComponent implements OnInit {
     }
   }
 
-  translateMessage(message: string): string {
+    translateMessage(message: string): string {
     const lower = message.toLowerCase();
 
-    if (lower.includes('נשלחה בהצלחה')) {
+    if (lower.includes('vehicle unavailable due to technical issues') || lower.includes('בוטלה עקב תקלה ברכב')) {
+      return 'ההזמנה שלך בוטלה כי הרכב הוקפא בעקבות תקלה. אנא הזמן/י נסיעה חדשה עם רכב אחר.';
+    } else if (lower.includes('נשלחה בהצלחה')) {
       return 'ההזמנה שלך נשלחה בהצלחה. תקבל/י התראה לאחר הבדיקה והאישור.';
     } else if (lower.includes('אושרה')) {
       return 'ההזמנה שלך אושרה.';
@@ -236,6 +240,7 @@ export class NotificationsComponent implements OnInit {
       return message;
     }
   }
+
   getStatusClass(status?: string): string {
     if (!status) {
       return 'neutral';
@@ -268,7 +273,7 @@ export class NotificationsComponent implements OnInit {
     }
   }
 
-  handleNotificationClick(notif: MyNotification): void {
+    handleNotificationClick(notif: MyNotification): void {
     const role = localStorage.getItem('role');
 
     if (!notif.seen) {
@@ -281,9 +286,22 @@ export class NotificationsComponent implements OnInit {
         }
       });
     }
-    if (role !='admin' && notif.message.includes('לא הוחזר בזמן')){
-      return
+
+    // Vehicle freeze → go to "הנסיעות שלי" (My Reservations)
+    if (this.isVehicleFreezeCancellation(notif)) {
+      this.router.navigate(['/all-rides'], {
+        queryParams: {
+          mode: 'future',      
+          highlight: notif.order_id 
+        },
+      });
+      return;
     }
+
+    if (role != 'admin' && notif.message.includes('לא הוחזר בזמן')) {
+      return;
+    }
+
     if (role === 'admin' && notif.message.includes('בעיה חמורה')) {
       this.router.navigate(['/admin/critical-issues'], {
         queryParams: { highlight: '1' },
@@ -295,6 +313,7 @@ export class NotificationsComponent implements OnInit {
     }
   }
 
+
   getLeaseAlerts(title: string): string {
     return title == 'Vehicle Lease Expiry' ? 'lease-alert' : '';
   }
@@ -305,4 +324,18 @@ export class NotificationsComponent implements OnInit {
   onImageError(event: any, note: MyNotification): void {
     event.target.src = 'assets/images/message.png';
   }
+
+  isVehicleFreezeCancellation(notif: MyNotification): boolean {
+  const type = (notif as any).notification_type?.toLowerCase?.() || '';
+  const msg = notif.message?.toLowerCase?.() || '';
+
+  return (
+    type === 'reservation_vehicle_frozen' ||
+    type === 'ride_cancelled_vehicle_freeze' ||
+    msg.includes('vehicle unavailable due to technical issues') ||
+    msg.includes('בוטלה עקב תקלה ברכב')
+  );
+}
+
+
 }
