@@ -24,22 +24,20 @@ import { Location } from '@angular/common';
     ButtonModule,
     TagModule,
     DividerModule,
-    ProgressSpinnerModule
+    ProgressSpinnerModule,
   ],
   templateUrl: './order-card.component.html',
-  styleUrls: ['./order-card.component.css']
+  styleUrls: ['./order-card.component.css'],
 })
 export class OrderCardComponent implements OnInit {
   trip: any = null;
   order: OrderCardItem | null = null;
-  departmentId: string | null = null; 
+  departmentId: string | null = null;
   loading = false;
   rideId!: string;
   cityMap: { [id: string]: string } = {};
   users: { id: string; user_name: string }[] = [];
   vehicles: { id: string; vehicle_model: string; plate_number: string }[] = [];
-
-
 
   constructor(
     private route: ActivatedRoute,
@@ -50,15 +48,14 @@ export class OrderCardComponent implements OnInit {
     private http: HttpClient,
     private vehicleService: VehicleService,
     private location: Location
-  ) { }
+  ) {}
 
   ngOnInit(): void {
-
-     window.scrollTo({
-    top: 0,
-    left: 0,
-    behavior: 'auto', 
-  });
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'auto',
+    });
     this.departmentId = localStorage.getItem('department_id');
     if (!this.departmentId) {
       this.toastService.show('מחלקה לא נמצאה', 'error');
@@ -71,7 +68,7 @@ export class OrderCardComponent implements OnInit {
 
       if (orderIdParam) {
         this.rideId = orderIdParam;
-        this.loadOrder(this.departmentId!, this.rideId); 
+        this.loadOrder(this.departmentId!, this.rideId);
       } else {
         this.toastService.show('Missing orderId', 'error');
       }
@@ -85,7 +82,7 @@ export class OrderCardComponent implements OnInit {
       },
       error: () => {
         this.toastService.show('שגיאה בטעינת ערים', 'error');
-      }
+      },
     });
     this.fetchUsers();
     this.fetchVehicles();
@@ -95,20 +92,15 @@ export class OrderCardComponent implements OnInit {
     document.body.style.overflow = '';
   }
 
-
   getCityName(id: string): string {
     return this.cityMap[id] || 'לא ידוע';
   }
 
-
-
   loadOrder(departmentId: string, orderId: string): void {
-
     this.loading = true;
-    this.orderService.getDepartmentSpecificOrder(departmentId, this.rideId)
-      .pipe(
-        finalize(() => this.loading = false)
-      )
+    this.orderService
+      .getDepartmentSpecificOrder(departmentId, this.rideId)
+      .pipe(finalize(() => (this.loading = false)))
       .subscribe({
         next: (response) => {
           this.trip = {
@@ -128,13 +120,13 @@ export class OrderCardComponent implements OnInit {
             licenseCheckPassed: response.license_check_passed,
             submittedAt: response.submitted_at,
             emergencyEvent: response.emergency_event,
-            four_by_four_reason: response.four_by_four_reason ?? null, 
-            extended_ride_reason: response.extended_ride_reason ?? null    
+            four_by_four_reason: response.four_by_four_reason ?? null,
+            extended_ride_reason: response.extended_ride_reason ?? null,
           };
         },
         error: (error) => {
           this.toastService.show('שגיאה בטעינת הזמנה', 'error');
-        }
+        },
       });
   }
 
@@ -142,7 +134,8 @@ export class OrderCardComponent implements OnInit {
     if (!this.trip) return;
     this.loading = true;
 
-    this.orderService.updateOrderStatus(this.departmentId!, this.rideId, status)
+    this.orderService
+      .updateOrderStatus(this.departmentId!, this.rideId, status)
       .pipe(
         finalize(() => {
           this.loading = false;
@@ -150,21 +143,21 @@ export class OrderCardComponent implements OnInit {
       )
       .subscribe({
         next: (response) => {
-          
           this.toastService.show(`סטטוס עודכן בהצלחה`, 'success');
           setTimeout(() => {
             this.loadOrder(this.departmentId!, this.rideId);
           }, 500);
+          this.router.navigate(['/supervisor-dashboard']);
         },
         error: (error) => {
           this.toastService.show('שגיאה בעדכון הסטטוס', 'error');
-        }
+        },
       });
   }
 
-    goBack(): void {
-        this.location.back();
-    }
+  goBack(): void {
+    this.location.back();
+  }
 
   getCardClass(status: string | null | undefined): string {
     if (!status) return '';
@@ -223,21 +216,23 @@ export class OrderCardComponent implements OnInit {
       error: (err: any) => {
         this.toastService.show('שגיאה בטעינת רשימת משתמשים', 'error');
         this.users = [];
-      }
+      },
     });
   }
   getUserNameById(id: string): string {
     if (!Array.isArray(this.users)) return id;
-    const user = this.users.find(u => u.id === id);
+    const user = this.users.find((u) => u.id === id);
     return user ? `${user.user_name}` : id;
   }
 
   fetchVehicles(): void {
     this.vehicleService.getAllVehicles().subscribe(
       (data) => {
-        this.vehicles = Array.isArray(data) ? data.map(vehicle => ({
-          ...vehicle,
-        })) : [];
+        this.vehicles = Array.isArray(data)
+          ? data.map((vehicle) => ({
+              ...vehicle,
+            }))
+          : [];
       },
       (error) => {
         this.toastService.show('שגיאה בטעינת רכבים', 'error');
@@ -245,8 +240,10 @@ export class OrderCardComponent implements OnInit {
     );
   }
 
-  getVehicleById(vehicleId: string): { vehicle_model: string; plate_number: string } | undefined {
-    return this.vehicles.find(vehicle => vehicle.id === vehicleId);
+  getVehicleById(
+    vehicleId: string
+  ): { vehicle_model: string; plate_number: string } | undefined {
+    return this.vehicles.find((vehicle) => vehicle.id === vehicleId);
   }
   getVehicleModel(vehicleId: string): string {
     const vehicle = this.getVehicleById(vehicleId);
@@ -273,7 +270,10 @@ export class OrderCardComponent implements OnInit {
     return Math.ceil(value);
   }
 
-  getFormattedStops(firstStopId: string, extraStopsRaw: string[] | null): string {
+  getFormattedStops(
+    firstStopId: string,
+    extraStopsRaw: string[] | null
+  ): string {
     let extraStopIds: string[] = [];
 
     if (Array.isArray(extraStopsRaw)) {
@@ -284,7 +284,7 @@ export class OrderCardComponent implements OnInit {
 
     return allStops
       .filter(Boolean)
-      .map(id => this.getCityName(id))
+      .map((id) => this.getCityName(id))
       .join(' ← ');
   }
 }
