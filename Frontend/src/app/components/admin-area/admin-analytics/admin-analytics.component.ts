@@ -75,7 +75,7 @@ export class AdminAnalyticsComponent implements OnInit {
     let chartData: any;
     let title: string;
     if (isNoShowTab) {
-      title = 'דיווח אי-הגעות';
+      title = 'No-Show Report';
     } else {
       chartData = isVehicleTab
         ? this.vehicleStatusComponent.vehicleChartData
@@ -84,12 +84,12 @@ export class AdminAnalyticsComponent implements OnInit {
         : this.vehicleUsageComponent.topUsedVehiclesData;
 
       title = isVehicleTab
-        ? 'סטטוס רכבים'
+        ? 'Vehicle Status'
         : isRideTab
-        ? 'סטטוס נסיעות'
+        ? 'Ride Status'
         : this.vehicleUsageComponent.isMonthlyView
-        ? 'שימוש חודשי ברכבים'
-        : 'רכבים בשימוש גבוה ';
+        ? 'Monthly Vehicle Usage'
+        : 'High Usage Vehicles';
     }
 
     const timestamp = new Date().toLocaleString();
@@ -98,7 +98,6 @@ export class AdminAnalyticsComponent implements OnInit {
     let body: any[] = [];
 
     if (isNoShowTab) {
-      // Create no-show users table
       body.push([
         { text: 'User Name', style: 'tableHeader' },
         { text: 'Email', style: 'tableHeader' },
@@ -116,13 +115,13 @@ export class AdminAnalyticsComponent implements OnInit {
 
         if (count >= 3) {
           status = 'Critical';
-          bgColor = '#FFCDD2'; // light red
+          bgColor = '#FFCDD2';
         } else if (count >= 1) {
           status = 'Warning';
-          bgColor = '#FFF9C4'; // light yellow
+          bgColor = '#FFF9C4';
         } else {
           status = 'Good';
-          bgColor = '#BBDEFB'; // light blue
+          bgColor = '#BBDEFB';
         }
 
         body.push([
@@ -158,13 +157,13 @@ export class AdminAnalyticsComponent implements OnInit {
 
         if (count > 10) {
           usageLabel = 'High Usage';
-          bgColor = '#FFCDD2'; // light red
+          bgColor = '#FFCDD2';
         } else if (count >= 5) {
           usageLabel = 'Medium';
-          bgColor = '#FFF9C4'; // light yellow
+          bgColor = '#FFF9C4';
         } else {
           usageLabel = 'Good';
-          bgColor = '#BBDEFB'; // light blue
+          bgColor = '#BBDEFB';
         }
 
         body.push([
@@ -191,18 +190,18 @@ export class AdminAnalyticsComponent implements OnInit {
         let bgColor = '';
 
         if (isVehicleTab) {
-          if (hebrew.includes('זמין')) bgColor = '#C8E6C9'; // light green
-          else if (hebrew.includes('מוקפא')) bgColor = '#FFCDD2'; // light red
-          else if (hebrew.includes('בשימוש')) bgColor = '#FFE0B2'; // light orange
+          if (hebrew.includes('זמין')) bgColor = '#C8E6C9';
+          else if (hebrew.includes('מוקפא')) bgColor = '#FFCDD2';
+          else if (hebrew.includes('בשימוש')) bgColor = '#FFE0B2';
         }
 
         if (isRideTab) {
-          if (hebrew.includes('ממתין')) bgColor = '#FFF9C4'; // yellow
-          else if (hebrew.includes('מאושר')) bgColor = '#C8E6C9'; // green
-          else if (hebrew.includes('הושלם')) bgColor = '#BBDEFB'; // blue
-          else if (hebrew.includes('בוטל')) bgColor = '#F8BBD0'; // pink
-          else if (hebrew.includes('נדחה')) bgColor = '#FFCDD2'; // red
-          else if (hebrew.includes('בתהליך')) bgColor = '#D1C4E9'; // purple
+          if (hebrew.includes('ממתין')) bgColor = '#FFF9C4';
+          else if (hebrew.includes('מאושר')) bgColor = '#C8E6C9'; 
+          else if (hebrew.includes('הושלם')) bgColor = '#BBDEFB';
+          else if (hebrew.includes('בוטל')) bgColor = '#F8BBD0'; 
+          else if (hebrew.includes('נדחה')) bgColor = '#FFCDD2';
+          else if (hebrew.includes('בתהליך')) bgColor = '#D1C4E9';
         }
 
         body.push([
@@ -234,7 +233,6 @@ export class AdminAnalyticsComponent implements OnInit {
         {
           table: {
             headerRows: 1,
-            // Better column sizing for No-Show table
             widths: isNoShowTab
               ? ['auto', '*', 'auto', '*', 'auto', 'auto', 'auto']
               : isTopUsedTab
@@ -245,7 +243,6 @@ export class AdminAnalyticsComponent implements OnInit {
           layout: {
             fillColor: (rowIndex: number) =>
               rowIndex === 0 ? '#f2f2f2' : null,
-            // Add light horizontal lines for clarity
             hLineWidth: (i: number, node: any) =>
               i === 0 || i === node.table.body.length ? 1 : 0.5,
             vLineWidth: (i: number, node: any) =>
@@ -381,9 +378,9 @@ export class AdminAnalyticsComponent implements OnInit {
         const count = Number(worksheet[`F${row + 1}`]?.v);
         let fillColor = 'FFFFFFFF';
 
-        if (count >= 3) fillColor = 'FFFFCDD2'; // Critical = red
-        else if (count >= 1) fillColor = 'FFFFFFCC'; // Warning = yellow
-        else fillColor = 'FFBBDEFB'; // Good = blue
+        if (count >= 3) fillColor = 'FFFFCDD2'; 
+        else if (count >= 1) fillColor = 'FFFFFFCC';
+        else fillColor = 'FFBBDEFB';
 
         ['A', 'B', 'C', 'D', 'E', 'F', 'G'].forEach((col) => {
           const cell = worksheet[`${col}${row + 1}`];
@@ -424,18 +421,15 @@ export class AdminAnalyticsComponent implements OnInit {
         const label = worksheet[`A${row + 1}`]?.v as string;
         let fillColor = 'FFFFFFFF';
 
-        // Vehicle Status tab
-        if (label.includes('זמין')) fillColor = 'FFC8E6C9'; // light green
-        else if (label.includes('מוקפא')) fillColor = 'FFFFCDD2'; // light red
-        else if (label.includes('בשימוש')) fillColor = 'FFFFE0B2'; // light orange
-
-        // Ride Status tab
-        if (label.includes('ממתין')) fillColor = 'FFFFF9C4'; // yellow
-        else if (label.includes('מאושר')) fillColor = 'FFC8E6C9'; // green
-        else if (label.includes('הושלם')) fillColor = 'FFBBDEFB'; // blue
-        else if (label.includes('בוטל')) fillColor = 'FFF8BBD0'; // pink
-        else if (label.includes('נדחה')) fillColor = 'FFFFCDD2'; // red
-        else if (label.includes('בתהליך')) fillColor = 'FFD1C4E9'; // purple
+        if (label.includes('זמין')) fillColor = 'FFC8E6C9';
+        else if (label.includes('מוקפא')) fillColor = 'FFFFCDD2';
+        else if (label.includes('בשימוש')) fillColor = 'FFFFE0B2'; 
+        if (label.includes('ממתין')) fillColor = 'FFFFF9C4';
+        else if (label.includes('מאושר')) fillColor = 'FFC8E6C9';
+        else if (label.includes('הושלם')) fillColor = 'FFBBDEFB';
+        else if (label.includes('בוטל')) fillColor = 'FFF8BBD0';
+        else if (label.includes('נדחה')) fillColor = 'FFFFCDD2';
+        else if (label.includes('בתהליך')) fillColor = 'FFD1C4E9';
 
         ['A', 'B'].forEach((col) => {
           const cell = worksheet[`${col}${row + 1}`];
