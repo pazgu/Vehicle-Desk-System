@@ -33,7 +33,6 @@ export class RideCompletionFormComponent implements OnInit {
   VehicleFuelType:FuelType=FuelType.Gasoline
   extra_stops_names: string[] = [];
 
-  // rideId!: string;
   showForm = true;
   @Input() rideId!: string;
   @Output() formCompleted = new EventEmitter<void>();
@@ -86,7 +85,6 @@ export class RideCompletionFormComponent implements OnInit {
     this.form = this.fb.group({
       emergency_event: ['', Validators.required],
       freeze_details: [''],
-      // completed: ['', Validators.required],
       fueled: ['', Validators.required],
       is_vehicle_ready_for_next_ride: ['', Validators.required] 
     });
@@ -148,10 +146,9 @@ loadFuelType(vehicleId: string) {
       ride_id: this.rideId,
       emergency_event: rawForm.emergency_event === 'true' ? 'true' : 'false',
       freeze_details: rawForm.freeze_details || '',
-      // completed: rawForm.completed === 'true',
       fueled: rawForm.fueled === 'true',
-      is_vehicle_ready_for_next_ride: rawForm.is_vehicle_ready_for_next_ride === true, // ✅ NEW FIELD
-      changed_by: localStorage.getItem('user_id') || '' // Make sure this is a string!
+      is_vehicle_ready_for_next_ride: rawForm.is_vehicle_ready_for_next_ride === true,
+      changed_by: localStorage.getItem('user_id') || '' 
 
     };
 
