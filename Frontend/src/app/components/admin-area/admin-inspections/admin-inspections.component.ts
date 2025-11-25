@@ -14,7 +14,7 @@ import { ToastService } from '../../../services/toast.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './admin-inspections.component.html',
-  styleUrls: ['./admin-inspections.component.css']
+  styleUrls: ['./admin-inspections.component.css'],
 })
 export class AdminInspectionsComponent implements OnInit {
   inspections: VehicleInspection[] = [];
@@ -32,24 +32,22 @@ export class AdminInspectionsComponent implements OnInit {
   showRideNotesColumn: boolean = false;
   hasCriticalIssues: boolean = false;
   cityMap: { [id: string]: string } = {};
-  ridesPerPage = 4; 
-  filteredRides: OrderCardItem[] = []; 
-
-
+  ridesPerPage = 4;
+  filteredRides: OrderCardItem[] = [];
 
   constructor(
     private http: HttpClient,
     private route: ActivatedRoute,
     private cdr: ChangeDetectorRef,
-    private router: Router ,
+    private router: Router,
     private cityService: CityService,
     private toastService: ToastService
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.fetchUsers();
     this.loadData();
-      this.cityService.getCities().subscribe({
+    this.cityService.getCities().subscribe({
       next: (cities) => {
         this.cityMap = cities.reduce((map: { [id: string]: string }, city) => {
           map[city.id] = city.name;
@@ -58,7 +56,7 @@ export class AdminInspectionsComponent implements OnInit {
       },
       error: () => {
         this.toastService.show('שגיאה בטעינת ערים', 'error');
-      }
+      },
     });
   }
 
@@ -66,34 +64,26 @@ export class AdminInspectionsComponent implements OnInit {
     this.loading = true;
     const apiUrl = 'http://localhost:8000/api';
     const url = `${apiUrl}/critical-issues`;
-    let params = new HttpParams();
 
-    if (this.showProblematicFilters && (this.showMediumIssues || this.showCriticalIssues)) {
-      if (this.showMediumIssues && !this.showCriticalIssues) {
-        params = params.set('problem_type', 'medium');
-      } else if (!this.showMediumIssues && this.showCriticalIssues) {
-        params = params.set('problem_type', 'critical');
-      } else if (this.showMediumIssues && this.showCriticalIssues) {
-        params = params.set('problem_type', 'medium,critical');
-      }
-    }
-
-    this.http.get<{ inspections: VehicleInspection[]; rides: OrderCardItem[] }>(url, { params }).subscribe({
-      next: (data) => {
-        this.inspections = data.inspections || [];
-        this.rides = data.rides || [];
-        this.applyInspectionFilters();
-        this.applyRideFilters();
-        this.hasCriticalIssues = this.inspections.some(insp => insp.critical_issue_bool);
-
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.loading = false;
-        // this.toastService.show('❌ שגיאה בטעינת נתונים', 'error');
-      }
-    });
+    this.http
+      .get<{ inspections: VehicleInspection[]; rides: OrderCardItem[] }>(url)
+      .subscribe({
+        next: (data) => {
+          this.inspections = data.inspections || [];
+          this.rides = data.rides || [];
+          this.applyInspectionFilters();
+          this.applyRideFilters();
+          this.hasCriticalIssues = this.inspections.some(
+            (insp) => insp.critical_issue_bool
+          );
+          this.loading = false;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.loading = false;
+          // this.toastService.show('❌ שגיאה בטעינת נתונים', 'error');
+        },
+      });
   }
 
   handleFilterChange(filterType: 'medium' | 'critical'): void {
@@ -106,11 +96,32 @@ export class AdminInspectionsComponent implements OnInit {
         this.showMediumIssues = false;
       }
     }
-    this.loadData();
+    this.currentPage = 1;
+    this.applyInspectionFilters();
   }
 
   applyInspectionFilters(): void {
     this.filteredInspections = [...this.inspections];
+    
+    if (
+      this.showProblematicFilters &&
+      (this.showMediumIssues || this.showCriticalIssues)
+    ) {
+      this.filteredInspections = this.filteredInspections.filter((insp) => {
+        const hasMediumIssue =
+          !insp.clean || insp.fuel_checked || !insp.no_items_left;
+        const hasCriticalIssue = insp.critical_issue_bool;
+
+        if (this.showMediumIssues && !this.showCriticalIssues) {
+          return hasMediumIssue && !hasCriticalIssue;
+        } else if (!this.showMediumIssues && this.showCriticalIssues) {
+          return hasCriticalIssue;
+        } else if (this.showMediumIssues && this.showCriticalIssues) {
+          return hasMediumIssue || hasCriticalIssue;
+        }
+        return true;
+      });
+    }
   }
 
   get pagedRides() {
@@ -130,7 +141,7 @@ export class AdminInspectionsComponent implements OnInit {
       },
       error: (err: any) => {
         this.users = [];
-      }
+      },
     });
   }
 
@@ -138,7 +149,10 @@ export class AdminInspectionsComponent implements OnInit {
     return this.cityMap[id] || 'לא ידוע';
   }
 
-  getFormattedStops(firstStopId: string, extraStopsRaw?: string[] | null): string {
+  getFormattedStops(
+    firstStopId: string,
+    extraStopsRaw?: string[] | null
+  ): string {
     let extraStopIds: string[] = [];
 
     if (Array.isArray(extraStopsRaw)) {
@@ -149,29 +163,33 @@ export class AdminInspectionsComponent implements OnInit {
 
     return allStops
       .filter(Boolean)
-      .map(id => this.getCityName(id))
+      .map((id) => this.getCityName(id))
       .join(' ← ');
   }
-  
 
   getUserNameById(id: string): string {
     if (!this.users || this.users.length === 0) {
       return id;
     }
-    const user = this.users.find(u => u.id === id);
+    const user = this.users.find((u) => u.id === id);
     return user ? `${user.user_name}` : id;
   }
 
   get pagedInspections() {
     const start = (this.currentPage - 1) * this.inspectionsPerPage;
-    return this.filteredInspections.slice(start, start + this.inspectionsPerPage);
+    return this.filteredInspections.slice(
+      start,
+      start + this.inspectionsPerPage
+    );
   }
 
   get totalPages() {
     if (this.activeTable === 'inspections') {
       const totalItems = this.filteredInspections.length;
-      return totalItems > 0 ? Math.ceil(totalItems / this.inspectionsPerPage) : 1;
-    } else { 
+      return totalItems > 0
+        ? Math.ceil(totalItems / this.inspectionsPerPage)
+        : 1;
+    } else {
       const totalItems = this.filteredRides.length;
       return totalItems > 0 ? Math.ceil(totalItems / this.ridesPerPage) : 1;
     }
@@ -192,7 +210,6 @@ export class AdminInspectionsComponent implements OnInit {
   setActiveTable(table: 'inspections' | 'rides'): void {
     this.activeTable = table;
     this.currentPage = 1;
-
   }
 
   toggleVehicleNotesColumn(): void {
