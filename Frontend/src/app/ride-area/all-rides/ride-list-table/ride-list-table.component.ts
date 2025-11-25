@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-ride-list-table',
@@ -19,10 +20,14 @@ export class RideListTableComponent implements OnChanges {
   @Output() editRide = new EventEmitter<any>();
   @Output() deleteRide = new EventEmitter<any>();
   @Output() newRide = new EventEmitter<void>();
+  @Output() rebookRide = new EventEmitter<any>();
+
+  
+  constructor(private router:Router){}
 
   currentPage = 1;
   pagedOrders: any[] = [];
-
+  role = localStorage.getItem("role")
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['filteredOrders'] || changes['ordersPerPage']) {
       this.currentPage = 1;
@@ -53,18 +58,21 @@ export class RideListTableComponent implements OnChanges {
     }
   }
 
-  getStatusTooltip(status: string): string {
-    switch (status.toLowerCase()) {
-      case 'approved': return 'אושר';
-      case 'pending': return 'בהמתנה';
-      case 'rejected': return 'נדחה';
-      case 'completed': return 'בוצע';
-      case 'in_progress': return 'בתהליך';
-      case 'cancelled_due_to_no_show': return 'בוטל – אי הגעה';
-      case 'reserved': return 'מוזמן';
-      default: return 'סטטוס לא ידוע';
-    }
+ getStatusTooltip(status: string): string {
+  switch (status.toLowerCase()) {
+    case 'approved': return 'אושר';
+    case 'pending': return 'בהמתנה';
+    case 'rejected': return 'נדחה';
+    case 'completed': return 'בוצע';
+    case 'in_progress': return 'בתהליך';
+    case 'cancelled_due_to_no_show': return 'בוטל – אי הגעה';
+    case 'reserved': return 'מוזמן';
+    case 'cancelled': return 'בוטל';
+    case 'cancelled_vehicle_unavilable': return 'בוטל – הרכב לא זמין';
+    default: return 'סטטוס לא ידוע';
   }
+}
+
 
   getStatusClass(status: string): string {
     switch (status.toLowerCase()) {
@@ -74,6 +82,7 @@ export class RideListTableComponent implements OnChanges {
       case 'in_progress': return 'status_in_progress';
       case 'cancelled_due_to_no_show': return 'status-cancelled-no-show';
       case 'reserved': return 'status-reserved';
+      case 'cancelled': return 'status-cancelled'; 
       default: return '';
     }
   }
@@ -137,6 +146,36 @@ export class RideListTableComponent implements OnChanges {
     return timeDifferenceHours > 2;
   }
 
+  ChangeStatus(id:string){
+      const userRole = localStorage.getItem('role');
+      if (userRole != 'supervisor'){
+        return
+      }
+      this.router.navigate(['/order-card', id])
+      
+  }
+
+canChangeStatus(order: any): boolean {
+  const userRole = localStorage.getItem('role');
+  if (userRole !== 'supervisor') return false;
+  // if (order.status !== 'available') return false;
+
+  const [day, month, year] = order.date.split('.');
+  const formattedDate = `${year}-${month}-${day}`; 
+
+  const combined = `${formattedDate}T${order.time}`;
+  const start = new Date(combined);
+
+  if (isNaN(start.getTime())) {
+    console.error("Invalid datetime:", combined);
+    return false;
+  }
+
+  return start.getTime() > Date.now();
+}
+
+
+
   canDelete(order: any): boolean {
     const userRole = localStorage.getItem('role');
     const isSupervisor = userRole === 'supervisor';
@@ -180,4 +219,20 @@ export class RideListTableComponent implements OnChanges {
     date.setHours(12, 0, 0, 0);
     return date;
   }
+
+  canRebook(order: any): boolean {
+  if (!order?.status) return false;
+
+  const status = order.status.toLowerCase();
+
+  return status === 'cancelled_vehicle_unavilable';
+}
+
+
+onRebook(order: any, event: Event): void {
+  event.stopPropagation();
+  this.rebookRide.emit(order);
+}
+
+
 }

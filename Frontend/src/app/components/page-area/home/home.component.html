@@ -9,6 +9,9 @@
 </div>
 <div *ngIf="!orderSubmitted">
   <div class="overlay">
+            <div class="quota-header-wrapper" *ngIf="step === 2">
+      <app-quota-indicator [allOrders]="orders"></app-quota-indicator>
+    </div>
     <div class="modal">
       <div class="header-row">
         <h2 class="page-title">הזמנה חדשה</h2>

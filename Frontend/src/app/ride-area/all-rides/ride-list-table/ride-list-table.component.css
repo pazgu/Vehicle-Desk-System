@@ -263,6 +263,31 @@ button:disabled {
   height: 32px;
 }
 
+.modify-buttons button.status {
+  padding: 0.3rem 0.4rem;
+  background-color: transparent;
+  border: 1px solid rgba(178, 178, 179, 0.3);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.modify-buttons button.status:hover{
+  background-color: #c1c1c1;
+  border-color: #353535;
+}
+.switch{
+  width:20px;
+  height:20px;
+
+}
+
 .delete {
   padding: 0.4rem 0.5rem;
   color: #e74c3c;
@@ -303,4 +328,16 @@ button:disabled {
 .delete:disabled:hover {
   background-color: transparent;
   transform: none;
+}
+
+.status-cancelled {
+  border-right: 4px solid #b43a3a;
+  background: rgba(180, 58, 58, 0.04);
+}
+
+.cancel-reason-text {
+  margin-top: 4px;
+  font-size: 0.78rem;
+  color: #7a1f1f;
+  line-height: 1.3;
 }

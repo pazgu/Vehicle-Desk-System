@@ -704,7 +704,7 @@ export class EditRideComponent implements OnInit {
 
     this.rideService.updateRide(this.rideId, payload).subscribe({
       next: () => {
-        this.toastService.show('ההזמנה עודכנה בהצלחה ✅', 'success');
+        this.toastService.show('ההזמנה עודכנה בהצלחה ', 'success');
         this.router.navigate(['/all-rides']);
       },
       error: (err) => {

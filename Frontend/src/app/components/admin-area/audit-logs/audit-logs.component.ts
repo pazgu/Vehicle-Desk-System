@@ -204,24 +204,6 @@ translateRideType = translateRideType;
     this.fetchVehicles();
 
 
-    this.socketService.notifications$.subscribe((notif) => {
-      if (notif?.message?.includes('בעיה חמורה')) {
-        this.toastService.show('📢 בדיקה חדשה עם בעיה חמורה התקבלה', 'error');
-      }
-    });
-
-    this.socketService.newInspection$.subscribe((newInspection) => {
-      if (
-        newInspection &&
-        newInspection.inspection_id !== this.lastInspectionId
-      ) {
-
-        this.lastInspectionId = newInspection.inspection_id;
-        this.cdr.detectChanges();
-
-        this.toastService.show('📢 התקבלה בדיקה חדשה');
-      }
-    });
   }
 
   resetFilters() {

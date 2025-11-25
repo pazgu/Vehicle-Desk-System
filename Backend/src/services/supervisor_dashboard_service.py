@@ -45,6 +45,7 @@ def get_department_orders(department_id: str, db: Session) -> List[RideDashboard
     .join(User, User.employee_id == Ride.user_id)
     .join(Vehicle, Ride.vehicle_id == Vehicle.id)
     .filter(User.department_id == department_id)
+    .filter(User.role == "employee") 
     .order_by(desc(Ride.submitted_at))  # 👈 Sort by submitted_at DESC
     .all()
 )

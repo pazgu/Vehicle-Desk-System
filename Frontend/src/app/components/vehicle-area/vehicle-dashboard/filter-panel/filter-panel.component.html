@@ -39,7 +39,18 @@
           [(ngModel)]="sortByMostUsed"
           (change)="onSortByMostUsedChange()"
         />
-        <span>מיין לפי כלי רכב הכי בשימוש</span>
+        <span> מיין לפי כלי רכב הכי בשימוש (לחודש זה) </span>
+      </label>
+      <label
+        class="checkbox-label"
+        *ngIf="userRole === 'admin' || userRole === 'manager'"
+      >
+        <input
+          type="checkbox"
+          [(ngModel)]="sortByMostUsedAllTime"
+          (change)="onSortByMostUsedAllTimeChange()"
+        />
+        <span>מיין לפי כלי רכב הכי בשימוש (כל הזמנים) </span>
       </label>
 
       <label class="checkbox-label">

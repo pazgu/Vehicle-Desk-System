@@ -149,7 +149,7 @@ if (!dateValue) {
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, 'User Orders');
 
-      const fileName = `UserOrders-${this.selectedYear}-${
+      const fileName = `הזמנות משתמשים-${this.selectedYear}-${
         this.viewMode === 'monthly' ? this.selectedMonth : 'Full'
       }.xlsx`;
       XLSX.writeFile(workbook, fileName);
