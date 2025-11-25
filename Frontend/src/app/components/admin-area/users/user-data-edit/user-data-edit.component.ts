@@ -6,14 +6,11 @@ import { UserService } from '../../../../services/user_service';
 import { DepartmentService } from '../../../../services/department_service';
 import { ToastService } from '../../../../services/toast.service';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { RedirectByRoleComponent } from '../../../../services/redirect-by-role';
 import { Router } from '@angular/router';
 import { SocketService } from '../../../../services/socket.service';
 import { Subscription } from 'rxjs';
 import { Socket } from 'socket.io-client';
 import { environment } from '../../../../../environments/environment';
-
 
 @Component({
   selector: 'app-user-data',
@@ -22,7 +19,7 @@ import { environment } from '../../../../../environments/environment';
   standalone: true,
   imports: [RouterModule, ReactiveFormsModule, CommonModule]
 })
-export class UserDataEditComponent implements OnInit {
+export class UserDataEditComponent implements OnInit, OnDestroy {
   userForm!: FormGroup;
   userId: string | null = null;
   user: any = null;
@@ -34,8 +31,8 @@ export class UserDataEditComponent implements OnInit {
   hasExistingExpiryDate = false;
   showFileRemovedMessage = false;
   private subs: Subscription[] = [];
-
-  private isSubmitting = false;
+  isSubmitting = false;
+  minDateTime: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -49,6 +46,7 @@ export class UserDataEditComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    this.setMinDateTime();
     this.initForm();
     this.loadUserData();
     this.fetchDepartments();
@@ -60,6 +58,15 @@ export class UserDataEditComponent implements OnInit {
 
   ngOnDestroy(): void {
     this.subs.forEach(sub => sub.unsubscribe());
+  }
+  setMinDateTime(): void {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    this.minDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
   }
 
   setupFormSubscriptions(): void {
@@ -117,7 +124,6 @@ export class UserDataEditComponent implements OnInit {
     this.subs.push(sockeytSub);
   }
 
-
   initForm(): void {
     this.userForm = this.fb.group({
       first_name: ['', Validators.required],
@@ -130,7 +136,8 @@ export class UserDataEditComponent implements OnInit {
       license_file_url: [''],
       license_expiry_date: [''],
       phone: ['', [Validators.required, Validators.pattern(/^05\d{8}$/)]],
-
+      block_reason: [''],
+      block_expires_at: ['']
     });
   }
 
@@ -146,7 +153,6 @@ export class UserDataEditComponent implements OnInit {
         );
       },
       error: (err) => {
-        console.error('Failed to fetch departments', err);
         this.toastService.show('שגיאה בטעינת מחלקות', 'error');
         this.departments = [];
       }
@@ -159,11 +165,9 @@ export class UserDataEditComponent implements OnInit {
         this.roles = rolesData;
       },
       error: (err) => {
-        console.error('Failed to load roles', err);
         this.toastService.show('שגיאה בטעינת תפקידים', 'error');
         this.roles = [];
       }
-
     });
   }
   setupRoleBasedValidation(): void {
@@ -207,17 +211,25 @@ export class UserDataEditComponent implements OnInit {
             phone: user.phone,
             license_expiry_date: user.license_expiry_date
               ? new Date(user.license_expiry_date).toISOString().substring(0, 10)
+              : '',
+            block_reason: user.block_reason || '',
+            block_expires_at: user.block_expires_at 
+              ? new Date(user.block_expires_at).toISOString().substring(0, 16)
               : ''
           });
+          if (user.is_blocked) {
+            this.userForm.get('block_reason')?.setValidators([Validators.required]);
+            this.userForm.get('block_expires_at')?.setValidators([Validators.required]);
+            this.userForm.get('block_reason')?.updateValueAndValidity();
+            this.userForm.get('block_expires_at')?.updateValueAndValidity();
+          }
         },
         error: () => {
-          this.toastService.show('שגיאה בטעינת פרטי המשתמש');
-
+          this.toastService.show('שגיאה בטעינת פרטי המשתמש', 'error');
         }
       });
     }
   }
-
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -242,6 +254,41 @@ export class UserDataEditComponent implements OnInit {
     }
     return { isValid: true };
   }
+  private validateBlockExpiry(): { isValid: boolean; errorMessage?: string } {
+    const blockExpiresAt = this.userForm.get('block_expires_at')?.value;
+    if (blockExpiresAt) {
+      const expiryDate = new Date(blockExpiresAt);
+      const now = new Date(); 
+      if (expiryDate <= now) {
+        return { isValid: false, errorMessage: 'תאריך סיום החסימה חייב להיות בעתיד' };
+      }
+    } 
+    return { isValid: true };
+  }
+  private validateBlockFields(): { isValid: boolean; errorMessage?: string } {
+    if (this.user?.is_blocked) {
+      const blockReason = this.userForm.get('block_reason')?.value?.trim();
+      const blockExpiresAt = this.userForm.get('block_expires_at')?.value;
+      if (!blockReason) {
+        return { isValid: false, errorMessage: 'סיבת החסימה היא שדה חובה' };
+      }
+      if (!blockExpiresAt || blockExpiresAt.trim() === '') {
+        return { isValid: false, errorMessage: 'תאריך סיום החסימה הוא שדה חובה' };
+      }
+    } 
+    return { isValid: true };
+  }
+  validateBlockExpiryOnBlur(): void {
+    const blockExpiresAt = this.userForm.get('block_expires_at')?.value;
+    if (blockExpiresAt) {
+      const selectedDate = new Date(blockExpiresAt);
+      const now = new Date();
+      if (selectedDate <= now) {
+        this.userForm.get('block_expires_at')?.setValue('', { emitEvent: false });
+        this.toastService.show('לא ניתן לבחור תאריך בעבר לסיום חסימה', 'error');
+      }
+    }
+  }
   onSubmit(): void {
     if (this.isSubmitting) {
       return;
@@ -251,12 +298,21 @@ export class UserDataEditComponent implements OnInit {
       this.toastService.show(validationResult.errorMessage!, 'error');
       return;
     }
+    const blockValidationResult = this.validateBlockExpiry();
+    if (!blockValidationResult.isValid) {
+      this.toastService.show(blockValidationResult.errorMessage!, 'error');
+      return;
+    }
+    const blockFieldsValidation = this.validateBlockFields();
+    if (!blockFieldsValidation.isValid) {
+      this.toastService.show(blockFieldsValidation.errorMessage!, 'error');
+      return;
+    }
     if (this.userForm.valid && this.userId) {
       this.isSubmitting = true;
       const formData = new FormData();
       const formValues = this.userForm.value;
 
-      // Always append basic user data
       formData.append('first_name', formValues.first_name);
       formData.append('last_name', formValues.last_name);
       formData.append('username', formValues.username);
@@ -272,7 +328,6 @@ export class UserDataEditComponent implements OnInit {
         formData.append('has_government_license', hasLicenseControl.value ? 'true' : 'false');
       }
 
-      // Logic for license_file upload: Only send if it's a new upload (no existing file) AND a file is selected.
       if (!this.hasExistingLicenseFile && this.selectedFile) {
         formData.append('license_file', this.selectedFile);
       }
@@ -281,16 +336,27 @@ export class UserDataEditComponent implements OnInit {
       const oldExpiryDate = this.user?.license_expiry_date;
 
       if (newExpiryDate && newExpiryDate !== oldExpiryDate) {
-        // User entered a new expiry date, send that
         formData.append('license_expiry_date', newExpiryDate);
       } else if (oldExpiryDate) {
-        // No change, send the original value
         formData.append('license_expiry_date', new Date(oldExpiryDate).toISOString().substring(0, 10));
       }
-console.log('FormData contents:');
-formData.forEach((value, key) => {
-  console.log(key, value);
-});
+      if (this.user?.is_blocked) {
+        const blockReason = formValues.block_reason?.trim() || '';    
+        formData.append('is_blocked', 'true');
+        formData.append('block_reason', blockReason);
+        if (formValues.block_expires_at) {
+          const expiryDate = new Date(formValues.block_expires_at);
+          const year = expiryDate.getFullYear();
+          const month = String(expiryDate.getMonth() + 1).padStart(2, '0');
+          const day = String(expiryDate.getDate()).padStart(2, '0');
+          const hours = String(expiryDate.getHours()).padStart(2, '0');
+          const minutes = String(expiryDate.getMinutes()).padStart(2, '0');
+          const formattedDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+          formData.append('block_expires_at', formattedDateTime);
+        }
+      } else {
+        formData.append('is_blocked', 'false');
+      }
       this.userService.updateUser(this.userId, formData).subscribe({
         next: (updatedUser) => {
           this.isSubmitting = false;
@@ -301,18 +367,23 @@ formData.forEach((value, key) => {
         },
         error: (err: HttpErrorResponse) => {
           this.isSubmitting = false;
-          console.error('Failed to update user');
-          // Extract specific error detail from backend if available, otherwise use a generic message
-          const errorMessage = err.error && err.error.detail ? err.error.detail : 'שגיאה בעדכון המשתמש';
-          if (!errorMessage.includes('נדרש קובץ רשיון בעת הפעלת רשיון ממשלתי') && 
-              !errorMessage.includes('נדרש תאריך תפוגת רשיון בעת הפעלת רשיון ממשלתי') &&
-              !errorMessage.includes('License file is required when enabling government license')) {
-            this.toastService.show(errorMessage, 'error');
+          
+          let errorMessage = 'שגיאה בעדכון המשתמש';
+          if (err.error) {
+            if (err.error.detail) {
+              if (Array.isArray(err.error.detail)) {
+                errorMessage = err.error.detail.map((e: any) => e.msg || e).join(', ');
+              } else {
+                errorMessage = err.error.detail;
+              }
+            } else if (typeof err.error === 'string') {
+              errorMessage = err.error;
+            }
           }
+          this.toastService.show(errorMessage, 'error');
         }
       });
     } else {
-      // Mark all controls as touched to display validation errors
       Object.keys(this.userForm.controls).forEach(key => {
         this.userForm.get(key)?.markAsTouched();
       });

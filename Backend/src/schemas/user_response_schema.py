@@ -26,6 +26,7 @@ class UserUpdate(BaseModel):
     phone: Optional[str] = None
     is_blocked: Optional[bool] = False  # Feild for blocking user
     block_expires_at: Optional[date] = None  # Optional, if user is blocked
+    block_reason: Optional[str] = None
 
 class UserResponse(BaseModel):
     first_name: str
@@ -41,6 +42,7 @@ class UserResponse(BaseModel):
     phone: Optional[str] = None 
     is_blocked: bool = False
     block_expires_at: Optional[datetime] = None
+    block_reason: Optional[str] = None
     is_unassigned_user: Optional[bool] = False
     class Config:
         from_attributes = True

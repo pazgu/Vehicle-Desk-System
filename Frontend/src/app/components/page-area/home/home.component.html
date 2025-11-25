@@ -51,8 +51,8 @@
   type="button"
   class="submit-btn"
   (click)="handleStep1Next()"
-  [disabled]="disableDueToDepartment || disableRequest"
-  [class.disabled-button]="disableDueToDepartment || disableRequest">
+  [disabled]="disableDueToDepartment || disableRequest || disableDueToBlock"
+  [class.disabled-button]="disableDueToDepartment || disableRequest || disableDueToBlock">
   הבא
 </button>
 

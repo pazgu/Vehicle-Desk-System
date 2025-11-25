@@ -1,8 +1,6 @@
 <div class="page-container">
   <div class="user-data-container">
     <div class="content">
-      <!-- Close button -->
-      <!-- <a routerLink="//admin/critical-issues"><span class="close-button">✕</span></a> -->
       <a routerLink="/user-data" class="back-button"> חזרה לרשימה ← </a>
 
       <div class="header">
@@ -54,21 +52,19 @@
               יש לבחור מחלקה
             </small>
           </div>
-
         </div>
         <!-- Row 3 -->
         <div class="form-row">
           <div class="form-group">
             <label for="phone">מספר טלפון</label>
             <input type="tel" id="phone" formControlName="phone" class="form-control" />
-            <small *ngIf="f['phone'].touched && f['phone'].invalid" style="color:red;">
+            <small *ngIf="f['phone'].touched && f['phone'].invalid" class="phone-error">
                טלפון חייב להכיל 10 ספרות ולהתחיל ב-05
             </small>
-            
           </div>
         </div>
 
-        <!-- Row 3 -->
+        <!-- Row 4: License Expiry -->
         <div class="form-row">
           <div class="form-group">
             <label for="license_expiry_date">תוקף רישיון</label>
@@ -76,6 +72,7 @@
           </div>
         </div>
 
+        <!-- Row 5: Email -->
         <div class="form-row">
           <div class="form-group">
             <label for="email">כתובת דואר אלקטרוני</label>
@@ -83,7 +80,7 @@
           </div>
         </div>
 
-        <!-- Row 4: Government License -->
+        <!-- Government License -->
         <div class="form-row">
           <div class="form-group">
             <label>האם למשתמש יש רישיון ממשלתי?</label>
@@ -91,13 +88,13 @@
               <input type="checkbox" formControlName="has_government_license" [disabled]="hasExistingLicenseFile" />
               <span class="slider round"></span>
             </label>
-            <div *ngIf="showFileRemovedMessage" style="background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px; padding: 6px 10px; margin-top: 8px; color: #856404; font-size: 0.85rem;">
+            <div *ngIf="showFileRemovedMessage" class="file-removed-message">
               <small>📄 הקובץ הוסר אוטומטית עקב ביטול הרשיון</small>
             </div>
           </div>
         </div>
 
-        <!-- Row 5: License File Upload (only if checkbox is checked) -->
+        <!-- License File Upload -->
         <ng-container *ngIf="!hasExistingLicenseFile">
           <div class="form-row">
             <div class="form-group">
@@ -113,14 +110,48 @@
             <div class="form-group">
               <label>קובץ רישיון ממשלתי שהועלה:</label>
               <a [href]="userForm.get('license_file_url')?.value" target="_blank" class="uploaded-file-link">
-                <button (click)="openLicenseInNewTab()">הצג קובץ/תמונה</button>
+                <button type="button" (click)="openLicenseInNewTab()">הצג קובץ/תמונה</button>
               </a>
             </div>
           </div>
         </ng-container>
+        <!-- Block Section -->
+        <div *ngIf="user?.is_blocked" class="block-section">
+          <h3>חסימת משתמש</h3> 
+          <div class="form-row">
+            <div class="form-group">
+              <label for="block_reason">סיבת חסימה <span class="required-asterisk">*</span></label>
+              <textarea 
+                id="block_reason" 
+                formControlName="block_reason" 
+                class="form-control" 
+                rows="3"
+                placeholder="הזן את סיבת החסימה..."></textarea>
+              <small *ngIf="f['block_reason'].touched && f['block_reason'].errors?.['required']" class="error-message">
+                יש להזין סיבת חסימה
+              </small>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="block_expires_at">תאריך סיום חסימה <span class="required-asterisk">*</span></label>
+              <input 
+                type="datetime-local" 
+                id="block_expires_at" 
+                formControlName="block_expires_at" 
+                [min]="minDateTime"
+                (blur)="validateBlockExpiryOnBlur()"
+                (change)="validateBlockExpiryOnBlur()"
+                class="form-control" />
+              <small *ngIf="f['block_expires_at'].touched && f['block_expires_at'].errors?.['required']" class="error-message">
+                יש להזין תאריך סיום חסימה
+              </small>
+            </div>
+          </div>
+        </div>
         <!-- Submit -->
         <div class="form-actions">
-          <button type="submit" class="btn-submit">שמירה</button>
+          <button type="submit" class="btn-submit" [disabled]="isSubmitting">שמירה</button>
         </div>
       </form>
     </div>
@@ -128,4 +159,3 @@
 </div>
 
 <router-outlet></router-outlet>
-
