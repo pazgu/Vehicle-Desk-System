@@ -17,7 +17,6 @@ from ..utils.socket_manager import sio
 def is_offroad_vehicle(vehicle_type: str) -> bool:
     return any(keyword.lower() in vehicle_type.lower() for keyword in OFFROAD_TYPES)
 
-
 async def create_ride(db: Session, user_id: UUID, ride: RideCreate, license_check_passed: bool = False):
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id)})
 
@@ -31,30 +30,38 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate, license_chec
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    if user.is_unassigned_user or not user.department_id:
+    now = datetime.now(timezone.utc)
+    if user.is_blocked and user.block_expires_at and now < user.block_expires_at:
         raise HTTPException(
             status_code=403,
-            detail="לא ניתן ליצור נסיעה: המשתמש אינו משויך למחלקה. יש ליצור קשר עם המנהל להשמה במחלקה."
+            detail=f"You are currently blocked from making any ride requests until {user.block_expires_at.strftime('%Y-%m-%d %H:%M:%S')}."
         )
-    if user.role == "employee" and not user.has_government_license:
+    rider_id = ride.user_id if ride.user_id else user_id
+    rider = db.query(User).filter(User.employee_id == rider_id).first()
+    if not rider:
+        raise HTTPException(status_code=404, detail="Rider not found")
+    if rider_id != user_id: 
+        if rider.is_blocked and rider.block_expires_at and now < rider.block_expires_at:
+            raise HTTPException(
+                status_code=403,
+                detail=f"The selected rider is currently blocked from booking until {rider.block_expires_at.strftime('%Y-%m-%d %H:%M:%S')}."
+            )
+    if rider.is_unassigned_user or not rider.department_id:
+        raise HTTPException(
+            status_code=403,
+            detail="לא ניתן ליצור נסיעה: המשתמש הנוהג אינו משויך למחלקה. יש ליצור קשר עם המנהל להשמה במחלקה."
+        )
+    if rider.role == "employee" and not rider.has_government_license:
         raise HTTPException(
             status_code=403,
             detail="You must have a government license to request a ride."
         )
     
-    if user.license_expiry_date <= ride.start_datetime.date():
+    if not rider.license_expiry_date or rider.license_expiry_date <= ride.start_datetime.date():
         raise HTTPException(
             status_code=403,
             detail="You must have a government license to request a ride."
         )
-
-    now = datetime.now(timezone.utc)
-    if user.is_blocked and user.block_expires_at and now < user.block_expires_at:
-        raise HTTPException(
-            status_code=403,
-            detail=f"You are currently blocked from booking until {user.block_expires_at.strftime('%Y-%m-%d %H:%M:%S')}."
-        )
-
 
     if is_offroad_vehicle(vehicle.type) and not ride.four_by_four_reason:
         raise HTTPException(
@@ -63,16 +70,12 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate, license_chec
         )
 
     duration_days = (ride.end_datetime - ride.start_datetime).days + 1
-    
     if duration_days >= 4:
         if not ride.extended_ride_reason or not ride.extended_ride_reason.strip():
             raise HTTPException(
                 status_code=400,
                 detail="נסיעות של 4 ימים ומעלה דורשות הסבר"
             )
-
-    # Determine who is the rider
-    rider_id = ride.user_id
 
     new_ride = Ride(
         id=uuid4(),
@@ -139,8 +142,6 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate, license_chec
     ride_response_dict.pop('_sa_instance_state', None)
 
     return ride_response
-
-
 async def create_supervisor_ride(db: Session, user_id: UUID, ride: RideCreate):
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id)})
 
@@ -150,41 +151,46 @@ async def create_supervisor_ride(db: Session, user_id: UUID, ride: RideCreate):
     if vehicle.lease_expiry <= datetime.utcnow():
         raise HTTPException(status_code=404, detail="Vehicle is expired")
 
-
-
-    user = db.query(User).filter(User.employee_id == user_id).first()
-    if not user:
+    requester = db.query(User).filter(User.employee_id == user_id).first()
+    if not requester:
         raise HTTPException(status_code=404, detail="User not found")
 
-    if user.is_unassigned_user or not user.department_id:
-        raise HTTPException(
-            status_code=403,
-            detail="לא ניתן ליצור נסיעה: המשתמש אינו משויך למחלקה. יש ליצור קשר עם המנהל להשמה במחלקה."
-        )
-    
-    if user.role == "supervisor" and not user.has_government_license:
-        raise HTTPException(
-            status_code=403,
-            detail="You must have a government license to request a ride."
-        )
-    
-    if not user.license_expiry_date:
-        raise HTTPException(
-            status_code=403,
-            detail="You must have a government license to request a ride."
-        )
-    
-    if user.license_expiry_date <= ride.start_datetime.date():
-        raise HTTPException(
-            status_code=403,
-            detail="You must have a government license to request a ride."
-        )
-
     now = datetime.now(timezone.utc)
-    if user.is_blocked and user.block_expires_at and now < user.block_expires_at:
+    if requester.is_blocked and requester.block_expires_at and now < requester.block_expires_at:
         raise HTTPException(
             status_code=403,
-            detail=f"You are currently blocked from booking until {user.block_expires_at.strftime('%Y-%m-%d %H:%M:%S')}."
+            detail=f"You are currently blocked from making any ride requests until {requester.block_expires_at.strftime('%Y-%m-%d %H:%M:%S')}."
+        )
+    rider_id = ride.user_id if ride.user_id else user_id
+    rider = db.query(User).filter(User.employee_id == rider_id).first()
+    if not rider:
+        raise HTTPException(status_code=404, detail="Rider not found")
+    if rider.is_blocked and rider.block_expires_at and now < rider.block_expires_at:
+        raise HTTPException(
+            status_code=403,
+            detail=f"The selected rider is currently blocked from booking until {rider.block_expires_at.strftime('%Y-%m-%d %H:%M:%S')}."
+        )
+    if rider.is_unassigned_user or not rider.department_id:
+        raise HTTPException(
+            status_code=403,
+            detail="לא ניתן ליצור נסיעה: המשתמש הנוהג אינו משויך למחלקה. יש ליצור קשר עם המנהל להשמה במחלקה."
+        )
+    
+    if rider.role in ["employee", "supervisor"] and not rider.has_government_license:
+        raise HTTPException(
+            status_code=403,
+            detail="The rider must have a government license to perform the ride."
+        )
+    
+    if not rider.license_expiry_date:
+        raise HTTPException(
+            status_code=403,
+            detail="The rider must have a valid license expiry date on file."
+        )
+    if rider.license_expiry_date <= ride.start_datetime.date():
+        raise HTTPException(
+            status_code=403,
+            detail="The rider's license is not valid for the requested ride start date."
         )
 
     if is_offroad_vehicle(vehicle.type) and not ride.four_by_four_reason:
@@ -192,9 +198,6 @@ async def create_supervisor_ride(db: Session, user_id: UUID, ride: RideCreate):
             status_code=400,
             detail="A reason must be provided when requesting an off-road vehicle."
         )
-
-    # Determine who is the rider
-    rider_id = ride.user_id
 
     new_ride = Ride(
         id=uuid4(),
@@ -234,7 +237,7 @@ async def create_supervisor_ride(db: Session, user_id: UUID, ride: RideCreate):
     ride_response = RideResponse(
         **new_ride.__dict__,
         plate_number=vehicle.plate_number,
-        username=f"{user.first_name} {user.last_name}",
+        username=f"{requester.first_name} {requester.last_name}",
     )
     ride_response_dict = ride_response.dict()
     ride_response_dict.pop('_sa_instance_state', None)
@@ -242,7 +245,7 @@ async def create_supervisor_ride(db: Session, user_id: UUID, ride: RideCreate):
     return ride_response
 
 def check_license_validity(db: Session, user_id: UUID, ride_start: datetime):
-    from src.models.user_model import User  # או הנתיב הנכון אצלך
+    from src.models.user_model import User
     user = db.query(User).filter(User.employee_id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="משתמש לא נמצא")
