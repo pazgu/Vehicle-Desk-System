@@ -1,4 +1,11 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnChanges,
+  SimpleChanges,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
@@ -7,7 +14,7 @@ import { Router } from '@angular/router';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './ride-list-table.component.html',
-  styleUrls: ['./ride-list-table.component.css']
+  styleUrls: ['./ride-list-table.component.css'],
 })
 export class RideListTableComponent implements OnChanges {
   @Input() filteredOrders: any[] = [];
@@ -22,12 +29,11 @@ export class RideListTableComponent implements OnChanges {
   @Output() newRide = new EventEmitter<void>();
   @Output() rebookRide = new EventEmitter<any>();
 
-  
-  constructor(private router:Router){}
+  constructor(private router: Router) {}
 
   currentPage = 1;
   pagedOrders: any[] = [];
-  role = localStorage.getItem("role")
+  role = localStorage.getItem('role');
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['filteredOrders'] || changes['ordersPerPage']) {
       this.currentPage = 1;
@@ -36,12 +42,17 @@ export class RideListTableComponent implements OnChanges {
   }
 
   get totalPages(): number {
-    return this.filteredOrders.length > 0 ? Math.ceil(this.filteredOrders.length / this.ordersPerPage) : 1;
+    return this.filteredOrders.length > 0
+      ? Math.ceil(this.filteredOrders.length / this.ordersPerPage)
+      : 1;
   }
 
   private updatePagedOrders(): void {
     const start = (this.currentPage - 1) * this.ordersPerPage;
-    this.pagedOrders = this.filteredOrders.slice(start, start + this.ordersPerPage);
+    this.pagedOrders = this.filteredOrders.slice(
+      start,
+      start + this.ordersPerPage
+    );
   }
 
   nextPage(): void {
@@ -58,32 +69,49 @@ export class RideListTableComponent implements OnChanges {
     }
   }
 
- getStatusTooltip(status: string): string {
-  switch (status.toLowerCase()) {
-    case 'approved': return 'אושר';
-    case 'pending': return 'בהמתנה';
-    case 'rejected': return 'נדחה';
-    case 'completed': return 'בוצע';
-    case 'in_progress': return 'בתהליך';
-    case 'cancelled_due_to_no_show': return 'בוטל – אי הגעה';
-    case 'reserved': return 'מוזמן';
-    case 'cancelled': return 'בוטל';
-    case 'cancelled_vehicle_unavilable': return 'בוטל – הרכב לא זמין';
-    default: return 'סטטוס לא ידוע';
+  getStatusTooltip(status: string): string {
+    switch (status.toLowerCase()) {
+      case 'approved':
+        return 'אושר';
+      case 'pending':
+        return 'בהמתנה';
+      case 'rejected':
+        return 'נדחה';
+      case 'completed':
+        return 'בוצע';
+      case 'in_progress':
+        return 'בתהליך';
+      case 'cancelled_due_to_no_show':
+        return 'בוטל – אי הגעה';
+      case 'reserved':
+        return 'מוזמן';
+      case 'cancelled':
+        return 'בוטל';
+      case 'cancelled_vehicle_unavilable':
+        return 'בוטל – הרכב לא זמין';
+      default:
+        return 'סטטוס לא ידוע';
+    }
   }
-}
-
 
   getStatusClass(status: string): string {
     switch (status.toLowerCase()) {
-      case 'approved': return 'status-green';
-      case 'pending': return 'status-yellow';
-      case 'rejected': return 'status-red';
-      case 'in_progress': return 'status_in_progress';
-      case 'cancelled_due_to_no_show': return 'status-cancelled-no-show';
-      case 'reserved': return 'status-reserved';
-      case 'cancelled': return 'status-cancelled'; 
-      default: return '';
+      case 'approved':
+        return 'status-green';
+      case 'pending':
+        return 'status-yellow';
+      case 'rejected':
+        return 'status-red';
+      case 'in_progress':
+        return 'status_in_progress';
+      case 'cancelled_due_to_no_show':
+        return 'status-cancelled-no-show';
+      case 'reserved':
+        return 'status-reserved';
+      case 'cancelled':
+        return 'status-cancelled';
+      default:
+        return '';
     }
   }
 
@@ -106,13 +134,17 @@ export class RideListTableComponent implements OnChanges {
     beginningOfMonth.setHours(0, 0, 0, 0);
     const orderDate = this.parseDate(order.date);
 
-    if (orderDate.getMonth() === beginningOfMonth.getMonth() &&
-      orderDate.getFullYear() === beginningOfMonth.getFullYear()) {
+    if (
+      orderDate.getMonth() === beginningOfMonth.getMonth() &&
+      orderDate.getFullYear() === beginningOfMonth.getFullYear()
+    ) {
       const priorOrdersThisMonth = this.allOrders.filter((o: any) => {
         const oDate = this.parseDate(o.date);
-        return oDate.getMonth() === beginningOfMonth.getMonth() &&
+        return (
+          oDate.getMonth() === beginningOfMonth.getMonth() &&
           oDate.getFullYear() === beginningOfMonth.getFullYear() &&
-          oDate < orderDate;
+          oDate < orderDate
+        );
       }).length;
       return priorOrdersThisMonth >= maxFreeRides;
     }
@@ -137,44 +169,46 @@ export class RideListTableComponent implements OnChanges {
       return isPending && isFuture;
     }
 
-    const isEditableStatus = ['pending', 'approved'].includes(order.status.toLowerCase());
+    const isEditableStatus = ['pending', 'approved'].includes(
+      order.status.toLowerCase()
+    );
     if (!isEditableStatus || !isFuture) return false;
 
-    const rideDateTime = new Date(`${order.date.split('.').reverse().join('-')}T${order.time}:00`);
+    const rideDateTime = new Date(
+      `${order.date.split('.').reverse().join('-')}T${order.time}:00`
+    );
     const now = new Date();
-    const timeDifferenceHours = (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+    const timeDifferenceHours =
+      (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
     return timeDifferenceHours > 2;
   }
 
-  ChangeStatus(id:string){
-      const userRole = localStorage.getItem('role');
-      if (userRole != 'supervisor'){
-        return
-      }
-      this.router.navigate(['/order-card', id])
-      
+  ChangeStatus(id: string) {
+    const userRole = localStorage.getItem('role');
+    if (userRole != 'supervisor') {
+      return;
+    }
+    this.router.navigate(['/order-card', id]);
   }
 
-canChangeStatus(order: any): boolean {
-  const userRole = localStorage.getItem('role');
-  if (userRole !== 'supervisor') return false;
-  // if (order.status !== 'available') return false;
+  canChangeStatus(order: any): boolean {
+    const userRole = localStorage.getItem('role');
+    if (userRole !== 'supervisor') return false;
+    // if (order.status !== 'available') return false;
 
-  const [day, month, year] = order.date.split('.');
-  const formattedDate = `${year}-${month}-${day}`; 
+    const [day, month, year] = order.date.split('.');
+    const formattedDate = `${year}-${month}-${day}`;
 
-  const combined = `${formattedDate}T${order.time}`;
-  const start = new Date(combined);
+    const combined = `${formattedDate}T${order.time}`;
+    const start = new Date(combined);
 
-  if (isNaN(start.getTime())) {
-    console.error("Invalid datetime:", combined);
-    return false;
+    if (isNaN(start.getTime())) {
+      console.error('Invalid datetime:', combined);
+      return false;
+    }
+
+    return start.getTime() > Date.now();
   }
-
-  return start.getTime() > Date.now();
-}
-
-
 
   canDelete(order: any): boolean {
     const userRole = localStorage.getItem('role');
@@ -186,12 +220,17 @@ canChangeStatus(order: any): boolean {
       return isPending && isFuture;
     }
 
-    const isDeletableStatus = ['pending', 'approved'].includes(order.status.toLowerCase());
+    const isDeletableStatus = ['pending', 'approved'].includes(
+      order.status.toLowerCase()
+    );
     if (!isDeletableStatus || !isFuture) return false;
 
-    const rideDateTime = new Date(`${order.date.split('.').reverse().join('-')}T${order.time}:00`);
+    const rideDateTime = new Date(
+      `${order.date.split('.').reverse().join('-')}T${order.time}:00`
+    );
     const now = new Date();
-    const timeDifferenceHours = (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+    const timeDifferenceHours =
+      (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
     return timeDifferenceHours > 2;
   }
 
@@ -221,18 +260,15 @@ canChangeStatus(order: any): boolean {
   }
 
   canRebook(order: any): boolean {
-  if (!order?.status) return false;
+    if (!order?.status) return false;
 
-  const status = order.status.toLowerCase();
+    const status = order.status.toLowerCase();
 
-  return status === 'cancelled_vehicle_unavilable';
-}
+    return status === 'cancelled_vehicle_unavilable';
+  }
 
-
-onRebook(order: any, event: Event): void {
-  event.stopPropagation();
-  this.rebookRide.emit(order);
-}
-
-
+  onRebook(order: any, event: Event): void {
+    event.stopPropagation();
+    this.rebookRide.emit(order);
+  }
 }
