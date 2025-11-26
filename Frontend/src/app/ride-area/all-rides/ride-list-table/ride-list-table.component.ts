@@ -224,8 +224,11 @@ canChangeStatus(order: any): boolean {
   if (!order?.status) return false;
 
   const status = order.status.toLowerCase();
-
-  return status === 'cancelled_vehicle_unavilable';
+    console.log("status from rebook:",order.status)
+  if (status === 'cancelled_vehicle_unavailable'){
+    return true 
+  }
+  return false
 }
 
 

@@ -36,7 +36,7 @@ class RideCreate(BaseModel):
     actual_distance_km: float
     four_by_four_reason: Optional[str] = None
     extended_ride_reason: Optional[str] = None
-    target_type: Optional[str] = "self"  # "Self" or "Other"
+    target_type: Optional[str] = "self" 
     extra_stops: Optional[List[UUID]] = None 
     is_extended_request: Optional[bool] = False
 

@@ -51,7 +51,7 @@ def cancel_future_rides_for_vehicle(vehicle_id: str, db: Session, admin_id: str)
             order_id=ride.id
         )
     for user_id in affected_users:
-        user = db.query(User).filter(User.id == user_id).first()
+        user = db.query(User).filter(User.employee_id == user_id).first()
         if user:
             user.has_pending_rebook = True
             db.add(user)
@@ -63,3 +63,24 @@ def cancel_future_rides_for_vehicle(vehicle_id: str, db: Session, admin_id: str)
         "cancelled": len(rides),
         "users": list(affected_users)
     }
+
+
+
+
+def update_user_pending_rebook_status(db, user_id: int):
+
+    user = db.query(User).filter(User.employee_id == user_id).first()
+    if not user:
+        return None
+
+    pending_rides = db.query(Ride).filter(
+        Ride.user_id == user_id,
+        Ride.status == RideStatus.cancelled_vehicle_unavailable
+    ).count()
+
+    user.has_pending_rebook = pending_rides > 0
+
+    db.commit()
+    db.refresh(user)
+
+    return user.has_pending_rebook

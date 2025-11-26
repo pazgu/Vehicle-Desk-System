@@ -4,29 +4,54 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { of } from 'rxjs';
 import { StartedRidesResponse } from '../models/ride.model';
-
 export interface RebookData {
-  ride_id: string;           
+  id:string
+  user_id: string;
+  ride_type: string;
   start_datetime: string;
   end_datetime: string;
   start_location: string;
+  stop: string;
   destination: string;
-  passengers_count: number;
-  reason?: string;
-  [key: string]: any;
+  estimated_distance: number;
+  actual_distance_km: number;
+  four_by_four_reason?: string | null;
+  extended_ride_reason?: string | null;
+  target_type?: string;
+  extra_stops?: string[];   
+  is_extended_request?: boolean;
 }
+
 
 export interface RebookRequest {
-  original_ride_id: string;   
-  new_vehicle_id: string;    
-  start_datetime: string;
-  end_datetime: string;
-  start_location: string;
-  destination: string;
-  passengers_count: number;
-  reason?: string;
+  old_ride_id: string;           
+  new_ride: {                    
+    user_id: string;
+    vehicle_id?: string;
+    ride_type: string;
+    start_datetime: string;
+    end_datetime: string;
+    start_location: string;
+    stop: string;                
+    destination: string;
+    estimated_distance_km: number;
+    actual_distance_km?: number;
+    status: string;
+    license_check_passed?: boolean;
+    submitted_at: string;
+    emergency_event?: string;
+    extra_stops?: string[];
+    rejection_reason?: string;
+    extended_ride_reason?: string;
+    four_by_four_reason?: string;
+  };
   [key: string]: any;
 }
+
+export interface HasPendingRebookResponse {
+  has_pending: boolean;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -36,13 +61,13 @@ export class MyRidesService {
   private allOrdersUrl = environment.allOrdersUrl;
   private pastOrdersUrl = environment.pastOrdersUrl;
   private futureOrdersUrl = environment.futureOrdersUrl;
+private rebookData: RebookData | null = null;
 
   private apiBase = 'http://127.0.0.1:8000/api';
 
 
   constructor(private http: HttpClient) { }
 
-  // Helper method to create consistent headers
   private getAuthHeaders(): HttpHeaders {
     const token = localStorage.getItem('access_token');
     return new HttpHeaders({
@@ -117,14 +142,31 @@ export class MyRidesService {
     );
   }
 
-  rebookReservation(payload: RebookRequest): Observable<any> {
-    const headers = this.getAuthHeaders().set('Content-Type', 'application/json');
-    return this.http.post(
-      `${this.apiBase}/reservations/rebook`,
-      payload,
+  
+ checkPendingRebook(): Observable<HasPendingRebookResponse> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<HasPendingRebookResponse>(
+      `${this.apiBase}/rides/has-pending-rebook`,
       { headers }
     );
   }
+
+setRebookData(data: RebookData) {
+  this.rebookData = data;
+}
+
+clearRebookData() {
+  this.rebookData = null;
+}
+
+getRebookDatafromService() {
+  return this.rebookData;
+}
+
+rebookReservation(payload: any) {
+  return this.http.post(`${this.apiBase}/reservations/rebook`, payload);
+}
+
 
 
 }

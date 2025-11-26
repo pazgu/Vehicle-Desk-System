@@ -9,6 +9,7 @@ from ..schemas.new_ride_schema import RideCreate
 from ..models.ride_model import RideType
 
 class RideRebookData(BaseModel):
+    id:UUID
     user_id: UUID
     ride_type: RideType
     start_datetime: datetime
@@ -16,8 +17,8 @@ class RideRebookData(BaseModel):
     start_location: str
     stop: str
     destination: str
-    estimated_distance_km: float
-    actual_distance_km: float
+    estimated_distance: Optional[float] = None
+    actual_distance_km: Optional[float] = None
     four_by_four_reason: Optional[str] = None
     extended_ride_reason: Optional[str] = None
     target_type: Optional[str] = "self"
@@ -31,3 +32,7 @@ class RideRebookData(BaseModel):
 class RebookRideRequest(BaseModel):
     old_ride_id: UUID
     new_ride: RideCreate   
+
+
+class HasPendingRebookResponse(BaseModel):
+    has_pending: bool

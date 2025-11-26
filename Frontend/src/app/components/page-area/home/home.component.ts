@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators, AbstractControl, ReactiveFormsModul
 import { Router, RouterModule } from '@angular/router';
 import { ToastService } from '../../../services/toast.service';
 import { RideService } from '../../../services/ride.service';
-import { MyRidesService } from '../../../services/myrides.service';
+import { MyRidesService, RebookRequest } from '../../../services/myrides.service';
 import { HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { VehicleService } from '../../../services/vehicle.service';
@@ -64,18 +64,11 @@ import {
   ConfirmDialogComponent,
   ConfirmDialogData,
 } from '../../page-area/confirm-dialog/confirm-dialog.component';
-
+import { RebookData } from '../../../services/myrides.service';
 
 interface Employee { id: string; full_name: string; }
-interface RebookData {
-  ride_id: string;            
-  start_datetime: string;
-  end_datetime: string;
-  start_location: any;         
-  destination: any;             
-  passengers_count?: number;
-  reason?: string;
-}
+
+
 
 
 @Component({
@@ -136,22 +129,34 @@ export class NewRideComponent implements OnInit {
    ngOnInit(): void {
   this.currentUserId = getUserIdFromToken(localStorage.getItem('access_token'));
   this.initializeComponent();
-  const nav = this.router.getCurrentNavigation();
-  const rebookData = nav?.extras?.state?.['rebookData'] as RebookData | undefined;
+
+   this.myRidesService.checkPendingRebook().subscribe({
+  next: (res) => {
+    if (res.has_pending && !rebookData) {
+      this.toastService.show('יש נסיעות ממתינות לשחזור, יש להשלים את החידוש לפני הזמנת נסיעה חדשה', 'error');
+      this.router.navigate(['/all-rides']);
+    }
+  },
+  error: (err) => console.error(err)
+});
+  const rebookData = this.myRidesService.getRebookDatafromService();
 
   if (rebookData) {
     this.applyRebookData(rebookData);  
+    this.rideForm.get('target_type')?.setValue('self');
+      this.handleStep1Next();
+
   }
+ 
+
+  
   this.loadUserOrders();
   const initialTargetType = this.rideForm.get('target_type')?.value;
-  
-
   if (initialTargetType === 'self') {
     if (this.currentUserId) {
       this.checkUserDepartment(this.currentUserId);
       this.checkGovernmentLicence(this.currentUserId);
     } else {
-      console.warn('Current user ID not found in token during ngOnInit. Disabling request.');
       this.toastService.show('שגיאה: מזהה משתמש נוכחי לא נמצא.', 'error');
       this.disableRequest = true;
     }
@@ -207,21 +212,49 @@ onBeforeUnload(e: BeforeUnloadEvent) {
   setClosestQuarterHourTimeOnForm(this.rideForm, this.timeOptions);
 }
 
-
 private applyRebookData(data: RebookData): void {
-  // mark that we’re in rebook flow
   this.isRebookMode = true;
-  this.rebookOriginalRideId = data.ride_id;
+  this.rebookOriginalRideId = data.user_id;
 
-  // pre-fill the form with original reservation details (except vehicle)
+  const extraStopsArray = this.rideForm.get('extraStops') as FormArray;
+  extraStopsArray.clear();
+
+  if (data.extra_stops && Array.isArray(data.extra_stops)) {
+    data.extra_stops.forEach(stopId => {
+      extraStopsArray.push(this.fb.control(stopId));
+    });
+  }
+
+  const start = new Date(data.start_datetime);
+  const end = new Date(data.end_datetime);
+  const pad = (num: number) => num.toString().padStart(2, '0');
+
   this.rideForm.patchValue({
     start_location: data.start_location,
-    destination: data.destination,
-    passengers: data.passengers_count ?? this.rideForm.get('passengers')?.value,
-    reason: data.reason ?? this.rideForm.get('reason')?.value,
-    car: null, // force user to pick a new vehicle
+    stop: data.stop,               
+    destination: data.destination,   
+
+    ride_type: data.ride_type,
+    estimated_distance_km: data.estimated_distance,
+
+    four_by_four_reason: data.four_by_four_reason ?? '',
+    extended_ride_reason: data.extended_ride_reason ?? '',
+
+    car: null,
+
+    ride_date: start.toISOString().split('T')[0],   
+    start_hour: pad(start.getHours()),
+    start_minute: pad(start.getMinutes()),
+    end_hour: pad(end.getHours()),
+    end_minute: pad(end.getMinutes()),
+
+    start_time: `${pad(start.getHours())}:${pad(start.getMinutes())}`,
+    end_time: `${pad(end.getHours())}:${pad(end.getMinutes())}`,
   });
+
 }
+
+
 
 private isVehicleFrozenError(err: any): boolean {
   const detail =
@@ -581,10 +614,8 @@ private openVehicleFrozenDialog(): void {
   const selectedType = this.rideForm.get('vehicle_type')?.value;
   const carControl = this.rideForm.get('car');
 
-  // 1) Base filtering by type
   let filtered = filterAvailableCars(this.allCars, selectedType);
 
-  // 2) Extra safety: only truly 'available' vehicles
   filtered = filtered.filter(car => car.status === 'available');
 
   this.availableCars = filtered;
@@ -614,7 +645,9 @@ private setDefaultStartAndDestination(): void {
         const hasRequiredError = carControl.errors?.['required'];
         return (carControl.touched || carControl.dirty) && (hasValidationErrors || hasPendingError || hasRequiredError);
     }
-    onRideTypeChange(): void {
+ onRideTypeChange(): void {
+  const isPrefilled = this.isRebookMode;
+
   const distance = this.rideForm.get('estimated_distance_km')?.value;
   const rideDate = this.rideForm.get('ride_date')?.value;
   const vehicleType = this.rideForm.get('vehicle_type')?.value;
@@ -631,7 +664,7 @@ private setDefaultStartAndDestination(): void {
     if (distance && rideDateNight && vehicleType) {
       const isoDate = toIsoDate(rideDate);
       this.loadVehicles(distance, isoDate, vehicleType, startDateTime, endDateTime);
-    } else {
+    } else if (!isPrefilled) {
       this.toastService.show('אנא הזן תאריך וסוג רכב לפני סינון רכבים', 'error');
       this.availableCars = [];
       this.rideForm.get('car')?.setValue(null);
@@ -640,13 +673,14 @@ private setDefaultStartAndDestination(): void {
     if (distance && rideDate && vehicleType) {
       const isoDate = toIsoDate(rideDate);
       this.loadVehicles(distance, isoDate, vehicleType, startDateTime, endDateTime);
-    } else {
+    } else if (!isPrefilled) {
       this.toastService.show('אנא הזן תאריך וסוג רכב לפני סינון רכבים', 'error');
       this.availableCars = [];
       this.rideForm.get('car')?.setValue(null);
     }
   }
 }
+
     private updateVehicleTypeValidation(value: string): void {
         const vehicleTypeReason = this.rideForm.get('four_by_four_reason');
         vehicleTypeReason?.clearValidators();
@@ -907,13 +941,53 @@ if (distance && rideDate && vehicleType) {
         });
 
         const role = localStorage.getItem('role');
+          if (this.isRebookMode) {
+            const rebookD=this.myRidesService.getRebookDatafromService()
+            if (!rebookD) {
+  console.error("rebookD is undefined");
+  return;
+}
 
+
+  const payload: RebookRequest = {
+    old_ride_id: rebookD.id,
+    new_ride: {
+      start_datetime: formData.start_datetime,
+      end_datetime: formData.end_datetime,
+      start_location: formData.start_location,
+      destination: formData.destination,
+      ride_type: formData.ride_type,
+      stop: formData.stop,
+      extra_stops: formData.extra_stops?.map((s: any) => s.id) || [],
+      extended_ride_reason: formData.extended_ride_reason || undefined,
+      four_by_four_reason: formData.four_by_four_reason || undefined,
+      vehicle_id: formData.vehicle_id,
+      estimated_distance_km: formData.estimated_distance_km,
+      actual_distance_km:formData.actual_distance_km,
+      user_id: formData.user_id,
+      status: 'pending',
+      submitted_at: new Date().toISOString(),
+    }
+  };
+
+  this.myRidesService.rebookReservation(payload).subscribe({
+    next: (res) => {
+      this.toastService.show('הנסיעה עודכנה בהצלחה', 'success');
+      this.router.navigate(['/all-rides']);
+        this.myRidesService.clearRebookData();
+
+    },
+    error: (err) => {
+      this.toastService.show('שגיאה בעדכון הנסיעה', 'error');
+    }
+  });
+
+}else{
         if (role === 'employee') {
             this.rideService.createRide(formData, user_id).subscribe({
                 next: (createdRide) => {
                     this.toastService.show('הבקשה נשלחה בהצלחה! ', 'success');
                     this.orderSubmitted = true;
-
                     this.loadFuelType(formData.vehicle_id);
                     this.socketService.sendMessage('new_ride_request', { ...createdRide, user_id });
 
@@ -968,7 +1042,7 @@ if (distance && rideDate && vehicleType) {
 
             });
         }
-    }
+    }}
 
     get f() {
   return getRideFormControls(this.rideForm);

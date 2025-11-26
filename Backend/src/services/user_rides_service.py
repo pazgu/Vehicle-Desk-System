@@ -157,7 +157,6 @@ def get_ride_by_id(db: Session, ride_id: UUID) -> RideSchema:
         Vehicle.vehicle_model.label("vehicle_model"),
         Ride.actual_pickup_time,
     ).join(Vehicle, Ride.vehicle_id == Vehicle.id).filter(Ride.id == ride_id).first()
-
     if not ride:
         raise HTTPException(status_code=404, detail="Ride not found")
     return RideSchema(**dict(ride._mapping))
