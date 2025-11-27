@@ -1158,7 +1158,6 @@ private applyRebookData(data: RebookData): void {
         if (role === 'employee') {
             this.rideService.createRide(formData, user_id).subscribe({
                 next: (createdRide) => {
-                    this.toastService.show('הבקשה נשלחה בהצלחה! ', 'success');
                     this.orderSubmitted = true;
                     this.loadFuelType(formData.vehicle_id);
                     this.socketService.sendMessage('new_ride_request', { ...createdRide, user_id });
@@ -1186,7 +1185,6 @@ private applyRebookData(data: RebookData): void {
     } else if (role === 'supervisor') {
       this.rideService.createSupervisorRide(formData, user_id).subscribe({
         next: (createdRide) => {
-          this.toastService.show('הבקשה נשלחה בהצלחה! ', 'success');
           this.orderSubmitted = true;
 
           this.loadFuelType(formData.vehicle_id);
