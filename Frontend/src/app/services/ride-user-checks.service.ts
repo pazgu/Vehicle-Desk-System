@@ -8,6 +8,10 @@ interface DepartmentCheckResult {
   disableDueToDepartment: boolean;
   disableRequest: boolean;
 }
+interface UserBlockCheckResult {
+  isBlocked: boolean;
+  blockExpirationDate: string | null;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -78,7 +82,6 @@ export class RideUserChecksService {
     );
   }
 
-
   checkUserDepartment(userId: string): Observable<DepartmentCheckResult> {
     if (!userId) {
       return of({
@@ -116,6 +119,36 @@ export class RideUserChecksService {
         return of({
           disableDueToDepartment: true,
           disableRequest: true,
+        });
+      })
+    );
+  }
+  checkUserBlock(userId: string): Observable<UserBlockCheckResult> {
+    if (!userId) {
+      console.warn(
+        '⚠️ RideUserChecksService.checkUserBlock called with empty userId'
+      );
+      return of({
+        isBlocked: false,
+        blockExpirationDate: null,
+      });
+    }
+    
+    return this.userService.getUserById(userId).pipe(
+      map((user: any) => {
+        const isBlocked = user.is_blocked === true;
+        const expirationDateStr = user.block_expires_at as string | null;
+        return {
+          isBlocked: isBlocked,
+          blockExpirationDate: expirationDateStr,
+        };
+      }),
+      catchError((err) => {
+        console.error('❌ Failed to check user block status:', err);
+        this.toastService.show('אירעה שגיאה בבדיקת סטטוס המשתמש. אנא נסה שנית.', 'error');
+        return of({
+          isBlocked: false,
+          blockExpirationDate: null,
         });
       })
     );

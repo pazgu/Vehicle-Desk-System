@@ -1,3 +1,41 @@
+.filter-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  direction: rtl;
+}
+
+.filter-container label {
+  font-weight: 700;
+  color: #4a5568;
+  font-size: 1rem;
+  font-family: 'Alef', sans-serif;
+}
+
+.filter-container select {
+  padding: 0.6rem 1.2rem;
+  border-radius: 10px;
+  border: 2px solid rgba(102, 126, 234, 0.2);
+  font-size: 0.9rem;
+  font-family: 'Alef', sans-serif;
+  font-weight: 600;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  min-width: 150px;
+}
+
+.filter-container select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+}
+
+.filter-container select:hover {
+  border-color: rgba(102, 126, 234, 0.4);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
 
 .p-chart {
   transition: all 0.3s ease;
@@ -22,3 +60,10 @@
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
 }
 
+.no-data-message {
+  text-align: center;
+  padding: 2rem;
+  color: #4a5568;
+  font-weight: 600;
+  font-family: 'Alef', sans-serif;
+}

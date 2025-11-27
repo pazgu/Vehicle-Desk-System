@@ -171,15 +171,14 @@ text-decoration: none;}
   border-radius: 6px;
 }
 
-::ng-deep .ng-select .ng-select-container {
-  min-height: 36px;
-  display: flex;
-  align-items: center;
-  margin-left: 70px;
+::ng-deep .ng-select .ng-value-container {
+  justify-content: center;
+  width: 100%;
 }
 
-::ng-deep .ng-dropdown-panel {
-  z-index: 9999 !important;
+::ng-deep .ng-select .ng-value {
+  text-align: center;
+  width: 100%;
 }
 
 .custom-hour-dropdown {
@@ -211,6 +210,9 @@ text-decoration: none;}
 
 ::ng-deep .custom-hour-dropdown .ng-option {
   color: #333;
+  padding: 4px 6px;
+  text-align: center;
+  font-size: 14px;
   padding: 8px;
   ::ng-deep .select .ng-option {
   border: 1px solid #cecece;
