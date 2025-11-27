@@ -115,6 +115,10 @@ export class NewRideComponent implements OnInit {
     currentUserId: string | null = null;
     isRebookMode = false;
     rebookOriginalRideId: string | null = null;
+    rideTypes = [
+  { value: 'administrative', label: 'מנהלתית' },
+  { value: 'operational', label: 'מבצעית' }
+];
 
     constructor(
         private fb: FormBuilder,
@@ -134,6 +138,7 @@ export class NewRideComponent implements OnInit {
     ) { }
 
    ngOnInit(): void {
+    
   this.currentUserId = getUserIdFromToken(localStorage.getItem('access_token'));
   this.initializeComponent();
   const nav = this.router.getCurrentNavigation();
