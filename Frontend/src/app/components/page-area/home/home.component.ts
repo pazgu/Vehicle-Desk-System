@@ -133,7 +133,18 @@ export class NewRideComponent implements OnInit {
    ngOnInit(): void {
   this.currentUserId = getUserIdFromToken(localStorage.getItem('access_token'));
   this.initializeComponent();
-  
+    if (this.currentUserId){
+      this.rideUserChecksService.checkUserBlock(this.currentUserId).subscribe((result) => {
+        this.currentUserBlocked = result.isBlocked;
+        this.currentUserBlockExpirationDate = result.blockExpirationDate;
+        if (this.currentUserBlocked) {
+          this.disableDueToBlock = true;
+          this.disableRequest = true;
+          this.disableDueToDepartment = true;
+          this.showBlockedUserMessage();
+
+        }});
+    }
    this.myRidesService.checkPendingRebook().subscribe({
   next: (res) => {
     if (res.has_pending && !rebookData) {
@@ -158,8 +169,6 @@ export class NewRideComponent implements OnInit {
   this.loadUserOrders();
   const initialTargetType = this.rideForm.get('target_type')?.value;
   if (initialTargetType === 'self') {
-      this.showBlockedUserMessage();
-
     if (this.currentUserId) {
       this.checkUserDepartment(this.currentUserId);
       this.checkGovernmentLicence(this.currentUserId);
