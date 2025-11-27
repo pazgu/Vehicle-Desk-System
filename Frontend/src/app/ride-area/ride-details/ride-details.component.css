@@ -1,76 +1,117 @@
-.ride-details-container {
-  max-width: 1200px;
-  margin: 0 auto;
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-content {
+  background: white;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  animation: slideUp 0.3s ease;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.close-button {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: white;
+  border: 2px solid #811313;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+  color: #811313;
+  font-size: 1.2rem;
+}
+
+.close-button:hover {
+  background-color: #811313;
+  color: white;
+  transform: rotate(90deg);
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  gap: 1rem;
+}
+
+.loading-state p {
+  color: #6b7280;
+  font-size: 1.1rem;
+}
+
+.ride-details-modal-container {
   padding: 2rem 1.5rem;
   font-family: "Alef", sans-serif;
   direction: rtl;
-  position: relative;
-  min-height: 100vh;
 }
 
-/* Header */
-.page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-direction: row;
+.modal-header {
+  text-align: center;
+  margin-bottom: 2rem;
 }
 
-
-.page-header h1 {
-  font-size: 2.5rem;
+.modal-header h1 {
+  font-size: 2rem;
   font-weight: 700;
   color: #811313;
-  margin: 0 auto;
+  margin: 0;
   padding-bottom: 0.5rem;
   border-bottom: 3px solid #942222;
   display: inline-block;
 }
 
-.back-button {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background-color: transparent;
-  color: #811313;
-  border: 1px solid #811313;
-  padding: 0.6rem 1.2rem;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-family: "Alef", sans-serif;
-}
-
-.back-button:hover {
-  background-color: #811313;
-  color: white;
-  transform: translateX(2px);
-}
-
-.back-button i {
-  font-size: 1.1rem;
-}
-
-.header-spacer {
-  width: 120px;
-}
-
-/* Main Card */
 .ride-details-card {
   background: white;
   border-radius: 16px;
   padding: 2rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   position: relative;
 }
 
-/* Start Ride Button */
 .start-ride-btn {
   position: absolute;
-  top: 2rem;
-  left: 2rem;
+  top: 0;
+  left: 0;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -96,7 +137,6 @@
   font-size: 1.2rem;
 }
 
-/* Status Badge */
 .status-badge {
   display: inline-block;
   padding: 0.5rem 1.5rem;
@@ -136,7 +176,6 @@
   color: #6b7280;
 }
 
-/* Details Sections */
 .details-section {
   margin-bottom: 2rem;
   padding-bottom: 1.5rem;
@@ -163,7 +202,6 @@
   font-size: 1.4rem;
 }
 
-/* Detail Items */
 .detail-item {
   display: flex;
   justify-content: space-between;
@@ -191,7 +229,6 @@
   font-weight: 500;
 }
 
-/* Special Notice */
 .special-notice {
   background: linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%);
   border: 2px solid #fbbf24;
@@ -228,30 +265,18 @@
   line-height: 1.5;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
-  .ride-details-container {
+  .modal-content {
+    width: 95%;
+    max-height: 95vh;
+  }
+
+  .ride-details-modal-container {
     padding: 1rem;
   }
 
-  .page-header {
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-
-  .page-header h1 {
-    font-size: 1.8rem;
-    width: 100%;
-    text-align: center;
-  }
-
-  .header-spacer {
-    display: none;
-  }
-
-  .back-button {
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
+  .modal-header h1 {
+    font-size: 1.5rem;
   }
 
   .ride-details-card {
@@ -263,15 +288,6 @@
     width: 100%;
     margin-bottom: 1.5rem;
     justify-content: center;
-  }
-
-  .status-badge {
-    width: 100%;
-    text-align: center;
-  }
-
-  .section-title {
-    font-size: 1.1rem;
   }
 
   .detail-item {
@@ -286,29 +302,5 @@
 
   .detail-value {
     text-align: right;
-  }
-
-  .special-notice {
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .ride-details-container {
-    padding: 0.75rem;
-  }
-
-  .page-header h1 {
-    font-size: 1.5rem;
-  }
-
-  .section-title {
-    font-size: 1rem;
-  }
-
-  .detail-label,
-  .detail-value {
-    font-size: 0.9rem;
   }
 }

@@ -13,6 +13,8 @@ import { QuotaIndicatorComponent } from './quota-indicator/quota-indicator.compo
 import { RideListTableComponent } from './ride-list-table/ride-list-table.component';
 import { ExceededWarningBannerComponent } from './exceeded-warning-banner/exceeded-warning-banner.component';
 import { HttpErrorResponse, HttpClient, HttpHeaders } from '@angular/common/http';
+import { RideDetailsComponent } from './../ride-details/ride-details.component';
+
 
 @Component({
   selector: 'app-home',
@@ -281,14 +283,29 @@ export class AllRidesComponent implements OnInit {
     this.filteredOrders = filtered;
   }
 
-  onViewRide(order: any): void {
-    if (!order.ride_id) {
-      this.toastService.show('שגיאה בזיהוי ההזמנה', 'error');
-      return;
-    }
-    this.router.navigate(['/ride/details', order.ride_id]);
-
+onViewRide(order: any): void {
+  if (!order.ride_id) {
+    this.toastService.show('שגיאה בזיהוי ההזמנה', 'error');
+    return;
   }
+
+  const dialogRef = this.dialog.open(RideDetailsComponent, {
+    width: '900px',
+    maxWidth: '95vw',
+    maxHeight: '90vh',
+    panelClass: 'ride-details-modal-panel',
+    data: { rideId: order.ride_id },
+    autoFocus: false,
+    restoreFocus: false
+  });
+
+  dialogRef.afterClosed().subscribe(result => {
+    if (result?.rideStarted) {
+      this.fetchRides();
+    }
+  });
+}
+
 
   scrollToTop(): void {
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -452,7 +469,6 @@ export class AllRidesComponent implements OnInit {
 
   this.rideService.getRebookData(order.ride_id).subscribe({
     next: (data: RebookData) => {
-      // navigate to New Ride page in "rebook mode"
       this.router.navigate(['/home'], {
         state: { rebookData: data }
       });
