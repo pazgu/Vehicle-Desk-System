@@ -39,7 +39,7 @@
 
           <div class="form-field-group" *ngIf="rideForm.get('target_type')?.value === 'other'">
             <label>בחר עובד</label>
-            <select formControlName="target_employee_id">
+            <select formControlName="target_employee_id" class="styled-select">
               <option *ngFor="let emp of departmentEmployees" [value]="emp.id">
                 {{ emp.full_name }}
               </option>
@@ -72,7 +72,7 @@
             <div class="form-row">
               <div class="form-field-group">
                 <label>מספר ימי נסיעה (יום / יומיים)</label>
-                <select formControlName="ride_period">
+                <select formControlName="ride_period" class="styled-select">
                   <option value="morning">נסיעה יומית</option>
                   <option value="night">נסיעה ליותר מיום</option>
                 </select>
