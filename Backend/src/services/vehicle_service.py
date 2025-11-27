@@ -106,7 +106,6 @@ def get_available_vehicles_new_ride(
         query = query.filter(~Vehicle.id.in_(overlapping_rides))
 
     final_query = query.all()
-    print('Available vehicles for new ride:', [v.id for v in final_query])
 
     return final_query
 

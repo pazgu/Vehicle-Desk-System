@@ -14,6 +14,10 @@ from sqlalchemy import text, cast
 from sqlalchemy.orm import Session, aliased
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
+from ..helpers.user_helpers import update_user_pending_rebook_status
+
+from ..schemas.rebook_ride import HasPendingRebookResponse, RebookRideRequest, RideRebookData
+
 from ..schemas.ride_requirements_schema import RideRequirementOut
 from ..services.ride_requirements import get_latest_requirement
 from ..schemas.ride_requirements_confirm import RideRequirementConfirmationIn
@@ -171,6 +175,22 @@ def get_past_orders(user_id: UUID, status: Optional[RideStatus] = Query(None),
 
 
 
+@router.get("/user/me")
+async def get_current_user_info(
+    user: User = Depends(get_current_user)
+):
+    return {
+        "id": str(user.id),
+        "employee_id": str(user.employee_id),
+        "username": user.username,
+        "email": user.email,
+        "role": user.role,
+        "department_id": str(user.department_id) if user.department_id else None,
+        "has_pending_rebook": user.has_pending_rebook,
+        "has_government_license": user.has_government_license,
+    }
+
+
 @router.get("/api/all-orders/{user_id}", response_model=List[RideSchema])
 def get_all_orders(user_id: UUID, status: Optional[RideStatus] = Query(None),
                    from_date: Optional[datetime] = Query(None),
@@ -201,6 +221,11 @@ async def create_order(
         user = db.query(User).filter(User.employee_id == user_id).first()
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
+        if user.has_pending_rebook:
+            raise HTTPException(
+                status_code=400,
+                detail="You must complete your rebook before creating a new ride."
+            )
         license_check_passed = bool(getattr(user, "has_government_license", False))
 
         new_ride = await create_ride(
@@ -275,6 +300,103 @@ async def create_order(
         print(f"An error occurred: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/api/rides/has-pending-rebook", response_model=HasPendingRebookResponse)
+def check_pending_rebook(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    pending_rides = db.query(Ride).filter(
+        Ride.user_id == user.employee_id,
+        Ride.status == RideStatus.cancelled_vehicle_unavailable
+    ).count()
+
+    return {"has_pending": pending_rides > 0}
+
+@router.get("/api/reservations/{ride_id}/rebook-data", response_model=RideRebookData)
+async def get_rebook_data(
+    ride_id: UUID,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    ride = get_ride_by_id(db, ride_id)
+
+    if not ride:
+        raise HTTPException(status_code=404, detail="Ride not found")
+
+    start=get_city_by_name(ride.start_location,db=db)
+    end=get_city_by_name(ride.destination,db=db)
+
+    rebook_data = {
+        "id":ride.ride_id,
+        "user_id": ride.user_id,
+        "ride_type": ride.ride_type,
+        "start_datetime": ride.start_datetime,
+        "end_datetime": ride.end_datetime,
+        "start_location": str(start.id),
+        "stop": ride.stop,
+        "extra_stops": ride.extra_stops,
+        "destination": str(end.id), 
+        "estimated_distance": ride.estimated_distance,
+        "actual_distance": None,
+        "extended_ride_reason": ride.extended_ride_reason,
+        "four_by_four_reason": ride.four_by_four_reason,
+        "is_extended_request": False,  
+        "target_type": "self",         
+    }
+    print("rebook data:",rebook_data)
+
+    return rebook_data
+
+
+
+def get_city_by_name(name: str, db: Session):
+    return db.query(City).filter(City.name == name).first()
+
+@router.post("/api/reservations/rebook", response_model=RideResponse)
+async def rebook_ride(
+    data: RebookRideRequest,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    old_ride = get_ride_by_id(db, data.old_ride_id)
+    if not old_ride:
+        raise HTTPException(status_code=404, detail="Old ride not found")
+
+    updated_ride = await patch_order_in_db(
+        order_id=data.old_ride_id,
+        patch_data=data.new_ride,
+        db=db,
+        changed_by=str(user.employee_id)
+    )
+    updated_ride.status=RideStatus.pending
+    db.commit()
+    db.refresh(updated_ride)
+
+    update_user_pending_rebook_status(db, user.employee_id)
+
+    vehicle = db.query(Vehicle).filter(Vehicle.id == updated_ride.vehicle_id).first()
+
+    return {
+        "id": updated_ride.id,
+        "user_id": updated_ride.user_id,
+        "username": user.username if user.username else "",
+        "vehicle_id": updated_ride.vehicle_id,
+        "ride_type": updated_ride.ride_type,
+        "start_datetime": updated_ride.start_datetime,
+        "end_datetime": updated_ride.end_datetime,
+        "start_location": updated_ride.start_location if updated_ride.start_location else "",
+        "stop": updated_ride.stop,
+        "destination": updated_ride.destination if updated_ride.destination else "",
+        "estimated_distance_km": updated_ride.estimated_distance_km,
+        "actual_distance_km": updated_ride.actual_distance_km,
+        "four_by_four_reason": updated_ride.four_by_four_reason,
+        "extended_ride_reason": updated_ride.extended_ride_reason,
+        "status": updated_ride.status,
+        "license_check_passed": updated_ride.license_check_passed,
+        "submitted_at": updated_ride.submitted_at,
+        "override_user_id": updated_ride.override_user_id,
+        "plate_number": vehicle.plate_number if vehicle.plate_number else "",
+        "extra_stops": [s.id for s in updated_ride.extra_stops] if updated_ride.extra_stops else [],
+        "is_extended_request": True if updated_ride.extended_ride_reason else False,
+        "vehicle_model": vehicle.vehicle_model if vehicle.vehicle_model else None
+    }
 
 @router.get("/api/rides_supposed-to-start")
 def check_started_approved_rides(db: Session = Depends(get_db)):

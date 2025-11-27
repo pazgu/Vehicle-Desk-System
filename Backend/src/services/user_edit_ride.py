@@ -48,6 +48,7 @@ async def patch_order_in_db(order_id: UUID, patch_data: OrderCardItem, db: Sessi
                 status_code=400,
                 detail="יש למלא סיבה לבחירת רכב 4X4"
             )
+    print("updated order:",order.status)
     db.commit()
     db.refresh(order)
 
