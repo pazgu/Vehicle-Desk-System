@@ -22,6 +22,7 @@ from fastapi.security import OAuth2PasswordBearer
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import and_, or_, desc, func, text
 from sqlalchemy.orm import Session, aliased
+from ..helpers.department_helpers import get_or_create_vip_department
 from src.schemas.ride_requirements_schema import RideRequirementOut, RideRequirementUpdate
 from src.services.ride_requirements import get_latest_requirement,create_requirement
 # Utils
@@ -32,7 +33,7 @@ from src.utils.stats import generate_monthly_vehicle_usage
 
 # Services
 from src.services import admin_service, department_service 
-from src.services.department_service import create_department, update_department, delete_department
+from src.services.department_service import delete_department
 from src.services.admin_rides_service import (
     get_all_orders,
     get_future_orders,
@@ -159,7 +160,6 @@ async def edit_user_by_id_route(
 ):
     user_id_from_token = payload.get("user_id") or payload.get("sub")
     user_role_from_token = payload.get("role")
-    # --- DEBUGGING LOGS END ---
 
     user = db.query(User).filter(User.employee_id == user_id).first()
     if not user:
@@ -168,12 +168,14 @@ async def edit_user_by_id_route(
     if not user_id_from_token:
         raise HTTPException(status_code=401, detail="User ID not found in token")
 
-    # Authorization: User can edit their own data OR if they are an admin
     if str(user_id) != user_id_from_token and user_role_from_token != UserRole.admin.value:
         raise HTTPException(status_code=403, detail="Not authorized to edit this user's data.")
 
-    # Set session audit user ID for database triggers/logging
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id_from_token)})
+
+    if department_id == "vip":
+        vip_dep = get_or_create_vip_department(db)
+        department_id = str(vip_dep.id)  
 
     has_gov_license = has_government_license.lower() == "true"
 
@@ -229,6 +231,7 @@ async def edit_user_by_id_route(
                 status_code=400,
                 detail="Invalid date-time format for block_expires_at. Expected YYYY-MM-DDTHH:MM."
             )
+     
     if not is_blocked and role:
         try:
             new_role = UserRole(role)
@@ -426,6 +429,10 @@ async def add_user_as_admin(
         with open(f"uploads/{license_file.filename}", "wb") as f:
             f.write(contents)
         license_file_url = f"/uploads/{license_file.filename}"
+
+    if department_id and department_id.lower() == "vip":
+        dep = get_or_create_vip_department(db)
+        department_id=dep.id
 
     user_data = UserCreate(
         first_name=first_name,
