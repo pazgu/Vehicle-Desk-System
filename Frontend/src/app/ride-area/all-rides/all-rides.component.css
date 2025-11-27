@@ -121,37 +121,4 @@
     padding: 0.4rem 0.8rem;
     font-size: 0.85rem;
   }
-
-  .rebook {
-  background-color: #fff;
-  border: 1px solid #c9b7a8; 
-  color: #5a4634;
-  padding: 6px 14px;
-  border-radius: 10px;
-  font-size: 14px;
-  font-family: var(--font-family-alef), sans-serif;
-  cursor: pointer;
-  transition: 0.2s ease-in-out;
-  margin-right: 8px;
-  white-space: nowrap;
-}
-
-.rebook:hover {
-  background-color: #f3ece7;
-  border-color: #b8a394;
-  transform: translateY(-1px);
-}
-
-.rebook:active {
-  transform: translateY(0);
-  background-color: #e8e0da;
-}
-
-.rebook:disabled {
-  background-color: #e6e6e6;
-  border-color: #d0d0d0;
-  color: #9f9f9f;
-  cursor: not-allowed;
-}
-
 }

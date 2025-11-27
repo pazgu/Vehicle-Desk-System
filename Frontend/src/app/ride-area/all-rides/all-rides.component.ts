@@ -135,84 +135,122 @@ export class AllRidesComponent implements OnInit {
     this.router.navigate(['/ride/edit', order.ride_id]);
   }
 
-  deleteOrder(order: any): void {
-    const userRole = localStorage.getItem('role');
-    const isSupervisor = userRole === 'supervisor';
-    const isFuture = this.parseDate(order.date) >= new Date();
 
+deleteOrder(order: any): void {
+  const rawStatus = order.status || '';
+  const status = rawStatus.toString().toLowerCase().trim();
+  const userRole = localStorage.getItem('role');
+  const isSupervisor = userRole === 'supervisor';
+
+  const [day, month, year] = order.date.split('.');
+  const rideDateTime = new Date(`${year}-${month}-${day}T${order.time}:00`);
+  const now = new Date();
+
+  if (isNaN(rideDateTime.getTime())) {
+    console.error('Invalid ride datetime:', order.date, order.time);
+    this.toastService.show('שגיאה בזיהוי זמן הנסיעה', 'error');
+    return;
+  }
+
+  const isFuture = rideDateTime.getTime() > now.getTime();
+    const isRebookContext = 
+    status === 'cancelled_vehicle_unavailable' ||
+    status === 'cancelled_vehicle_unavilable';
+
+  if (!isRebookContext) {
     if (!isFuture) {
       this.toastService.show('אפשר לבטל רק הזמנות עתידיות ', 'error');
       return;
     }
 
     if (!isSupervisor) {
-      const isPending = order.status.toLowerCase() === 'pending';
+      const isPending = status === 'pending';
       if (!isPending) {
-        this.toastService.show('אפשר לבטל רק הזמנות עתידיות במצב "ממתין" ', 'error');
+        this.toastService.show(
+          'אפשר לבטל רק הזמנות עתידיות במצב "ממתין" ',
+          'error'
+        );
+        return;
+      }
+      
+      const timeDifferenceHours = (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+      if (timeDifferenceHours <= 2) {
+        this.toastService.show(
+          'אפשר לבטל הזמנה עד שעתיים לפני זמן הנסיעה ',
+          'error'
+        );
         return;
       }
     } else {
-      const isDeletableStatus = ['pending', 'approved'].includes(order.status.toLowerCase());
+      const isDeletableStatus = ['pending', 'approved'].includes(status);
       if (!isDeletableStatus) {
-        this.toastService.show('אפשר לבטל רק הזמנות במצב "ממתין" או "מאושר" ', 'error');
+        this.toastService.show(
+          'אפשר לבטל רק הזמנות במצב "ממתין" או "מאושר" ',
+          'error'
+        );
         return;
       }
 
-      const rideDateTime = new Date(`${order.date.split('.').reverse().join('-')}T${order.time}:00`);
-      const now = new Date();
-      const timeDifferenceHours = (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
-      
+      const timeDifferenceHours =
+        (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+
       if (timeDifferenceHours <= 2) {
-        this.toastService.show('אפשר לבטל הזמנה עד שעתיים לפני זמן הנסיעה ', 'error');
+        this.toastService.show(
+          'אפשר לבטל הזמנה עד שעתיים לפני זמן הנסיעה ',
+          'error'
+        );
         return;
       }
     }
-
-    if (!order.ride_id) {
-      this.toastService.show('שגיאה בזיהוי ההזמנה', 'error');
-      return;
-    }
-
-    const dialogData: ConfirmDialogData = {
-      title: 'ביטול הזמנה',
-      message: `?האם אתה בטוח שברצונך לבטל את ההזמנה\n\nתאריך: ${order.date}\nשעה: ${order.time}\nסוג: ${order.type}`,
-      confirmText: 'בטל הזמנה',
-      cancelText: 'חזור',
-      noRestoreText: 'שימ/י לב שלא ניתן לשחזר את הנסיעה',
-      isDestructive: true
-    };
-
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: '420px',
-      height: 'auto',
-      data: dialogData
-    });
-
-    dialogRef.afterClosed().subscribe(confirmed => {
-      if (!confirmed) return;
-
-      this.rideService.deleteOrder(order.ride_id).subscribe({
-        next: () => {
-          this.toastService.show('ההזמנה בוטלה בהצלחה ', 'success');
-          this.socketService.deleteRequests$.subscribe((deletedRide) => {
-         
-          });
-          this.fetchRides();
-          const index = this.orders.findIndex(o => o.ride_id === order.ride_id);
-          if (index !== -1) {
-            this.orders = [
-              ...this.orders.slice(0, index),
-              ...this.orders.slice(index + 1)
-            ];
-          }
-        },
-        error: (error) => {
-          console.error('Error deleting order:', error);
-          this.toastService.show('שגיאה בביטול ההזמנה ', 'error');
-        }
-      });
-    });
   }
+
+  if (!order.ride_id) {
+    this.toastService.show('שגיאה בזיהוי ההזמנה', 'error');
+    return;
+  }
+
+  const dialogData: ConfirmDialogData = {
+    title: 'ביטול הזמנה',
+    message: `?האם אתה בטוח שברצונך לבטל את ההזמנה\n\nתאריך: ${order.date}\nשעה: ${order.time}\nסוג: ${order.type}`,
+    confirmText: 'בטל הזמנה',
+    cancelText: 'חזור',
+    noRestoreText: isRebookContext ? '' : 'שימ/י לב שלא ניתן לשחזר את הנסיעה',
+    isDestructive: true,
+  };
+
+  const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+    width: '420px',
+    height: 'auto',
+    data: dialogData,
+  });
+
+  dialogRef.afterClosed().subscribe((confirmed) => {
+    if (!confirmed) return;
+
+    this.rideService.deleteOrder(order.ride_id).subscribe({
+      next: () => {
+        this.toastService.show('ההזמנה בוטלה בהצלחה ', 'success');
+        this.socketService.deleteRequests$.subscribe(() => {});
+        this.fetchRides();
+        const index = this.orders.findIndex(
+          (o) => o.ride_id === order.ride_id
+        );
+        if (index !== -1) {
+          this.orders = [
+            ...this.orders.slice(0, index),
+            ...this.orders.slice(index + 1),
+          ];
+        }
+      },
+      error: (error) => {
+        console.error('Error deleting order:', error);
+        this.toastService.show('שגיאה בביטול ההזמנה ', 'error');
+      },
+    });
+  });
+}
+
+
 
   private setupSocketSubscriptions(): void {
     this.socketService.rideRequests$.subscribe((newRide) => {
