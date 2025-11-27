@@ -373,6 +373,8 @@ async def rebook_ride(
         changed_by=str(user.employee_id)
     )
     updated_ride.status=RideStatus.pending
+    db.execute(text('SET session "session.audit.user_id" = :user_id'), {"user_id": str(user.employee_id)})
+
     db.commit()
     db.refresh(updated_ride)
 
@@ -520,6 +522,7 @@ async def delete_order(order_id: UUID, db: Session = Depends(get_db),current_use
 
         db.delete(ride)
         db.commit()
+        update_user_pending_rebook_status(db, current_user.employee_id)
 
         await sio.emit("order_deleted", {"order_id": str(order_id)})
         try:
