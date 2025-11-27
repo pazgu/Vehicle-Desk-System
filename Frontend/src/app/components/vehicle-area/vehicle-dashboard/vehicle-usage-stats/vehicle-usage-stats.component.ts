@@ -32,7 +32,7 @@ export class VehicleUsageStatsComponent implements OnInit {
           });
         },
         error: (err) => {
-          console.error('❌ Error fetching vehicle usage data:', err);
+          console.error(' Error fetching vehicle usage data:', err);
         },
       });
   }

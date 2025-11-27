@@ -73,7 +73,6 @@ export class AdminGuidelinesComponent implements OnInit {
   
 
 
-  // ✅ Compare form state to detect unsaved changes
   hasChanges(): boolean {
     return JSON.stringify(this.form.getRawValue()) !== JSON.stringify(this.originalValue);
   }

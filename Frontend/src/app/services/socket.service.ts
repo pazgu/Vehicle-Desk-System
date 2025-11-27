@@ -34,11 +34,11 @@ export class SocketService {
   public reservationCanceledDueToVehicleFreeze$=new BehaviorSubject<any>(null);
 
   constructor(private notificationService: NotificationService) {
-    this.connectToSocket(); // ✅ now always tries to connect (later you can add env check)
+    this.connectToSocket(); 
   }
 
   private connectToSocket(): void {
-    const token = localStorage.getItem('access_token'); // ✅ Fixed this line!
+    const token = localStorage.getItem('access_token');
 
     this.socket = io(this.SOCKET_URL, {
       transports: ['websocket'],
@@ -61,7 +61,7 @@ export class SocketService {
 
   private listenToEvents(): void {
     this.socket.on('order_updated', (data: any) => {
-      this.orderUpdated$.next(data); // ✅ Pushes to subscribers like HomeComponent
+      this.orderUpdated$.next(data);
     });
 
 this.socket.on('user_deleted', (data: any) => {

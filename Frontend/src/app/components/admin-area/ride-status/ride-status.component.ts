@@ -1,8 +1,7 @@
 import { Component } from '@angular/core';
 import { ChartModule } from 'primeng/chart';
-import { environment } from '../../../../environments/environment';
 import { SocketService } from '../../../services/socket.service';
-import { HttpClient } from '@angular/common/http';
+import { RideService } from '../../../services/ride.service';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -17,7 +16,7 @@ export class RideStatusComponent {
   selectedRideStatus: string = '';
   rideChartInitialized = false;
 
-  constructor(private socketService: SocketService, private http: HttpClient) {}
+  constructor(private socketService: SocketService, private rideService: RideService) {}
   ngOnInit() {
     this.loadRideChart();
     this.socketService.rideStatusUpdated$.subscribe(() => {
@@ -105,16 +104,12 @@ export class RideStatusComponent {
       },
       responsive: true,
       maintainAspectRatio: false,
-      locale: 'he-IL', // Hebrew locale
+      locale: 'he-IL',
     };
   }
 
   private loadRideChart() {
-    let url = `${environment.apiUrl}/analytics/ride-status-summary`;
-    if (this.selectedRideStatus && this.selectedRideStatus.trim() !== '') {
-      url += `?status=${encodeURIComponent(this.selectedRideStatus)}`;
-    }
-    this.http.get<{ status: string; count: number }[]>(url).subscribe({
+    this.rideService.getRideStatusSummary(this.selectedRideStatus).subscribe({
       next: (data) => {
         if (!data || data.length === 0) {
           this.rideChartData = {
@@ -133,7 +128,7 @@ export class RideStatusComponent {
         this.rideChartInitialized = true;
       },
       error: (error) => {
-        console.error('❌ Error loading ride data:', error);
+        console.error('Error loading ride data:', error);
         this.rideChartInitialized = true;
         this.rideChartData = {
           labels: ['שגיאה בטעינת נתונים'],

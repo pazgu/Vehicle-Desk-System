@@ -39,29 +39,23 @@ def get_department_orders(department_id: str, db: Session) -> List[RideDashboard
     """
     Fetch all orders for a specific department by joining the Ride and User tables.
     """
-    # Query the database for rides where the user's department matches the given department_id
     orders = (
     db.query(Ride, Vehicle.vehicle_model)
     .join(User, User.employee_id == Ride.user_id)
     .join(Vehicle, Ride.vehicle_id == Vehicle.id)
     .filter(User.department_id == department_id)
     .filter(User.role == "employee") 
-    .order_by(desc(Ride.submitted_at))  # 👈 Sort by submitted_at DESC
+    .order_by(desc(Ride.submitted_at))
     .all()
 )
 
 
-    # Map the database results to the RideDashboardItem schema
     dashboard_items = []
 
     for order, vehicle_model in orders:
-        # Query the users table to get the employee name
         user = db.query(User).filter(User.employee_id == order.user_id).first()
         employee_name = f"{user.first_name} {user.last_name}" if user else "Unknown"
 
-        # Get the vehicle plate (mocked for now)
-
-        # Create a RideDashboardItem schema for each order
         dashboard_item = RideDashboardItem(
             ride_id=order.id,
             vehicle_id=order.vehicle_id,
@@ -71,7 +65,7 @@ def get_department_orders(department_id: str, db: Session) -> List[RideDashboard
             end_datetime=order.end_datetime,
             destination=order.destination,
             distance = math.ceil(order.estimated_distance_km),
-            status=order.status.value,  # Access the string value of the enum
+            status=order.status.value,  
             submitted_at=order.submitted_at 
         )
 
@@ -84,7 +78,6 @@ def get_department_specific_order(department_id: str, order_id: str, db: Session
     """
     Fetch the details of a specific order for a department.
     """
-    # Query the database for the specific order
     order = (
         db.query(Ride)
         .join(User, User.employee_id == Ride.user_id)
@@ -93,23 +86,22 @@ def get_department_specific_order(department_id: str, order_id: str, db: Session
     )
 
     if not order:
-        return None  # Or raise an exception if the order is not found
+        return None  
 
-    # Create an OrderCardItem schema for the specific order
     order_details = OrderCardItem(
-        id=order.id,  # Pass as UUID
-        user_id=order.user_id,  # Pass as UUID
-        vehicle_id=order.vehicle_id,  # Pass as UUID
+        id=order.id, 
+        user_id=order.user_id,  
+        vehicle_id=order.vehicle_id,  
         start_datetime=order.start_datetime,
         end_datetime=order.end_datetime,
-        ride_type=order.ride_type.name if order.ride_type else None,  # Enum to string
+        ride_type=order.ride_type.name if order.ride_type else None,
         start_location=order.start_location,
         stop=order.stop or "",
         extra_stops=order.extra_stops or [],
         destination=order.destination,
         estimated_distance_km = float(math.ceil(order.estimated_distance_km)),
         actual_distance_km=float(order.actual_distance_km) if order.actual_distance_km else None,
-        status=order.status,  # Pass as RideStatusEnum
+        status=order.status,  
         license_check_passed=order.license_check_passed,
         submitted_at=order.submitted_at,
         emergency_event=order.emergency_event,
@@ -127,7 +119,6 @@ async def edit_order_status(department_id: str, order_id: str, new_status: str,u
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id)})
     
 
-    # Query the database for the specific order
     order = (
         db.query(Ride)
         .join(User, User.employee_id == Ride.user_id)
@@ -139,7 +130,6 @@ async def edit_order_status(department_id: str, order_id: str, new_status: str,u
             raise HTTPException(status_code=404, detail="ההזמנה לא נמצאה")
 
 
-    # Update the status of the order
     order.status = new_status
     if new_status.lower() == "rejected":
         order.rejection_reason = rejection_reason
@@ -164,8 +154,7 @@ async def edit_order_status(department_id: str, order_id: str, new_status: str,u
     db.add(notification)
     db.commit()
     db.refresh(notification)
-    
-     # Fetch extra details for email + Socket
+
     user = db.query(User).filter(User.employee_id == order.user_id).first()
     vehicle = db.query(Vehicle).filter(Vehicle.id == order.vehicle_id).first()
 
@@ -220,7 +209,6 @@ async def edit_order_status(department_id: str, order_id: str, new_status: str,u
     #                 html_content=body
     #             )
 
-    # Always reset the audit session var
     db.execute(text("SET session.audit.user_id = DEFAULT"))
 
     await sio.emit("ride_status_updated", {
@@ -246,18 +234,16 @@ async def edit_order_status(department_id: str, order_id: str, new_status: str,u
 
 
 def get_department_notifications(department_id: UUID, db: Session) -> List[Notification]:
-    # Find all supervisors in the department
     supervisors = db.query(User).filter(
         User.department_id == department_id,
-        User.role == 'supervisor'  # adjust this if you use enums or constants
+        User.role == 'supervisor'
     ).all()
 
-    supervisor_ids = [sup.employee_id for sup in supervisors]  # use employee_id here
+    supervisor_ids = [sup.employee_id for sup in supervisors]
 
     if not supervisor_ids:
         return []
-
-    # Query notifications for those supervisors
+    
     notifications = db.query(Notification).filter(
         Notification.user_id.in_(supervisor_ids)
     ).order_by(Notification.sent_at.desc()).all()
@@ -290,7 +276,6 @@ async def start_ride(db: Session, ride_id: UUID):
     )
     vehicle.last_used_at = func.now()
 
-    # 2️⃣ Update ride status + pickup time
     ride.actual_pickup_time = datetime.now(timezone.utc)
     ride.status = RideStatus.in_progress
 
@@ -302,12 +287,11 @@ async def start_ride(db: Session, ride_id: UUID):
     db.refresh(ride)
     db.refresh(vehicle)
 
-    # 3️⃣ Emit ride update
     await sio.emit("ride_status_updated", {
         "ride_id": str(ride.id),
         "new_status": ride.status.value
     })
-    # 4️⃣ Emit vehicle update
+
     await sio.emit("vehicle_status_updated", {
         "ride_id": str(vehicle.id),
         "new_status": vehicle.status.value

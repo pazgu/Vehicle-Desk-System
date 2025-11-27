@@ -22,11 +22,9 @@ SECRET_KEY = environ.get("JWT_SECRET")
 
 ALGORITHM = environ.get("ALGORITHM")
 
-# Function to hash a password
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
 
-# Function to verify if the provided password matches the stored hashed password
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     try:
         is_valid = pwd_context.verify(plain_password, hashed_password)
@@ -73,28 +71,24 @@ def get_current_user(request: Request) -> User:
 def token_check_socket(token: str) -> bool:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        # You can add more checks on payload here if you want
         return True
     except PyJWTError:
         return False
 
 def role_check(allowed_roles: list, token: str):
     try:
-        # Decode the token and get the payload
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        
-        # Extract user role from the payload
+
         user_role = payload.get("role")
         if not user_role:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token: Missing role")
         
-        # Check if the user's role matches the allowed roles
         if user_role not in allowed_roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You do not have the necessary permissions to access this resource"
             )
-        return payload  # You can return the entire payload if needed
+        return payload
     except jwt.PyJWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
@@ -109,7 +103,6 @@ def identity_check(user_id: str, token: str):
         if not token_user_id:
             raise HTTPException(status_code=401, detail="Invalid token: Missing user_id")
 
-        # Correct "owner or admin" check
         if token_user_id != user_id and user_role != "admin":
             raise HTTPException(
                 status_code=403,
@@ -130,10 +123,8 @@ def supervisor_check(request: Request, department_id: int,db: Session = Depends(
 
     token = token.split(" ")[1]
 
-    # ✅ Check role
     payload = role_check(["supervisor"], token)
     user_id = int(payload["sub"])
-    # ✅ Extract supervised departments (from token or DB)
     supervised_departments = get_supervised_departments(user_id, db)
 
     if supervised_departments is None:
@@ -142,7 +133,7 @@ def supervisor_check(request: Request, department_id: int,db: Session = Depends(
     if department_id not in supervised_departments:
         raise HTTPException(status_code=403, detail="Not authorized for this department")
 
-    return payload  # or return supervisor info if needed
+    return payload
 
 
 

@@ -4,6 +4,7 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { User } from '../models/user.model';
 import { Observable, throwError, forkJoin, of } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 export interface NewUserPayload {
   first_name: string;
@@ -38,7 +39,7 @@ export interface NoShowResponse {
   providedIn: 'root',
 })
 export class UserService {
-  private apiUrl = 'http://localhost:8000/api';
+  private apiUrl = environment.apiUrl;
   constructor(private http: HttpClient) {}
 
   private getAuthHeaders(): HttpHeaders {
@@ -54,8 +55,8 @@ export class UserService {
     return this.http.get<User>(`${this.apiUrl}/user-data/${id}`);
   }
   getRoles() {
-    // This should return Observable<string[]> or your role type
-    return this.http.get<string[]>('http://localhost:8000/api/roles');
+    let url = environment.rolesUrl;
+    return this.http.get<string[]>(url);
   }
   updateUser(userId: string, updateData: any) {
     const token = localStorage.getItem('access_token');

@@ -212,7 +212,7 @@ export class VehicleUsageComponent {
           };
         },
         error: (err: any) => {
-          console.error('❌ Error fetching all-time used vehicles:', err);
+          console.error('Error fetching all-time used vehicles:', err);
         },
       });
   }
@@ -315,7 +315,7 @@ export class VehicleUsageComponent {
           this.monthlyStatsChartOptions = { ...this.monthlyChartOptions };
         },
         error: (err) => {
-          console.error('❌ Error fetching top used vehicles:', err);
+          console.error('Error fetching top used vehicles:', err);
         },
       });
   }

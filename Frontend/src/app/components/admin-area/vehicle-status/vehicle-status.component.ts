@@ -5,8 +5,6 @@ import {
   FreezeReason,
   VehicleOutItem,
 } from '../../../models/vehicle-dashboard-item/vehicle-out-item.module';
-import { environment } from '../../../../environments/environment';
-import { HttpClient } from '@angular/common/http';
 import { ToastService } from '../../../services/toast.service';
 import { VehicleService } from '../../../services/vehicle.service';
 import { SocketService } from '../../../services/socket.service';
@@ -27,7 +25,6 @@ export class VehicleStatusComponent {
   vehicleTypes: string[] = [];
 
   constructor(
-    private http: HttpClient,
     private toastService: ToastService,
     private vehicleService: VehicleService,
     private socketService: SocketService
@@ -73,26 +70,26 @@ export class VehicleStatusComponent {
     const backgroundColors = data.map((d) => {
       switch (d.status) {
         case 'available':
-          return '#66BB6A'; // green
+          return '#66BB6A';
         case 'frozen':
-          return '#42A5F5'; // blue
+          return '#42A5F5';
         case 'in_use':
-          return '#FFA726'; // orange
+          return '#FFA726';
         default:
-          return '#BDBDBD'; // gray
+          return '#BDBDBD';
       }
     });
 
     const hoverColors = data.map((d) => {
       switch (d.status) {
         case 'available':
-          return '#81C784'; // lighter green
+          return '#81C784';
         case 'frozen':
-          return '#64B5F6'; // lighter blue
+          return '#64B5F6';
         case 'in_use':
-          return '#FFB74D'; // lighter orange
+          return '#FFB74D';
         default:
-          return '#E0E0E0'; // lighter gray
+          return '#E0E0E0';
       }
     });
 
@@ -157,11 +154,9 @@ export class VehicleStatusComponent {
   }
 
   loadVehicleTypes() {
-    this.http
-      .get<{ vehicle_types: string[] }>(`${environment.apiUrl}/vehicles/types`)
-      .subscribe({
-        next: (res) => {
-          this.vehicleTypes = res.vehicle_types;
+    this.vehicleService.getVehicleTypes().subscribe({
+        next: (vehicleTypes) => {
+          this.vehicleTypes = vehicleTypes;
         },
         error: (err) => {
           this.toastService.show('אירעה שגיאה בטעינת סוגי רכבים', 'error');
@@ -170,12 +165,7 @@ export class VehicleStatusComponent {
   }
 
   private loadVehicleChart() {
-    let url = `${environment.apiUrl}/analytics/vehicle-status-summary`;
-    if (this.selectedVehicleType && this.selectedVehicleType.trim() !== '') {
-      url += `?type=${encodeURIComponent(this.selectedVehicleType)}`;
-    }
-
-    this.http.get<{ status: string; count: number }[]>(url).subscribe({
+    this.vehicleService.getVehicleStatusSummary(this.selectedVehicleType).subscribe({
       next: (data) => {
         this.updateVehicleChart(data);
         this.vehicleChartInitialized = true;

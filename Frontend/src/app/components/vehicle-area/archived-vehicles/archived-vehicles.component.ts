@@ -5,11 +5,10 @@ import { VehicleService } from '../../../services/vehicle.service';
 import { CardModule } from 'primeng/card';
 import { VehicleInItem } from '../../../models/vehicle-dashboard-item/vehicle-in-use-item.module';
 import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../../environments/environment';
 import { ToastService } from '../../../services/toast.service';
 import { MatDialog } from '@angular/material/dialog';
-import { ConfirmDialogComponent, ConfirmDialogData } from '../../page-area/confirm-dialog/confirm-dialog.component';
+import { ConfirmDialogComponent } from '../../page-area/confirm-dialog/confirm-dialog.component';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-archived-vehicles',
@@ -34,7 +33,6 @@ export class ArchivedVehiclesComponent implements OnInit {
   constructor(
     private vehicleService: VehicleService,
     private router: Router,
-    private http: HttpClient,
     private toastService: ToastService,
     private dialog: MatDialog
   ) { }
@@ -50,12 +48,15 @@ export class ArchivedVehiclesComponent implements OnInit {
 
   async fetchAndMapDepartments(): Promise<void> {
     try {
-      const departments = await this.http.get<{ id: string, name: string }[]>(`${environment.apiUrl}/departments`).toPromise();
-      if (departments) {
-        departments.forEach(dept => {
-          this.departmentMap.set(dept.id, dept.name);
-        });
-      }
+      const departments = await firstValueFrom(
+        this.vehicleService.getAllDepartments()
+      );
+
+      this.departmentMap.clear();
+      departments.forEach(dept => {
+        this.departmentMap.set(dept.id, dept.name);
+      });
+
     } catch (err) {
       this.toastService.show('שגיאה בטעינת נתוני מחלקות', 'error');
     }
@@ -84,9 +85,7 @@ export class ArchivedVehiclesComponent implements OnInit {
   
 
   loadVehicleUsageData(): void {
-    this.http.get<{ plate_number: string; vehicle_model: string; ride_count: number }[]>(
-      `${environment.apiUrl}/analytics/top-used-vehicles`
-    ).subscribe({
+    this.vehicleService.getTopUsedVehicles().subscribe({
       next: data => {
         this.vehicleUsageData = data;
         this.topUsedVehiclesMap = {};
@@ -95,7 +94,7 @@ export class ArchivedVehiclesComponent implements OnInit {
         });
       },
       error: err => {
-        console.error('❌ Error fetching vehicle usage data:', err);
+        console.error(' Error fetching vehicle usage data:', err);
       }
     });
   }
@@ -142,7 +141,6 @@ export class ArchivedVehiclesComponent implements OnInit {
   }
 
   getCardClass(status: string | null | undefined): string {
-    // For archived vehicles, we'll use a special archived card class
     return 'card-archived';
   }
 
@@ -150,7 +148,6 @@ export class ArchivedVehiclesComponent implements OnInit {
     this.router.navigate(['/vehicle-details', vehicleId]);
   }
 
-  // Method to restore vehicle from archive (unarchive) - UPDATED
   restoreVehicle(vehicle: VehicleInItem): void {
     const message = `האם את/ה בטוח/ה שברצונך לשחזר את הרכב ${vehicle.plate_number} מהארכיון ולהחזיר אותו לפעילות?`;
     
@@ -171,17 +168,16 @@ export class ArchivedVehiclesComponent implements OnInit {
       this.vehicleService.restoreVehicle(vehicle.id).subscribe({
         next: () => {
           this.toastService.show(`הרכב ${vehicle.plate_number} שוחזר בהצלחה מהארכיון`, 'success');
-          this.loadArchivedVehicles(); // Refresh the list
+          this.loadArchivedVehicles();
         },
         error: (err) => {
-          console.error('❌ Error restoring vehicle:', err);
+          console.error(' Error restoring vehicle:', err);
           this.toastService.show('שגיאה בשחזור הרכב מהארכיון', 'error');
         }
       });
     });
   }
 
-  // Method to permanently delete vehicle - UPDATED
   permanentlyDeleteVehicle(vehicle: VehicleInItem): void {
     const message = `⚠️ האם את/ה בטוח/ה שברצונך למחוק לצמיתות את הרכב ${vehicle.plate_number}?\n\nפעולה זו לא ניתנת לביטול ותמחק את כל הנתונים הקשורים לרכב!`;
     
@@ -202,10 +198,10 @@ export class ArchivedVehiclesComponent implements OnInit {
       this.vehicleService.permanentlyDeleteVehicle(vehicle.id).subscribe({
         next: () => {
           this.toastService.show(`הרכב ${vehicle.plate_number} נמחק לצמיתות`, 'success');
-          this.loadArchivedVehicles(); // Refresh the list
+          this.loadArchivedVehicles(); 
         },
         error: (err) => {
-          console.error('❌ Error permanently deleting vehicle:', err);
+          console.error(' Error permanently deleting vehicle:', err);
           this.toastService.show('שגיאה במחיקה לצמיתות של הרכב', 'error');
         }
       });

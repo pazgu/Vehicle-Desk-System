@@ -63,7 +63,7 @@ export class MyRidesService {
   private futureOrdersUrl = environment.futureOrdersUrl;
 private rebookData: RebookData | null = null;
 
-  private apiBase = 'http://127.0.0.1:8000/api';
+  private apiBase = environment.apiUrl;
 
 
   constructor(private http: HttpClient) { }

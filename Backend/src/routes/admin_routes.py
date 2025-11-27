@@ -290,8 +290,6 @@ async def edit_user_by_id_route(
         "license_file_url": user.license_file_url or ""
     })
 
-
-    # Reset session audit user ID
     db.execute(text("SET session.audit.user_id = DEFAULT"))
     return user
 
@@ -302,7 +300,6 @@ def get_roles():
 
 @router.get("/no-show-events/count")
 def get_no_show_events_count_per_user(db: Session = Depends(get_db)):
-    # Step 1: Query user + vehicle data
     results = (
         db.query(
             User.employee_id,
@@ -317,7 +314,6 @@ def get_no_show_events_count_per_user(db: Session = Depends(get_db)):
         .all()
     )
 
-    # Step 2: Aggregate by user
     user_data = {}
 
     for row in results:
@@ -335,7 +331,6 @@ def get_no_show_events_count_per_user(db: Session = Depends(get_db)):
         user_data[emp_id]["no_show_count"] += 1
         user_data[emp_id]["plate_numbers"].add(row.plate_number)
 
-    # Step 3: Convert sets to lists
     formatted_users = []
     for data in user_data.values():
         data["plate_numbers"] = list(data["plate_numbers"])
@@ -349,13 +344,11 @@ def get_recent_no_show_events_per_user(
     per_user_limit: int = Query(1, ge=1, le=3),
     db: Session = Depends(get_db)
 ):
-    # Window function to get recent events per user
     row_number = func.row_number().over(
         partition_by=NoShowEvent.user_id,
         order_by=NoShowEvent.occurred_at.desc()
     ).label("rn")
 
-    # Subquery with row numbers
     subq = (
         db.query(
             NoShowEvent.id.label("event_id"),
@@ -366,7 +359,6 @@ def get_recent_no_show_events_per_user(
         ).subquery()
     )
 
-    # Join subquery with Ride and Vehicle
     results = (
         db.query(
             subq.c.event_id,
@@ -381,7 +373,6 @@ def get_recent_no_show_events_per_user(
         .all()
     )
 
-    # Format result
     events = [
         {
             "event_id": row.event_id,
@@ -474,7 +465,7 @@ def get_filtered_vehicles(
     db: Session = Depends(get_db),
     token: str = Depends(oauth2_scheme)
 ):
-    role_check(["admin"], token)  # Only admins can access this
+    role_check(["admin"], token)
 
     query = db.query(Vehicle)
 
@@ -482,7 +473,7 @@ def get_filtered_vehicles(
         query = query.filter(Vehicle.status == status)
 
     if vehicle_type:
-        query = query.filter(Vehicle.type.ilike(vehicle_type))  # Case-insensitive match
+        query = query.filter(Vehicle.type.ilike(vehicle_type))
 
     return query.all()
 
@@ -576,9 +567,9 @@ def get_today_inspections(
         response_data.append({
             "inspection_id": str(insp.inspection_id),
             "ride_id": None,
-            "submitted_by": str(insp.inspected_by),  # 👈 FRONT expects this!
+            "submitted_by": str(insp.inspected_by), 
             "role": "inspector",
-            "type": "inspector",  # 👈 match RawCriticalIssue
+            "type": "inspector",   
             "status": "critical" if insp.critical_issue_bool else "medium",
             "severity": "critical" if insp.critical_issue_bool else "medium",
             "issue_description": insp.issues_found,
@@ -601,7 +592,7 @@ def get_today_inspections(
 @router.get("/analytics/vehicle-status-summary")
 def vehicle_status_summary(
     db: Session = Depends(get_db),
-    type: Optional[str] = Query(None, alias="type")  # 'type' from query param
+    type: Optional[str] = Query(None, alias="type")
 ):
     try:
         query = db.query(Vehicle.status, func.count(Vehicle.id).label("count"))
@@ -611,7 +602,6 @@ def vehicle_status_summary(
 
         result = query.group_by(Vehicle.status).all()
 
-        # Format response
         summary = [{"status": row.status.value, "count": row.count} for row in result]
         return JSONResponse(content=summary)
 
@@ -669,7 +659,7 @@ def vehicle_usage_stats(
         raise HTTPException(status_code=400, detail="Missing year or month for monthly stats.")
 
     try:
-        generate_monthly_vehicle_usage(db, year, month)  # ✅ This is the only line you need to add
+        generate_monthly_vehicle_usage(db, year, month)  
 
         stats = get_vehicle_usage_stats(db, year, month)
         return {
@@ -852,7 +842,7 @@ def get_critical_issue_details(issue_id: str, db: Session = Depends(get_db)):
         if not issue_details:
             raise HTTPException(status_code=404, detail="Critical issue not found")
 
-        return issue_details  # ✅ this line is now correctly indented
+        return issue_details  
     except HTTPException:
         raise
     except Exception as e:
