@@ -73,7 +73,7 @@ export class AllRidesComponent implements OnInit {
       this.endDate = params['end_date'] || '';
       this.showFilters = params['filters'] === 'true';
       this.showOldOrders = params['old_orders'] === 'true';
-
+      this.rideService.clearRebookData();
       if (this.showOldOrders && !this.startDate && !this.endDate) {
         const oneMonthAgo = new Date();
         oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
@@ -334,7 +334,7 @@ onViewRide(order: any): void {
 
   this.http.get<any>(`${this.apiBase}/user/me`, { headers }).subscribe({
     next: (user) => {
-      const hasPendingRebook = user?.hasPendingRebook === true;
+      const hasPendingRebook = user?.has_pending_rebook === true;
 
       if (hasPendingRebook) {
         const dialogData: ConfirmDialogData = {
@@ -469,9 +469,9 @@ onViewRide(order: any): void {
 
   this.rideService.getRebookData(order.ride_id).subscribe({
     next: (data: RebookData) => {
-      this.router.navigate(['/home'], {
-        state: { rebookData: data }
-      });
+      this.rideService.setRebookData(data);
+      this.router.navigate(['/home']);
+
     },
     error: (err) => {
       console.error('Failed to load rebook data:', err);

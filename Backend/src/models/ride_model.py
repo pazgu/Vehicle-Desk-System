@@ -23,6 +23,7 @@ class RideStatus(str, enum.Enum):
     cancelled = "cancelled"
     cancelled_due_to_no_show = "cancelled_due_to_no_show"  
     reserved = "reserved"
+    cancelled_vehicle_unavailable= "cancelled_vehicle_unavailable"
 
 class Ride(Base):
     __tablename__ = "rides"

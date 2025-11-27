@@ -24,7 +24,7 @@
       <hr />
 
       <form [formGroup]="rideForm">
-        <div *ngIf="step === 1">
+        <div *ngIf="step === 1&& !isRebookMode">
           <h3 class="ride-question">האם הנסיעה עבורך או עבור עובד אחר?</h3>
           <div class="form-field-group">
             <label>
@@ -261,16 +261,20 @@
                     {{ car.vehicle_model }}
                   </option>
                 </select>
-
+                <div class="car-validation-message" *ngIf="availableCars.length === 0 && isRebookMode&&hasTouchedVehicleType()"> <ng-container>
+                      אין רכבים זמינים מסוג זה בשעות שנבחרו. נא לבחור סוג רכב אחר.
+                    </ng-container></div>
+                 
                 <div
-                  *ngIf="rideForm?.get('vehicle_type') && (availableCars.length === 0 && hasTouchedVehicleType() &&shouldShowCarError()&&canChooseVehicle())"
+                  *ngIf="rideForm?.get('vehicle_type') && (availableCars.length === 0 && hasTouchedVehicleType() &&shouldShowCarError()&&canChooseVehicle())&&!isRebookMode"
                   class="car-validation-message">
-                  <ng-container *ngIf="availableCars.length === 0 && !shouldShowCarError()">
+                  <ng-container *ngIf="availableCars.length === 0 && !shouldShowCarError()&&!isRebookMode">
                     אין רכבים זמינים מסוג זה בשעות שנבחרו,
                   </ng-container>
-                  <ng-container *ngIf="availableCars.length === 0 && shouldShowCarError()">
+                  <ng-container *ngIf="availableCars.length === 0 && shouldShowCarError() &&!isRebookMode">
                     אין רכבים זמינים מסוג זה בשעות שנבחרו. נא לבחור סוג רכב אחר.
                   </ng-container>
+                 
                   <ng-container *ngIf="availableCars.length > 0 && shouldShowCarError()">
                     {{ isPendingVehicle(f.car.value) ? 'רכב זה אינו זמין בשעות שנבחרו' : 'חובה לבחור רכב' }}
                   </ng-container>
@@ -278,9 +282,6 @@
               </div>
             </div>
           </div>
-
-
-
 
 
           <div class="button-container">

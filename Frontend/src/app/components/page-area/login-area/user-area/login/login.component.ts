@@ -12,6 +12,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { LoginService } from '../../../../../services/login.service';
 import { environment } from '../../../../../../environments/environment';
+import { MyRidesService } from '../../../../../services/myrides.service';
 
 @Component({
   selector: 'app-login',
@@ -31,7 +32,8 @@ export class LoginComponent implements OnInit {
     private loginService: LoginService,
     private router: Router,
     private authService: AuthService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private myRidesService:MyRidesService
   ) {}
   showPassword = false;
 
@@ -104,7 +106,18 @@ onLogin(): void {
         } else if (role === 'inspector') {
           this.router.navigate(['/inspector/inspection']);
         } else {
-          this.router.navigate(['/home']);
+            this.myRidesService.checkPendingRebook().subscribe({
+              next: (res) => {
+                if (res.has_pending) {
+                  this.router.navigate(['/all-rides']);
+                }
+                else{
+                  this.router.navigate(['/home']);
+                }
+              },
+              error: (err) => console.error(err)
+            });
+          
         }
       } else {
         this.toastService.show('שגיאה בעיבוד פרטי ההתחברות', 'error');
