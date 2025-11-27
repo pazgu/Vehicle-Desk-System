@@ -110,6 +110,19 @@ def get_available_vehicles_new_ride(
     return final_query
 
 
+def get_most_used_vehicles_all_time(db: Session) -> Dict[str, int]:
+    """
+    Get vehicle usage statistics for all time
+    Returns a dictionary mapping vehicle_id to total ride count
+    """
+    stats = db.query(
+        Ride.vehicle_id,
+        func.count(Ride.id).label('total_rides')
+    ).filter(
+        Ride.status.in_(['completed', 'in_progress'])
+    ).group_by(Ride.vehicle_id).all()
+    
+    return {str(stat.vehicle_id): stat.total_rides for stat in stats}
 
 
 def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_reason: str, db: Session, changed_by: UUID, notes: Optional[str] = None):

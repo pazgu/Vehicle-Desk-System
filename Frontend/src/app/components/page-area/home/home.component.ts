@@ -106,6 +106,10 @@ export class NewRideComponent implements OnInit {
     disableDueToDepartment: boolean = false;
     departmentCheckCompleted: boolean = false;
     currentUserId: string | null = null;
+    disableDueToBlock: boolean = false;
+    blockExpirationDate: string | null = null;
+    currentUserBlocked: boolean = false;
+    currentUserBlockExpirationDate: string | null = null;
     isRebookMode = false;
     rebookOriginalRideId: string | null = null;
 
@@ -129,7 +133,7 @@ export class NewRideComponent implements OnInit {
    ngOnInit(): void {
   this.currentUserId = getUserIdFromToken(localStorage.getItem('access_token'));
   this.initializeComponent();
-
+  
    this.myRidesService.checkPendingRebook().subscribe({
   next: (res) => {
     if (res.has_pending && !rebookData) {
@@ -140,6 +144,7 @@ export class NewRideComponent implements OnInit {
   error: (err) => console.error(err)
 });
   const rebookData = this.myRidesService.getRebookDatafromService();
+
 
   if (rebookData) {
     this.applyRebookData(rebookData);  
@@ -153,15 +158,16 @@ export class NewRideComponent implements OnInit {
   this.loadUserOrders();
   const initialTargetType = this.rideForm.get('target_type')?.value;
   if (initialTargetType === 'self') {
+      this.showBlockedUserMessage();
+
     if (this.currentUserId) {
       this.checkUserDepartment(this.currentUserId);
       this.checkGovernmentLicence(this.currentUserId);
     } else {
       this.toastService.show('שגיאה: מזהה משתמש נוכחי לא נמצא.', 'error');
       this.disableRequest = true;
-    }
   }
-}
+}}
     hasTouchedVehicleType(): boolean {
         const value = this.rideForm.get('vehicle_type')?.value;
         if (value) {
@@ -376,6 +382,26 @@ private openVehicleFrozenDialog(): void {
       );
     }
   });
+    this.socketService.usersBlockStatus$.subscribe(update => {
+    const { id, is_blocked, block_expires_at } = update;
+    const selfUserId =
+      this.currentUserId ?? getUserIdFromToken(localStorage.getItem('access_token'));
+    const selectedUserId =
+      this.rideForm.get('target_type')?.value === 'self'
+        ? selfUserId
+        : this.rideForm.get('target_employee_id')?.value;
+    if (id !== selectedUserId) return;
+    this.disableDueToBlock = is_blocked;
+    this.blockExpirationDate = block_expires_at ? block_expires_at.toISOString() : null;
+    if (is_blocked) {
+      this.disableRequest = true;
+    } else {
+      this.disableDueToBlock = false;
+      this.blockExpirationDate = null;
+      this.toastService.clearAll();
+    }
+    this.cdr.detectChanges();
+  });
 }
     get startTime() {
         const h = this.rideForm.get('start_hour')?.value;
@@ -402,36 +428,49 @@ private openVehicleFrozenDialog(): void {
         return false;
     }
     private setupFormSubscriptions(): void {
-        this.rideForm.get('target_type')?.valueChanges.subscribe(type => {
-  this.showStep1Error = false;
+    this.rideForm.get('target_type')?.valueChanges.subscribe(type => {
+        if (this.currentUserBlocked) {
+            return;
+        }
+        this.showStep1Error = false;
+        this.toastService.clearAll();
+        this.disableRequest = false;
+        this.disableDueToBlock = false;
+        this.disableDueToDepartment = false;
+        this.blockExpirationDate = null;
 
-  if (type === 'other') {
-    this.fetchDepartmentEmployees();
-    this.rideForm.get('target_employee_id')?.setValue(null, { emitEvent: true });
-  } else {
-    if (this.currentUserId) {
-      this.checkUserDepartment(this.currentUserId);
-      this.checkGovernmentLicence(this.currentUserId);
-    } else {
-      console.warn('Current user ID not found in token (target_type subscription). Disabling request.');
-      this.toastService.show('שגיאה: מזהה משתמש נוכחי לא נמצא.', 'error');
-      this.disableRequest = true;
-    }
-
-    this.rideForm.get('target_employee_id')?.setValue(null, { emitEvent: false });
-  }
-});
-        this.rideForm.get('target_employee_id')?.valueChanges.subscribe(employeeId => {
-            const targetType = this.rideForm.get('target_type')?.value;
-            this.toastService.clearAll();
-            if (targetType === 'other' && employeeId) {
-                this.checkUserDepartment(employeeId);
-                this.checkGovernmentLicence(employeeId);
-            } else if (!employeeId) {
-                this.disableRequest = false;
-                this.disableDueToDepartment = false;
+        if (type === 'other') {
+            this.fetchDepartmentEmployees();
+            this.rideForm.get('target_employee_id')?.setValue(null, { emitEvent: true });
+        } else if (type === 'self') {
+            if (this.currentUserId && !this.currentUserBlocked) {
+                this.checkUserDepartment(this.currentUserId);
+                this.checkGovernmentLicence(this.currentUserId);
             }
-        });
+            this.rideForm.get('target_employee_id')?.setValue(null, { emitEvent: false });
+        }
+    });
+    this.rideForm.get('target_employee_id')?.valueChanges.subscribe(employeeId => {
+        if (this.currentUserBlocked) {
+            return;
+        }
+        const targetType = this.rideForm.get('target_type')?.value;
+        this.toastService.clearAll();
+        if (targetType === 'other' && employeeId) {
+            this.disableRequest = false;
+            this.disableDueToBlock = false;
+            this.disableDueToDepartment = false;
+            this.blockExpirationDate = null;
+            this.checkUserDepartment(employeeId);
+            this.checkGovernmentLicence(employeeId);
+            this.checkUserBlock(employeeId);
+        } else if (!employeeId) {
+            this.disableRequest = false;
+            this.disableDueToBlock = false;
+            this.disableDueToDepartment = false;
+            this.blockExpirationDate = null;
+        }
+    });
         this.rideForm.get('ride_period')?.valueChanges.subscribe(value => {
   this.onPeriodChange(value);
   this.updateAvailableCars();
@@ -496,6 +535,10 @@ private openVehicleFrozenDialog(): void {
 }
 
     handleStep1Next(): void {
+        if (this.currentUserBlocked) {
+            this.showBlockedUserMessage();
+            return;
+        }  
         const targetType = this.rideForm.get('target_type')?.value;
         const targetEmployeeId = this.rideForm.get('target_employee_id')?.value;
         if (!targetType || (targetType === 'other' && !targetEmployeeId)) {
@@ -504,6 +547,10 @@ private openVehicleFrozenDialog(): void {
         }
         if (this.disableDueToDepartment) {
             this.toastService.showPersistent('לא ניתן להמשיך: המשתמש שנבחר אינו משויך למחלקה. יש ליצור קשר עם המנהל להשמה במחלקה.','error');
+            return;
+        }
+        if (this.disableDueToBlock) {
+            this.showBlockedUserMessage(this.blockExpirationDate);
             return;
         }
         if (this.disableRequest) {
@@ -516,8 +563,14 @@ private openVehicleFrozenDialog(): void {
     canProceedToDetails(): boolean {
         const type = this.rideForm.get('target_type')?.value;
         const selectedEmp = this.rideForm.get('target_employee_id')?.value;
-        if (type === 'self') return true;
-        if (type === 'other' && selectedEmp) return true;
+        if (type === 'self') {
+          return !this.disableRequest && !this.disableDueToDepartment && !this.currentUserBlocked;
+        }
+        if (type === 'other' && selectedEmp) {
+          return !this.disableDueToBlock && 
+                !this.disableRequest && 
+                !this.disableDueToDepartment;
+        }
         return false;
     }
     private fetchVehicleTypes(): void {
@@ -703,6 +756,37 @@ private setDefaultStartAndDestination(): void {
     this.pendingVehicles
   );
 }
+  private showBlockedUserMessage(expirationDate: string | null = null): void {
+    const expiry = expirationDate || this.currentUserBlockExpirationDate;
+    const expiryMsg = expiry
+      ? ' עד תאריך ' + new Date(expiry).toLocaleDateString('he-IL')
+      : '';
+    const userContext = this.isCurrentUserContext() ? 'אתה חסום' : 'המשתמש שנבחר חסום';
+    this.toastService.showPersistent(
+      `לא ניתן לשלוח בקשה: לצערנו ${userContext} מהאתר ולא ניתן לבצע הזמנות${expiryMsg}.`,
+      'error'
+    );
+}
+  private isCurrentUserContext(): boolean {
+    return this.rideForm.get('target_type')?.value === 'self';
+}
+  checkUserBlock(userId: string): void {
+    if (!userId) {
+      this.disableDueToBlock = false;
+      return;
+    }
+    this.rideUserChecksService
+      .checkUserBlock(userId)
+      .subscribe((result) => {
+        this.disableDueToBlock = result.isBlocked;
+        this.blockExpirationDate = result.blockExpirationDate; 
+        if (this.disableDueToBlock) {
+          this.disableRequest = true;
+          this.showBlockedUserMessage(this.blockExpirationDate);
+        }
+        this.cdr.detectChanges();
+      });
+}
 
     onTimeInput(event: Event, controlName: string): void {
   const input = event.target as HTMLInputElement;
@@ -817,15 +901,20 @@ private setDefaultStartAndDestination(): void {
     });
 }
     resetOrderForm(): void {
+  const wasBlockedUser = this.currentUserBlocked;
   resetRideForm(this.rideForm);
-
   this.step = 1;
   this.orderSubmitted = false;
   this.availableCars = [];
   this.showStep1Error = false;
-  this.disableRequest = false;
   this.fetchedDistance = null;
   this.estimated_distance_with_buffer = null;
+  if (!wasBlockedUser) {
+    this.disableRequest = false;
+    this.disableDueToBlock = false;
+    this.disableDueToDepartment = false;
+    this.blockExpirationDate = null;
+  }
   this.setDefaultStartAndDestination();
   setClosestQuarterHourTimeOnForm(this.rideForm, this.timeOptions);
 }
@@ -870,6 +959,12 @@ private setDefaultStartAndDestination(): void {
     });
   }
         submit(confirmedWarning = false): void {
+        if (this.currentUserBlocked) {
+          this.showBlockedUserMessage();
+          return;
+        }
+        const targetType = this.rideForm.get('target_type')?.value;
+        const targetEmployeeId = this.rideForm.get('target_employee_id')?.value;
         const preCheckResult = runPreSubmitChecks({
             form: this.rideForm,
             disableDueToDepartment: this.disableDueToDepartment,
@@ -914,8 +1009,6 @@ if (distance && rideDate && vehicleType) {
             this.toastService.show('שגיאת זיהוי משתמש - התחבר מחדש', 'error');
             return;
         }
-        const targetType = this.rideForm.get('target_type')?.value;
-        const targetEmployeeId = this.rideForm.get('target_employee_id')?.value;
         let rider_id = user_id;
         let requester_id: string | null = null;
         if (targetType === 'other' && targetEmployeeId) {
@@ -1059,6 +1152,8 @@ if (distance && rideDate && vehicleType) {
         this.step = 1;
         this.showStep1Error = false;
     }
+
+    
 
     
 }

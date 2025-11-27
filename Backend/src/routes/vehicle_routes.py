@@ -22,7 +22,7 @@ from ..services.vehicle_service import (
     update_vehicle_status,
     get_vehicle_by_id,
     get_available_vehicles_for_ride_by_id,
-    get_inactive_vehicles
+    get_inactive_vehicles, get_most_used_vehicles_all_time
 )
 
 # Schemas
@@ -356,3 +356,18 @@ def permanently_delete_vehicle(
     db.execute(text("SET session.audit.user_id = DEFAULT"))
     
     return {"message": f"Vehicle {vehicle.plate_number} permanently deleted"}
+
+@router.get("/vehicles/usage-stats-all-time")
+async def get_usage_stats_all_time(db: Session = Depends(get_db)):
+    """
+    Get vehicle usage statistics for all time
+    """
+    try:
+        stats_dict = get_most_used_vehicles_all_time(db)
+        stats_list = [
+            {"vehicle_id": vid, "total_rides": count}
+            for vid, count in stats_dict.items()
+        ]
+        return {"stats": stats_list}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
