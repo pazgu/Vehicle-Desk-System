@@ -11,8 +11,6 @@ import type { TDocumentDefinitions } from 'pdfmake/interfaces';
 import { SocketService } from '../../../services/socket.service';
 import { CityService } from '../../../services/city.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { environment } from '../../../../environments/environment';
 import { ToastService } from '../../../services/toast.service';
 import * as XLSX from 'xlsx-js-style';
 import { VehicleService } from '../../../services/vehicle.service';
@@ -61,7 +59,7 @@ export class AuditLogsComponent implements OnInit {
   customFromDate: string = '';
   customToDate: string = '';
 
-  showExceededQuotaOnly: boolean = false; // <-- NEW
+  showExceededQuotaOnly: boolean = false;
   filtersCollapsed = true;
 
   cityMap: { [id: string]: string } = {};
@@ -99,7 +97,6 @@ translateRideType = translateRideType;
 
 
   constructor(
-    private http: HttpClient,
     private route: ActivatedRoute,
     private socketService: SocketService,
     private cityService: CityService,
@@ -115,7 +112,7 @@ translateRideType = translateRideType;
   }
 
   fetchDepartments(): void {
-    this.http.get<any[]>('http://localhost:8000/api/departments').subscribe({
+    this.auditLogService.getDepartments().subscribe({
       next: (data) => {
         this.departments = data.map(dep => ({
           ...dep,
@@ -139,7 +136,7 @@ translateRideType = translateRideType;
   }
 
   fetchUsers(): void {
-    this.http.get<any>('http://localhost:8000/api/users').subscribe({
+    this.auditLogService.getUsers().subscribe({
       next: (data) => {
         const usersArr = Array.isArray(data.users) ? data.users : [];
         this.users = usersArr.map((user: any) => ({
@@ -164,7 +161,6 @@ translateRideType = translateRideType;
     this.loading = true;
     this.auditLogService.getAuditLogs(fromDate, toDate).subscribe({
       next: (data) => {
-        // Ensure data is an array before sorting/spreading
         this.logs = Array.isArray(data) ? data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()) : [];
         this.loading = false;
         this.filterLogs();
@@ -248,12 +244,12 @@ translateRideType = translateRideType;
     const searchLower = this.searchTerm.toLowerCase();
     let tempLogs = [...this.logs];
 
-    if (this.showExceededQuotaOnly) { // <-- NEW FILTER LOGIC
+    if (this.showExceededQuotaOnly) {
       tempLogs = tempLogs.filter(log =>
         log.entity_type === 'User' &&
         log.action === 'UPDATE' &&
-        log.change_data && // Ensure change_data exists
-        log.change_data.new && // Ensure new data exists
+        log.change_data &&
+        log.change_data.new &&
         log.change_data.new.exceeded_monthly_trip_quota === true
       );
     }

@@ -6,7 +6,7 @@ import { VehicleInItem } from '../models/vehicle-dashboard-item/vehicle-in-use-i
 import { FuelType, FuelTypeResponse, VehicleOutItem } from '../models/vehicle-dashboard-item/vehicle-out-item.module';
 import { Vehicle } from '../models/vehicle.model';
 import { map } from 'rxjs/operators';
- import { of } from 'rxjs';
+import { of } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -40,7 +40,8 @@ export class VehicleService {
 
     return this.http.get<VehicleInItem[]>(url, { params });
   }
-getAllVehiclesForNewRide(distance: number, rideDate: string, vehicleType: string,startTime:string,endTime:string): Observable<Vehicle[]> {
+
+getAllVehiclesForNewRide(distance: number, rideDate: string, vehicleType: string, startTime: string, endTime: string): Observable<Vehicle[]> {
   const params: any = {
     distance_km: distance,
     ride_date: rideDate,
@@ -87,24 +88,24 @@ getAllVehiclesForNewRide(distance: number, rideDate: string, vehicleType: string
   }
 
 
-getMostUsedVehiclesThisMonth(year: number, month: number): Observable<{ stats: VehicleInItem[] }> {
-  const url = `${this.apiUrl}/vehicles/usage-stats`;
-  return this.http.get<{ stats: VehicleInItem[] }>(url, {
-    params: {
-      range: 'month',
-      year,
-      month
-    }
-  });
-}
-
-getFuelTypeByVehicleId(vehicleId: string): Observable<FuelTypeResponse> {
-  if (vehicleId) {
-    return this.http.get<FuelTypeResponse>(`${this.apiUrl}/vehicles/${vehicleId}/fuel-type`);
+  getMostUsedVehiclesThisMonth(year: number, month: number): Observable<{ stats: VehicleInItem[] }> {
+    const url = `${this.apiUrl}/vehicles/usage-stats`;
+    return this.http.get<{ stats: VehicleInItem[] }>(url, {
+      params: {
+        range: 'month',
+        year,
+        month
+      }
+    });
   }
-  const res: FuelTypeResponse = { vehicle_id: vehicleId, fuel_type: 'hybrid' as FuelType };
-  return of(res);
-}
+
+  getFuelTypeByVehicleId(vehicleId: string): Observable<FuelTypeResponse> {
+    if (vehicleId) {
+      return this.http.get<FuelTypeResponse>(`${this.apiUrl}/vehicles/${vehicleId}/fuel-type`);
+    }
+    const res: FuelTypeResponse = { vehicle_id: vehicleId, fuel_type: 'hybrid' as FuelType };
+    return of(res);
+  }
 
   getVehicles(params: any): Observable<Vehicle[]> {
     return this.http.get<Vehicle[]>(`${this.apiUrl}/vehicles`, { params });
@@ -115,71 +116,77 @@ getFuelTypeByVehicleId(vehicleId: string): Observable<FuelTypeResponse> {
     map(res => res.vehicle_types)
   );
 }
-deleteVehicle(vehicleId: string): Observable<void> {
-  return this.http.delete<void>(`${environment.apiUrl}/vehicles/${vehicleId}`);
-}
+  deleteVehicle(vehicleId: string): Observable<void> {
+    return this.http.delete<void>(`${environment.apiUrl}/vehicles/${vehicleId}`);
+  }
 
-archiveVehicle(vehicleId: string) {
-  return this.http.post(`${environment.apiUrl}/vehicles/${vehicleId}/archive`, {});
-}
+  archiveVehicle(vehicleId: string) {
+    return this.http.post(`${environment.apiUrl}/vehicles/${vehicleId}/archive`, {});
+  }
 
-getArchivedVehicles(): Observable<VehicleInItem[]> {
-  return this.http.get<VehicleInItem[]>(`${this.apiUrl}/archived-vehicles`);
-}
+  getArchivedVehicles(): Observable<VehicleInItem[]> {
+    return this.http.get<VehicleInItem[]>(`${this.apiUrl}/archived-vehicles`);
+  }
 
-deleteArchivedVehicle(vehicleId: string) {
-  return this.http.delete(`${this.apiUrl}/archived-vehicles/${vehicleId}`);
-}
+  deleteArchivedVehicle(vehicleId: string) {
+    return this.http.delete(`${this.apiUrl}/archived-vehicles/${vehicleId}`);
+  }
 
 
-restoreVehicle(vehicleId: string): Observable<any> {
-  return this.http.put(`${this.apiUrl}/vehicles/${vehicleId}/restore`, {});
-}
+  restoreVehicle(vehicleId: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/vehicles/${vehicleId}/restore`, {});
+  }
 
-/**
- * Permanently delete a vehicle (only for archived vehicles)
- */
-permanentlyDeleteVehicle(vehicleId: string): Observable<any> {
-  return this.http.delete(`${this.apiUrl}/vehicles/${vehicleId}/permanent`);
-}
+  permanentlyDeleteVehicle(vehicleId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/vehicles/${vehicleId}/permanent`);
+  }
 
-uploadMileageReport(file: File): Observable<any> {
-  const formData = new FormData();
-  formData.append('file', file);
+  uploadMileageReport(file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
 
-  return this.http.post(`${this.apiUrl}/admin/vehicles/mileage/upload`, formData);
-}
+    return this.http.post(`${this.apiUrl}/admin/vehicles/mileage/upload`, formData);
+  }
 
-updatemileage(vehicleId: string, mileage: number): Observable<any> {
-  const body = { new_mileage: mileage };
-  return this.http.patch(`${this.apiUrl}/vehicles/${vehicleId}/mileage`, body); 
-}
+  updatemileage(vehicleId: string, mileage: number): Observable<any> {
+    const body = { new_mileage: mileage };
+    return this.http.patch(`${this.apiUrl}/vehicles/${vehicleId}/mileage`, body); 
+  }
 
-addVehicle(vehicleData: any): Observable<any> {
-  return this.http.post(`${this.apiUrl}/add-vehicle`, vehicleData);
-}
-getTopUsedVehicles(): Observable<{ plate_number: string; vehicle_model: string; ride_count: number }[]> {
-  return this.http.get<{ plate_number: string; vehicle_model: string; ride_count: number }[]>(
-    `${this.apiUrl}/analytics/top-used-vehicles`
-  );
-}
+  addVehicle(vehicleData: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/add-vehicle`, vehicleData);
+  }
+  getTopUsedVehicles(): Observable<{ plate_number: string; vehicle_model: string; ride_count: number }[]> {
+    return this.http.get<{ plate_number: string; vehicle_model: string; ride_count: number }[]>(
+      `${this.apiUrl}/analytics/top-used-vehicles`
+    );
+  }
 
-getAllOrders(): Observable<{ vehicle_id: string, date_and_time: string }[]> {
-  return this.http.get<{ vehicle_id: string, date_and_time: string }[]>(
-    `${this.apiUrl}/orders`
-  );
-}
+  getAllOrders(): Observable<{ vehicle_id: string, date_and_time: string }[]> {
+    return this.http.get<{ vehicle_id: string, date_and_time: string }[]>(
+      `${this.apiUrl}/orders`
+    );
+  }
 
-getDepartmentById(departmentId: string): Observable<any> {
-  return this.http.get<any>(`${this.apiUrl}/departments/${departmentId}`);
+  getDepartmentById(departmentId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/departments/${departmentId}`);
+  }
+  getAllDepartments(): Observable<{ id: string; name: string }[]> {
+    return this.http.get<{ id: string; name: string }[]>(
+      `${this.apiUrl}/departments`
+    );
+  }
+  getMostUsedVehiclesAllTime(): Observable<{ stats: VehicleInItem[] }> {
+    const url = `${this.apiUrl}/vehicles/usage-stats-all-time`;
+    return this.http.get<{ stats: VehicleInItem[] }>(url);
 }
-getAllDepartments(): Observable<{ id: string; name: string }[]> {
-  return this.http.get<{ id: string; name: string }[]>(
-    `${this.apiUrl}/departments`
-  );
-}
-getMostUsedVehiclesAllTime(): Observable<{ stats: VehicleInItem[] }> {
-  const url = `${this.apiUrl}/vehicles/usage-stats-all-time`;
-  return this.http.get<{ stats: VehicleInItem[] }>(url);
-}
+  getVehicleStatusSummary(vehicleType?: string): Observable<{ status: string; count: number }[]> {
+    let url = `${this.apiUrl}/analytics/vehicle-status-summary`;
+    
+    if (vehicleType && vehicleType.trim() !== '') {
+      url += `?type=${encodeURIComponent(vehicleType)}`;
+    }
+
+    return this.http.get<{ status: string; count: number }[]>(url);
+  }
 }

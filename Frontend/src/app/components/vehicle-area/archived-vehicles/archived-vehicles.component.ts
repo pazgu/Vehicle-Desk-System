@@ -5,11 +5,10 @@ import { VehicleService } from '../../../services/vehicle.service';
 import { CardModule } from 'primeng/card';
 import { VehicleInItem } from '../../../models/vehicle-dashboard-item/vehicle-in-use-item.module';
 import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../../environments/environment';
 import { ToastService } from '../../../services/toast.service';
 import { MatDialog } from '@angular/material/dialog';
-import { ConfirmDialogComponent, ConfirmDialogData } from '../../page-area/confirm-dialog/confirm-dialog.component';
+import { ConfirmDialogComponent } from '../../page-area/confirm-dialog/confirm-dialog.component';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-archived-vehicles',
@@ -34,7 +33,6 @@ export class ArchivedVehiclesComponent implements OnInit {
   constructor(
     private vehicleService: VehicleService,
     private router: Router,
-    private http: HttpClient,
     private toastService: ToastService,
     private dialog: MatDialog
   ) { }
@@ -50,12 +48,15 @@ export class ArchivedVehiclesComponent implements OnInit {
 
   async fetchAndMapDepartments(): Promise<void> {
     try {
-      const departments = await this.http.get<{ id: string, name: string }[]>(`${environment.apiUrl}/departments`).toPromise();
-      if (departments) {
-        departments.forEach(dept => {
-          this.departmentMap.set(dept.id, dept.name);
-        });
-      }
+      const departments = await firstValueFrom(
+        this.vehicleService.getAllDepartments()
+      );
+
+      this.departmentMap.clear();
+      departments.forEach(dept => {
+        this.departmentMap.set(dept.id, dept.name);
+      });
+
     } catch (err) {
       this.toastService.show('שגיאה בטעינת נתוני מחלקות', 'error');
     }
@@ -84,9 +85,7 @@ export class ArchivedVehiclesComponent implements OnInit {
   
 
   loadVehicleUsageData(): void {
-    this.http.get<{ plate_number: string; vehicle_model: string; ride_count: number }[]>(
-      `${environment.apiUrl}/analytics/top-used-vehicles`
-    ).subscribe({
+    this.vehicleService.getTopUsedVehicles().subscribe({
       next: data => {
         this.vehicleUsageData = data;
         this.topUsedVehiclesMap = {};
