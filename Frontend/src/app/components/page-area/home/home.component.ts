@@ -251,8 +251,8 @@ private applyRebookData(data: RebookData): void {
 
   this.rideForm.patchValue({
     start_location: data.start_location,
-    stop: data.stop,               
-    destination: data.destination,   
+    stop: data.stop,
+    destination: data.destination,
 
     ride_type: data.ride_type,
     estimated_distance_km: data.estimated_distance,
@@ -262,7 +262,7 @@ private applyRebookData(data: RebookData): void {
 
     car: null,
 
-    ride_date: start.toISOString().split('T')[0],   
+    ride_date: start.toISOString().split('T')[0],
     start_hour: pad(start.getHours()),
     start_minute: pad(start.getMinutes()),
     end_hour: pad(end.getHours()),
@@ -272,8 +272,9 @@ private applyRebookData(data: RebookData): void {
     end_time: `${pad(end.getHours())}:${pad(end.getMinutes())}`,
   });
 
+  this.rideForm.clearValidators();
+  this.rideForm.updateValueAndValidity({ emitEvent: false });
 }
-
 
 
 private isVehicleFrozenError(err: any): boolean {
@@ -363,7 +364,7 @@ private openVehicleFrozenDialog(): void {
 }
 
     private initializeForm(): void {
-  this.rideForm = buildRideForm(this.fb);
+  this.rideForm = buildRideForm(this.fb, this.isRebookMode);
   this.setDefaultStartAndDestination();
   this.socketService.usersLicense$.subscribe(update => {
   const { id, has_government_license, license_expiry_date } = update;
