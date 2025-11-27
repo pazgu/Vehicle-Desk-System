@@ -21,15 +21,11 @@ def schedule_ride_reminder_email(ride_id: UUID, scheduled_start_time: datetime):
     """
     Schedules a ride reminder email to be sent 24 hours before the ride starts.
     """
-    # Calculate the reminder time (24 hours before start)
     reminder_time = scheduled_start_time - timedelta(hours=24)
 
-    # Ensure the reminder is scheduled for a future time
     if reminder_time <= datetime.now():
         logger.warning(f"Ride {ride_id} is too close to its start time ({scheduled_start_time}) "
                        f"to schedule a 24-hour reminder. Sending immediately instead.")
-        # If the ride is less than 24 hours away, send the reminder immediately
-        # In a real-world scenario, you might want different logic here (e.g., skip, or send next available reminder)
         send_ride_reminder(str(ride_id))
         return
 
@@ -41,9 +37,9 @@ def schedule_ride_reminder_email(ride_id: UUID, scheduled_start_time: datetime):
             run_date=reminder_time,
             args=[str(ride_id)],
             id=job_id,
-            replace_existing=True # Useful if ride start time is updated
+            replace_existing=True
         )
-        logger.info(f"✅ Scheduled ride reminder email for ride {ride_id} at {reminder_time}")
+        logger.info(f" Scheduled ride reminder email for ride {ride_id} at {reminder_time}")
     except Exception as e:
         logger.error(f"❌ Error scheduling ride reminder for {ride_id}: {e}")
 
@@ -65,13 +61,11 @@ def send_ride_reminder(ride_id: str):
             logger.warning(f"User or user email not found for ride {ride_id}. Skipping reminder.")
             return
 
-        # Get city names
         destination_city = db.query(City).filter(City.id == ride.stop).first()
         destination_name = destination_city.name if destination_city else "Unknown Destination"
 
         from_city_name = os.getenv("FROM_CITY_NAME", "Unknown City") # Assuming FROM_CITY_NAME is available in .env
 
-        # Get vehicle plate number
         vehicle_plate = "לא נבחר"
         if ride.vehicle_id:
             vehicle = db.query(Vehicle).filter(Vehicle.id == ride.vehicle_id).first()

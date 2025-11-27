@@ -52,10 +52,8 @@ async def patch_order_in_db(order_id: UUID, patch_data: OrderCardItem, db: Sessi
     db.commit()
     db.refresh(order)
 
-    # ✅ Only send email if status changed AND is now approved/rejected
     if "status" in data and order.status != original_status and order.status.value in ["APPROVED", "REJECTED"]:
         employee = db.query(User).filter(User.employee_id == order.user_id).first()
-        # employee_email = get_user_email(order.user_id, db)
         destination_city = db.query(City).filter(City.id == order.stop).first()
         destination_name = destination_city.name if destination_city else order.stop
 
