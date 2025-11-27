@@ -741,7 +741,7 @@ private setDefaultStartAndDestination(): void {
       : '';
     const userContext = this.isCurrentUserContext() ? 'אתה חסום' : 'המשתמש שנבחר חסום';
     this.toastService.showPersistent(
-      `לא ניתן לשלוח בקשה: לצערנו ${userContext} מהאתר ולא ניתן לבצע הזמנות${expiryMsg}.`,
+      `לא ניתן לשלוח בקשה: לצערנו ${userContext} מהאתר ולא ניתן לבצע הזמנות ממשתמש זה${expiryMsg}.`,
       'error'
     );
 }

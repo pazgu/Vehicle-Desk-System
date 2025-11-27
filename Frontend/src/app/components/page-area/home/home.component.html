@@ -31,7 +31,7 @@
               <input type="radio" formControlName="target_type" value="self" />
               לעצמי
             </label>
-            <label>
+            <label *ngIf="!disableDueToDepartment && !disableRequest && !disableDueToBlock" >
               <input type="radio" formControlName="target_type" value="other" />
               לעובד אחר מהמחלקה
             </label>
