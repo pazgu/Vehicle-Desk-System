@@ -31,19 +31,29 @@ export class QuotaIndicatorComponent implements OnInit, OnChanges {
   }
 
   private calculateQuota(): void {
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+  const now = new Date();
 
-    const used = this.allOrders.filter((o: any) => {
-      if (!o?.date) return false;
-      const d = this.parseDate(o.date);
-      d.setHours(12, 0, 0, 0);
-      return d >= startOfMonth && d <= endOfMonth;
-    }).length;
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
 
-    this.freeQuotaUsed = Math.min(used, this.freeQuotaTotal);
-  }
+  const used = this.allOrders.filter((o: any) => {
+    if (!o?.date || !o?.status) return false;
+
+    const d = this.parseDate(o.date);
+    d.setHours(12, 0, 0, 0);
+
+    const isEligible =
+      o.status === 'completed' ||
+      (o.status === 'pending' && d >= now);
+
+    if (!isEligible) return false;
+
+    return d >= startOfMonth && d <= endOfMonth;
+  }).length;
+
+  this.freeQuotaUsed = Math.min(used, this.freeQuotaTotal);
+}
+
 
   private parseDate(d: string): Date {
     const [day, month, year] = d.split('.').map(Number);
