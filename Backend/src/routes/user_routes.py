@@ -302,10 +302,17 @@ async def create_order(
 
 @router.get("/api/rides/has-pending-rebook", response_model=HasPendingRebookResponse)
 def check_pending_rebook(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
-    pending_rides = db.query(Ride).filter(
-        Ride.user_id == user.employee_id,
-        Ride.status == RideStatus.cancelled_vehicle_unavailable
-    ).count()
+    now = datetime.now(timezone.utc)
+
+    pending_rides = (
+        db.query(Ride)
+        .filter(
+            Ride.user_id == user.employee_id,
+            Ride.status == RideStatus.cancelled_vehicle_unavailable,
+            Ride.start_datetime > now  # Only future rides
+        )
+        .count()
+    )
 
     return {"has_pending": pending_rides > 0}
 
