@@ -275,8 +275,8 @@ private applyRebookData(data: RebookData): void {
 
   this.rideForm.patchValue({
     start_location: data.start_location,
-    stop: data.stop,               
-    destination: data.destination,   
+    stop: data.stop,
+    destination: data.destination,
 
     ride_type: data.ride_type,
     estimated_distance_km: data.estimated_distance,
@@ -286,7 +286,7 @@ private applyRebookData(data: RebookData): void {
 
     car: null,
 
-    ride_date: start.toISOString().split('T')[0],   
+    ride_date: start.toISOString().split('T')[0],
     start_hour: pad(start.getHours()),
     start_minute: pad(start.getMinutes()),
     end_hour: pad(end.getHours()),
@@ -296,8 +296,9 @@ private applyRebookData(data: RebookData): void {
     end_time: `${pad(end.getHours())}:${pad(end.getMinutes())}`,
   });
 
+  this.rideForm.clearValidators();
+  this.rideForm.updateValueAndValidity({ emitEvent: false });
 }
-
 
 
   private isVehicleFrozenError(err: any): boolean {
@@ -384,18 +385,17 @@ private applyRebookData(data: RebookData): void {
     return `${hours}:${minutes}`;
   }
 
-  private initializeForm(): void {
-    this.rideForm = buildRideForm(this.fb);
-    this.setDefaultStartAndDestination();
-    this.socketService.usersLicense$.subscribe((update) => {
-      const { id, has_government_license, license_expiry_date } = update;
-      const selfUserId =
-        this.currentUserId ??
-        getUserIdFromToken(localStorage.getItem('access_token'));
-      const selectedUserId =
-        this.rideForm.get('target_type')?.value === 'self'
-          ? selfUserId
-          : this.rideForm.get('target_employee_id')?.value;
+    private initializeForm(): void {
+  this.rideForm = buildRideForm(this.fb, this.isRebookMode);
+  this.setDefaultStartAndDestination();
+  this.socketService.usersLicense$.subscribe(update => {
+  const { id, has_government_license, license_expiry_date } = update;
+  const selfUserId =
+    this.currentUserId ?? getUserIdFromToken(localStorage.getItem('access_token'));
+  const selectedUserId =
+    this.rideForm.get('target_type')?.value === 'self'
+      ? selfUserId
+      : this.rideForm.get('target_employee_id')?.value;
 
       if (id !== selectedUserId) return;
 

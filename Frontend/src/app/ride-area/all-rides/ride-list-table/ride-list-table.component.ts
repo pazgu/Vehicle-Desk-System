@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { MyRidesService } from '../../../services/myrides.service';
 
 @Component({
   selector: 'app-ride-list-table',
@@ -29,7 +30,10 @@ export class RideListTableComponent implements OnChanges {
   @Output() newRide = new EventEmitter<void>();
   @Output() rebookRide = new EventEmitter<any>();
 
-  constructor(private router: Router) {}
+  constructor(private router: Router , private myrideservice : MyRidesService) {}
+
+
+
 
   currentPage = 1;
   pagedOrders: any[] = [];
@@ -87,7 +91,7 @@ export class RideListTableComponent implements OnChanges {
         return 'מוזמן';
       case 'cancelled':
         return 'בוטל';
-      case 'cancelled_vehicle_unavilable':
+      case 'cancelled_vehicle_unavailable':
         return 'בוטל – הרכב לא זמין';
       default:
         return 'סטטוס לא ידוע';
@@ -110,6 +114,8 @@ export class RideListTableComponent implements OnChanges {
         return 'status-reserved';
       case 'cancelled':
         return 'status-cancelled';
+        case 'cancelled_vehicle_unavailable': 
+      return 'status-cancelled-vehicle-unavailable';
       default:
         return '';
     }
@@ -194,7 +200,6 @@ export class RideListTableComponent implements OnChanges {
   canChangeStatus(order: any): boolean {
     const userRole = localStorage.getItem('role');
     if (userRole !== 'supervisor') return false;
-    // if (order.status !== 'available') return false;
 
     const [day, month, year] = order.date.split('.');
     const formattedDate = `${year}-${month}-${day}`;
@@ -209,30 +214,56 @@ export class RideListTableComponent implements OnChanges {
 
     return start.getTime() > Date.now();
   }
+canDelete(order: any, isRebookContext: boolean = false): boolean {
+  if (!order) return false;
 
-  canDelete(order: any): boolean {
-    const userRole = localStorage.getItem('role');
-    const isSupervisor = userRole === 'supervisor';
-    const isPending = order.status.toLowerCase() === 'pending';
-    const isFuture = this.parseDate(order.date) >= new Date();
+  const status = (order.status ?? '')
+    .toString()
+    .toLowerCase()
+    .trim();
 
-    if (!isSupervisor) {
+  const userRole = localStorage.getItem('role');
+  const isSupervisor = userRole === 'supervisor';
+  
+  if (
+    status === 'cancelled_vehicle_unavailable' ||
+    status === 'cancelled_vehicle_unavilable'
+  ) {
+    return true;
+  }
+
+  const [day, month, year] = order.date.split('.');
+  const rideDateTime = new Date(`${year}-${month}-${day}T${order.time}:00`);
+
+  if (isNaN(rideDateTime.getTime())) {
+    console.error('Invalid ride datetime:', order.date, order.time);
+    return false;
+  }
+
+  const now = new Date();
+  const isFuture = rideDateTime.getTime() > now.getTime();
+  const isPending = status === 'pending';
+
+  if (!isSupervisor) {
+    if (isRebookContext) {
       return isPending && isFuture;
     }
-
-    const isDeletableStatus = ['pending', 'approved'].includes(
-      order.status.toLowerCase()
-    );
-    if (!isDeletableStatus || !isFuture) return false;
-
-    const rideDateTime = new Date(
-      `${order.date.split('.').reverse().join('-')}T${order.time}:00`
-    );
-    const now = new Date();
-    const timeDifferenceHours =
-      (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
-    return timeDifferenceHours > 2;
+    const timeDifferenceHours = (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+    return isPending && isFuture && timeDifferenceHours > 2;
   }
+
+  const isDeletableStatus = ['pending', 'approved'].includes(status);
+  if (!isDeletableStatus || !isFuture) return false;
+
+  if (isRebookContext) {
+    return true;
+  }
+
+  const timeDifferenceHours =
+    (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+  return timeDifferenceHours > 2;
+}
 
   onViewRide(order: any): void {
     this.viewRide.emit(order);
@@ -268,7 +299,6 @@ export class RideListTableComponent implements OnChanges {
   }
   return false
 }
-
 
   onRebook(order: any, event: Event): void {
     event.stopPropagation();
