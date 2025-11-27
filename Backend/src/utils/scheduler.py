@@ -1299,12 +1299,12 @@ async def check_expired_government_licenses():
                     print(f"✅ Socket notification sent to admin {admin.employee_id}")
 
                 except Exception as e:
-                    print(f"❌ Error processing admin {admin.employee_id}: {str(e)}")
+                    print(f"Error processing admin {admin.employee_id}: {str(e)}")
                     continue
 
     except Exception as e:
         db.rollback()
-        print(f"❌ Error in check_expired_government_licenses: {e}")
+        print(f"Error in check_expired_government_licenses: {e}")
         import traceback
         print(f"Full traceback: {traceback.format_exc()}")
 

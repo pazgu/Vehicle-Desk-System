@@ -128,7 +128,7 @@ export class RideStatusComponent {
         this.rideChartInitialized = true;
       },
       error: (error) => {
-        console.error('❌ Error loading ride data:', error);
+        console.error('Error loading ride data:', error);
         this.rideChartInitialized = true;
         this.rideChartData = {
           labels: ['שגיאה בטעינת נתונים'],

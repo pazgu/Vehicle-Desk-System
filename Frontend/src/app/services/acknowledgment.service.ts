@@ -7,14 +7,14 @@ import { environment } from '../../environments/environment';
 export interface RideAcknowledgmentPayload {
   ride_id: string;
   user_id: string;
-  confirmed: boolean;               // checkbox result
-  acknowledged_at?: string;         // ISO timestamp (server can override)
-  signature_data_url?: string | null; // optional for future
+  confirmed: boolean;               
+  acknowledged_at?: string;         
+  signature_data_url?: string | null; 
 }
 
 export interface RideAcknowledgmentResponse {
   success: boolean;
-  id?: string;                      // db id if you want to return it
+  id?: string;                      
   message?: string;
 }
 
@@ -22,22 +22,13 @@ export interface RideAcknowledgmentResponse {
   providedIn: 'root',
 })
 export class AcknowledgmentService {
-  private baseUrl = environment.apiUrl || '/api'; // make sure environment.apiUrl exists
-  /**
-   * While backend is not ready, set to true to simulate server.
-   * Flip to false once your FastAPI endpoint is up.
-   */
+  private baseUrl = environment.apiUrl || '/api'; 
   private useMock = true;
 
   constructor(private http: HttpClient) {}
 
-  /**
-   * Persist the user's acknowledgment for a ride.
-   * Backend suggestion: POST /api/ride-acknowledgments
-   */
   saveAcknowledgment(payload: RideAcknowledgmentPayload): Observable<RideAcknowledgmentResponse> {
     if (this.useMock) {
-      // --- MOCK: simulate network + success
       return of({ success: true, id: crypto.randomUUID() }).pipe(delay(600));
     }
     return this.http.post<RideAcknowledgmentResponse>(

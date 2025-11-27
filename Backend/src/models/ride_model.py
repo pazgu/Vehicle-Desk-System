@@ -60,12 +60,12 @@ class Ride(Base):
 
 
 class PendingRideSchema(BaseModel):
-    vehicle_id: uuid.UUID  # ✅ Use this, not sqlalchemy.UUID
-    ride_period: str  # 'morning' or 'night'
-    ride_date: str    # 'YYYY-MM-DD'
+    vehicle_id: uuid.UUID  
+    ride_period: str  
+    ride_date: str    
     ride_date_night_end: str | None
-    start_time: str   # 'HH:mm'
-    end_time: str     # 'HH:mm'
+    start_time: str  
+    end_time: str     
     feedback_submitted: bool = False 
 
     class Config:
