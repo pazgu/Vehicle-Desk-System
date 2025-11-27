@@ -8,14 +8,14 @@ import { environment } from '../../environments/environment';
 })
 export class RideService {
   private baseUrl = 'http://localhost:8000/api/orders';
-  private distanceUrl = 'http://localhost:8000/api/distance'; // ✅ distance API URL
-    private supervisorUrl = 'http://localhost:8000/api/supervisor-orders';
+  private distanceUrl = 'http://localhost:8000/api/distance'; 
+  private supervisorUrl = 'http://localhost:8000/api/supervisor-orders';
 
 
   constructor(private http: HttpClient) {}
 
   createRide(data: any, user_id: string): Observable<any> {
-    const token = localStorage.getItem('access_token'); // ⬅️ get the token from login
+    const token = localStorage.getItem('access_token');
 
     if (!token) {
       throw new Error('Access token not found in localStorage.');
@@ -29,7 +29,7 @@ export class RideService {
   }
 
    createSupervisorRide(data: any, user_id: string): Observable<any> {
-    const token = localStorage.getItem('access_token'); // ⬅️ get the token from login
+    const token = localStorage.getItem('access_token');
 
     if (!token) {
       throw new Error('Access token not found in localStorage.');
@@ -68,23 +68,6 @@ startRide(rideId: string): Observable<any> {
   return this.http.post(`${environment.apiUrl}/rides/${rideId}/start`, {}, { headers });
 }
 
-
-
-// ✅ NEW: Fetch estimated distance from backend
-// getDistance(from: string, to: string): Observable<{ distance_km: number }> {
-//   const token = localStorage.getItem('access_token');
-//   if (!token) throw new Error('Access token not found in localStorage.');
-//   const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-
-//   const encodedFrom = encodeURIComponent(from);
-//   const encodedTo = encodeURIComponent(to);
-
-//   return this.http.get<{ distance_km: number }>(
-//   `${this.distanceUrl}?from_city=${encodedFrom}&to_city=${encodedTo}`,
-//   { headers }
-// );
-// }
-
 getRouteDistance(to: string, extraStops: string[] = []): Observable<{ distance_km: number }> {
   const token = localStorage.getItem('access_token');
   if (!token) throw new Error('Access token not found in localStorage.');
@@ -117,6 +100,11 @@ getDepartmentEmployees(user_id: string): Observable<{ id: string; full_name: str
 }
 
 
-
-
+  getRideStatusSummary(status?: string): Observable<{ status: string; count: number }[]> {
+    let url = `${environment.apiUrl}/analytics/ride-status-summary`;
+    if (status && status.trim() !== '') {
+      url += `?status=${encodeURIComponent(status)}`;
+    }
+    return this.http.get<{ status: string; count: number }[]>(url);
+  }
 }
