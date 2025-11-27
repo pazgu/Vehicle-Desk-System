@@ -214,12 +214,12 @@ text-decoration: none;}
   text-align: center;
   font-size: 14px;
   padding: 8px;
+
+}
   ::ng-deep .select .ng-option {
   border: 1px solid #cecece;
   background-color: #eceff1 ;
 }
-}
-
 ::ng-deep .custom-hour-dropdown .ng-option:hover {
   background-color: #767676;
   color: #ffffff;
