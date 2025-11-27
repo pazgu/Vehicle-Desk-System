@@ -1,15 +1,13 @@
 <div class="departments-container">
   <h2>נתוני מחלקות</h2>
-  <button (click)="toggleNewDepartmentMode()" 
+ 
+  
+  <div *ngIf="isNewDepartmentMode" class="new-department-form">
+    
+ <button (click)="toggleNewDepartmentMode()" 
           [class]="isNewDepartmentMode ? 'closed-button' : 'add-department-button'">
     {{ isNewDepartmentMode ? 'סגור חלון ' : '  הוסף מחלקה חדשה +' }}
   </button>
-  
-  <div *ngIf="isNewDepartmentMode" class="new-department-form">
-    <button type="button" class="back-button" (click)="toggleNewDepartmentMode()">
-      חזור
-    </button>
-
     <form [formGroup]="newDepartmentForm" (ngSubmit)="submitNewDepartment()">
       <div>
         <label>שם מחלקה</label>

@@ -52,7 +52,18 @@ function createSameStopAndDestinationValidator(form: FormGroup): ValidatorFn {
   };
 }
 
-export function buildRideForm(fb: FormBuilder): FormGroup {
+export function buildRideForm(fb: FormBuilder, isRebook: boolean = false): FormGroup {
+  const validators = [
+    createTripDurationValidator(),
+    createSameDayValidator(),
+    createSameDateNightRideValidator(),
+    createInspectorClosureTimeValidator(),
+  ];
+
+  if (!isRebook) {
+    validators.unshift(createFutureDateTimeValidator());
+  }
+
   const form = fb.group(
     {
       target_type: ['self', Validators.required],
@@ -82,15 +93,7 @@ export function buildRideForm(fb: FormBuilder): FormGroup {
       four_by_four_reason: [''],
       extended_ride_reason: [''],
     },
-    {
-      validators: [
-        createFutureDateTimeValidator(),
-        createTripDurationValidator(),
-        createSameDayValidator(),
-        createSameDateNightRideValidator(),
-        createInspectorClosureTimeValidator(),
-      ],
-    }
+    { validators }
   );
 
   const extraStopsArray = form.get('extraStops') as FormArray;

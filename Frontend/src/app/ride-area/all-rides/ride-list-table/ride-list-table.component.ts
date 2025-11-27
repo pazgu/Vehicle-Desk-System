@@ -262,10 +262,13 @@ export class RideListTableComponent implements OnChanges {
   canRebook(order: any): boolean {
     if (!order?.status) return false;
 
-    const status = order.status.toLowerCase();
-
-    return status === 'cancelled_vehicle_unavilable';
+  const status = order.status.toLowerCase();
+  if (status === 'cancelled_vehicle_unavailable'){
+    return true 
   }
+  return false
+}
+
 
   onRebook(order: any, event: Event): void {
     event.stopPropagation();

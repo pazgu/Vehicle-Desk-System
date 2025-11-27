@@ -7,6 +7,8 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 from typing import Optional
 
+from ..helpers.user_helpers import cancel_future_rides_for_vehicle
+
 from ..models.user_model import User,UserRole
 from ..models.ride_model import Ride,RideStatus
 from ..models.notification_model import Notification,NotificationType
@@ -184,87 +186,108 @@ def mark_feedback_submitted(db: Session, ride_id: str):
 
 
 async def process_completion_form(db: Session, user: User, form_data: CompletionFormData):
-    # This entire block needs to be a single transaction
     try:
-        ride = db.query(Ride).filter_by(id=form_data.ride_id, user_id=user.employee_id).first()
-        if not ride:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ride not found")
+        ride = db.query(Ride).filter_by(
+            id=form_data.ride_id,
+            user_id=user.employee_id
+        ).first()
 
-        db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user.employee_id)})
+        if not ride:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, 
+                detail="Ride not found"
+            )
+
+        db.execute(
+            text("SET session.audit.user_id = :user_id"),
+            {"user_id": str(user.employee_id)}
+        )
 
         supervisors = db.query(User).filter_by(
             department_id=user.department_id,
             role=UserRole.supervisor
         ).all()
 
-        # Update basic ride fields
         if form_data.emergency_event:
             ride.emergency_event = form_data.emergency_event
 
-        # Mark ride as completed
         ride.status = RideStatus.completed
         ride.completion_date = datetime.now(timezone.utc)
         update_monthly_usage_stats(db=db, ride=ride)
 
-        # Update vehicle status
         vehicle = db.query(Vehicle).filter_by(id=ride.vehicle_id).first()
         if not vehicle:
-            # This should not happen if ride exists, but good practice to handle
-            raise HTTPException(status_code=404, detail="Vehicle not found")
+            raise HTTPException(404, "Vehicle not found")
 
         vehicle.last_used_at = ride.end_datetime
         vehicle.last_user_id = ride.user_id
 
         is_emergency = form_data.emergency_event == 'true'
+        vehicle_becomes_frozen = False
 
         if is_emergency:
             vehicle.status = VehicleStatus.frozen
             vehicle.freeze_reason = FreezeReason.accident
             vehicle.freeze_details = form_data.freeze_details
+            vehicle_becomes_frozen = True
 
-            # Notification and email logic for emergency
-            for supervisor in supervisors:
-                # ... (your existing notification and email logic)
-                pass
+            # your email + notif logic here...
+            pass
 
         else:
             vehicle.status = VehicleStatus.available
-            
-        # Vehicle not ready for next ride logic
+
+
         if form_data.is_vehicle_ready_for_next_ride is False:
-            # ... (your existing notification and email logic)
+            # your logic...
             pass
 
-        # If not fueled logic
         if not form_data.fueled:
-            # ... (your existing notification and email logic)
+            # your logic...
             pass
 
-        # Mark feedback submitted
         ride.feedback_submitted = True
-        
-        # All database changes are now ready to be committed
-        db.commit()
 
-        # Emit socket events after the transaction is successfully committed
+        db.commit()
+        cancelled_result = None
+
+        if vehicle_becomes_frozen:
+            cancelled_result =  cancel_future_rides_for_vehicle(vehicle.id, db,user.employee_id)
+        if cancelled_result is None:
+            cancelled_result = {"cancelled": [], "users": []}
+
+            await sio.emit('reservationCanceledDueToVehicleFreeze', {
+                "vehicle_id": str(vehicle.id),
+                "cancelled_rides": cancelled_result["cancelled"],
+                "affected_users": [str(u) for u in cancelled_result["users"]],
+                "status": vehicle.status,
+                "freeze_reason": vehicle.freeze_reason or ""
+            })
+
         await sio.emit('ride_status_updated', {
             "ride_id": str(ride.id),
-            "new_status": ride.status,
+            "new_status": ride.status.value,
         })
+
         await sio.emit('vehicle_status_updated', {
             "vehicle_id": str(vehicle.id),
-            "status": vehicle.status,
+            "status": vehicle.status.value,
         })
 
-        return {"message": "Completion form processed successfully."}
+        response = {
+            "message": "Completion form processed successfully."
+        }
+
+        if cancelled_result:
+            response["cancelled_rides"] = cancelled_result["cancelled"]
+            response["affected_users"] = cancelled_result["users"]
+
+        return response
 
     except Exception as e:
-        # If any step fails, roll back the transaction
         db.rollback()
         print(f"Failed to process completion form, rolling back: {e}")
-        
-        # Log the error for debugging
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An internal server error occurred while processing the form."
         )
