@@ -182,4 +182,12 @@ getMostUsedVehiclesAllTime(): Observable<{ stats: VehicleInItem[] }> {
   const url = `${this.apiUrl}/vehicles/usage-stats-all-time`;
   return this.http.get<{ stats: VehicleInItem[] }>(url);
 }
+updateVehicle(vehicleId: string, vehicleData: any): Observable<any> {
+    const updatePayload = {
+      department_id: vehicleData.department_id,
+      mileage: vehicleData.mileage,
+      image_url: vehicleData.image_url
+    };
+    return this.http.put(`${this.apiUrl}/vehicle/${vehicleId}`, updatePayload);
+  }
 }
