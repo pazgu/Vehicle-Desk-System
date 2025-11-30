@@ -1,5 +1,5 @@
 from ..models.vehicle_model import Vehicle
-from src.services.inspection_alert_service import handle_inspection_alert  # תתאימי את הנתיב
+from src.services.inspection_alert_service import handle_inspection_alert
 import asyncio
 from datetime import datetime, timezone
 from uuid import UUID
@@ -81,7 +81,7 @@ async def create_inspection(data: VehicleInspectionSchema, db: Session):
                         "seen": False
                     })
                 except Exception as socket_error:
-                    print(f"❌ Socket emission failed: {socket_error}")
+                    print(f"Socket emission failed: {socket_error}")
 
         try:
             await sio.emit("new_inspection", {
@@ -96,7 +96,7 @@ async def create_inspection(data: VehicleInspectionSchema, db: Session):
                 "issues_found": inspection.issues_found,
             })
         except Exception as socket_error:
-            print(f"❌ Socket emission failed: {socket_error}")
+            print(f"Socket emission failed: {socket_error}")
 
         return inspection
 

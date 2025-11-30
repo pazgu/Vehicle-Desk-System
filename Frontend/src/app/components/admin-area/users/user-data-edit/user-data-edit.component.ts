@@ -9,7 +9,6 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { SocketService } from '../../../../services/socket.service';
 import { Subscription } from 'rxjs';
-import { Socket } from 'socket.io-client';
 import { environment } from '../../../../../environments/environment';
 
 @Component({
@@ -148,9 +147,21 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
   fetchDepartments(): void {
     this.departmentService.getDepartments().subscribe({
       next: (data) => {
-        this.departments = data.filter((dept: any) => 
+        const dbDepartments = data.filter((dept: any) => 
           dept.name.toLowerCase() !== 'unassigned'
         );
+         const hasVip = dbDepartments.some(
+        (dept: any) => dept.name.toLowerCase() === 'vip'
+      );
+
+      if (!hasVip) {
+        dbDepartments.push({
+          id: 'vip',  
+          name: 'VIP'
+        });
+      }
+
+      this.departments = dbDepartments;
       },
       error: (err) => {
         this.toastService.show('שגיאה בטעינת מחלקות', 'error');

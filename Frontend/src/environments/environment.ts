@@ -21,6 +21,17 @@ export const environment = {
     noShowStatsUrl: 'http://localhost:8000/api/statistics/no-show',
     userRidesForExport: 'http://localhost:8000/api/analytics/user-rides',
     latestRequirementURL:'http://localhost:8000/api/latest-requirement',
-    addReqConfirmationURL:'http://localhost:8000/api/confirm-requirements'
+    addReqConfirmationURL:'http://localhost:8000/api/confirm-requirements',
+    allAuditLogsUrl: 'http://localhost:8000/api/all-audit-logs', 
+    departmentsUrl: 'http://localhost:8000/api/departments',
+    usersUrl: 'http://localhost:8000/api/users',
+    getRequirementsUrl: 'http://localhost:8000/api/get-requirements',
+    updateRequirementsUrl: 'http://localhost:8000/api/update-requirements',
+    ordersBaseUrl: 'http://localhost:8000/api/orders',
+    distanceUrl: 'http://localhost:8000/api/distance', 
+    supervisorOrdersUrl: 'http://localhost:8000/api/supervisor-orders',
+    ridesBaseUrl: 'http://localhost:8000/api/rides', 
+    employeesByDepartmentUrl: 'http://localhost:8000/api/employees/by-department',
+    rolesUrl: 'http://localhost:8000/api/roles',
   };
   

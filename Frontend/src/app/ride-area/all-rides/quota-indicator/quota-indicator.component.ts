@@ -6,11 +6,11 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './quota-indicator.component.html',
-  styleUrls: ['./quota-indicator.component.css']
+  styleUrls: ['./quota-indicator.component.css'],
 })
 export class QuotaIndicatorComponent implements OnInit, OnChanges {
   @Input() allOrders: any[] = [];
-  
+
   freeQuotaTotal = 6;
   freeQuotaUsed = 0;
 
@@ -32,13 +32,39 @@ export class QuotaIndicatorComponent implements OnInit, OnChanges {
 
   private calculateQuota(): void {
     const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+    const startOfMonth = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      1,
+      0,
+      0,
+      0,
+      0
+    );
+    const endOfMonth = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      0,
+      23,
+      59,
+      59,
+      999
+    );
 
     const used = this.allOrders.filter((o: any) => {
-      if (!o?.date) return false;
+      if (!o?.date || !o?.status) return false;
+
       const d = this.parseDate(o.date);
       d.setHours(12, 0, 0, 0);
+
+      const isEligible =
+        o.status === 'completed' ||
+        o.status === 'approved' ||
+        (o.status === 'pending' && d >= now);
+
+      if (!isEligible) return false;
+
       return d >= startOfMonth && d <= endOfMonth;
     }).length;
 

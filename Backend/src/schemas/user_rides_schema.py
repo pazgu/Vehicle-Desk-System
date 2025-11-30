@@ -13,6 +13,9 @@ class RideStatus(str, Enum):
     completed = "completed"
     cancelled = "cancelled"
     cancelled_due_to_no_show="cancelled_due_to_no_show"
+    reserved = "reserved"
+    cancelled_vehicle_unavailable= "cancelled_vehicle_unavailable"
+
 
 class FuelType(str, Enum):
     electric = "electric"

@@ -1,6 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpParams } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
@@ -8,6 +7,7 @@ import { VehicleInspection } from '../../../models/vehicle-inspections.model';
 import { OrderCardItem } from '../../../models/order-card-item.module';
 import { CityService } from '../../../services/city.service';
 import { ToastService } from '../../../services/toast.service';
+import { InspectionService } from '../../../services/inspection.service';
 
 @Component({
   selector: 'app-admin-inspections',
@@ -36,12 +36,12 @@ export class AdminInspectionsComponent implements OnInit {
   filteredRides: OrderCardItem[] = [];
 
   constructor(
-    private http: HttpClient,
     private route: ActivatedRoute,
     private cdr: ChangeDetectorRef,
     private router: Router,
     private cityService: CityService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private inspectionService: InspectionService
   ) {}
 
   ngOnInit(): void {
@@ -62,12 +62,8 @@ export class AdminInspectionsComponent implements OnInit {
 
   loadData(): void {
     this.loading = true;
-    const apiUrl = 'http://localhost:8000/api';
-    const url = `${apiUrl}/critical-issues`;
 
-    this.http
-      .get<{ inspections: VehicleInspection[]; rides: OrderCardItem[] }>(url)
-      .subscribe({
+    this.inspectionService.getCriticalIssues().subscribe({
         next: (data) => {
           this.inspections = data.inspections || [];
           this.rides = data.rides || [];
@@ -81,7 +77,6 @@ export class AdminInspectionsComponent implements OnInit {
         },
         error: () => {
           this.loading = false;
-          // this.toastService.show('❌ שגיאה בטעינת נתונים', 'error');
         },
       });
   }
@@ -130,8 +125,7 @@ export class AdminInspectionsComponent implements OnInit {
   }
 
   fetchUsers(): void {
-    const apiUrl = 'http://localhost:8000/api';
-    this.http.get<any>(`${apiUrl}/users`).subscribe({
+    this.inspectionService.getUsers().subscribe({
       next: (data) => {
         const usersArr = Array.isArray(data.users) ? data.users : [];
         this.users = usersArr.map((user: any) => ({

@@ -4,7 +4,6 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastService } from '../../../../services/toast.service';
 import { UserService } from '../../../../services/user_service';
-import { DepartmentService } from '../../../../services/department_service';
 import { MatIconModule } from '@angular/material/icon';
 import { Router } from '@angular/router';
 
@@ -151,22 +150,33 @@ export class AddNewUserComponent implements OnInit {
   }
 
   fetchDepartments(): void {
-    this.userService.getDepartments().subscribe({
-      next: (data) => {
-        this.departments = data
-          .filter(dep => dep.name.toLowerCase() !== 'unassigned')
-          .map(dep => ({
-            ...dep,
-            name: dep.name
-          }));
-      },
-      error: (err: any) => {
-        console.error('Failed to fetch departments', err);
-        this.toast.show('שגיאה בטעינת מחלקות', 'error');
-        this.departments = [];
+  this.userService.getDepartments().subscribe({
+    next: (data) => {
+      const dbDepartments = data
+        .filter(dep => dep.name.toLowerCase() !== 'unassigned')
+        .map(dep => ({
+          ...dep,
+          name: dep.name
+        }));
+
+      const vipExists = dbDepartments.some(dep => dep.name.toLowerCase() === 'vip');
+      if (!vipExists) {
+        const vipDepartment = {
+          id: 'vip',
+          name: 'VIP'
+        };
+        this.departments = [...dbDepartments, vipDepartment];
+      } else {
+        this.departments = [...dbDepartments];
       }
-    });
-  }
+    },
+    error: (err: any) => {
+      console.error('Failed to fetch departments', err);
+      this.toast.show('שגיאה בטעינת מחלקות', 'error');
+      this.departments = [];
+    }
+  });
+}
 
   checkIfHasGovernmentlicense(): boolean {
     return this.addUserForm.get('has_government_license')?.value === true;

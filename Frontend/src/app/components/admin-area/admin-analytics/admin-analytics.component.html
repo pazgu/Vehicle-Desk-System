@@ -29,6 +29,9 @@
       </button>
       <button [class.active]="activeTabIndex === 4" (click)="activeTabIndex = 4">
         אי-הגעות</button>
+        <button [class.active]="activeTabIndex === 5" (click)="activeTabIndex = 5">
+    זמני התחלת נסיעות
+  </button>
     </div>
 
     <div>
@@ -67,5 +70,129 @@
 
         <p-tabPanel header=" " [headerStyle]="{ display: 'none' }">
           <h3 class="section-heading">טבלת אי-הגעות של משתמשים</h3>
-       <no-shows></no-shows>
+          <no-shows></no-shows>
         </p-tabPanel>
+
+        <p-tabPanel header=" " [headerStyle]="{ display: 'none' }">
+          <h3 class="section-heading">התפלגות זמני התחלת נסיעות</h3>
+
+          <div class="ride-start-filters">
+            <div class="filter-mode-toggle">
+              <label>
+                <input
+                  type="radio"
+                  name="rideStartMode"
+                  value="last4"
+                  [(ngModel)]="rideStartFilterMode"
+                  (change)="onRideStartFilterModeChange('last4')"
+                />
+                4 חודשים אחרונים (ברירת מחדל)
+              </label>
+
+              <label>
+                <input
+                  type="radio"
+                  name="rideStartMode"
+                  value="single"
+                  [(ngModel)]="rideStartFilterMode"
+                  (change)="onRideStartFilterModeChange('single')"
+                />
+                חודש בודד
+              </label>
+
+              <label>
+                <input
+                  type="radio"
+                  name="rideStartMode"
+                  value="range"
+                  [(ngModel)]="rideStartFilterMode"
+                  (change)="onRideStartFilterModeChange('range')"
+                />
+                טווח של 4 חודשים
+              </label>
+            </div>
+
+            <div
+              class="single-month-filter"
+              *ngIf="rideStartFilterMode === 'single'"
+            >
+              <label>
+                שנה:
+                <select [(ngModel)]="rideStartSingleYear">
+                  <option *ngFor="let y of years" [value]="y">{{ y }}</option>
+                </select>
+              </label>
+
+              <label>
+                חודש:
+                <select [(ngModel)]="rideStartSingleMonth">
+                  <option
+                    *ngFor="let m of [1,2,3,4,5,6,7,8,9,10,11,12]"
+                    [value]="m"
+                  >
+                    {{ m }}
+                  </option>
+                </select>
+              </label>
+
+              <button (click)="onApplySingleMonthFilter()">הצג</button>
+            </div>
+
+            <div
+              class="range-filter"
+              *ngIf="rideStartFilterMode === 'range'"
+            >
+              <label>
+                שנה:
+                <select [(ngModel)]="rideStartRangeYear">
+                  <option *ngFor="let y of years" [value]="y">{{ y }}</option>
+                </select>
+              </label>
+
+              <label>
+                חודש התחלה:
+                <select [(ngModel)]="rideStartRangeStartMonth">
+                  <option
+                    *ngFor="let m of [1,2,3,4,5,6,7,8,9,10,11,12]"
+                    [value]="m"
+                  >
+                    {{ m }}
+                  </option>
+                </select>
+              </label>
+
+              <label>
+                חודש סיום:
+                <select [(ngModel)]="rideStartRangeEndMonth">
+                  <option
+                    *ngFor="let m of [1,2,3,4,5,6,7,8,9,10,11,12]"
+                    [value]="m"
+                  >
+                    {{ m }}
+                  </option>
+                </select>
+              </label>
+
+              <button (click)="onApplyRangeFilter()">הצג</button>
+            </div>
+          </div>
+
+          <div class="ride-start-chart-wrapper">
+            <div *ngIf="rideStartTimeLoading" class="loading-state">
+              טוען נתונים...
+            </div>
+
+            <div *ngIf="!rideStartTimeLoading && rideStartTimeChartData">
+              <p-chart
+                type="bar"
+                [data]="rideStartTimeChartData"
+                [options]="rideStartTimeChartOptions"
+                style="width: 100%; height: 400px"
+              ></p-chart>
+            </div>
+          </div>
+        </p-tabPanel>
+      </p-tabView>
+    </div>
+  </div>
+</div>
