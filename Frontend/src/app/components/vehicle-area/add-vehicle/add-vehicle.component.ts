@@ -67,23 +67,30 @@ export class AddVehicleComponent implements OnInit {
   
 
   fetchDepartments(): void {
-    this.departmentService.getDepartments().subscribe({
-      next: (data: any) => {
-        const mappedDepartments = data.map((dept: any) => ({ value: dept.id, name: dept.name }));
-        this.departments = [{ value: null, name: 'ללא מחלקה' }, ...mappedDepartments];
-        
-        if (this.vehicleForm.get('department_id')?.value === '' || this.vehicleForm.get('department_id')?.value === undefined) {
-          this.vehicleForm.get('department_id')?.setValue(null);
-        }
-      },
-      error: (err) => {
-        console.error('Failed to fetch departments', err);
-        this.toastService.show('שגיאה בטעינת מחלקות', 'error');
-        this.departments = [{ value: null, name: 'ללא מחלקה' }];
+  this.departmentService.getDepartments().subscribe({
+    next: (data: any) => {
+      const filteredDepartments = data.filter((dept:any) => dept.name.toLowerCase() !== 'unassigned');
+      const mappedDepartments = filteredDepartments.map((dept: any) => ({ value: dept.id, name: dept.name }));
+      const hasVIP = mappedDepartments.some((d:any) => d.name.toLowerCase() === 'vip');
+
+      const vipDepartment = { value: 'vip', name: 'VIP' };
+      const finalDepartments = hasVIP ? mappedDepartments : [...mappedDepartments, vipDepartment];
+
+      this.departments = [{ value: null, name: 'ללא מחלקה' }, ...finalDepartments];
+
+      if (this.vehicleForm.get('department_id')?.value === '' || this.vehicleForm.get('department_id')?.value === undefined) {
         this.vehicleForm.get('department_id')?.setValue(null);
       }
-    });
-  }
+    },
+    error: (err) => {
+      console.error('Failed to fetch departments', err);
+      this.toastService.show('שגיאה בטעינת מחלקות', 'error');
+      this.departments = [{ value: null, name: 'ללא מחלקה' }];
+      this.vehicleForm.get('department_id')?.setValue(null);
+    }
+  });
+}
+
 
   submitForm() {
     this.vehicleForm.markAllAsTouched();

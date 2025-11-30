@@ -7,9 +7,9 @@ import { environment } from '../../environments/environment';
   providedIn: 'root'
 })
 export class RideService {
-  private baseUrl = 'http://localhost:8000/api/orders';
-  private distanceUrl = 'http://localhost:8000/api/distance'; 
-  private supervisorUrl = 'http://localhost:8000/api/supervisor-orders';
+  private baseUrl = environment.ordersBaseUrl;
+  private distanceUrl = environment.distanceUrl; 
+  private supervisorUrl = environment.supervisorOrdersUrl;
 
 
   constructor(private http: HttpClient) {}
@@ -47,7 +47,8 @@ getRideById(rideId: string): Observable<any> {
   const headers = new HttpHeaders({
     Authorization: `Bearer ${token}`
   });
-  return this.http.get(`http://localhost:8000/api/rides/${rideId}`, { headers });
+  let url = environment.ridesBaseUrl;
+  return this.http.get(`${url}/${rideId}`, { headers });
 }
 
 updateRide(rideId: string, data: any): Observable<any> {
@@ -55,8 +56,8 @@ updateRide(rideId: string, data: any): Observable<any> {
   const headers = new HttpHeaders({
     Authorization: `Bearer ${token}`
   });
-
-  return this.http.patch(`http://localhost:8000/api/orders/${rideId}`, data, { headers });
+  let url = environment.ordersBaseUrl;
+  return this.http.patch(`${url}/${rideId}`, data, { headers });
 }
 
 startRide(rideId: string): Observable<any> {
@@ -94,7 +95,7 @@ getDepartmentEmployees(user_id: string): Observable<{ id: string; full_name: str
   });
 
   return this.http.get<{ id: string; full_name: string }[]>(
-    `http://localhost:8000/api/employees/by-department/${user_id}`,
+    `${environment.employeesByDepartmentUrl}${user_id}`,
     { headers }
   );
 }

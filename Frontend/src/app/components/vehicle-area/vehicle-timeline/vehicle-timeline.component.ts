@@ -255,12 +255,12 @@ onRideHover(event: MouseEvent, ride: RenderableRide): void {
   .getVehicleTimeline(this.vehicleId, from, to)
   .subscribe({
         next: (data) => {
-          console.log('✅ API response:', data);
+          console.log(' API response:', data);
           this.vehicleTimelineData = data;
           this.processRidesForDisplay();
         },
         error: (err) => {
-          console.error('❌ Error loading vehicle timeline:', err);
+          console.error(' Error loading vehicle timeline:', err);
           this.vehicleTimelineData = [];
           this.processRidesForDisplay();
         },
@@ -326,7 +326,7 @@ onRideHover(event: MouseEvent, ride: RenderableRide): void {
         loopDay.setDate(loopDay.getDate() + 1);
       }
     }
-    console.log('✅ Finished processing rides:', this.processedRides);
+    console.log(' Finished processing rides:', this.processedRides);
   }
 
   private formatDateToYYYYMMDD(date: Date): string {

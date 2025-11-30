@@ -12,7 +12,7 @@ export class GuidelinesService {
   private latestReqURL=environment.latestRequirementURL;
   private addReqConfirmURL=environment.addReqConfirmationURL;
   constructor(private http: HttpClient) {
-    this.get(); // initial fetch
+    this.get(); 
   }
 
   get(): Observable<GuidelinesDoc> {

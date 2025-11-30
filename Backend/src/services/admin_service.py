@@ -13,7 +13,7 @@ def delete_user_by_id(user_id: UUID, current_user: User, db: Session):
     if current_user.role != UserRole.admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="❌ You do not have permission to perform this action"
+            detail=" You do not have permission to perform this action"
         )
 
     if str(user_id) == str(current_user.employee_id):
@@ -26,7 +26,7 @@ def delete_user_by_id(user_id: UUID, current_user: User, db: Session):
     if not user_to_delete:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="❌ User not found"
+            detail=" User not found"
         )
 
     try:
@@ -58,14 +58,12 @@ def delete_user_by_id(user_id: UUID, current_user: User, db: Session):
         fk_rows = db.execute(fk_query).fetchall()
 
         from collections import defaultdict
-        table_columns = defaultdict(list)  # {table_name: [columns]}
+        table_columns = defaultdict(list)  
         for row in fk_rows:
-            # row: (schema, table_name, column_name, foreign_table_name, foreign_column_name)
             table_columns[row.table_name].append(row.column_name)
 
        
         for table_name, columns in table_columns.items():
-            # בדיקה אילו עמודות מאפשרות NULL
             nullable_query = text("""
                 SELECT column_name, is_nullable
                 FROM information_schema.columns
@@ -75,10 +73,8 @@ def delete_user_by_id(user_id: UUID, current_user: User, db: Session):
             result = db.execute(nullable_query, {"table_name": table_name, "columns": columns}).fetchall()
             nullable_columns = {r.column_name: r.is_nullable == 'YES' for r in result}
 
-            # עדכון ל-NULL או מחיקה בהתאם
             for col in columns:
                 if nullable_columns.get(col, False):
-                    # מאפשר NULL — עדכון לשים NULL
                     update_sql = f"UPDATE {table_name} SET {col} = NULL WHERE {col} = :user_id"
                     db.execute(text(update_sql), {"user_id": str(user_id)})
                 else:
@@ -100,7 +96,7 @@ def delete_user_by_id(user_id: UUID, current_user: User, db: Session):
         db.execute(text("SET session.audit.user_id = DEFAULT"))
 
     return {
-        "message": "✅ User deleted successfully",
+        "message": "User deleted successfully",
         "user_id": str(user_id)
     }
 

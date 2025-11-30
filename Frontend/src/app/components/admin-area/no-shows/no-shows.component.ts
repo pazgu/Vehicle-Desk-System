@@ -178,13 +178,12 @@ export class NoShowsComponent {
           this.topNoShowUsers = mappedUsers;
 
           this.allNoShowUsers = mappedUsers;
-          this.applyNoShowFilter(); // Apply default filter/sort
+          this.applyNoShowFilter();
         },
         error: (err) => {
-          console.error('❌ Failed to load no-show statistics:', err);
+          console.error('Failed to load no-show statistics:', err);
           this.toastService.show('אירעה שגיאה בטעינת נתוני אי-הגעה.', 'error');
 
-          // Reset values on error
           this.topNoShowUsers = [];
           this.totalNoShows = 0;
           this.uniqueNoShowUsers = 0;

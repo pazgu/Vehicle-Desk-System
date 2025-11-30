@@ -7,6 +7,8 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import text, func, or_
 from sqlalchemy.orm import Session
 
+from ..helpers.department_helpers import get_or_create_vip_department
+
 from ..helpers.user_helpers import cancel_future_rides_for_vehicle
 
 # Utils
@@ -195,7 +197,7 @@ def get_vehicle_by_id_route(vehicle_id: str, db: Session = Depends(get_db)):
 def create_vehicle(
     vehicle_data: VehicleCreate,
     db: Session = Depends(get_db),
-    payload: dict = Depends(token_check)  # <-- get user info from token
+    payload: dict = Depends(token_check) 
 ):
     user_id = payload.get("user_id") or payload.get("sub") or "system"
     db.execute(text("SET LOCAL session.audit.user_id = :user_id"), {"user_id": user_id})
@@ -204,11 +206,16 @@ def create_vehicle(
     if existing_vehicle:
         raise HTTPException(status_code=400, detail="Vehicle with this plate number already exists")
     
-    # Validate department if provided
     if vehicle_data.department_id:
-        department = db.query(Department).filter_by(id=vehicle_data.department_id).first()
-        if not department:
-            raise HTTPException(status_code=404, detail="Department not found")
+        if vehicle_data.department_id == "vip":
+            vip_dep = get_or_create_vip_department(db)
+            vehicle_data.department_id = str(vip_dep.id)
+        else:
+            department = db.query(Department).filter_by(id=vehicle_data.department_id).first()
+            if not department:
+                raise HTTPException(status_code=404, detail="Department not found")
+
+        
 
     data = vehicle_data.dict()
     data['image_url'] = str(data['image_url']) if data.get('image_url') else None

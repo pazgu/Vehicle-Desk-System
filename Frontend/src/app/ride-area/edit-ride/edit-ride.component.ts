@@ -585,7 +585,7 @@ export class EditRideComponent implements OnInit {
         this.isLoadingDistance = false;
       },
       error: (err) => {
-        console.error('❌ Failed to fetch distance:', err);
+        console.error(' Failed to fetch distance:', err);
         this.toastService.show('שגיאה בחישוב מרחק בין הערים', 'error');
         this.resetDistanceValues();
         this.isLoadingDistance = false;

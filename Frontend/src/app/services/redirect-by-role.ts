@@ -12,14 +12,13 @@ export class RedirectByRoleComponent implements OnInit {
   ngOnInit(): void {
     const role = localStorage.getItem('role');
     if (!role) {
-      // No role found in localStorage, redirect to login page
       this.router.navigate(['/login']);
     } else if (role === 'admin') {
       this.router.navigate(['/admin/analytics']);
     } else if (role === 'supervisor') {
       this.router.navigate(['/supervisor-dashboard']);
     } else if (role === 'inspector') {
-    this.router.navigate(['/inspector/inspection']); // ✅ FIXED HERE
+    this.router.navigate(['/inspector/inspection']);
   } else {
       this.router.navigate(['/home']);
     }

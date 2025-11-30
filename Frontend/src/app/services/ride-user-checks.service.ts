@@ -21,15 +21,11 @@ export class RideUserChecksService {
     private userService: UserService,
     private toastService: ToastService
   ) {}
-
-  /**
-   * Returns true if user CAN send a ride request (license ok),
-   * false if request must be disabled.
-   */
+  
   checkGovernmentLicence(employeeId: string): Observable<boolean> {
     if (!employeeId) {
       console.warn(
-        '⚠️ RideUserChecksService.checkGovernmentLicence called with empty employeeId'
+        'RideUserChecksService.checkGovernmentLicence called with empty employeeId'
       );
       return of(false);
     }
@@ -71,11 +67,10 @@ export class RideUserChecksService {
           }
         }
 
-        // has license and not expired
         return true;
       }),
       catchError((err) => {
-        console.error('❌ Failed to fetch user data from API:', err);
+        console.error('Failed to fetch user data from API:', err);
         this.toastService.show('שגיאה בבדיקת רישיון ממשלתי', 'error');
         return of(false);
       })
@@ -126,7 +121,7 @@ export class RideUserChecksService {
   checkUserBlock(userId: string): Observable<UserBlockCheckResult> {
     if (!userId) {
       console.warn(
-        '⚠️ RideUserChecksService.checkUserBlock called with empty userId'
+        'RideUserChecksService.checkUserBlock called with empty userId'
       );
       return of({
         isBlocked: false,
@@ -144,7 +139,7 @@ export class RideUserChecksService {
         };
       }),
       catchError((err) => {
-        console.error('❌ Failed to check user block status:', err);
+        console.error('Failed to check user block status:', err);
         this.toastService.show('אירעה שגיאה בבדיקת סטטוס המשתמש. אנא נסה שנית.', 'error');
         return of({
           isBlocked: false,
