@@ -52,18 +52,18 @@ def update_department(db: Session, dept_id: UUID, dept_data: DepartmentUpdate, p
         if new_supervisor.role != UserRole.supervisor:
             raise HTTPException(status_code=400, detail="User is not a supervisor")
 
-        # משחרר את המפקח הישן אם קיים
+
         if department.supervisor_id:
             old_supervisor = db.query(User).filter_by(employee_id=department.supervisor_id).first()
             if old_supervisor:
                 old_supervisor.department_id = None
-                db.flush()  # שולח את השינוי ל-DB מיד
+                db.flush()  
 
-        # מקצה למפקח החדש את department_id
+       
         new_supervisor.department_id = dept_id
         department.supervisor_id = dept_data.supervisor_id
 
-    # מעדכן את session audit
+   
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id_from_token)})
 
     db.commit()
