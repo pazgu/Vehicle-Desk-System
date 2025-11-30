@@ -221,7 +221,7 @@ def create_vehicle(
     
     if vehicle_data.department_id:
         if vehicle_data.department_id == "vip":
-            vip_dep = get_or_create_vip_department(db)
+            vip_dep = get_or_create_vip_department(db, user_id)
             vehicle_data.department_id = str(vip_dep.id)
         else:
             department = db.query(Department).filter_by(id=vehicle_data.department_id).first()
