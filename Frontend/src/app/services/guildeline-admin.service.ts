@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
+import { environment } from '../../environments/environment';
 
 export interface AdminGuidelinesDoc {
   id: string;
@@ -17,10 +17,12 @@ export class GuidelinesServiceAdmin {
   constructor(private http: HttpClient) {}
 
   getLatest(): Observable<AdminGuidelinesDoc> {
-    return this.http.get<AdminGuidelinesDoc>('http://localhost:8000/api/get-requirements');
+    let url = environment.latestRequirementURL;
+    return this.http.get<AdminGuidelinesDoc>(url);
   }
 
   update(payload: { title: string; items: string[] }): Observable<AdminGuidelinesDoc> {
-    return this.http.put<AdminGuidelinesDoc>('http://localhost:8000/api/update-requirements', payload);
+    let url = environment.updateRequirementsUrl;
+    return this.http.put<AdminGuidelinesDoc>(url, payload);
   }
 }

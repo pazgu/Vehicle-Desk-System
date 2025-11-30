@@ -7,15 +7,15 @@ import { environment } from '../../environments/environment';
   providedIn: 'root'
 })
 export class RideService {
-  private baseUrl = 'http://localhost:8000/api/orders';
-  private distanceUrl = 'http://localhost:8000/api/distance'; // ✅ distance API URL
-    private supervisorUrl = 'http://localhost:8000/api/supervisor-orders';
+  private baseUrl = environment.ordersBaseUrl;
+  private distanceUrl = environment.distanceUrl; 
+  private supervisorUrl = environment.supervisorOrdersUrl;
 
 
   constructor(private http: HttpClient) {}
 
   createRide(data: any, user_id: string): Observable<any> {
-    const token = localStorage.getItem('access_token'); // ⬅️ get the token from login
+    const token = localStorage.getItem('access_token');
 
     if (!token) {
       throw new Error('Access token not found in localStorage.');
@@ -29,7 +29,7 @@ export class RideService {
   }
 
    createSupervisorRide(data: any, user_id: string): Observable<any> {
-    const token = localStorage.getItem('access_token'); // ⬅️ get the token from login
+    const token = localStorage.getItem('access_token');
 
     if (!token) {
       throw new Error('Access token not found in localStorage.');
@@ -47,7 +47,8 @@ getRideById(rideId: string): Observable<any> {
   const headers = new HttpHeaders({
     Authorization: `Bearer ${token}`
   });
-  return this.http.get(`http://localhost:8000/api/rides/${rideId}`, { headers });
+  let url = environment.ridesBaseUrl;
+  return this.http.get(`${url}/${rideId}`, { headers });
 }
 
 updateRide(rideId: string, data: any): Observable<any> {
@@ -55,8 +56,8 @@ updateRide(rideId: string, data: any): Observable<any> {
   const headers = new HttpHeaders({
     Authorization: `Bearer ${token}`
   });
-
-  return this.http.patch(`http://localhost:8000/api/orders/${rideId}`, data, { headers });
+  let url = environment.ordersBaseUrl;
+  return this.http.patch(`${url}/${rideId}`, data, { headers });
 }
 
 startRide(rideId: string): Observable<any> {
@@ -67,23 +68,6 @@ startRide(rideId: string): Observable<any> {
 
   return this.http.post(`${environment.apiUrl}/rides/${rideId}/start`, {}, { headers });
 }
-
-
-
-// ✅ NEW: Fetch estimated distance from backend
-// getDistance(from: string, to: string): Observable<{ distance_km: number }> {
-//   const token = localStorage.getItem('access_token');
-//   if (!token) throw new Error('Access token not found in localStorage.');
-//   const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-
-//   const encodedFrom = encodeURIComponent(from);
-//   const encodedTo = encodeURIComponent(to);
-
-//   return this.http.get<{ distance_km: number }>(
-//   `${this.distanceUrl}?from_city=${encodedFrom}&to_city=${encodedTo}`,
-//   { headers }
-// );
-// }
 
 getRouteDistance(to: string, extraStops: string[] = []): Observable<{ distance_km: number }> {
   const token = localStorage.getItem('access_token');
@@ -111,12 +95,17 @@ getDepartmentEmployees(user_id: string): Observable<{ id: string; full_name: str
   });
 
   return this.http.get<{ id: string; full_name: string }[]>(
-    `http://localhost:8000/api/employees/by-department/${user_id}`,
+    `${environment.employeesByDepartmentUrl}${user_id}`,
     { headers }
   );
 }
 
 
-
-
+  getRideStatusSummary(status?: string): Observable<{ status: string; count: number }[]> {
+    let url = `${environment.apiUrl}/analytics/ride-status-summary`;
+    if (status && status.trim() !== '') {
+      url += `?status=${encodeURIComponent(status)}`;
+    }
+    return this.http.get<{ status: string; count: number }[]>(url);
+  }
 }

@@ -31,6 +31,8 @@ class User(Base):
     block_expires_at = Column(DateTime, nullable=True)
     block_reason = Column(String, nullable=True)
     is_unassigned_user = Column(Boolean, default=False, nullable=False)
+    has_pending_rebook = Column(Boolean, nullable=False, default=False)
+
 
     
 

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-type ToastType = 'success' | 'error' | 'neutral' | 'warning' | 'info' ;// Add your custom types here
+type ToastType = 'success' | 'error' | 'neutral' | 'warning' | 'info' ;
 
 @Injectable({ providedIn: 'root' })
 export class ToastService {
@@ -22,7 +22,7 @@ const existing = Array.from(container.querySelectorAll('.custom-toast'))
 
   if (existing) {
     console.warn('Duplicate toast blocked:', message);
-    return; // Don't create another one
+    return;
   }
     const toast = document.createElement('div');
     toast.className = `custom-toast ${type}`;
@@ -40,13 +40,12 @@ const existing = Array.from(container.querySelectorAll('.custom-toast'))
   showPersistent(message: string, type: ToastType = 'neutral') {
   const container = this.getContainer();
 
-  // ✅ Check if a persistent toast with the same text already exists
   const existing = Array.from(container.querySelectorAll('.toast.persistent'))
     .find(toast => toast.textContent?.replace('OK', '').trim() === message.trim());
 
   if (existing) {
     console.warn('Duplicate persistent toast blocked:', message);
-    return; // Don't create another one
+    return;
   }
 
   const toast = document.createElement('div');

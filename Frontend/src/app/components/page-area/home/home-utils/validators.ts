@@ -102,8 +102,12 @@ export function createSameDateNightRideValidator(): ValidatorFn {
   };
 }
 
-export function createFutureDateTimeValidator(): ValidatorFn {
+export function createFutureDateTimeValidator(isRebookMode: boolean = false): ValidatorFn {
   return (formGroup: AbstractControl): ValidationErrors | null => {
+    if (isRebookMode) {
+      return null;
+    }
+
     const rideDateControl = formGroup.get('ride_date');
     const startHourControl = formGroup.get('start_hour');
     const startMinuteControl = formGroup.get('start_minute');
@@ -136,6 +140,7 @@ export function createFutureDateTimeValidator(): ValidatorFn {
     return null;
   };
 }
+
 
 export function createInspectorClosureTimeValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {

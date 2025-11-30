@@ -117,7 +117,6 @@ register(): void {
 
       this.toastService.show('ההרשמה בוצעה בהצלחה 🎉', 'success');
 
-      // ✅ Redirect based on role
       const role = response.role;
       if (role === 'admin') {
         this.router.navigate(['/audit-logs']);

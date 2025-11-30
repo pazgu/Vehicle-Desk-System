@@ -4,10 +4,10 @@ import { AuthService } from '../../../services/auth.service';
 import { ToastService } from '../../../services/toast.service';
 import { Observable, of } from 'rxjs';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../../environments/environment';
 import { NotificationService } from '../../../services/notification';
 import { SocketService } from '../../../services/socket.service';
+import { HeaderService } from '../../../services/header.service';
+
 @Component({
   selector: 'app-header',
   standalone: true,
@@ -15,6 +15,7 @@ import { SocketService } from '../../../services/socket.service';
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css']
 })
+
 export class HeaderComponent implements OnInit {
   fullName$: Observable<string> = of('');
   role$: Observable<string> = of('');
@@ -27,9 +28,9 @@ export class HeaderComponent implements OnInit {
     private authService: AuthService,
     private router: Router,
     private toastService: ToastService,
-    private http: HttpClient,
     private notificationService: NotificationService,
-    private socketService:SocketService
+    private socketService:SocketService,
+    private headerService: HeaderService
   ) {}
 
   ngOnInit(): void {
@@ -46,69 +47,57 @@ export class HeaderComponent implements OnInit {
       this.rideIdToComplete = pendingRideId;
       this.showFeedbackModal = true;
     } else {
+
       this.checkFeedbackNeeded();
     }
- 
-this.socketService.feedbackNeeded$.subscribe((data) => {
 
-  if (data?.ride_id && data?.showPage) {
-    localStorage.setItem('pending_feedback_ride', data.ride_id);
-    this.rideIdToComplete = data.ride_id;
-    this.showFeedbackModal = true;
-
-
-    const role = localStorage.getItem('role');
-    // if (role === 'employee') {
-    //   this.toastService.show('יש למלא טופס חווית נסיעה', 'neutral');
-    // }
+    this.socketService.feedbackNeeded$.subscribe((data) => {
+      if (data?.ride_id && data?.showPage) {
+        localStorage.setItem('pending_feedback_ride', data.ride_id);
+        this.rideIdToComplete = data.ride_id;
+        this.showFeedbackModal = true;
+      }
+    });
   }
-});
 
-
-  }
   onLogout(): void {
     this.authService.logout();
     this.toastService.show('התנתקת בהצלחה', 'success');
     this.router.navigate(['/login']);
-    this.toastService.clearAll()
+    this.toastService.clearAll();
   }
 
   getUserId(): string | null {
-  const token = localStorage.getItem('access_token');
-  if (!token) return null;
-
-  // Decode token to extract user ID (assuming JWT)
-  const payload = JSON.parse(atob(token.split('.')[1]));
-  return payload.sub || null; // or 'user_id' depending on your token
-}
-
-  // Keep your original frontend code
-checkFeedbackNeeded(): void {
-  const userId = this.getUserId();
-
-  if (!userId) return;
-
-  this.http.get<any>(`${environment.apiUrl}/rides/feedback/check/${userId}`).subscribe(
-    
-    (res) => {
-      if (res?.ride_id && res?.showPage) {
-        localStorage.setItem('pending_feedback_ride', res.ride_id);
-        this.rideIdToComplete = res.ride_id;
-        this.showFeedbackModal = true;
-
-         const role=localStorage.getItem('role');
-  // if(role==='employee'){
-  //   this.toastService.show('יש למלא טופס חווית נסיעה','neutral')
-    
-  // }
-  
-      }
-    },
-    (error) => {
-      console.error('Feedback check error:', error);
+    const token = localStorage.getItem('access_token');
+    if (!token) return null;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.sub || null;
+    } catch (e) {
+      console.error('Error parsing access token payload:', e);
+      return null;
     }
-  );
-}
+  }
+
+  checkFeedbackNeeded(): void {
+    const userId = this.getUserId();
+    if (!userId) return;
+
+
+    this.headerService.checkFeedbackNeeded(userId).subscribe(
+      (res) => {
+        if (res?.ride_id && res?.showPage) {
+          localStorage.setItem('pending_feedback_ride', res.ride_id);
+          this.rideIdToComplete = res.ride_id;
+          this.showFeedbackModal = true;
+          this.toastService.show('יש למלא טופס חווית נסיעה', 'neutral');
+        }
+      },
+      (error) => {
+        console.error('Feedback check error:', error);
+      }
+    );
+  }
 
 
   onFormCompleted(): void {
@@ -118,8 +107,8 @@ checkFeedbackNeeded(): void {
   }
 
   get isAuthPage(): boolean {
-  const url = this.router.url;
-  return url.startsWith('/login') || url.startsWith('/register') || url.startsWith('/reset-password');
-}
+    const url = this.router.url;
+    return url.startsWith('/login') || url.startsWith('/register') || url.startsWith('/reset-password');
+  }
 
 }

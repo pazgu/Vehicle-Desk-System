@@ -1,5 +1,5 @@
 import calendar
-from datetime import datetime, date
+from datetime import datetime, date, time
 from typing import List, Optional, Dict, Any
 from uuid import UUID
 
@@ -16,6 +16,17 @@ from ..models.user_model import User
 from ..models.vehicle_inspection_model import VehicleInspection
 from ..models.vehicle_model import Vehicle
 from src.models.ride_approval_model import RideApproval
+
+from src.schemas.statistics_schema import (
+    NoShowStatsResponse,
+    TopNoShowUser,
+    RideStartTimeStatsResponse,
+    RideStartTimeBucket,
+    PurposeOfTravelStatsResponse,
+    MonthlyPurposeBreakdown,
+)
+
+
 
 
 def filter_rides(query, status: Optional[RideStatus], from_date, to_date):
@@ -396,3 +407,66 @@ def get_critical_issue_by_id(issue_id: str, db: Session) -> Optional[Dict[str, A
         raise(f"Error parsing ride approval ID: {e}")
 
     return None
+def get_ride_start_time_stats_by_hour(
+    db: Session,
+    from_date: Optional[date],
+    to_date: Optional[date],
+) -> RideStartTimeStatsResponse:
+    """
+    Returns ride start-time distribution for the given date range.
+    """
+    if to_date is None:
+        to_d = date.today()
+    else:
+        to_d = to_date if isinstance(to_date, date) else to_date.date()
+
+    if from_date is None:
+        d = to_d.replace(day=1)
+        month = d.month - 3
+        year = d.year
+        while month <= 0:
+            month += 12
+            year -= 1
+        from_d = date(year, month, 1)
+    else:
+        from_d = from_date if isinstance(from_date, date) else from_date.date()
+
+    start_dt = datetime.combine(from_d, datetime.min.time())
+    end_dt = datetime.combine(to_d, datetime.max.time())
+
+    hour_col = func.extract("hour", Ride.start_datetime).label("hour")
+
+    grouped = (
+        db.query(hour_col, func.count(Ride.id).label("ride_count"))
+        .filter(
+            Ride.start_datetime >= start_dt,
+            Ride.start_datetime <= end_dt,
+        )
+        .group_by(hour_col)
+        .order_by(hour_col)
+        .all()
+    )
+
+    buckets: List[RideStartTimeBucket] = [
+        RideStartTimeBucket(hour=int(row.hour), ride_count=int(row.ride_count))
+        for row in grouped
+    ]
+
+    total_rides = sum(b.ride_count for b in buckets)
+
+    return RideStartTimeStatsResponse(
+        from_date=from_d,
+        to_date=to_d,
+        total_rides=total_rides,
+        buckets=buckets,
+    )
+    
+def _add_months(year: int, month: int, delta: int) -> tuple[int, int]:
+    month += delta
+    while month > 12:
+        month -= 12
+        year += 1
+    while month <= 0:
+        month += 12
+        year -= 1
+    return year, month

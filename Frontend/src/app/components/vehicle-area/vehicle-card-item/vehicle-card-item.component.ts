@@ -179,7 +179,7 @@ export class VehicleCardItemComponent implements OnInit {
         });
       },
       error: err => {
-        console.error('❌ Error fetching vehicle usage data:', err);
+        console.error(' Error fetching vehicle usage data:', err);
       }
     });
   }
@@ -374,7 +374,7 @@ translateType(type: string | undefined): string {
           this.location.back();
         },
         error: (err) => {
-          console.error("❌ ארכוב נכשל:", err);
+          console.error(" ארכוב נכשל:", err);
           const msg = err?.error?.detail || "הארכוב נכשל.";
           this.toastService.show(msg, 'error');
         }
@@ -479,7 +479,7 @@ translateType(type: string | undefined): string {
           this.location.back();
         },
         error: (err) => {
-          console.error('❌ Error restoring vehicle:', err);
+          console.error(' Error restoring vehicle:', err);
           this.toastService.show('שגיאה בשחזור הרכב מהארכיון', 'error');
         }
       });
@@ -521,7 +521,7 @@ updateVehiclemileage(vehicle: any): void {
           this.location.back();
         },
         error: (err) => {
-          console.error('❌ Error permanently deleting vehicle:', err);
+          console.error(' Error permanently deleting vehicle:', err);
           this.toastService.show('שגיאה במחיקה לצמיתות של הרכב', 'error');
         }
       });

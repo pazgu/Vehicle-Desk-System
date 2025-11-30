@@ -55,14 +55,14 @@ def _send_email_sync_sendgrid(subject: str, html_content: str, to_emails: List[s
         sg = SendGridAPIClient(SENDGRID_API_KEY)
         response = sg.send(message)
         if 200 <= response.status_code < 300:
-            logger.info(f"✅ SendGrid Email sent successfully with status: {response.status_code}")
+            logger.info(f"SendGrid Email sent successfully with status: {response.status_code}")
             return True
         else:
             error_details = response.body.decode('utf-8') if response.body else 'No error details provided.'
-            logger.error(f"❌ SendGrid returned an error status: {response.status_code}. Details: {error_details}")
+            logger.error(f" SendGrid returned an error status: {response.status_code}. Details: {error_details}")
             return False
     except Exception as e:
-        logger.error(f"❌ Error sending email via SendGrid: {e}", exc_info=True)
+        logger.error(f"Error sending email via SendGrid: {e}", exc_info=True)
         return False
 
 async def _async_send_email_sendgrid(subject: str, body: str, recipients: List[str]) -> bool:
@@ -78,8 +78,7 @@ async def _async_send_email_sendgrid(subject: str, body: str, recipients: List[s
             ""
         )
     except Exception as e:
-        # Log the error instead of crashing the app
-        print(f"❌ Failed to send async email: {e}")
+        print(f"Failed to send async email: {e}")
         return False
 
 
@@ -141,10 +140,10 @@ class EmailService:
             raise
 
     @retry(
-        stop=stop_after_attempt(3), # Try up to 3 times
-        wait=wait_exponential(multiplier=1, min=2, max=10), # Wait 2, 4, 8 seconds
-        before_sleep=before_sleep_log(logger, logging.WARNING), # Log before retrying
-        reraise=True # Re-raise the last exception if all retries fail
+        stop=stop_after_attempt(3), 
+        wait=wait_exponential(multiplier=1, min=2, max=10), 
+        before_sleep=before_sleep_log(logger, logging.WARNING), 
+        reraise=True 
     )
     async def _send_email_with_tenacity(
         self,
@@ -159,7 +158,7 @@ class EmailService:
         Sends an email with automatic retries using tenacity.
         Emits Socket.IO status updates for each attempt.
         """
-        current_recipient_email = recipients[0] if recipients else "N/A" # For logging
+        current_recipient_email = recipients[0] if recipients else "N/A"
 
         try:
             await self._emit_email_status(user_id, email_type, EmailStatusEnum.ATTEMPTING,
@@ -179,18 +178,16 @@ class EmailService:
             else:
                 error_msg = f"Email utility reported failure for '{email_type}' to {current_recipient_email}."
                 logger.warning(error_msg)
-                raise Exception(error_msg) # Raise an exception to trigger tenacity to retry
+                raise Exception(error_msg) 
 
         except Exception as e:
             error_msg = f"Failed to send email type '{email_type}' to {current_recipient_email}: {e}"
             logger.error(error_msg, exc_info=True)
             await self._emit_email_status(user_id, email_type, EmailStatusEnum.FAILED,
                                          f"Failed to send email to {current_recipient_email}. Error: {e}", identifier_id)
-            raise # Re-raise to let tenacity handle the retry or final failure
-    # --- END NEW PRIVATE HELPER ---
+            raise 
 
 
-    # --- MODIFIED: _async_send_email_via_utils (Now a dispatcher) ---
     async def _async_send_email_via_utils(
         self,
         subject: str,
@@ -199,7 +196,7 @@ class EmailService:
         user_id: UUID,
         email_type: str,
         identifier_id: UUID | None = None,
-        use_retries: bool = True # NEW PARAMETER - default to True for background tasks
+        use_retries: bool = True
     ) -> bool:
         """
         Internal wrapper to use the consolidated SendGrid-based async email utility.
@@ -212,16 +209,13 @@ class EmailService:
 
         if use_retries:
             try:
-                # Call the retry-enabled helper
                 return await self._send_email_with_tenacity(
                     subject, body, recipients, user_id, email_type, identifier_id
                 )
             except Exception as e:
-                # Final failure after all retries in _send_email_with_tenacity
                 logger.error(f"Final failure after all retries for email type '{email_type}' for user {user_id}: {e}", exc_info=True)
                 return False
         else:
-            # Single attempt without retries (for real-time user-initiated emails)
             current_recipient_email = recipients[0]
 
             try:
@@ -252,10 +246,8 @@ class EmailService:
                 await self._emit_email_status(user_id, email_type, EmailStatusEnum.FAILED,
                                              f"Failed to send email due to an internal error.", identifier_id)
                 return False
-    # --- END MODIFIED ---
 
 
-    # --- MODIFIED: send_email_direct (Takes new 'use_retries' param, default False) ---
     async def send_email_direct(
         self,
         to_email: str,
@@ -312,12 +304,9 @@ class EmailService:
             await self._emit_email_status(recipient_id, email_type, EmailStatusEnum.FAILED, error_msg, ride_id)
             return False
 
-        # The subject and template are specific to the supervisor email
         subject = "📄 בקשת נסיעה חדשה מחכה לאישורך"
         template_name = "new_ride_request.html"
 
-        # Corrected context dictionary to match template variables
-        # The keys here MUST match the {{...}} placeholders in your HTML file
         context = {
             "SUPERVISOR_NAME": ride_details.get("supervisor_name", "מנהל"),
             "EMPLOYEE_NAME": ride_details.get("username", "העובד"),
@@ -348,9 +337,7 @@ class EmailService:
             logger.error(error_msg, exc_info=True)
             await self._emit_email_status(recipient_id, email_type, EmailStatusEnum.FAILED, "Email preparation failed.", ride_id)
             return False
-        
 
-    # --- ADD/MODIFY send_ride_cancellation_email (accept use_retries, default False) ---
     async def send_ride_cancellation_email(self, ride_id: UUID, recipient_id: UUID, db: Session, ride_details: Dict[str, Any], cancellation_reason: str = "Unknown reason", use_retries: bool = False) -> bool:
         logger.info(f"Attempting to send ride cancellation email for ride {ride_id} to recipient {recipient_id} (Retries: {use_retries})")
         recipient_email = await self._get_user_email(recipient_id, db)
@@ -382,7 +369,7 @@ class EmailService:
                 user_id=recipient_id,
                 email_type="ride_cancellation",
                 identifier_id=ride_id,
-                use_retries=use_retries # Pass the new parameter
+                use_retries=use_retries 
             )
             return email_sent_successfully
         except Exception as e:
@@ -437,7 +424,7 @@ class EmailService:
 #                 use_retries=True
 #             )
 #         )
-#         print(f"✅ Email for ride {ride_id} successfully dispatched.")
+#         print(f" Email for ride {ride_id} successfully dispatched.")
 
 #     except Exception as e:
 #         print(f"🔥 An error occurred while dispatching email for ride {ride_id}: {e}")

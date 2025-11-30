@@ -60,6 +60,15 @@
     class="cancelled-no-show-icon"
   />
 
+  <img
+  *ngIf="order.status.toLowerCase() === 'cancelled_vehicle_unavailable'"
+  src="assets/images/rebook-icon.png"
+  alt="Vehicle Unavailable - Rebook Available"
+  class="rebook-icon"
+  title="יש לבחור רכב אחר "
+/>
+
+
   <div
     *ngIf="order.status?.toLowerCase() === 'cancelled' && order.cancel_reason"
     class="cancel-reason-text"
@@ -79,7 +88,7 @@
 
     <div class="cell actions-cell">
       <div class="modify-buttons">
-        <button
+        <button *ngIf="order.status!='cancelled_vehicle_unavailable'"
           class="modify"
           (click)="canEdit(order) ? onEditRide(order, $event) : null"
           [disabled]="!canEdit(order)"
@@ -91,17 +100,18 @@
 
         <button
           class="delete"
-          [disabled]="!canDelete(order)"
+          [disabled]="!canDelete(order) || isPastOrder(order)"
           [style.opacity]="canDelete(order) ? '1' : '0.5'"
           (click)="canDelete(order) ? onDeleteRide(order, $event) : null"
-          [style.cursor]="canDelete(order) ? 'pointer' : 'not-allowed'"
+          [style.cursor]="!canDelete(order)||isPastOrder(order) ? 'not-allowed' : 'pointer'"
         >
           <i class="pi pi-trash"></i>
         </button>
             <button
-      class="rebook"
-      *ngIf="canRebook(order)"
-      (click)="onRebook(order, $event)"
+    class="rebook"
+    *ngIf="canRebook(order)"
+    (click)="onRebook(order, $event)"
+    [disabled]="isPastOrder(order)"
     >
       הזמן מחדש
     </button>

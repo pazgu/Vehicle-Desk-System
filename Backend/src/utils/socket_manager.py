@@ -19,4 +19,4 @@ async def connect(sid, environ, auth=None):
 
 @sio.event
 async def disconnect(sid):
-    print(f"❌ Socket disconnected")
+    print(f"Socket disconnected")

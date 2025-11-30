@@ -127,7 +127,7 @@ export class FilterPanelComponent implements OnInit, OnChanges {
         this.applyFilters();
       },
       error: (err) => {
-        console.error('❌ Error loading all-time vehicle usage data:', err);
+        console.error(' Error loading all-time vehicle usage data:', err);
       },
     });
   }
@@ -147,7 +147,7 @@ export class FilterPanelComponent implements OnInit, OnChanges {
         this.applyFilters();
       },
       error: (err) => {
-        console.error('❌ Error loading vehicle usage data:', err);
+        console.error(' Error loading vehicle usage data:', err);
       },
     });
   }
@@ -163,7 +163,7 @@ export class FilterPanelComponent implements OnInit, OnChanges {
         this.applyFilters();
       },
       error: (err) => {
-        console.error('❌ Error loading all-time vehicle usage data:', err);
+        console.error(' Error loading all-time vehicle usage data:', err);
       },
     });
   }
