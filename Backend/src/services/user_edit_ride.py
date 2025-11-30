@@ -5,11 +5,12 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from ..models.city_model import City
-from ..models.ride_model import Ride
+from ..models.ride_model import Ride,RideStatus
 from ..models.user_model import User
 from ..models.vehicle_model import Vehicle
 from ..schemas.order_card_item import OrderCardItem
 from ..schemas.user_response_schema import UserUpdate
+from ..helpers.department_helpers import is_vip_department
 
 
 async def patch_order_in_db(order_id: UUID, patch_data: OrderCardItem, db: Session, changed_by: str):
@@ -18,7 +19,10 @@ async def patch_order_in_db(order_id: UUID, patch_data: OrderCardItem, db: Sessi
     order = db.query(Ride).filter(Ride.id == order_id).first()
     if not order:
         raise HTTPException(status_code=404, detail="ההזמנה לא נמצאה")
-    if order.status == "APPROVED":
+    
+    is_vip = is_vip_department(db, UUID(changed_by))
+    
+    if order.status == "APPROVED" and not is_vip:
         raise HTTPException(status_code=400, detail="אי אפשר לערוך הזמנה שאושרה. ניתן רק לבטל ולהזמין חדשה.")
 
     # Save the original status to check for changes
@@ -28,6 +32,8 @@ async def patch_order_in_db(order_id: UUID, patch_data: OrderCardItem, db: Sessi
     for key, value in data.items():
         setattr(order, key, value)
 
+    if is_vip and order.status != RideStatus.approved:
+        order.status = RideStatus.approved
     start = order.start_datetime
     end = order.end_datetime
     if start and end:

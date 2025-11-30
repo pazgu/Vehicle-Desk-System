@@ -179,7 +179,7 @@ async def edit_user_by_id_route(
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id_from_token)})
 
     if department_id == "vip":
-        vip_dep = get_or_create_vip_department(db)
+        vip_dep = get_or_create_vip_department(db, user_id_from_token)
         department_id = str(vip_dep.id)  
 
     has_gov_license = has_government_license.lower() == "true"
@@ -427,7 +427,7 @@ async def add_user_as_admin(
         license_file_url = f"/uploads/{license_file.filename}"
 
     if department_id and department_id.lower() == "vip":
-        dep = get_or_create_vip_department(db)
+        dep = get_or_create_vip_department(db, changed_by)
         department_id=dep.id
 
     user_data = UserCreate(
