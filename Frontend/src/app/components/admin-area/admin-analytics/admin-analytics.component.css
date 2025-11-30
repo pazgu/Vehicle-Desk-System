@@ -370,7 +370,6 @@ body {
   }
 }
 
-/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -389,7 +388,6 @@ body {
   background: linear-gradient(135deg, #5a6fd8, #6a4190);
 }
 
-/* Loading States */
 .chart-loading {
   display: flex;
   justify-content: center;
@@ -465,7 +463,6 @@ body {
   animation: fadeAndCollapse 4s ease-out forwards;
 }
 
-/* Makes it fade AND collapse the height */
 @keyframes fadeAndCollapse {
   0% {
     opacity: 1;
@@ -484,7 +481,6 @@ body {
 
   
 }
-/* Enhanced Export Disclaimer Styling */
 .export-disclaimer {
   display: block;
   margin: 0.75rem auto 1.5rem auto;
@@ -584,5 +580,355 @@ body {
     font-size: 0.75rem;
     padding: 0.4rem 0.8rem;
     margin: 0.5rem auto 0.75rem auto;
+  }
+}
+
+.ride-start-filters {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9));
+  border-radius: 12px;
+  padding: 1rem;
+  margin: 1rem auto;
+  max-width: 85%;
+  border: 2px solid rgba(148, 34, 34, 0.1);
+  box-shadow: 
+    0 4px 15px rgba(148, 34, 34, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.5) inset;
+  backdrop-filter: blur(10px);
+  direction: rtl;
+}
+
+.filter-mode-toggle {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid rgba(148, 34, 34, 0.1);
+}
+
+.filter-mode-toggle label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Alef', sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #4a5568;
+  border: 2px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.filter-mode-toggle label::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(148, 34, 34, 0.05), transparent);
+  transition: left 0.5s ease;
+}
+
+.filter-mode-toggle label:hover {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(148, 34, 34, 0.2);
+  transform: translateX(-2px);
+}
+
+.filter-mode-toggle label:hover::before {
+  left: 100%;
+}
+
+.filter-mode-toggle input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #942222;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.filter-mode-toggle input[type="radio"]:checked + * {
+  font-weight: 700;
+}
+
+.filter-mode-toggle label:has(input[type="radio"]:checked) {
+  background: linear-gradient(135deg, #942222, #b91c1c);
+  color: white;
+  border-color: #942222;
+  box-shadow: 
+    0 4px 12px rgba(148, 34, 34, 0.25),
+    0 1px 0 rgba(255, 255, 255, 0.2) inset;
+}
+
+.single-month-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 10px;
+  border: 1px solid rgba(148, 34, 34, 0.1);
+}
+
+.single-month-filter label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-family: 'Alef', sans-serif;
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 0.9rem;
+}
+
+.single-month-filter select {
+  padding: 0.5rem 2rem 0.5rem 0.75rem;
+  border: 2px solid rgba(148, 34, 34, 0.2);
+  border-radius: 8px;
+  font-family: 'Alef', sans-serif;
+  font-size: 0.85rem;
+  background: white;
+  color: #2d3748;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 90px;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23942222' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 0.75rem center;
+}
+
+.single-month-filter select:hover {
+  border-color: #942222;
+  box-shadow: 0 2px 8px rgba(148, 34, 34, 0.15);
+}
+
+.single-month-filter select:focus {
+  outline: none;
+  border-color: #942222;
+  box-shadow: 0 0 0 3px rgba(148, 34, 34, 0.1);
+}
+
+.single-month-filter button {
+  padding: 0.5rem 1.25rem;
+  background: linear-gradient(145deg, #942222, #b91c1c);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Alef', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 10px rgba(148, 34, 34, 0.2);
+}
+
+.single-month-filter button:hover {
+  background: linear-gradient(145deg, #7f1d1d, #991b1b);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(148, 34, 34, 0.3);
+}
+
+.single-month-filter button:active {
+  transform: translateY(0);
+}
+
+.range-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 10px;
+  border: 1px solid rgba(148, 34, 34, 0.1);
+}
+
+.range-filter label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-family: 'Alef', sans-serif;
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 0.9rem;
+}
+
+.range-filter select {
+  padding: 0.5rem 2rem 0.5rem 0.75rem;
+  border: 2px solid rgba(148, 34, 34, 0.2);
+  border-radius: 8px;
+  font-family: 'Alef', sans-serif;
+  font-size: 0.85rem;
+  background: white;
+  color: #2d3748;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 90px;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23942222' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 0.75rem center;
+}
+
+.range-filter select:hover {
+  border-color: #942222;
+  box-shadow: 0 2px 8px rgba(148, 34, 34, 0.15);
+}
+
+.range-filter select:focus {
+  outline: none;
+  border-color: #942222;
+  box-shadow: 0 0 0 3px rgba(148, 34, 34, 0.1);
+}
+
+.range-filter button {
+  padding: 0.5rem 1.25rem;
+  background: linear-gradient(145deg, #942222, #b91c1c);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Alef', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 10px rgba(148, 34, 34, 0.2);
+}
+
+.range-filter button:hover {
+  background: linear-gradient(145deg, #7f1d1d, #991b1b);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(148, 34, 34, 0.3);
+}
+
+.range-filter button:active {
+  transform: translateY(0);
+}
+
+.ride-start-chart-wrapper {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 12px;
+  border: 1px solid rgba(148, 34, 34, 0.1);
+  box-shadow: 0 2px 10px rgba(148, 34, 34, 0.05);
+}
+
+.loading-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem;
+  font-family: 'Alef', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #942222;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  position: relative;
+}
+
+.loading-state::after {
+  content: '';
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border: 3px solid rgba(148, 34, 34, 0.2);
+  border-top: 3px solid #942222;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 10px;
+}
+
+@media (max-width: 768px) {
+  .ride-start-filters {
+    padding: 1rem;
+    max-width: 95%;
+  }
+
+  .filter-mode-toggle {
+    gap: 0.5rem;
+  }
+
+  .filter-mode-toggle label {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.9rem;
+  }
+
+  .single-month-filter,
+  .range-filter {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .single-month-filter label,
+  .range-filter label {
+    width: 100%;
+  }
+
+  .single-month-filter select,
+  .range-filter select {
+    width: 100%;
+  }
+
+  .single-month-filter button,
+  .range-filter button {
+    width: 100%;
+  }
+
+  .ride-start-chart-wrapper {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .ride-start-filters {
+    padding: 0.75rem;
+    max-width: 98%;
+  }
+
+  .filter-mode-toggle label {
+    padding: 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .filter-mode-toggle input[type="radio"] {
+    width: 18px;
+    height: 18px;
+  }
+
+  .single-month-filter,
+  .range-filter {
+    padding: 0.75rem;
+  }
+
+  .single-month-filter label,
+  .range-filter label {
+    font-size: 0.85rem;
+  }
+
+  .single-month-filter select,
+  .range-filter select {
+    padding: 0.5rem 1.5rem 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .single-month-filter button,
+  .range-filter button {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .ride-start-chart-wrapper {
+    padding: 0.75rem;
+    margin-top: 1rem;
   }
 }
