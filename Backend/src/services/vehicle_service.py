@@ -27,7 +27,7 @@ from src.utils.database import SessionLocal
 # Schemas
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 from ..schemas.user_rides_schema import RideSchema
-from ..schemas.vehicle_schema import VehicleOut, InUseVehicleOut
+from ..schemas.vehicle_schema import VehicleOut, InUseVehicleOut , VehicleUpdateRequest
 
 # Models
 from ..models.ride_model import Ride, RideStatus
@@ -327,6 +327,41 @@ def get_vehicle_by_id(vehicle_id: str, db: Session):
         "archived_at": vehicle.archived_at,
         "mileage_last_updated": vehicle.mileage_last_updated
     }
+
+def update_vehicle(vehicle_id: str, vehicle_data: VehicleUpdateRequest, db: Session):
+    vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
+    
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="רכב לא נמצא")
+    if vehicle.is_archived:
+        raise HTTPException(status_code=400, detail="לא ניתן לערוך רכב מארכב")
+    if vehicle_data.department_id:
+        from ..models.department_model import Department
+        dept = db.query(Department).filter(
+            Department.id == vehicle_data.department_id,
+        ).first()
+        if not dept:
+            raise HTTPException(status_code=400, detail="מחלקה לא נמצאה או לא פעילה")
+    if vehicle_data.department_id is not None:
+        vehicle.department_id = vehicle_data.department_id
+    if vehicle_data.mileage is not None:
+        if vehicle_data.mileage < 0:
+            raise HTTPException(status_code=400, detail="קילומטראז' לא יכול להיות שלילי")
+        vehicle.mileage = vehicle_data.mileage
+        vehicle.mileage_last_updated = datetime.utcnow()
+    if vehicle_data.image_url is not None:
+        vehicle.image_url = vehicle_data.image_url
+    if hasattr(vehicle, 'updated_at'):
+        vehicle.updated_at = datetime.utcnow()
+    try:
+        db.commit()
+        db.refresh(vehicle)
+        print(f"✅ Vehicle {vehicle.plate_number} updated successfully")
+        return get_vehicle_by_id(vehicle_id, db)
+    except Exception as e:
+        db.rollback()
+        print(f"❌ Error updating vehicle: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"שגיאה בעדכון הרכב: {str(e)}")
 
 def freeze_vehicle_service(db: Session, vehicle_id: UUID, reason: str, changed_by: UUID):
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(changed_by)})

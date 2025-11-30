@@ -189,4 +189,13 @@ getAllVehiclesForNewRide(distance: number, rideDate: string, vehicleType: string
 
     return this.http.get<{ status: string; count: number }[]>(url);
   }
+
+  updateVehicle(vehicleId: string, vehicleData: any): Observable<any> {
+    const updatePayload = {
+      department_id: vehicleData.department_id,
+      mileage: vehicleData.mileage,
+      image_url: vehicleData.image_url
+    };
+    return this.http.put(`${this.apiUrl}/vehicle/${vehicleId}`, updatePayload);
+  }
 }
