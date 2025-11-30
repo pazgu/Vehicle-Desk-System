@@ -63,7 +63,12 @@ from src.schemas.audit_schema import AuditLogsSchema
 from src.schemas.department_schema import DepartmentCreate, DepartmentUpdate, DepartmentOut
 from src.schemas.order_card_item import OrderCardItem
 from src.schemas.ride_dashboard_item import RideDashboardItem
-from src.schemas.statistics_schema import NoShowStatsResponse, TopNoShowUser
+from src.schemas.statistics_schema import (
+    NoShowStatsResponse,
+    TopNoShowUser,
+    RideStartTimeStatsResponse,
+    RideStartTimeBucket,
+)
 from src.schemas.trip_completion_schema import RawCriticalIssueSchema, TripCompletionIssueSchema
 from src.schemas.user_response_schema import UserResponse, PaginatedUserResponse
 from src.schemas.vehicle_inspection_schema import VehicleInspectionOut
@@ -952,6 +957,7 @@ def get_no_show_statistics(
     db: Session = Depends(get_db),
 ):
     
+    
 
     # 1. Get total no-shows
     query = db.query(NoShowEvent)
@@ -1026,6 +1032,75 @@ def get_no_show_statistics(
     )
 
 
+@router.get("/statistics/ride-start-time", response_model=RideStartTimeStatsResponse)
+def get_ride_start_time_statistics(
+    from_date: Optional[date] = Query(
+        None,
+        description="Start date for filtering (inclusive, YYYY-MM-DD)",
+    ),
+    to_date: Optional[date] = Query(
+        None,
+        description="End date for filtering (inclusive, YYYY-MM-DD)",
+    ),
+    db: Session = Depends(get_db),
+):
+    """
+    Returns how many rides start at each hour of the day (0–23),
+    within an optional date range. If no dates are provided, defaults
+    to the last 4 full months up to the end of the current month.
+    """
+    today = date.today()
+
+    if to_date is None:
+        if today.month == 12:
+            next_month = date(today.year + 1, 1, 1)
+        else:
+            next_month = date(today.year, today.month + 1, 1)
+        to_date = next_month - timedelta(days=1)
+
+    if from_date is None:
+        month = to_date.month - 3
+        year = to_date.year
+        while month <= 0:
+            month += 12
+            year -= 1
+        from_date = date(year, month, 1)
+
+    start_dt = datetime.combine(from_date, time.min)
+    end_dt = datetime.combine(to_date, time.max)
+
+    base_query = db.query(Ride).filter(
+        Ride.start_datetime >= start_dt,
+        Ride.start_datetime <= end_dt,
+    )
+    total_rides = base_query.count()
+
+    hour_col = func.extract("hour", Ride.start_datetime).label("hour")
+
+    grouped = (
+        db.query(hour_col, func.count(Ride.id).label("ride_count"))
+        .filter(
+            Ride.start_datetime >= start_dt,
+            Ride.start_datetime <= end_dt,
+        )
+        .group_by(hour_col)
+        .order_by(hour_col)
+        .all()
+    )
+
+    counts_by_hour = {int(row.hour): row.ride_count for row in grouped}
+
+    buckets = [
+        RideStartTimeBucket(hour=h, ride_count=counts_by_hour.get(h, 0))
+        for h in range(24)
+    ]
+
+    return RideStartTimeStatsResponse(
+        from_date=from_date,
+        to_date=to_date,
+        total_rides=total_rides,
+        buckets=buckets,
+    )
 
 
 @router.post("/admin/vehicles/mileage/upload")

@@ -17,6 +17,11 @@ from ..models.vehicle_inspection_model import VehicleInspection
 from ..models.vehicle_model import Vehicle
 from src.models.ride_approval_model import RideApproval
 
+from src.schemas.statistics_schema import (
+    RideStartTimeStatsResponse,
+    RideStartTimeBucket,
+)
+
 
 def filter_rides(query, status: Optional[RideStatus], from_date, to_date):
     if status:
@@ -396,3 +401,79 @@ def get_critical_issue_by_id(issue_id: str, db: Session) -> Optional[Dict[str, A
         raise(f"Error parsing ride approval ID: {e}")
 
     return None
+
+
+def get_ride_start_time_stats_by_hour(
+    db: Session,
+    from_date: Optional[datetime],
+    to_date: Optional[datetime],
+) -> RideStartTimeStatsResponse:
+    """
+    Returns ride start-time distribution for the given date range
+    AND stores it into ride_start_time_stats table (one row per hour).
+    """
+
+    if to_date is None:
+        to_d = date.today()
+    else:
+        to_d = to_date.date()
+
+    if from_date is None:
+        d = to_d.replace(day=1)
+        month = d.month - 3
+        year = d.year
+        while month <= 0:
+            month += 12
+            year -= 1
+        from_d = date(year, month, 1)
+    else:
+        from_d = from_date.date()
+
+    start_dt = datetime.combine(from_d, time.min)
+    end_dt = datetime.combine(to_d, time.max)
+
+    hour_col = func.extract("hour", Ride.start_datetime).label("hour")
+
+    grouped = (
+        db.query(hour_col, func.count(Ride.id).label("ride_count"))
+        .filter(
+            Ride.start_datetime >= start_dt,
+            Ride.start_datetime <= end_dt,
+        )
+        .group_by(hour_col)
+        .order_by(hour_col)
+        .all()
+    )
+
+    db.query(RideStartTimeStats).filter(
+        RideStartTimeStats.from_date == from_d,
+        RideStartTimeStats.to_date == to_d,
+    ).delete()
+
+    for row in grouped:
+        hour = int(row.hour)
+        count = int(row.ride_count)
+
+        stats_row = RideStartTimeStats(
+            from_date=from_d,
+            to_date=to_d,
+            hour=hour,
+            ride_count=count,
+        )
+        db.add(stats_row)
+
+    db.commit()
+
+    buckets: List[RideStartTimeBucket] = [
+        RideStartTimeBucket(hour=int(row.hour), ride_count=int(row.ride_count))
+        for row in grouped
+    ]
+
+    total_rides = sum(b.ride_count for b in buckets)
+
+    return RideStartTimeStatsResponse(
+        from_date=from_d,
+        to_date=to_d,
+        total_rides=total_rides,
+        buckets=buckets,
+    )
