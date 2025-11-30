@@ -103,15 +103,15 @@
           [disabled]="!canDelete(order) || isPastOrder(order)"
           [style.opacity]="canDelete(order) ? '1' : '0.5'"
           (click)="canDelete(order) ? onDeleteRide(order, $event) : null"
-          [style.cursor]="canDelete(order) ? 'pointer' : 'not-allowed'"
+          [style.cursor]="!canDelete(order)||isPastOrder(order) ? 'not-allowed' : 'pointer'"
         >
           <i class="pi pi-trash"></i>
         </button>
             <button
-      class="rebook"
-      *ngIf="canRebook(order)"
-      (click)="onRebook(order, $event)"
-      [disabled]="isPastOrder(order)"
+    class="rebook"
+    *ngIf="canRebook(order)"
+    (click)="onRebook(order, $event)"
+    [disabled]="isPastOrder(order)"
     >
       הזמן מחדש
     </button>
