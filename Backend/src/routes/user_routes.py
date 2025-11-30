@@ -216,7 +216,7 @@ async def create_order(
     check_department_assignment(db, user_id)
 
     check_license_validity(db, user_id, ride_request.start_datetime)
-
+    update_user_pending_rebook_status(db,user_id)
     try:
         user = db.query(User).filter(User.employee_id == user_id).first()
         if not user:
