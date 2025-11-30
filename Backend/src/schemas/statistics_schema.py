@@ -13,11 +13,13 @@ class TopNoShowUser(BaseModel):
     role: Optional[str] = None
     employee_id: Optional[str] = None
 
+
 class NoShowStatsResponse(BaseModel):
     total_no_show_events: int
     unique_no_show_users: int
     top_no_show_users: List[TopNoShowUser]
-    
+
+
 class RideStartTimeBucket(BaseModel):
     hour: int
     ride_count: int
@@ -29,3 +31,24 @@ class RideStartTimeStatsResponse(BaseModel):
     total_rides: int
     buckets: List[RideStartTimeBucket]
 
+
+class MonthlyPurposeBreakdown(BaseModel):
+    year: int
+    month: int                
+    month_label: str           
+    administrative_count: int
+    operational_count: int
+    total_rides: int
+    administrative_percentage: float
+    operational_percentage: float
+
+class PurposeOfTravelStatsResponse(BaseModel):
+    from_year: int
+    from_month: int
+    to_year: int
+    to_month: int
+    total_rides: int
+    months: List[MonthlyPurposeBreakdown]
+
+    class Config:
+        from_attributes = True
