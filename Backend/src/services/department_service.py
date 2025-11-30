@@ -17,7 +17,18 @@ def create_department(db: Session, dept_data: DepartmentCreate, payload: dict):
         raise HTTPException(status_code=404, detail="Supervisor not found")
     if supervisor.role != UserRole.supervisor:
         raise HTTPException(status_code=400, detail="User is not a supervisor")
-    db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id_from_token)})
+    if supervisor.department_id is not None:
+        raise HTTPException(
+            status_code=400,
+            detail="Supervisor is already assigned to another department"
+        )
+    if user_id_from_token:
+            db.execute(
+                text("SET session.audit.user_id = :user_id"),
+                {"user_id": str(user_id_from_token)},
+            )
+    else:
+        db.execute(text("SET session.audit.user_id = NULL"))   
     new_dept = Department(name=dept_data.name, supervisor_id=dept_data.supervisor_id)
     db.add(new_dept)
     db.commit()
@@ -34,20 +45,25 @@ def update_department(db: Session, dept_id: UUID, dept_data: DepartmentUpdate, p
     if not department:
         raise HTTPException(status_code=404, detail="Department not found")
 
-    if dept_data.name:
-        if db.query(Department).filter(Department.name == dept_data.name, Department.id != dept_id).first():
-            raise HTTPException(status_code=409, detail="Department name already exists")
-        department.name = dept_data.name
-
     if dept_data.supervisor_id:
-        supervisor = db.query(User).filter_by(employee_id=dept_data.supervisor_id).first()
-        if not supervisor:
+        new_supervisor = db.query(User).filter_by(employee_id=dept_data.supervisor_id).first()
+        if not new_supervisor:
             raise HTTPException(status_code=404, detail="Supervisor not found")
-        if supervisor.role != UserRole.supervisor:
+        if new_supervisor.role != UserRole.supervisor:
             raise HTTPException(status_code=400, detail="User is not a supervisor")
-        department.supervisor_id = dept_data.supervisor_id
-        supervisor.department_id = dept_id
 
+        # משחרר את המפקח הישן אם קיים
+        if department.supervisor_id:
+            old_supervisor = db.query(User).filter_by(employee_id=department.supervisor_id).first()
+            if old_supervisor:
+                old_supervisor.department_id = None
+                db.flush()  # שולח את השינוי ל-DB מיד
+
+        # מקצה למפקח החדש את department_id
+        new_supervisor.department_id = dept_id
+        department.supervisor_id = dept_data.supervisor_id
+
+    # מעדכן את session audit
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id_from_token)})
 
     db.commit()
@@ -55,6 +71,11 @@ def update_department(db: Session, dept_id: UUID, dept_data: DepartmentUpdate, p
     db.execute(text("SET session.audit.user_id = DEFAULT"))
 
     return department
+
+
+
+
+
 
 
 def delete_department(db: Session, department_id: str, payload: dict):

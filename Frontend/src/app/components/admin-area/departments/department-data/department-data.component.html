@@ -80,9 +80,9 @@
         <div class="form-group">
           <label for="editSupervisor">מפקח מחלקה</label>
           <select id="editSupervisor" formControlName="supervisor_id">
-            <option value="">בחר מפקח</option>
+            <option  value="" formControlName="supervisor">בחר מפקח</option>
             <option *ngFor="let user of users" [value]="user.employee_id">
-              {{ user.first_name }} {{ user.last_name }}
+             {{ user.first_name }} {{ user.last_name }}
             </option>
           </select>
         </div>
