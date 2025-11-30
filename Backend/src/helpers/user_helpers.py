@@ -1,6 +1,7 @@
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import select, text
-from datetime import datetime
+from datetime import datetime, timezone
 
 from ..models.user_model import User
 
@@ -68,6 +69,7 @@ def cancel_future_rides_for_vehicle(vehicle_id: str, db: Session, admin_id: str)
 
 
 def update_user_pending_rebook_status(db, user_id: int):
+    now = datetime.now(timezone.utc)
 
     user = db.query(User).filter(User.employee_id == user_id).first()
     if not user:
@@ -75,7 +77,8 @@ def update_user_pending_rebook_status(db, user_id: int):
 
     pending_rides = db.query(Ride).filter(
         Ride.user_id == user_id,
-        Ride.status == RideStatus.cancelled_vehicle_unavailable
+        Ride.status == RideStatus.cancelled_vehicle_unavailable,
+        Ride.start_datetime > now   
     ).count()
 
     user.has_pending_rebook = pending_rides > 0
@@ -84,3 +87,5 @@ def update_user_pending_rebook_status(db, user_id: int):
     db.refresh(user)
 
     return user.has_pending_rebook
+
+
