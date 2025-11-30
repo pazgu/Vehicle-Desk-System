@@ -18,14 +18,14 @@ from ..services.vehicle_service import (
     get_vehicles_with_optional_status,
     get_available_vehicles_new_ride,
     update_vehicle_status,
-    get_vehicle_by_id,
+    get_vehicle_by_id, update_vehicle,
     get_available_vehicles_for_ride_by_id,
     get_inactive_vehicles, get_most_used_vehicles_all_time
 )
 
 # Schemas
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
-from ..schemas.vehicle_schema import VehicleOut, VehicleStatusUpdate, RideTimelineSchema
+from ..schemas.vehicle_schema import VehicleOut, VehicleStatusUpdate, RideTimelineSchema , VehicleUpdateRequest
 from src.schemas.vehicle_create_schema import VehicleCreate
 
 # Models
@@ -156,7 +156,20 @@ def get_vehicle_by_id_route(vehicle_id: str, db: Session = Depends(get_db)):
     return get_vehicle_by_id(vehicle_id, db)
 
 
-
+@router.put("/vehicle/{vehicle_id}")
+def update_vehicle_route(
+    vehicle_id: str, 
+    vehicle_data: VehicleUpdateRequest, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    try:
+        updated_vehicle = update_vehicle(vehicle_id, vehicle_data, db)
+        return updated_vehicle
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/add-vehicle", response_model=VehicleOut, status_code=status.HTTP_201_CREATED)
 def create_vehicle(
