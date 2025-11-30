@@ -20,6 +20,8 @@ import { ToastService } from '../../../services/toast.service';
 })
 export class VehicleCardItemComponent implements OnInit {
   vehicle: any;
+  originalVehicle: any; 
+  isEditMode: boolean = false;
   isFreezeReasonFieldVisible: boolean = false;
   freezeReason: string = '';
   freezeDetails: string = '';
@@ -27,10 +29,10 @@ export class VehicleCardItemComponent implements OnInit {
   vehicleUsageData: { plate_number: string; vehicle_model: string; ride_count: number }[] = [];
   currentVehicleRideCount: number = 0;
   departmentName: string = '';
-
-  showMileageModal = false;
-newMileage: number = 0;
-currentDate = new Date();
+  departments: any[] = [];
+  currentDate = new Date();
+  vehicleTypes = ['Private', 'Small Commercial', 'Large Commercial', '4x4 Pickup', '4x4 SUV', '8-Seater'];
+  fuelTypes = ['electric', 'hybrid', 'gasoline'];
   constructor(
     private navigateRouter: Router,
     private route: ActivatedRoute,
@@ -43,11 +45,13 @@ currentDate = new Date();
   ngOnInit(): void {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     this.loadVehicleUsageData();
+    this.loadDepartments();
 
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.vehicleService.getVehicleById(id).subscribe(vehicleData => {
         this.vehicle = vehicleData;
+        this.originalVehicle = JSON.parse(JSON.stringify(vehicleData));
         this.vehicle.displayStatus = this.translateStatus(vehicleData.status);
         if (vehicleData.is_archived) {
           this.vehicle.status = 'archived';
@@ -72,6 +76,63 @@ currentDate = new Date();
       });
     }
   }
+  loadDepartments(): void {
+    this.vehicleService.getAllDepartments().subscribe({
+      next: (departments) => {
+        this.departments = departments;
+      },
+      error: (err) => {
+        console.error('Failed to load departments:', err);
+      }
+    });
+  }
+  enterEditMode(): void {
+    this.isEditMode = true;
+    this.originalVehicle = JSON.parse(JSON.stringify(this.vehicle));
+  }
+  cancelEdit(): void {
+    this.vehicle = JSON.parse(JSON.stringify(this.originalVehicle));
+    this.isEditMode = false;
+  }
+  saveChanges(): void {
+  const dialogData: ConfirmDialogData = {
+    title: 'שמירת שינויים',
+    message: 'האם אתה בטוח שברצונך לשמור את השינויים?',
+    confirmText: 'שמור',
+    cancelText: 'בטל',
+    noRestoreText: '',
+    isDestructive: false
+  };
+
+  const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+    data: dialogData,
+    width: '400px',
+    maxWidth: '90vw',
+    panelClass: 'confirm-dialog-no-scroll'
+  });
+
+  dialogRef.afterClosed().subscribe(result => {
+    if (result) {
+      this.vehicleService.updateVehicle(this.vehicle.id, this.vehicle).subscribe({
+        next: () => {
+          this.toastService.show('הרכב עודכן בהצלחה', 'success');
+          this.isEditMode = false;
+          this.originalVehicle = JSON.parse(JSON.stringify(this.vehicle));
+          
+          if (this.vehicle.department_id) {
+            const dept = this.departments.find(d => d.id === this.vehicle.department_id);
+            this.departmentName = dept ? dept.name : 'לא ידוע';
+          } else {
+            this.departmentName = 'לא משוייך למחלקה';
+          }
+        },
+        error: (err) => {
+          this.toastService.show(err.error?.detail || 'שגיאה בעדכון הרכב', 'error');
+        }
+      });
+    }
+  });
+}
 
   getCardClass(status: string): string {
     switch (status) {
@@ -84,7 +145,28 @@ currentDate = new Date();
   }
 
     goBack(): void {
+      if (this.isEditMode) {
+        const dialogData: ConfirmDialogData = {
+          title: 'יציאה ממצב עריכה',
+          message: 'יש לך שינויים שלא נשמרו. האם אתה בטוח שברצונך לצאת?',
+          confirmText: 'צא',
+          cancelText: 'בטל',
+          noRestoreText: 'השינויים לא יישמרו',
+          isDestructive: true
+        };
+
+        const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+          data: dialogData
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+          if (result) {
+            this.location.back();
+          }
+        });
+      } else {
         this.location.back();
+      }
     }
 
   loadVehicleUsageData(): void {
@@ -158,11 +240,8 @@ translateType(type: string | undefined): string {
     '4x4 SUV': 'ג׳יפ 4x4',
     '8-Seater': '8 מושבים'
   };
-
   return map[type || ''] || type || '';
 }
-
-
 
   translateFuelType(fuelType: string | null | undefined): string {
     if (!fuelType) return '';
@@ -176,26 +255,6 @@ translateType(type: string | undefined): string {
       default:
         return fuelType;
     }
-  }
-openMileageModal(): void {
-  this.newMileage = this.vehicle.mileage;
-  this.showMileageModal = true;
-  this.currentDate = new Date();
-}
-
-closeMileageModal(): void {
-  this.showMileageModal = false;
-}
-
-saveMileage(): void {
-  this.vehicleService.updatemileage(this.vehicle.id, this.newMileage).subscribe({
-    next: () => {
-      this.toastService.show(`קילומטראז' עודכן בהצלחה`, 'success');
-      this.vehicle.mileage = this.newMileage;
-      this.vehicle.mileage_last_updated = new Date();
-      this.closeMileageModal();
-    },
-  });
 }
   translateFreezeReason(freezeReason: string | null | undefined): string {
     if (!freezeReason) return '';
@@ -269,20 +328,14 @@ saveMileage(): void {
   getAllRidesForCurrentVehicle(vehicleId: string): void {
     this.vehicleService.getAllOrders().subscribe({
       next: (rides) => {
-
         const count = rides.filter(ride => {
           if (ride.vehicle_id !== vehicleId) return false;
-
           if (!ride.date_and_time) return false;
-
           const rideDate = new Date(ride.date_and_time);
           const currentDate = new Date();
-
           return rideDate.getMonth() === currentDate.getMonth() &&
             rideDate.getFullYear() === currentDate.getFullYear();
         }).length;
-
-
         this.currentVehicleRideCount = count;
       },
       error: (err) => {
@@ -297,8 +350,6 @@ saveMileage(): void {
       this.navigateRouter.navigate([`/vehicle-details/${this.vehicle.id}/timeline`]);
     }
   }
-
-  
   confirmArchive(vehicle: any): void {
     const message = `תוקף חוזה ההשכרה של רכב ${vehicle.plate_number} פג והרכב מוקפא.\nלא ניתן למחוק את הרכב, אך ניתן לארכב אותו.\n\nהאם את/ה בטוח/ה שברצונך לארכב את הרכב?`;
 
@@ -309,6 +360,7 @@ saveMileage(): void {
         message,
         confirmText: 'ארכב',
         cancelText: 'בטל',
+        noRestoreText: '',
         isDestructive: false
       }
     });
@@ -340,6 +392,7 @@ saveMileage(): void {
         message,
         confirmText: 'שחרר',
         cancelText: 'בטל',
+        noRestoreText: '',
         isDestructive: false
       }
     });
@@ -366,6 +419,7 @@ saveMileage(): void {
         message,
         confirmText: 'הקפא',
         cancelText: 'בטל',
+        noRestoreText: '',
         isDestructive: false
       }
     });
@@ -386,10 +440,8 @@ saveMileage(): void {
     if (!dateStr) return 'לא בוצעו נסיעות';
     const date = new Date(dateStr);
     const now = new Date();
-
     const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     const nowOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
     const diffDays = Math.floor((+nowOnly - +dateOnly) / (1000 * 60 * 60 * 24));
 
     if (diffDays === 0) {
@@ -413,6 +465,7 @@ saveMileage(): void {
         message,
         confirmText: 'שחזר',
         cancelText: 'בטל',
+        noRestoreText: '',
         isDestructive: false
       }
     });
@@ -444,7 +497,6 @@ updateVehiclemileage(vehicle: any): void {
   });
 }
 
-
   permanentlyDeleteVehicle(vehicle: any): void {
     const message = `⚠️ האם את/ה בטוח/ה שברצונך למחוק לצמיתות את הרכב ${vehicle.plate_number}?\n\nפעולה זו לא ניתנת לביטול ותמחק את כל הנתונים הקשורים לרכב!`;
     
@@ -455,6 +507,7 @@ updateVehiclemileage(vehicle: any): void {
         message,
         confirmText: 'מחק לצמיתות',
         cancelText: 'בטל',
+        noRestoreText: 'לא ניתן לשחזור',
         isDestructive: true
       }
     });

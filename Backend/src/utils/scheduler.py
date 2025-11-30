@@ -826,9 +826,6 @@ async def check_ride_status_and_notify_user():
 
 async def notify_ride_cancelled_due_to_no_show(ride_id: uuid.UUID):
 
-    """
-    Notifies user and admin that a ride was cancelled due to no-show.
-    """
     db: Session = SessionLocal()
     try:
         

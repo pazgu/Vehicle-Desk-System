@@ -1146,7 +1146,7 @@ private applyRebookData(data: RebookData): void {
     next: (res) => {
       this.toastService.show('הנסיעה עודכנה בהצלחה', 'success');
       this.router.navigate(['/all-rides']);
-        this.myRidesService.clearRebookData();
+      this.myRidesService.clearRebookData();
 
     },
     error: (err) => {

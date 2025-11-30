@@ -150,7 +150,8 @@
 }
 
 .vehicle-details-card {
-  max-width: 700px;
+  max-width: 1200px;
+  min-width: 800px;
   margin: 2.5rem auto;
   padding: 2rem 1.5rem;
   border: 1.5px solid #e0e0e0;
@@ -191,6 +192,7 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  min-width: 450px;
 }
 
 .vehicle-details-card h2 {
@@ -302,13 +304,6 @@
 .mileage-last-updated {
   font-size: 0.85rem;
   color: #655e5e;
-}
-
-.right-side {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.5rem;
 }
 
 .edit-mileage-btn {
@@ -691,3 +686,118 @@
   transition: border-color 0.2s ease;
 }
   
+
+.edit-button,
+.save-button,
+.cancel-button {
+  background-color: #655e5e;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1.2rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+  box-shadow: 0 2px 8px rgba(101, 94, 94, 0.2);
+  letter-spacing: 0.3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 40px;
+}
+.edit-button mat-icon,
+.save-button mat-icon,
+.cancel-button mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+.edit-button:hover {
+  background-color: #973838dc;
+  box-shadow: 0 2px 8px rgba(173, 49, 49, 0.89);
+  transform: translateY(-1px);
+}
+.save-button {
+  background-color: #4caf50;
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+}
+.save-button:hover {
+  background-color: #45a049;
+  box-shadow: 0 2px 8px rgba(69, 160, 73, 0.5);
+  transform: translateY(-1px);
+}
+.cancel-button {
+  background-color: #f44336;
+  box-shadow: 0 2px 8px rgba(244, 67, 54, 0.3);
+}
+.cancel-button:hover {
+  background-color: #da190b;
+  box-shadow: 0 2px 8px rgba(218, 25, 11, 0.5);
+  transform: translateY(-1px);
+}
+.edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0.5rem 0;
+  min-height: 60px;
+}
+.edit-field label {
+  font-weight: 600;
+  color: #942222;
+  font-size: 0.95rem;
+}
+.edit-input,
+.edit-select {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.95rem;
+  border: 1.5px solid #cfcece;
+  border-radius: 8px;
+  background-color: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  direction: rtl;
+  text-align: right;
+  font-family: inherit;
+  max-width: 100%;
+}
+.edit-input:focus,
+.edit-select:focus {
+  outline: none;
+  border-color: #942222;
+  box-shadow: 0 0 0 3px rgba(148, 34, 34, 0.08);
+}
+.edit-input:hover,
+.edit-select:hover {
+  border-color: #ad3131;
+}
+.edit-select {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23942222' d='M10.293 3.293L6 7.586 1.707 3.293A1 1 0 00.293 4.707l5 5a1 1 0 001.414 0l5-5a1 1 0 10-1.414-1.414z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 0.75rem center;
+  padding-left: 2.5rem;
+}
+.image-edit-section {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.image-edit-section label {
+  font-weight: 600;
+  color: #942222;
+  font-size: 0.95rem;
+}
+.image-edit-section input {
+  width: 100%;
+  max-width: 260px;
+}
+[dir="rtl"] .edit-select {
+  background-position: right 0.75rem center;
+  padding-right: 2.5rem;
+  padding-left: 0.6rem;
+}
