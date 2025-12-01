@@ -15,7 +15,7 @@
         <input formControlName="name" type="text" />
       </div>
       <div>
-        <label>מפקח מחלקה</label>
+        <label>מנהל מחלקה</label>
         <select formControlName="supervisor_id">
           <option value="">בחר מפקח</option>
           <option *ngFor="let user of users" [value]="user.employee_id">
@@ -56,7 +56,7 @@
         <div class="department-supervisor">
           <p *ngIf="!isUnassignedDepartment(department)">
   <i class="pi pi-user"></i>
-  מפקח מחלקה : {{ supervisorNames[department.supervisor_id] || "לא נמצא" }}
+  מנהל מחלקה : {{ supervisorNames[department.supervisor_id] || "לא נמצא" }}
 </p>
 
           <p *ngIf="isUnassignedDepartment(department)">
@@ -77,7 +77,7 @@
           <input id="editName" formControlName="name" type="text" />
         </div>
         <div class="form-group">
-          <label for="editSupervisor">מפקח מחלקה</label>
+          <label for="editSupervisor">מנהל מחלקה</label>
           <select id="editSupervisor" formControlName="supervisor_id">
             <option  value="" formControlName="supervisor">בחר מפקח</option>
             <option *ngFor="let user of users" [value]="user.employee_id">
