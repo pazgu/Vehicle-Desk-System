@@ -67,14 +67,14 @@ export class DashboardAllOrdersComponent implements OnInit {
     this.socketService.rideRequests$.subscribe((newRide) => {
       const role = localStorage.getItem('role');
       if (newRide) {
-        if(newRide.role ==='supervisor'){ 
+        if (newRide.role === 'supervisor') {
           if (newRide.department_id == departmentId && role != 'admin') {
-          this.orders = [newRide, ...this.orders];
-          if (role === 'supervisor') {
-            this.toastService.show('התקבלה בקשה חדשה', 'success');
+            this.orders = [newRide, ...this.orders];
+            if (role === 'supervisor') {
+              this.toastService.show('התקבלה בקשה חדשה', 'success');
+            }
           }
-        }}
-       
+        }
       }
     });
     this.socketService.orderUpdated$.subscribe((updatedRide) => {
@@ -135,26 +135,25 @@ export class DashboardAllOrdersComponent implements OnInit {
   }
 
   getStartDate(dateTime: string): string {
-  if (!dateTime) return '';
-  
-  const date = new Date(dateTime);
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = date.getFullYear();
-  
-  return `${day}.${month}.${year}`;
-}
+    if (!dateTime) return '';
 
+    const date = new Date(dateTime);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
 
-getStartTime(dateTime: string): string {
-  if (!dateTime) return '';
-  
-  const date = new Date(dateTime);
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  
-  return `${hours}:${minutes}`;
-}
+    return `${day}.${month}.${year}`;
+  }
+
+  getStartTime(dateTime: string): string {
+    if (!dateTime) return '';
+
+    const date = new Date(dateTime);
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+
+    return `${hours}:${minutes}`;
+  }
 
   goBack(): void {
     this.location.back();

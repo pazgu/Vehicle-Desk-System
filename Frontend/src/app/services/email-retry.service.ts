@@ -107,7 +107,7 @@
 //     // Create retry function based on whether we have backend retry or not
 //     const retryFn = () => {
 //       this.hideToast();
-      
+
 //       if (retryIdentifier && retryEmailFn) {
 //         // Use backend retry
 //         this.showLoading();
@@ -140,33 +140,33 @@
 //    */
 //   private getFriendlyErrorMessage(errorMessage: string): string {
 //     // Handle specific email scenarios first
-//     if (errorMessage.toLowerCase().includes('user not found') || 
+//     if (errorMessage.toLowerCase().includes('user not found') ||
 //         errorMessage.toLowerCase().includes('email not found') ||
 //         errorMessage.toLowerCase().includes('account not found')) {
 //       return 'כתובת המייל לא נמצאה במערכת. אנא בדקו את הכתובת.';
 //     }
-    
-//     if (errorMessage.toLowerCase().includes('email') && 
+
+//     if (errorMessage.toLowerCase().includes('email') &&
 //         errorMessage.toLowerCase().includes('failed')) {
 //       return 'שליחת המייל נכשלה. אנא בדקו את כתובת המייל ונסו שוב.';
 //     }
-    
+
 //     if (errorMessage.toLowerCase().includes('invalid email')) {
 //       return 'כתובת המייל אינה חוקית. אנא בדקו את הכתובת.';
 //     }
-    
-//     if (errorMessage.toLowerCase().includes('rate limit') || 
+
+//     if (errorMessage.toLowerCase().includes('rate limit') ||
 //         errorMessage.toLowerCase().includes('too many')) {
 //       return 'נשלחו יותר מדי בקשות. אנא המתינו כמה דקות לפני שתנסו שוב.';
 //     }
-    
+
 //     // Check our error mappings
 //     for (const [key, value] of Object.entries(this.errorMessages)) {
 //       if (errorMessage.toLowerCase().includes(key.toLowerCase())) {
 //         return value;
 //       }
 //     }
-    
+
 //     // Check for common HTTP status patterns
 //     if (errorMessage.includes('404')) {
 //       return 'כתובת המייל לא נמצאה במערכת.';
@@ -180,7 +180,7 @@
 //     if (errorMessage.includes('network') || errorMessage.includes('connection')) {
 //       return 'אירעה בעיית רשת. אנא בדקו את החיבור לאינטרנט ונסו שוב.';
 //     }
-    
+
 //     // Fallback for email operations
 //     return 'אירעה שגיאה בעת שליחת המייל. אנא נסו שוב.';
 //   }

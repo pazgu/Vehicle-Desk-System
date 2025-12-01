@@ -9,9 +9,7 @@
       (change)="onFileSelected($event)"
       style="display: none"
     />
-    <label for="mileageFile" class="custom-file-button">
-      בחר קובץ
-    </label>
+    <label for="mileageFile" class="custom-file-button"> בחר קובץ </label>
     <span class="file-name" *ngIf="selectedFile">{{ selectedFile.name }}</span>
   </div>
 
@@ -20,7 +18,7 @@
     [disabled]="!selectedFile || isLoading"
     (click)="uploadMileageReport()"
   >
-    {{ isLoading ? 'מעלה...' : 'העלה דוח' }}
+    {{ isLoading ? "מעלה..." : "העלה דוח" }}
   </button>
 
   <div *ngIf="uploadSuccess" class="upload-success">

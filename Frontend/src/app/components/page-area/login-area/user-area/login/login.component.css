@@ -1,19 +1,17 @@
-
 .page-container {
   display: flex;
   justify-content: center;
   align-items: center;
   direction: rtl;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
 
-  min-height: calc(100vh - 55px); 
+  min-height: calc(100vh - 55px);
   margin-top: 0;
   padding-top: 10px;
-  box-sizing: border-box; 
-  background-image: url('/assets/images/login.png');
+  box-sizing: border-box;
+  background-image: url("/assets/images/login.png");
   background-size: cover;
 }
-
 
 .login-box {
   background: white;
@@ -24,9 +22,8 @@
   width: 100%;
   position: relative;
   text-align: right;
-  
 }
-.register-link{
+.register-link {
   padding-right: 161px;
   padding-top: 10px;
   color: #000;
@@ -85,11 +82,9 @@ button:hover {
 }
 
 .show-password {
- 
   z-index: 90;
   width: 30px;
   height: 30px;
- 
 }
 
 .password-container {
@@ -110,7 +105,7 @@ button:hover {
 
 .show-password {
   position: absolute;
-  left: 10px; 
+  left: 10px;
   top: 20%;
   cursor: pointer;
   color: #555;
@@ -118,5 +113,3 @@ button:hover {
 .error-border {
   border: 2px solid #942222 !important;
 }
-
-

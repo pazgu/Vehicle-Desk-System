@@ -11,14 +11,17 @@ import { Subscription } from 'rxjs';
 import { CityService } from '../../services/city.service';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
-interface City { id: string; name: string; }
+interface City {
+  id: string;
+  name: string;
+}
 
 @Component({
   selector: 'app-edit-ride',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './edit-ride.component.html',
-  styleUrl: './edit-ride.component.css'
+  styleUrl: './edit-ride.component.css',
 })
 export class EditRideComponent implements OnInit {
   cities: City[] = [];
@@ -93,7 +96,7 @@ export class EditRideComponent implements OnInit {
     }
 
     return null;
-  }
+  };
   private updateMinEndDate(): void {
     const startDate = this.rideForm.get('ride_date')?.value;
     if (startDate) {
@@ -129,7 +132,11 @@ export class EditRideComponent implements OnInit {
           if (!endDate) {
             const nextDay = new Date(startDate);
             nextDay.setDate(nextDay.getDate() + 1);
-            this.rideForm.get('ride_date_night_end')?.setValue(nextDay.toISOString().split('T')[0], { emitEvent: false });
+            this.rideForm
+              .get('ride_date_night_end')
+              ?.setValue(nextDay.toISOString().split('T')[0], {
+                emitEvent: false,
+              });
           }
           return;
         }
@@ -138,17 +145,28 @@ export class EditRideComponent implements OnInit {
       this.isDayRide = true;
       this.rideTypeNote = 'נסיעה יומית - התחלה וסיום באותו היום';
       if (endDate && startDate === endDate) {
-        this.rideForm.get('ride_date_night_end')?.setValue('', { emitEvent: false });
+        this.rideForm
+          .get('ride_date_night_end')
+          ?.setValue('', { emitEvent: false });
       }
     }
   }
   private ensureOriginalEndTimeAvailable(): void {
-    if (this.originalEndTime && !this.filteredEndTimes.includes(this.originalEndTime)) {
-      this.filteredEndTimes = [this.originalEndTime, ...this.filteredEndTimes.filter(time => time !== this.originalEndTime)];
+    if (
+      this.originalEndTime &&
+      !this.filteredEndTimes.includes(this.originalEndTime)
+    ) {
+      this.filteredEndTimes = [
+        this.originalEndTime,
+        ...this.filteredEndTimes.filter(
+          (time) => time !== this.originalEndTime
+        ),
+      ];
     }
   }
   private updateFilteredEndTimes(startTime?: string): void {
-    const currentStartTime = startTime || this.rideForm.get('start_time')?.value;
+    const currentStartTime =
+      startTime || this.rideForm.get('start_time')?.value;
 
     if (!currentStartTime) {
       this.filteredEndTimes = [...this.timeOptions];
@@ -160,14 +178,17 @@ export class EditRideComponent implements OnInit {
       const [startHour, startMin] = currentStartTime.split(':').map(Number);
       const startMinutes = startHour * 60 + startMin;
 
-      this.filteredEndTimes = this.timeOptions.filter(time => {
+      this.filteredEndTimes = this.timeOptions.filter((time) => {
         const [timeHour, timeMin] = time.split(':').map(Number);
         const timeMinutes = timeHour * 60 + timeMin;
         return timeMinutes >= startMinutes + 15;
       });
       const currentEndTime = this.rideForm.get('end_time')?.value;
       if (currentEndTime && !this.filteredEndTimes.includes(currentEndTime)) {
-        if (!this.isLoadingExistingRide && currentEndTime !== this.originalEndTime) {
+        if (
+          !this.isLoadingExistingRide &&
+          currentEndTime !== this.originalEndTime
+        ) {
           this.rideForm.get('end_time')?.setValue('');
         }
       }
@@ -203,7 +224,7 @@ export class EditRideComponent implements OnInit {
     this.buildForm();
     this.fetchVehicleTypes();
 
-    this.rideForm.get('start_time')?.valueChanges.subscribe(startTime => {
+    this.rideForm.get('start_time')?.valueChanges.subscribe((startTime) => {
       if (!startTime) {
         this.filteredEndTimes = [...this.timeOptions];
         return;
@@ -219,21 +240,28 @@ export class EditRideComponent implements OnInit {
       this.updateExtendedRideReasonValidation();
     });
 
-    this.rideForm.get('ride_date_night_end')?.valueChanges.subscribe((endDate) => {
-      if (endDate) {
-        const startDate = this.rideForm.get('ride_date')?.value;
-        if (startDate && endDate === startDate) {
-          this.toastService.show('בנסיעה ליותר מיום, תאריך הסיום חייב להיות שונה מתאריך ההתחלה', 'error');
-          this.rideForm.get('ride_date_night_end')?.setValue(this.minEndDate, { emitEvent: false });
-          return;
+    this.rideForm
+      .get('ride_date_night_end')
+      ?.valueChanges.subscribe((endDate) => {
+        if (endDate) {
+          const startDate = this.rideForm.get('ride_date')?.value;
+          if (startDate && endDate === startDate) {
+            this.toastService.show(
+              'בנסיעה ליותר מיום, תאריך הסיום חייב להיות שונה מתאריך ההתחלה',
+              'error'
+            );
+            this.rideForm
+              .get('ride_date_night_end')
+              ?.setValue(this.minEndDate, { emitEvent: false });
+            return;
+          }
         }
-      }
-      this.updateRideTypeNote();
-      this.updateFilteredEndTimes();
-      this.updateExtendedRideReasonValidation();
-    });
+        this.updateRideTypeNote();
+        this.updateFilteredEndTimes();
+        this.updateExtendedRideReasonValidation();
+      });
 
-    this.rideForm.get('end_time')?.valueChanges.subscribe(endTime => {
+    this.rideForm.get('end_time')?.valueChanges.subscribe((endTime) => {
       this.updateRideTypeNote();
       this.filterAvailableVehicles();
       this.updateFilteredEndTimes();
@@ -241,11 +269,14 @@ export class EditRideComponent implements OnInit {
 
     this.setupDistanceCalculationSubscriptions();
 
-    this.rideForm.get('vehicle_type')?.valueChanges.subscribe(value => {
+    this.rideForm.get('vehicle_type')?.valueChanges.subscribe((value) => {
       const fourByFourControl = this.rideForm.get('four_by_four_reason');
-      if (value && (value.toLowerCase().includes('4x4') || 
-                    value.toLowerCase().includes('jeep') || 
-                    value.toLowerCase().includes('van'))) {
+      if (
+        value &&
+        (value.toLowerCase().includes('4x4') ||
+          value.toLowerCase().includes('jeep') ||
+          value.toLowerCase().includes('van'))
+      ) {
         fourByFourControl?.setValidators([Validators.required]);
       } else {
         fourByFourControl?.clearValidators();
@@ -257,17 +288,18 @@ export class EditRideComponent implements OnInit {
     });
     this.vehicleService.getAllVehicles().subscribe({
       next: (vehicles) => {
-        this.allCars = vehicles.filter(v =>
-          !!v.id &&
-          !!v.type &&
-          !!v.vehicle_model &&
-          typeof v.mileage === 'number'
+        this.allCars = vehicles.filter(
+          (v) =>
+            !!v.id &&
+            !!v.type &&
+            !!v.vehicle_model &&
+            typeof v.mileage === 'number'
         );
         this.loadRide();
       },
       error: () => {
         this.toastService.show('שגיאה בטעינת רכבים זמינים', 'error');
-      }
+      },
     });
   }
 
@@ -287,10 +319,10 @@ export class EditRideComponent implements OnInit {
       destination: ['', Validators.required],
       extraStops: this.fb.array([]),
       extended_ride_reason: [''],
-      four_by_four_reason: ['']
+      four_by_four_reason: [''],
     });
 
-    this.rideForm.get('vehicle_type')?.valueChanges.subscribe(value => {
+    this.rideForm.get('vehicle_type')?.valueChanges.subscribe((value) => {
       this.filterAvailableVehicles();
       this.rideForm.get('car')?.setValue('');
     });
@@ -307,10 +339,11 @@ export class EditRideComponent implements OnInit {
       return;
     }
 
-    let filteredCars = this.allCars.filter(car =>
-      car.type === vehicleType &&
-      car.status === 'available' &&
-      !car.freeze_reason
+    let filteredCars = this.allCars.filter(
+      (car) =>
+        car.type === vehicleType &&
+        car.status === 'available' &&
+        !car.freeze_reason
     );
 
     if (selectedDate && startTime && endTime) {
@@ -320,7 +353,7 @@ export class EditRideComponent implements OnInit {
   }
   private updateExtendedRideReasonValidation(): void {
     const extendedReasonControl = this.rideForm.get('extended_ride_reason');
-    
+
     if (this.isExtendedRequest) {
       extendedReasonControl?.setValidators([Validators.required]);
     } else {
@@ -334,7 +367,7 @@ export class EditRideComponent implements OnInit {
     const user_id = localStorage.getItem('employee_id');
     const userRole = localStorage.getItem('role');
     const isSupervisor = userRole === 'supervisor';
-    
+
     if (!user_id) {
       this.toastService.show('שגיאת זיהוי משתמש - התחבר מחדש', 'error');
       this.router.navigate(['/login']);
@@ -347,9 +380,11 @@ export class EditRideComponent implements OnInit {
         this.status = ride.status || 'pending';
         this.submittedAt = ride.submitted_at || new Date().toISOString();
         this.licenseCheckPassed = ride.license_check_passed ?? true;
-        const isPending = ride.status && ride.status.toLowerCase() === 'pending';
-        const isApproved = ride.status && ride.status.toLowerCase() === 'approved';
-        
+        const isPending =
+          ride.status && ride.status.toLowerCase() === 'pending';
+        const isApproved =
+          ride.status && ride.status.toLowerCase() === 'approved';
+
         if (!isSupervisor) {
           if (!isPending) {
             this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
@@ -362,14 +397,18 @@ export class EditRideComponent implements OnInit {
             this.router.navigate(['/home']);
             return;
           }
-          
+
           if (isApproved) {
             const rideDateTime = new Date(ride.start_datetime);
             const now = new Date();
-            const timeDifferenceHours = (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
-            
+            const timeDifferenceHours =
+              (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+
             if (timeDifferenceHours <= 2) {
-              this.toastService.show('אפשר לערוך הזמנה מאושרת עד שעתיים לפני זמן הנסיעה', 'error');
+              this.toastService.show(
+                'אפשר לערוך הזמנה מאושרת עד שעתיים לפני זמן הנסיעה',
+                'error'
+              );
               this.router.navigate(['/home']);
               return;
             }
@@ -381,21 +420,30 @@ export class EditRideComponent implements OnInit {
         this.originalStartTime = startDate.toTimeString().slice(0, 5);
         this.originalEndTime = endDate.toTimeString().slice(0, 5);
 
-        const selectedVehicle = this.allCars.find(car =>
-          car.type === ride.vehicle_type && car.vehicle_model === ride.vehicle_model
+        const selectedVehicle = this.allCars.find(
+          (car) =>
+            car.type === ride.vehicle_type &&
+            car.vehicle_model === ride.vehicle_model
         );
 
         if (!selectedVehicle) {
-          this.toastService.show('הרכב שבוצעה בו ההזמנה אינו זמין יותר', 'error');
+          this.toastService.show(
+            'הרכב שבוצעה בו ההזמנה אינו זמין יותר',
+            'error'
+          );
           return;
         }
 
-        this.availableCars = this.allCars.filter(car =>
-          car.status === 'available' && car.type === selectedVehicle.type
+        this.availableCars = this.allCars.filter(
+          (car) =>
+            car.status === 'available' && car.type === selectedVehicle.type
         );
 
-        const isOvernightRide = startDate.toDateString() !== endDate.toDateString();
-        const nightEndDate = isOvernightRide ? endDate.toISOString().split('T')[0] : '';
+        const isOvernightRide =
+          startDate.toDateString() !== endDate.toDateString();
+        const nightEndDate = isOvernightRide
+          ? endDate.toISOString().split('T')[0]
+          : '';
         const startDateStr = startDate.toISOString().split('T')[0];
         this.rideForm.get('ride_date')?.setValue(startDateStr);
         this.updateMinEndDate();
@@ -413,12 +461,12 @@ export class EditRideComponent implements OnInit {
           start_location: ride.start_location ?? 'מיקום התחלה לא ידוע',
           destination: ride.destination ?? 'יעד לא ידוע',
           extended_ride_reason: ride.extended_ride_reason || '',
-          four_by_four_reason: ride.four_by_four_reason || ''
+          four_by_four_reason: ride.four_by_four_reason || '',
         });
 
         if (ride.stop) {
           this.cityService.getCityNameById(ride.stop).subscribe({
-            next: city => {
+            next: (city) => {
               const cityName = city?.name ?? 'תחנה לא ידועה';
               this.stopName = cityName;
               this.rideForm.get('stop')?.setValue(ride.stop);
@@ -426,7 +474,7 @@ export class EditRideComponent implements OnInit {
             error: (err) => {
               this.stopName = 'תחנה לא ידועה';
               this.rideForm.get('stop')?.setValue('');
-            }
+            },
           });
         }
 
@@ -438,13 +486,15 @@ export class EditRideComponent implements OnInit {
           ride.extra_stops.forEach((stopId: string) => {
             this.extraStops.push(
               this.fb.group({
-                stop: [stopId, Validators.required]
+                stop: [stopId, Validators.required],
               })
             );
           });
         }
 
-        this.estimated_distance_with_buffer = +(parseFloat(ride.estimated_distance) * 1.1).toFixed(2);
+        this.estimated_distance_with_buffer = +(
+          parseFloat(ride.estimated_distance) * 1.1
+        ).toFixed(2);
 
         this.updateRideTypeNote();
         this.updateFilteredEndTimes();
@@ -456,16 +506,16 @@ export class EditRideComponent implements OnInit {
         this.isLoadingExistingRide = false;
         this.toastService.show('שגיאה בטעינת ההזמנה לעריכה', 'error');
         this.router.navigate(['/home']);
-      }
+      },
     });
   }
 
-  isCarDisabled(car: typeof this.allCars[0]): boolean {
+  isCarDisabled(car: (typeof this.allCars)[0]): boolean {
     return car.status !== 'available' || !!car.freeze_reason;
   }
 
   private fetchVehicleTypes(): void {
-    this.vehicleService.getVehicleTypes().subscribe(types => {
+    this.vehicleService.getVehicleTypes().subscribe((types) => {
       this.vehicleTypes = types;
     });
   }
@@ -485,33 +535,38 @@ export class EditRideComponent implements OnInit {
   private fetchCities(): void {
     this.cityService.getCities().subscribe({
       next: (cities) => {
-        this.cities = cities.map(city => ({
+        this.cities = cities.map((city) => ({
           id: city.id,
-          name: city.name
+          name: city.name,
         }));
       },
       error: (err) => {
         console.error('Failed to fetch cities', err);
         this.toastService.show('שגיאה בטעינת ערים', 'error');
         this.cities = [];
-      }
+      },
     });
   }
 
   private getCityId(value: any): string | null {
     if (!value) return null;
-    if (typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value.trim())) {
+    if (
+      typeof value === 'string' &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+        value.trim()
+      )
+    ) {
       return value;
     }
     if (typeof value === 'object' && value.id) {
       return value.id;
     }
-    const city = this.cities.find(c => c.name === value);
+    const city = this.cities.find((c) => c.name === value);
     return city?.id || null;
   }
 
   getVehicleTypes(): string[] {
-    return [...new Set(this.allCars.map(car => car.type))];
+    return [...new Set(this.allCars.map((car) => car.type))];
   }
 
   get extraStops(): FormArray {
@@ -521,7 +576,7 @@ export class EditRideComponent implements OnInit {
   addExtraStop(): void {
     this.extraStops.push(
       this.fb.group({
-        stop: ['', Validators.required]
+        stop: ['', Validators.required],
       })
     );
   }
@@ -531,17 +586,24 @@ export class EditRideComponent implements OnInit {
   }
 
   private setupDistanceCalculationSubscriptions(): void {
-    this.rideForm.get('stop')?.valueChanges.pipe(debounceTime(300), distinctUntilChanged()).subscribe(() => {
-      this.calculateRouteDistance();
-    });
-    this.extraStops.valueChanges.pipe(debounceTime(300), distinctUntilChanged()).subscribe(() => {
-      this.calculateRouteDistance();
-    });
-    this.rideForm.get('estimated_distance_km')?.valueChanges.subscribe((value) => {
-      if (value) {
-        this.estimated_distance_with_buffer = +(value * 1.1).toFixed(2);
-      }
-    });
+    this.rideForm
+      .get('stop')
+      ?.valueChanges.pipe(debounceTime(300), distinctUntilChanged())
+      .subscribe(() => {
+        this.calculateRouteDistance();
+      });
+    this.extraStops.valueChanges
+      .pipe(debounceTime(300), distinctUntilChanged())
+      .subscribe(() => {
+        this.calculateRouteDistance();
+      });
+    this.rideForm
+      .get('estimated_distance_km')
+      ?.valueChanges.subscribe((value) => {
+        if (value) {
+          this.estimated_distance_with_buffer = +(value * 1.1).toFixed(2);
+        }
+      });
   }
 
   private calculateRouteDistance(): void {
@@ -552,12 +614,16 @@ export class EditRideComponent implements OnInit {
     const stopId = this.getCityId(stopRaw);
 
     const extraStopIds = this.extraStops.controls
-      .map(ctrl => this.getCityId(ctrl.get('stop')?.value))
+      .map((ctrl) => this.getCityId(ctrl.get('stop')?.value))
       .filter((id): id is string => !!id);
 
-    const destinationId = this.getCityId(this.rideForm.get('destination')?.value);
+    const destinationId = this.getCityId(
+      this.rideForm.get('destination')?.value
+    );
 
-    const allStops = [...extraStopIds, stopId, destinationId].filter((id): id is string => !!id);
+    const allStops = [...extraStopIds, stopId, destinationId].filter(
+      (id): id is string => !!id
+    );
 
     if (!startId || allStops.length === 0) {
       this.resetDistanceValues();
@@ -570,7 +636,9 @@ export class EditRideComponent implements OnInit {
   private resetDistanceValues(): void {
     this.fetchedDistance = null;
     this.estimated_distance_with_buffer = 0;
-    this.rideForm.get('estimated_distance_km')?.setValue(null, { emitEvent: false });
+    this.rideForm
+      .get('estimated_distance_km')
+      ?.setValue(null, { emitEvent: false });
   }
 
   private fetchEstimatedDistance(from: string, toArray: string[]): void {
@@ -581,7 +649,9 @@ export class EditRideComponent implements OnInit {
         const realDistance = response.distance_km;
         this.fetchedDistance = realDistance;
         this.estimated_distance_with_buffer = +(realDistance * 1.1).toFixed(2);
-        this.rideForm.get('estimated_distance_km')?.setValue(realDistance, { emitEvent: false });
+        this.rideForm
+          .get('estimated_distance_km')
+          ?.setValue(realDistance, { emitEvent: false });
         this.isLoadingDistance = false;
       },
       error: (err) => {
@@ -589,7 +659,7 @@ export class EditRideComponent implements OnInit {
         this.toastService.show('שגיאה בחישוב מרחק בין הערים', 'error');
         this.resetDistanceValues();
         this.isLoadingDistance = false;
-      }
+      },
     });
   }
 
@@ -602,7 +672,7 @@ export class EditRideComponent implements OnInit {
 
     const carControl = this.rideForm.get('car');
     const vehicleType = this.rideForm.get('vehicle_type')?.value;
-    
+
     if (vehicleType && (!carControl?.value || carControl.value.trim() === '')) {
       carControl?.setErrors({ required: true });
       carControl?.markAsTouched();
@@ -617,18 +687,27 @@ export class EditRideComponent implements OnInit {
 
     if (!this.isDayRide) {
       if (!endDate) {
-        this.toastService.show('בנסיעה שיותר מיום חובה לבחור תאריך סיום', 'error');
+        this.toastService.show(
+          'בנסיעה שיותר מיום חובה לבחור תאריך סיום',
+          'error'
+        );
         return;
       }
       if (endDate === startDate) {
-        this.toastService.show('בנסיעה ליותר מיום, תאריך הסיום חייב להיות שונה מתאריך ההתחלה', 'error');
+        this.toastService.show(
+          'בנסיעה ליותר מיום, תאריך הסיום חייב להיות שונה מתאריך ההתחלה',
+          'error'
+        );
         return;
       }
       const startDateObj = new Date(startDate);
       const endDateObj = new Date(endDate);
 
       if (endDateObj <= startDateObj) {
-        this.toastService.show('בנסיעה שיותר מיום: תאריך הסיום חייב להיות לאחר תאריך ההתחלה', 'error');
+        this.toastService.show(
+          'בנסיעה שיותר מיום: תאריך הסיום חייב להיות לאחר תאריך ההתחלה',
+          'error'
+        );
         return;
       }
     }
@@ -638,7 +717,10 @@ export class EditRideComponent implements OnInit {
       const startMinutes = startHour * 60 + startMin;
       const endMinutes = endHour * 60 + endMin;
       if (endMinutes <= startMinutes || endMinutes - startMinutes < 15) {
-        this.toastService.show('בנסיעה יומית: שעת הסיום חייבת להיות לפחות 15 דקות אחרי שעת ההתחלה', 'error');
+        this.toastService.show(
+          'בנסיעה יומית: שעת הסיום חייבת להיות לפחות 15 דקות אחרי שעת ההתחלה',
+          'error'
+        );
         return;
       }
     }
@@ -649,31 +731,47 @@ export class EditRideComponent implements OnInit {
     const start_datetime = `${rideDate}T${startTime}`;
     const end_datetime = `${nightEndDate || rideDate}T${endTime}`;
 
-    const startUUID = this.getCityId(this.rideForm.get('start_location')?.value);
+    const startUUID = this.getCityId(
+      this.rideForm.get('start_location')?.value
+    );
     const stopUUID = this.getCityId(this.rideForm.get('stop')?.value);
     const extraStopsUUIDs = this.extraStops.controls
-      .map(ctrl => this.getCityId(ctrl.get('stop')?.value))
+      .map((ctrl) => this.getCityId(ctrl.get('stop')?.value))
       .filter((id): id is string => !!id);
 
     if (!startUUID || !stopUUID) {
-      this.toastService.show('יש לבחור נקודת התחלה ונקודת עצירה תקפות', 'error');
+      this.toastService.show(
+        'יש לבחור נקודת התחלה ונקודת עצירה תקפות',
+        'error'
+      );
       return;
     }
     const extendedReasonControl = this.rideForm.get('extended_ride_reason');
-      if (this.isExtendedRequest && (!extendedReasonControl?.value || extendedReasonControl.value.trim() === '')) {
-        extendedReasonControl?.setErrors({ required: true });
-        extendedReasonControl?.markAsTouched();
-        this.toastService.show('נא לפרט את הסיבה לנסיעה ממושכת', 'error');
-        return;
-      }
+    if (
+      this.isExtendedRequest &&
+      (!extendedReasonControl?.value ||
+        extendedReasonControl.value.trim() === '')
+    ) {
+      extendedReasonControl?.setErrors({ required: true });
+      extendedReasonControl?.markAsTouched();
+      this.toastService.show('נא לפרט את הסיבה לנסיעה ממושכת', 'error');
+      return;
+    }
     const fourByFourReasonControl = this.rideForm.get('four_by_four_reason');
-    if (vehicleType && (vehicleType.toLowerCase().includes('4x4') || 
-                        vehicleType.toLowerCase().includes('jeep') || 
-                        vehicleType.toLowerCase().includes('van')) &&
-        (!fourByFourReasonControl?.value || fourByFourReasonControl.value.trim() === '')) {
+    if (
+      vehicleType &&
+      (vehicleType.toLowerCase().includes('4x4') ||
+        vehicleType.toLowerCase().includes('jeep') ||
+        vehicleType.toLowerCase().includes('van')) &&
+      (!fourByFourReasonControl?.value ||
+        fourByFourReasonControl.value.trim() === '')
+    ) {
       fourByFourReasonControl?.setErrors({ required: true });
       fourByFourReasonControl?.markAsTouched();
-      this.toastService.show('נא למלא את הסיבה לשימוש ברכב 4X4 / Jeep / Van', 'error');
+      this.toastService.show(
+        'נא למלא את הסיבה לשימוש ברכב 4X4 / Jeep / Van',
+        'error'
+      );
       return;
     } else {
       if (fourByFourReasonControl?.hasError('required')) {
@@ -697,9 +795,11 @@ export class EditRideComponent implements OnInit {
       submitted_at: this.submittedAt,
       is_day_ride: this.isDayRide,
       ride_note: this.rideTypeNote,
-      extended_ride_reason: this.rideForm.get('extended_ride_reason')?.value || null,
+      extended_ride_reason:
+        this.rideForm.get('extended_ride_reason')?.value || null,
       is_extended_request: this.isExtendedRequest,
-      four_by_four_reason: this.rideForm.get('four_by_four_reason')?.value || null
+      four_by_four_reason:
+        this.rideForm.get('four_by_four_reason')?.value || null,
     };
 
     this.rideService.updateRide(this.rideId, payload).subscribe({
@@ -709,9 +809,10 @@ export class EditRideComponent implements OnInit {
       },
       error: (err) => {
         console.error('Update error:', err);
-        const errorMessage = err.error?.detail || err.error?.message || 'שגיאה לא ידועה';
+        const errorMessage =
+          err.error?.detail || err.error?.message || 'שגיאה לא ידועה';
         this.toastService.show(`שגיאה בעדכון ההזמנה: ${errorMessage}`, 'error');
-      }
+      },
     });
   }
 

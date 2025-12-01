@@ -3,7 +3,7 @@
   margin: 0 auto;
   padding: 0.5rem;
   min-height: 100vh;
-  background: rgba(255,250,245,255);
+  background: rgba(255, 250, 245, 255);
   position: relative;
   z-index: 1;
 }
@@ -18,21 +18,19 @@
   border-radius: 12px;
   border: 2px solid rgba(234, 102, 102, 0.2);
   font-size: 0.9rem;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   font-weight: 600;
   background: linear-gradient(145deg, #ffffff, #f8fafc);
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.06),
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06),
     0 1px 0 rgba(255, 255, 255, 0.9) inset;
   min-width: 160px;
   cursor: pointer;
 }
 
-.sort-container{
+.sort-container {
   margin-top: 20px;
   margin-bottom: 20px;
 }
-
 
 .summary-cards {
   display: grid;
@@ -54,9 +52,8 @@
   transition: all 0.3s ease;
 }
 
-
 .summary-cards .card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -64,7 +61,6 @@
   height: 4px;
   background: linear-gradient(90deg, #942222, #dc2626);
 }
-
 
 .summary-cards .card-icon {
   margin-bottom: 1rem;
@@ -77,7 +73,7 @@
 }
 
 .summary-cards .card-content {
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
 }
 
 .summary-cards .card-number {
@@ -110,7 +106,7 @@
 .styled-table {
   width: 100%;
   margin: 2rem 0;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid rgba(0, 0, 0, 0.1);
@@ -119,36 +115,39 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
 }
 .styled-table tbody tr::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(148, 34, 34, 0.03), rgba(185, 28, 28, 0.02));
+  background: linear-gradient(
+    135deg,
+    rgba(148, 34, 34, 0.03),
+    rgba(185, 28, 28, 0.02)
+  );
   opacity: 0;
   transition: opacity 0.4s ease;
   pointer-events: none;
   border-radius: 12px;
 }
 .styled-table td {
-padding: 1rem 2rem;
-text-align: center;
-border: none;
-font-size: 0.95rem;
-font-weight: 500;
-color: #5c3535; 
-position: relative;
+  padding: 1rem 2rem;
+  text-align: center;
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #5c3535;
+  position: relative;
 }
 
-.styled-table tr{
-    color:#f8fafc;
+.styled-table tr {
+  color: #f8fafc;
 }
 .styled-table thead {
-background: linear-gradient(135deg, #942222, #c53030); 
-border-bottom: none;
+  background: linear-gradient(135deg, #942222, #c53030);
+  border-bottom: none;
 }
-
 
 .summary-cards {
   display: grid;
@@ -176,7 +175,7 @@ border-bottom: none;
 }
 
 .summary-cards .card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -185,33 +184,31 @@ border-bottom: none;
   background: linear-gradient(90deg, #942222, #dc2626);
 }
 
-
-
 @media (max-width: 768px) {
   .styled-table th,
   .styled-table td {
     padding: 1rem 1.2rem;
     font-size: 0.9rem;
   }
-  
+
   .styled-table th {
     font-size: 0.85rem;
     letter-spacing: 1px;
   }
-  
+
   .styled-table .no-show-count {
     font-size: 1.1rem;
   }
-  
+
   .summary-cards {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   .summary-cards .card {
     padding: 1.5rem;
   }
-  
+
   .summary-cards .card-number {
     font-size: 1.8rem;
   }
@@ -221,25 +218,25 @@ border-bottom: none;
   .styled-table {
     font-size: 0.8rem;
   }
-  
+
   .styled-table th,
   .styled-table td {
     padding: 0.8rem 1rem;
   }
-  
+
   .styled-table th {
     font-size: 0.75rem;
     padding: 1.2rem 1rem;
   }
-  
+
   .styled-table .no-show-count::before {
     display: none;
   }
-  
+
   .summary-cards .card-icon {
     font-size: 2rem;
   }
-  
+
   .summary-cards .card-number {
     font-size: 1.6rem;
   }
@@ -250,7 +247,11 @@ border-bottom: none;
   justify-content: center;
   align-items: center;
   height: 250px;
-  background: linear-gradient(135deg, rgba(148, 34, 34, 0.05), rgba(255, 255, 255, 0.8));
+  background: linear-gradient(
+    135deg,
+    rgba(148, 34, 34, 0.05),
+    rgba(255, 255, 255, 0.8)
+  );
   border-radius: 20px;
   backdrop-filter: blur(15px);
   margin: 2rem 0;
@@ -258,7 +259,7 @@ border-bottom: none;
 }
 
 .table-loading::after {
-  content: '';
+  content: "";
   width: 50px;
   height: 50px;
   border: 5px solid rgba(148, 34, 34, 0.3);
@@ -268,6 +269,10 @@ border-bottom: none;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }

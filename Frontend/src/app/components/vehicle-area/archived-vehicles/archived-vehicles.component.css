@@ -1,5 +1,3 @@
-
-
 .dashboard-wrapper {
   min-height: 100vh;
   padding: 2rem 0;
@@ -137,7 +135,6 @@
   margin: 2.5rem;
 }
 
-
 :host ::ng-deep .p-card.vehicle-card:hover {
   transform: translateY(-6px) scale(1.02);
   box-shadow: 0 12px 28px rgba(136, 136, 137, 0.25);
@@ -159,9 +156,7 @@
   flex-direction: column;
   position: relative;
   box-sizing: border-box;
-  transition:
-    transform 0.22s ease-out,
-    box-shadow 0.22s ease-out,
+  transition: transform 0.22s ease-out, box-shadow 0.22s ease-out,
     border 0.22s ease-out;
 }
 
@@ -169,7 +164,6 @@
   background: #ffffff !important;
   border: 1.5px solid #dcd1c7 !important;
 }
-
 
 .usage-indicator {
   position: absolute;

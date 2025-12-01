@@ -43,26 +43,26 @@
 
   <div class="table-wrapper">
     <table class="user-table">
-     <thead>
-  <tr>
-    <th class="column-name">שם עובד</th>
-    <th class="column-role">תפקיד</th>
-    <th class="column-department">מחלקה</th>
-    <th class="column-email">כתובת מייל</th>
-    <th class="column-license">רישיון ממשלתי</th>
-    <th class="column-actions">פעולות</th>
-  </tr>
-</thead>
+      <thead>
+        <tr>
+          <th class="column-name">שם עובד</th>
+          <th class="column-role">תפקיד</th>
+          <th class="column-department">מחלקה</th>
+          <th class="column-email">כתובת מייל</th>
+          <th class="column-license">רישיון ממשלתי</th>
+          <th class="column-actions">פעולות</th>
+        </tr>
+      </thead>
       <tbody>
         <tr *ngIf="pagedUsers.length === 0">
-  <td colspan="6" class="no-results">לא נמצאו משתמשים תואמים</td>
-</tr>
+          <td colspan="6" class="no-results">לא נמצאו משתמשים תואמים</td>
+        </tr>
 
         <tr
           *ngFor="let user of pagedUsers"
           (click)="goToUserCard(user.employee_id)"
           class="clickable-row"
-          [ngClass]="{'blocked-user-row': user.is_blocked}"
+          [ngClass]="{ 'blocked-user-row': user.is_blocked }"
         >
           <td class="column-name">
             <div class="user-name-wrapper">
@@ -76,78 +76,92 @@
               </span>
 
               <span class="user-icons">
-  <small *ngIf="user.is_blocked" class="blocked-indicator">
-    <i class="pi pi-ban"></i>
-  </small>
-</span>
-
+                <small *ngIf="user.is_blocked" class="blocked-indicator">
+                  <i class="pi pi-ban"></i>
+                </small>
+              </span>
             </div>
           </td>
 
-          <td class="column-role" [ngClass]="{'blocked-text': user.is_blocked}">{{ user.role }}</td>
-          <td class="column-department" [ngClass]="{'blocked-text': user.is_blocked}">
+          <td
+            class="column-role"
+            [ngClass]="{ 'blocked-text': user.is_blocked }"
+          >
+            {{ user.role }}
+          </td>
+          <td
+            class="column-department"
+            [ngClass]="{ 'blocked-text': user.is_blocked }"
+          >
             {{ getDepartmentName(user) }}
           </td>
 
-         <td class="column-email" [ngClass]="{'blocked-text': user.is_blocked}">
-  {{ user.email }}
-</td>
+          <td
+            class="column-email"
+            [ngClass]="{ 'blocked-text': user.is_blocked }"
+          >
+            {{ user.email }}
+          </td>
 
-<td class="column-license">
-  <span
-    *ngIf="user.has_government_license && !hasExpiredLicense(user)"
-    class="license-badge yes-license"
-    title="יש רישיון ממשלתי תקף"
-  >
-    <i class="pi pi-check-circle"></i>
-  </span>
+          <td class="column-license">
+            <span
+              *ngIf="user.has_government_license && !hasExpiredLicense(user)"
+              class="license-badge yes-license"
+              title="יש רישיון ממשלתי תקף"
+            >
+              <i class="pi pi-check-circle"></i>
+            </span>
 
-  <span
-    *ngIf="hasNoLicense(user) || hasExpiredLicense(user)"
-    class="license-badge no-license"
-    [title]="hasExpiredLicense(user) ? 'רישיון פג תוקף' : 'אין רישיון ממשלתי'"
-  >
-    <i class="pi pi-times-circle"></i>
-  </span>
-</td>
+            <span
+              *ngIf="hasNoLicense(user) || hasExpiredLicense(user)"
+              class="license-badge no-license"
+              [title]="
+                hasExpiredLicense(user) ? 'רישיון פג תוקף' : 'אין רישיון ממשלתי'
+              "
+            >
+              <i class="pi pi-times-circle"></i>
+            </span>
+          </td>
 
-<td class="column-actions">
-  <div class="modify-buttons">
-    <a class="edit-button" routerLink="/user-data-edit/{{user?.employee_id}}">
-      <button title="ערוך משתמש" class="modify">
-        <i class="pi pi-pencil"></i>
-      </button>
-    </a>
-    <button
-      onclick="event.stopPropagation()"
-      (click)="deleteUser(user.employee_id)"
-      class="delete"
-      title="מחק משתמש"
-    >
-      <i class="pi pi-trash"></i>
-    </button>
-    <button
-      *ngIf="!user.is_blocked"
-      class="block"
-      onclick="event.stopPropagation()"
-      (click)="openBlockUserModal(user)"
-      title="חסום משתמש"
-    >
-      <i class="pi pi-ban"></i>
-    </button>
+          <td class="column-actions">
+            <div class="modify-buttons">
+              <a
+                class="edit-button"
+                routerLink="/user-data-edit/{{ user?.employee_id }}"
+              >
+                <button title="ערוך משתמש" class="modify">
+                  <i class="pi pi-pencil"></i>
+                </button>
+              </a>
+              <button
+                onclick="event.stopPropagation()"
+                (click)="deleteUser(user.employee_id)"
+                class="delete"
+                title="מחק משתמש"
+              >
+                <i class="pi pi-trash"></i>
+              </button>
+              <button
+                *ngIf="!user.is_blocked"
+                class="block"
+                onclick="event.stopPropagation()"
+                (click)="openBlockUserModal(user)"
+                title="חסום משתמש"
+              >
+                <i class="pi pi-ban"></i>
+              </button>
 
-    <button
-      *ngIf="user.is_blocked"
-      class="unblock"
-      onclick="event.stopPropagation()"
-      (click)="openUnblockConfirmationModal(user)"
-      title="בטל חסימה"
-    >
-      <i class="pi pi-check-circle"></i>
-    </button>
-  </div>
-</td>
-
+              <button
+                *ngIf="user.is_blocked"
+                class="unblock"
+                onclick="event.stopPropagation()"
+                (click)="openUnblockConfirmationModal(user)"
+                title="בטל חסימה"
+              >
+                <i class="pi pi-check-circle"></i>
+              </button>
+            </div>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -156,7 +170,11 @@
   <div class="pagination-controls">
     <button (click)="nextPage()" [disabled]="currentPage === totalPages">
       <span class="icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+        >
           <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z" />
         </svg>
       </span>
@@ -164,7 +182,11 @@
     <span>עמוד {{ currentPage }} מתוך {{ totalPages }}</span>
     <button (click)="prevPage()" [disabled]="currentPage === 1">
       <span class="icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+        >
           <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
         </svg>
       </span>
@@ -174,35 +196,77 @@
   <div *ngIf="isBlockUserModalOpen" class="modal-overlay">
     <div class="modal-content">
       <h2>חסימת משתמש</h2>
-      <p>חסימת המשתמש: <strong>{{ selectedUserForBlock?.first_name }} {{ selectedUserForBlock?.last_name }}</strong></p>
+      <p>
+        חסימת המשתמש:
+        <strong
+          >{{ selectedUserForBlock?.first_name }}
+          {{ selectedUserForBlock?.last_name }}</strong
+        >
+      </p>
       <form [formGroup]="blockUserForm" (ngSubmit)="confirmBlockUser()">
         <div class="form-group">
           <label for="blockDuration">משך חסימה (ימים):</label>
-          <input type="number" id="blockDuration" formControlName="blockDuration" min="1" class="form-control" />
-          <div *ngIf="blockUserForm.get('blockDuration')?.invalid && blockUserForm.get('blockDuration')?.touched" class="text-danger">
+          <input
+            type="number"
+            id="blockDuration"
+            formControlName="blockDuration"
+            min="1"
+            class="form-control"
+          />
+          <div
+            *ngIf="
+              blockUserForm.get('blockDuration')?.invalid &&
+              blockUserForm.get('blockDuration')?.touched
+            "
+            class="text-danger"
+          >
             חובה להזין מספר ימים חיובי.
           </div>
         </div>
         <div class="form-group">
           <label for="blockReason">סיבת החסימה:</label>
-          <textarea 
-            id="blockReason" 
-            formControlName="blockReason" 
-            class="form-control" 
+          <textarea
+            id="blockReason"
+            formControlName="blockReason"
+            class="form-control"
             placeholder="הזן את הסיבה לחסימת משתמש זה (חובה)"
             rows="4"
-            style="resize: vertical; min-height: 80px;"></textarea>
-          <div *ngIf="blockUserForm.get('blockReason')?.invalid && blockUserForm.get('blockReason')?.touched" class="text-danger">
-            <span *ngIf="blockUserForm.get('blockReason')?.errors?.['required']">חובה למלא את סיבת החסימה.</span>
-            <span *ngIf="blockUserForm.get('blockReason')?.errors?.['minlength']">הסיבה חייבת להכיל לפחות 5 תווים.</span>
-            <span *ngIf="blockUserForm.get('blockReason')?.errors?.['whitespace']">הסיבה אינה יכולה להכיל רק רווחים.</span>
+            style="resize: vertical; min-height: 80px"
+          ></textarea>
+          <div
+            *ngIf="
+              blockUserForm.get('blockReason')?.invalid &&
+              blockUserForm.get('blockReason')?.touched
+            "
+            class="text-danger"
+          >
+            <span *ngIf="blockUserForm.get('blockReason')?.errors?.['required']"
+              >חובה למלא את סיבת החסימה.</span
+            >
+            <span
+              *ngIf="blockUserForm.get('blockReason')?.errors?.['minlength']"
+              >הסיבה חייבת להכיל לפחות 5 תווים.</span
+            >
+            <span
+              *ngIf="blockUserForm.get('blockReason')?.errors?.['whitespace']"
+              >הסיבה אינה יכולה להכיל רק רווחים.</span
+            >
           </div>
         </div>
         <div class="modal-buttons">
-          <button type="submit" class="btn btn-primary" [disabled]="blockUserForm.invalid || isSubmitting">
-            {{ isSubmitting ? 'מבצע חסימה...' : 'כן' }}
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="blockUserForm.invalid || isSubmitting"
+          >
+            {{ isSubmitting ? "מבצע חסימה..." : "כן" }}
           </button>
-          <button type="button" class="btn btn-secondary" (click)="closeBlockUserModal()" [disabled]="isSubmitting">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="closeBlockUserModal()"
+            [disabled]="isSubmitting"
+          >
             ביטול
           </button>
         </div>
@@ -213,12 +277,28 @@
   <div *ngIf="isUnblockConfirmationModalOpen" class="modal-overlay">
     <div class="modal-content">
       <h2>שחרור חסימת משתמש</h2>
-      <p>האם אתה בטוח שברצונך לשחרר את חסימת המשתמש <strong>{{ selectedUserForBlock?.first_name }} {{ selectedUserForBlock?.last_name }}</strong>?</p>
+      <p>
+        האם אתה בטוח שברצונך לשחרר את חסימת המשתמש
+        <strong
+          >{{ selectedUserForBlock?.first_name }}
+          {{ selectedUserForBlock?.last_name }}</strong
+        >?
+      </p>
       <div class="modal-buttons">
-        <button type="button" class="btn btn-primary" (click)="confirmUnblockUser()" [disabled]="isSubmitting">
-          {{ isSubmitting ? 'משחרר...' : 'כן' }}
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="confirmUnblockUser()"
+          [disabled]="isSubmitting"
+        >
+          {{ isSubmitting ? "משחרר..." : "כן" }}
         </button>
-        <button type="button" class="btn btn-secondary" (click)="closeUnblockConfirmationModal()" [disabled]="isSubmitting">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="closeUnblockConfirmationModal()"
+          [disabled]="isSubmitting"
+        >
           לא
         </button>
       </div>

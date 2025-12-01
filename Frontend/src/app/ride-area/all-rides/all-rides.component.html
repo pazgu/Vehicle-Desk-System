@@ -1,59 +1,58 @@
 <div class="page-wrapper">
-<div class="all-rides-container" dir="rtl">
-  <app-exceeded-warning-banner 
-    [allOrders]="orders"
-    (bannerClicked)="scrollToTop()">
-  </app-exceeded-warning-banner>
-  <div class="page-header">
-    <div class="quota-header-wrapper">
-      <app-quota-indicator [allOrders]="orders"></app-quota-indicator>
+  <div class="all-rides-container" dir="rtl">
+    <app-exceeded-warning-banner
+      [allOrders]="orders"
+      (bannerClicked)="scrollToTop()"
+    >
+    </app-exceeded-warning-banner>
+    <div class="page-header">
+      <div class="quota-header-wrapper">
+        <app-quota-indicator [allOrders]="orders"></app-quota-indicator>
+      </div>
+
+      <h1>הנסיעות שלי</h1>
+
+      <button class="back-button" (click)="goBack()">
+        חזור
+        <i class="pi pi-arrow-left"></i>
+      </button>
     </div>
 
-    <h1>הנסיעות שלי</h1>
+    <app-ride-filter-panel
+      [allOrders]="orders"
+      [rideViewMode]="rideViewMode"
+      [sortBy]="sortBy"
+      [statusFilter]="statusFilter"
+      [startDate]="startDate"
+      [endDate]="endDate"
+      [showFilters]="showFilters"
+      [minDate]="minDate"
+      [maxDate]="maxDate"
+      (filteredOrdersChanged)="onFilteredOrdersChanged($event)"
+    >
+    </app-ride-filter-panel>
 
-    <button class="back-button" (click)="goBack()">
-      חזור
-      <i class="pi pi-arrow-left"></i>
-    </button>
+    <div *ngIf="loading" class="loading-spinner">
+      <i
+        class="pi pi-spin pi-spinner"
+        style="font-size: 2rem; color: #942222"
+      ></i>
+      <p>טוען נסיעות...</p>
+    </div>
+
+    <app-ride-list-table
+      *ngIf="!loading"
+      [filteredOrders]="filteredOrders"
+      [loading]="loading"
+      [highlightedOrderId]="highlightedOrderId"
+      [allOrders]="orders"
+      [ordersPerPage]="ordersPerPage"
+      (viewRide)="onViewRide($event)"
+      (editRide)="onEditRide($event)"
+      (deleteRide)="onDeleteRide($event)"
+      (newRide)="goToNewRide()"
+      (rebookRide)="onRebookRide($event)"
+    >
+    </app-ride-list-table>
   </div>
-
-  <app-ride-filter-panel
-    [allOrders]="orders"
-    [rideViewMode]="rideViewMode"
-    [sortBy]="sortBy"
-    [statusFilter]="statusFilter"
-    [startDate]="startDate"
-    [endDate]="endDate"
-    [showFilters]="showFilters"
-    [minDate]="minDate"
-    [maxDate]="maxDate"
-    (filteredOrdersChanged)="onFilteredOrdersChanged($event)"
-  >
-  </app-ride-filter-panel>
-
-
-  <div *ngIf="loading" class="loading-spinner">
-    <i
-      class="pi pi-spin pi-spinner"
-      style="font-size: 2rem; color: #942222"
-    ></i>
-    <p>טוען נסיעות...</p>
-  </div>
-
-  <app-ride-list-table
-    *ngIf="!loading"
-    [filteredOrders]="filteredOrders"
-    [loading]="loading"
-    [highlightedOrderId]="highlightedOrderId"
-    [allOrders]="orders"
-    [ordersPerPage]="ordersPerPage"
-    (viewRide)="onViewRide($event)"
-    (editRide)="onEditRide($event)"
-    (deleteRide)="onDeleteRide($event)"
-    (newRide)="goToNewRide()"
-    (rebookRide)="onRebookRide($event)"
-
-  >
-  </app-ride-list-table>
-</div>
 </div>

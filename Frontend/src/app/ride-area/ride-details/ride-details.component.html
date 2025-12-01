@@ -30,13 +30,13 @@
         <div
           class="status-badge"
           [ngClass]="{
-          'status-pending': ride?.status === 'pending',
-          'status-approved': ride?.status === 'approved',
-          'status-completed': ride?.status === 'completed',
-          'status-in-progress': ride?.status === 'in_progress',
-          'status-rejected': ride?.status === 'rejected',
-          'status-cancelled': ride?.status === 'cancelled_due_to_no_show'
-        }"
+            'status-pending': ride?.status === 'pending',
+            'status-approved': ride?.status === 'approved',
+            'status-completed': ride?.status === 'completed',
+            'status-in-progress': ride?.status === 'in_progress',
+            'status-rejected': ride?.status === 'rejected',
+            'status-cancelled': ride?.status === 'cancelled_due_to_no_show'
+          }"
         >
           {{ getStatusText(ride?.status) }}
         </div>
@@ -49,30 +49,30 @@
 
           <div class="detail-item">
             <span class="detail-label">תאריך התחלה:</span>
-            <span class="detail-value"
-              >{{ ride?.start_datetime | date: 'dd/MM/yyyy' }}</span
-            >
+            <span class="detail-value">{{
+              ride?.start_datetime | date : "dd/MM/yyyy"
+            }}</span>
           </div>
 
           <div *ngIf="isRideLongerThanOneDay()" class="detail-item">
             <span class="detail-label">תאריך סיום:</span>
-            <span class="detail-value"
-              >{{ ride?.end_datetime | date: 'dd/MM/yyyy' }}</span
-            >
+            <span class="detail-value">{{
+              ride?.end_datetime | date : "dd/MM/yyyy"
+            }}</span>
           </div>
 
           <div class="detail-item">
             <span class="detail-label">שעת התחלה:</span>
-            <span class="detail-value"
-              >{{ ride?.start_datetime | date: 'HH:mm' }}</span
-            >
+            <span class="detail-value">{{
+              ride?.start_datetime | date : "HH:mm"
+            }}</span>
           </div>
 
           <div class="detail-item">
             <span class="detail-label">שעת סיום:</span>
-            <span class="detail-value"
-              >{{ ride?.end_datetime | date: 'HH:mm' }}</span
-            >
+            <span class="detail-value">{{
+              ride?.end_datetime | date : "HH:mm"
+            }}</span>
           </div>
         </div>
 
@@ -95,9 +95,9 @@
 
           <div class="detail-item">
             <span class="detail-label">נקודת התחלה:</span>
-            <span class="detail-value"
-              >{{ getCityName(ride?.start_location) }}</span
-            >
+            <span class="detail-value">{{
+              getCityName(ride?.start_location)
+            }}</span>
           </div>
 
           <div class="detail-item">
@@ -122,9 +122,9 @@
 
           <div class="detail-item">
             <span class="detail-label">נקודת סיום:</span>
-            <span class="detail-value"
-              >{{ getCityName(ride?.destination) }}</span
-            >
+            <span class="detail-value">{{
+              getCityName(ride?.destination)
+            }}</span>
           </div>
 
           <div class="detail-item">
@@ -141,10 +141,9 @@
 
           <div class="detail-item">
             <span class="detail-label">סוג נסיעה:</span>
-            <span class="detail-value"
-              >{{ ride?.ride_type === 'operational' ? 'מבצעית' : 'מנהלתית'
-              }}</span
-            >
+            <span class="detail-value">{{
+              ride?.ride_type === "operational" ? "מבצעית" : "מנהלתית"
+            }}</span>
           </div>
 
           <div class="detail-item">
@@ -154,7 +153,7 @@
                 {{ ride?.vehicle_model }}
               </ng-container>
               <ng-template #fallbackVehicle>
-                {{ ride?.vehicle || 'לא זמין' }}
+                {{ ride?.vehicle || "לא זמין" }}
               </ng-template>
             </span>
           </div>

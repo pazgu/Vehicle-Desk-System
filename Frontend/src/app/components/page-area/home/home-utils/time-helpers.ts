@@ -46,9 +46,10 @@ export function checkTimeOverlap(
   const start2Minutes = timeToMinutes(start2);
   const end2Minutes = timeToMinutes(end2);
 
-  // handle overnight cases by normalizing end times
-  const end1Adjusted = end1Minutes < start1Minutes ? end1Minutes + 1440 : end1Minutes;
-  const end2Adjusted = end2Minutes < start2Minutes ? end2Minutes + 1440 : end2Minutes;
+  const end1Adjusted =
+    end1Minutes < start1Minutes ? end1Minutes + 1440 : end1Minutes;
+  const end2Adjusted =
+    end2Minutes < start2Minutes ? end2Minutes + 1440 : end2Minutes;
 
   return start1Minutes < end2Adjusted && start2Minutes < end1Adjusted;
 }
@@ -68,7 +69,6 @@ export function correctToNearestQuarter(time: string): string {
     Math.abs(curr - minutes) < Math.abs(prev - minutes) ? curr : prev
   );
 
-  // If we’re near the end of the hour, roll to next hour
   if (minutes > 52) {
     closestQuarter = 0;
     const newHours = hours === 23 ? 0 : hours + 1;
@@ -98,8 +98,6 @@ export function calculateMinDate(): string {
   return date.toISOString().split('T')[0];
 }
 
-
-
 export function padTo2(value: number | string): string {
   const num = typeof value === 'string' ? Number(value) : value;
   if (Number.isNaN(num)) {
@@ -120,7 +118,6 @@ export function toIsoDate(dateStr: string): string {
   if (!dateStr) return '';
   const d = new Date(dateStr);
   if (Number.isNaN(d.getTime())) {
-    // if it's already in a safe format, just return as-is
     return dateStr;
   }
   return d.toISOString().split('T')[0];
@@ -173,5 +170,3 @@ export function setClosestQuarterHourTimeOnForm(
     end_minute: padTo2(endMinute),
   });
 }
-
-

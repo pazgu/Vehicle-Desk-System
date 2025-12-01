@@ -4,8 +4,9 @@
   box-sizing: border-box;
 }
 
-html, body {
-  font-family: 'Assistant', sans-serif;
+html,
+body {
+  font-family: "Assistant", sans-serif;
   direction: rtl;
   height: 100vh;
   overflow: hidden;
@@ -13,25 +14,25 @@ html, body {
 }
 .overlay {
   display: flex;
-  background-image: url('/assets/images/edit_ride_bg.jpg');
+  background-image: url("/assets/images/edit_ride_bg.jpg");
   background-repeat: no-repeat;
   background-color: #f5f5f5;
   background-size: cover;
   background-position: center center;
-  background-size: 100% auto; 
+  background-size: 100% auto;
   background-repeat: no-repeat;
-  background-color: #fbe6c9; 
+  background-color: #fbe6c9;
   backdrop-filter: blur(2px);
   justify-content: center;
   min-height: 100vh;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   direction: rtl;
   position: fixed;
-  align-items: center; 
+  align-items: center;
   top: 0;
   left: 0;
-  width: 100vw; 
-  height: 100vh; 
+  width: 100vw;
+  height: 100vh;
   z-index: 10;
   overflow: hidden;
 }
@@ -48,7 +49,6 @@ html, body {
   flex-direction: column;
   justify-content: space-between;
   margin-top: 60px;
-
 }
 
 @media (max-width: 600px) {
@@ -98,12 +98,13 @@ form .row {
   font-weight: bold;
 }
 
-input, select {
+input,
+select {
   padding: 10px;
   border-radius: 5px;
   border: 1px solid #d3b1b1;
   background-color: #ffffff;
-  font-family: 'Assistant', sans-serif;
+  font-family: "Assistant", sans-serif;
 }
 
 input[type="date"],
@@ -158,9 +159,9 @@ select.styled-select {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  align-items: stretch;  
-  justify-content: flex-start; 
-  height: auto; 
+  align-items: stretch;
+  justify-content: flex-start;
+  height: auto;
 }
 .headers {
   display: flex;
@@ -290,14 +291,14 @@ form .removeBtn:hover {
 }
 
 .alert-info {
-  background-color: #e0f7fa; 
-  border: 1px solid #00acc1; 
-  color: #00838f; 
+  background-color: #e0f7fa;
+  border: 1px solid #00acc1;
+  color: #00838f;
 }
 
 .alert-warning {
-  background-color: #fff3e0; 
-  border: 1px solid #ffb300; 
+  background-color: #fff3e0;
+  border: 1px solid #ffb300;
   color: #e65100;
 }
 
@@ -313,7 +314,7 @@ form .removeBtn:hover {
 
 .removeBtn .pi {
   font-size: 14px;
-  color: inherit;  
+  color: inherit;
 }
 
 .addBtn .pi {

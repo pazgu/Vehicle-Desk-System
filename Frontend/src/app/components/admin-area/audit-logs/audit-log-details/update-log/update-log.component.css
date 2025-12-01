@@ -1,5 +1,5 @@
 .old-value-cell {
-  background: #ffeaea !important; 
+  background: #ffeaea !important;
   color: #b71c1c;
   font-weight: bold;
 }
@@ -53,7 +53,7 @@
 }
 
 .new-value-cell {
-  background: #eaffea !important; 
+  background: #eaffea !important;
   color: #1b5e20;
   font-weight: bold;
 }

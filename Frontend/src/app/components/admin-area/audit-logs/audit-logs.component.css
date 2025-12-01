@@ -2,12 +2,11 @@
   min-height: 100vh;
   background: #ded7d7;
   padding: 2rem 0;
-  background-image: url('/assets/images/vehicle-dashboard-bg.png');
+  background-image: url("/assets/images/vehicle-dashboard-bg.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-attachment: fixed; 
-
+  background-attachment: fixed;
 }
 
 .back-btn {
@@ -22,7 +21,7 @@
   border-radius: 20px;
   cursor: pointer;
   transition: background-color 0.2s ease, transform 0.15s ease;
-  margin-left:0px;
+  margin-left: 0px;
   margin-right: 800px;
   background: none;
 }
@@ -45,7 +44,7 @@
 
 .audit-wrapper {
   direction: rtl;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -203,7 +202,7 @@
 }
 
 .active-row {
-  background-color: #ffe5b4 !important; 
+  background-color: #ffe5b4 !important;
 }
 
 .delete-row {
@@ -222,15 +221,23 @@
 }
 
 .cancelled-due-to-no-show {
-  background: #e0d6e8 !important; 
+  background: #e0d6e8 !important;
 }
 
 .exceeded-monthly-trip-quota-row {
-  background: #cdb69b !important; 
+  background: #cdb69b !important;
 }
 
-.in-progress-row{
-  background: linear-gradient(45deg, #27ae60 25%, #2ecc71 25%, #2ecc71 50%, #27ae60 50%, #27ae60 75%, #2ecc71 75%);
+.in-progress-row {
+  background: linear-gradient(
+    45deg,
+    #27ae60 25%,
+    #2ecc71 25%,
+    #2ecc71 50%,
+    #27ae60 50%,
+    #27ae60 75%,
+    #2ecc71 75%
+  );
   background-size: 20px 20px;
   animation: moveStripes 1s linear infinite;
 }
@@ -277,7 +284,7 @@
 }
 
 .log-details-card h2::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -10px;
   left: 50%;
@@ -407,7 +414,7 @@
   color: #e2e8f0;
   padding: 1.5rem;
   border-radius: 8px;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   font-size: 0.9rem;
   line-height: 1.6;
   overflow-x: auto;
@@ -468,7 +475,6 @@
     grid-template-columns: 1fr;
   }
 
- 
   .field-value {
     margin-right: 0;
     width: 100%;
@@ -625,12 +631,12 @@
   border: 1.5px solid #903d34;
 }
 .status-indicator.cancelled-due-to-no-show {
-  background-color: #e0d6e8; 
-  border: #a398b3 1.6px solid; 
+  background-color: #e0d6e8;
+  border: #a398b3 1.6px solid;
 }
 .status-indicator.exceeded-monthly-trip-quota {
-  background-color: #cdb69b; 
-  border: #9b876b 1.6px solid; 
+  background-color: #cdb69b;
+  border: #9b876b 1.6px solid;
 }
 
 .export-button {
@@ -670,9 +676,9 @@
 }
 
 .range-select {
-  padding: 0.5rem 1rem; 
-  padding-left: 2rem; 
-  border-radius: 8px; 
+  padding: 0.5rem 1rem;
+  padding-left: 2rem;
+  border-radius: 8px;
   border: 0.5px solid #942222;
   font-family: inherit;
   font-size: 1rem;
@@ -685,22 +691,21 @@
   -moz-appearance: none;
   background-image: url('data:image/svg+xml;utf8,<svg fill="%23942222" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
   background-repeat: no-repeat;
-  background-position: left 0.75rem center; 
-  background-size: 1em; 
+  background-position: left 0.75rem center;
+  background-size: 1em;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  direction: rtl; 
+  direction: rtl;
 }
 
 .range-select:hover {
   border-color: #942222;
-  box-shadow: 0 0 0 3px rgba(148, 34, 34, 0.2); 
+  box-shadow: 0 0 0 3px rgba(148, 34, 34, 0.2);
 }
 
 .range-select:focus {
   outline: none;
-  border-color: #942222; 
+  border-color: #942222;
 }
-
 
 .range-select option {
   direction: rtl;
@@ -811,25 +816,23 @@ input[type="checkbox"] {
   height: 13px;
   accent-color: #942222;
   cursor: pointer;
-  margin-left: 8px; 
+  margin-left: 8px;
   vertical-align: middle;
 }
 
-  .filters-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    align-items: center;
-    margin-bottom: 1rem;
-  }
-
+.filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
 
 .problematic-only-filter {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
-
 
 .filter-actions-row {
   display: flex;
@@ -838,7 +841,7 @@ input[type="checkbox"] {
   margin-bottom: 1rem;
 }
 
-.collapse-btn{
+.collapse-btn {
   background: none;
   border: 1px solid #942222;
   font-size: 1rem;
@@ -853,7 +856,7 @@ input[type="checkbox"] {
   height: 40px;
 }
 
-.collapse-btn:hover{
+.collapse-btn:hover {
   background: #942222;
   color: white;
   transform: translateY(-2px);

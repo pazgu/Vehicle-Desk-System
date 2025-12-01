@@ -56,64 +56,70 @@ export class UserDataComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-
     this.blockUserForm = this.fb.group({
       blockDuration: [14, [Validators.required, Validators.min(1)]],
-      blockReason: ['', [
-        Validators.required,
-        Validators.minLength(5),
-        this.noWhitespaceValidator
-      ]]
+      blockReason: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(5),
+          this.noWhitespaceValidator,
+        ],
+      ],
     });
 
     this.loadUsersAndDepartments();
   }
 
-noWhitespaceValidator(control: any) {
-  const isWhitespace = (control.value || '').trim().length === 0;
-  const isValid = !isWhitespace;
-  return isValid ? null : { 'whitespace': true };
-}
-private loadUsersAndDepartments(): void {
-  const users$ = this.userService.getAllUsers();
-  const departments$ = this.userService.getDepartments();
+  noWhitespaceValidator(control: any) {
+    const isWhitespace = (control.value || '').trim().length === 0;
+    const isValid = !isWhitespace;
+    return isValid ? null : { whitespace: true };
+  }
+  private loadUsersAndDepartments(): void {
+    const users$ = this.userService.getAllUsers();
+    const departments$ = this.userService.getDepartments();
 
-  forkJoin([users$, departments$]).subscribe({
-    next: ([users, departments]) => {
-      const deptIdToName = departments.reduce((map, dept) => {
-        map[dept.id] = dept.name;
-        return map;
-      }, {} as { [key: string]: string });
+    forkJoin([users$, departments$]).subscribe({
+      next: ([users, departments]) => {
+        const deptIdToName = departments.reduce((map, dept) => {
+          map[dept.id] = dept.name;
+          return map;
+        }, {} as { [key: string]: string });
 
-      this.supervisorToDeptName = departments.reduce((map, dept) => {
-        if (dept.supervisor_id) {
-          map[dept.supervisor_id] = dept.name;
-        }
-        return map;
-      }, {} as { [key: string]: string });
+        this.supervisorToDeptName = departments.reduce((map, dept) => {
+          if (dept.supervisor_id) {
+            map[dept.supervisor_id] = dept.name;
+          }
+          return map;
+        }, {} as { [key: string]: string });
 
-      this.users = users.map(user => {
-        let deptName = '—'; 
-        if (user.role === 'supervisor' && this.supervisorToDeptName[user.employee_id]) {
-          deptName = this.supervisorToDeptName[user.employee_id]; 
-        } else if (user.department_id && deptIdToName[user.department_id]) {
-          deptName = deptIdToName[user.department_id]; 
-        }
+        this.users = users.map((user) => {
+          let deptName = '—';
+          if (
+            user.role === 'supervisor' &&
+            this.supervisorToDeptName[user.employee_id]
+          ) {
+            deptName = this.supervisorToDeptName[user.employee_id];
+          } else if (user.department_id && deptIdToName[user.department_id]) {
+            deptName = deptIdToName[user.department_id];
+          }
 
-        return { ...user, department_name: deptName };
-      });
+          return { ...user, department_name: deptName };
+        });
 
-      this.filteredLogs = [...this.users];
-      this.departmentNames = deptIdToName;
-      this.checkLicence(this.users);
-      this.availableRoles = Array.from(new Set(users.map(u => u.role))).filter(Boolean);
+        this.filteredLogs = [...this.users];
+        this.departmentNames = deptIdToName;
+        this.checkLicence(this.users);
+        this.availableRoles = Array.from(
+          new Set(users.map((u) => u.role))
+        ).filter(Boolean);
 
-      this.setupSocketListeners();
-    },
-    error: (err) => console.error('Failed to fetch data', err),
-  });
-}
-
+        this.setupSocketListeners();
+      },
+      error: (err) => console.error('Failed to fetch data', err),
+    });
+  }
 
   private setupSocketListeners(): void {
     this.socketservice.deleteUserRequests$.subscribe((deletedUser) => {
@@ -123,9 +129,9 @@ private loadUsersAndDepartments(): void {
       }
     });
 
-    this.socketservice.usersBlockStatus$.subscribe(update => {
+    this.socketservice.usersBlockStatus$.subscribe((update) => {
       const id = String(update.id);
-      const idx = this.users.findIndex(u => String(u.employee_id) === id);
+      const idx = this.users.findIndex((u) => String(u.employee_id) === id);
       if (idx === -1) return;
 
       const updatedUser = {
@@ -140,7 +146,9 @@ private loadUsersAndDepartments(): void {
         ...this.users.slice(idx + 1),
       ];
 
-      const fIdx = this.filteredLogs.findIndex(u => String(u.employee_id) === id);
+      const fIdx = this.filteredLogs.findIndex(
+        (u) => String(u.employee_id) === id
+      );
       if (fIdx !== -1) {
         this.filteredLogs = [
           ...this.filteredLogs.slice(0, fIdx),
@@ -149,7 +157,10 @@ private loadUsersAndDepartments(): void {
         ];
       }
 
-      if (this.selectedUserForBlock?.employee_id && String(this.selectedUserForBlock.employee_id) === id) {
+      if (
+        this.selectedUserForBlock?.employee_id &&
+        String(this.selectedUserForBlock.employee_id) === id
+      ) {
         this.closeBlockUserModal();
         this.closeUnblockConfirmationModal();
       }
@@ -167,24 +178,31 @@ private loadUsersAndDepartments(): void {
       }
 
       this.users[idx] = updatedUser;
-      this.licenceExpiredMap[update.id] = updatedUser.license_expiry_date ? updatedUser.license_expiry_date < new Date() : false;
+      this.licenceExpiredMap[update.id] = updatedUser.license_expiry_date
+        ? updatedUser.license_expiry_date < new Date()
+        : false;
 
       this.cdr.detectChanges();
     });
   }
 
- getDepartmentName(user: any): string {
-  if (user.role === 'supervisor' && user.employee_id in this.supervisorToDeptName) {
-    return this.supervisorToDeptName[user.employee_id];
-  }
+  getDepartmentName(user: any): string {
+    if (
+      user.role === 'supervisor' &&
+      user.employee_id in this.supervisorToDeptName
+    ) {
+      return this.supervisorToDeptName[user.employee_id];
+    }
 
-  return this.departmentNames[user.department_id] || 'לא זמין';
-}
+    return this.departmentNames[user.department_id] || 'לא זמין';
+  }
   hasNoLicense(user: User): boolean {
     return !user.has_government_license;
   }
   hasExpiredLicense(user: User): boolean {
-    return user.has_government_license && this.licenceExpiredMap[user.employee_id];
+    return (
+      user.has_government_license && this.licenceExpiredMap[user.employee_id]
+    );
   }
   getLicenseWarningMessage(user: User): string {
     if (this.hasNoLicense(user)) {
@@ -229,34 +247,46 @@ private loadUsersAndDepartments(): void {
     const now = new Date();
     const blockExpiresAt = new Date(now.setDate(now.getDate() + blockDuration));
 
-    const formData = this.createFormDataForUserUpdate(this.selectedUserForBlock, true, blockExpiresAt.toISOString().slice(0, 16),blockReason);
+    const formData = this.createFormDataForUserUpdate(
+      this.selectedUserForBlock,
+      true,
+      blockExpiresAt.toISOString().slice(0, 16),
+      blockReason
+    );
 
-    this.userService.updateUser(this.selectedUserForBlock.employee_id, formData).subscribe({
-      next: () => {
-        this.isSubmitting = false;
-        this.toastservice.show(`המשתמש נחסם בהצלחה למשך ${blockDuration} ימים. הסיבה נרשמה `, 'success');
-        this.closeBlockUserModal();
-      },
-      error: (err) => {
-        this.isSubmitting = false;
-        let errorMessage = 'שגיאה בחסימת המשתמש ';
-        if (err.status === 400) {
-          errorMessage = err.error?.detail || 'נתונים שגויים - יש לבדוק את השדות ולנסות שוב ';
-        } else if (err.status === 403) {
-          errorMessage = 'אין לך הרשאה לחסום משתמש זה ';
-        } else if (err.status === 404) {
-          errorMessage = 'המשתמש לא נמצא במערכת ';
-        } else if (err.status === 500) {
-          errorMessage = 'שגיאה בשרת או במסד הנתונים - נסה שוב מאוחר יותר ';
-        } else if (err.status === 0 || !err.status) {
-          errorMessage = 'אין חיבור לשרת - בדוק את החיבור לאינטרנט ';
-        } else if (err.error?.detail) {
-          errorMessage = err.error.detail;
-        }
-        this.toastservice.show(errorMessage, 'error');
-        console.error('Error blocking user:', err);
-      },
-    });
+    this.userService
+      .updateUser(this.selectedUserForBlock.employee_id, formData)
+      .subscribe({
+        next: () => {
+          this.isSubmitting = false;
+          this.toastservice.show(
+            `המשתמש נחסם בהצלחה למשך ${blockDuration} ימים. הסיבה נרשמה `,
+            'success'
+          );
+          this.closeBlockUserModal();
+        },
+        error: (err) => {
+          this.isSubmitting = false;
+          let errorMessage = 'שגיאה בחסימת המשתמש ';
+          if (err.status === 400) {
+            errorMessage =
+              err.error?.detail ||
+              'נתונים שגויים - יש לבדוק את השדות ולנסות שוב ';
+          } else if (err.status === 403) {
+            errorMessage = 'אין לך הרשאה לחסום משתמש זה ';
+          } else if (err.status === 404) {
+            errorMessage = 'המשתמש לא נמצא במערכת ';
+          } else if (err.status === 500) {
+            errorMessage = 'שגיאה בשרת או במסד הנתונים - נסה שוב מאוחר יותר ';
+          } else if (err.status === 0 || !err.status) {
+            errorMessage = 'אין חיבור לשרת - בדוק את החיבור לאינטרנט ';
+          } else if (err.error?.detail) {
+            errorMessage = err.error.detail;
+          }
+          this.toastservice.show(errorMessage, 'error');
+          console.error('Error blocking user:', err);
+        },
+      });
   }
 
   confirmUnblockUser() {
@@ -266,20 +296,27 @@ private loadUsersAndDepartments(): void {
 
     this.isSubmitting = true;
 
-    const formData = this.createFormDataForUserUpdate(this.selectedUserForBlock, false, null, null);
+    const formData = this.createFormDataForUserUpdate(
+      this.selectedUserForBlock,
+      false,
+      null,
+      null
+    );
 
-    this.userService.updateUser(this.selectedUserForBlock.employee_id, formData).subscribe({
-      next: () => {
-        this.isSubmitting = false;
-        this.toastservice.show('חסימת המשתמש שוחררה בהצלחה ', 'success');
-        this.closeUnblockConfirmationModal();
-      },
-      error: (err) => {
-        this.isSubmitting = false;
-        this.toastservice.show('שגיאה בשחרור חסימת המשתמש ', 'error');
-        console.error('Error unblocking user:', err);
-      },
-    });
+    this.userService
+      .updateUser(this.selectedUserForBlock.employee_id, formData)
+      .subscribe({
+        next: () => {
+          this.isSubmitting = false;
+          this.toastservice.show('חסימת המשתמש שוחררה בהצלחה ', 'success');
+          this.closeUnblockConfirmationModal();
+        },
+        error: (err) => {
+          this.isSubmitting = false;
+          this.toastservice.show('שגיאה בשחרור חסימת המשתמש ', 'error');
+          console.error('Error unblocking user:', err);
+        },
+      });
   }
 
   private createFormDataForUserUpdate(
@@ -303,7 +340,10 @@ private loadUsersAndDepartments(): void {
       formData.append('department_id', '');
     }
 
-    formData.append('has_government_license', String(user.has_government_license || false));
+    formData.append(
+      'has_government_license',
+      String(user.has_government_license || false)
+    );
 
     if (user.license_expiry_date) {
       const date = new Date(user.license_expiry_date);
@@ -329,7 +369,6 @@ private loadUsersAndDepartments(): void {
     return formData;
   }
 
-
   goToUserCard(userId: string): void {
     this.router.navigate(['/user-card', userId]);
   }
@@ -340,7 +379,10 @@ private loadUsersAndDepartments(): void {
 
   get pagedUsers(): User[] {
     const start = (this.currentPage - 1) * this.pageSize;
-    return this.filteredLogs.slice().reverse().slice(start, start + this.pageSize);
+    return this.filteredLogs
+      .slice()
+      .reverse()
+      .slice(start, start + this.pageSize);
   }
 
   nextPage(): void {
@@ -373,7 +415,7 @@ private loadUsersAndDepartments(): void {
         confirmText: 'מחק משתמש',
         cancelText: 'חזור',
         noRestoreText: 'שימ/י לב שלא ניתן לשחזר את המשתמש',
-        isDestructive: true
+        isDestructive: true,
       },
     });
 
@@ -427,6 +469,4 @@ private loadUsersAndDepartments(): void {
       toast.remove();
     }, 3000);
   }
-
-
 }

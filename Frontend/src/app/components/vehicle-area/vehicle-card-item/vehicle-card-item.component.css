@@ -1,5 +1,5 @@
 .vehicle-details-wrapper {
-  background-image: url('/assets/images/vehicle-dashboard-bg.png');
+  background-image: url("/assets/images/vehicle-dashboard-bg.png");
   background-size: cover;
   min-height: 100vh;
   background-position: center;
@@ -20,7 +20,7 @@
   margin-top: 15px;
   padding: 8px 0;
 }
-.right-side{
+.right-side {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -49,7 +49,7 @@
 
 .progress-fill {
   height: 100%;
-  background: #8B0000;
+  background: #8b0000;
   transition: width 0.3s ease;
 }
 .vehicle-wrapper-header {
@@ -67,8 +67,6 @@
   font-size: 2rem;
   color: #333;
 }
-
-
 
 .unfreeze-button {
   background-color: #655e5e;
@@ -93,8 +91,8 @@
 }
 
 .freeze-button {
-  background-color: #655e5e; 
-  color: #fff; 
+  background-color: #655e5e;
+  color: #fff;
   border: none;
   padding: 0.35rem 0.9rem;
   font-size: 0.95rem;
@@ -111,7 +109,7 @@
 .freeze-button:hover,
 .freeze-button:focus {
   background-color: #973838dc;
-  box-shadow: 0 2px 8px #ad3131e3; 
+  box-shadow: 0 2px 8px #ad3131e3;
 }
 
 .freeze-reason-container {
@@ -144,7 +142,7 @@
 
 .confirm-freeze-button:hover {
   background-color: #973838dc;
-  box-shadow: 0 2px 8px #ad3131e3; 
+  box-shadow: 0 2px 8px #ad3131e3;
 }
 
 .vehicle-details-card {
@@ -156,7 +154,7 @@
   border-radius: 18px;
   box-shadow: 0 2px 12px rgba(148, 34, 34, 0.08);
   display: flex;
-  flex-direction: row-reverse; 
+  flex-direction: row-reverse;
   align-items: flex-start;
   gap: 2rem;
   text-align: right;
@@ -170,7 +168,7 @@
 
 .vehicle-horizontal-content {
   display: flex;
-  flex-direction: row-reverse; 
+  flex-direction: row-reverse;
   align-items: flex-start;
   gap: 2rem;
 }
@@ -223,9 +221,7 @@
 .vehicle-details-card.card-frozen {
   background: #e2ecf2c3 !important;
   border: 1.5px solid #747dbc4f !important;
-
 }
-
 
 .back-btn {
   width: 130px;
@@ -239,13 +235,12 @@
   border-radius: 20px;
   cursor: pointer;
   transition: background-color 0.2s ease, transform 0.15s ease;
-  margin-left:0px;
+  margin-left: 0px;
   background: none;
 }
 .back-btn:hover {
   transform: scale(1.03);
 }
-
 
 .timeline-button-inline {
   background-color: #655e5e;
@@ -260,7 +255,7 @@
 }
 
 .timeline-button-inline:hover {
-  background-color: #973838dc; 
+  background-color: #973838dc;
   box-shadow: 0 2px 8px #ad3131e3;
 }
 
@@ -275,8 +270,6 @@
   align-items: center;
   gap: 4px;
 }
-
-
 
 .mileage-info {
   display: flex;
@@ -347,7 +340,7 @@
 }
 
 .modal-header {
-  background-color:  #973838dc;
+  background-color: #973838dc;
   color: white;
   border-radius: 0px;
   border-bottom: none;
@@ -534,14 +527,12 @@
   }
 }
 
-
-
 .modern-edit-btn {
   background: linear-gradient(145deg, #7a6868, #5e4f4f);
   color: white;
   border: none;
   padding: 0.45rem 1.3rem;
-  border-radius: 8px; 
+  border-radius: 8px;
   cursor: pointer;
   font-size: 0.95rem;
   font-weight: 500;
@@ -574,13 +565,18 @@
 }
 
 .modern-edit-btn::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   transition: left 0.5s;
 }
 
@@ -597,9 +593,8 @@
 .modern-edit-btn:active {
   transform: translateY(0) scale(1);
   transition: all 0.1s ease;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
-
 
 .modern-edit-btn mat-icon {
   font-size: 20px;
@@ -607,7 +602,7 @@
   height: 20px;
   color: #fff;
   transition: transform 0.3s ease;
-  margin-bottom: 2px; 
+  margin-bottom: 2px;
 }
 
 .modern-edit-btn:hover mat-icon {
@@ -615,13 +610,18 @@
 }
 
 .modern-edit-btn::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   transition: left 0.5s;
 }
 
@@ -638,26 +638,26 @@
 .modern-edit-btn:active {
   transform: translateY(0) scale(1);
   transition: all 0.1s ease;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .personal-reason-box {
   display: flex;
   flex-direction: column;
-  align-items: flex-start; 
+  align-items: flex-start;
   margin-top: 10px;
   gap: 8px;
-  text-align: right; 
+  text-align: right;
 }
 
 .personal-reason-label {
   font-weight: 600;
   color: #942222;
   font-family: var(--font-family-alef);
-  font-size: 0.9rem; 
+  font-size: 0.9rem;
   align-self: flex-start;
-  padding-right: 0.5rem; 
-  line-height: 1.2; 
+  padding-right: 0.5rem;
+  line-height: 1.2;
 }
 
 .personal-textarea {
@@ -665,14 +665,13 @@
   border: 1px solid #942222;
   border-radius: 8px;
   padding: 8px;
-  font-size: 0.9rem; 
+  font-size: 0.9rem;
   direction: rtl;
   text-align: right;
   resize: none;
   font-family: inherit;
   transition: border-color 0.2s ease;
 }
-  
 
 .edit-button,
 .save-button,

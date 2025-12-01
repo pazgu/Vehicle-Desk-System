@@ -155,26 +155,28 @@ export class VehicleStatusComponent {
 
   loadVehicleTypes() {
     this.vehicleService.getVehicleTypes().subscribe({
-        next: (vehicleTypes) => {
-          this.vehicleTypes = vehicleTypes;
-        },
-        error: (err) => {
-          this.toastService.show('אירעה שגיאה בטעינת סוגי רכבים', 'error');
-        },
-      });
+      next: (vehicleTypes) => {
+        this.vehicleTypes = vehicleTypes;
+      },
+      error: (err) => {
+        this.toastService.show('אירעה שגיאה בטעינת סוגי רכבים', 'error');
+      },
+    });
   }
 
   private loadVehicleChart() {
-    this.vehicleService.getVehicleStatusSummary(this.selectedVehicleType).subscribe({
-      next: (data) => {
-        this.updateVehicleChart(data);
-        this.vehicleChartInitialized = true;
-      },
-      error: (error) => {
-        this.toastService.show('אירעה שגיאה בטעינת נתוני רכבים', 'error');
-        this.vehicleChartInitialized = true;
-      },
-    });
+    this.vehicleService
+      .getVehicleStatusSummary(this.selectedVehicleType)
+      .subscribe({
+        next: (data) => {
+          this.updateVehicleChart(data);
+          this.vehicleChartInitialized = true;
+        },
+        error: (error) => {
+          this.toastService.show('אירעה שגיאה בטעינת נתוני רכבים', 'error');
+          this.vehicleChartInitialized = true;
+        },
+      });
   }
 
   get isVehicleNoData(): boolean {

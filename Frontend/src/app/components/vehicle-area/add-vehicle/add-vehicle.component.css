@@ -1,11 +1,11 @@
 .page-wrapper {
-    min-height: 100vh;
-    padding: 2rem 0;
-    position: relative;
-    z-index: 10;
-    background-repeat: repeat;        
-    background-size: 520px auto;       
-    background-position: top center;
+  min-height: 100vh;
+  padding: 2rem 0;
+  position: relative;
+  z-index: 10;
+  background-repeat: repeat;
+  background-size: 520px auto;
+  background-position: top center;
   background-color: rgb(255, 255, 255);
 }
 
@@ -13,7 +13,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(255,255,255,0.5); 
+  background: rgba(255, 255, 255, 0.5);
   pointer-events: none;
   z-index: 1;
 }
@@ -27,9 +27,7 @@
   margin: 0 auto;
   background-color: rgba(255, 255, 255, 0.95);
   border-radius: 20px;
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.15),
-    0 4px 16px rgba(0, 0, 0, 0.1),
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15), 0 4px 16px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
   padding: 2rem 2.5rem;
   backdrop-filter: blur(10px);
@@ -46,7 +44,12 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.8),
+    transparent
+  );
   z-index: -1;
 }
 
@@ -67,17 +70,14 @@
 }
 
 @keyframes floatyCard {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
-    box-shadow: 
-      0 8px 32px rgba(0, 0, 0, 0.15),
-      0 4px 16px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15), 0 4px 16px rgba(0, 0, 0, 0.1);
   }
   50% {
     transform: translateY(-6px);
-    box-shadow: 
-      0 12px 40px rgba(0, 0, 0, 0.2),
-      0 6px 20px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.15);
   }
 }
 
@@ -88,17 +88,16 @@
   margin-bottom: 12px;
 }
 
-form{
-    direction:rtl;
+form {
+  direction: rtl;
 }
 
-h2{
-    text-align: center;
-    color: #942222;
-    font-size: 2rem;
-    margin-bottom: 0;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-
+h2 {
+  text-align: center;
+  color: #942222;
+  font-size: 2rem;
+  margin-bottom: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 label {
@@ -108,7 +107,8 @@ label {
   color: #333;
 }
 
-input, select {
+input,
+select {
   width: 100%;
   padding: 12px;
   margin-top: 4px;
@@ -119,14 +119,16 @@ input, select {
   background: rgba(255, 255, 255, 0.9);
 }
 
-input:focus, select:focus {
+input:focus,
+select:focus {
   outline: none;
   border-color: #942222;
   box-shadow: 0 0 0 3px rgba(148, 34, 34, 0.1);
   transform: translateY(-1px);
 }
 
-input:hover, select:hover {
+input:hover,
+select:hover {
   border-color: #b71c1c;
 }
 
@@ -152,7 +154,12 @@ button[type="submit"]::before {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   transition: left 0.5s ease;
 }
 
@@ -170,20 +177,19 @@ button[type="submit"]:hover::before {
   position: absolute;
   width: 130px;
   height: 40px;
-  left: 0;         
+  left: 0;
   top: 0;
   color: #942222;
   font-family: var(--font-family-alef);
   font-size: 20px;
   font-weight: bold;
   padding: 1px 2px;
-  border: none; 
+  border: none;
   border-radius: 20px;
   cursor: pointer;
   transition: all 0.3s ease;
   background: rgba(255, 255, 255, 0.9);
 }
-
 
 .back-btn:hover {
   background: #942222;
@@ -192,13 +198,12 @@ button[type="submit"]:hover::before {
 }
 
 .vehicle-image {
-  border-radius: 0.5rem; 
-  width: 160px;         
-  height: 128px;        
-  object-fit: cover;     
-  display: block;        
+  border-radius: 0.5rem;
+  width: 160px;
+  height: 128px;
+  object-fit: cover;
+  display: block;
 }
-
 
 .vehicle-wrapper-header {
   position: relative;
@@ -233,13 +238,25 @@ button[type="submit"]:hover::before {
   z-index: 1;
 }
 
-.row-1 { top: 15%; animation: drive-left 12s linear infinite; }
-.row-2 { top: 35%; animation: drive-left 14s linear infinite; }
-.row-3 { top: 55%; animation: drive-left 13s linear infinite; }
-.row-4 { top: 75%; animation: drive-left 15s linear infinite; }
+.row-1 {
+  top: 15%;
+  animation: drive-left 12s linear infinite;
+}
+.row-2 {
+  top: 35%;
+  animation: drive-left 14s linear infinite;
+}
+.row-3 {
+  top: 55%;
+  animation: drive-left 13s linear infinite;
+}
+.row-4 {
+  top: 75%;
+  animation: drive-left 15s linear infinite;
+}
 
 .car {
-  font-size: 3.3rem; 
+  font-size: 3.3rem;
   position: relative;
   animation: bobCar 2.5s ease-in-out infinite;
   filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.3));
@@ -247,36 +264,58 @@ button[type="submit"]:hover::before {
 }
 
 @keyframes drive-left {
-  0% { transform: translateX(100%); }
-  100% { transform: translateX(-100%); }
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
 }
 
 @keyframes bobCar {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
 }
 
 @keyframes smoke-puff {
-  0%   { transform: translateX(0) scale(1); opacity: 0.7; }
-  50%  { transform: translateX(-15px) scale(1.2); opacity: 0.4; }
-  100% { transform: translateX(-30px) scale(1.4); opacity: 0; }
+  0% {
+    transform: translateX(0) scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateX(-15px) scale(1.2);
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateX(-30px) scale(1.4);
+    opacity: 0;
+  }
 }
 
 .car-wrapper {
   position: relative;
   display: inline-block;
-  z-index: 2; 
-
+  z-index: 2;
 }
 
 .car-smoke {
   content: "";
   position: absolute;
-  left: -0.8rem; 
-  top: 0.7rem; 
+  left: -0.8rem;
+  top: 0.7rem;
   width: 1.2rem;
   height: 1.2rem;
-  background: radial-gradient(circle, rgba(120,120,120,0.8) 20%, rgba(180,180,180,0.4) 50%, rgba(255,255,255,0) 70%);
+  background: radial-gradient(
+    circle,
+    rgba(120, 120, 120, 0.8) 20%,
+    rgba(180, 180, 180, 0.4) 50%,
+    rgba(255, 255, 255, 0) 70%
+  );
   border-radius: 50%;
   opacity: 0.7;
   animation: smoke-puff 1.5s ease-in-out infinite;

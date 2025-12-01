@@ -8,14 +8,17 @@ import { RideStartTimeStatsResponse } from '../models/ride-start-time-stats.mode
 import { PurposeOfTravelStatsResponse } from '../models/purpose-of-travel-stats.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class StatisticsService {
-  private apiUrl = environment.apiUrl; 
+  private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
-  getTopNoShowUsers(fromDate?: string, toDate?: string): Observable<NoShowStatsResponse> {
+  getTopNoShowUsers(
+    fromDate?: string,
+    toDate?: string
+  ): Observable<NoShowStatsResponse> {
     let params = new HttpParams();
 
     if (fromDate) {
@@ -63,7 +66,7 @@ export class StatisticsService {
     );
 
     const url = `${this.apiUrl}/statistics/ride-start-time`;
-    
+
     console.log('🔍 Calling ride-start-time API:', url, params.toString());
 
     return this.http
@@ -103,7 +106,7 @@ export class StatisticsService {
     );
 
     const url = `${this.apiUrl}/statistics/purpose-of-travel`;
-    
+
     console.log('🔍 Calling purpose-of-travel API:', url);
     console.log('📊 Params:', params.toString());
     console.log('🔑 Token exists:', !!localStorage.getItem('token'));
@@ -121,7 +124,7 @@ export class StatisticsService {
             status: err.status,
             statusText: err.statusText,
             url: err.url,
-            message: err.message
+            message: err.message,
           });
           return throwError(() => err);
         })

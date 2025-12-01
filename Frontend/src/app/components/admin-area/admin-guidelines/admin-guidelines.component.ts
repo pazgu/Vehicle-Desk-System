@@ -6,7 +6,7 @@ import {
   FormControl,
   FormGroup,
   ReactiveFormsModule,
-  Validators
+  Validators,
 } from '@angular/forms';
 import { GuidelinesServiceAdmin } from '../../../services/guildeline-admin.service';
 import { ToastService } from '../../../services/toast.service';
@@ -20,7 +20,7 @@ import { ToastService } from '../../../services/toast.service';
 })
 export class AdminGuidelinesComponent implements OnInit {
   form!: FormGroup;
-  originalValue: any = null; // to track original data
+  originalValue: any = null; 
 
   constructor(
     private fb: FormBuilder,
@@ -42,7 +42,6 @@ export class AdminGuidelinesComponent implements OnInit {
 
         doc.items.forEach((text: string) => this.addItem(text));
 
-        // Store the initial form state
         this.originalValue = this.form.getRawValue();
       },
       error: () => this.toastService.show('שגיאה בטעינת נתונים', 'error'),
@@ -63,18 +62,17 @@ export class AdminGuidelinesComponent implements OnInit {
   }
 
   removeItem(index: number) {
-  if (index < 0 || index >= this.items.length) return;
-  this.items.removeAt(index);
-}
-
+    if (index < 0 || index >= this.items.length) return;
+    this.items.removeAt(index);
+  }
 
   trackByControl = (_: number, ctrl: FormControl<string>) => ctrl;
 
-  
-
-
   hasChanges(): boolean {
-    return JSON.stringify(this.form.getRawValue()) !== JSON.stringify(this.originalValue);
+    return (
+      JSON.stringify(this.form.getRawValue()) !==
+      JSON.stringify(this.originalValue)
+    );
   }
 
   save() {
@@ -96,7 +94,7 @@ export class AdminGuidelinesComponent implements OnInit {
     this.guidelinesService.update(payload).subscribe({
       next: () => {
         this.toastService.show('הנתונים נשמרו בהצלחה!', 'success');
-        this.originalValue = this.form.getRawValue(); // reset baseline
+        this.originalValue = this.form.getRawValue(); 
       },
       error: () => {
         this.toastService.show('שגיאה בשמירת נתונים', 'error');

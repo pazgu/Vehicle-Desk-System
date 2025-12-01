@@ -73,7 +73,7 @@
   z-index: 99999;
   animation: slideIn 0.3s ease forwards, fadeOut 0.5s ease 2.5s forwards;
   max-width: 300px;
-  opacity: 0; 
+  opacity: 0;
   direction: rtl;
   text-align: right;
 }

@@ -1,175 +1,337 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
-<head>
-  <meta charset="UTF-8" />
-  <title>Bookit Login</title>
-  <link href="https://fonts.googleapis.com/css2?family=Alef:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="header.component.css" />
-</head>
-<body>
-  <div class="navbar">
-    <div class="nav-left">
-      <div class="user-menu-container">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Bookit Login</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Alef:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="header.component.css" />
+  </head>
+  <body>
+    <div class="navbar">
+      <div class="nav-left">
+        <div class="user-menu-container">
           <div class="user-icon-container">
-            <a *ngIf="!isLoggedIn" routerLink="/login" routerLinkActive="active">
-              <img src="/assets/images/user-icon.png" alt="User Icon"  class="user-icon"/>
+            <a
+              *ngIf="!isLoggedIn"
+              routerLink="/login"
+              routerLinkActive="active"
+            >
+              <img
+                src="/assets/images/user-icon.png"
+                alt="User Icon"
+                class="user-icon"
+              />
             </a>
             <div *ngIf="isLoggedIn" class="user-icon-logged-in">
-              <img src="/assets/images/user-icon.png" alt="User Icon" class="user-icon"/>
+              <img
+                src="/assets/images/user-icon.png"
+                alt="User Icon"
+                class="user-icon"
+              />
             </div>
           </div>
           <ul class="user-dropdown">
-            <!-- If not logged in -->
             <ng-container *ngIf="!isLoggedIn">
               <li><a routerLink="/login">התחברות</a></li>
               <li><a routerLink="/register">יצירת משתמש חדש</a></li>
             </ng-container>
 
-            <!-- If logged in -->
             <ng-container *ngIf="isLoggedIn">
               <li><a (click)="onLogout()">התנתקות</a></li>
             </ng-container>
-        </ul>
+          </ul>
+        </div>
+
+        <span class="username">{{ fullName$ | async }}</span>
+
+        <a
+          *ngIf="(role$ | async) === 'admin'"
+          [routerLink]="['/admin/add-new-user']"
+          class="nav-link special-link"
+        >
+          | הוסף משתמש חדש
+        </a>
+
+        <a
+          *ngIf="(role$ | async) === 'employee'"
+          [routerLink]="['/home']"
+          title="להזמין נסיעה"
+        >
+          <img
+            src="/assets/images/add-car.png"
+            alt="Car"
+            class="add-car"
+            class="car-icon"
+          />
+        </a>
+        <a
+          *ngIf="(role$ | async) === 'supervisor'"
+          [routerLink]="['/home']"
+          title="להזמין נסיעה"
+        >
+          <img
+            src="/assets/images/add-car.png"
+            alt="Car"
+            class="add-car"
+            class="car-icon"
+          />
+        </a>
       </div>
-      
-      <span class="username">{{ fullName$ | async }}</span>
 
-      <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/admin/add-new-user']" class="nav-link special-link">
-      | הוסף משתמש חדש 
-      </a>
+      <div class="nav-center">
+        <a
+          [routerLink]="
+            (role$ | async) === 'employee' || (role$ | async) === 'supervisor'
+              ? '/all-rides'
+              : null
+          "
+          [class.disabled]="
+            (role$ | async) !== 'employee' || (role$ | async) === 'supervisor'
+          "
+          routerLinkActive="active"
+          ><img
+            src="/assets/images/bookit-logo.png"
+            alt="Bookit Logo"
+            class="logo"
+        /></a>
+      </div>
 
-      <a *ngIf="(role$ | async) === 'employee'" [routerLink]="['/home']" title="להזמין נסיעה">
-        <img src="/assets/images/add-car.png" alt="Car" class="add-car" class="car-icon" />
-      </a>
-      <a *ngIf="(role$ | async) === 'supervisor'" [routerLink]="['/home']" title="להזמין נסיעה">
-        <img src="/assets/images/add-car.png" alt="Car" class="add-car" class="car-icon"/>
-      </a>
+      <div class="media-dropdown">
+        <button class="navbar-toggle" onclick="toggleMenu()">☰</button>
+        <div class="dropdown-content-mobile">
+          <ul>
+            <li *ngIf="isLoggedIn && !isAuthPage">
+              <a [routerLink]="['/notifications']" class="nav-link" href="#"
+                >התראות</a
+              >
+            </li>
 
-    </div>    
-  
+            <li>
+              <a
+                *ngIf="(role$ | async) === 'admin'"
+                [routerLink]="['/vehicle-dashboard']"
+                class="nav-link"
+                href="#"
+                >רכבים
+              </a>
+            </li>
+            <li>
+              <a
+                *ngIf="(role$ | async) === 'admin'"
+                [routerLink]="['/audit-logs']"
+                class="nav-link"
+                href="#"
+              >
+                מעקב פעולות
+              </a>
+            </li>
+            <li>
+              <a
+                *ngIf="(role$ | async) === 'admin'"
+                [routerLink]="['/user-data']"
+                class="nav-link"
+                href="#"
+              >
+                נתוני עובדים
+              </a>
+            </li>
+            <li>
+              <a
+                *ngIf="(role$ | async) === 'admin'"
+                [routerLink]="['/department-data']"
+                class="nav-link"
+                href="#"
+              >
+                נתוני מחלקות
+              </a>
+            </li>
 
-    <div class="nav-center">
-          <a [routerLink]="(role$ | async) === 'employee' || (role$ | async) ==='supervisor' ? '/all-rides' : null"
-          [class.disabled]="(role$ | async) !== 'employee'||(role$ | async) ==='supervisor'"
-          routerLinkActive="active"><img src="/assets/images/bookit-logo.png" alt="Bookit Logo" class="logo"/></a>
+            <li>
+              <a
+                *ngIf="(role$ | async) === 'admin'"
+                [routerLink]="['/admin/critical-issues']"
+                class="nav-link"
+                href="#"
+                >דוחות
+              </a>
+            </li>
+
+            <li>
+              <a
+                *ngIf="(role$ | async) === 'admin'"
+                [routerLink]="['/admin/guidelines']"
+                class="nav-link"
+                href="#"
+              >
+                הנחיות נסיעה
+              </a>
+            </li>
+
+            <li>
+              <a
+                *ngIf="(role$ | async) === 'admin'"
+                [routerLink]="['/admin/analytics']"
+                class="nav-link"
+                href="#"
+                >סטטיסטיקות</a
+              >
+            </li>
+
+            <li>
+              <a
+                *ngIf="(role$ | async) === 'supervisor'"
+                [routerLink]="['/supervisor-dashboard']"
+                class="nav-link"
+                href="#"
+                >הזמנות מחלקה
+              </a>
+            </li>
+            <li>
+              <a
+                *ngIf="(role$ | async) === 'supervisor'"
+                [routerLink]="['/all-rides']"
+                class="nav-link"
+                href="#"
+                >ההזמנות שלי</a
+              >
+            </li>
+
+            <li>
+              <a
+                *ngIf="(role$ | async) === 'employee'"
+                [routerLink]="['/all-rides']"
+                class="nav-link"
+                href="#"
+                >ההזמנות שלי</a
+              >
+            </li>
+            <li>
+              <a
+                *ngIf="(role$ | async) === 'employee'"
+                [routerLink]="['/home']"
+                class="nav-link"
+                href="#"
+                >הזמנה חדשה</a
+              >
+            </li>
+
+            <li>
+              <a
+                *ngIf="(role$ | async) === 'supervisor'"
+                [routerLink]="['/home']"
+                class="nav-link"
+                href="#"
+                >הזמנה חדשה</a
+              >
+            </li>
+
+            <li>
+              <a
+                *ngIf="(role$ | async) === 'inspector'"
+                [routerLink]="['/inspector/inspection']"
+                class="nav-link"
+                >בדיקת רכבים <br />
+                יומית
+              </a>
+            </li>
+            <li></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="nav-right">
+        <a
+          *ngIf="(role$ | async) === 'admin'"
+          [routerLink]="['/vehicle-dashboard']"
+          class="nav-link"
+          href="#"
+          >רכבים |
+        </a>
+        <a
+          *ngIf="(role$ | async) === 'admin'"
+          [routerLink]="['/audit-logs']"
+          class="nav-link"
+          href="#"
+        >
+          מעקב פעולות |</a
+        >
+        <div *ngIf="(role$ | async) === 'admin'" class="dropdown">
+          <button class="dropbtn">נתונים ועריכה |</button>
+          <div class="dropdown-content">
+            <a [routerLink]="['/user-data']" class="nav-link" href="#">
+              נתוני עובדים
+            </a>
+            <a [routerLink]="['/department-data']" class="nav-link" href="#">
+              נתוני מחלקות
+            </a>
+            <a [routerLink]="['/admin/guidelines']" class="nav-link" href="#">
+              הנחיות נסיעה
+            </a>
+          </div>
+        </div>
+        <a
+          *ngIf="(role$ | async) === 'admin'"
+          [routerLink]="['/admin/critical-issues']"
+          class="nav-link"
+          href="#"
+          >דוחות |</a
+        >
+        <a
+          *ngIf="(role$ | async) === 'admin'"
+          [routerLink]="['/admin/analytics']"
+          class="nav-link"
+          href="#"
+          >סטטיסטיקות</a
+        >
+
+        <a
+          *ngIf="(role$ | async) === 'supervisor'"
+          [routerLink]="['/supervisor-dashboard']"
+          class="nav-link"
+          href="#"
+          >הזמנות מחלקה |
+        </a>
+        <a
+          *ngIf="(role$ | async) === 'supervisor'"
+          [routerLink]="['/all-rides']"
+          class="nav-link"
+          href="#"
+          >ההזמנות שלי</a
+        >
+
+        <a
+          *ngIf="(role$ | async) === 'employee'"
+          [routerLink]="['/all-rides']"
+          class="nav-link"
+          href="#"
+          >ההזמנות שלי</a
+        >
+
+        <a
+          *ngIf="(role$ | async) === 'inspector'"
+          [routerLink]="['/inspector/inspection']"
+          class="nav-link"
+          >בדיקת רכבים יומית</a
+        >
+        <a *ngIf="isLoggedIn && !isAuthPage" routerLink="/notifications">
+          <img
+            src="/assets/images/bell-icon.png"
+            alt="Notifications"
+            class="bell-icon"
+          />
+          <span
+            class="badge"
+            *ngIf="unreadCount$ | async as count"
+            [hidden]="count === 0"
+          >
+            {{ count }}
+          </span>
+        </a>
+      </div>
     </div>
-
-
-        <!-- in case of limited space for navbar -->
-<div class="media-dropdown" >
- <button class="navbar-toggle" onclick="toggleMenu()">☰</button>
- <div class="dropdown-content-mobile">
-  <ul>
-    <li *ngIf="isLoggedIn && !isAuthPage">
-  <a [routerLink]="['/notifications']" class="nav-link" href="#">התראות</a>
-</li>
-
-    <li>
-      <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/vehicle-dashboard']" class="nav-link" href="#">רכבים </a>
-    </li>
-    <li>
-    <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/audit-logs']" class="nav-link" href="#"> מעקב פעולות </a>
-    </li>
-    <li>
-    <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/user-data']" class="nav-link" href="#"> נתוני עובדים </a>
-    </li>
-    <li>
-    <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/department-data']" class="nav-link" href="#"> נתוני מחלקות </a>
-    </li>
-    
-    <li>
-    <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/admin/critical-issues']" class="nav-link" href="#">דוחות </a>
-    </li>
-
-    <li>
-  <a *ngIf="(role$ | async) === 'admin'"
-     [routerLink]="['/admin/guidelines']"
-     class="nav-link"
-     href="#">
-     הנחיות נסיעה
-  </a>
-</li>
-
-    <li>
-    <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/admin/analytics']" class="nav-link" href="#">סטטיסטיקות</a>
-    </li>
-
-    <li>
-    <a *ngIf="(role$ | async) === 'supervisor'" [routerLink]="['/supervisor-dashboard']" class="nav-link" href="#">הזמנות מחלקה  </a>
-    </li>
-    <li>
-    <a *ngIf="(role$ | async) === 'supervisor'" [routerLink]="['/all-rides']" class="nav-link" href="#">ההזמנות שלי</a>
-    </li>
-
-    
-   <li>
-    <a *ngIf="(role$ | async) === 'employee'" [routerLink]="['/all-rides']" class="nav-link" href="#">ההזמנות שלי</a>
-</li>
-  <li>
-    <a *ngIf="(role$ | async) === 'employee'" [routerLink]="['/home']" class="nav-link" href="#">הזמנה חדשה</a>
-</li>
- 
- <li>
-    <a *ngIf="(role$ | async) === 'supervisor'" [routerLink]="['/home']" class="nav-link" href="#">הזמנה חדשה</a>
-</li>
-<!-- <li>
-    <a *ngIf="(role$ | async) === 'inspector'" [routerLink]="['/inspector/vehicles']" class="nav-link">סטטוס רכבים </a>
-  </li> -->
-  <li>
-    <a *ngIf="(role$ | async) === 'inspector'" [routerLink]="['/inspector/inspection']" class="nav-link">בדיקת רכבים <br> יומית </a>
-    </li>
-    <li>
-    </li>
-
-</ul>
-      </div>
-
-</div>
-
-    <div class="nav-right">
-        
-    <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/vehicle-dashboard']" class="nav-link" href="#">רכבים | </a>
-    <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/audit-logs']" class="nav-link" href="#"> מעקב פעולות |</a>
-    <div *ngIf="(role$ | async) === 'admin'" class="dropdown">
-      <button class="dropbtn">נתונים ועריכה |</button>
-      <div class="dropdown-content">
-        <a [routerLink]="['/user-data']" class="nav-link" href="#"> נתוני עובדים </a>
-        <a [routerLink]="['/department-data']" class="nav-link" href="#"> נתוני מחלקות </a>
-        <a [routerLink]="['/admin/guidelines']" class="nav-link" href="#"> הנחיות נסיעה </a>
-
-      </div>
-
-
-    </div>
-    <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/admin/critical-issues']" class="nav-link" href="#">דוחות  |</a>
-    <a *ngIf="(role$ | async) === 'admin'" [routerLink]="['/admin/analytics']" class="nav-link" href="#">סטטיסטיקות</a>
-
-
-
-    <!-- supervisor routes -->
-    <a *ngIf="(role$ | async) === 'supervisor'" [routerLink]="['/supervisor-dashboard']" class="nav-link" href="#">הזמנות מחלקה  | </a>
-    <a *ngIf="(role$ | async) === 'supervisor'" [routerLink]="['/all-rides']" class="nav-link" href="#">ההזמנות שלי</a>
-
-    <!-- employee routes -->
-    <a *ngIf="(role$ | async) === 'employee'" [routerLink]="['/all-rides']" class="nav-link" href="#">ההזמנות שלי</a>
-
-   <a *ngIf="(role$ | async) === 'inspector'" [routerLink]="['/inspector/inspection']" class="nav-link">בדיקת רכבים יומית</a>
-    <a *ngIf="isLoggedIn && !isAuthPage" routerLink="/notifications">
-    <img src="/assets/images/bell-icon.png" alt="Notifications" class="bell-icon" />
-    <span
-      class="badge"
-      *ngIf="(unreadCount$ | async) as count"
-      [hidden]="count === 0">
-      {{ count }}
-    </span>
-</a>
-
-    </div> 
-  </div>
-
-</body>
-<div class="navbar-spacer"></div>
-
-
+  </body>
+  <div class="navbar-spacer"></div>
 </html>
-
