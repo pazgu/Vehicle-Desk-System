@@ -21,15 +21,16 @@ from ..services.vehicle_service import (
     get_vehicle_km_driven_on_date,
     get_vehicles_with_optional_status,
     get_available_vehicles_new_ride,
+    get_vip_vehicles_for_ride,
     update_vehicle_status,
-    get_vehicle_by_id,
+    get_vehicle_by_id, update_vehicle,
     get_available_vehicles_for_ride_by_id,
     get_inactive_vehicles, get_most_used_vehicles_all_time
 )
 
 # Schemas
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
-from ..schemas.vehicle_schema import VehicleOut, VehicleStatusUpdate, RideTimelineSchema
+from ..schemas.vehicle_schema import VehicleOut, VehicleStatusUpdate, RideTimelineSchema , VehicleUpdateRequest
 from src.schemas.vehicle_create_schema import VehicleCreate
 
 # Models
@@ -100,10 +101,62 @@ def get_all_vehicles_route(
         prioritized = hybrid
     elif fuel:
         prioritized = fuel
-    elif electric:  # fallback even if distance > 200
+    elif electric:  
         prioritized = electric
 
     return prioritized
+
+
+
+
+
+
+
+@router.get("/vip-vehicles-new-ride", response_model=List[VehicleOut])
+def get_vip_vehicles_route(
+    distance_km: float = Query(...),
+    ride_date: Optional[date] = Query(None),
+    type: Optional[str] = Query(None),
+    start_time: Optional[datetime] = Query(None),
+    end_time: Optional[datetime] = Query(None),
+    db: Session = Depends(get_db),
+    payload: dict = Depends(token_check),
+):
+    vehicles = get_vip_vehicles_for_ride(db, start_time, end_time, type)
+
+    if type:
+        vehicles = [v for v in vehicles if v.type and v.type.lower() == type.lower()]
+
+    if not vehicles:
+        return []
+
+    electric, hybrid, fuel = [], [], []
+
+    for v in vehicles:
+        if v.fuel_type == "electric":
+            km_today = get_vehicle_km_driven_on_date(db, v.id, ride_date or date.today())
+            if distance_km + float(km_today) <= 200:
+                electric.append(v)
+
+        elif v.fuel_type == "hybrid":
+            hybrid.append(v)
+
+        elif v.fuel_type == "gasoline":
+            fuel.append(v)
+
+    prioritized = []
+    if distance_km <= 200 and electric:
+        prioritized = electric
+    elif hybrid:
+        prioritized = hybrid
+    elif fuel:
+        prioritized = fuel
+    elif electric:
+        prioritized = electric
+
+    return prioritized
+
+
 
 @router.get("/all-vehicles", response_model=List[VehicleOut])
 def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = Depends(get_db), payload: dict = Depends(token_check)):
@@ -191,7 +244,20 @@ def get_vehicle_by_id_route(vehicle_id: str, db: Session = Depends(get_db)):
     return get_vehicle_by_id(vehicle_id, db)
 
 
-
+@router.put("/vehicle/{vehicle_id}")
+def update_vehicle_route(
+    vehicle_id: str, 
+    vehicle_data: VehicleUpdateRequest, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    try:
+        updated_vehicle = update_vehicle(vehicle_id, vehicle_data, db)
+        return updated_vehicle
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/add-vehicle", response_model=VehicleOut, status_code=status.HTTP_201_CREATED)
 def create_vehicle(
@@ -208,7 +274,7 @@ def create_vehicle(
     
     if vehicle_data.department_id:
         if vehicle_data.department_id == "vip":
-            vip_dep = get_or_create_vip_department(db)
+            vip_dep = get_or_create_vip_department(db, user_id)
             vehicle_data.department_id = str(vip_dep.id)
         else:
             department = db.query(Department).filter_by(id=vehicle_data.department_id).first()
@@ -330,10 +396,10 @@ def restore_vehicle(
     
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user.employee_id)})
     
-    # Restore the vehicle
     vehicle.is_archived = False
     vehicle.archived_at = None
-    # Set status back to available (or you can keep the previous status if you store it)
+    vehicle.freeze_reason = None
+    vehicle.freeze_details = None
     vehicle.status = VehicleStatus.available
     
     db.commit()

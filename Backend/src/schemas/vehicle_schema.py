@@ -77,3 +77,8 @@ class VehicleAvailabilityRequest(BaseModel):
 
 class MileageUpdateRequest(BaseModel):
     new_mileage: int = Field(..., ge=0, description="New mileage must be zero or positive")
+
+class VehicleUpdateRequest(BaseModel):
+    department_id: Optional[str] = None
+    mileage: Optional[int] = None
+    image_url: Optional[str] = None
