@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
- import { environment } from '../../environments/environment';
+import { environment } from '../../environments/environment';
 
 export interface LoginRequest {
   username: string;
@@ -13,7 +13,7 @@ export interface LoginResponse {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class LoginService {
   constructor(private http: HttpClient) {}

@@ -1,9 +1,15 @@
 <div class="analytics-container">
   <div class="chart-card">
     <div class="export-buttons">
-      <button *ngIf="activeTabIndex!=3" (click)="exportCSV()"><i class="pi pi-folder"></i> ייצוא CSV</button>
-      <button *ngIf="activeTabIndex!=3" (click)="exportPDF()"><i class="pi pi-file-pdf"></i> ייצוא PDF</button>
-      <button *ngIf="activeTabIndex!=3" (click)="exportExcel()"><i class="pi pi-file-excel"></i> ייצוא Excel</button>
+      <button *ngIf="activeTabIndex != 3" (click)="exportCSV()">
+        <i class="pi pi-folder"></i> ייצוא CSV
+      </button>
+      <button *ngIf="activeTabIndex != 3" (click)="exportPDF()">
+        <i class="pi pi-file-pdf"></i> ייצוא PDF
+      </button>
+      <button *ngIf="activeTabIndex != 3" (click)="exportExcel()">
+        <i class="pi pi-file-excel"></i> ייצוא Excel
+      </button>
 
       <div class="export-warning" *ngIf="noShowExportWarningVisible">
         אין נתוני אי-הגעה לייצוא כרגע.
@@ -12,13 +18,48 @@
     <small class="export-disclaimer">*הייצוא מתבצע בהתאם לסינונים</small>
 
     <div class="tab-buttons">
-      <button [class.active]="activeTabIndex === 0" (click)="activeTabIndex = 0">סטטוס רכבים</button>
-      <button [class.active]="activeTabIndex === 1" (click)="activeTabIndex = 1">סטטוס נסיעות</button>
-      <button [class.active]="activeTabIndex === 2" (click)="activeTabIndex = 2">שימוש חודשי ברכבים</button>
-      <button [class.active]="activeTabIndex === 3" (click)="activeTabIndex = 3">נסיעות לפי משתמש</button>
-      <button [class.active]="activeTabIndex === 4" (click)="activeTabIndex = 4">אי-הגעות</button>
-      <button [class.active]="activeTabIndex === 5" (click)="activeTabIndex = 5">זמני התחלת נסיעות</button>
-      <button [class.active]="activeTabIndex === 6" (click)="activeTabIndex = 6">מטרת נסיעה</button>
+      <button
+        [class.active]="activeTabIndex === 0"
+        (click)="activeTabIndex = 0"
+      >
+        סטטוס רכבים
+      </button>
+      <button
+        [class.active]="activeTabIndex === 1"
+        (click)="activeTabIndex = 1"
+      >
+        סטטוס נסיעות
+      </button>
+      <button
+        [class.active]="activeTabIndex === 2"
+        (click)="activeTabIndex = 2"
+      >
+        שימוש חודשי ברכבים
+      </button>
+      <button
+        [class.active]="activeTabIndex === 3"
+        (click)="activeTabIndex = 3"
+      >
+        נסיעות לפי משתמש
+      </button>
+      <button
+        [class.active]="activeTabIndex === 4"
+        (click)="activeTabIndex = 4"
+      >
+        אי-הגעות
+      </button>
+      <button
+        [class.active]="activeTabIndex === 5"
+        (click)="activeTabIndex = 5"
+      >
+        זמני התחלת נסיעות
+      </button>
+      <button
+        [class.active]="activeTabIndex === 6"
+        (click)="activeTabIndex = 6"
+      >
+        מטרת נסיעה
+      </button>
     </div>
 
     <div>
@@ -60,51 +101,94 @@
           <div class="ride-start-filters">
             <div class="filter-mode-toggle">
               <label>
-                <input type="radio" name="rideStartMode" value="last4" [(ngModel)]="rideStartFilterMode" (change)="onRideStartFilterModeChange('last4')" />
+                <input
+                  type="radio"
+                  name="rideStartMode"
+                  value="last4"
+                  [(ngModel)]="rideStartFilterMode"
+                  (change)="onRideStartFilterModeChange('last4')"
+                />
                 4 חודשים אחרונים (ברירת מחדל)
               </label>
               <label>
-                <input type="radio" name="rideStartMode" value="single" [(ngModel)]="rideStartFilterMode" (change)="onRideStartFilterModeChange('single')" />
+                <input
+                  type="radio"
+                  name="rideStartMode"
+                  value="single"
+                  [(ngModel)]="rideStartFilterMode"
+                  (change)="onRideStartFilterModeChange('single')"
+                />
                 חודש בודד
               </label>
               <label>
-                <input type="radio" name="rideStartMode" value="range" [(ngModel)]="rideStartFilterMode" (change)="onRideStartFilterModeChange('range')" />
+                <input
+                  type="radio"
+                  name="rideStartMode"
+                  value="range"
+                  [(ngModel)]="rideStartFilterMode"
+                  (change)="onRideStartFilterModeChange('range')"
+                />
                 טווח של 4 חודשים
               </label>
             </div>
 
-            <div class="single-month-filter" *ngIf="rideStartFilterMode === 'single'">
-              <label>שנה: <select [(ngModel)]="rideStartSingleYear"><option *ngFor="let y of years" [value]="y">{{ y }}</option></select></label>
-              <label>חודש: <select [(ngModel)]="rideStartSingleMonth"><option *ngFor="let m of [1,2,3,4,5,6,7,8,9,10,11,12]" [value]="m">{{ m }}</option></select></label>
+            <div
+              class="single-month-filter"
+              *ngIf="rideStartFilterMode === 'single'"
+            >
+              <label
+                >שנה:
+                <select [(ngModel)]="rideStartSingleYear">
+                  <option *ngFor="let y of years" [value]="y">{{ y }}</option>
+                </select></label
+              >
+              <label
+                >חודש:
+                <select [(ngModel)]="rideStartSingleMonth">
+                  <option
+                    *ngFor="let m of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]"
+                    [value]="m"
+                  >
+                    {{ m }}
+                  </option>
+                </select></label
+              >
               <button (click)="onApplySingleMonthFilter()">הצג</button>
             </div>
 
             <div class="range-filter" *ngIf="rideStartFilterMode === 'range'">
-  <label>
-    תאריך התחלה:
-    <input 
-      type="date" 
-      [(ngModel)]="rideStartRangeStartDate"
-      class="date-input"
-    />
-  </label>
-  <label>
-    תאריך סיום:
-    <input 
-      type="date" 
-      [(ngModel)]="rideStartRangeEndDate"
-      class="date-input"
-    />
-  </label>
-  <button (click)="onApplyRangeFilter()">הצג</button>
-  <small class="hint-text">בחר טווח תאריכים (עד 4 חודשים)</small>
-</div>
+              <label>
+                תאריך התחלה:
+                <input 
+                  type="date" 
+                  [(ngModel)]="rideStartRangeStartDate"
+                  class="date-input"
+                />
+              </label>
+              <label>
+                תאריך סיום:
+                <input 
+                  type="date" 
+                  [(ngModel)]="rideStartRangeEndDate"
+                  class="date-input"
+                />
+              </label>
+              <button (click)="onApplyRangeFilter()">הצג</button>
+              <small class="hint-text">בחר טווח תאריכים (עד 4 חודשים)</small>
+            </div>
           </div>
 
           <div class="ride-start-chart-wrapper">
-            <div *ngIf="rideStartTimeLoading" class="loading-state">טוען נתונים...</div>
+            <div *ngIf="rideStartTimeLoading" class="loading-state">
+              טוען נתונים...
+            </div>
             <div *ngIf="!rideStartTimeLoading && rideStartTimeChartData">
-              <p-chart type="bar" [data]="rideStartTimeChartData" [options]="rideStartTimeChartOptions" style="width: 100%; height: 400px"></p-chart>
+              <p-chart
+                type="bar"
+                [data]="rideStartTimeChartData"
+                [options]="rideStartTimeChartOptions"
+                style="width: 100%; height: 400px"
+              ></p-chart>
             </div>
           </div>
         </p-tabPanel>
@@ -115,27 +199,61 @@
           <div class="ride-start-filters">
             <div class="filter-mode-toggle">
               <label>
-                <input type="radio" name="purposeMode" value="last4" [(ngModel)]="purposeFilterMode" (change)="onPurposeFilterModeChange('last4')" />
+                <input
+                  type="radio"
+                  name="purposeMode"
+                  value="last4"
+                  [(ngModel)]="purposeFilterMode"
+                  (change)="onPurposeFilterModeChange('last4')"
+                />
                 4 חודשים אחרונים (ברירת מחדל)
               </label>
               <label>
-                <input type="radio" name="purposeMode" value="custom" [(ngModel)]="purposeFilterMode" (change)="onPurposeFilterModeChange('custom')" />
+                <input
+                  type="radio"
+                  name="purposeMode"
+                  value="custom"
+                  [(ngModel)]="purposeFilterMode"
+                  (change)="onPurposeFilterModeChange('custom')"
+                />
                 טווח מותאם (4 חודשים רצופים)
               </label>
             </div>
 
             <div class="range-filter" *ngIf="purposeFilterMode === 'custom'">
-              <label>שנה: <select [(ngModel)]="purposeYear"><option *ngFor="let y of years" [value]="y">{{ y }}</option></select></label>
-              <label>חודש התחלה: <select [(ngModel)]="purposeStartMonth"><option *ngFor="let m of [1,2,3,4,5,6,7,8,9,10,11,12]" [value]="m">{{ m }}</option></select></label>
+              <label
+                >שנה:
+                <select [(ngModel)]="purposeYear">
+                  <option *ngFor="let y of years" [value]="y">{{ y }}</option>
+                </select></label
+              >
+              <label
+                >חודש התחלה:
+                <select [(ngModel)]="purposeStartMonth">
+                  <option
+                    *ngFor="let m of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]"
+                    [value]="m"
+                  >
+                    {{ m }}
+                  </option>
+                </select></label
+              >
               <button (click)="onApplyPurposeRange()">הצג</button>
               <small class="hint-text">יוצגו 4 חודשים ברצף החל מחודש זה.</small>
             </div>
           </div>
 
           <div class="ride-start-chart-wrapper">
-            <div *ngIf="purposeLoading" class="loading-state">טוען נתונים...</div>
+            <div *ngIf="purposeLoading" class="loading-state">
+              טוען נתונים...
+            </div>
             <div *ngIf="!purposeLoading && purposeChartData">
-              <p-chart type="bar" [data]="purposeChartData" [options]="purposeChartOptions" style="width: 100%; height: 400px"></p-chart>
+              <p-chart
+                type="bar"
+                [data]="purposeChartData"
+                [options]="purposeChartOptions"
+                style="width: 100%; height: 400px"
+              ></p-chart>
             </div>
           </div>
         </p-tabPanel>

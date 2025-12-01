@@ -45,17 +45,20 @@ export class UserCardComponent implements OnInit {
     const user$ = this.userService.getUserById(userId);
     const noShow$ = this.userService.getNoShowData(userId);
     const departments$ = this.userService.getDepartments();
-    
+
     forkJoin([user$, noShow$, departments$]).subscribe({
       next: ([user, noShowData, departments]) => {
         this.user = user;
         this.NoShowsData = noShowData;
         this.NoShowsCNT = noShowData.count;
         this.departments = departments;
-        const userDepartment = departments.find(dept => dept.id === user.department_id);
-        this.departmentName = userDepartment?.name || user.department_id || 'לא זמין';
+        const userDepartment = departments.find(
+          (dept) => dept.id === user.department_id
+        );
+        this.departmentName =
+          userDepartment?.name || user.department_id || 'לא זמין';
       },
-      error: (err) => console.error('Failed to load data:', err)
+      error: (err) => console.error('Failed to load data:', err),
     });
   }
 

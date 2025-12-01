@@ -68,7 +68,7 @@
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  direction: rtl; 
+  direction: rtl;
 }
 
 .card-header h2 {
@@ -306,5 +306,3 @@
 .back-btn i {
   font-size: 1rem;
 }
-
-

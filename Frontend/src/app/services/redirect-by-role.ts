@@ -3,10 +3,9 @@ import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-redirect-by-role',
-  template: ''
+  template: '',
 })
 export class RedirectByRoleComponent implements OnInit {
-
   constructor(private router: Router) {}
 
   ngOnInit(): void {
@@ -18,8 +17,8 @@ export class RedirectByRoleComponent implements OnInit {
     } else if (role === 'supervisor') {
       this.router.navigate(['/supervisor-dashboard']);
     } else if (role === 'inspector') {
-    this.router.navigate(['/inspector/inspection']);
-  } else {
+      this.router.navigate(['/inspector/inspection']);
+    } else {
       this.router.navigate(['/home']);
     }
   }

@@ -1,4 +1,11 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnChanges,
+  SimpleChanges,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -7,7 +14,7 @@ import { FormsModule } from '@angular/forms';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './filter-panel.component.html',
-  styleUrls: ['./filter-panel.component.css']
+  styleUrls: ['./filter-panel.component.css'],
 })
 export class FilterPanelComponent implements OnChanges {
   @Input() allOrders: any[] = [];
@@ -25,8 +32,14 @@ export class FilterPanelComponent implements OnChanges {
   private filteredOrders: any[] = [];
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['allOrders'] || changes['rideViewMode'] || changes['sortBy'] || 
-        changes['statusFilter'] || changes['startDate'] || changes['endDate']) {
+    if (
+      changes['allOrders'] ||
+      changes['rideViewMode'] ||
+      changes['sortBy'] ||
+      changes['statusFilter'] ||
+      changes['startDate'] ||
+      changes['endDate']
+    ) {
       this.applyFiltersAndSort();
     }
   }
@@ -74,11 +87,11 @@ export class FilterPanelComponent implements OnChanges {
 
   private translateStatusToEnglish(hebrewStatus: string): string {
     const statusMap: { [key: string]: string } = {
-      'מאושר': 'approved',
-      'בהמתנה': 'pending',
-      'נדחה': 'rejected',
-      'בוטל': 'cancelled_due_to_no_show',
-      'בוצע': 'completed'
+      מאושר: 'approved',
+      בהמתנה: 'pending',
+      נדחה: 'rejected',
+      בוטל: 'cancelled_due_to_no_show',
+      בוצע: 'completed',
     };
     return statusMap[hebrewStatus] || hebrewStatus;
   }
@@ -93,22 +106,26 @@ export class FilterPanelComponent implements OnChanges {
 
     switch (this.rideViewMode) {
       case 'future':
-        filtered = filtered.filter(order => this.parseDate(order.date) >= today);
+        filtered = filtered.filter(
+          (order) => this.parseDate(order.date) >= today
+        );
         break;
       case 'past':
-        filtered = filtered.filter(order => this.parseDate(order.date) < today);
+        filtered = filtered.filter(
+          (order) => this.parseDate(order.date) < today
+        );
         break;
     }
 
     if (this.statusFilter) {
       const englishStatus = this.translateStatusToEnglish(this.statusFilter);
-      filtered = filtered.filter(order => order.status === englishStatus);
+      filtered = filtered.filter((order) => order.status === englishStatus);
     }
 
     if (this.startDate) {
       const start = new Date(this.startDate);
       start.setHours(0, 0, 0, 0);
-      filtered = filtered.filter(order => {
+      filtered = filtered.filter((order) => {
         const orderDate = this.parseDate(order.date);
         orderDate.setHours(0, 0, 0, 0);
         return orderDate >= start;
@@ -118,7 +135,7 @@ export class FilterPanelComponent implements OnChanges {
     if (this.endDate) {
       const end = new Date(this.endDate);
       end.setHours(23, 59, 59, 999);
-      filtered = filtered.filter(order => {
+      filtered = filtered.filter((order) => {
         const orderDate = this.parseDate(order.date);
         orderDate.setHours(0, 0, 0, 0);
         return orderDate <= end;
@@ -127,16 +144,25 @@ export class FilterPanelComponent implements OnChanges {
 
     switch (this.sortBy) {
       case 'status':
-        filtered = [...filtered].sort((a, b) => a.status.localeCompare(b.status));
+        filtered = [...filtered].sort((a, b) =>
+          a.status.localeCompare(b.status)
+        );
         break;
       case 'date':
-        filtered = [...filtered].sort((a, b) => this.parseDate(a.date).getTime() - this.parseDate(b.date).getTime());
+        filtered = [...filtered].sort(
+          (a, b) =>
+            this.parseDate(a.date).getTime() - this.parseDate(b.date).getTime()
+        );
         break;
       case 'recent':
       default:
         filtered = [...filtered].sort((a, b) => {
-          const dateA = a.submitted_at ? new Date(a.submitted_at) : this.parseDate(a.date);
-          const dateB = b.submitted_at ? new Date(b.submitted_at) : this.parseDate(b.date);
+          const dateA = a.submitted_at
+            ? new Date(a.submitted_at)
+            : this.parseDate(a.date);
+          const dateB = b.submitted_at
+            ? new Date(b.submitted_at)
+            : this.parseDate(b.date);
           return dateB.getTime() - dateA.getTime();
         });
     }

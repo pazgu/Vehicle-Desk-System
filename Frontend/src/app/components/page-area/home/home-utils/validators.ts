@@ -6,7 +6,6 @@ import {
 } from '@angular/forms';
 import { timeToMinutes } from './time-helpers';
 
-
 export function createRideDateValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const value = control.value;
@@ -102,7 +101,9 @@ export function createSameDateNightRideValidator(): ValidatorFn {
   };
 }
 
-export function createFutureDateTimeValidator(isRebookMode: boolean = false): ValidatorFn {
+export function createFutureDateTimeValidator(
+  isRebookMode: boolean = false
+): ValidatorFn {
   return (formGroup: AbstractControl): ValidationErrors | null => {
     if (isRebookMode) {
       return null;
@@ -140,7 +141,6 @@ export function createFutureDateTimeValidator(isRebookMode: boolean = false): Va
     return null;
   };
 }
-
 
 export function createInspectorClosureTimeValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {

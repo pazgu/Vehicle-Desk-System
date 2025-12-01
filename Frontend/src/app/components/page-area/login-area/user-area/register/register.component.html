@@ -1,79 +1,124 @@
 <div class="page-container">
   <div class="login-box">
-    <a routerLink="/login" routerLinkActive="active"><div class="close-btn">✕</div></a>
+    <a routerLink="/login" routerLinkActive="active"
+      ><div class="close-btn">✕</div></a
+    >
     <h2>יצירת משתמש חדש</h2>
 
     <form [formGroup]="registerForm" (ngSubmit)="register()" class="form-grid">
       <div>
         <label>שם פרטי</label>
-        <input type="text" formControlName="first_name">
-        <small *ngIf="f['first_name'].touched && f['first_name'].errors?.['required']" style="color:red;">יש להזין שם פרטי</small>
-        <small *ngIf="f['first_name'].errors?.['minlength']" style="color:red;">לפחות 2 תווים</small>
-        <small *ngIf="f['first_name'].errors?.['pattern']" style="color:red;">אותיות בלבד</small>
+        <input type="text" formControlName="first_name" />
+        <small
+          *ngIf="f['first_name'].touched && f['first_name'].errors?.['required']"
+          style="color: red"
+          >יש להזין שם פרטי</small
+        >
+        <small *ngIf="f['first_name'].errors?.['minlength']" style="color: red"
+          >לפחות 2 תווים</small
+        >
+        <small *ngIf="f['first_name'].errors?.['pattern']" style="color: red"
+          >אותיות בלבד</small
+        >
       </div>
 
       <div>
         <label>שם משפחה</label>
-        <input type="text" formControlName="last_name">
-        <small *ngIf="f['last_name'].touched && f['last_name'].errors?.['required']" style="color:red;">יש להזין שם משפחה</small>
-        <small *ngIf="f['last_name'].errors?.['minlength']" style="color:red;">לפחות 2 תווים</small>
-        <small *ngIf="f['last_name'].errors?.['pattern']" style="color:red;">אותיות בלבד</small>
+        <input type="text" formControlName="last_name" />
+        <small
+          *ngIf="f['last_name'].touched && f['last_name'].errors?.['required']"
+          style="color: red"
+          >יש להזין שם משפחה</small
+        >
+        <small *ngIf="f['last_name'].errors?.['minlength']" style="color: red"
+          >לפחות 2 תווים</small
+        >
+        <small *ngIf="f['last_name'].errors?.['pattern']" style="color: red"
+          >אותיות בלבד</small
+        >
       </div>
 
       <div>
         <label>שם משתמש</label>
-        <input type="text" formControlName="username">
-        <small *ngIf="f['username'].touched && f['username'].errors?.['required']" style="color:red;">יש להזין שם משתמש</small>
-        <small *ngIf="f['username'].errors?.['minlength']" style="color:red;">לפחות 3 תווים</small>
+        <input type="text" formControlName="username" />
+        <small
+          *ngIf="f['username'].touched && f['username'].errors?.['required']"
+          style="color: red"
+          >יש להזין שם משתמש</small
+        >
+        <small *ngIf="f['username'].errors?.['minlength']" style="color: red"
+          >לפחות 3 תווים</small
+        >
       </div>
 
       <div>
         <label>כתובת מייל</label>
-        <input type="email" formControlName="email">
-        <small *ngIf="f['email'].touched && f['email'].errors?.['required']" style="color:red;">יש להזין כתובת אימייל</small>
-        <small *ngIf="f['email'].errors?.['email']" style="color:red;">יש להזין כתובת אימייל חוקית</small>
+        <input type="email" formControlName="email" />
+        <small
+          *ngIf="f['email'].touched && f['email'].errors?.['required']"
+          style="color: red"
+          >יש להזין כתובת אימייל</small
+        >
+        <small *ngIf="f['email'].errors?.['email']" style="color: red"
+          >יש להזין כתובת אימייל חוקית</small
+        >
       </div>
 
-      
-
-
-        <div>
-            <label>מספר טלפון</label>
-            <input type="tel" formControlName="phone">
-            <small *ngIf="f['phone'].touched && f['phone'].errors?.['required']" style="color:red;">יש להזין מספר טלפון</small>
-            <small *ngIf="f['phone'].errors?.['pattern']" style="color:red;">מספר טלפון חייב להכיל 10 ספרות ולהתחיל ב-05</small>
-        </div>
+      <div>
+        <label>מספר טלפון</label>
+        <input type="tel" formControlName="phone" />
+        <small
+          *ngIf="f['phone'].touched && f['phone'].errors?.['required']"
+          style="color: red"
+          >יש להזין מספר טלפון</small
+        >
+        <small *ngIf="f['phone'].errors?.['pattern']" style="color: red"
+          >מספר טלפון חייב להכיל 10 ספרות ולהתחיל ב-05</small
+        >
+      </div>
 
       <div>
         <label>סיסמה</label>
-<div class="password-container">
-  <input 
-    [type]="showPassword ? 'text' : 'password'" 
-    formControlName="password" 
-    class="password-input"
-  />
-  <mat-icon 
-    class="show-password"
-    (click)="togglePassword()">
-    {{ showPassword ? 'visibility' : 'visibility_off' }}
-  </mat-icon>
-</div>
-        <small *ngIf="f['password'].touched && f['password'].errors?.['required']" style="color:red;">יש להזין סיסמה</small>
-        <small *ngIf="f['password'].errors?.['minlength']" style="color:red;">לפחות 8 תווים</small>
-        <small *ngIf="f['password'].errors?.['pattern']" style="color:red;">חובה לכלול אות גדולה ומספר</small>
+        <div class="password-container">
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            formControlName="password"
+            class="password-input"
+          />
+          <mat-icon class="show-password" (click)="togglePassword()">
+            {{ showPassword ? "visibility" : "visibility_off" }}
+          </mat-icon>
+        </div>
+        <small
+          *ngIf="f['password'].touched && f['password'].errors?.['required']"
+          style="color: red"
+          >יש להזין סיסמה</small
+        >
+        <small *ngIf="f['password'].errors?.['minlength']" style="color: red"
+          >לפחות 8 תווים</small
+        >
+        <small *ngIf="f['password'].errors?.['pattern']" style="color: red"
+          >חובה לכלול אות גדולה ומספר</small
+        >
       </div>
-      
+
       <div>
         <label>מחלקה</label>
         <select formControlName="department_id">
           <option value="">לחץ.י לבחירת מחלקה</option>
-          <option *ngFor="let dept of departments" [value]="dept.id">{{ dept.name }}</option>
+          <option *ngFor="let dept of departments" [value]="dept.id">
+            {{ dept.name }}
+          </option>
         </select>
-        <small *ngIf="f['department_id'].touched && f['department_id'].errors?.['required']" style="color:red;">יש לבחור מחלקה</small>
+        <small
+          *ngIf="f['department_id'].touched && f['department_id'].errors?.['required']"
+          style="color: red"
+          >יש לבחור מחלקה</small
+        >
       </div>
 
       <button type="submit">צור משתמש</button>
-      <p *ngIf="errorMessage" style="color:red;">{{ errorMessage }}</p>
+      <p *ngIf="errorMessage" style="color: red">{{ errorMessage }}</p>
     </form>
   </div>
 </div>

@@ -144,22 +144,22 @@
 }
 
 .status-indicators-inline .status-indicator.pending {
-  background-color: #efe5c7; 
-  border: #c8b88a 1.6px solid; 
+  background-color: #efe5c7;
+  border: #c8b88a 1.6px solid;
 }
 
 .status-indicators-inline .status-indicator.rejected {
- background-color: #ecc9c9;
+  background-color: #ecc9c9;
   border: #c97b83 1.6px solid;
 }
 
 .status-indicators-inline .status-indicator.cancelled {
   background-color: #dfdddd;
-  border:#8d8d90 1.6px solid;
+  border: #8d8d90 1.6px solid;
 }
 
 .status-indicators-inline .status-indicator.completed {
- background-color: #c6e2f5; 
+  background-color: #c6e2f5;
   border: #5babb8 1.6px solid;
 }
 
@@ -257,8 +257,6 @@
   border-color: #942222;
   background: white;
 }
-
-
 
 .orders-header-row {
   background-color: #811313;

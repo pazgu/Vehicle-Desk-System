@@ -105,12 +105,10 @@
   accent-color: #942222;
 }
 
-
 .checkbox-label .pi-exclamation-triangle {
   color: #f59e0b;
   font-size: 1rem;
 }
-
 
 @media (max-width: 768px) {
   .filters-panel {

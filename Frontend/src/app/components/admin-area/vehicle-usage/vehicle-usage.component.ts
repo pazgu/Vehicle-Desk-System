@@ -52,9 +52,9 @@ export class VehicleUsageComponent {
     private route: ActivatedRoute
   ) {}
 
-  ngOnInit(){
-    this.loadAllTimeTopUsedVehiclesChart()
-    this.loadTopUsedVehiclesChart()
+  ngOnInit() {
+    this.loadAllTimeTopUsedVehiclesChart();
+    this.loadTopUsedVehiclesChart();
   }
   onMonthOrYearChange() {
     this.updateQueryParams({
@@ -66,27 +66,27 @@ export class VehicleUsageComponent {
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: params,
-      queryParamsHandling: 'merge', // keeps the other params
+      queryParamsHandling: 'merge', 
     });
   }
-   toggleUsageView() {
-      this.isMonthlyView = !this.isMonthlyView;
-      if (this.isMonthlyView) {
-        this.loadTopUsedVehiclesChart();
-        this.reloadChart();
-      } else {
-        this.loadAllTimeTopUsedVehiclesChart();
-        this.reloadChart();
-      }
+  toggleUsageView() {
+    this.isMonthlyView = !this.isMonthlyView;
+    if (this.isMonthlyView) {
+      this.loadTopUsedVehiclesChart();
+      this.reloadChart();
+    } else {
+      this.loadAllTimeTopUsedVehiclesChart();
+      this.reloadChart();
     }
-    get isMonthlyNoData(): boolean {
+  }
+  get isMonthlyNoData(): boolean {
     return (
       !this.monthlyStatsChartData ||
       !this.monthlyStatsChartData.labels ||
       this.monthlyStatsChartData.labels.length === 0
     );
   }
-   get isAllTimeNoData(): boolean {
+  get isAllTimeNoData(): boolean {
     return (
       !this.allTimeStatsChartData ||
       !this.allTimeStatsChartData.labels ||
@@ -99,7 +99,7 @@ export class VehicleUsageComponent {
       this.showChart = true;
     }, 0);
   }
-  
+
   public loadAllTimeTopUsedVehiclesChart() {
     this.http
       .get(`${environment.apiUrl}/vehicles/usage-stats?range=all`)
@@ -149,7 +149,6 @@ export class VehicleUsageComponent {
           );
           const data = stats.map((s: any) => s.total_rides);
           const kilometers = stats.map((a: { total_km: number }) => a.total_km);
-          // Ensure data is numeric
           const counts = stats.map((v: { total_rides: number }) =>
             Number.isFinite(v.total_rides) ? v.total_rides : 0
           );
@@ -217,7 +216,6 @@ export class VehicleUsageComponent {
       });
   }
 
-
   public loadTopUsedVehiclesChart() {
     this.http
       .get<{
@@ -240,7 +238,7 @@ export class VehicleUsageComponent {
           const counts = data.stats.map((v) =>
             Number.isFinite(v.total_rides) ? v.total_rides : 0
           );
-          const kilometers = data.stats.map((v) => v.total_km); // array like [82.68]
+          const kilometers = data.stats.map((v) => v.total_km);
 
           const backgroundColors = counts.map((count) => {
             if (count > 10) return '#FF5252';
@@ -319,5 +317,4 @@ export class VehicleUsageComponent {
         },
       });
   }
-
 }

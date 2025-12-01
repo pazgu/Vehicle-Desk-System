@@ -6,11 +6,10 @@ import { environment } from '../../environments/environment';
 export interface AdminGuidelinesDoc {
   id: string;
   title: string;
-  items: string[]; 
+  items: string[];
   updated_at: string;
   updated_by?: string;
 }
-
 
 @Injectable({ providedIn: 'root' })
 export class GuidelinesServiceAdmin {
@@ -21,7 +20,10 @@ export class GuidelinesServiceAdmin {
     return this.http.get<AdminGuidelinesDoc>(url);
   }
 
-  update(payload: { title: string; items: string[] }): Observable<AdminGuidelinesDoc> {
+  update(payload: {
+    title: string;
+    items: string[];
+  }): Observable<AdminGuidelinesDoc> {
     let url = environment.updateRequirementsUrl;
     return this.http.put<AdminGuidelinesDoc>(url, payload);
   }

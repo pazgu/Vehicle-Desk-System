@@ -1,41 +1,61 @@
-
-
 <div *ngIf="!loading" class="admin-inspections-container">
   <div class="title-container">
     <h1 class="page-title">דוחות ובדיקות</h1>
   </div>
 
-
   <div class="controls-container">
     <div class="table-tabs">
-      <button class="tab-button" [class.active-button]="activeTable === 'inspections'"
-        (click)="setActiveTable('inspections')">
+      <button
+        class="tab-button"
+        [class.active-button]="activeTable === 'inspections'"
+        (click)="setActiveTable('inspections')"
+      >
         בדיקות רכב
       </button>
-      <button class="tab-button" [class.active-button]="activeTable === 'rides'" (click)="setActiveTable('rides')">
+      <button
+        class="tab-button"
+        [class.active-button]="activeTable === 'rides'"
+        (click)="setActiveTable('rides')"
+      >
         דוחות נסיעות
       </button>
     </div>
   </div>
 
-
   <div class="filter-controls" dir="rtl" *ngIf="activeTable === 'inspections'">
     <div class="filter-accordion" [class.active]="showProblematicFilters">
-      <button class="filter-toggle-button" (click)="showProblematicFilters = !showProblematicFilters">
-        <span>{{ showProblematicFilters ? 'הסתר אפשרויות סינון' :'הצג אפשרויות סינון' }}</span>
+      <button
+        class="filter-toggle-button"
+        (click)="showProblematicFilters = !showProblematicFilters"
+      >
+        <span>{{
+          showProblematicFilters ? "הסתר אפשרויות סינון" : "הצג אפשרויות סינון"
+        }}</span>
         <span class="icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
             <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z" />
           </svg>
         </span>
       </button>
       <div class="filter-options" *ngIf="showProblematicFilters">
         <label class="checkbox-label">
-          <input type="checkbox" [(ngModel)]="showMediumIssues" (change)="handleFilterChange('medium')" />
+          <input
+            type="checkbox"
+            [(ngModel)]="showMediumIssues"
+            (change)="handleFilterChange('medium')"
+          />
           <span>הצג בעיות - דרגה בינונית</span>
         </label>
         <label class="checkbox-label">
-          <input type="checkbox" [(ngModel)]="showCriticalIssues" (change)="handleFilterChange('critical')" />
+          <input
+            type="checkbox"
+            [(ngModel)]="showCriticalIssues"
+            (change)="handleFilterChange('critical')"
+          />
           <span>הצג בעיות - דרגה חריגה</span>
         </label>
       </div>
@@ -45,17 +65,21 @@
   <div class="content-table-section" *ngIf="activeTable === 'inspections'">
     <div class="section-header">
       <h2 class="section-subtitle">בדיקות רכבים</h2>
-    <button class="toggle-notes-button" (click)="toggleVehicleNotesColumn()" *ngIf="hasCriticalIssues">
-  <i class="pi pi-file-edit"></i>
-  {{ showVehicleNotesColumn ? 'הסתר הערות' : 'הצג הערות' }}
-</button>
+      <button
+        class="toggle-notes-button"
+        (click)="toggleVehicleNotesColumn()"
+        *ngIf="hasCriticalIssues"
+      >
+        <i class="pi pi-file-edit"></i>
+        {{ showVehicleNotesColumn ? "הסתר הערות" : "הצג הערות" }}
+      </button>
     </div>
     <div class="table-wrapper">
       <table class="data-table">
         <thead>
           <tr>
             <th>תאריך</th>
-            <th>לוחית רישוי </th>
+            <th>לוחית רישוי</th>
 
             <th>בודק</th>
             <th>נקי</th>
@@ -67,41 +91,60 @@
         </thead>
         <tbody>
           <tr *ngFor="let insp of pagedInspections">
-            <td>{{ insp.inspection_date | date: 'short' }}</td>
+            <td>{{ insp.inspection_date | date : "short" }}</td>
             <td>{{ insp.plate_number }}</td>
 
-            <td>{{ insp.inspected_by_name || '—' }}</td>
-           <td [class.status-positive]="insp.clean" [class.status-negative]="!insp.clean">
-  <i [class]="insp.clean ? 'pi pi-check' : 'pi pi-times'"></i>
-</td>
-<td [class.status-positive]="!insp.fuel_checked" [class.status-negative]="insp.fuel_checked">
-  <i [class]="!insp.fuel_checked ? 'pi pi-check' : 'pi pi-times'"></i>
-</td>
-<td [class.status-positive]="insp.no_items_left" [class.status-negative]="!insp.no_items_left">
-  <i [class]="insp.no_items_left ? 'pi pi-check' : 'pi pi-times'"></i>
-</td>
-            <td [class.status-critical]="insp.critical_issue_bool">
-              {{ insp.critical_issue_bool ? 'כן' : 'לא' }}
+            <td>{{ insp.inspected_by_name || "—" }}</td>
+            <td
+              [class.status-positive]="insp.clean"
+              [class.status-negative]="!insp.clean"
+            >
+              <i [class]="insp.clean ? 'pi pi-check' : 'pi pi-times'"></i>
             </td>
-            <td *ngIf="showVehicleNotesColumn">{{ insp.issues_found || '—' }}</td>
+            <td
+              [class.status-positive]="!insp.fuel_checked"
+              [class.status-negative]="insp.fuel_checked"
+            >
+              <i
+                [class]="!insp.fuel_checked ? 'pi pi-check' : 'pi pi-times'"
+              ></i>
+            </td>
+            <td
+              [class.status-positive]="insp.no_items_left"
+              [class.status-negative]="!insp.no_items_left"
+            >
+              <i
+                [class]="insp.no_items_left ? 'pi pi-check' : 'pi pi-times'"
+              ></i>
+            </td>
+            <td [class.status-critical]="insp.critical_issue_bool">
+              {{ insp.critical_issue_bool ? "כן" : "לא" }}
+            </td>
+            <td *ngIf="showVehicleNotesColumn">
+              {{ insp.issues_found || "—" }}
+            </td>
           </tr>
           <tr *ngIf="filteredInspections.length === 0 && !loading">
-            <td [attr.colspan]="showVehicleNotesColumn ? 7 : 6" class="empty-state"  style="padding-right: 235px;">לא נמצאו בדיקות רכב</td>
+            <td
+              [attr.colspan]="showVehicleNotesColumn ? 7 : 6"
+              class="empty-state"
+              style="padding-right: 235px"
+            >
+              לא נמצאו בדיקות רכב
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
   </div>
 
-
-
   <div class="content-table-section" *ngIf="activeTable === 'rides'">
     <div class="section-header">
       <h2 class="section-subtitle">דוחות נסיעות</h2>
-     <button class="toggle-notes-button" (click)="toggleRideNotesColumn()">
-  <i class="pi pi-file-edit"></i>
-  {{ showRideNotesColumn ? 'הסתר הערות' : 'הצג הערות' }}
-</button>
+      <button class="toggle-notes-button" (click)="toggleRideNotesColumn()">
+        <i class="pi pi-file-edit"></i>
+        {{ showRideNotesColumn ? "הסתר הערות" : "הצג הערות" }}
+      </button>
     </div>
 
     <div class="table-wrapper">
@@ -116,22 +159,24 @@
             <th>מרחק בפועל (ק"מ)</th>
             <th>אירוע חירום</th>
             <th *ngIf="showRideNotesColumn">הערות</th>
-
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let ride of pagedRides">
-            <td>{{ ride.start_datetime | date: 'short' }}</td>
+            <td>{{ ride.start_datetime | date : "short" }}</td>
             <td>{{ getUserNameById(ride.user_id) }}</td>
-            <td>{{ ride.ride_type === 'operational' ? 'מבצעית' : 'מנהלתית' }}</td>
+            <td>
+              {{ ride.ride_type === "operational" ? "מבצעית" : "מנהלתית" }}
+            </td>
             <td>{{ getFormattedStops(ride.stop, ride.extra_stops) }}</td>
             <td>{{ ride.estimated_distance_km | number }}</td>
             <td>{{ ride.actual_distance_km | number }}</td>
             <td [class.status-critical]="ride.emergency_event === 'true'">
-              {{ ride.emergency_event === 'true' ? 'כן' : 'לא' }}
+              {{ ride.emergency_event === "true" ? "כן" : "לא" }}
             </td>
-            <td *ngIf="showRideNotesColumn">{{ ride.freeze_details || '—' }}</td>
-
+            <td *ngIf="showRideNotesColumn">
+              {{ ride.freeze_details || "—" }}
+            </td>
           </tr>
           <tr *ngIf="rides.length === 0 && !loading">
             <td colspan="8" class="empty-state">לא נמצאו נסיעות</td>
@@ -141,13 +186,14 @@
     </div>
   </div>
 
-
   <div class="pagination-controls">
-
     <button (click)="prevPage()" [disabled]="currentPage === 1">
       <span class="icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+        >
           <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z" />
         </svg>
       </span>
@@ -156,11 +202,14 @@
     <span>עמוד {{ currentPage }} מתוך {{ totalPages }}</span>
     <button (click)="nextPage()" [disabled]="currentPage === totalPages">
       <span class="icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+        >
           <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
         </svg>
       </span>
     </button>
   </div>
-
 </div>

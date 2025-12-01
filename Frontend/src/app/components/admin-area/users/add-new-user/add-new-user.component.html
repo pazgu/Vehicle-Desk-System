@@ -5,12 +5,17 @@
 
   <div class="form-container">
     <form [formGroup]="addUserForm" (ngSubmit)="submit()">
-     
       <div class="form-section">
         <div class="form-group">
           <label>שם פרטי</label>
           <input type="text" formControlName="first_name" />
-          <small *ngIf="addUserForm.get('first_name')?.touched && addUserForm.get('first_name')?.invalid" class="error">
+          <small
+            *ngIf="
+              addUserForm.get('first_name')?.touched &&
+              addUserForm.get('first_name')?.invalid
+            "
+            class="error"
+          >
             חובה להזין שם פרטי
           </small>
         </div>
@@ -18,7 +23,13 @@
         <div class="form-group">
           <label>שם משפחה</label>
           <input type="text" formControlName="last_name" />
-          <small *ngIf="addUserForm.get('last_name')?.touched && addUserForm.get('last_name')?.invalid" class="error">
+          <small
+            *ngIf="
+              addUserForm.get('last_name')?.touched &&
+              addUserForm.get('last_name')?.invalid
+            "
+            class="error"
+          >
             חובה להזין שם משפחה
           </small>
         </div>
@@ -26,7 +37,13 @@
         <div class="form-group">
           <label>שם משתמש</label>
           <input type="text" formControlName="username" />
-          <small *ngIf="addUserForm.get('username')?.touched && addUserForm.get('username')?.invalid" class="error">
+          <small
+            *ngIf="
+              addUserForm.get('username')?.touched &&
+              addUserForm.get('username')?.invalid
+            "
+            class="error"
+          >
             חובה להזין שם משתמש
           </small>
         </div>
@@ -36,10 +53,22 @@
         <div class="form-group">
           <label>אימייל</label>
           <input type="email" formControlName="email" />
-          <small *ngIf="addUserForm.get('email')?.touched && addUserForm.get('email')?.hasError('required')" class="error">
+          <small
+            *ngIf="
+              addUserForm.get('email')?.touched &&
+              addUserForm.get('email')?.hasError('required')
+            "
+            class="error"
+          >
             חובה להזין אימייל
           </small>
-          <small *ngIf="addUserForm.get('email')?.touched && addUserForm.get('email')?.hasError('email')" class="error">
+          <small
+            *ngIf="
+              addUserForm.get('email')?.touched &&
+              addUserForm.get('email')?.hasError('email')
+            "
+            class="error"
+          >
             אימייל לא תקין
           </small>
         </div>
@@ -47,10 +76,22 @@
         <div class="form-group">
           <label>טלפון</label>
           <input type="text" formControlName="phone" />
-          <small *ngIf="addUserForm.get('phone')?.touched && addUserForm.get('phone')?.hasError('required')" class="error">
+          <small
+            *ngIf="
+              addUserForm.get('phone')?.touched &&
+              addUserForm.get('phone')?.hasError('required')
+            "
+            class="error"
+          >
             חובה להזין מספר טלפון
           </small>
-          <small *ngIf="addUserForm.get('phone')?.touched && addUserForm.get('phone')?.hasError('pattern')" class="error">
+          <small
+            *ngIf="
+              addUserForm.get('phone')?.touched &&
+              addUserForm.get('phone')?.hasError('pattern')
+            "
+            class="error"
+          >
             הטלפון חייב להכיל 10 ספרות ולהתחיל ב-05
           </small>
         </div>
@@ -61,22 +102,41 @@
           <label>תפקיד</label>
           <select formControlName="role">
             <option value="" disabled selected>בחר תפקיד</option>
-            <option *ngFor="let r of roles" [value]="r.key">{{ r.label }}</option>
+            <option *ngFor="let r of roles" [value]="r.key">
+              {{ r.label }}
+            </option>
           </select>
-          <small *ngIf="addUserForm.get('role')?.touched && addUserForm.get('role')?.invalid" class="error">
+          <small
+            *ngIf="
+              addUserForm.get('role')?.touched &&
+              addUserForm.get('role')?.invalid
+            "
+            class="error"
+          >
             שדה חובה
           </small>
         </div>
 
         <div class="form-group" *ngIf="shouldShowDepartment()">
-          <label>מחלקה {{ isDepartmentRequired() ? '*' : '(אופציונלי)' }}</label>
+          <label
+            >מחלקה {{ isDepartmentRequired() ? "*" : "(אופציונלי)" }}</label
+          >
           <select formControlName="department_id">
             <option value="" [disabled]="isDepartmentRequired()">
-              {{ isDepartmentRequired() ? 'בחר מחלקה' : 'ללא מחלקה' }}
+              {{ isDepartmentRequired() ? "בחר מחלקה" : "ללא מחלקה" }}
             </option>
-            <option *ngFor="let d of departments" [value]="d.id">{{ d.name }}</option>
+            <option *ngFor="let d of departments" [value]="d.id">
+              {{ d.name }}
+            </option>
           </select>
-          <small *ngIf="addUserForm.get('department_id')?.touched && addUserForm.get('department_id')?.invalid && isDepartmentRequired()" class="error">
+          <small
+            *ngIf="
+              addUserForm.get('department_id')?.touched &&
+              addUserForm.get('department_id')?.invalid &&
+              isDepartmentRequired()
+            "
+            class="error"
+          >
             שדה חובה
           </small>
         </div>
@@ -92,17 +152,35 @@
               class="password-input"
             />
             <mat-icon class="show-password" (click)="togglePassword()">
-              {{ showPassword ? 'visibility' : 'visibility_off' }}
+              {{ showPassword ? "visibility" : "visibility_off" }}
             </mat-icon>
           </div>
 
-          <small *ngIf="addUserForm.get('password')?.touched && addUserForm.get('password')?.hasError('required')" class="error">
+          <small
+            *ngIf="
+              addUserForm.get('password')?.touched &&
+              addUserForm.get('password')?.hasError('required')
+            "
+            class="error"
+          >
             חובה להזין סיסמה
           </small>
-          <small *ngIf="addUserForm.get('password')?.touched && addUserForm.get('password')?.hasError('pattern')" class="error">
+          <small
+            *ngIf="
+              addUserForm.get('password')?.touched &&
+              addUserForm.get('password')?.hasError('pattern')
+            "
+            class="error"
+          >
             הסיסמה חייבת להכיל לפחות אות גדולה אחת באנגלית
           </small>
-          <small *ngIf="addUserForm.get('password')?.touched && addUserForm.get('password')?.hasError('minlength')" class="error">
+          <small
+            *ngIf="
+              addUserForm.get('password')?.touched &&
+              addUserForm.get('password')?.hasError('minlength')
+            "
+            class="error"
+          >
             הסיסמה חייבת להיות באורך של לפחות 8 תווים
           </small>
         </div>
@@ -110,7 +188,9 @@
 
       <div class="form-section">
         <div class="form-group">
-          <label for="has_government_license">האם המשתמש בעל רישיון נהיגה ממשלתי?</label>
+          <label for="has_government_license"
+            >האם המשתמש בעל רישיון נהיגה ממשלתי?</label
+          >
           <label class="switch">
             <input
               type="checkbox"
@@ -129,17 +209,30 @@
 
         <div class="form-group" *ngIf="checkIfHasGovernmentlicense()">
           <label for="license_expiry_date">תוקף רישיון</label>
-          <input type="date" id="license_expiry_date" formControlName="license_expiry_date" />
+          <input
+            type="date"
+            id="license_expiry_date"
+            formControlName="license_expiry_date"
+          />
         </div>
 
         <div class="form-group" *ngIf="checkIfHasGovernmentlicense()">
           <label>העלה תמונת/קובץ רישיון (אופציונלי)</label>
           <div class="custom-file-upload">
-            <input type="file" id="licenseUpload" (change)="onFileSelected($event)" #fileInput>
-           
+            <input
+              type="file"
+              id="licenseUpload"
+              (change)="onFileSelected($event)"
+              #fileInput
+            />
+
             <div class="file-upload-area" (click)="fileInput.click()">
-              <span class="file-text" *ngIf="selectedFileName">{{ selectedFileName }}</span>
-              <span class="file-text" *ngIf="!selectedFileName">לא נבחר קובץ</span>
+              <span class="file-text" *ngIf="selectedFileName">{{
+                selectedFileName
+              }}</span>
+              <span class="file-text" *ngIf="!selectedFileName"
+                >לא נבחר קובץ</span
+              >
               <button type="button" class="choose-file-btn">בחר קובץ</button>
             </div>
           </div>

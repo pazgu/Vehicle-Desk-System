@@ -1,21 +1,18 @@
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-  #RideForm{
-    height: 50%;
-    z-index: 1000;
-  }
+#RideForm {
+  height: 50%;
+  z-index: 1000;
+}
 
 .feedback-button-container {
-
   z-index: 1000;
   background-color: rgba(0, 0, 0, 0.231);
 }
-
-
 
 .feedback-button {
   background-color: #942222;
@@ -39,7 +36,7 @@
   right: 45%;
   z-index: 1000;
 
-  background-color: #942222; 
+  background-color: #942222;
   color: white;
   border: none;
   border-radius: 50px;
@@ -53,6 +50,3 @@
 .modal-overlay:hover {
   background-color: #b93333;
 }
-
-
-

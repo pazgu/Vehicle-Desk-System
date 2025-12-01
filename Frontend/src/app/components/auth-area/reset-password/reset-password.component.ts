@@ -1,5 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { CommonModule } from '@angular/common';
@@ -11,7 +16,7 @@ import { Router } from '@angular/router';
   templateUrl: './reset-password.component.html',
   styleUrls: ['./reset-password.component.css'],
 
-  imports:[CommonModule,ReactiveFormsModule,MatIconModule]
+  imports: [CommonModule, ReactiveFormsModule, MatIconModule],
 })
 export class ResetPasswordComponent implements OnInit {
   resetForm!: FormGroup;
@@ -20,7 +25,7 @@ export class ResetPasswordComponent implements OnInit {
   error = '';
   token: string = '';
   showPassword = false;
-  showConfirmPassword= false;
+  showConfirmPassword = false;
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
@@ -29,28 +34,32 @@ export class ResetPasswordComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.route.params.subscribe(params => {
+    this.route.params.subscribe((params) => {
       this.token = params['token'];
-       });
-       
-    this.resetForm = this.fb.group({
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', Validators.required]
-    }, { validator: this.passwordsMatch });
+    });
+
+    this.resetForm = this.fb.group(
+      {
+        password: ['', [Validators.required, Validators.minLength(6)]],
+        confirmPassword: ['', Validators.required],
+      },
+      { validator: this.passwordsMatch }
+    );
   }
 
   get f() {
     return this.resetForm.controls;
   }
- togglePassword() {
+  togglePassword() {
     this.showPassword = !this.showPassword;
   }
-   toggleConfirmPassword() {
+  toggleConfirmPassword() {
     this.showConfirmPassword = !this.showConfirmPassword;
   }
   passwordsMatch(form: FormGroup) {
     return form.get('password')?.value === form.get('confirmPassword')?.value
-      ? null : { mismatch: true };
+      ? null
+      : { mismatch: true };
   }
 
   onSubmit() {
@@ -66,7 +75,7 @@ export class ResetPasswordComponent implements OnInit {
       },
       error: (err) => {
         this.error = err.error.detail || 'Failed to reset password';
-      }
+      },
     });
   }
 }

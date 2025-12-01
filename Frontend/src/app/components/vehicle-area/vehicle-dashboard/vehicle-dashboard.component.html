@@ -68,10 +68,9 @@
             <span>מוקפא</span>
           </div>
           <div class="status-item status-item-inactive">
-  <span class="inactive">לא פעיל</span>
-  <span class="status-note">לא היה בשימוש ליותר מ־7 ימים</span>
-</div>
-
+            <span class="inactive">לא פעיל</span>
+            <span class="status-note">לא היה בשימוש ליותר מ־7 ימים</span>
+          </div>
         </div>
       </div>
     </div>
@@ -81,7 +80,7 @@
         *ngFor="let vehicle of filteredVehicles"
         [vehicle]="vehicle"
         (cardClick)="goToVehicleDetails($event)"
-      ></app-vehicle-card>   
+      ></app-vehicle-card>
     </div>
 
     <div class="empty-state" *ngIf="filteredVehicles.length === 0">

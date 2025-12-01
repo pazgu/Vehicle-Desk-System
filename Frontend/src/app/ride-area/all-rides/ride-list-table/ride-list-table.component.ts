@@ -30,10 +30,7 @@ export class RideListTableComponent implements OnChanges {
   @Output() newRide = new EventEmitter<void>();
   @Output() rebookRide = new EventEmitter<any>();
 
-  constructor(private router: Router , private myrideservice : MyRidesService) {}
-
-
-
+  constructor(private router: Router, private myrideservice: MyRidesService) {}
 
   currentPage = 1;
   pagedOrders: any[] = [];
@@ -114,8 +111,8 @@ export class RideListTableComponent implements OnChanges {
         return 'status-reserved';
       case 'cancelled':
         return 'status-cancelled';
-        case 'cancelled_vehicle_unavailable': 
-      return 'status-cancelled-vehicle-unavailable';
+      case 'cancelled_vehicle_unavailable':
+        return 'status-cancelled-vehicle-unavailable';
       default:
         return '';
     }
@@ -214,56 +211,54 @@ export class RideListTableComponent implements OnChanges {
 
     return start.getTime() > Date.now();
   }
-canDelete(order: any, isRebookContext: boolean = false): boolean {
-  if (!order) return false;
+  canDelete(order: any, isRebookContext: boolean = false): boolean {
+    if (!order) return false;
 
-  const status = (order.status ?? '')
-    .toString()
-    .toLowerCase()
-    .trim();
+    const status = (order.status ?? '').toString().toLowerCase().trim();
 
-  const userRole = localStorage.getItem('role');
-  const isSupervisor = userRole === 'supervisor';
-  
-  if (
-    status === 'cancelled_vehicle_unavailable' ||
-    status === 'cancelled_vehicle_unavilable'
-  ) {
-    return true;
-  }
+    const userRole = localStorage.getItem('role');
+    const isSupervisor = userRole === 'supervisor';
 
-  const [day, month, year] = order.date.split('.');
-  const rideDateTime = new Date(`${year}-${month}-${day}T${order.time}:00`);
-
-  if (isNaN(rideDateTime.getTime())) {
-    console.error('Invalid ride datetime:', order.date, order.time);
-    return false;
-  }
-
-  const now = new Date();
-  const isFuture = rideDateTime.getTime() > now.getTime();
-  const isPending = status === 'pending';
-
-  if (!isSupervisor) {
-    if (isRebookContext) {
-      return isPending && isFuture;
+    if (
+      status === 'cancelled_vehicle_unavailable' ||
+      status === 'cancelled_vehicle_unavilable'
+    ) {
+      return true;
     }
-    const timeDifferenceHours = (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
-    return isPending && isFuture && timeDifferenceHours > 2;
+
+    const [day, month, year] = order.date.split('.');
+    const rideDateTime = new Date(`${year}-${month}-${day}T${order.time}:00`);
+
+    if (isNaN(rideDateTime.getTime())) {
+      console.error('Invalid ride datetime:', order.date, order.time);
+      return false;
+    }
+
+    const now = new Date();
+    const isFuture = rideDateTime.getTime() > now.getTime();
+    const isPending = status === 'pending';
+
+    if (!isSupervisor) {
+      if (isRebookContext) {
+        return isPending && isFuture;
+      }
+      const timeDifferenceHours =
+        (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+      return isPending && isFuture && timeDifferenceHours > 2;
+    }
+
+    const isDeletableStatus = ['pending', 'approved'].includes(status);
+    if (!isDeletableStatus || !isFuture) return false;
+
+    if (isRebookContext) {
+      return true;
+    }
+
+    const timeDifferenceHours =
+      (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+    return timeDifferenceHours > 2;
   }
-
-  const isDeletableStatus = ['pending', 'approved'].includes(status);
-  if (!isDeletableStatus || !isFuture) return false;
-
-  if (isRebookContext) {
-    return true;
-  }
-
-  const timeDifferenceHours =
-    (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
-
-  return timeDifferenceHours > 2;
-}
 
   onViewRide(order: any): void {
     this.viewRide.emit(order);
@@ -293,12 +288,12 @@ canDelete(order: any, isRebookContext: boolean = false): boolean {
   canRebook(order: any): boolean {
     if (!order?.status) return false;
 
-  const status = order.status.toLowerCase();
-  if (status === 'cancelled_vehicle_unavailable'){
-    return true 
+    const status = order.status.toLowerCase();
+    if (status === 'cancelled_vehicle_unavailable') {
+      return true;
+    }
+    return false;
   }
-  return false
-}
 
   onRebook(order: any, event: Event): void {
     event.stopPropagation();

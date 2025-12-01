@@ -46,14 +46,13 @@ export class NoShowsComponent {
     this.loadNoShowStatistics();
     this.loadDepartments();
     this.route.queryParams.subscribe((params) => {
-      // Read query params if they exist, else keep defaults
       this.noShowSortOption = params['noShowSort'] || 'countAsc';
       this.selectedSortOption = params['selectedSort'] || 'countAsc';
       if (params['month']) {
-        this.selectedMonth = String(+params['month']); // convert string to number
+        this.selectedMonth = String(+params['month']); 
       }
       if (params['year']) {
-        this.selectedYear = String(+params['year']); // convert string to number
+        this.selectedYear = String(+params['year']); 
       }
     });
   }
@@ -61,7 +60,7 @@ export class NoShowsComponent {
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: params,
-      queryParamsHandling: 'merge', // keeps the other params
+      queryParamsHandling: 'merge', 
     });
   }
   onMonthOrYearChange() {
@@ -95,14 +94,14 @@ export class NoShowsComponent {
   }
   onFilterOnePlusChange() {
     if (this.filterOnePlus) {
-      this.filterCritical = false; // Uncheck critical when one-plus is selected
+      this.filterCritical = false;
     }
     this.applyNoShowFilter();
   }
 
   onFilterCriticalChange() {
     if (this.filterCritical) {
-      this.filterOnePlus = false; // Uncheck one-plus when critical is selected
+      this.filterOnePlus = false; 
     }
     this.applyNoShowFilter();
   }
@@ -141,7 +140,7 @@ export class NoShowsComponent {
   goToUserDetails(userId: string) {
     this.router.navigate(['/user-card', userId]);
   }
-  
+
   public loadDepartments(): void {
     this.userService.getDepartments().subscribe({
       next: (departments) => {
