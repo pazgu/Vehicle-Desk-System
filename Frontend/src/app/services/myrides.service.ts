@@ -167,6 +167,10 @@ rebookReservation(payload: any) {
   return this.http.post(`${this.apiBase}/reservations/rebook`, payload);
 }
 
+isVip(): Observable<{ is_vip: boolean }> {
+  return this.http.get<{ is_vip: boolean }>(`${this.apiBase}/is-vip`);
+}
+
 
 
 }

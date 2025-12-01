@@ -699,6 +699,20 @@ def reset_password(
 def cancel_order(order_id: UUID, db: Session = Depends(get_db)):
     return cancel_order_in_db(order_id, db)
 
+@router.get("/api/is-vip")
+def is_user_vip(
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
+):
+    vip_dep = db.query(Department).filter(Department.name.ilike("VIP")).first()
+
+    if not vip_dep:
+        return {"is_vip": False}
+
+    return {"is_vip": user.department_id == str(vip_dep.id)}
+
+
+
 @router.get("/api/distance")
 def get_distance(
     to_city: str,
