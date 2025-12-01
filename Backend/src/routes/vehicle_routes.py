@@ -252,7 +252,7 @@ def update_vehicle_route(
     current_user: User = Depends(get_current_user)
 ):
     try:
-        updated_vehicle = update_vehicle(vehicle_id, vehicle_data, db)
+        updated_vehicle = update_vehicle(vehicle_id, vehicle_data, db, current_user.employee_id)
         return updated_vehicle
     except HTTPException as e:
         raise e
