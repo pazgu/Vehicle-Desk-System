@@ -2,6 +2,8 @@ import pandas as pd
 from datetime import datetime, time, date, timedelta
 from typing import Optional, List, Dict, Any
 from uuid import UUID
+import calendar
+
 
 from fastapi import (
     APIRouter, 
@@ -20,10 +22,10 @@ from fastapi import (
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.staticfiles import StaticFiles
-from sqlalchemy import and_, or_, desc, func, text
+from sqlalchemy import and_, or_, desc, func, text ,case
 from sqlalchemy.orm import Session, aliased
 from ..helpers.department_helpers import get_or_create_vip_department
-from src.schemas.ride_requirements_schema import RideRequirementOut, RideRequirementUpdate
+from src.schemas.ride_requirements_schema import RideRequirementOut, RideRequirementUpdate 
 from src.services.ride_requirements import get_latest_requirement,create_requirement
 # Utils
 from ..utils.auth import get_current_user, token_check, role_check
@@ -68,6 +70,8 @@ from src.schemas.statistics_schema import (
     TopNoShowUser,
     RideStartTimeStatsResponse,
     RideStartTimeBucket,
+    PurposeOfTravelStatsResponse, 
+    MonthlyPurposeBreakdown, 
 )
 from src.schemas.trip_completion_schema import RawCriticalIssueSchema, TripCompletionIssueSchema
 from src.schemas.user_response_schema import UserResponse, PaginatedUserResponse
@@ -78,7 +82,7 @@ from ..schemas.vehicle_schema import VehicleOut, InUseVehicleOut, VehicleStatusU
 
 # Models
 from src.models.department_model import Department
-from src.models.ride_model import Ride
+from src.models.ride_model import Ride, RideType
 from src.models.user_model import User, UserRole
 from src.models.vehicle_inspection_model import VehicleInspection
 from src.models.vehicle_model import Vehicle
@@ -179,7 +183,7 @@ async def edit_user_by_id_route(
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id_from_token)})
 
     if department_id == "vip":
-        vip_dep = get_or_create_vip_department(db)
+        vip_dep = get_or_create_vip_department(db, user_id_from_token)
         department_id = str(vip_dep.id)  
 
     has_gov_license = has_government_license.lower() == "true"
@@ -427,7 +431,7 @@ async def add_user_as_admin(
         license_file_url = f"/uploads/{license_file.filename}"
 
     if department_id and department_id.lower() == "vip":
-        dep = get_or_create_vip_department(db)
+        dep = get_or_create_vip_department(db, changed_by)
         department_id=dep.id
 
     user_data = UserCreate(
@@ -1102,6 +1106,153 @@ def get_ride_start_time_statistics(
         buckets=buckets,
     )
 
+@router.get("/statistics/purpose-of-travel", response_model=PurposeOfTravelStatsResponse)
+def get_purpose_of_travel_statistics(
+    from_year: Optional[int] = Query(
+        None, description="Start year of the range (inclusive)"
+    ),
+    from_month: Optional[int] = Query(
+        None, ge=1, le=12, description="Start month of the range (1–12, inclusive)"
+    ),
+    to_year: Optional[int] = Query(
+        None, description="End year of the range (inclusive)"
+    ),
+    to_month: Optional[int] = Query(
+        None, ge=1, le=12, description="End month of the range (1–12, inclusive)"
+    ),
+    db: Session = Depends(get_db),
+):
+    """
+    Purpose-of-travel stats (administrative vs operational) per month.
+
+    - Default: last 4 months (including current month).
+    - Admin can pass from_year/from_month/to_year/to_month to view any month range.
+    """
+
+    today = date.today()
+
+    if from_year is None or from_month is None or to_year is None or to_month is None:
+        to_year = today.year
+        to_month = today.month
+
+        fy = to_year
+        fm = to_month
+        for _ in range(3):
+            fm -= 1
+            if fm == 0:
+                fm = 12
+                fy -= 1
+
+        from_year = fy
+        from_month = fm
+
+    if (from_year, from_month) > (to_year, to_month):
+        raise HTTPException(
+            status_code=400,
+            detail="from_year/from_month cannot be after to_year/to_month.",
+        )
+
+    from_date = date(from_year, from_month, 1)
+
+    last_day_of_to_month = calendar.monthrange(to_year, to_month)[1]
+    to_date = date(to_year, to_month, last_day_of_to_month)
+
+    start_dt = datetime.combine(from_date, datetime.min.time())
+    end_dt = datetime.combine(to_date, datetime.max.time())
+
+    month_start = func.date_trunc("month", Ride.start_datetime).label("month_start")
+
+    grouped = (
+        db.query(
+            month_start,
+            Ride.ride_type,
+            func.count(Ride.id).label("count"),
+        )
+        .filter(
+            Ride.start_datetime >= start_dt,
+            Ride.start_datetime <= end_dt,
+        )
+        .group_by(month_start, Ride.ride_type)
+        .order_by(month_start)
+        .all()
+    )
+
+    def iter_months(y1: int, m1: int, y2: int, m2: int):
+        y, m = y1, m1
+        while (y < y2) or (y == y2 and m <= m2):
+            yield y, m
+            if m == 12:
+                y += 1
+                m = 1
+            else:
+                m += 1
+
+    months_map = {}
+    for y, m in iter_months(from_year, from_month, to_year, to_month):
+        months_map[(y, m)] = {
+            "administrative": 0,
+            "operational": 0,
+        }
+
+    for row in grouped:
+        dt = row.month_start
+        y = dt.year
+        m = dt.month
+
+        if (y, m) not in months_map:
+            months_map[(y, m)] = {
+                "administrative": 0,
+                "operational": 0,
+            }
+
+        ride_type_value = (
+            row.ride_type.value if hasattr(row.ride_type, "value") else str(row.ride_type)
+        )
+
+        if ride_type_value == "administrative":
+            months_map[(y, m)]["administrative"] += row.count
+        elif ride_type_value == "operational":
+            months_map[(y, m)]["operational"] += row.count
+        else:
+            continue
+
+    months_output: List[MonthlyPurposeBreakdown] = []
+    total_rides_all = 0
+
+    for (y, m) in sorted(months_map.keys()):
+        admin_count = months_map[(y, m)]["administrative"]
+        op_count = months_map[(y, m)]["operational"]
+        total = admin_count + op_count
+        total_rides_all += total
+
+        if total > 0:
+            admin_pct = round(admin_count * 100.0 / total, 1)
+            op_pct = round(op_count * 100.0 / total, 1)
+        else:
+            admin_pct = 0.0
+            op_pct = 0.0
+
+        months_output.append(
+            MonthlyPurposeBreakdown(
+                year=y,
+                month=m,
+                month_label=f"{m}/{y}", 
+                administrative_count=admin_count,
+                operational_count=op_count,
+                total_rides=total,
+                administrative_percentage=admin_pct,
+                operational_percentage=op_pct,
+            )
+        )
+
+    return PurposeOfTravelStatsResponse(
+        from_year=from_year,
+        from_month=from_month,
+        to_year=to_year,
+        to_month=to_month,
+        total_rides=total_rides_all,
+        months=months_output,
+    )
 
 @router.post("/admin/vehicles/mileage/upload")
 async def upload_mileage_excel(
