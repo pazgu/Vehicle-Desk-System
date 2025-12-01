@@ -54,6 +54,21 @@ getAllVehiclesForNewRide(distance: number, rideDate: string, vehicleType: string
 }
 
 
+
+getVIPVehiclesForNewRide(distance: number, rideDate: string, vehicleType: string, startTime: string, endTime: string): Observable<Vehicle[]> {
+  const params: any = {
+    distance_km: distance,
+    ride_date: rideDate,
+    type: vehicleType,
+    start_time: startTime,
+    end_time: endTime
+  };
+
+  return this.http.get<Vehicle[]>(`${environment.apiUrl}/vip-vehicles-new-ride`, { params });
+}
+
+
+
   getAvailableVehicles(): Observable<VehicleInItem[]> {
     const url = `${this.apiUrl}/all-vehicles/available`;
     return this.http.get<VehicleInItem[]>(url);

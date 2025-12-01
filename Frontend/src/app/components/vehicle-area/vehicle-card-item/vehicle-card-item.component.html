@@ -149,13 +149,14 @@
             </button>
             <button
               *ngIf="vehicle.status === 'frozen' && isLeaseExpired(vehicle.lease_expiry) && vehicle.canDelete"
-              class="freeze-button"
+              class="freeze-button button-spacing"
               (click)="confirmArchive(vehicle)"
               title="הרכב מוקפא – ניתן לארכב">
               ארכוב רכב
             </button>
+            
 
-            <button class="timeline-button-inline button-spacing" (click)="navigateToTimeline()">
+            <button class="freeze-button button-spacing" (click)="navigateToTimeline()">
               צפה בלוח הזמנים
             </button>
           </div>

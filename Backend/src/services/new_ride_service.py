@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from uuid import uuid4, UUID
 from datetime import datetime, timedelta, timezone
+from ..helpers.department_helpers import is_vip_department
 
 from ..schemas.new_ride_schema import RideCreate, RideResponse
 from src.constants import OFFROAD_TYPES
@@ -38,6 +39,9 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate, license_chec
         )
     rider_id = ride.user_id if ride.user_id else user_id
     rider = db.query(User).filter(User.employee_id == rider_id).first()
+    is_vip = is_vip_department(db, rider_id)
+    initial_status = RideStatus.approved if is_vip else RideStatus.pending
+ 
     if not rider:
         raise HTTPException(status_code=404, detail="Rider not found")
     if rider_id != user_id: 
@@ -92,11 +96,12 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate, license_chec
         actual_distance_km=ride.actual_distance_km,
         four_by_four_reason=ride.four_by_four_reason,
         extended_ride_reason=ride.extended_ride_reason,
-        status=RideStatus.pending,
+        status=initial_status, 
         license_check_passed=license_check_passed,  
         submitted_at=datetime.now(timezone.utc),
         extra_stops=ride.extra_stops or None
     )
+   
 
     vehicle.mileage += ride.estimated_distance_km
 
@@ -104,6 +109,16 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate, license_chec
     db.commit()
     db.refresh(new_ride)
     db.refresh(vehicle)
+
+
+    if is_vip:
+        admins = db.query(User).filter(User.role == "admin").all()
+        for admin in admins:
+            create_system_notification(
+                user_id=admin.employee_id,
+                title="בקשת נסיעה חדשה ",
+                message = f"העובד {rider.first_name} {rider.last_name} ממחלקת VIP יצר בקשת נסיעה חדשה.",
+            )
 
     await sio.emit("ride_status_updated", {
         "ride_id": str(new_ride.id),
