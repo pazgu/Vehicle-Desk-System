@@ -113,13 +113,19 @@ export class VehicleCardItemComponent implements OnInit {
 
   dialogRef.afterClosed().subscribe(result => {
     if (result) {
-      this.vehicleService.updateVehicle(this.vehicle.id, this.vehicle).subscribe({
+      const cleanedVehicle = {
+        ...this.vehicle,
+        department_id: (!this.vehicle.department_id || this.vehicle.department_id === '') 
+          ? null 
+          : this.vehicle.department_id
+      };
+      this.vehicleService.updateVehicle(this.vehicle.id, cleanedVehicle).subscribe({
         next: () => {
           this.toastService.show('הרכב עודכן בהצלחה', 'success');
           this.isEditMode = false;
           this.originalVehicle = JSON.parse(JSON.stringify(this.vehicle));
           
-          if (this.vehicle.department_id) {
+          if (this.vehicle.department_id && this.vehicle.department_id !== '') {
             const dept = this.departments.find(d => d.id === this.vehicle.department_id);
             this.departmentName = dept ? dept.name : 'לא ידוע';
           } else {
