@@ -51,7 +51,6 @@
 //   });
 // }
 
-
 //   navigateBack() {
 //     this.emailHandlerService.reset();
 //     this.router.navigate(['/login']);
@@ -74,9 +73,13 @@
 //   }
 // }
 
-
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
@@ -90,7 +93,7 @@ import { EmailRetryComponent } from '../../shared/email-retry/email-retry.compon
   standalone: true,
   templateUrl: './forgot-password.component.html',
   styleUrls: ['./forgot-password.component.css'],
-  imports: [CommonModule, ReactiveFormsModule, EmailRetryComponent]
+  imports: [CommonModule, ReactiveFormsModule, EmailRetryComponent],
 })
 export class ForgotPasswordComponent implements OnInit, OnDestroy {
   forgotForm: FormGroup;
@@ -105,7 +108,7 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
     private toastService: ToastService
   ) {
     this.forgotForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]]
+      email: ['', [Validators.required, Validators.email]],
     });
     this.initializeFloatingChars();
   }
@@ -115,7 +118,9 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
     this.emailHandlerService.setToastService(this.toastService);
   }
 
-  get f() { return this.forgotForm.controls; }
+  get f() {
+    return this.forgotForm.controls;
+  }
 
   onSubmit() {
     this.submitted = true;
@@ -129,19 +134,21 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
       this.submitted = false;
     };
 
-    this.emailHandlerService.handleEmailOperation(
-      this.authService.requestPasswordReset(email),
-      undefined,                                  // no retryCallback (we'll use the endpoint)
-      null,                                       // DO NOT pass identifier; use the server's one
-      (id: string) => this.authService.retryEmail(id, 'forgot_password'),
-      'forgot_password',
-      successCallback                             // Pass success callback to clear form
-    ).subscribe({
-      next: () => { 
-        // Success is handled by the service now
-      },
-      error: () => {} // non-422 errors will be toasted by AuthInterceptor
-    });
+    this.emailHandlerService
+      .handleEmailOperation(
+        this.authService.requestPasswordReset(email),
+        undefined, // no retryCallback (we'll use the endpoint)
+        null, // DO NOT pass identifier; use the server's one
+        (id: string) => this.authService.retryEmail(id, 'forgot_password'),
+        'forgot_password',
+        successCallback // Pass success callback to clear form
+      )
+      .subscribe({
+        next: () => {
+          // Success is handled by the service now
+        },
+        error: () => {}, // non-422 errors will be toasted by AuthInterceptor
+      });
   }
 
   navigateBack() {
@@ -160,7 +167,7 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
         char: symbols[Math.floor(Math.random() * symbols.length)],
         left: Math.random() * 100,
         delay: Math.random() * 5,
-        duration: 5 + Math.random() * 5
+        duration: 5 + Math.random() * 5,
       });
     }
   }

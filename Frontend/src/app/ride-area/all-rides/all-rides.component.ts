@@ -6,15 +6,21 @@ import { ToastService } from '../../services/toast.service';
 import { SocketService } from '../../services/socket.service';
 import { Location } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
-import { ConfirmDialogComponent, ConfirmDialogData } from '../../components/page-area/confirm-dialog/confirm-dialog.component';
+import {
+  ConfirmDialogComponent,
+  ConfirmDialogData,
+} from '../../components/page-area/confirm-dialog/confirm-dialog.component';
 import { StartedRidesResponse } from '../../models/ride.model';
 import { FilterPanelComponent } from './filter-panel/filter-panel.component';
 import { QuotaIndicatorComponent } from './quota-indicator/quota-indicator.component';
 import { RideListTableComponent } from './ride-list-table/ride-list-table.component';
 import { ExceededWarningBannerComponent } from './exceeded-warning-banner/exceeded-warning-banner.component';
-import { HttpErrorResponse, HttpClient, HttpHeaders } from '@angular/common/http';
+import {
+  HttpErrorResponse,
+  HttpClient,
+  HttpHeaders,
+} from '@angular/common/http';
 import { RideDetailsComponent } from './../ride-details/ride-details.component';
-
 
 @Component({
   selector: 'app-home',
@@ -25,13 +31,12 @@ import { RideDetailsComponent } from './../ride-details/ride-details.component';
     FilterPanelComponent,
     QuotaIndicatorComponent,
     RideListTableComponent,
-    ExceededWarningBannerComponent
+    ExceededWarningBannerComponent,
   ],
   templateUrl: './all-rides.component.html',
-  styleUrls: ['./all-rides.component.css']
+  styleUrls: ['./all-rides.component.css'],
 })
 export class AllRidesComponent implements OnInit {
-
   constructor(
     private router: Router,
     private rideService: MyRidesService,
@@ -40,14 +45,14 @@ export class AllRidesComponent implements OnInit {
     private socketService: SocketService,
     private location: Location,
     private dialog: MatDialog,
-    private http: HttpClient  
+    private http: HttpClient
   ) {}
 
   loading: boolean = false;
   orders: any[] = [];
   filteredOrders: any[] = [];
   highlightedOrderId: string | null = null;
-  
+
   rideViewMode: 'all' | 'future' | 'past' = 'all';
   sortBy: string = 'recent';
   statusFilter: string = '';
@@ -56,17 +61,19 @@ export class AllRidesComponent implements OnInit {
   showFilters: boolean = false;
   showOldOrders: boolean = false;
   minDate = '2025-01-01';
-  maxDate = new Date(new Date().setMonth(new Date().getMonth() + 2)).toISOString().split('T')[0];
+  maxDate = new Date(new Date().setMonth(new Date().getMonth() + 2))
+    .toISOString()
+    .split('T')[0];
   private apiBase = 'http://127.0.0.1:8000/api';
-
 
   get ordersPerPage(): number {
     return this.showFilters ? 3 : 4;
   }
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
-      this.rideViewMode = (params['mode'] as 'all' | 'future' | 'past') || 'all';
+    this.route.queryParams.subscribe((params) => {
+      this.rideViewMode =
+        (params['mode'] as 'all' | 'future' | 'past') || 'all';
       this.sortBy = params['sort'] || 'recent';
       this.statusFilter = params['status'] || '';
       this.startDate = params['start_date'] || '';
@@ -84,7 +91,9 @@ export class AllRidesComponent implements OnInit {
       if (idToHighlight) {
         setTimeout(() => {
           this.highlightedOrderId = idToHighlight;
-          setTimeout(() => { this.highlightedOrderId = null; }, 10000);
+          setTimeout(() => {
+            this.highlightedOrderId = null;
+          }, 10000);
         }, 500);
       }
 
@@ -107,22 +116,36 @@ export class AllRidesComponent implements OnInit {
     if (!isSupervisor) {
       const isPending = order.status.toLowerCase() === 'pending';
       if (!isPending) {
-        this.toastService.show('אפשר לערוך רק הזמנות עתידיות במצב "ממתין" ', 'error');
+        this.toastService.show(
+          'אפשר לערוך רק הזמנות עתידיות במצב "ממתין" ',
+          'error'
+        );
         return;
       }
     } else {
-      const isEditableStatus = ['pending', 'approved'].includes(order.status.toLowerCase());
+      const isEditableStatus = ['pending', 'approved'].includes(
+        order.status.toLowerCase()
+      );
       if (!isEditableStatus) {
-        this.toastService.show('אפשר לערוך רק הזמנות במצב "ממתין" או "מאושר" ', 'error');
+        this.toastService.show(
+          'אפשר לערוך רק הזמנות במצב "ממתין" או "מאושר" ',
+          'error'
+        );
         return;
       }
 
-      const rideDateTime = new Date(`${order.date.split('.').reverse().join('-')}T${order.time}:00`);
+      const rideDateTime = new Date(
+        `${order.date.split('.').reverse().join('-')}T${order.time}:00`
+      );
       const now = new Date();
-      const timeDifferenceHours = (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
-      
+      const timeDifferenceHours =
+        (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+
       if (timeDifferenceHours <= 2) {
-        this.toastService.show('אפשר לערוך הזמנה עד שעתיים לפני זמן הנסיעה ', 'error');
+        this.toastService.show(
+          'אפשר לערוך הזמנה עד שעתיים לפני זמן הנסיעה ',
+          'error'
+        );
         return;
       }
     }
@@ -135,122 +158,120 @@ export class AllRidesComponent implements OnInit {
     this.router.navigate(['/ride/edit', order.ride_id]);
   }
 
+  deleteOrder(order: any): void {
+    const rawStatus = order.status || '';
+    const status = rawStatus.toString().toLowerCase().trim();
+    const userRole = localStorage.getItem('role');
+    const isSupervisor = userRole === 'supervisor';
 
-deleteOrder(order: any): void {
-  const rawStatus = order.status || '';
-  const status = rawStatus.toString().toLowerCase().trim();
-  const userRole = localStorage.getItem('role');
-  const isSupervisor = userRole === 'supervisor';
+    const [day, month, year] = order.date.split('.');
+    const rideDateTime = new Date(`${year}-${month}-${day}T${order.time}:00`);
+    const now = new Date();
 
-  const [day, month, year] = order.date.split('.');
-  const rideDateTime = new Date(`${year}-${month}-${day}T${order.time}:00`);
-  const now = new Date();
-
-  if (isNaN(rideDateTime.getTime())) {
-    console.error('Invalid ride datetime:', order.date, order.time);
-    this.toastService.show('שגיאה בזיהוי זמן הנסיעה', 'error');
-    return;
-  }
-
-  const isFuture = rideDateTime.getTime() > now.getTime();
-    const isRebookContext = 
-    status === 'cancelled_vehicle_unavailable' ||
-    status === 'cancelled_vehicle_unavilable';
-
-  if (!isRebookContext) {
-    if (!isFuture) {
-      this.toastService.show('אפשר לבטל רק הזמנות עתידיות ', 'error');
+    if (isNaN(rideDateTime.getTime())) {
+      console.error('Invalid ride datetime:', order.date, order.time);
+      this.toastService.show('שגיאה בזיהוי זמן הנסיעה', 'error');
       return;
     }
 
-    if (!isSupervisor) {
-      const isPending = status === 'pending';
-      if (!isPending) {
-        this.toastService.show(
-          'אפשר לבטל רק הזמנות עתידיות במצב "ממתין" ',
-          'error'
-        );
-        return;
-      }
-      
-      const timeDifferenceHours = (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
-      if (timeDifferenceHours <= 2) {
-        this.toastService.show(
-          'אפשר לבטל הזמנה עד שעתיים לפני זמן הנסיעה ',
-          'error'
-        );
-        return;
-      }
-    } else {
-      const isDeletableStatus = ['pending', 'approved'].includes(status);
-      if (!isDeletableStatus) {
-        this.toastService.show(
-          'אפשר לבטל רק הזמנות במצב "ממתין" או "מאושר" ',
-          'error'
-        );
+    const isFuture = rideDateTime.getTime() > now.getTime();
+    const isRebookContext =
+      status === 'cancelled_vehicle_unavailable' ||
+      status === 'cancelled_vehicle_unavilable';
+
+    if (!isRebookContext) {
+      if (!isFuture) {
+        this.toastService.show('אפשר לבטל רק הזמנות עתידיות ', 'error');
         return;
       }
 
-      const timeDifferenceHours =
-        (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+      if (!isSupervisor) {
+        const isPending = status === 'pending';
+        if (!isPending) {
+          this.toastService.show(
+            'אפשר לבטל רק הזמנות עתידיות במצב "ממתין" ',
+            'error'
+          );
+          return;
+        }
 
-      if (timeDifferenceHours <= 2) {
-        this.toastService.show(
-          'אפשר לבטל הזמנה עד שעתיים לפני זמן הנסיעה ',
-          'error'
-        );
-        return;
+        const timeDifferenceHours =
+          (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+        if (timeDifferenceHours <= 2) {
+          this.toastService.show(
+            'אפשר לבטל הזמנה עד שעתיים לפני זמן הנסיעה ',
+            'error'
+          );
+          return;
+        }
+      } else {
+        const isDeletableStatus = ['pending', 'approved'].includes(status);
+        if (!isDeletableStatus) {
+          this.toastService.show(
+            'אפשר לבטל רק הזמנות במצב "ממתין" או "מאושר" ',
+            'error'
+          );
+          return;
+        }
+
+        const timeDifferenceHours =
+          (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+        if (timeDifferenceHours <= 2) {
+          this.toastService.show(
+            'אפשר לבטל הזמנה עד שעתיים לפני זמן הנסיעה ',
+            'error'
+          );
+          return;
+        }
       }
     }
-  }
 
-  if (!order.ride_id) {
-    this.toastService.show('שגיאה בזיהוי ההזמנה', 'error');
-    return;
-  }
+    if (!order.ride_id) {
+      this.toastService.show('שגיאה בזיהוי ההזמנה', 'error');
+      return;
+    }
 
-  const dialogData: ConfirmDialogData = {
-    title: 'ביטול הזמנה',
-    message: `?האם אתה בטוח שברצונך לבטל את ההזמנה\n\nתאריך: ${order.date}\nשעה: ${order.time}\nסוג: ${order.type}`,
-    confirmText: 'בטל הזמנה',
-    cancelText: 'חזור',
-    noRestoreText: isRebookContext ? '' : 'שימ/י לב שלא ניתן לשחזר את הנסיעה',
-    isDestructive: true,
-  };
+    const dialogData: ConfirmDialogData = {
+      title: 'ביטול הזמנה',
+      message: `?האם אתה בטוח שברצונך לבטל את ההזמנה\n\nתאריך: ${order.date}\nשעה: ${order.time}\nסוג: ${order.type}`,
+      confirmText: 'בטל הזמנה',
+      cancelText: 'חזור',
+      noRestoreText: isRebookContext ? '' : 'שימ/י לב שלא ניתן לשחזר את הנסיעה',
+      isDestructive: true,
+    };
 
-  const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-    width: '420px',
-    height: 'auto',
-    data: dialogData,
-  });
-
-  dialogRef.afterClosed().subscribe((confirmed) => {
-    if (!confirmed) return;
-
-    this.rideService.deleteOrder(order.ride_id).subscribe({
-      next: () => {
-        this.toastService.show('ההזמנה בוטלה בהצלחה ', 'success');
-        this.socketService.deleteRequests$.subscribe(() => {});
-        this.fetchRides();
-        const index = this.orders.findIndex(
-          (o) => o.ride_id === order.ride_id
-        );
-        if (index !== -1) {
-          this.orders = [
-            ...this.orders.slice(0, index),
-            ...this.orders.slice(index + 1),
-          ];
-        }
-      },
-      error: (error) => {
-        console.error('Error deleting order:', error);
-        this.toastService.show('שגיאה בביטול ההזמנה ', 'error');
-      },
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '420px',
+      height: 'auto',
+      data: dialogData,
     });
-  });
-}
 
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (!confirmed) return;
 
+      this.rideService.deleteOrder(order.ride_id).subscribe({
+        next: () => {
+          this.toastService.show('ההזמנה בוטלה בהצלחה ', 'success');
+          this.socketService.deleteRequests$.subscribe(() => {});
+          this.fetchRides();
+          const index = this.orders.findIndex(
+            (o) => o.ride_id === order.ride_id
+          );
+          if (index !== -1) {
+            this.orders = [
+              ...this.orders.slice(0, index),
+              ...this.orders.slice(index + 1),
+            ];
+          }
+        },
+        error: (error) => {
+          console.error('Error deleting order:', error);
+          this.toastService.show('שגיאה בביטול ההזמנה ', 'error');
+        },
+      });
+    });
+  }
 
   private setupSocketSubscriptions(): void {
     this.socketService.rideRequests$.subscribe((newRide) => {
@@ -277,11 +298,17 @@ deleteOrder(order: any): void {
   }
 
   private handleOrderUpdate(updatedRide: any): void {
-    const index = this.orders.findIndex(o => o.ride_id === updatedRide.id);
+    const index = this.orders.findIndex((o) => o.ride_id === updatedRide.id);
     if (index !== -1) {
-      const newDate = formatDate(updatedRide.start_datetime, 'dd.MM.yyyy', 'en-US');
+      const newDate = formatDate(
+        updatedRide.start_datetime,
+        'dd.MM.yyyy',
+        'en-US'
+      );
       const newTime = formatDate(updatedRide.start_datetime, 'HH:mm', 'en-US');
-      const newRecent = updatedRide.submitted_at ? formatDate(updatedRide.submitted_at, 'dd.MM.yyyy', 'en-US') : newDate;
+      const newRecent = updatedRide.submitted_at
+        ? formatDate(updatedRide.submitted_at, 'dd.MM.yyyy', 'en-US')
+        : newDate;
       const updatedOrder = {
         ...this.orders[index],
         recent: newRecent,
@@ -291,25 +318,36 @@ deleteOrder(order: any): void {
         distance: updatedRide.estimated_distance_km,
         start_datetime: updatedRide.start_datetime,
         end_datetime: updatedRide.end_datetime,
-        submitted_at: updatedRide.submitted_at
+        submitted_at: updatedRide.submitted_at,
       };
-      this.orders = [...this.orders.slice(0, index), updatedOrder, ...this.orders.slice(index + 1)];
+      this.orders = [
+        ...this.orders.slice(0, index),
+        updatedOrder,
+        ...this.orders.slice(index + 1),
+      ];
     }
-
   }
 
   private handleStatusUpdate(updatedStatus: any): void {
-    const index = this.orders.findIndex(o => o.ride_id === updatedStatus.ride_id);
+    const index = this.orders.findIndex(
+      (o) => o.ride_id === updatedStatus.ride_id
+    );
     if (index !== -1) {
-      this.orders[index] = { ...this.orders[index], status: updatedStatus.new_status };
+      this.orders[index] = {
+        ...this.orders[index],
+        status: updatedStatus.new_status,
+      };
       this.orders = [...this.orders];
     }
   }
 
   private handleDeletedRide(deletedRide: any): void {
-    const index = this.orders.findIndex(o => o.ride_id === deletedRide.id);
+    const index = this.orders.findIndex((o) => o.ride_id === deletedRide.id);
     if (index !== -1) {
-      this.orders = [...this.orders.slice(0, index), ...this.orders.slice(index + 1)];
+      this.orders = [
+        ...this.orders.slice(0, index),
+        ...this.orders.slice(index + 1),
+      ];
     }
   }
 
@@ -321,34 +359,33 @@ deleteOrder(order: any): void {
     this.filteredOrders = filtered;
   }
 
-onViewRide(order: any): void {
-  if (!order.ride_id) {
-    this.toastService.show('שגיאה בזיהוי ההזמנה', 'error');
-    return;
-  }
-
-  const dialogRef = this.dialog.open(RideDetailsComponent, {
-    width: '900px',
-    maxWidth: '95vw',
-    maxHeight: '90vh',
-    panelClass: 'ride-details-modal-panel',
-    data: { rideId: order.ride_id },
-    autoFocus: false,
-    restoreFocus: false
-  });
-
-  dialogRef.afterClosed().subscribe(result => {
-    if (result?.rideStarted) {
-      this.fetchRides();
+  onViewRide(order: any): void {
+    if (!order.ride_id) {
+      this.toastService.show('שגיאה בזיהוי ההזמנה', 'error');
+      return;
     }
-  });
-}
 
+    const dialogRef = this.dialog.open(RideDetailsComponent, {
+      width: '900px',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
+      panelClass: 'ride-details-modal-panel',
+      data: { rideId: order.ride_id },
+      autoFocus: false,
+      restoreFocus: false,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result?.rideStarted) {
+        this.fetchRides();
+      }
+    });
+  }
 
   scrollToTop(): void {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
-  
+
   onEditRide(order: any): void {
     this.editOrder(order);
   }
@@ -358,63 +395,60 @@ onViewRide(order: any): void {
   }
 
   goToNewRide(): void {
-  const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem('access_token');
 
-  if (!token) {
-    this.router.navigate(['/home']);
-    return;
-  }
-
-  const headers = new HttpHeaders({
-    Authorization: `Bearer ${token}`,
-    Accept: 'application/json'
-  });
-
-  this.http.get<any>(`${this.apiBase}/user/me`, { headers }).subscribe({
-    next: (user) => {
-      const hasPendingRebook = user?.has_pending_rebook === true;
-
-      if (hasPendingRebook) {
-        const dialogData: ConfirmDialogData = {
-          title: 'יש להשלים הזמנה מחדש',
-          message:
-            'הנסיעה שלך בוטלה בגלל רכב שאינו זמין. לפני יצירת הזמנה חדשה, יש להשלים הזמנה מחדש באמצעות כפתור "הזמן מחדש" במסך "הנסיעות שלי".',
-          confirmText: 'עבור להנסיעות שלי',
-          cancelText: 'חזור',
-          noRestoreText: '',
-          isDestructive: false
-        };
-
-        const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-          width: '420px',
-          height: 'auto',
-          data: dialogData
-        });
-
-        dialogRef.afterClosed().subscribe((confirmed) => {
-          if (confirmed) {
-            this.router.navigate(['/all-rides'], {
-              queryParams: { mode: 'future' }
-            });
-          }
-        });
-      } else {
-        this.router.navigate(['/home']);
-      }
-    },
-    error: (err: HttpErrorResponse) => {
-      console.error('Failed to check hasPendingRebook:', err);
+    if (!token) {
       this.router.navigate(['/home']);
+      return;
     }
-  });
-}
 
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json',
+    });
+
+    this.http.get<any>(`${this.apiBase}/user/me`, { headers }).subscribe({
+      next: (user) => {
+        const hasPendingRebook = user?.has_pending_rebook === true;
+
+        if (hasPendingRebook) {
+          const dialogData: ConfirmDialogData = {
+            title: 'יש להשלים הזמנה מחדש',
+            message:
+              'הנסיעה שלך בוטלה בגלל רכב שאינו זמין. לפני יצירת הזמנה חדשה, יש להשלים הזמנה מחדש באמצעות כפתור "הזמן מחדש" במסך "הנסיעות שלי".',
+            confirmText: 'עבור להנסיעות שלי',
+            cancelText: 'חזור',
+            noRestoreText: '',
+            isDestructive: false,
+          };
+
+          const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+            width: '420px',
+            height: 'auto',
+            data: dialogData,
+          });
+
+          dialogRef.afterClosed().subscribe((confirmed) => {
+            if (confirmed) {
+              this.router.navigate(['/all-rides'], {
+                queryParams: { mode: 'future' },
+              });
+            }
+          });
+        } else {
+          this.router.navigate(['/home']);
+        }
+      },
+      error: (err: HttpErrorResponse) => {
+        console.error('Failed to check hasPendingRebook:', err);
+        this.router.navigate(['/home']);
+      },
+    });
+  }
 
   private formatDateForInput(date: Date): string {
     return date.toISOString().split('T')[0];
   }
-
-  
 
   fetchRides() {
     const userId = localStorage.getItem('employee_id');
@@ -447,7 +481,7 @@ onViewRide(order: any): void {
       next: (res) => {
         this.loading = false;
         if (Array.isArray(res)) {
-          const mappedOrders = res.map(order => ({
+          const mappedOrders = res.map((order) => ({
             ride_id: order.ride_id,
             date: formatDate(order.start_datetime, 'dd.MM.yyyy', 'en-US'),
             time: formatDate(order.start_datetime, 'HH:mm', 'en-US'),
@@ -458,22 +492,22 @@ onViewRide(order: any): void {
             end_datetime: order.end_datetime,
             submitted_at: order.submitted_at,
             user_id: order.user_id,
-            cancel_reason: order.cancel_reason || order.cancellation_reason || null
-
+            cancel_reason:
+              order.cancel_reason || order.cancellation_reason || null,
           }));
           this.orders = mappedOrders;
- 
+
           localStorage.setItem('user_orders', JSON.stringify(this.orders));
-          
+
           this.rideService.checkStartedApprovedRides().subscribe({
             next: (res: StartedRidesResponse) => {
               const startedRideIds = res.rides_supposed_to_start;
-              this.orders = this.orders.map(order => ({
+              this.orders = this.orders.map((order) => ({
                 ...order,
-                hasStarted: startedRideIds.includes(order.ride_id)
+                hasStarted: startedRideIds.includes(order.ride_id),
               }));
             },
-            error: (err) => console.error('Error checking started rides:', err)
+            error: (err) => console.error('Error checking started rides:', err),
           });
         } else {
           this.orders = [];
@@ -482,13 +516,16 @@ onViewRide(order: any): void {
       error: (err: HttpErrorResponse) => {
         this.loading = false;
         if (err.status === 404) {
-          console.warn('Backend returned 404 for orders, treating as no orders found:', err);
+          console.warn(
+            'Backend returned 404 for orders, treating as no orders found:',
+            err
+          );
           this.orders = [];
         } else {
           console.error('Error fetching orders:', err);
           this.toastService.show('שגיאה בטעינת ההזמנות ', 'error');
         }
-      }
+      },
     });
   }
 
@@ -500,22 +537,23 @@ onViewRide(order: any): void {
   }
 
   onRebookRide(order: any): void {
-  if (!order?.ride_id) {
-    this.toastService.show('שגיאה בזיהוי ההזמנה לביצוע הזמנה מחדש', 'error');
-    return;
-  }
-
-  this.rideService.getRebookData(order.ride_id).subscribe({
-    next: (data: RebookData) => {
-      this.rideService.setRebookData(data);
-      this.router.navigate(['/home']);
-
-    },
-    error: (err) => {
-      console.error('Failed to load rebook data:', err);
-      this.toastService.show('שגיאה בטעינת פרטי ההזמנה לביצוע הזמנה מחדש ❌', 'error');
+    if (!order?.ride_id) {
+      this.toastService.show('שגיאה בזיהוי ההזמנה לביצוע הזמנה מחדש', 'error');
+      return;
     }
-  });
-}
 
+    this.rideService.getRebookData(order.ride_id).subscribe({
+      next: (data: RebookData) => {
+        this.rideService.setRebookData(data);
+        this.router.navigate(['/home']);
+      },
+      error: (err) => {
+        console.error('Failed to load rebook data:', err);
+        this.toastService.show(
+          'שגיאה בטעינת פרטי ההזמנה לביצוע הזמנה מחדש ❌',
+          'error'
+        );
+      },
+    });
+  }
 }

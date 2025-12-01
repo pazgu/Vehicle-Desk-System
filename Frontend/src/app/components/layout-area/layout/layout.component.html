@@ -1,14 +1,20 @@
 <div>
+  <app-header></app-header>
+  <div
+    *ngIf="
+      feedbackCheckComplete && pendingRideId && loggedIn && !isFeedbackPage
+    "
+    class="feedback-button-container"
+  >
+    <button
+      class="modal-overlay"
+      [routerLink]="['/ride-completion-form', pendingRideId]"
+      (click)="onFeedbackButtonClick()"
+    >
+      נא למלא משוב
+    </button>
+  </div>
+  <app-loading-spinner />
 
-<app-header></app-header>
-<div  *ngIf="feedbackCheckComplete && pendingRideId && loggedIn&& !isFeedbackPage " class="feedback-button-container">
-   <button
-    class="modal-overlay"
-    [routerLink]="['/ride-completion-form', pendingRideId]"
-    (click)="onFeedbackButtonClick()" >
-    נא למלא משוב 
-  </button>
+  <router-outlet></router-outlet>
 </div>
-<app-loading-spinner />
-
-<router-outlet></router-outlet>

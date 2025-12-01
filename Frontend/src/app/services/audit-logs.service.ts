@@ -4,19 +4,23 @@ import { Observable } from 'rxjs';
 import { AuditLogs } from '../models/audit-logs/audit-logs.module';
 import { environment } from '../../environments/environment';
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuditLogsService {
-  private apiUrl = environment.allAuditLogsUrl
+  private apiUrl = environment.allAuditLogsUrl;
   private departmentsUrl = environment.latestRequirementURL;
   private usersUrl = environment.usersUrl;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
-  getAuditLogs(fromDate?: string, toDate?: string, problematicOnly: boolean = false): Observable<AuditLogs[]> {
+  getAuditLogs(
+    fromDate?: string,
+    toDate?: string,
+    problematicOnly: boolean = false
+  ): Observable<AuditLogs[]> {
     const token = localStorage.getItem('token');
     const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`
+      Authorization: `Bearer ${token}`,
     });
 
     let params = new HttpParams();

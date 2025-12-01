@@ -3,14 +3,14 @@
   padding: 2rem 1.5rem;
   direction: rtl;
   background-color: #ffffff;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
 }
 
 .user-data-container {
   max-width: 1200px;
   margin: 0 auto;
   direction: rtl;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
 }
 
 .content {
@@ -33,7 +33,6 @@
   margin: 0;
 }
 
-/* Buttons */
 .edit-button {
   position: absolute;
   top: 2rem;
@@ -138,7 +137,7 @@
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 2px 6px rgba(148, 34, 34, 0.3);
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
 }
 
 .detail-row button:hover {
@@ -287,7 +286,6 @@
   box-shadow: 0 4px 8px rgba(220, 38, 38, 0.3);
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .page-container {
     padding: 1rem;

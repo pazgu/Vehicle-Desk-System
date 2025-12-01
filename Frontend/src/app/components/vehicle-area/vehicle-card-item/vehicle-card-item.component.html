@@ -1,8 +1,12 @@
 <div class="vehicle-details-wrapper">
   <div class="vehicle-wrapper-header">
     <h1>פרטי רכב</h1>
-    <div style="display: flex; gap: 10px;">
-      <button *ngIf="!isEditMode && vehicle?.status !== 'archived'" class="edit-button" (click)="enterEditMode()">
+    <div style="display: flex; gap: 10px">
+      <button
+        *ngIf="!isEditMode && vehicle?.status !== 'archived'"
+        class="edit-button"
+        (click)="enterEditMode()"
+      >
         <mat-icon>edit</mat-icon> ערוך
       </button>
       <button *ngIf="isEditMode" class="save-button" (click)="saveChanges()">
@@ -17,13 +21,24 @@
   <br />
 
   <div class="vehicle-details-content">
-    <p-card *ngIf="vehicle" class="vehicle-details-card" [ngClass]="getCardClass(vehicle.status)">
+    <p-card
+      *ngIf="vehicle"
+      class="vehicle-details-card"
+      [ngClass]="getCardClass(vehicle.status)"
+    >
       <div class="vehicle-horizontal-content">
         <div class="right-side">
           <div class="usage-line">
-            <div class="usage-indicator" [style.background-color]="getUsageBarColor(vehicle.plate_number)"></div>
-            <span class="usage-number" *ngIf="getVehicleUsageCount(vehicle.plate_number) > 0">
-              {{ getVehicleUsageCount(vehicle.plate_number) }} נסיעות קיימות לרכב זה
+            <div
+              class="usage-indicator"
+              [style.background-color]="getUsageBarColor(vehicle.plate_number)"
+            ></div>
+            <span
+              class="usage-number"
+              *ngIf="getVehicleUsageCount(vehicle.plate_number) > 0"
+            >
+              {{ getVehicleUsageCount(vehicle.plate_number) }} נסיעות קיימות
+              לרכב זה
             </span>
           </div>
           <div class="vehicle-image-container">
@@ -39,9 +54,9 @@
             </div>
             <div *ngIf="isEditMode" class="image-edit-section">
               <label><strong>URL תמונה:</strong></label>
-              <input 
-                type="text" 
-                [(ngModel)]="vehicle.image_url" 
+              <input
+                type="text"
+                [(ngModel)]="vehicle.image_url"
                 class="edit-input"
                 placeholder="הכנס כתובת URL של התמונה"
               />
@@ -52,24 +67,33 @@
         <div class="vehicle-details-info">
           <h2>רכב: {{ vehicle.plate_number }}</h2>
 
-          <div *ngIf="isLeaseExpired(vehicle.lease_expiry)" class="lease-expired-warning">
+          <div
+            *ngIf="isLeaseExpired(vehicle.lease_expiry)"
+            class="lease-expired-warning"
+          >
             <mat-icon color="warn">warning</mat-icon> חוזה ההשכרה פג
           </div>
 
           <p><strong>דגם:</strong> {{ vehicle.vehicle_model }}</p>
           <p><strong>סטטוס:</strong> {{ translateStatus(vehicle.status) }}</p>
           <p><strong>סוג רכב:</strong> {{ translateType(vehicle.type) }}</p>
-          <p><strong>סוג דלק:</strong> {{ translateFuelType(vehicle.fuel_type) }}</p>
+          <p>
+            <strong>סוג דלק:</strong> {{ translateFuelType(vehicle.fuel_type) }}
+          </p>
           <p>
             <strong>פעם אחרונה בשימוש:</strong>
             {{ formatLastUsedAt(vehicle.last_used_at) }}
           </p>
-          <p *ngIf="!isEditMode"><strong>מחלקה:</strong> {{ departmentName || 'לא משוייך למחלקה' }}</p>
+          <p *ngIf="!isEditMode">
+            <strong>מחלקה:</strong> {{ departmentName || "לא משוייך למחלקה" }}
+          </p>
           <div *ngIf="isEditMode" class="edit-field">
             <label><strong>מחלקה:</strong></label>
             <select [(ngModel)]="vehicle.department_id" class="edit-select">
-              <option [value]="null">לא משוייך למחלקה</option>
-              <option *ngFor="let dept of departments" [value]="dept.id">{{ dept.name }}</option>
+              <option value="">לא משוייך למחלקה</option>
+              <option *ngFor="let dept of departments" [value]="dept.id">
+                {{ dept.name }}
+              </option>
             </select>
           </div>
           <p *ngIf="vehicle.reason_for_4x4">
@@ -77,60 +101,116 @@
           </p>
 
           <p *ngIf="vehicle.status === 'frozen' && vehicle.freeze_reason">
-            <strong>סיבת הקפאה:</strong> {{ translateFreezeReason(vehicle.freeze_reason) }}
+            <strong>סיבת הקפאה:</strong>
+            {{ translateFreezeReason(vehicle.freeze_reason) }}
           </p>
 
-          <p *ngIf="!isEditMode" style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
-            <strong style="color: #842020;">קילומטראז':</strong>
+          <p
+            *ngIf="!isEditMode"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 1rem;
+              flex-wrap: wrap;
+            "
+          >
+            <strong style="color: #842020">קילומטראז':</strong>
             {{ vehicle.mileage | number }} ק"מ
           </p>
           <div *ngIf="isEditMode" class="edit-field">
-            <label><strong style="color: #842020;">קילומטראז':</strong></label>
-            <input type="number" [(ngModel)]="vehicle.mileage" [min]="0" class="edit-input" />
+            <label><strong style="color: #842020">קילומטראז':</strong></label>
+            <input
+              type="number"
+              [(ngModel)]="vehicle.mileage"
+              [min]="0"
+              class="edit-input"
+            />
           </div>
 
           <p *ngIf="vehicle.mileage_last_updated">
-            <strong>עודכן לאחרונה:</strong> {{ vehicle.mileage_last_updated | date:'dd/MM/yyyy' }}
+            <strong>עודכן לאחרונה:</strong>
+            {{ vehicle.mileage_last_updated | date : "dd/MM/yyyy" }}
           </p>
 
-          <p><strong>מספר נסיעות לחודש זה:</strong> {{ currentVehicleRideCount }}</p>
+          <p>
+            <strong>מספר נסיעות לחודש זה:</strong> {{ currentVehicleRideCount }}
+          </p>
           <p><strong>אחוז נסיעות לחודש זה:</strong></p>
 
           <div class="ride-progress">
-            <span>{{ (currentVehicleRideCount / 20) * 100 | number:'1.0-0' }}%</span>
+            <span
+              >{{
+                (currentVehicleRideCount / 20) * 100 | number : "1.0-0"
+              }}%</span
+            >
             <div class="progress-bar">
-              <div class="progress-fill" [style.width.%]="(currentVehicleRideCount / 20) * 100"></div>
+              <div
+                class="progress-fill"
+                [style.width.%]="(currentVehicleRideCount / 20) * 100"
+              ></div>
             </div>
           </div>
 
           <p>
             <strong>תוקף חוזה השכרה:</strong>
-            {{ vehicle.lease_expiry ? (vehicle.lease_expiry | date: 'dd/MM/yyyy') : 'לא סופק' }}
+            {{
+              vehicle.lease_expiry
+                ? (vehicle.lease_expiry | date : "dd/MM/yyyy")
+                : "לא סופק"
+            }}
           </p>
 
-          <div *ngIf="!isEditMode" style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap; margin-top: 20px;">
+          <div
+            *ngIf="!isEditMode"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 15px;
+              flex-wrap: wrap;
+              margin-top: 20px;
+            "
+          >
             <button
               class="unfreeze-button button-spacing"
               (click)="confirmUnfreeze()"
-              *ngIf="vehicle.status === 'frozen'">
+              *ngIf="vehicle.status === 'frozen'"
+            >
               שחרור מהקפאה
             </button>
 
-            <div *ngIf="vehicle.status === 'in-use' || vehicle.status === 'available'">
-              <button class="freeze-button button-spacing" (click)="showFreezeReasonField()">
+            <div
+              *ngIf="
+                vehicle.status === 'in-use' || vehicle.status === 'available'
+              "
+            >
+              <button
+                class="freeze-button button-spacing"
+                (click)="showFreezeReasonField()"
+              >
                 הקפא רכב
               </button>
 
-              <div *ngIf="isFreezeReasonFieldVisible" class="freeze-reason-container">
-                <select [(ngModel)]="freezeReason" class="freeze-reason-dropdown">
+              <div
+                *ngIf="isFreezeReasonFieldVisible"
+                class="freeze-reason-container"
+              >
+                <select
+                  [(ngModel)]="freezeReason"
+                  class="freeze-reason-dropdown"
+                >
                   <option value="" disabled selected>בחר סיבת הקפאה</option>
                   <option value="maintenance">תחזוקה</option>
                   <option value="accident">תאונה</option>
                   <option value="personal">אישי</option>
                 </select>
 
-                <div *ngIf="freezeReason === 'personal'" class="personal-reason-box">
-                  <label class="personal-reason-label">פרטי הקפאה אישיים:</label>
+                <div
+                  *ngIf="freezeReason === 'personal'"
+                  class="personal-reason-box"
+                >
+                  <label class="personal-reason-label"
+                    >פרטי הקפאה אישיים:</label
+                  >
                   <textarea
                     [(ngModel)]="freezeDetails"
                     rows="2"
@@ -138,25 +218,42 @@
                   ></textarea>
                 </div>
 
-                <button class="confirm-freeze-button button-spacing" (click)="confirmFreeze()">
+                <button
+                  class="confirm-freeze-button button-spacing"
+                  (click)="confirmFreeze()"
+                >
                   אישור הקפאה
                 </button>
               </div>
             </div>
-            <button class="freeze-button button-spacing" dir="rtl"
-              (click)="confirmDeleteVehicle(vehicle)">
-              {{ vehicle.status === 'in-use' ? 'לא ניתן למחוק רכב בשימוש' : 'מחק רכב' }}
+            <button
+              class="freeze-button button-spacing"
+              dir="rtl"
+              (click)="confirmDeleteVehicle(vehicle)"
+            >
+              {{
+                vehicle.status === "in-use"
+                  ? "לא ניתן למחוק רכב בשימוש"
+                  : "מחק רכב"
+              }}
             </button>
             <button
-              *ngIf="vehicle.status === 'frozen' && isLeaseExpired(vehicle.lease_expiry) && vehicle.canDelete"
+              *ngIf="
+                vehicle.status === 'frozen' &&
+                isLeaseExpired(vehicle.lease_expiry) &&
+                vehicle.canDelete
+              "
               class="freeze-button button-spacing"
               (click)="confirmArchive(vehicle)"
-              title="הרכב מוקפא – ניתן לארכב">
+              title="הרכב מוקפא – ניתן לארכב"
+            >
               ארכוב רכב
             </button>
-            
 
-            <button class="freeze-button button-spacing" (click)="navigateToTimeline()">
+            <button
+              class="freeze-button button-spacing"
+              (click)="navigateToTimeline()"
+            >
               צפה בלוח הזמנים
             </button>
           </div>

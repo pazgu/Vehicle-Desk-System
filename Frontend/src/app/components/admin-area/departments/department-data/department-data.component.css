@@ -2,31 +2,27 @@
   display: block;
   min-height: 100vh;
 
-  background-image: url('/assets/images/vehicle-dashboard-bg.png'); 
+  background-image: url("/assets/images/vehicle-dashboard-bg.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
 }
 
 :host::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background: rgba(255, 255, 255, 0.6); 
+  background: rgba(255, 255, 255, 0.6);
   pointer-events: none;
 }
 
-
-
-.department-info{
-    border: black 1px solid;
-    border-radius: 8px;
-    padding: 1rem;
-    width: 300px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    background-color: rgba(255, 255, 255, 0.89);
-    
-    
+.department-info {
+  border: black 1px solid;
+  border-radius: 8px;
+  padding: 1rem;
+  width: 300px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: rgba(255, 255, 255, 0.89);
 }
 
 .departments-list {
@@ -35,423 +31,427 @@
   gap: 20px;
 }
 
-
 .departments-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
-    position: relative;
- 
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  position: relative;
 }
 
 .departments-container h2 {
-    color: #2d3748;
-    font-size: 2rem;
-    font-weight: 700;
-    text-align: center;
-    margin-bottom: 3rem;
-    position: relative;
-    background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+  color: #2d3748;
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 3rem;
+  position: relative;
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .departments-container h2::after {
-    content: '';
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 120px;
-    height: 2px;
-    background: linear-gradient(90deg, #ef4444, #dc2626);
-    border-radius: 2px;
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 2px;
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+  border-radius: 2px;
 }
 
 @keyframes glow {
-    from { 
-        box-shadow: 0 0 5px rgba(239, 68, 68, 0.5);
-        transform: translateX(-50%) scaleX(1);
-    }
-    to { 
-        box-shadow: 0 0 20px rgba(220, 38, 38, 0.8);
-        transform: translateX(-50%) scaleX(1.1);
-    }
+  from {
+    box-shadow: 0 0 5px rgba(239, 68, 68, 0.5);
+    transform: translateX(-50%) scaleX(1);
+  }
+  to {
+    box-shadow: 0 0 20px rgba(220, 38, 38, 0.8);
+    transform: translateX(-50%) scaleX(1.1);
+  }
 }
 
 .departments-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 2rem;
-    padding: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2rem;
+  padding: 1rem;
 }
 
 .department-cards {
-    opacity: 0;
-    transform: translateY(30px);
-    animation: slideUp 0.8s ease-out forwards;
+  opacity: 0;
+  transform: translateY(30px);
+  animation: slideUp 0.8s ease-out forwards;
 }
 
-.department-cards:nth-child(1) { animation-delay: 0.1s; }
-.department-cards:nth-child(2) { animation-delay: 0.2s; }
-.department-cards:nth-child(3) { animation-delay: 0.3s; }
-.department-cards:nth-child(4) { animation-delay: 0.4s; }
-.department-cards:nth-child(5) { animation-delay: 0.5s; }
-.department-cards:nth-child(6) { animation-delay: 0.6s; }
+.department-cards:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.department-cards:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.department-cards:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.department-cards:nth-child(4) {
+  animation-delay: 0.4s;
+}
+.department-cards:nth-child(5) {
+  animation-delay: 0.5s;
+}
+.department-cards:nth-child(6) {
+  animation-delay: 0.6s;
+}
 
 @keyframes slideUp {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-.department-title{
-    display: flex;
-    flex-direction: row;
+.department-title {
+  display: flex;
+  flex-direction: row;
 }
-
 
 i:hover {
-    color: #dc2626;
+  color: #dc2626;
 }
 
-.add-department-button:hover{
-cursor: cell;
+.add-department-button:hover {
+  cursor: cell;
 }
 .department-info {
-    border: 1px solid rgba(220, 38, 38, 0.3);
-    border-radius: 16px;
-    padding: 2rem;
-    width: 100%;
-    box-shadow: 
-        0 8px 25px rgba(220, 38, 38, 0.15),
-        0 4px 10px rgba(0, 0, 0, 0.1);
-    background: rgba(255, 255, 255, 0.792);
-    position: relative;
-    overflow: hidden;
-    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    cursor: pointer;
-    backdrop-filter: blur(10px);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  border-radius: 16px;
+  padding: 2rem;
+  width: 100%;
+  box-shadow: 0 8px 25px rgba(220, 38, 38, 0.15), 0 4px 10px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.792);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  cursor: pointer;
+  backdrop-filter: blur(10px);
 }
 
-/* Shimmer effect */
 .department-info::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, 0.1),
-        transparent
-    );
-    transition: left 0.8s ease;
-    z-index: 1;
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transition: left 0.8s ease;
+  z-index: 1;
 }
 
 .department-info:hover::before {
-    left: 100%;
+  left: 100%;
 }
 
-/* Enhanced hover effects */
 .department-info:hover {
-    box-shadow: 
-        0 20px 50px rgba(218, 114, 114, 0.11),
-        0 10px 20px rgba(0, 0, 0, 0.15),
-        0 0 30px rgba(220, 38, 38, 0.1);
-    border-color: rgba(180, 159, 159, 0.411);
- 
+  box-shadow: 0 20px 50px rgba(218, 114, 114, 0.11),
+    0 10px 20px rgba(0, 0, 0, 0.15), 0 0 30px rgba(220, 38, 38, 0.1);
+  border-color: rgba(180, 159, 159, 0.411);
 }
 
-/* Red glow orb effect */
 .department-info::after {
-    content: '';
-    position: absolute;
-    top: -30px;
-    right: -30px;
-    width: 80px;
-    height: 80px;
-    background: radial-gradient(circle, rgba(220, 38, 38, 0.2) 0%, transparent 70%);
-    border-radius: 50%;
-    opacity: 0;
-    transition: opacity 0.3s ease, transform 0.3s ease;
-    z-index: 1;
+  content: "";
+  position: absolute;
+  top: -30px;
+  right: -30px;
+  width: 80px;
+  height: 80px;
+  background: radial-gradient(
+    circle,
+    rgba(220, 38, 38, 0.2) 0%,
+    transparent 70%
+  );
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 1;
 }
 
 .department-info:hover::after {
-    opacity: 1;
-    transform: scale(1.3);
+  opacity: 1;
+  transform: scale(1.3);
 }
 
 .department-info h3 {
-    color: #1f2937;
-    font-size: 1.8rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    position: relative;
-    z-index: 2;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
+  color: #1f2937;
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 2;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
 }
 
 .department-info:hover h3 {
-    transform: translateX(5px);
-    color: #111827;
+  transform: translateX(5px);
+  color: #111827;
 }
 
 .department-info p {
-    color: #374151;
-    font-size: 1.1rem;
-    font-weight: 500;
-    position: relative;
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.3s ease;
+  color: #374151;
+  font-size: 1.1rem;
+  font-weight: 500;
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
 }
 
 .department-info:hover p {
-    transform: translateX(5px);
-    color: #1f2937;
+  transform: translateX(5px);
+  color: #1f2937;
 }
-
-
 
 .department-info:hover p::before {
-    transform: scale(1.2);
+  transform: scale(1.2);
 }
 
-/* Subtle pulse animation for alternating cards */
 @keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.005); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.005);
+  }
 }
 
 .department-cards:nth-child(odd) .department-info {
-    animation: pulse 6s ease-in-out infinite;
-    animation-delay: 3s;
+  animation: pulse 6s ease-in-out infinite;
+  animation-delay: 3s;
 }
-
 
 .department-info:hover h3::after {
-    width: 60%;
+  width: 60%;
 }
 
-/* Responsive design */
 @media (max-width: 768px) {
-    .departments-list {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-        padding: 0.5rem;
-    }
-    
-    .departments-container {
-        padding: 1rem;
-    }
-    
-    .departments-container h2 {
-        font-size: 2rem;
-        margin-bottom: 2rem;
-    }
-    
-    .department-info {
-        padding: 1.5rem;
-    }
-    
-    .department-info h3 {
-        font-size: 1.5rem;
-    }
-    
-    .department-info p {
-        font-size: 1rem;
-    }
+  .departments-list {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 0.5rem;
+  }
+
+  .departments-container {
+    padding: 1rem;
+  }
+
+  .departments-container h2 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .department-info {
+    padding: 1.5rem;
+  }
+
+  .department-info h3 {
+    font-size: 1.5rem;
+  }
+
+  .department-info p {
+    font-size: 1rem;
+  }
 }
 
-/* Active/Focus states */
 .department-info:active {
-    transform: translateY(-8px) scale(0.99);
-    transition: transform 0.1s ease;
+  transform: translateY(-8px) scale(0.99);
+  transition: transform 0.1s ease;
 }
 
 .department-info:focus {
-    outline: none;
-    box-shadow: 
-        0 20px 50px rgba(220, 38, 38, 0.25),
-        0 0 0 3px rgba(220, 38, 38, 0.3),
-        0 10px 20px rgba(0, 0, 0, 0.15);
+  outline: none;
+  box-shadow: 0 20px 50px rgba(220, 38, 38, 0.25),
+    0 0 0 3px rgba(220, 38, 38, 0.3), 0 10px 20px rgba(0, 0, 0, 0.15);
 }
 
-/* Additional red-themed interactions */
 .department-info:hover {
-    background: rgba(255, 179, 179, 0.466);
+  background: rgba(255, 179, 179, 0.466);
 }
 
-/* Subtle border glow on hover */
 @keyframes borderGlow {
-    0%, 100% { border-color: rgba(220, 38, 38, 0.3); }
-    50% { border-color: rgba(220, 38, 38, 0.6); }
+  0%,
+  100% {
+    border-color: rgba(220, 38, 38, 0.3);
+  }
+  50% {
+    border-color: rgba(220, 38, 38, 0.6);
+  }
 }
 
 .department-info:hover {
-    animation: borderGlow 2s ease-in-out infinite;
+  animation: borderGlow 2s ease-in-out infinite;
 }
 
 .add-department-button {
-    color: #991b1b;
-    background: none;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 20px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
+  color: #991b1b;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 .add-department-button:hover {
-    color: #c12a2a;
-    transform: translateY(-2px);
+  color: #c12a2a;
+  transform: translateY(-2px);
 }
-.edit-button{
-    color: #1f2937;
-    background: none;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 20px;
-    font-size: 25px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
+.edit-button {
+  color: #1f2937;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 25px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-
-
-
-
-/* New Department Form Styling */
 .new-department-form {
-    position: relative; /* מאפשר מיקום יחסי של הכפתור בפנים */
-    max-width: 500px;
-    margin: 0 auto 2rem auto;
-    padding: 2rem;
-    background: linear-gradient(135deg, 
-        rgba(220, 38, 38, 0.15) 0%, 
-        rgba(185, 28, 28, 0.1) 50%,
-        rgba(153, 27, 27, 0.05) 100%);
-    border: 1px solid rgba(220, 38, 38, 0.2);
-    border-radius: 16px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 8px 32px rgba(220, 38, 38, 0.1);
-    opacity: 0;
-    transform: translateY(-20px);
-    animation: formSlideIn 0.5s ease-out forwards;
+  position: relative;
+  max-width: 500px;
+  margin: 0 auto 2rem auto;
+  padding: 2rem;
+  background: linear-gradient(
+    135deg,
+    rgba(220, 38, 38, 0.15) 0%,
+    rgba(185, 28, 28, 0.1) 50%,
+    rgba(153, 27, 27, 0.05) 100%
+  );
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(220, 38, 38, 0.1);
+  opacity: 0;
+  transform: translateY(-20px);
+  animation: formSlideIn 0.5s ease-out forwards;
 }
 
 @keyframes formSlideIn {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .new-department-form form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .new-department-form div {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .new-department-form label {
-    font-weight: 600;
-    color: #374151;
-    font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.9rem;
 }
 
 .new-department-form input,
 .new-department-form select {
-    padding: 0.75rem 1rem;
-    border: 2px solid rgba(220, 38, 38, 0.2);
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(5px);
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    color: #374151;
+  padding: 0.75rem 1rem;
+  border: 2px solid rgba(220, 38, 38, 0.2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(5px);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  color: #374151;
 }
 
 .new-department-form input:focus,
 .new-department-form select:focus {
-    outline: none;
-    border-color: rgba(220, 38, 38, 0.5);
-    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
-    background: rgba(255, 255, 255, 0.95);
+  outline: none;
+  border-color: rgba(220, 38, 38, 0.5);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+  background: rgba(255, 255, 255, 0.95);
 }
 
 .new-department-form button[type="submit"] {
-    padding: 0.75rem 1.5rem;
-    background: linear-gradient(135deg, rgba(220, 38, 38, 0.9), rgba(185, 28, 28, 0.9));
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.2);
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(
+    135deg,
+    rgba(220, 38, 38, 0.9),
+    rgba(185, 28, 28, 0.9)
+  );
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(220, 38, 38, 0.2);
 }
 
 .new-department-form button[type="submit"]:hover:not(:disabled) {
-    transform: translateY(-2px);
-    background: linear-gradient(135deg, rgba(239, 68, 68, 1), rgba(220, 38, 38, 1));
-    box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3);
+  transform: translateY(-2px);
+  background: linear-gradient(
+    135deg,
+    rgba(239, 68, 68, 1),
+    rgba(220, 38, 38, 1)
+  );
+  box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3);
 }
 
 .new-department-form button[type="submit"]:disabled {
-    background: #bfbfbf; /* soft gray tone */
-    color: #f8f8f8 !important;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-    border: none;
-    opacity: 1; /* remove transparency so it looks solid gray */
+  background: #bfbfbf;
+  color: #f8f8f8 !important;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  border: none;
+  opacity: 1;
 }
 
-
-
-
-
-/* Modal Overlay */
 .modal-overlay {
-  position: fixed; /* Stays in place even if the page scrolls */
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
-  display: flex; /* Use flexbox for centering content */
-  justify-content: center; /* Center horizontally */
-  align-items: center; /* Center vertically */
-  z-index: 1000; /* Ensure it's on top of other content */
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
-/* Modal Content Box */
 .modal-content {
   background-color: white;
   padding: 25px;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  width: 90%; /* Adjust as needed */
-  max-width: 500px; /* Max width for larger screens */
-  transform: translateY(-50px); /* Small animation effect */
-  animation: slideIn 0.3s forwards ease-out; /* Simple animation */
+  width: 90%;
+  max-width: 500px;
+  transform: translateY(-50px);
+  animation: slideIn 0.3s forwards ease-out;
 }
 
 @keyframes slideIn {
@@ -465,7 +465,6 @@ cursor: cell;
   }
 }
 
-/* Form Group Styling (optional, to make inputs and labels look nice) */
 .form-group {
   margin-bottom: 15px;
 }
@@ -478,18 +477,17 @@ cursor: cell;
 
 .form-group input,
 .form-group select {
-  width: calc(100% - 20px); /* Adjust for padding if needed */
+  width: calc(100% - 20px);
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 1rem;
 }
 
-/* Modal Actions (buttons) */
 .modal-actions {
   display: flex;
-  justify-content: flex-end; /* Align buttons to the right */
-  gap: 10px; /* Space between buttons */
+  justify-content: flex-end;
+  gap: 10px;
   margin-top: 20px;
 }
 
@@ -502,7 +500,7 @@ cursor: cell;
 }
 
 .modal-actions button[type="submit"] {
-background-color: #942222; 
+  background-color: #942222;
   color: white;
 }
 
@@ -512,109 +510,92 @@ background-color: #942222;
 }
 
 .modal-actions button[type="button"] {
-  background-color: #6c757d; /* Grey for cancel */
+  background-color: #6c757d;
   color: white;
 }
 .closed-button:hover {
-     color: #c12a2a; 
-     transform: translateY(-2px); 
-     background: none; 
-    }
+  color: #c12a2a;
+  transform: translateY(-2px);
+  background: none;
+}
 .closed-button {
-     color: #942222;
-     background: none; 
-     border: none; 
-     border-radius: 8px;
-margin-right: 60vh;
-      font-size: 16px; 
-      font-weight: bold; 
-      cursor: pointer; 
-      transition: all 0.3s ease;
-     }
+  color: #942222;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  margin-right: 60vh;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
 
 .back-button {
-    color: #942222;
-    background: none;
-    border: none; 
-    border-radius: 8px;
-    padding: 10px 20px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    position: absolute;
-    top: 10px;     /* מרחק מהחלק העליון */
-    left: 10px;    /* מרחק מצד שמאל */
-    background-color: transparent;
-    border: none;
-    color: #333;
-    font-weight: bold;
-    cursor: pointer;
-    }
+  color: #942222;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: transparent;
+  border: none;
+  color: #333;
+  font-weight: bold;
+  cursor: pointer;
+}
 
 .back-button:hover {
-    color: #c12a2a; 
-    transform: translateY(-2px); 
-    background: none; 
-
+  color: #c12a2a;
+  transform: translateY(-2px);
+  background: none;
 }
-/* .save-button {
-background-color: #b91c1c; 
-    color: white !important;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-} */
-
-
 .save-button-modal {
-background-color: #b91c1c; 
-    color: white !important;
-    border: none;
+  background-color: #b91c1c;
+  color: white !important;
+  border: none;
 }
-
 
 .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
 .modal-header h3 {
-    margin: 0;
-    color: #1f2937;
-    font-size: 1.5rem;
-    font-weight: 600;
+  margin: 0;
+  color: #1f2937;
+  font-size: 1.5rem;
+  font-weight: 600;
 }
 
-
 .close-modal-button {
-    color: #000000;
-    background: none;
-    border: none;
-    padding: 5px 10px;
-    font-size: 14px;
-    font-weight: normal;
-    cursor: pointer;
-    transition: color 0.2s ease;
+  color: #000000;
+  background: none;
+  border: none;
+  padding: 5px 10px;
+  font-size: 14px;
+  font-weight: normal;
+  cursor: pointer;
+  transition: color 0.2s ease;
 }
 
 .close-modal-button:hover {
-    color: #666666;
+  color: #666666;
 }
 
-/* Department Actions Container */
 .department-actions {
   display: flex;
   align-items: center;
   gap: 5px;
 }
 
-/* Delete Icon Styling */
 .delete-icon {
   color: #dc2626 !important;
   font-size: 18px;
@@ -626,7 +607,6 @@ background-color: #b91c1c;
   transform: scale(1.1);
 }
 
-/* Delete Confirmation Modal Content */
 .delete-confirmation {
   margin: 20px 0;
   text-align: center;
@@ -643,7 +623,6 @@ background-color: #b91c1c;
   font-style: italic;
 }
 
-/* Delete Confirm Button */
 .delete-confirm-button {
   background-color: #dc2626 !important;
   color: white !important;
@@ -664,7 +643,6 @@ background-color: #b91c1c;
   cursor: not-allowed;
 }
 
-/* Enhanced Department Title Layout */
 .department-title {
   display: flex;
   justify-content: space-between;
@@ -677,51 +655,48 @@ background-color: #b91c1c;
   flex-grow: 1;
 }
 
-/* Responsive adjustments for actions */
 @media (max-width: 768px) {
   .department-actions {
     gap: 3px;
   }
-  
-  .delete-icon, .edit-icon {
+
+  .delete-icon,
+  .edit-icon {
     font-size: 16px !important;
   }
 }
-/* Edit Icon Styling */
 .edit-icon {
-  color: #1f2937 !important; /* Set a consistent color for the edit icon */
-  font-size: 18px; /* Match the size of the delete icon */
+  color: #1f2937 !important;
+  font-size: 18px;
   transition: all 0.3s ease;
 }
 
 .edit-icon:hover {
-  color: #374151 !important; /* A darker shade on hover for a subtle effect */
+  color: #374151 !important;
   transform: scale(1.1);
 }
 
-/* Add styles for the icon approach */
 .department-supervisor {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .department-supervisor i {
-    color: #6b7280;
-    font-size: 1.1rem;
-    opacity: 0.8;
-    transition: all 0.3s ease;
+  color: #6b7280;
+  font-size: 1.1rem;
+  opacity: 0.8;
+  transition: all 0.3s ease;
 }
 
 .department-info:hover .department-supervisor i {
-    color: #374151;
-    transform: scale(1.1);
+  color: #374151;
+  transform: scale(1.1);
 }
 
-/* Alternative: If you want to keep the existing p styling but add icon */
 .department-supervisor p {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
 }

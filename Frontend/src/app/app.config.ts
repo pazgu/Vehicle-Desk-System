@@ -1,11 +1,17 @@
-import { ApplicationConfig, LOCALE_ID, provideZoneChangeDetection } from '@angular/core';
+import {
+  ApplicationConfig,
+  LOCALE_ID,
+  provideZoneChangeDetection,
+} from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi,
+} from '@angular/common/http';
 import { authInterceptorProvider } from './interceptors/auth.interceptor';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { loadingInterceptorProvider } from './interceptors/loading.interceptor';
-
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -15,8 +21,6 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptorsFromDi()),
     authInterceptorProvider,
     loadingInterceptorProvider,
-    { provide: LOCALE_ID, useValue: 'he' } 
-  ]
-  
+    { provide: LOCALE_ID, useValue: 'he' },
+  ],
 };
-

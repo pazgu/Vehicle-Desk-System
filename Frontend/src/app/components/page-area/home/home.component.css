@@ -6,7 +6,7 @@
 
 html,
 body {
-  font-family: 'Assistant', sans-serif;
+  font-family: "Assistant", sans-serif;
   direction: rtl;
   height: 100vh;
   overflow: hidden;
@@ -54,11 +54,10 @@ select {
   border-radius: 5px;
   border: 1px solid #cf8686;
   background-color: #ffffff;
-  font-family: 'Assistant', sans-serif;
+  font-family: "Assistant", sans-serif;
   font-size: 16px;
   width: 100%;
 }
-
 
 form .row,
 form .column,
@@ -81,11 +80,11 @@ form .removeBtn {
 }
 
 form .addBtn {
-  color: #353ddc; 
-  align-self: flex-end; 
-  margin-right: 0; 
+  color: #353ddc;
+  align-self: flex-end;
+  margin-right: 0;
   direction: rtl;
-   align-self: flex-start;  
+  align-self: flex-start;
 }
 
 form .addBtn:hover:not(:disabled) {
@@ -93,9 +92,9 @@ form .addBtn:hover:not(:disabled) {
 }
 
 form .removeBtn {
-  color: #942222;      
-  font-size: 0.9rem;     
-  font-weight: bold;    
+  color: #942222;
+  font-size: 0.9rem;
+  font-weight: bold;
   border: none;
   background: transparent;
   cursor: pointer;
@@ -103,20 +102,20 @@ form .removeBtn {
   align-items: center;
   gap: 4px;
   padding: 2px 4px;
-  text-decoration: none; 
+  text-decoration: none;
 }
 
 form .removeBtn:hover {
-color: #b30000;       
-transform: scale(1.05);
-text-decoration: none;}
+  color: #b30000;
+  transform: scale(1.05);
+  text-decoration: none;
+}
 
 #extrastops {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   margin-top: -1rem;
-  
 }
 
 .extra-stop-item {
@@ -124,7 +123,6 @@ text-decoration: none;}
   align-items: center;
   margin: 0;
   gap: 0.5rem;
-  
 }
 
 .extra-stop-fields {
@@ -132,8 +130,7 @@ text-decoration: none;}
   align-items: center;
   gap: 0;
   flex: 1;
-    border: 1px solid #cf8686;
-
+  border: 1px solid #cf8686;
 }
 
 .extra-stop-fields label {
@@ -195,7 +192,8 @@ text-decoration: none;}
   overflow-x: hidden;
   border: none;
   border: 1px solid #767676;
-  background-color: #eceff1 ;}
+  background-color: #eceff1;
+}
 
 ::ng-deep ng-select.ng-select .ng-dropdown-panel {
   border: none !important;
@@ -214,22 +212,19 @@ text-decoration: none;}
   text-align: center;
   font-size: 14px;
   padding: 8px;
-
 }
-  ::ng-deep .select .ng-option {
+::ng-deep .select .ng-option {
   border: 1px solid #cecece;
-  background-color: #eceff1 ;
+  background-color: #eceff1;
 }
 ::ng-deep .custom-hour-dropdown .ng-option:hover {
   background-color: #767676;
   color: #ffffff;
-
 }
 
-::ng-deep .custom-hour-dropdown .ng-option{
+::ng-deep .custom-hour-dropdown .ng-option {
   border: 1px solid #cecece;
-  background-color: #eceff1 ;
-
+  background-color: #eceff1;
 }
 
 #extra-stop {
@@ -242,20 +237,19 @@ text-decoration: none;}
   display: flex;
   flex-direction: column;
   margin-left: 30px;
-;
 }
 
 .overlay {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-image: url('/assets/images/left-hand-car.png');
+  background-image: url("/assets/images/left-hand-car.png");
   background-color: #fbe6c9;
   background-repeat: no-repeat;
   background-size: 100% auto;
   background-position: center center;
   backdrop-filter: blur(2px);
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   direction: rtl;
   position: fixed;
   top: 0;
@@ -364,7 +358,7 @@ text-decoration: none;}
   border-radius: 5px;
   background-color: #ffffff;
   border: 1px solid #cf8686;
-  font-family: 'Assistant', sans-serif;
+  font-family: "Assistant", sans-serif;
   font-size: 16px;
 }
 
@@ -463,7 +457,7 @@ text-decoration: none;}
   padding: 0.7rem 1.5rem;
   border-radius: 6px;
   font-size: 15px;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   font-weight: bold;
   cursor: pointer;
   border: none;
@@ -572,7 +566,7 @@ text-decoration: none;}
   top: 25%;
   transform: translate(-50%, -25%);
   direction: rtl;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
 }
 
 .step-header {
@@ -647,7 +641,7 @@ hr {
   padding: 10px !important;
   background-color: #ffffff !important;
   border-radius: 6px;
-  font-family: 'Assistant', sans-serif !important;
+  font-family: "Assistant", sans-serif !important;
   font-size: 16px !important;
   width: 100% !important;
   min-height: 40px !important;
@@ -657,23 +651,22 @@ hr {
   display: flex;
   align-items: center;
   border: 1px solid #cf8686;
-
 }
 
 ::ng-deep .styled-select.ng-select .ng-placeholder {
   color: #666;
-  font-family: 'Assistant', sans-serif;
+  font-family: "Assistant", sans-serif;
   font-size: 16px;
 }
 
 ::ng-deep .styled-select.ng-select .ng-single-filter-input {
-  font-family: 'Assistant', sans-serif;
+  font-family: "Assistant", sans-serif;
   font-size: 16px;
   color: #333;
 }
 
 ::ng-deep .styled-select.ng-select .ng-value {
-  font-family: 'Assistant', sans-serif;
+  font-family: "Assistant", sans-serif;
   font-size: 16px;
   color: #333;
 }
@@ -683,9 +676,9 @@ hr {
 }
 
 ::ng-deep .styled-select.ng-select .ng-dropdown-panel {
-   border: 1px solid #cecece;
-  background-color: #eceff1 ;
-  font-family: 'Assistant', sans-serif;
+  border: 1px solid #cecece;
+  background-color: #eceff1;
+  font-family: "Assistant", sans-serif;
   box-shadow: none;
   margin: 0;
   padding: 0;
@@ -701,8 +694,8 @@ hr {
   padding: 10px;
   font-size: 16px;
   color: #333;
- border: 1px solid #cecece;
-  background-color: #eceff1 ;
+  border: 1px solid #cecece;
+  background-color: #eceff1;
 }
 
 ::ng-deep .styled-select.ng-select .ng-option:hover {
@@ -710,17 +703,14 @@ hr {
   color: #ffffff;
 }
 
-
 ::ng-deep .styled-select.ng-select .ng-option.ng-option-disabled {
   border: 1px solid #cecece;
-  background-color: #eceff1 ;
+  background-color: #eceff1;
   color: #666;
   text-align: center;
   font-style: italic;
   padding: 15px;
 }
-
-
 
 ::ng-deep .styled-select.ng-select {
   border: none !important;
@@ -728,8 +718,9 @@ hr {
 }
 
 ::ng-deep .styled-select.ng-select.ng-select-focused .ng-select-container {
- border: 1px solid #cecece;
-  background-color: #eceff1 ;  box-shadow: none !important;
+  border: 1px solid #cecece;
+  background-color: #eceff1;
+  box-shadow: none !important;
   outline: none !important;
 }
 
@@ -791,7 +782,7 @@ hr {
 .new-form-button:active {
   transform: scale(0.97);
 }
- 
+
 .disabled-button {
   opacity: 0.5;
   cursor: not-allowed;
@@ -820,8 +811,7 @@ option {
   background-color: #eceff1 !important;
 }
 
-option:hover{
+option:hover {
   background-color: #ffffff;
   color: #333;
 }
-

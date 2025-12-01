@@ -1,40 +1,36 @@
-
-    
-    
-     
 <div class="status-legend">
-              <h3 class="legend-title">מקרא סטטוסים:</h3>
-              <div class="legend-items">
-                <div *ngFor="let item of statusLegend" class="legend-item">
-                  <div class="legend-color" [ngStyle]="{'background-color': item.color}"></div>
-                  <span class="legend-label">{{ item.label }}</span>
-                </div>
-              </div>
-            </div> 
-    
-    <div class="timeline-header">
-      
-        <h2 class="timeline-title">לו״ז רכב</h2>
-                <button class="back-btn" (click)="navigateBack()">חזור ←</button>
+  <h3 class="legend-title">מקרא סטטוסים:</h3>
+  <div class="legend-items">
+    <div *ngFor="let item of statusLegend" class="legend-item">
+      <div
+        class="legend-color"
+        [ngStyle]="{ 'background-color': item.color }"
+      ></div>
+      <span class="legend-label">{{ item.label }}</span>
+    </div>
+  </div>
+</div>
 
-        <div class="header-sub">
-          <p>מזהה רכב: {{ vehicleId }}</p>
-          <div class="week-controls">
-            <button (click)="navigateWeek(-1)">→ שבוע קודם</button>
-            <span class="week-label">
-              {{ currentWeekStart | date: 'd MMMM' : 'he' }} - {{ weekEnd | date: 'd MMMM y' : 'he' }}
-            </span>
-            <button (click)="navigateWeek(1)">שבוע הבא ←</button>
+<div class="timeline-header">
+  <h2 class="timeline-title">לו״ז רכב</h2>
+  <button class="back-btn" (click)="navigateBack()">חזור ←</button>
 
-           </div>
-           
-           <div class="timeline-page-wrapper">
-  
-  <div class="timeline-page-container">
-    <div class="timeline-container">
-   </div>
+  <div class="header-sub">
+    <p>מזהה רכב: {{ vehicleId }}</p>
+    <div class="week-controls">
+      <button (click)="navigateWeek(-1)">→ שבוע קודם</button>
+      <span class="week-label">
+        {{ currentWeekStart | date : "d MMMM" : "he" }} -
+        {{ weekEnd | date : "d MMMM y" : "he" }}
+      </span>
+      <button (click)="navigateWeek(1)">שבוע הבא ←</button>
+    </div>
+
+    <div class="timeline-page-wrapper">
+      <div class="timeline-page-container">
+        <div class="timeline-container"></div>
       </div>
-      
+
       <div class="timeline-body">
         <div class="timeline-hours-labels">
           <div class="hour-label-header"></div>
@@ -45,7 +41,7 @@
 
         <div class="timeline-days">
           <div class="timeline-day" *ngFor="let day of getDaysRange()">
-            <div class="day-label">{{ day | date: 'EEEE, d MMM' : 'he' }}</div>
+            <div class="day-label">{{ day | date : "EEEE, d MMM" : "he" }}</div>
 
             <div class="timeline-hours">
               <div class="hour-slot" *ngFor="let hour of getHoursRange()"></div>
@@ -64,8 +60,9 @@
                 (click)="onRideClick(ride)"
               >
                 <div class="ride-info">
-                  <span class="ride-driver">{{ride.first_name}} {{ride.last_name}}</span>
-              
+                  <span class="ride-driver"
+                    >{{ ride.first_name }} {{ ride.last_name }}</span
+                  >
                 </div>
               </div>
             </div>
@@ -74,41 +71,55 @@
       </div>
     </div>
 
-
-  <div
-    *ngIf="hoverCardVisible && hoveredRide"
-    class="hover-card"
-    [ngStyle]="{'left.px': hoverCardPosition.x, 'top.px': hoverCardPosition.y}"
-    (mouseleave)="onRideLeave()"
-  >
-    <div class="hover-card-header" [ngStyle]="{'border-top-color': getColorByStatus(hoveredRide.status)}">
-      <h4 class="hover-card-title">פרטי הנסיעה</h4>
-    </div>
-    <div class="hover-card-content">
-      <div class="hover-card-row">
-        <span class="hover-card-label">נהג:</span>
-        <span class="hover-card-value">{{ hoveredRide.first_name }} {{ hoveredRide.last_name }}</span>
+    <div
+      *ngIf="hoverCardVisible && hoveredRide"
+      class="hover-card"
+      [ngStyle]="{
+        'left.px': hoverCardPosition.x,
+        'top.px': hoverCardPosition.y
+      }"
+      (mouseleave)="onRideLeave()"
+    >
+      <div
+        class="hover-card-header"
+        [ngStyle]="{ 'border-top-color': getColorByStatus(hoveredRide.status) }"
+      >
+        <h4 class="hover-card-title">פרטי הנסיעה</h4>
       </div>
-      <div class="hover-card-row">
-        <span class="hover-card-label">סטטוס:</span>
-        <span class="hover-card-value">{{ getStatusLabel(hoveredRide.status) }}</span>
-      </div>
-      <div class="hover-card-row">
-        <span class="hover-card-label">זמן התחלה:</span>
-        <span class="hover-card-value">{{ hoveredRide.start_datetime | date: 'dd/MM/yyyy HH:mm' }}</span>
-      </div>
-      <div class="hover-card-row">
-        <span class="hover-card-label">זמן סיום:</span>
-        <span class="hover-card-value">{{ hoveredRide.end_datetime | date: 'dd/MM/yyyy HH:mm' }}</span>
-      </div>
-      <div class="hover-card-row" *ngIf="hoveredRide.purpose">
-        <span class="hover-card-label">מטרה:</span>
-        <span class="hover-card-value">{{ hoveredRide.purpose }}</span>
-      </div>
-      <div class="hover-card-row">
-        <span class="hover-card-label">מזהה משתמש:</span>
-        <span class="hover-card-value">{{ hoveredRide.user_id }}</span>
+      <div class="hover-card-content">
+        <div class="hover-card-row">
+          <span class="hover-card-label">נהג:</span>
+          <span class="hover-card-value"
+            >{{ hoveredRide.first_name }} {{ hoveredRide.last_name }}</span
+          >
+        </div>
+        <div class="hover-card-row">
+          <span class="hover-card-label">סטטוס:</span>
+          <span class="hover-card-value">{{
+            getStatusLabel(hoveredRide.status)
+          }}</span>
+        </div>
+        <div class="hover-card-row">
+          <span class="hover-card-label">זמן התחלה:</span>
+          <span class="hover-card-value">{{
+            hoveredRide.start_datetime | date : "dd/MM/yyyy HH:mm"
+          }}</span>
+        </div>
+        <div class="hover-card-row">
+          <span class="hover-card-label">זמן סיום:</span>
+          <span class="hover-card-value">{{
+            hoveredRide.end_datetime | date : "dd/MM/yyyy HH:mm"
+          }}</span>
+        </div>
+        <div class="hover-card-row" *ngIf="hoveredRide.purpose">
+          <span class="hover-card-label">מטרה:</span>
+          <span class="hover-card-value">{{ hoveredRide.purpose }}</span>
+        </div>
+        <div class="hover-card-row">
+          <span class="hover-card-label">מזהה משתמש:</span>
+          <span class="hover-card-value">{{ hoveredRide.user_id }}</span>
+        </div>
       </div>
     </div>
   </div>
-
+</div>

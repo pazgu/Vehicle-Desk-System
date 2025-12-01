@@ -10,11 +10,15 @@ export class AuthService {
   private registerUrl = `${environment.registerUrl}`;
 
   private fullNameSubject = new BehaviorSubject<string>(
-    `${localStorage.getItem('first_name') || ''} ${localStorage.getItem('last_name') || ''}`.trim() || 'משתמש'
+    `${localStorage.getItem('first_name') || ''} ${
+      localStorage.getItem('last_name') || ''
+    }`.trim() || 'משתמש'
   );
   fullName$ = this.fullNameSubject.asObservable();
 
-  private loggedInSubject = new BehaviorSubject<boolean>(!!localStorage.getItem('access_token'));
+  private loggedInSubject = new BehaviorSubject<boolean>(
+    !!localStorage.getItem('access_token')
+  );
   isLoggedIn$ = this.loggedInSubject.asObservable();
 
   private roleSubject = new BehaviorSubject<string>(
@@ -77,7 +81,7 @@ export class AuthService {
   getRole(): string {
     return this.roleSubject.value;
   }
-  
+
   setRole(role: string): void {
     localStorage.setItem('role', role);
     this.roleSubject.next(role);
@@ -94,15 +98,13 @@ export class AuthService {
     return this.http.post(`${this.apiUrl}/emails/retry`, body, { headers });
   }
 
-
   resetPassword(token: string, newPassword: string) {
     return this.http.post(environment.resetPassUrl, {
       token,
-      new_password: newPassword
+      new_password: newPassword,
     });
   }
   isAuthenticated(): boolean {
     return !!localStorage.getItem('access_token');
   }
-
 }

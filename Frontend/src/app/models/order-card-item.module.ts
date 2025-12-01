@@ -7,7 +7,7 @@ export interface OrderCardItem {
   end_datetime: string;
   start_location: string;
   stop: string;
-  extra_stops?: string[]; // Optional field for additional stops
+  extra_stops?: string[]; 
   destination: string;
   estimated_distance_km: number;
   actual_distance_km: number;

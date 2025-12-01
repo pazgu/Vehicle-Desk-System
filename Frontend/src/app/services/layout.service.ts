@@ -9,14 +9,15 @@ export interface FeedbackCheckResponse {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class LayoutService {
-
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   checkPendingFeedback(userId: string): Observable<FeedbackCheckResponse> {
-    return this.http.get<FeedbackCheckResponse>(`${environment.apiUrl}/rides/feedback/check/${userId}`);
+    return this.http.get<FeedbackCheckResponse>(
+      `${environment.apiUrl}/rides/feedback/check/${userId}`
+    );
   }
 
   getUserIdFromToken(): string | null {
@@ -29,7 +30,10 @@ export class LayoutService {
       const payload = JSON.parse(payloadJson);
       return payload.sub || null;
     } catch (err) {
-      console.error('[GET USER ID] Error parsing token payload in LayoutService:', err);
+      console.error(
+        '[GET USER ID] Error parsing token payload in LayoutService:',
+        err
+      );
       return null;
     }
   }

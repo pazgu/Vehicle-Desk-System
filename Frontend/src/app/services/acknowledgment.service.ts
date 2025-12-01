@@ -7,14 +7,14 @@ import { environment } from '../../environments/environment';
 export interface RideAcknowledgmentPayload {
   ride_id: string;
   user_id: string;
-  confirmed: boolean;               
-  acknowledged_at?: string;         
-  signature_data_url?: string | null; 
+  confirmed: boolean;
+  acknowledged_at?: string;
+  signature_data_url?: string | null;
 }
 
 export interface RideAcknowledgmentResponse {
   success: boolean;
-  id?: string;                      
+  id?: string;
   message?: string;
 }
 
@@ -22,12 +22,14 @@ export interface RideAcknowledgmentResponse {
   providedIn: 'root',
 })
 export class AcknowledgmentService {
-  private baseUrl = environment.apiUrl || '/api'; 
+  private baseUrl = environment.apiUrl || '/api';
   private useMock = true;
 
   constructor(private http: HttpClient) {}
 
-  saveAcknowledgment(payload: RideAcknowledgmentPayload): Observable<RideAcknowledgmentResponse> {
+  saveAcknowledgment(
+    payload: RideAcknowledgmentPayload
+  ): Observable<RideAcknowledgmentResponse> {
     if (this.useMock) {
       return of({ success: true, id: crypto.randomUUID() }).pipe(delay(600));
     }

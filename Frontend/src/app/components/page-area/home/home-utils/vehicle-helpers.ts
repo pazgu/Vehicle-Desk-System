@@ -37,7 +37,9 @@ export function normalizeVehiclesResponse(raw: any[]): Vehicle[] {
   }));
 }
 
-export function normalizePendingVehiclesResponse(response: any): PendingVehicle[] {
+export function normalizePendingVehiclesResponse(
+  response: any
+): PendingVehicle[] {
   let pendingData: any[] = [];
 
   if (Array.isArray(response)) {
@@ -51,7 +53,9 @@ export function normalizePendingVehiclesResponse(response: any): PendingVehicle[
   return pendingData
     .filter((item) => item && typeof item === 'object')
     .map((item) => ({
-      vehicle_id: String(item.vehicle_id || item.vehicleId || item.car_id || ''),
+      vehicle_id: String(
+        item.vehicle_id || item.vehicleId || item.car_id || ''
+      ),
       date: String(item.date || item.ride_date || ''),
       period: String(item.period || item.ride_period || ''),
       start_time: item.start_time || item.startTime || undefined,
@@ -133,7 +137,8 @@ export function isVehiclePendingForRide(
     const normalizedPendingDate = normalizeDateString(pv.date);
 
     const basicMatch =
-      pv.vehicle_id === vehicleId && normalizedPendingDate === normalizedRideDate;
+      pv.vehicle_id === vehicleId &&
+      normalizedPendingDate === normalizedRideDate;
 
     if (!basicMatch) return false;
     if (!pv.start_time || !pv.end_time) {

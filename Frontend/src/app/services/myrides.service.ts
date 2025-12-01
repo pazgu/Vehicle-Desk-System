@@ -6,7 +6,7 @@ import { of } from 'rxjs';
 import { StartedRidesResponse } from '../models/ride.model';
 import { Supervisor } from '../models/user.model';
 export interface RebookData {
-  id:string
+  id: string;
   user_id: string;
   ride_type: string;
   start_datetime: string;
@@ -19,23 +19,22 @@ export interface RebookData {
   four_by_four_reason?: string | null;
   extended_ride_reason?: string | null;
   target_type?: string;
-  extra_stops?: string[];   
+  extra_stops?: string[];
   is_extended_request?: boolean;
   approving_supervisor?: string | null;
 
 }
 
-
 export interface RebookRequest {
-  old_ride_id: string;           
-  new_ride: {                    
+  old_ride_id: string;
+  new_ride: {
     user_id: string;
     vehicle_id?: string;
     ride_type: string;
     start_datetime: string;
     end_datetime: string;
     start_location: string;
-    stop: string;                
+    stop: string;
     destination: string;
     estimated_distance_km: number;
     actual_distance_km?: number;
@@ -57,26 +56,23 @@ export interface HasPendingRebookResponse {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
-
-
 export class MyRidesService {
   private allOrdersUrl = environment.allOrdersUrl;
   private pastOrdersUrl = environment.pastOrdersUrl;
   private futureOrdersUrl = environment.futureOrdersUrl;
-private rebookData: RebookData | null = null;
+  private rebookData: RebookData | null = null;
 
   private apiBase = environment.apiUrl;
 
-
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   private getAuthHeaders(): HttpHeaders {
     const token = localStorage.getItem('access_token');
     return new HttpHeaders({
       Authorization: `Bearer ${token}`,
-      Accept: 'application/json'
+      Accept: 'application/json',
     });
   }
 
@@ -84,23 +80,26 @@ private rebookData: RebookData | null = null;
     const headers = this.getAuthHeaders();
     const orders = this.http.get(`${this.futureOrdersUrl}/${userId}`, {
       params: this.buildParams(filters),
-      headers
+      headers,
     });
     return orders;
   }
 
   deleteOrder(orderId: string): Observable<any> {
-    const headers = this.getAuthHeaders().set('Content-Type', 'application/json');
-    
+    const headers = this.getAuthHeaders().set(
+      'Content-Type',
+      'application/json'
+    );
+
     return this.http.delete(`${this.allOrdersUrl}/${orderId}`, { headers });
   }
 
   getPastOrders(userId: string, filters?: any): Observable<any> {
     const headers = this.getAuthHeaders();
-    
+
     const orders = this.http.get(`${this.pastOrdersUrl}/${userId}`, {
       params: this.buildParams(filters),
-      headers
+      headers,
     });
     return orders;
   }
@@ -117,7 +116,7 @@ private rebookData: RebookData | null = null;
 
     return this.http.get(`${this.allOrdersUrl}/${userId}`, {
       params: this.buildParams(filters),
-      headers
+      headers,
     });
   }
 
@@ -134,11 +133,14 @@ private rebookData: RebookData | null = null;
 
   checkStartedApprovedRides(): Observable<StartedRidesResponse> {
     const headers = this.getAuthHeaders();
-    
-    return this.http.get<StartedRidesResponse>(environment.ridesSupposedToStartUrl, { headers });
+
+    return this.http.get<StartedRidesResponse>(
+      environment.ridesSupposedToStartUrl,
+      { headers }
+    );
   }
 
-   getRebookData(reservationId: string): Observable<RebookData> {
+  getRebookData(reservationId: string): Observable<RebookData> {
     const headers = this.getAuthHeaders();
     return this.http.get<RebookData>(
       `${this.apiBase}/reservations/${reservationId}/rebook-data`,
@@ -146,8 +148,7 @@ private rebookData: RebookData | null = null;
     );
   }
 
-  
- checkPendingRebook(): Observable<HasPendingRebookResponse> {
+  checkPendingRebook(): Observable<HasPendingRebookResponse> {
     const headers = this.getAuthHeaders();
     return this.http.get<HasPendingRebookResponse>(
       `${this.apiBase}/rides/has-pending-rebook`,
@@ -155,21 +156,21 @@ private rebookData: RebookData | null = null;
     );
   }
 
-setRebookData(data: RebookData) {
-  this.rebookData = data;
-}
+  setRebookData(data: RebookData) {
+    this.rebookData = data;
+  }
 
-clearRebookData() {
-  this.rebookData = null;
-}
+  clearRebookData() {
+    this.rebookData = null;
+  }
 
-getRebookDatafromService() {
-  return this.rebookData;
-}
+  getRebookDatafromService() {
+    return this.rebookData;
+  }
 
-rebookReservation(payload: any) {
-  return this.http.post(`${this.apiBase}/reservations/rebook`, payload);
-}
+  rebookReservation(payload: any) {
+    return this.http.post(`${this.apiBase}/reservations/rebook`, payload);
+  }
 
 isVip(): Observable<{ is_vip: boolean }> {
   return this.http.get<{ is_vip: boolean }>(`${this.apiBase}/is-vip`);

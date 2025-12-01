@@ -1,4 +1,11 @@
-import { Component, Input, OnInit, OnChanges, Output, EventEmitter } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit,
+  OnChanges,
+  Output,
+  EventEmitter,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -6,7 +13,7 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './exceeded-warning-banner.component.html',
-  styleUrls: ['./exceeded-warning-banner.component.css']
+  styleUrls: ['./exceeded-warning-banner.component.css'],
 })
 export class ExceededWarningBannerComponent implements OnInit, OnChanges {
   @Input() allOrders: any[] = [];

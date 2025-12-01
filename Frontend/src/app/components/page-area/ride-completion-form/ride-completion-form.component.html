@@ -1,118 +1,159 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
-
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>טופס חווית נסיעה</title>
-    <link href="https://fonts.googleapis.com/css2?family=Alef:wght@400;700&display=swap" rel="stylesheet">
-</head>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Alef:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
 
-<body>
+  <body>
     <div class="page-container">
-        <div class="form-wrapper" *ngIf="showForm">
-            <div class="page-header">
-                <h1>טופס חווית נסיעה</h1>
-                <button class="back-btn" (click)="goBack()">
-                    חזור
-                    <span class="arrow">←</span>
-                </button>
-            </div>
-
-            <div class="form-card">
-                <div class="trip-info-section">
-                    <div class="trip-info-header">פרטי הנסיעה</div>
-                    <div class="trip-info-content">
-                        <div class="trip-info-row">
-                            <span class="info-label">מוצא:</span>
-                            <span class="info-value">{{ start_location_name }}</span>
-                        </div>
-                        <div class="trip-info-row">
-                            <span class="info-label">יעד:</span>
-                            <span class="info-value">{{ stop_name }}</span>
-                        </div>
-                        <div class="trip-info-row" *ngIf="extra_stops_names && extra_stops_names.length > 0">
-                            <span class="info-label">דרך:</span>
-                            <span class="info-value">{{ extra_stops_names.join(', ') }}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-content" *ngIf="currentRide" [formGroup]="form">
-                    <div class="question-block">
-                        <p class="question-text">האם הטענת/תדלקת את הרכב?</p>
-                        <div class="options-row">
-                            <div class="option-card" 
-                                 [ngClass]="{ selected: form.get('fueled')?.value === 'true' }"
-                                 (click)="setFormValue('fueled', 'true')">
-                                כן
-                            </div>
-                            <div class="option-card" 
-                                 [ngClass]="{ selected: form.get('fueled')?.value === 'false' }"
-                                 (click)="setFormValue('fueled', 'false')">
-                                לא
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="question-block">
-                        <p class="question-text">האם הרכב מוכן לנסיעה הבאה?</p>
-                        <div class="options-row">
-                            <div class="option-card"
-                                 [ngClass]="{ selected: form.get('is_vehicle_ready_for_next_ride')?.value === true }"
-                                 (click)="setFormValue('is_vehicle_ready_for_next_ride', true)">
-                                כן
-                            </div>
-                            <div class="option-card"
-                                 [ngClass]="{ selected: form.get('is_vehicle_ready_for_next_ride')?.value === false }"
-                                 (click)="setFormValue('is_vehicle_ready_for_next_ride', false)">
-                                לא
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="question-block">
-                        <p class="question-text">האם קרה דבר שונה מהרגיל במהלך הנסיעה?</p>
-                        <div class="options-row">
-                            <div class="option-card" 
-                                 [ngClass]="{ selected: form.get('emergency_event')?.value === 'true' }"
-                                 (click)="setEmergencyEvent('true')">
-                                כן
-                            </div>
-                            <div class="option-card" 
-                                 [ngClass]="{ selected: form.get('emergency_event')?.value === 'false' }"
-                                 (click)="setEmergencyEvent('false')">
-                                לא
-                            </div>
-                        </div>
-
-                        <div *ngIf="form.get('emergency_event')?.value === 'true'" class="details-section">
-                            <label for="elaborateText" class="details-label">אנא פרט:</label>
-                            <textarea 
-                                class="details-textarea" 
-                                id="elaborateText" 
-                                formControlName="freeze_details"
-                                placeholder="תאר את האירוע בפירוט...">
-                            </textarea>
-                        </div>
-                    </div>
-
-                    <div class="submit-section">
-                        <button class="submit-btn" 
-                                id="submitBtn" 
-                                (click)="onSubmit()" 
-                                [disabled]="loading" 
-                                type="button">
-                            <span class="btn-text" *ngIf="!loading">שלח טופס</span>
-                            <div class="btn-loading" *ngIf="loading">
-                                <div class="spinner"></div>
-                            </div>
-                        </button>
-                    </div>
-                </div>
-            </div>
+      <div class="form-wrapper" *ngIf="showForm">
+        <div class="page-header">
+          <h1>טופס חווית נסיעה</h1>
+          <button class="back-btn" (click)="goBack()">
+            חזור
+            <span class="arrow">←</span>
+          </button>
         </div>
-    </div>
-</body>
 
+        <div class="form-card">
+          <div class="trip-info-section">
+            <div class="trip-info-header">פרטי הנסיעה</div>
+            <div class="trip-info-content">
+              <div class="trip-info-row">
+                <span class="info-label">מוצא:</span>
+                <span class="info-value">{{ start_location_name }}</span>
+              </div>
+              <div class="trip-info-row">
+                <span class="info-label">יעד:</span>
+                <span class="info-value">{{ stop_name }}</span>
+              </div>
+              <div
+                class="trip-info-row"
+                *ngIf="extra_stops_names && extra_stops_names.length > 0"
+              >
+                <span class="info-label">דרך:</span>
+                <span class="info-value">{{
+                  extra_stops_names.join(", ")
+                }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-content" *ngIf="currentRide" [formGroup]="form">
+            <div class="question-block">
+              <p class="question-text">האם הטענת/תדלקת את הרכב?</p>
+              <div class="options-row">
+                <div
+                  class="option-card"
+                  [ngClass]="{ selected: form.get('fueled')?.value === 'true' }"
+                  (click)="setFormValue('fueled', 'true')"
+                >
+                  כן
+                </div>
+                <div
+                  class="option-card"
+                  [ngClass]="{
+                    selected: form.get('fueled')?.value === 'false'
+                  }"
+                  (click)="setFormValue('fueled', 'false')"
+                >
+                  לא
+                </div>
+              </div>
+            </div>
+
+            <div class="question-block">
+              <p class="question-text">האם הרכב מוכן לנסיעה הבאה?</p>
+              <div class="options-row">
+                <div
+                  class="option-card"
+                  [ngClass]="{
+                    selected:
+                      form.get('is_vehicle_ready_for_next_ride')?.value === true
+                  }"
+                  (click)="setFormValue('is_vehicle_ready_for_next_ride', true)"
+                >
+                  כן
+                </div>
+                <div
+                  class="option-card"
+                  [ngClass]="{
+                    selected:
+                      form.get('is_vehicle_ready_for_next_ride')?.value ===
+                      false
+                  }"
+                  (click)="
+                    setFormValue('is_vehicle_ready_for_next_ride', false)
+                  "
+                >
+                  לא
+                </div>
+              </div>
+            </div>
+
+            <div class="question-block">
+              <p class="question-text">האם קרה דבר שונה מהרגיל במהלך הנסיעה?</p>
+              <div class="options-row">
+                <div
+                  class="option-card"
+                  [ngClass]="{
+                    selected: form.get('emergency_event')?.value === 'true'
+                  }"
+                  (click)="setEmergencyEvent('true')"
+                >
+                  כן
+                </div>
+                <div
+                  class="option-card"
+                  [ngClass]="{
+                    selected: form.get('emergency_event')?.value === 'false'
+                  }"
+                  (click)="setEmergencyEvent('false')"
+                >
+                  לא
+                </div>
+              </div>
+
+              <div
+                *ngIf="form.get('emergency_event')?.value === 'true'"
+                class="details-section"
+              >
+                <label for="elaborateText" class="details-label"
+                  >אנא פרט:</label
+                >
+                <textarea
+                  class="details-textarea"
+                  id="elaborateText"
+                  formControlName="freeze_details"
+                  placeholder="תאר את האירוע בפירוט..."
+                >
+                </textarea>
+              </div>
+            </div>
+
+            <div class="submit-section">
+              <button
+                class="submit-btn"
+                id="submitBtn"
+                (click)="onSubmit()"
+                [disabled]="loading"
+                type="button"
+              >
+                <span class="btn-text" *ngIf="!loading">שלח טופס</span>
+                <div class="btn-loading" *ngIf="loading">
+                  <div class="spinner"></div>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
 </html>

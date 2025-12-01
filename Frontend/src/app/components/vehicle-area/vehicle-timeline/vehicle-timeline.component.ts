@@ -1,4 +1,3 @@
-
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { VehicleTimelineService } from '../../../services/vehicle-timeline';
@@ -34,7 +33,6 @@ export class VehicleTimelineComponent implements OnInit, OnDestroy {
 
   private HOUR_SLOT_HEIGHT = 40;
   private VERTICAL_GAP_PX = 4;
-  
 
   statusLegend = [
     { status: 'approved', color: '#a4d1ae', label: 'מאושר' },
@@ -51,7 +49,6 @@ export class VehicleTimelineComponent implements OnInit, OnDestroy {
   hoverCardSide: 'right' | 'left' = 'right';
   private currentHoveredElement: HTMLElement | null = null;
 
-  
   private boundOnScroll = (ev?: Event) => {
     if (this.hoverCardVisible) {
       this.hoverCardVisible = false;
@@ -144,7 +141,6 @@ export class VehicleTimelineComponent implements OnInit, OnDestroy {
       this.loadVehicleTimeline(this.currentWeekStart);
     }
 
-    
     window.addEventListener('scroll', this.boundOnScroll, true);
     document.addEventListener('mousemove', this.boundOnDocumentMouseMove);
   }
@@ -161,7 +157,7 @@ export class VehicleTimelineComponent implements OnInit, OnDestroy {
     return el ? el.getBoundingClientRect() : null;
   }
 
-onRideHover(event: MouseEvent, ride: RenderableRide): void {
+  onRideHover(event: MouseEvent, ride: RenderableRide): void {
     this.hoveredRide = ride;
     this.hoverCardVisible = true;
 
@@ -172,18 +168,20 @@ onRideHover(event: MouseEvent, ride: RenderableRide): void {
 
     const cardWidth = 320;
     const cardHeight = 280;
-    const gap = 8; 
-    const minTopPadding = 80; 
+    const gap = 8;
+    const minTopPadding = 80;
 
-    
-    const timelineBody = document.querySelector('.timeline-body') as HTMLElement | null;
-    const containerRect = timelineBody ? timelineBody.getBoundingClientRect() : null;
-    
+    const timelineBody = document.querySelector(
+      '.timeline-body'
+    ) as HTMLElement | null;
+    const containerRect = timelineBody
+      ? timelineBody.getBoundingClientRect()
+      : null;
+
     if (!containerRect) {
       return;
     }
 
-    
     const cLeft = containerRect.left;
     const cRight = containerRect.right;
     const cTop = containerRect.top;
@@ -211,19 +209,22 @@ onRideHover(event: MouseEvent, ride: RenderableRide): void {
       x = leftPosition;
     } else {
       this.hoverCardSide = 'right';
-      x = Math.max(effectiveLeft, Math.min(rightPosition, effectiveRight - cardWidth));
+      x = Math.max(
+        effectiveLeft,
+        Math.min(rightPosition, effectiveRight - cardWidth)
+      );
     }
 
     let y = rect.top;
-    
+
     if (y < effectiveTop) {
       y = effectiveTop;
     }
-    
+
     if (y + cardHeight > effectiveBottom) {
       y = Math.max(effectiveTop, effectiveBottom - cardHeight);
     }
-    
+
     y = Math.max(y, effectiveTop);
 
     this.hoverCardPosition.x = Math.round(x);
@@ -252,8 +253,8 @@ onRideHover(event: MouseEvent, ride: RenderableRide): void {
     console.log(`📡 Fetching timeline: ${from} → ${to}`);
 
     this.vehicleTimelineService
-  .getVehicleTimeline(this.vehicleId, from, to)
-  .subscribe({
+      .getVehicleTimeline(this.vehicleId, from, to)
+      .subscribe({
         next: (data) => {
           console.log(' API response:', data);
           this.vehicleTimelineData = data;

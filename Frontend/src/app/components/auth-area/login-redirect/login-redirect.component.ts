@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, Router, UrlTree } from '@angular/router';
-import { AuthService } from '../../../services/auth.service'; // adjust path if different
+import { AuthService } from '../../../services/auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class LoginRedirectGuard implements CanActivate {
@@ -8,7 +8,7 @@ export class LoginRedirectGuard implements CanActivate {
 
   canActivate(): boolean | UrlTree {
     return this.auth.isAuthenticated()
-      ? this.router.parseUrl('/home') // change target route if needed
+      ? this.router.parseUrl('/home')
       : true;
   }
 }

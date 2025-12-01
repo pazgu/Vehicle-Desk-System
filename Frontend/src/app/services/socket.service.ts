@@ -31,10 +31,12 @@ export class SocketService {
     is_blocked: boolean;
     block_expires_at: Date | null;
   }>();
-  public reservationCanceledDueToVehicleFreeze$=new BehaviorSubject<any>(null);
+  public reservationCanceledDueToVehicleFreeze$ = new BehaviorSubject<any>(
+    null
+  );
 
   constructor(private notificationService: NotificationService) {
-    this.connectToSocket(); 
+    this.connectToSocket();
   }
 
   private connectToSocket(): void {
@@ -64,15 +66,14 @@ export class SocketService {
       this.orderUpdated$.next(data);
     });
 
-this.socket.on('user_deleted', (data: any) => {
-  this.deleteUserRequests$.next(data);
-});
+    this.socket.on('user_deleted', (data: any) => {
+      this.deleteUserRequests$.next(data);
+    });
 
-
-this.socket.on('reservationCanceledDueToVehicleFreeze', (data: any) => {
-  this.reservationCanceledDueToVehicleFreeze$.next(data);
-  console.log("reservationCanceledDueToVehicleFreeze:",data)
-});
+    this.socket.on('reservationCanceledDueToVehicleFreeze', (data: any) => {
+      this.reservationCanceledDueToVehicleFreeze$.next(data);
+      console.log('reservationCanceledDueToVehicleFreeze:', data);
+    });
 
     this.socket.on('feedback_needed', (data) => {
       this.feedbackNeeded$.next(data);
