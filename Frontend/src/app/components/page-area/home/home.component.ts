@@ -144,7 +144,7 @@ export class NewRideComponent implements OnInit {
     { value: 'administrative', label: 'מנהלתית' },
     { value: 'operational', label: 'מבצעית' },
   ];
-
+  isVIP=false
   constructor(
     private fb: FormBuilder,
     private router: Router,
@@ -162,7 +162,7 @@ export class NewRideComponent implements OnInit {
   ) {}
 
    ngOnInit(): void {
-    
+    this,this.checkVipStatus();
   this.currentUserId = getUserIdFromToken(localStorage.getItem('access_token'));
   this.initializeComponent();
     if (this.currentUserId){
@@ -195,6 +195,8 @@ export class NewRideComponent implements OnInit {
       this.handleStep1Next();
 
   }
+
+  
  
 
   
@@ -224,6 +226,19 @@ export class NewRideComponent implements OnInit {
       e.returnValue = '';
     }
   }
+
+
+  checkVipStatus(): void {
+  this.myRidesService.isVip().subscribe({
+    next: (res) => {
+      this.isVIP = res.is_vip;
+    },
+    error: (err) => {
+      console.error("Failed to check VIP status", err);
+      this.isVIP = false; // fallback
+    }
+  });
+}
   canChooseVehicle(): boolean {
     const distance = this.rideForm.get('estimated_distance_km')?.value;
     const rideDate = this.rideForm.get('ride_date')?.value;
@@ -665,31 +680,40 @@ private applyRebookData(data: RebookData): void {
     });
   }
 
-  private loadVehicles(
-    distance: number,
-    rideDate: string,
-    vehicleType: string,
-    startTime: string,
-    endTime: string
-  ): void {
-    this.vehicleService
-      .getAllVehiclesForNewRide(
+ private loadVehicles(
+  distance: number,
+  rideDate: string,
+  vehicleType: string,
+  startTime: string,
+  endTime: string
+): void {
+
+  const request$ = this.isVIP
+    ? this.vehicleService.getVIPVehiclesForNewRide(
         distance,
         rideDate,
         vehicleType,
         startTime,
         endTime
       )
-      .subscribe({
-        next: (vehicles) => {
-          this.allCars = normalizeVehiclesResponse(vehicles);
-          this.updateAvailableCars();
-        },
-        error: () => {
-          this.toastService.show('שגיאה בטעינת רכבים זמינים', 'error');
-        },
-      });
-  }
+    : this.vehicleService.getAllVehiclesForNewRide(
+        distance,
+        rideDate,
+        vehicleType,
+        startTime,
+        endTime
+      );
+
+  request$.subscribe({
+    next: (vehicles) => {
+      this.allCars = normalizeVehiclesResponse(vehicles);
+      this.updateAvailableCars();
+    },
+    error: () => {
+      this.toastService.show('שגיאה בטעינת רכבים זמינים', 'error');
+    },
+  });
+}
 
   private loadPendingVehicles(): void {
     this.vehicleService.getPendingCars().subscribe({

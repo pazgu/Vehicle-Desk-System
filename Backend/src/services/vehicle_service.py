@@ -7,6 +7,8 @@ from sqlalchemy.types import String
 from datetime import datetime, timezone, date, timedelta
 from typing import Optional, List, Dict, Union
 from uuid import UUID
+
+from ..models.department_model import Department
 from ..utils.socket_manager import sio
 
 from ..models.audit_log_model import AuditLog
@@ -108,6 +110,51 @@ def get_available_vehicles_new_ride(
     final_query = query.all()
 
     return final_query
+
+
+def get_vip_vehicles_for_ride(
+    db: Session,
+    start_time: Optional[datetime] = None,
+    end_time: Optional[datetime] = None,
+    type: Optional[str] = None
+) -> List[Vehicle]:
+    now = datetime.utcnow()
+
+    vip_name='VIP'
+    vip_department  = db.query(Department).filter(
+        func.lower(Department.name) == vip_name.lower()
+    ).first()
+
+    query = (
+        db.query(Vehicle)
+        .filter(
+            Vehicle.is_archived == False,
+            Vehicle.status == VehicleStatus.available,
+            Vehicle.lease_expiry > now,
+            Vehicle.department_id == vip_department.id   
+        )
+    )
+
+    if type:
+        query = query.filter(func.lower(Vehicle.type) == type.lower())
+
+    if start_time and end_time:
+
+        end_time_with_buffer = end_time + timedelta(hours=2)
+
+        overlapping_rides = db.query(Ride.vehicle_id).filter(
+            or_(
+                and_(Ride.start_datetime <= start_time, Ride.end_datetime > start_time),
+                and_(Ride.start_datetime < end_time_with_buffer, Ride.end_datetime >= end_time_with_buffer),
+                and_(Ride.start_datetime >= start_time, Ride.end_datetime <= end_time_with_buffer)
+            )
+        ).subquery()
+
+        query = query.filter(~Vehicle.id.in_(overlapping_rides))
+
+    return query.all()
+
+
 
 
 def get_most_used_vehicles_all_time(db: Session) -> Dict[str, int]:
@@ -529,7 +576,7 @@ def archive_vehicle_by_id(vehicle_id: UUID, db: Session, user_id: UUID) -> Vehic
     ).scalar()
 
     if not has_related_data:
-        raise HTTPException(status_code=400, detail="Cannot archive: vehicle has no related data (rides, logs, etc.).")
+        raise HTTPException(status_code=400, detail="לא ניתן לארכב רכב ללא נסיעות.")
 
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id)})
 
