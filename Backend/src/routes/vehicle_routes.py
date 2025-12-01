@@ -343,10 +343,10 @@ def restore_vehicle(
     
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user.employee_id)})
     
-    # Restore the vehicle
     vehicle.is_archived = False
     vehicle.archived_at = None
-    # Set status back to available (or you can keep the previous status if you store it)
+    vehicle.freeze_reason = None
+    vehicle.freeze_details = None
     vehicle.status = VehicleStatus.available
     
     db.commit()
