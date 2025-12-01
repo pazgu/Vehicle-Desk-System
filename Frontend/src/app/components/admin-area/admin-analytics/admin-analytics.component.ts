@@ -111,12 +111,12 @@ export class AdminAnalyticsComponent implements OnInit {
   let title: string;
 
   if (isNoShowTab) {
-    title = 'No-Show Report';
+    title = 'דוח אי הגעות';
   } else if (isRideStartTimeTab) {
-    title = 'Ride Start Time Distribution';
+    title = 'התפלגות זמני התחלת נסיעה';
     chartData = this.rideStartTimeChartData;
   }  else if (isPurposeTab) {
-    title = 'Purpose of Travel Distribution';
+    title = 'התפלגות מטרת נסיעה';
     chartData = this.purposeChartData;
   }
   
@@ -128,12 +128,12 @@ export class AdminAnalyticsComponent implements OnInit {
       : this.vehicleUsageComponent.topUsedVehiclesData;
 
     title = isVehicleTab
-      ? 'Vehicle Status'
+      ? 'סטטוס רכבים'
       : isRideTab
-      ? 'Ride Status'
+      ? 'סטטוס נסיעות'
       : this.vehicleUsageComponent.isMonthlyView
-      ? 'Monthly Vehicle Usage'
-      : 'High Usage Vehicles';
+      ? 'שימוש חודשי ברכבים'
+      : 'רכבים בשימוש גבוה';
   }
 
   const timestamp = new Date().toLocaleString();
