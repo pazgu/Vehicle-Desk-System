@@ -378,12 +378,10 @@ export class UserDataComponent implements OnInit {
   }
 
   get pagedUsers(): User[] {
-    const start = (this.currentPage - 1) * this.pageSize;
-    return this.filteredLogs
-      .slice()
-      .reverse()
-      .slice(start, start + this.pageSize);
-  }
+  const start = (this.currentPage - 1) * this.pageSize;
+  const end = start + this.pageSize;
+  return this.filteredLogs.slice(start, end);
+}
 
   nextPage(): void {
     if (this.currentPage < this.totalPages) this.currentPage++;

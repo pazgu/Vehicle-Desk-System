@@ -64,8 +64,8 @@ export class AdminAnalyticsComponent implements OnInit {
   rideStartSingleYear: string = new Date().getFullYear().toString();
 
   rideStartRangeYear: string = new Date().getFullYear().toString();
-  rideStartRangeStartMonth: string = '1';
-  rideStartRangeEndMonth: string = '4';
+  rideStartRangeStartDate: string = '';
+  rideStartRangeEndDate: string = '';  
   purposeStats: PurposeOfTravelStatsResponse | null = null;
   purposeChartData: any;
   purposeChartOptions: any;
@@ -107,8 +107,34 @@ export class AdminAnalyticsComponent implements OnInit {
       return;
     }
 
-    let chartData: any;
-    let title: string;
+  let chartData: any;
+  let title: string;
+
+  if (isNoShowTab) {
+    title = 'דוח אי הגעות';
+  } else if (isRideStartTimeTab) {
+    title = 'התפלגות זמני התחלת נסיעה';
+    chartData = this.rideStartTimeChartData;
+  }  else if (isPurposeTab) {
+    title = 'התפלגות מטרת נסיעה';
+    chartData = this.purposeChartData;
+  }
+  
+  else {
+    chartData = isVehicleTab
+      ? this.vehicleStatusComponent.vehicleChartData
+      : isRideTab
+      ? this.rideStatusComponent.rideChartData
+      : this.vehicleUsageComponent.topUsedVehiclesData;
+
+    title = isVehicleTab
+      ? 'סטטוס רכבים'
+      : isRideTab
+      ? 'סטטוס נסיעות'
+      : this.vehicleUsageComponent.isMonthlyView
+      ? 'שימוש חודשי ברכבים'
+      : 'רכבים בשימוש גבוה';
+  }
 
     if (isNoShowTab) {
       title = 'No-Show Report';
@@ -406,15 +432,31 @@ export class AdminAnalyticsComponent implements OnInit {
     if (endMonth - startMonth > 3) {
       endMonth = startMonth + 3;
     }
-
-    const from = new Date(year, startMonth - 1, 1);
-    const to = new Date(year, endMonth, 0);
-
-    const fromStr = from.toISOString().substring(0, 10);
-    const toStr = to.toISOString().substring(0, 10);
-
-    this.fetchRideStartTimeStats(fromStr, toStr);
+  if (!this.rideStartRangeStartDate || !this.rideStartRangeEndDate) {
+    return;
   }
+
+  const startDate = new Date(this.rideStartRangeStartDate);
+  const endDate = new Date(this.rideStartRangeEndDate);
+
+  if (endDate < startDate) {
+    alert('תאריך הסיום חייב להיות אחרי תאריך ההתחלה');
+    return;
+  }
+
+  const monthsDiff = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
+                     (endDate.getMonth() - startDate.getMonth());
+  
+  if (monthsDiff > 3) {
+    alert('ניתן לבחור טווח של עד 4 חודשים בלבד');
+    return;
+  }
+
+  const fromStr = this.rideStartRangeStartDate;
+  const toStr = this.rideStartRangeEndDate;
+
+  this.fetchRideStartTimeStats(fromStr, toStr);
+}
   onRideStartFilterModeChange(mode: 'last4' | 'single' | 'range'): void {
     this.rideStartFilterMode = mode;
 
@@ -516,24 +558,100 @@ export class AdminAnalyticsComponent implements OnInit {
         };
       });
 
-    } else if (isRideStartTimeTab) {
-      if (!this.rideStartTimeChartData) {
-        return; 
-      }
+  } else if (isRideStartTimeTab) {
+    if (!this.rideStartTimeChartData) {
+      return; 
+    }
 
-      const labels = this.rideStartTimeChartData.labels || [];
-      const counts = this.rideStartTimeChartData.datasets?.[0]?.data || [];
+    const labels = this.rideStartTimeChartData.labels || [];
+    const counts =
+      this.rideStartTimeChartData.datasets?.[0]?.data || [];
 
-      data = labels.map((label: string, i: number) => ({
-        שעה: label,
-        'מספר נסיעות': counts[i] ?? 0,
-      }));
+    data = labels.map((label: string, i: number) => ({
+      'שעה': label,
+      'מספר נסיעות': counts[i] ?? 0,
+    }));
 
-    } else {
-      data = chartData.labels.map((label: string, i: number) => ({
-        'Formatted Status': label,
-        Count: chartData.datasets[0].data[i],
-      }));
+  } else {
+    data = chartData.labels.map((label: string, i: number) => ({
+      'Formatted Status': label,
+      Count: chartData.datasets[0].data[i],
+    }));
+  }
+
+  const worksheet = XLSX.utils.json_to_sheet(data);
+  const range = XLSX.utils.decode_range(worksheet['!ref']!);
+
+  if (isNoShowTab) {
+    for (let row = 1; row <= range.e.r; row++) {
+      const count = Number(worksheet[`F${row + 1}`]?.v);
+      let fillColor = 'FFFFFFFF';
+
+      if (count >= 3) fillColor = 'FFFFCDD2';
+      else if (count >= 1) fillColor = 'FFFFFFCC';
+      else fillColor = 'FFBBDEFB';
+
+      ['A', 'B', 'C', 'D', 'E', 'F', 'G'].forEach((col) => {
+        const cell = worksheet[`${col}${row + 1}`];
+        if (cell) {
+          cell.s = {
+            fill: {
+              patternType: 'solid',
+              fgColor: { rgb: fillColor },
+            },
+          };
+        }
+      });
+    }
+  } else if (isTopUsedTab) {
+    for (let row = 1; row <= range.e.r; row++) {
+      const rideCount = Number(worksheet[`B${row + 1}`]?.v);
+      let fillColor =
+        rideCount > 10
+          ? 'FFFFCDD2'
+          : rideCount >= 5
+          ? 'FFFFFFCC'
+          : 'FFBBDEFB';
+
+      ['A', 'B', 'C'].forEach((col) => {
+        const cell = worksheet[`${col}${row + 1}`];
+        if (cell) {
+          cell.s = {
+            fill: {
+              patternType: 'solid',
+              fgColor: { rgb: fillColor },
+            },
+          };
+        }
+      });
+    }
+
+  } else if (!isRideStartTimeTab) {
+    for (let row = 1; row <= range.e.r; row++) {
+      const label = worksheet[`A${row + 1}`]?.v as string;
+      let fillColor = 'FFFFFFFF';
+
+      if (label.includes('זמין')) fillColor = 'FFC8E6C9';
+      else if (label.includes('מוקפא')) fillColor = 'FFFFCDD2';
+      else if (label.includes('בשימוש')) fillColor = 'FFFFE0B2';
+      if (label.includes('ממתין')) fillColor = 'FFFFF9C4';
+      else if (label.includes('מאושר')) fillColor = 'FFC8E6C9';
+      else if (label.includes('הושלם')) fillColor = 'FFBBDEFB';
+      else if (label.includes('בוטל')) fillColor = 'FFF8BBD0';
+      else if (label.includes('נדחה')) fillColor = 'FFFFCDD2';
+      else if (label.includes('בתהליך')) fillColor = 'FFD1C4E9';
+
+      ['A', 'B'].forEach((col) => {
+        const cell = worksheet[`${col}${row + 1}`];
+        if (cell) {
+          cell.s = {
+            fill: {
+              patternType: 'solid',
+              fgColor: { rgb: fillColor },
+            },
+          };
+        }
+      });
     }
 
     const worksheet = XLSX.utils.json_to_sheet(data);
@@ -658,7 +776,7 @@ export class AdminAnalyticsComponent implements OnInit {
         ? `סטטוס רכבים (${this.vehicleStatusComponent.selectedVehicleType})`
         : 'סטטוס רכבים (כל הסוגים)'
       : isRideTab
-      ? 'סטטוס נסיעות'
+      ? 'סטטוס נסיעות
       : this.vehicleUsageComponent.isMonthlyView
       ? 'שימוש חודשי ברכבים'
       : 'רכבים בשימוש גבוה';

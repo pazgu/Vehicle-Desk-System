@@ -157,35 +157,24 @@
             </div>
 
             <div class="range-filter" *ngIf="rideStartFilterMode === 'range'">
-              <label
-                >שנה:
-                <select [(ngModel)]="rideStartRangeYear">
-                  <option *ngFor="let y of years" [value]="y">{{ y }}</option>
-                </select></label
-              >
-              <label
-                >חודש התחלה:
-                <select [(ngModel)]="rideStartRangeStartMonth">
-                  <option
-                    *ngFor="let m of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]"
-                    [value]="m"
-                  >
-                    {{ m }}
-                  </option>
-                </select></label
-              >
-              <label
-                >חודש סיום:
-                <select [(ngModel)]="rideStartRangeEndMonth">
-                  <option
-                    *ngFor="let m of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]"
-                    [value]="m"
-                  >
-                    {{ m }}
-                  </option>
-                </select></label
-              >
+              <label>
+                תאריך התחלה:
+                <input 
+                  type="date" 
+                  [(ngModel)]="rideStartRangeStartDate"
+                  class="date-input"
+                />
+              </label>
+              <label>
+                תאריך סיום:
+                <input 
+                  type="date" 
+                  [(ngModel)]="rideStartRangeEndDate"
+                  class="date-input"
+                />
+              </label>
               <button (click)="onApplyRangeFilter()">הצג</button>
+              <small class="hint-text">בחר טווח תאריכים (עד 4 חודשים)</small>
             </div>
           </div>
 
