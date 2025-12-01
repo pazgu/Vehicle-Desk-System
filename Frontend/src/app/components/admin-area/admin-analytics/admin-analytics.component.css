@@ -933,7 +933,6 @@ body {
   }
 }
 
-/* Ride Start Time Filters Container */
 .ride-start-filters {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9));
   border-radius: 12px;
@@ -948,7 +947,6 @@ body {
   direction: rtl;
 }
 
-/* Filter Mode Toggle (Radio Buttons) */
 .filter-mode-toggle {
   display: flex;
   flex-direction: column;
@@ -1018,7 +1016,6 @@ body {
     0 1px 0 rgba(255, 255, 255, 0.2) inset;
 }
 
-/* Single Month Filter */
 .single-month-filter {
   display: flex;
   flex-wrap: wrap;
@@ -1092,7 +1089,6 @@ body {
   transform: translateY(0);
 }
 
-/* Range Filter */
 .range-filter {
   display: flex;
   flex-wrap: wrap;
@@ -1166,7 +1162,6 @@ body {
   transform: translateY(0);
 }
 
-/* Chart Wrapper */
 .ride-start-chart-wrapper {
   margin-top: 1.5rem;
   padding: 1rem;

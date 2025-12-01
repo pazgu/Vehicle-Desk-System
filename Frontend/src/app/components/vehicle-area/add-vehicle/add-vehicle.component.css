@@ -13,12 +13,11 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(255,255,255,0.5); /* tweak 0.35–0.6 to taste */
+  background: rgba(255,255,255,0.5); 
   pointer-events: none;
   z-index: 1;
 }
 
-/* keep the card above the veil */
 .vehicle-form-container {
   position: relative;
   z-index: 2;
@@ -40,7 +39,6 @@
   overflow: hidden;
 }
 
-/* Add subtle gradient overlay to card */
 .vehicle-form-container::before {
   content: "";
   position: absolute;
@@ -52,7 +50,6 @@
   z-index: -1;
 }
 
-/* Add subtle glow effect */
 .vehicle-form-container::after {
   content: "";
   position: absolute;
@@ -214,7 +211,6 @@ button[type="submit"]:hover::before {
   min-height: 50px;
 }
 
-/* 🌥️ Realistic soft air vibe */
 .animated-bg {
   position: fixed;
   top: 0;
@@ -242,7 +238,6 @@ button[type="submit"]:hover::before {
 .row-3 { top: 55%; animation: drive-left 13s linear infinite; }
 .row-4 { top: 75%; animation: drive-left 15s linear infinite; }
 
-/* 🚘 Bigger car emojis */
 .car {
   font-size: 3.3rem; 
   position: relative;
@@ -270,16 +265,15 @@ button[type="submit"]:hover::before {
 .car-wrapper {
   position: relative;
   display: inline-block;
-  z-index: 2; /* ensure it's its own stacking context */
+  z-index: 2; 
 
 }
 
-/* Bigger smoke closer to cars */
 .car-smoke {
   content: "";
   position: absolute;
-  left: -0.8rem; /* adjust closer to the emoji tail */
-  top: 0.7rem;   /* adjust vertically if needed */
+  left: -0.8rem; 
+  top: 0.7rem; 
   width: 1.2rem;
   height: 1.2rem;
   background: radial-gradient(circle, rgba(120,120,120,0.8) 20%, rgba(180,180,180,0.4) 50%, rgba(255,255,255,0) 70%);

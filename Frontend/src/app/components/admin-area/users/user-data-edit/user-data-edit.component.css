@@ -197,7 +197,6 @@ label {
   display: block;
 }
 
-/* Responsive Styles */ 
 @media (max-width: 768px) {
   .page-container {
     padding-top: 100px;

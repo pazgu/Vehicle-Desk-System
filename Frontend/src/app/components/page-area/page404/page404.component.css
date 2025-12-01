@@ -4,7 +4,7 @@
     align-items: center;
     text-align: center;
     font-family: 'Assistant', sans-serif;
-    margin-top: 20px; /* Less space from the top */
+    margin-top: 20px; 
   }
   
   .error-container h1 {
@@ -21,7 +21,7 @@
   
   .error-image {
     width: 150px;
-    margin: 10px 0; /* Less spacing above and below image */
+    margin: 10px 0;
   }
   
   .home-button {

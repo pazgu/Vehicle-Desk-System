@@ -4,32 +4,22 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Alef', sans-serif;
-  
+  font-family: "Alef", sans-serif;
 }
 
-
-/* Single toast container at bottom right */
 .toast-container {
   position: fixed;
   right: 20px;
   top: 70px;
   display: flex;
-  flex-direction: column-reverse; /* Newest toast at bottom */
-  align-items: flex-end; /* Aligns them neatly to the right */
+  flex-direction: column-reverse;
+  align-items: flex-end;
   gap: 10px;
   z-index: 99999;
 }
 
-/* Remove positioning from toasts themselves */
-
 .toast.persistent {
-  /* position: fixed !important;
-  bottom: 20px !important;
-  right: 20px !important;
-  top: auto !important;
-  left: auto !important; */
-  position: relative; /* Not fixed */
+  position: relative;
 
   padding: 16px 20px;
   border-radius: 8px;
@@ -42,14 +32,11 @@
   width: fit-content;
   max-width: 400px;
 
-  /* 🔹 Remove fixed height so it can grow with text */
-  height: auto;  
+  height: auto;
 
-  /* 🔹 Wrap long text */
   white-space: normal;
   overflow-wrap: break-word;
 }
-
 
 .toast-ok-btn {
   background: rgba(255, 255, 255, 0.2);
@@ -75,23 +62,18 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
-
 .custom-toast {
-  /* position: fixed;
-  top: 80px;
-  right: 20px; */
-    position: relative; /* Not fixed */
-
+  position: relative;
   padding: 1rem 1.5rem;
   border-radius: 8px;
   color: #fff;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   font-size: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   z-index: 99999;
   animation: slideIn 0.3s ease forwards, fadeOut 0.5s ease 2.5s forwards;
   max-width: 300px;
-  opacity: 0; /* Start hidden until slideIn runs */
+  opacity: 0; 
   direction: rtl;
   text-align: right;
 }
@@ -119,7 +101,6 @@
   color: black;
 }
 
-
 @keyframes slideIn {
   from {
     opacity: 0;
@@ -140,14 +121,13 @@
   }
 }
 
-
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
   padding: 0;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
 }
-
 
 body {
   direction: rtl;
@@ -155,7 +135,5 @@ body {
   background-repeat: repeat;
   background-attachment: fixed;
   background-position: center;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
 }
-
-

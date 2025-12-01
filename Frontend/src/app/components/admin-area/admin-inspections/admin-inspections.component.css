@@ -87,8 +87,7 @@
 }
 
 .filter-controls {
-  margin-top: -30px; /* Pulls the filter block up to align with the tabs */
-  text-align: right;
+  margin-top: -30px;
 }
 
 .filter-accordion {
@@ -194,9 +193,7 @@
   color: #555;
 }
 
-/*
-  Tables
-*/
+
 .table-wrapper {
   overflow-x: auto;
   border-radius: 10px;
@@ -243,16 +240,12 @@
   background-color: #f7f9fc;
 }
 
-/*
-  Status Indicators in Table
-*/
+
 .status-positive { color: #2e7d32; font-weight: 600; }
 .status-negative { color: #d32f2f; font-weight: 600; }
 .status-critical { color: #d32f2f; font-weight: 700; background-color: #ffebee; }
 
-/*
-  Pagination
-*/
+
 .pagination-controls {
   display: flex;
   justify-content: center;
@@ -302,9 +295,6 @@
   font-weight: 500;
 }
 
-/*
-  Loading and Empty States
-*/
 .loading-state {
   display: flex;
   flex-direction: column;
@@ -341,10 +331,9 @@
 
 
 .section-header {
-  
-  align-items: center; /* Vertically centers the items */
+  align-items: center;  
   margin-bottom: 20px;
-  direction: rtl; /* Ensures proper right-to-left flow for RTL languages */
+  direction: rtl; 
 }
 
 
@@ -369,10 +358,9 @@
 }
 
 .toggle-notes-button:active {
-  transform: translateY(1px); /* Slight press effect on click */
+  transform: translateY(1px);  
 }
 
-/* Optional: Add a simple icon to the button for better visual feedback */
 .toggle-notes-button {
   background-color: transparent;
   color: #777;

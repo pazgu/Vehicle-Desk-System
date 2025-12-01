@@ -3,20 +3,18 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  /* padding: 60px 20px; */
   direction: rtl;
   font-family: 'Alef', sans-serif;
 
-  min-height: calc(100vh - 55px); /* subtract any fixed nav height if needed */
+  min-height: calc(100vh - 55px); 
   margin-top: 0;
   padding-top: 10px;
-  box-sizing: border-box; /* Includes padding in total height */
+  box-sizing: border-box; 
   background-image: url('/assets/images/login.png');
   background-size: cover;
 }
 
 
-/* Modal box */
 .login-box {
   background: white;
   border-radius: 10px;
@@ -33,7 +31,7 @@
   padding-top: 10px;
   color: #000;
 }
-/* Close button top-left */
+
 .close-btn {
   position: absolute;
   top: 15px;
@@ -42,21 +40,18 @@
   font-size: 20px;
 }
 
-/* Form title */
 .login-box h2 {
   color: #942222;
   margin-bottom: 25px;
   text-align: center;
 }
 
-/* Label styles */
 label {
   display: block;
   margin: 10px 0 5px;
   font-weight: bold;
 }
 
-/* Input fields */
 input,
 select {
   width: 420px;
@@ -71,7 +66,7 @@ select {
   position: relative;
   display: flex;
 }
-/* Submit button */
+
 button {
   width: 100%;
   padding: 12px;
@@ -105,7 +100,7 @@ button:hover {
 
 .password-input {
   width: 100%;
-  padding: 10px 40px 10px 10px; /* space for the icon on the right */
+  padding: 10px 40px 10px 10px;
   border: 1px solid #ccc;
   background: #e5e5e5;
   border-radius: 5px;

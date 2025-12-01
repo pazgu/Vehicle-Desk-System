@@ -135,7 +135,6 @@ cursor: cell;
     backdrop-filter: blur(10px);
 }
 
-/* Shimmer effect */
 .department-info::before {
     content: '';
     position: absolute;
@@ -157,7 +156,6 @@ cursor: cell;
     left: 100%;
 }
 
-/* Enhanced hover effects */
 .department-info:hover {
     box-shadow: 
         0 20px 50px rgba(218, 114, 114, 0.11),
@@ -167,7 +165,6 @@ cursor: cell;
  
 }
 
-/* Red glow orb effect */
 .department-info::after {
     content: '';
     position: absolute;
@@ -226,7 +223,6 @@ cursor: cell;
     transform: scale(1.2);
 }
 
-/* Subtle pulse animation for alternating cards */
 @keyframes pulse {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.005); }
@@ -242,7 +238,6 @@ cursor: cell;
     width: 60%;
 }
 
-/* Responsive design */
 @media (max-width: 768px) {
     .departments-list {
         grid-template-columns: 1fr;
@@ -272,7 +267,6 @@ cursor: cell;
     }
 }
 
-/* Active/Focus states */
 .department-info:active {
     transform: translateY(-8px) scale(0.99);
     transition: transform 0.1s ease;
@@ -286,12 +280,10 @@ cursor: cell;
         0 10px 20px rgba(0, 0, 0, 0.15);
 }
 
-/* Additional red-themed interactions */
 .department-info:hover {
     background: rgba(255, 179, 179, 0.466);
 }
 
-/* Subtle border glow on hover */
 @keyframes borderGlow {
     0%, 100% { border-color: rgba(220, 38, 38, 0.3); }
     50% { border-color: rgba(220, 38, 38, 0.6); }
@@ -332,9 +324,8 @@ cursor: cell;
 
 
 
-/* New Department Form Styling */
 .new-department-form {
-    position: relative; /* מאפשר מיקום יחסי של הכפתור בפנים */
+    position: relative; 
     max-width: 500px;
     margin: 0 auto 2rem auto;
     padding: 2rem;
@@ -415,43 +406,41 @@ cursor: cell;
 }
 
 .new-department-form button[type="submit"]:disabled {
-    background: #bfbfbf; /* soft gray tone */
+    background: #bfbfbf;
     color: #f8f8f8 !important;
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
     border: none;
-    opacity: 1; /* remove transparency so it looks solid gray */
+    opacity: 1;
 }
 
 
 
 
 
-/* Modal Overlay */
 .modal-overlay {
-  position: fixed; /* Stays in place even if the page scrolls */
+  position: fixed; 
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
-  display: flex; /* Use flexbox for centering content */
-  justify-content: center; /* Center horizontally */
-  align-items: center; /* Center vertically */
-  z-index: 1000; /* Ensure it's on top of other content */
+  background-color: rgba(0, 0, 0, 0.5); 
+  display: flex; 
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; 
 }
 
-/* Modal Content Box */
 .modal-content {
   background-color: white;
   padding: 25px;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  width: 90%; /* Adjust as needed */
-  max-width: 500px; /* Max width for larger screens */
-  transform: translateY(-50px); /* Small animation effect */
-  animation: slideIn 0.3s forwards ease-out; /* Simple animation */
+  width: 90%;
+  max-width: 500px; 
+  transform: translateY(-50px); 
+  animation: slideIn 0.3s forwards ease-out; 
 }
 
 @keyframes slideIn {
@@ -465,7 +454,6 @@ cursor: cell;
   }
 }
 
-/* Form Group Styling (optional, to make inputs and labels look nice) */
 .form-group {
   margin-bottom: 15px;
 }
@@ -478,18 +466,17 @@ cursor: cell;
 
 .form-group input,
 .form-group select {
-  width: calc(100% - 20px); /* Adjust for padding if needed */
+  width: calc(100% - 20px);
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 1rem;
 }
 
-/* Modal Actions (buttons) */
 .modal-actions {
   display: flex;
-  justify-content: flex-end; /* Align buttons to the right */
-  gap: 10px; /* Space between buttons */
+  justify-content: flex-end; 
+  gap: 10px; 
   margin-top: 20px;
 }
 
@@ -512,7 +499,7 @@ background-color: #942222;
 }
 
 .modal-actions button[type="button"] {
-  background-color: #6c757d; /* Grey for cancel */
+  background-color: #6c757d; 
   color: white;
 }
 .closed-button:hover {
@@ -543,8 +530,8 @@ margin-right: 60vh;
     cursor: pointer;
     transition: all 0.3s ease;
     position: absolute;
-    top: 10px;     /* מרחק מהחלק העליון */
-    left: 10px;    /* מרחק מצד שמאל */
+    top: 10px;     
+    left: 10px;    
     background-color: transparent;
     border: none;
     color: #333;
@@ -558,18 +545,6 @@ margin-right: 60vh;
     background: none; 
 
 }
-/* .save-button {
-background-color: #b91c1c; 
-    color: white !important;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-} */
-
-
 .save-button-modal {
 background-color: #b91c1c; 
     color: white !important;
@@ -607,14 +582,12 @@ background-color: #b91c1c;
     color: #666666;
 }
 
-/* Department Actions Container */
 .department-actions {
   display: flex;
   align-items: center;
   gap: 5px;
 }
 
-/* Delete Icon Styling */
 .delete-icon {
   color: #dc2626 !important;
   font-size: 18px;
@@ -626,7 +599,6 @@ background-color: #b91c1c;
   transform: scale(1.1);
 }
 
-/* Delete Confirmation Modal Content */
 .delete-confirmation {
   margin: 20px 0;
   text-align: center;
@@ -643,7 +615,6 @@ background-color: #b91c1c;
   font-style: italic;
 }
 
-/* Delete Confirm Button */
 .delete-confirm-button {
   background-color: #dc2626 !important;
   color: white !important;
@@ -664,7 +635,6 @@ background-color: #b91c1c;
   cursor: not-allowed;
 }
 
-/* Enhanced Department Title Layout */
 .department-title {
   display: flex;
   justify-content: space-between;
@@ -677,7 +647,6 @@ background-color: #b91c1c;
   flex-grow: 1;
 }
 
-/* Responsive adjustments for actions */
 @media (max-width: 768px) {
   .department-actions {
     gap: 3px;
@@ -687,19 +656,17 @@ background-color: #b91c1c;
     font-size: 16px !important;
   }
 }
-/* Edit Icon Styling */
 .edit-icon {
-  color: #1f2937 !important; /* Set a consistent color for the edit icon */
-  font-size: 18px; /* Match the size of the delete icon */
+  color: #1f2937 !important; 
+  font-size: 18px; 
   transition: all 0.3s ease;
 }
 
 .edit-icon:hover {
-  color: #374151 !important; /* A darker shade on hover for a subtle effect */
+  color: #374151 !important;
   transform: scale(1.1);
 }
 
-/* Add styles for the icon approach */
 .department-supervisor {
     display: flex;
     align-items: center;
@@ -718,7 +685,6 @@ background-color: #b91c1c;
     transform: scale(1.1);
 }
 
-/* Alternative: If you want to keep the existing p styling but add icon */
 .department-supervisor p {
     display: flex;
     align-items: center;

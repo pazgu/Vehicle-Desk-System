@@ -48,10 +48,9 @@
 
 .filters select:focus {
   outline: none;
-  border-color: #942222; /* Focus on a main color */
+  border-color: #942222; 
 }
 
-/* --- Table Styling --- */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -62,7 +61,7 @@ table {
 }
 
 thead {
-  background: #942222; /* Simplified solid color from gradient */
+  background: #942222;
 }
 
 thead th {
@@ -76,15 +75,15 @@ thead th {
 
 button {
   padding: 0.6rem 1.2rem;
-  font-family: inherit; /* Inherit font from container */
+  font-family: inherit;
   font-size: 0.9rem;
   font-weight: 700;
   color: #942222;
   border: 1px solid #942222;
   border-radius: 12px;
-  background: #fff; /* Simplified background */
+  background: #fff;
   cursor: pointer;
-  transition: all 0.2s; /* Simplified transition */
+  transition: all 0.2s;
   min-width: 120px;
   box-shadow: 0 2px 5px rgba(148, 34, 34, 0.05);
 }
@@ -138,7 +137,7 @@ button:disabled {
 
 .export-btn:hover {
     background-color: #1d6f42 !important;
-    color: #fff; /* optional: change text color on hover */
+    color: #fff; 
 }
 
 
