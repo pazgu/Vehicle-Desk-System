@@ -63,9 +63,8 @@ export class AdminAnalyticsComponent implements OnInit {
   rideStartSingleMonth: string = (new Date().getMonth() + 1).toString();
   rideStartSingleYear: string = new Date().getFullYear().toString();
 
-  rideStartRangeYear: string = new Date().getFullYear().toString();
-  rideStartRangeStartMonth: string = '1';  
-  rideStartRangeEndMonth: string = '4';   
+  rideStartRangeStartDate: string = '';
+  rideStartRangeEndDate: string = '';  
   purposeStats: PurposeOfTravelStatsResponse | null = null;
   purposeChartData: any;
   purposeChartOptions: any;
@@ -394,28 +393,31 @@ export class AdminAnalyticsComponent implements OnInit {
     this.fetchRideStartTimeStats(fromStr, toStr);
   }
   onApplyRangeFilter(): void {
-    const year = parseInt(this.rideStartRangeYear, 10);
-    let startMonth = parseInt(this.rideStartRangeStartMonth, 10);
-    let endMonth = parseInt(this.rideStartRangeEndMonth, 10);
-
-    if (startMonth > endMonth) {
-      const tmp = startMonth;
-      startMonth = endMonth;
-      endMonth = tmp;
-    }
-
-    if (endMonth - startMonth > 3) {
-      endMonth = startMonth + 3; 
-    }
-
-    const from = new Date(year, startMonth - 1, 1);
-    const to = new Date(year, endMonth, 0);
-
-    const fromStr = from.toISOString().substring(0, 10);
-    const toStr = to.toISOString().substring(0, 10);
-
-    this.fetchRideStartTimeStats(fromStr, toStr);
+  if (!this.rideStartRangeStartDate || !this.rideStartRangeEndDate) {
+    return;
   }
+
+  const startDate = new Date(this.rideStartRangeStartDate);
+  const endDate = new Date(this.rideStartRangeEndDate);
+
+  if (endDate < startDate) {
+    alert('תאריך הסיום חייב להיות אחרי תאריך ההתחלה');
+    return;
+  }
+
+  const monthsDiff = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
+                     (endDate.getMonth() - startDate.getMonth());
+  
+  if (monthsDiff > 3) {
+    alert('ניתן לבחור טווח של עד 4 חודשים בלבד');
+    return;
+  }
+
+  const fromStr = this.rideStartRangeStartDate;
+  const toStr = this.rideStartRangeEndDate;
+
+  this.fetchRideStartTimeStats(fromStr, toStr);
+}
   onRideStartFilterModeChange(mode: 'last4' | 'single' | 'range'): void {
     this.rideStartFilterMode = mode;
 
@@ -519,10 +521,9 @@ public exportExcel(): void {
       };
     });
 
-  // 🔥 Ride start time tab
   } else if (isRideStartTimeTab) {
     if (!this.rideStartTimeChartData) {
-      return; // nothing to export
+      return; 
     }
 
     const labels = this.rideStartTimeChartData.labels || [];
@@ -534,7 +535,6 @@ public exportExcel(): void {
       'מספר נסיעות': counts[i] ?? 0,
     }));
 
-  // 🟡 Regular status charts (vehicle / ride status)
   } else {
     data = chartData.labels.map((label: string, i: number) => ({
       'Formatted Status': label,
@@ -545,7 +545,6 @@ public exportExcel(): void {
   const worksheet = XLSX.utils.json_to_sheet(data);
   const range = XLSX.utils.decode_range(worksheet['!ref']!);
 
-  // 🎨 Coloring – keep existing behavior for no-show + top-used + status tabs
   if (isNoShowTab) {
     for (let row = 1; row <= range.e.r; row++) {
       const count = Number(worksheet[`F${row + 1}`]?.v);
@@ -590,9 +589,7 @@ public exportExcel(): void {
       });
     }
 
-  // ❗ For ride start tab – no special coloring (plain table)
   } else if (!isRideStartTimeTab) {
-    // vehicle / ride status coloring
     for (let row = 1; row <= range.e.r; row++) {
       const label = worksheet[`A${row + 1}`]?.v as string;
       let fillColor = 'FFFFFFFF';

@@ -1287,3 +1287,23 @@ body {
     margin-top: 1rem;
   }
 }
+.date-input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  direction: ltr;
+}
+
+.range-filter label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 0 10px;
+}
+
+.hint-text {
+  color: #666;
+  font-size: 12px;
+  margin-top: 5px;
+}
