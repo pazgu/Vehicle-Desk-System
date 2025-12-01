@@ -529,7 +529,7 @@ def archive_vehicle_by_id(vehicle_id: UUID, db: Session, user_id: UUID) -> Vehic
     ).scalar()
 
     if not has_related_data:
-        raise HTTPException(status_code=400, detail="Cannot archive: vehicle has no related data (rides, logs, etc.).")
+        raise HTTPException(status_code=400, detail="לא ניתן לארכב רכב ללא נסיעות.")
 
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id)})
 
