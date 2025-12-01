@@ -192,7 +192,9 @@ getAllVehiclesForNewRide(distance: number, rideDate: string, vehicleType: string
 
   updateVehicle(vehicleId: string, vehicleData: any): Observable<any> {
     const updatePayload = {
-      department_id: vehicleData.department_id,
+      department_id: vehicleData.department_id === 'null' || vehicleData.department_id === '' 
+        ? null 
+        : vehicleData.department_id,
       mileage: vehicleData.mileage,
       image_url: vehicleData.image_url
     };
