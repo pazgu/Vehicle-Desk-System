@@ -31,7 +31,7 @@ export const environment = {
     distanceUrl: 'http://localhost:8000/api/distance', 
     supervisorOrdersUrl: 'http://localhost:8000/api/supervisor-orders',
     ridesBaseUrl: 'http://localhost:8000/api/rides', 
-    employeesByDepartmentUrl: 'http://localhost:8000/api/employees/by-department',
+    employeesByDepartmentUrl: 'http://localhost:8000/api/employees/by-department/',
     rolesUrl: 'http://localhost:8000/api/roles',
   };
   
