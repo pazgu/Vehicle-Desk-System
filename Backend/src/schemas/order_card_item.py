@@ -26,6 +26,7 @@ class OrderCardItem(BaseModel):
     rejection_reason: Optional[str] = None
     extended_ride_reason: Optional[str] = None
     four_by_four_reason: Optional[str] = None
+    approving_supervisor: Optional[UUID]=None
 
 
     class Config:

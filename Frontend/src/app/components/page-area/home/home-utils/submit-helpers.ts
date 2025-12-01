@@ -23,6 +23,7 @@ export interface RideFormPayload {
   four_by_four_reason: string | null;
   extended_ride_reason: string | null;
   is_extended_request: boolean;
+  approving_supervisor : string |null;
 }
 
 function extractCityName(raw: any): string {
@@ -58,6 +59,7 @@ export function buildRideFormPayload(params: {
   const distance = form.get('estimated_distance_km')?.value;
   const startLocationRaw = form.get('start_location')?.value;
   const destinationRaw = form.get('destination')?.value;
+  const approvingSupervisor = form.get('approving_supervisor')?.value;
 
   return {
     user_id: riderId,
@@ -75,6 +77,7 @@ export function buildRideFormPayload(params: {
     four_by_four_reason: form.get('four_by_four_reason')?.value || null,
     extended_ride_reason: form.get('extended_ride_reason')?.value || null,
     is_extended_request: isExtendedRequest,
+    approving_supervisor:approvingSupervisor || null,
   };
 }
 

@@ -35,3 +35,9 @@ export interface User {
   block_reason?: string | null;
   is_unassigned_user?: boolean;
 }
+
+
+export interface Supervisor {
+  id: string;
+  name: string;
+}

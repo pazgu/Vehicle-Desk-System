@@ -365,8 +365,7 @@ export class AdminAnalyticsComponent implements OnInit {
     pdfMake.createPdf(docDefinition).download(`${fileBaseName}-${safeTimestamp}.pdf`); 
   }
 
-    pdfMake.createPdf(docDefinition).download(`${title}-${safeTimestamp}.pdf`);
-  }
+  
 
   trackByUserId(index: number, user: any): any {
     return user.user_id;
@@ -387,8 +386,8 @@ export class AdminAnalyticsComponent implements OnInit {
   }
   onApplyRangeFilter(): void {
     const year = parseInt(this.rideStartRangeYear, 10);
-    let startMonth = parseInt(this.rideStartRangeStartMonth, 10);
-    let endMonth = parseInt(this.rideStartRangeEndMonth, 10);
+    let startMonth = parseInt(this.rideStartRangeStartDate, 10);
+    let endMonth = parseInt(this.rideStartRangeEndDate, 10);
 
     if (startMonth > endMonth) {
       const tmp = startMonth;
@@ -621,9 +620,7 @@ export class AdminAnalyticsComponent implements OnInit {
       });
     }
 
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const range = XLSX.utils.decode_range(worksheet['!ref']!);
-
+  
     if (isNoShowTab) {
       for (let row = 1; row <= range.e.r; row++) {
         const count = Number(worksheet[`F${row + 1}`]?.v);
@@ -698,7 +695,6 @@ export class AdminAnalyticsComponent implements OnInit {
     }
 
    const fileBaseName = this.getHebrewFileBaseName();
-   saveAs(blob, `${fileBaseName}__${timestamp}.xlsx`);
 
 }
 
@@ -749,7 +745,7 @@ export class AdminAnalyticsComponent implements OnInit {
         ? `סטטוס רכבים (${this.vehicleStatusComponent.selectedVehicleType})`
         : 'סטטוס רכבים (כל הסוגים)'
       : isRideTab
-      ? 'סטטוס נסיעות
+      ? 'סטטוס נסיעות'
       : this.vehicleUsageComponent.isMonthlyView
       ? 'שימוש חודשי ברכבים'
       : 'רכבים בשימוש גבוה';

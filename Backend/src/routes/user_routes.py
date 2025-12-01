@@ -14,6 +14,8 @@ from sqlalchemy import text, cast
 from sqlalchemy.orm import Session, aliased
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
+from ..schemas.supervisors_schema import SupervisorOut
+
 from ..helpers.user_helpers import update_user_pending_rebook_status
 
 from ..schemas.rebook_ride import HasPendingRebookResponse, RebookRideRequest, RideRebookData
@@ -216,33 +218,62 @@ async def create_order(
     check_department_assignment(db, user_id)
 
     check_license_validity(db, user_id, ride_request.start_datetime)
-    update_user_pending_rebook_status(db,user_id)
+    update_user_pending_rebook_status(db, user_id)
+
     try:
         user = db.query(User).filter(User.employee_id == user_id).first()
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
+
         if user.has_pending_rebook:
             raise HTTPException(
                 status_code=400,
                 detail="You must complete your rebook before creating a new ride."
             )
+
         license_check_passed = bool(getattr(user, "has_government_license", False))
 
         new_ride = await create_ride(
             db, user_id, ride_request, license_check_passed=license_check_passed
         )
 
-        schedule_ride_start(new_ride.id, new_ride.start_datetime)
-        warning_flag = is_time_in_blocked_window(new_ride.start_datetime)
+        requester_name = get_user_name(db, user_id)
+        ride_passenger_name = get_user_name(db, new_ride.user_id)
         department_id = get_user_department(user_id=user_id, db=db)
-        requester_name = get_user_name(db, user_id)             
-        ride_passenger_name = get_user_name(db, new_ride.user_id)  
+
+        schedule_ride_start(new_ride.id, new_ride.start_datetime)
+
+        target_supervisor_id = new_ride.approving_supervisor
+
+        if not target_supervisor_id:
+            target_supervisor_id = get_supervisor_id(user_id, db)
+
+        if target_supervisor_id:
+            employee_name = get_user_name(db, new_ride.user_id)
+
+            supervisor_notification = create_system_notification(
+                user_id=target_supervisor_id,
+                title="בקשת נסיעה ממתינה לאישור",
+                message=f"העובד/ת {employee_name} ביקש/ה נסיעה חדשה הדורשת את אישורך.",
+                order_id=new_ride.id
+            )
+
+            await sio.emit("new_notification", {
+                "id": str(supervisor_notification.id),
+                "user_id": str(supervisor_notification.user_id),
+                "title": supervisor_notification.title,
+                "message": supervisor_notification.message,
+                "notification_type": supervisor_notification.notification_type.value,
+                "sent_at": supervisor_notification.sent_at.isoformat(),
+                "order_id": str(supervisor_notification.order_id),
+                "order_status": new_ride.status
+            })
 
         await sio.emit("new_ride_request", {
             "ride_id": str(new_ride.id),
             "user_id": str(user_id),
-            "employee_name": ride_passenger_name,  
-            "requested_by_name": requester_name,  
+            "employee_name": ride_passenger_name,
+            "requested_by_name": requester_name,
             "status": new_ride.status,
             "destination": new_ride.stop,
             "end_datetime": str(new_ride.end_datetime),
@@ -254,51 +285,31 @@ async def create_order(
             "role": user.role
         })
 
-        supervisor_id = get_supervisor_id(user_id, db)
-        employee_name = get_user_name(db, new_ride.user_id)
-        is_extended = (new_ride.end_datetime - new_ride.start_datetime) > timedelta(days=2)
+        if new_ride.user_id != user_id:
+            passenger_notification = create_system_notification(
+                user_id=new_ride.user_id,
+                title="נסיעה הוזמנה עבורך",
+                message=f"העובד/ת {requester_name} הזמין/ה עבורך נסיעה חדשה.",
+                order_id=new_ride.id
+            )
 
-        if supervisor_id:
-            supervisor_name = get_user_name(db, supervisor_id)
-            # email_service = EmailService(sio_server=sio)
-            destination_city = db.query(City).filter(City.id == new_ride.stop).first()
-            destination_name = destination_city.name if destination_city else str(new_ride.stop)
-            ride_details_for_email = {
-                "username": employee_name,
-                "ride_id": str(new_ride.id),
-                "supervisor_name": supervisor_name,
-                "start_location": new_ride.start_location,
-                "destination": destination_name,
-                "start_datetime": new_ride.start_datetime,
-                "end_datetime": new_ride.end_datetime,
-                "plate_number": new_ride.plate_number,
-                "ride_type": new_ride.ride_type,
-                "estimated_distance_km": new_ride.estimated_distance_km,
-                "status": new_ride.status,
-            }
-         
-            if new_ride.user_id != user_id:
-                passenger_notification = create_system_notification(
-                    user_id=new_ride.user_id,
-                    title="נסיעה הוזמנה עבורך",
-                    message=f"העובד/ת {requester_name} הזמין/ה עבורך נסיעה חדשה.",
-                    order_id=new_ride.id
-                )
-                await sio.emit("new_notification", {
-        "id": str(passenger_notification.id),
-        "user_id": str(passenger_notification.user_id),
-        "title": passenger_notification.title,
-        "message": passenger_notification.message,
-        "notification_type": passenger_notification.notification_type.value,
-        "sent_at": passenger_notification.sent_at.isoformat(),
-        "order_id": str(passenger_notification.order_id) if passenger_notification.order_id else None,
-        "order_status": new_ride.status
-    })
+            await sio.emit("new_notification", {
+                "id": str(passenger_notification.id),
+                "user_id": str(passenger_notification.user_id),
+                "title": passenger_notification.title,
+                "message": passenger_notification.message,
+                "notification_type": passenger_notification.notification_type.value,
+                "sent_at": passenger_notification.sent_at.isoformat(),
+                "order_id": str(passenger_notification.order_id),
+                "order_status": new_ride.status
+            })
+
         return new_ride
 
     except Exception as e:
         print(f"An error occurred: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.get("/api/rides/has-pending-rebook", response_model=HasPendingRebookResponse)
 def check_pending_rebook(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
@@ -345,11 +356,33 @@ async def get_rebook_data(
         "extended_ride_reason": ride.extended_ride_reason,
         "four_by_four_reason": ride.four_by_four_reason,
         "is_extended_request": False,  
-        "target_type": "self",         
+        "target_type": "self",  
+        "approving_supervisor":ride.approving_supervisor or None    
     }
     print("rebook data:",rebook_data)
 
     return rebook_data
+
+
+@router.get("/api/departments/{department_id}/supervisors")
+def get_department_supervisors(department_id: str, db: Session = Depends(get_db)):
+    department = db.query(Department).filter(Department.id == department_id).first()
+    if not department:
+        raise HTTPException(status_code=404, detail="Department not found")
+
+    supervisor_query = db.query(User).filter(User.employee_id == department.supervisor_id)
+
+    sup_supervisors_query = db.query(User).filter(
+        User.role == "supervisor",
+        User.department_id == department_id,
+        User.employee_id != department.supervisor_id
+    )
+
+    all_supervisors = supervisor_query.union(sup_supervisors_query).all()
+
+    result = [{"id": str(s.employee_id), "name": f"{s.first_name} {s.last_name}"} for s in all_supervisors]
+    print("supervisors:",result)
+    return result
 
 
 

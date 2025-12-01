@@ -54,6 +54,7 @@ class Ride(Base):
     rejection_reason = Column(Text, nullable=True)
     completion_date = Column(DateTime, nullable=True)
     extended_ride_reason = Column(Text, nullable=True)
+    approving_supervisor = Column(UUID(as_uuid=True), ForeignKey("users.employee_id"), nullable=True)
 
     
     no_show_events = relationship("NoShowEvent", back_populates="ride")

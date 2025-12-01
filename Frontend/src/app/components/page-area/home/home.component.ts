@@ -86,11 +86,12 @@ import {
   ConfirmDialogData,
 } from '../../page-area/confirm-dialog/confirm-dialog.component';
 import { RebookData } from '../../../services/myrides.service';
+import { Supervisor } from '../../../models/user.model';
 
-interface Employee {
-  id: string;
-  full_name: string;
-}
+interface Employee { id: string; full_name: string; }
+
+
+
 
 @Component({
   selector: 'app-new-ride',
@@ -147,7 +148,12 @@ export class NewRideComponent implements OnInit {
     { value: 'administrative', label: 'מנהלתית' },
     { value: 'operational', label: 'מבצעית' },
   ];
-  isVIP = false;
+  supervisors: Supervisor[] = [];
+  selectedSupervisor: string | null = null;
+  departmentId=''
+
+
+  isVIP=false
   constructor(
     private fb: FormBuilder,
     private router: Router,
@@ -164,39 +170,43 @@ export class NewRideComponent implements OnInit {
     private dialog: MatDialog
   ) {}
 
-  ngOnInit(): void {
-    this, this.checkVipStatus();
-    this.currentUserId = getUserIdFromToken(
-      localStorage.getItem('access_token')
-    );
-    this.initializeComponent();
-    if (this.currentUserId) {
-      this.rideUserChecksService
-        .checkUserBlock(this.currentUserId)
-        .subscribe((result) => {
-          this.currentUserBlocked = result.isBlocked;
-          this.currentUserBlockExpirationDate = result.blockExpirationDate;
-          if (this.currentUserBlocked) {
-            this.disableDueToBlock = true;
-            this.disableRequest = true;
-            this.disableDueToDepartment = true;
-            this.showBlockedUserMessage();
-          }
-        });
+   ngOnInit(): void {
+    this,this.checkVipStatus();
+  this.currentUserId = getUserIdFromToken(localStorage.getItem('access_token'));
+  this.departmentId=localStorage.getItem('department_id') || ""
+  this.initializeComponent();
+    if (this.currentUserId){
+      this.rideUserChecksService.checkUserBlock(this.currentUserId).subscribe((result) => {
+        this.currentUserBlocked = result.isBlocked;
+        this.currentUserBlockExpirationDate = result.blockExpirationDate;
+        if (this.currentUserBlocked) {
+          this.disableDueToBlock = true;
+          this.disableRequest = true;
+          this.disableDueToDepartment = true;
+          this.showBlockedUserMessage();
+
+        }});
     }
-    this.myRidesService.checkPendingRebook().subscribe({
-      next: (res) => {
-        if (res.has_pending && !rebookData) {
-          this.toastService.show(
-            'יש נסיעות ממתינות לשחזור, יש להשלים את החידוש לפני הזמנת נסיעה חדשה',
-            'error'
-          );
-          this.router.navigate(['/all-rides']);
-        }
-      },
-      error: (err) => console.error(err),
+
+    this.myRidesService.getSupervisors(this.departmentId).subscribe({
+      next: (data) =>{
+        (this.supervisors = data)
+
+      } ,
+      error: (err) => console.error('Failed to load supervisors:', err),
     });
-    const rebookData = this.myRidesService.getRebookDatafromService();
+
+   this.myRidesService.checkPendingRebook().subscribe({
+  next: (res) => {
+    if (res.has_pending && !rebookData) {
+      this.toastService.show('יש נסיעות ממתינות לשחזור, יש להשלים את החידוש לפני הזמנת נסיעה חדשה', 'error');
+      this.router.navigate(['/all-rides']);
+    }
+  },
+  error: (err) => console.error(err)
+});
+  const rebookData = this.myRidesService.getRebookDatafromService();
+
 
     if (rebookData) {
       this.applyRebookData(rebookData);
@@ -288,14 +298,13 @@ export class NewRideComponent implements OnInit {
       });
     }
 
-    const start = new Date(data.start_datetime);
-    const end = new Date(data.end_datetime);
-    const pad = (num: number) => num.toString().padStart(2, '0');
-
-    this.rideForm.patchValue({
-      start_location: data.start_location,
-      stop: data.stop,
-      destination: data.destination,
+  const start = new Date(data.start_datetime);
+  const end = new Date(data.end_datetime);
+  const pad = (num: number) => num.toString().padStart(2, '0');
+  this.rideForm.patchValue({
+    start_location: data.start_location,
+    stop: data.stop,
+    destination: data.destination,
 
       ride_type: data.ride_type,
       estimated_distance_km: data.estimated_distance,
@@ -311,9 +320,10 @@ export class NewRideComponent implements OnInit {
       end_hour: pad(end.getHours()),
       end_minute: pad(end.getMinutes()),
 
-      start_time: `${pad(start.getHours())}:${pad(start.getMinutes())}`,
-      end_time: `${pad(end.getHours())}:${pad(end.getMinutes())}`,
-    });
+    start_time: `${pad(start.getHours())}:${pad(start.getMinutes())}`,
+    end_time: `${pad(end.getHours())}:${pad(end.getMinutes())}`,
+    approving_supervisor: data.approving_supervisor ?? null
+  });
 
     this.rideForm.clearValidators();
     this.rideForm.updateValueAndValidity({ emitEvent: false });
@@ -1149,7 +1159,10 @@ export class NewRideComponent implements OnInit {
         ? `${rideDate}T${endTime}`
         : `${nightEndDate}T${endTime}`;
 
-    const formData: RideFormPayload = buildRideFormPayload({
+    const approvingSupervisor = this.rideForm.get('approving_supervisor')?.value;
+
+    const formData: RideFormPayload ={
+      ...buildRideFormPayload({
       form: this.rideForm,
       riderId: rider_id,
       requesterId: requester_id,
@@ -1158,36 +1171,40 @@ export class NewRideComponent implements OnInit {
       vehicleId,
       isExtendedRequest: this.isExtendedRequest,
       estimatedDistanceWithBuffer: this.estimated_distance_with_buffer,
-    });
+    }),
+    approving_supervisor: approvingSupervisor || null, 
 
-    const role = localStorage.getItem('role');
-    if (this.isRebookMode) {
-      const rebookD = this.myRidesService.getRebookDatafromService();
-      if (!rebookD) {
-        console.error('rebookD is undefined');
-        return;
-      }
+} 
+        const role = localStorage.getItem('role');
+          if (this.isRebookMode) {
+            const rebookD=this.myRidesService.getRebookDatafromService()
+            if (!rebookD) {
+  console.error("rebookD is undefined");
+  return;
+}
 
-      const payload: RebookRequest = {
-        old_ride_id: rebookD.id,
-        new_ride: {
-          start_datetime: formData.start_datetime,
-          end_datetime: formData.end_datetime,
-          start_location: formData.start_location,
-          destination: formData.destination,
-          ride_type: formData.ride_type,
-          stop: formData.stop,
-          extra_stops: formData.extra_stops?.map((s: any) => s.id) || [],
-          extended_ride_reason: formData.extended_ride_reason || undefined,
-          four_by_four_reason: formData.four_by_four_reason || undefined,
-          vehicle_id: formData.vehicle_id,
-          estimated_distance_km: formData.estimated_distance_km,
-          actual_distance_km: formData.actual_distance_km,
-          user_id: formData.user_id,
-          status: 'pending',
-          submitted_at: new Date().toISOString(),
-        },
-      };
+
+  const payload: RebookRequest = {
+    old_ride_id: rebookD.id,
+    new_ride: {
+      start_datetime: formData.start_datetime,
+      end_datetime: formData.end_datetime,
+      start_location: formData.start_location,
+      destination: formData.destination,
+      ride_type: formData.ride_type,
+      stop: formData.stop,
+      extra_stops: formData.extra_stops?.map((s: any) => s.id) || [],
+      extended_ride_reason: formData.extended_ride_reason || undefined,
+      four_by_four_reason: formData.four_by_four_reason || undefined,
+      vehicle_id: formData.vehicle_id,
+      estimated_distance_km: formData.estimated_distance_km,
+      actual_distance_km:formData.actual_distance_km,
+      user_id: formData.user_id,
+      status: 'pending',
+      submitted_at: new Date().toISOString(),
+      approving_supervisor:formData.approving_supervisor || null
+    }
+  };
 
       this.myRidesService.rebookReservation(payload).subscribe({
         next: (res) => {

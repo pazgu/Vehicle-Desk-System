@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { of } from 'rxjs';
 import { StartedRidesResponse } from '../models/ride.model';
+import { Supervisor } from '../models/user.model';
 export interface RebookData {
   id: string;
   user_id: string;
@@ -20,6 +21,8 @@ export interface RebookData {
   target_type?: string;
   extra_stops?: string[];
   is_extended_request?: boolean;
+  approving_supervisor?: string | null;
+
 }
 
 export interface RebookRequest {
@@ -43,6 +46,7 @@ export interface RebookRequest {
     rejection_reason?: string;
     extended_ride_reason?: string;
     four_by_four_reason?: string;
+    approving_supervisor?: string | null;
   };
   [key: string]: any;
 }
@@ -168,7 +172,13 @@ export class MyRidesService {
     return this.http.post(`${this.apiBase}/reservations/rebook`, payload);
   }
 
-  isVip(): Observable<{ is_vip: boolean }> {
-    return this.http.get<{ is_vip: boolean }>(`${this.apiBase}/is-vip`);
+isVip(): Observable<{ is_vip: boolean }> {
+  return this.http.get<{ is_vip: boolean }>(`${this.apiBase}/is-vip`);
+}
+
+ getSupervisors(departmentId: string): Observable<Supervisor[]> {
+    return this.http.get<Supervisor[]>(`http://localhost:8000/api/departments/${departmentId}/supervisors`);
   }
+
+
 }

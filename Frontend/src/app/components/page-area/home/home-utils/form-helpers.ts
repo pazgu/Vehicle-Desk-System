@@ -95,6 +95,8 @@ export function buildRideForm(
 
       four_by_four_reason: [''],
       extended_ride_reason: [''],
+      
+      approving_supervisor: [null],
     },
     { validators }
   );
