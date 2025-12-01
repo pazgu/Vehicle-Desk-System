@@ -150,7 +150,6 @@
 //     if (f) this.handle(f).subscribe({ next: () => {}, error: () => {} });
 //   }
 
-
 //   /** Hide popup / clear error. */
 //   reset(): void {
 //     this.patch({
@@ -209,7 +208,6 @@
 //   }
 // }
 
-
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -230,7 +228,7 @@ export interface EmailHandlerState {
   retryEmailFn: ((identifier: string) => Observable<any>) | null;
   emailAction: 'forgot_password' | 'general' | null;
   isCooldownActive: boolean; // no-op (kept for compat)
-  cooldownSeconds: number;   // no-op (kept for compat)
+  cooldownSeconds: number; // no-op (kept for compat)
 
   // NEW fields (preferred)
   visible: boolean;
@@ -258,7 +256,7 @@ export class EmailHandlerService {
     loading: false,
     success: false,
     errorMessage: undefined,
-    lastOpFactory: undefined
+    lastOpFactory: undefined,
   });
 
   /** Public state stream */
@@ -295,33 +293,39 @@ export class EmailHandlerService {
     successCallback?: () => void
   ): Observable<T> {
     this.successCallback = successCallback;
-    
+
     this.patch({
-      loading: true,  isLoading: true,
-      visible: false, showRetry: false,
+      loading: true,
+      isLoading: true,
+      visible: false,
+      showRetry: false,
       success: false,
-      errorMessage: undefined, message: null,
+      errorMessage: undefined,
+      message: null,
       lastOpFactory: undefined,
       // clear legacy retry info
       retryIdentifier: null,
       retryCallback: null,
-      retryEmailFn: null
+      retryEmailFn: null,
     });
 
     return defer(opFactory).pipe(
       tap(() => {
         this.patch({
-          loading: false, isLoading: false,
-          visible: false, showRetry: false,
+          loading: false,
+          isLoading: false,
+          visible: false,
+          showRetry: false,
           success: true,
-          errorMessage: undefined, message: null
+          errorMessage: undefined,
+          message: null,
         });
-        
+
         // Call success callback and show toast
         if (this.successCallback) {
           this.successCallback();
         }
-        
+
         if (isPlatformBrowser(this.platformId) && this.toastService) {
           this.toastService.show('המייל נשלח בהצלחה!', 'success');
         }
@@ -330,13 +334,19 @@ export class EmailHandlerService {
         const isRetryable422 = err.status === 422;
         if (isRetryable422) {
           const serverId = err.error?.retry_info?.identifier_id ?? null;
-          const msg = err.error?.message || err.error?.detail || 'שליחת המייל נכשלה זמנית. תרצה לנסות שוב?';
+          const msg =
+            err.error?.message ||
+            err.error?.detail ||
+            'שליחת המייל נכשלה זמנית. תרצה לנסות שוב?';
 
           this.patch({
-            loading: false, isLoading: false,
-            visible: true,  showRetry: true,
+            loading: false,
+            isLoading: false,
+            visible: true,
+            showRetry: true,
             success: false,
-            errorMessage: msg, message: msg,
+            errorMessage: msg,
+            message: msg,
 
             // store the server-provided identifier for retry
             retryIdentifier: serverId,
@@ -351,7 +361,7 @@ export class EmailHandlerService {
             lastOpFactory:
               serverId && this._state.value.retryEmailFn
                 ? () => this._state.value.retryEmailFn!(serverId)
-                : (retryFactory ?? opFactory)
+                : retryFactory ?? opFactory,
           });
 
           // Complete quietly so components don't need special error handling
@@ -360,9 +370,11 @@ export class EmailHandlerService {
 
         // Non-422 → close popup; let AuthInterceptor toast if needed
         this.patch({
-          loading: false, isLoading: false,
-          visible: false, showRetry: false,
-          success: false
+          loading: false,
+          isLoading: false,
+          visible: false,
+          showRetry: false,
+          success: false,
         });
         throw err;
       })
@@ -389,22 +401,22 @@ export class EmailHandlerService {
         error: (err) => {
           console.error('Retry failed:', err);
           // Keep popup open on failure, but maybe update the error message
-          this.patch({ 
-            visible: true, 
+          this.patch({
+            visible: true,
             showRetry: true,
             errorMessage: 'הניסיון החוזר נכשל. אנא נסה שוב מאוחר יותר.',
-            message: 'הניסיון החוזר נכשל. אנא נסה שוב מאוחר יותר.'
+            message: 'הניסיון החוזר נכשל. אנא נסה שוב מאוחר יותר.',
           });
-        }
+        },
       });
       return;
     }
 
     const f = s.lastOpFactory;
     if (f) {
-      this.handle(f).subscribe({ 
-        next: () => {}, 
-        error: () => {} 
+      this.handle(f).subscribe({
+        next: () => {},
+        error: () => {},
       });
     }
   }
@@ -412,10 +424,13 @@ export class EmailHandlerService {
   /** Hide popup / clear error. */
   reset(): void {
     this.patch({
-      visible: false, showRetry: false,
-      errorMessage: undefined, message: null,
+      visible: false,
+      showRetry: false,
+      errorMessage: undefined,
+      message: null,
       lastOpFactory: undefined,
-      loading: false, isLoading: false
+      loading: false,
+      isLoading: false,
     });
   }
 
@@ -438,27 +453,34 @@ export class EmailHandlerService {
     successCallback?: () => void
   ): Observable<T> {
     const opFactory = () => apiCall$;
-    const retryFactory = (retryEmailFn && retryIdentifier)
-      ? () => retryEmailFn(retryIdentifier)
-      : opFactory;
+    const retryFactory =
+      retryEmailFn && retryIdentifier
+        ? () => retryEmailFn(retryIdentifier)
+        : opFactory;
 
     // store legacy metadata for any code that reads it
     this.patch({
       emailAction,
       retryIdentifier: retryIdentifier ?? null,
       retryCallback: retryCallback ?? null,
-      retryEmailFn: retryEmailFn ?? null
+      retryEmailFn: retryEmailFn ?? null,
     });
 
     return this.handle(opFactory, retryFactory, successCallback);
   }
 
   /** Old alias kept so existing code compiles */
-  closeRetryToast(): void { this.reset(); }
+  closeRetryToast(): void {
+    this.reset();
+  }
 
   /** Old getters (kept) */
-  getState(): Observable<EmailHandlerState> { return this.state$; }
-  getCurrentState(): EmailHandlerState { return this._state.value; }
+  getState(): Observable<EmailHandlerState> {
+    return this.state$;
+  }
+  getCurrentState(): EmailHandlerState {
+    return this._state.value;
+  }
 
   // =========================
   // internals

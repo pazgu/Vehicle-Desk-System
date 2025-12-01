@@ -48,7 +48,8 @@
   border-radius: 999px;
   border: 1px solid rgba(0, 0, 0, 0.08);
   background: rgba(148, 34, 34, 0.1);
-  transition: transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+  transition: transform 0.15s ease, background-color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .fq-segment.filled {

@@ -12,7 +12,7 @@ import { Router } from '@angular/router';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, MatIconModule],
   templateUrl: './add-new-user.component.html',
-  styleUrls: ['./add-new-user.component.css']
+  styleUrls: ['./add-new-user.component.css'],
 })
 export class AddNewUserComponent implements OnInit {
   addUserForm!: FormGroup;
@@ -20,10 +20,10 @@ export class AddNewUserComponent implements OnInit {
     { key: 'admin', label: 'מנהל' },
     { key: 'employee', label: 'עובד' },
     { key: 'supervisor', label: 'מפקח' },
-    { key: 'inspector', label: 'בודק רכבים' }
+    { key: 'inspector', label: 'בודק רכבים' },
   ];
   showPassword = false;
-  
+
   departments: { id: string; name: string }[] = [];
   selectedFile: File | null = null;
   selectedFileName: string = '';
@@ -49,16 +49,19 @@ export class AddNewUserComponent implements OnInit {
       phone: ['', [Validators.required, Validators.pattern(/^05\d{8}$/)]],
       role: ['', Validators.required],
       has_government_license: [false],
-      department_id: [''], 
+      department_id: [''],
       license_expiry_date: ['', [this.dateRangeValidator(today, maxDateStr)]],
-      password: ['', [
-        Validators.required,
-        Validators.minLength(8),
-        Validators.pattern(/^(?=.*[A-Z]).*$/)
-      ]],
+      password: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(8),
+          Validators.pattern(/^(?=.*[A-Z]).*$/),
+        ],
+      ],
     });
 
-    this.addUserForm.get('role')?.valueChanges.subscribe(role => {
+    this.addUserForm.get('role')?.valueChanges.subscribe((role) => {
       this.updateDepartmentValidation(role);
     });
 
@@ -67,7 +70,7 @@ export class AddNewUserComponent implements OnInit {
 
   updateDepartmentValidation(role: string): void {
     const departmentControl = this.addUserForm.get('department_id');
-    
+
     if (role === 'employee') {
       departmentControl?.setValidators([Validators.required]);
     } else if (role === 'supervisor') {
@@ -76,7 +79,7 @@ export class AddNewUserComponent implements OnInit {
       departmentControl?.clearValidators();
       departmentControl?.setValue('');
     }
-    
+
     departmentControl?.updateValueAndValidity();
   }
 
@@ -144,39 +147,41 @@ export class AddNewUserComponent implements OnInit {
       password: 'סיסמה',
       has_government_license: 'בעל רישיון',
       license_file_url: 'רישיון',
-      license_expiry_date: 'תוקף רישיון'
+      license_expiry_date: 'תוקף רישיון',
     };
     return map[field] || field;
   }
 
   fetchDepartments(): void {
-  this.userService.getDepartments().subscribe({
-    next: (data) => {
-      const dbDepartments = data
-        .filter(dep => dep.name.toLowerCase() !== 'unassigned')
-        .map(dep => ({
-          ...dep,
-          name: dep.name
-        }));
+    this.userService.getDepartments().subscribe({
+      next: (data) => {
+        const dbDepartments = data
+          .filter((dep) => dep.name.toLowerCase() !== 'unassigned')
+          .map((dep) => ({
+            ...dep,
+            name: dep.name,
+          }));
 
-      const vipExists = dbDepartments.some(dep => dep.name.toLowerCase() === 'vip');
-      if (!vipExists) {
-        const vipDepartment = {
-          id: 'vip',
-          name: 'VIP'
-        };
-        this.departments = [...dbDepartments, vipDepartment];
-      } else {
-        this.departments = [...dbDepartments];
-      }
-    },
-    error: (err: any) => {
-      console.error('Failed to fetch departments', err);
-      this.toast.show('שגיאה בטעינת מחלקות', 'error');
-      this.departments = [];
-    }
-  });
-}
+        const vipExists = dbDepartments.some(
+          (dep) => dep.name.toLowerCase() === 'vip'
+        );
+        if (!vipExists) {
+          const vipDepartment = {
+            id: 'vip',
+            name: 'VIP',
+          };
+          this.departments = [...dbDepartments, vipDepartment];
+        } else {
+          this.departments = [...dbDepartments];
+        }
+      },
+      error: (err: any) => {
+        console.error('Failed to fetch departments', err);
+        this.toast.show('שגיאה בטעינת מחלקות', 'error');
+        this.departments = [];
+      },
+    });
+  }
 
   checkIfHasGovernmentlicense(): boolean {
     return this.addUserForm.get('has_government_license')?.value === true;
@@ -190,23 +195,28 @@ export class AddNewUserComponent implements OnInit {
     const role = this.addUserForm.get('role')?.value;
     return role === 'employee' || role === 'supervisor';
   }
-  
+
   hasGovlicenseButNoFile(): boolean {
-    return this.checkIfHasGovernmentlicense() && !this.selectedFile;}
+    return this.checkIfHasGovernmentlicense() && !this.selectedFile;
+  }
 
   dateRangeValidator(minDate: string, maxDate: string) {
     return (control: any) => {
       if (!control.value) return null;
-      
+
       const selectedDate = new Date(control.value);
       const min = new Date(minDate);
       const max = new Date(maxDate);
-      
+
       if (selectedDate < min) {
         return { dateRange: { message: 'Date cannot be in the past' } };
       }
       if (selectedDate > max) {
-        return { dateRange: { message: 'Date cannot be more than 10 years in the future' } };
+        return {
+          dateRange: {
+            message: 'Date cannot be more than 10 years in the future',
+          },
+        };
       }
       return null;
     };

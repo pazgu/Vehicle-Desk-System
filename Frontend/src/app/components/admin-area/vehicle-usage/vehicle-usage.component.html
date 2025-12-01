@@ -1,45 +1,64 @@
-  <div class="date-filter-container" *ngIf="isMonthlyView">
-    
-    <label for="monthSelect">חודש:</label>
-            <select id="monthSelect" [(ngModel)]="selectedMonth" (change)="onMonthOrYearChange()">
-              <option *ngFor="let month of months" [value]="month.value">{{ month.label }}</option>
-            </select>
+<div class="date-filter-container" *ngIf="isMonthlyView">
+  <label for="monthSelect">חודש:</label>
+  <select
+    id="monthSelect"
+    [(ngModel)]="selectedMonth"
+    (change)="onMonthOrYearChange()"
+  >
+    <option *ngFor="let month of months" [value]="month.value">
+      {{ month.label }}
+    </option>
+  </select>
 
-            <label for="yearSelect">שנה:</label>
-            <select id="yearSelect" [(ngModel)]="selectedYear" (change)="onMonthOrYearChange()">
-              <option *ngFor="let year of years" [value]="year">{{ year }}</option>
-            </select>
-            <button class="filter-button" (click)="loadTopUsedVehiclesChart();onMonthOrYearChange()">סנן</button>
-          </div>
+  <label for="yearSelect">שנה:</label>
+  <select
+    id="yearSelect"
+    [(ngModel)]="selectedYear"
+    (change)="onMonthOrYearChange()"
+  >
+    <option *ngFor="let year of years" [value]="year">{{ year }}</option>
+  </select>
+  <button
+    class="filter-button"
+    (click)="loadTopUsedVehiclesChart(); onMonthOrYearChange()"
+  >
+    סנן
+  </button>
+</div>
 
-          <div *ngIf="showChart">
+<div *ngIf="showChart">
+  <button (click)="toggleUsageView()" class="toggle-view-button">
+    {{ isMonthlyView ? "הצג לפי כל הזמנים" : "הצג לפי חודש" }}
+  </button>
+  <div *ngIf="isMonthlyNoData && isMonthlyView" class="no-data-message">
+    אין נתונים להצגה
+  </div>
+  <p-chart
+    *ngIf="isMonthlyView && !isMonthlyNoData"
+    type="bar"
+    [data]="monthlyStatsChartData"
+    [options]="monthlyStatsChartOptions"
+  ></p-chart>
 
-       
-            <button (click)="toggleUsageView()" class="toggle-view-button">
-              {{ isMonthlyView ? 'הצג לפי כל הזמנים' : 'הצג לפי חודש' }}
-            </button>
-            <div *ngIf="isMonthlyNoData && isMonthlyView" class="no-data-message">
-              אין נתונים להצגה
-            </div>
-            <p-chart *ngIf="isMonthlyView && !isMonthlyNoData" type="bar" [data]="monthlyStatsChartData"
-              [options]="monthlyStatsChartOptions"></p-chart>
+  <div *ngIf="isAllTimeNoData && !isMonthlyView" class="no-data-message">
+    אין נתונים להצגה
+  </div>
+  <p-chart
+    *ngIf="!isMonthlyView && !isAllTimeNoData"
+    type="bar"
+    [data]="allTimeStatsChartData"
+    [options]="allTimeStatsChartOptions"
+  ></p-chart>
 
-            <div *ngIf="isAllTimeNoData&&!isMonthlyView" class="no-data-message">
-              אין נתונים להצגה
-            </div>
-            <p-chart *ngIf="!isMonthlyView&&!isAllTimeNoData" type="bar" [data]="allTimeStatsChartData"
-              [options]="allTimeStatsChartOptions"></p-chart>
-
-            <!-- Legend only relevant for Monthly View -->
-            <div class="usage-legend" *ngIf="showChart">
-              <div class="legend-item">
-                <span class="color-box good"></span> טוב (0–4 נסיעות)
-              </div>
-              <div class="legend-item">
-                <span class="color-box medium"></span> בינוני (5–10 נסיעות)
-              </div>
-              <div class="legend-item">
-                <span class="color-box high"></span> שימוש גבוה (11+ נסיעות)
-              </div>
-            </div>
-          </div>
+  <div class="usage-legend" *ngIf="showChart">
+    <div class="legend-item">
+      <span class="color-box good"></span> טוב (0–4 נסיעות)
+    </div>
+    <div class="legend-item">
+      <span class="color-box medium"></span> בינוני (5–10 נסיעות)
+    </div>
+    <div class="legend-item">
+      <span class="color-box high"></span> שימוש גבוה (11+ נסיעות)
+    </div>
+  </div>
+</div>

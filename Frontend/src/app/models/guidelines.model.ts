@@ -6,7 +6,6 @@ export interface GuidelinesDoc {
   updated_by?: string;
 }
 
-
 export interface RideRequirementConfirmationIn {
   ride_id: string;
   confirmed: boolean;

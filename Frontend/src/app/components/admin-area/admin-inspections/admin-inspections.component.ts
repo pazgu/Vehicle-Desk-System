@@ -64,21 +64,21 @@ export class AdminInspectionsComponent implements OnInit {
     this.loading = true;
 
     this.inspectionService.getCriticalIssues().subscribe({
-        next: (data) => {
-          this.inspections = data.inspections || [];
-          this.rides = data.rides || [];
-          this.applyInspectionFilters();
-          this.applyRideFilters();
-          this.hasCriticalIssues = this.inspections.some(
-            (insp) => insp.critical_issue_bool
-          );
-          this.loading = false;
-          this.cdr.detectChanges();
-        },
-        error: () => {
-          this.loading = false;
-        },
-      });
+      next: (data) => {
+        this.inspections = data.inspections || [];
+        this.rides = data.rides || [];
+        this.applyInspectionFilters();
+        this.applyRideFilters();
+        this.hasCriticalIssues = this.inspections.some(
+          (insp) => insp.critical_issue_bool
+        );
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.loading = false;
+      },
+    });
   }
 
   handleFilterChange(filterType: 'medium' | 'critical'): void {
@@ -97,7 +97,7 @@ export class AdminInspectionsComponent implements OnInit {
 
   applyInspectionFilters(): void {
     this.filteredInspections = [...this.inspections];
-    
+
     if (
       this.showProblematicFilters &&
       (this.showMediumIssues || this.showCriticalIssues)

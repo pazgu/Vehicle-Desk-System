@@ -1,5 +1,10 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { UserService } from '../../../../services/user_service';
@@ -16,7 +21,7 @@ import { environment } from '../../../../../environments/environment';
   templateUrl: './user-data-edit.component.html',
   styleUrls: ['./user-data-edit.component.css'],
   standalone: true,
-  imports: [RouterModule, ReactiveFormsModule, CommonModule]
+  imports: [RouterModule, ReactiveFormsModule, CommonModule],
 })
 export class UserDataEditComponent implements OnInit, OnDestroy {
   userForm!: FormGroup;
@@ -42,7 +47,7 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
     private router: Router,
     private socketService: SocketService,
     private cdr: ChangeDetectorRef
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.setMinDateTime();
@@ -56,7 +61,7 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.subs.forEach(sub => sub.unsubscribe());
+    this.subs.forEach((sub) => sub.unsubscribe());
   }
   setMinDateTime(): void {
     const now = new Date();
@@ -69,39 +74,51 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
   }
 
   setupFormSubscriptions(): void {
-    const licenceExpirySub = this.userForm.get('license_expiry_date')?.valueChanges.subscribe((value: string) => {
-      const expiry = value ? new Date(value) : null;
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+    const licenceExpirySub = this.userForm
+      .get('license_expiry_date')
+      ?.valueChanges.subscribe((value: string) => {
+        const expiry = value ? new Date(value) : null;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
 
-      if (this.user && (this.user.has_government_license === null || this.user.has_government_license === undefined) &&
-          !this.userForm.get('has_government_license')?.dirty) {
-        if (expiry && !isNaN(expiry.getTime())) {
-          this.userForm.get('has_government_license')?.setValue(expiry >= today, { emitEvent: false });
-        } else if (!value) {
-          this.userForm.get('has_government_license')?.setValue(false, { emitEvent: false });
+        if (
+          this.user &&
+          (this.user.has_government_license === null ||
+            this.user.has_government_license === undefined) &&
+          !this.userForm.get('has_government_license')?.dirty
+        ) {
+          if (expiry && !isNaN(expiry.getTime())) {
+            this.userForm
+              .get('has_government_license')
+              ?.setValue(expiry >= today, { emitEvent: false });
+          } else if (!value) {
+            this.userForm
+              .get('has_government_license')
+              ?.setValue(false, { emitEvent: false });
+          }
         }
-      }
-    });
+      });
 
-    const hasLicenseSub = this.userForm.get('has_government_license')?.valueChanges.subscribe((checked: boolean) => {
-      if (!checked) {
-        this.userForm.get('license_expiry_date')?.setValue('');
-        if (this.hasExistingLicenseFile) {
-          this.showFileRemovedMessage = true;
-          this.hasExistingLicenseFile = false;
+    const hasLicenseSub = this.userForm
+      .get('has_government_license')
+      ?.valueChanges.subscribe((checked: boolean) => {
+        if (!checked) {
+          this.userForm.get('license_expiry_date')?.setValue('');
+          if (this.hasExistingLicenseFile) {
+            this.showFileRemovedMessage = true;
+            this.hasExistingLicenseFile = false;
+          }
+        } else {
+          this.showFileRemovedMessage = false;
         }
-      } else {
-        this.showFileRemovedMessage = false;
-      }
-    });
+      });
 
     if (licenceExpirySub) this.subs.push(licenceExpirySub);
     if (hasLicenseSub) this.subs.push(hasLicenseSub);
   }
 
   setupSocketSubscriptions(): void {
-    const sockeytSub = this.socketService.usersLicense$.subscribe(update => {
+    const sockeytSub = this.socketService.usersLicense$.subscribe((update) => {
       if (!this.user || this.user.employee_id !== update.id) return;
 
       this.user = { ...this.user, ...update };
@@ -111,9 +128,11 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
       }
 
       this.userForm.patchValue({
-        license_expiry_date: this.user.license_expiry_date?.toISOString().substring(0, 10),
+        license_expiry_date: this.user.license_expiry_date
+          ?.toISOString()
+          .substring(0, 10),
         has_government_license: this.user.has_government_license,
-        license_file_url: this.user.license_file_url
+        license_file_url: this.user.license_file_url,
       });
       this.hasExistingLicenseFile = !!this.user.license_file_url;
       this.hasExistingExpiryDate = !!this.user.license_expiry_date;
@@ -136,7 +155,7 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
       license_expiry_date: [''],
       phone: ['', [Validators.required, Validators.pattern(/^05\d{8}$/)]],
       block_reason: [''],
-      block_expires_at: ['']
+      block_expires_at: [''],
     });
   }
 
@@ -147,26 +166,26 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
   fetchDepartments(): void {
     this.departmentService.getDepartments().subscribe({
       next: (data) => {
-        const dbDepartments = data.filter((dept: any) => 
-          dept.name.toLowerCase() !== 'unassigned'
+        const dbDepartments = data.filter(
+          (dept: any) => dept.name.toLowerCase() !== 'unassigned'
         );
-         const hasVip = dbDepartments.some(
-        (dept: any) => dept.name.toLowerCase() === 'vip'
-      );
+        const hasVip = dbDepartments.some(
+          (dept: any) => dept.name.toLowerCase() === 'vip'
+        );
 
-      if (!hasVip) {
-        dbDepartments.push({
-          id: 'vip',  
-          name: 'VIP'
-        });
-      }
+        if (!hasVip) {
+          dbDepartments.push({
+            id: 'vip',
+            name: 'VIP',
+          });
+        }
 
-      this.departments = dbDepartments;
+        this.departments = dbDepartments;
       },
       error: (err) => {
         this.toastService.show('שגיאה בטעינת מחלקות', 'error');
         this.departments = [];
-      }
+      },
     });
   }
 
@@ -178,25 +197,27 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
       error: (err) => {
         this.toastService.show('שגיאה בטעינת תפקידים', 'error');
         this.roles = [];
-      }
+      },
     });
   }
   setupRoleBasedValidation(): void {
-    const roleSub = this.userForm.get('role')?.valueChanges.subscribe((role: string) => {
-      const deptControl = this.userForm.get('department_id');
-      
-      if (role === 'employee') {
-        deptControl?.setValidators([Validators.required]);
-      } else {
-        deptControl?.clearValidators();
-        if (role === 'admin' || role === 'inspector') {
-          deptControl?.setValue('');
+    const roleSub = this.userForm
+      .get('role')
+      ?.valueChanges.subscribe((role: string) => {
+        const deptControl = this.userForm.get('department_id');
+
+        if (role === 'employee') {
+          deptControl?.setValidators([Validators.required]);
+        } else {
+          deptControl?.clearValidators();
+          if (role === 'admin' || role === 'inspector') {
+            deptControl?.setValue('');
+          }
         }
-      }
-      
-      deptControl?.updateValueAndValidity();
-    });
-    
+
+        deptControl?.updateValueAndValidity();
+      });
+
     if (roleSub) this.subs.push(roleSub);
   }
 
@@ -221,23 +242,29 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
             license_file_url: user.license_file_url,
             phone: user.phone,
             license_expiry_date: user.license_expiry_date
-              ? new Date(user.license_expiry_date).toISOString().substring(0, 10)
+              ? new Date(user.license_expiry_date)
+                  .toISOString()
+                  .substring(0, 10)
               : '',
             block_reason: user.block_reason || '',
-            block_expires_at: user.block_expires_at 
+            block_expires_at: user.block_expires_at
               ? new Date(user.block_expires_at).toISOString().substring(0, 16)
-              : ''
+              : '',
           });
           if (user.is_blocked) {
-            this.userForm.get('block_reason')?.setValidators([Validators.required]);
-            this.userForm.get('block_expires_at')?.setValidators([Validators.required]);
+            this.userForm
+              .get('block_reason')
+              ?.setValidators([Validators.required]);
+            this.userForm
+              .get('block_expires_at')
+              ?.setValidators([Validators.required]);
             this.userForm.get('block_reason')?.updateValueAndValidity();
             this.userForm.get('block_expires_at')?.updateValueAndValidity();
           }
         },
         error: () => {
           this.toastService.show('שגיאה בטעינת פרטי המשתמש', 'error');
-        }
+        },
       });
     }
   }
@@ -247,20 +274,28 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
     if (input && input.files && input.files.length > 0) {
       this.selectedFile = input.files[0];
       this.selectedFileName = this.selectedFile.name;
-      this.showFileRemovedMessage = false; 
+      this.showFileRemovedMessage = false;
     } else {
       this.selectedFile = null;
       this.selectedFileName = '';
     }
   }
-  
-  private validateLicenseRequirements(): { isValid: boolean; errorMessage?: string } {
-    const hasGovernmentLicense = this.userForm.get('has_government_license')?.value;
+
+  private validateLicenseRequirements(): {
+    isValid: boolean;
+    errorMessage?: string;
+  } {
+    const hasGovernmentLicense = this.userForm.get(
+      'has_government_license'
+    )?.value;
     const licenseExpiryDate = this.userForm.get('license_expiry_date')?.value;
-    
+
     if (hasGovernmentLicense) {
       if (!licenseExpiryDate || licenseExpiryDate.trim() === '') {
-        return { isValid: false, errorMessage: 'נדרש תאריך תפוגת רשיון בעת הפעלת רשיון ממשלתי' };
+        return {
+          isValid: false,
+          errorMessage: 'נדרש תאריך תפוגת רשיון בעת הפעלת רשיון ממשלתי',
+        };
       }
     }
     return { isValid: true };
@@ -269,11 +304,14 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
     const blockExpiresAt = this.userForm.get('block_expires_at')?.value;
     if (blockExpiresAt) {
       const expiryDate = new Date(blockExpiresAt);
-      const now = new Date(); 
+      const now = new Date();
       if (expiryDate <= now) {
-        return { isValid: false, errorMessage: 'תאריך סיום החסימה חייב להיות בעתיד' };
+        return {
+          isValid: false,
+          errorMessage: 'תאריך סיום החסימה חייב להיות בעתיד',
+        };
       }
-    } 
+    }
     return { isValid: true };
   }
   private validateBlockFields(): { isValid: boolean; errorMessage?: string } {
@@ -284,9 +322,12 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
         return { isValid: false, errorMessage: 'סיבת החסימה היא שדה חובה' };
       }
       if (!blockExpiresAt || blockExpiresAt.trim() === '') {
-        return { isValid: false, errorMessage: 'תאריך סיום החסימה הוא שדה חובה' };
+        return {
+          isValid: false,
+          errorMessage: 'תאריך סיום החסימה הוא שדה חובה',
+        };
       }
-    } 
+    }
     return { isValid: true };
   }
   validateBlockExpiryOnBlur(): void {
@@ -295,7 +336,9 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
       const selectedDate = new Date(blockExpiresAt);
       const now = new Date();
       if (selectedDate <= now) {
-        this.userForm.get('block_expires_at')?.setValue('', { emitEvent: false });
+        this.userForm
+          .get('block_expires_at')
+          ?.setValue('', { emitEvent: false });
         this.toastService.show('לא ניתן לבחור תאריך בעבר לסיום חסימה', 'error');
       }
     }
@@ -336,7 +379,10 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
 
       const hasLicenseControl = this.userForm.get('has_government_license');
       if (hasLicenseControl) {
-        formData.append('has_government_license', hasLicenseControl.value ? 'true' : 'false');
+        formData.append(
+          'has_government_license',
+          hasLicenseControl.value ? 'true' : 'false'
+        );
       }
 
       if (!this.hasExistingLicenseFile && this.selectedFile) {
@@ -349,10 +395,13 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
       if (newExpiryDate && newExpiryDate !== oldExpiryDate) {
         formData.append('license_expiry_date', newExpiryDate);
       } else if (oldExpiryDate) {
-        formData.append('license_expiry_date', new Date(oldExpiryDate).toISOString().substring(0, 10));
+        formData.append(
+          'license_expiry_date',
+          new Date(oldExpiryDate).toISOString().substring(0, 10)
+        );
       }
       if (this.user?.is_blocked) {
-        const blockReason = formValues.block_reason?.trim() || '';    
+        const blockReason = formValues.block_reason?.trim() || '';
         formData.append('is_blocked', 'true');
         formData.append('block_reason', blockReason);
         if (formValues.block_expires_at) {
@@ -378,12 +427,14 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
         },
         error: (err: HttpErrorResponse) => {
           this.isSubmitting = false;
-          
+
           let errorMessage = 'שגיאה בעדכון המשתמש';
           if (err.error) {
             if (err.error.detail) {
               if (Array.isArray(err.error.detail)) {
-                errorMessage = err.error.detail.map((e: any) => e.msg || e).join(', ');
+                errorMessage = err.error.detail
+                  .map((e: any) => e.msg || e)
+                  .join(', ');
               } else {
                 errorMessage = err.error.detail;
               }
@@ -392,19 +443,19 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
             }
           }
           this.toastService.show(errorMessage, 'error');
-        }
+        },
       });
     } else {
-      Object.keys(this.userForm.controls).forEach(key => {
+      Object.keys(this.userForm.controls).forEach((key) => {
         this.userForm.get(key)?.markAsTouched();
       });
       this.toastService.show('אנא מלא את כל השדות הנדרשים', 'error');
     }
   }
 
-    openLicenseInNewTab(): void {
-      if (!this.user?.license_file_url) return;
-      const fullUrl = environment.socketUrl + this.user.license_file_url;
-      window.open(fullUrl, '_blank');
-    }
+  openLicenseInNewTab(): void {
+    if (!this.user?.license_file_url) return;
+    const fullUrl = environment.socketUrl + this.user.license_file_url;
+    window.open(fullUrl, '_blank');
+  }
 }

@@ -15,7 +15,7 @@ export interface VehicleInItem {
   start_datetime?: string | null;
   end_datetime?: string | null;
   ride_count?: number;
-  department: string; 
+  department: string;
   department_id?: string;
   archived_at?: string | null;
   is_archived?: boolean;

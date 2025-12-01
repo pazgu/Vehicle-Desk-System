@@ -7,7 +7,7 @@ export interface RideLocationItem {
 }
 
 export interface StartedRide {
-  id: string; 
+  id: string;
 }
 
 export interface StartedRidesResponse {

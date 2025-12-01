@@ -7,6 +7,4 @@ export interface CriticalIssue {
   issue_summary: string;
   inspection_id?: string;
   ride_id?: string | null;
-
-
 }

@@ -3,18 +3,22 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { VehicleInItem } from '../models/vehicle-dashboard-item/vehicle-in-use-item.module';
-import { FuelType, FuelTypeResponse, VehicleOutItem } from '../models/vehicle-dashboard-item/vehicle-out-item.module';
+import {
+  FuelType,
+  FuelTypeResponse,
+  VehicleOutItem,
+} from '../models/vehicle-dashboard-item/vehicle-out-item.module';
 import { Vehicle } from '../models/vehicle.model';
 import { map } from 'rxjs/operators';
 import { of } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class VehicleService {
   private apiUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   getAllVehicles(status?: string, type?: string): Observable<VehicleInItem[]> {
     const url = `${this.apiUrl}/all-vehicles`;
@@ -41,55 +45,76 @@ export class VehicleService {
     return this.http.get<VehicleInItem[]>(url, { params });
   }
 
-getAllVehiclesForNewRide(distance: number, rideDate: string, vehicleType: string, startTime: string, endTime: string): Observable<Vehicle[]> {
-  const params: any = {
-    distance_km: distance,
-    ride_date: rideDate,
-    type: vehicleType,
-    start_time: startTime,
-    end_time: endTime
-  };
+  getAllVehiclesForNewRide(
+    distance: number,
+    rideDate: string,
+    vehicleType: string,
+    startTime: string,
+    endTime: string
+  ): Observable<Vehicle[]> {
+    const params: any = {
+      distance_km: distance,
+      ride_date: rideDate,
+      type: vehicleType,
+      start_time: startTime,
+      end_time: endTime,
+    };
 
-  return this.http.get<Vehicle[]>(`${environment.apiUrl}/all-vehicles-new-ride`, { params });
-}
+    return this.http.get<Vehicle[]>(
+      `${environment.apiUrl}/all-vehicles-new-ride`,
+      { params }
+    );
+  }
 
+  getVIPVehiclesForNewRide(
+    distance: number,
+    rideDate: string,
+    vehicleType: string,
+    startTime: string,
+    endTime: string
+  ): Observable<Vehicle[]> {
+    const params: any = {
+      distance_km: distance,
+      ride_date: rideDate,
+      type: vehicleType,
+      start_time: startTime,
+      end_time: endTime,
+    };
 
-
-getVIPVehiclesForNewRide(distance: number, rideDate: string, vehicleType: string, startTime: string, endTime: string): Observable<Vehicle[]> {
-  const params: any = {
-    distance_km: distance,
-    ride_date: rideDate,
-    type: vehicleType,
-    start_time: startTime,
-    end_time: endTime
-  };
-
-  return this.http.get<Vehicle[]>(`${environment.apiUrl}/vip-vehicles-new-ride`, { params });
-}
-
-
+    return this.http.get<Vehicle[]>(
+      `${environment.apiUrl}/vip-vehicles-new-ride`,
+      { params }
+    );
+  }
 
   getAvailableVehicles(): Observable<VehicleInItem[]> {
     const url = `${this.apiUrl}/all-vehicles/available`;
     return this.http.get<VehicleInItem[]>(url);
   }
 
-
   getVehicleById(id: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/vehicle/${id}`);
   }
 
-  updateVehicleStatus(id: string, new_status: string, freeze_reason?: string): Observable<any> {
+  updateVehicleStatus(
+    id: string,
+    new_status: string,
+    freeze_reason?: string
+  ): Observable<any> {
     const url = `${this.apiUrl}/vehicles-status/${id}`;
-    const body = { new_status, freeze_reason }; 
+    const body = { new_status, freeze_reason };
     return this.http.patch<any>(url, body);
   }
 
   getTodayInspections(): Observable<any[]> {
     return this.http.get<any[]>(`${environment.apiUrl}/inspections/today`);
   }
-  getPendingCars(): Observable<{ vehicle_id: string; date: string; period: string }[]> {
-    return this.http.get<{ vehicle_id: string; date: string; period: string }[]>(`${environment.apiUrl}/orders/pending-cars`);
+  getPendingCars(): Observable<
+    { vehicle_id: string; date: string; period: string }[]
+  > {
+    return this.http.get<
+      { vehicle_id: string; date: string; period: string }[]
+    >(`${environment.apiUrl}/orders/pending-cars`);
   }
 
   getAllVehiclesByStatus(status?: string): Observable<VehicleOutItem[]> {
@@ -99,26 +124,35 @@ getVIPVehiclesForNewRide(distance: number, rideDate: string, vehicleType: string
       params = params.set('status', status);
     }
 
-    return this.http.get<VehicleOutItem[]>(environment.frozenVehiclesUrl, { params });
+    return this.http.get<VehicleOutItem[]>(environment.frozenVehiclesUrl, {
+      params,
+    });
   }
 
-
-  getMostUsedVehiclesThisMonth(year: number, month: number): Observable<{ stats: VehicleInItem[] }> {
+  getMostUsedVehiclesThisMonth(
+    year: number,
+    month: number
+  ): Observable<{ stats: VehicleInItem[] }> {
     const url = `${this.apiUrl}/vehicles/usage-stats`;
     return this.http.get<{ stats: VehicleInItem[] }>(url, {
       params: {
         range: 'month',
         year,
-        month
-      }
+        month,
+      },
     });
   }
 
   getFuelTypeByVehicleId(vehicleId: string): Observable<FuelTypeResponse> {
     if (vehicleId) {
-      return this.http.get<FuelTypeResponse>(`${this.apiUrl}/vehicles/${vehicleId}/fuel-type`);
+      return this.http.get<FuelTypeResponse>(
+        `${this.apiUrl}/vehicles/${vehicleId}/fuel-type`
+      );
     }
-    const res: FuelTypeResponse = { vehicle_id: vehicleId, fuel_type: 'hybrid' as FuelType };
+    const res: FuelTypeResponse = {
+      vehicle_id: vehicleId,
+      fuel_type: 'hybrid' as FuelType,
+    };
     return of(res);
   }
 
@@ -127,16 +161,21 @@ getVIPVehiclesForNewRide(distance: number, rideDate: string, vehicleType: string
   }
 
   getVehicleTypes(): Observable<string[]> {
-  return this.http.get<{ vehicle_types: string[] }>(`${this.apiUrl}/vehicles/types`).pipe(
-    map(res => res.vehicle_types)
-  );
-}
+    return this.http
+      .get<{ vehicle_types: string[] }>(`${this.apiUrl}/vehicles/types`)
+      .pipe(map((res) => res.vehicle_types));
+  }
   deleteVehicle(vehicleId: string): Observable<void> {
-    return this.http.delete<void>(`${environment.apiUrl}/vehicles/${vehicleId}`);
+    return this.http.delete<void>(
+      `${environment.apiUrl}/vehicles/${vehicleId}`
+    );
   }
 
   archiveVehicle(vehicleId: string) {
-    return this.http.post(`${environment.apiUrl}/vehicles/${vehicleId}/archive`, {});
+    return this.http.post(
+      `${environment.apiUrl}/vehicles/${vehicleId}/archive`,
+      {}
+    );
   }
 
   getArchivedVehicles(): Observable<VehicleInItem[]> {
@@ -146,7 +185,6 @@ getVIPVehiclesForNewRide(distance: number, rideDate: string, vehicleType: string
   deleteArchivedVehicle(vehicleId: string) {
     return this.http.delete(`${this.apiUrl}/archived-vehicles/${vehicleId}`);
   }
-
 
   restoreVehicle(vehicleId: string): Observable<any> {
     return this.http.put(`${this.apiUrl}/vehicles/${vehicleId}/restore`, {});
@@ -160,25 +198,33 @@ getVIPVehiclesForNewRide(distance: number, rideDate: string, vehicleType: string
     const formData = new FormData();
     formData.append('file', file);
 
-    return this.http.post(`${this.apiUrl}/admin/vehicles/mileage/upload`, formData);
+    return this.http.post(
+      `${this.apiUrl}/admin/vehicles/mileage/upload`,
+      formData
+    );
   }
 
   updatemileage(vehicleId: string, mileage: number): Observable<any> {
     const body = { new_mileage: mileage };
-    return this.http.patch(`${this.apiUrl}/vehicles/${vehicleId}/mileage`, body); 
+    return this.http.patch(
+      `${this.apiUrl}/vehicles/${vehicleId}/mileage`,
+      body
+    );
   }
 
   addVehicle(vehicleData: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/add-vehicle`, vehicleData);
   }
-  getTopUsedVehicles(): Observable<{ plate_number: string; vehicle_model: string; ride_count: number }[]> {
-    return this.http.get<{ plate_number: string; vehicle_model: string; ride_count: number }[]>(
-      `${this.apiUrl}/analytics/top-used-vehicles`
-    );
+  getTopUsedVehicles(): Observable<
+    { plate_number: string; vehicle_model: string; ride_count: number }[]
+  > {
+    return this.http.get<
+      { plate_number: string; vehicle_model: string; ride_count: number }[]
+    >(`${this.apiUrl}/analytics/top-used-vehicles`);
   }
 
-  getAllOrders(): Observable<{ vehicle_id: string, date_and_time: string }[]> {
-    return this.http.get<{ vehicle_id: string, date_and_time: string }[]>(
+  getAllOrders(): Observable<{ vehicle_id: string; date_and_time: string }[]> {
+    return this.http.get<{ vehicle_id: string; date_and_time: string }[]>(
       `${this.apiUrl}/orders`
     );
   }
@@ -194,10 +240,12 @@ getVIPVehiclesForNewRide(distance: number, rideDate: string, vehicleType: string
   getMostUsedVehiclesAllTime(): Observable<{ stats: VehicleInItem[] }> {
     const url = `${this.apiUrl}/vehicles/usage-stats-all-time`;
     return this.http.get<{ stats: VehicleInItem[] }>(url);
-}
-  getVehicleStatusSummary(vehicleType?: string): Observable<{ status: string; count: number }[]> {
+  }
+  getVehicleStatusSummary(
+    vehicleType?: string
+  ): Observable<{ status: string; count: number }[]> {
     let url = `${this.apiUrl}/analytics/vehicle-status-summary`;
-    
+
     if (vehicleType && vehicleType.trim() !== '') {
       url += `?type=${encodeURIComponent(vehicleType)}`;
     }
@@ -207,11 +255,12 @@ getVIPVehiclesForNewRide(distance: number, rideDate: string, vehicleType: string
 
   updateVehicle(vehicleId: string, vehicleData: any): Observable<any> {
     const updatePayload = {
-      department_id: vehicleData.department_id === 'null' || vehicleData.department_id === '' 
-        ? null 
-        : vehicleData.department_id,
+      department_id:
+        vehicleData.department_id === 'null' || vehicleData.department_id === ''
+          ? null
+          : vehicleData.department_id,
       mileage: vehicleData.mileage,
-      image_url: vehicleData.image_url
+      image_url: vehicleData.image_url,
     };
     return this.http.put(`${this.apiUrl}/vehicle/${vehicleId}`, updatePayload);
   }

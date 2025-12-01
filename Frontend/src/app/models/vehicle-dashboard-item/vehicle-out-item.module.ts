@@ -1,11 +1,11 @@
-export interface VehicleOutItem{
-  id: string; // UUID as string
+export interface VehicleOutItem {
+  id: string; 
   plate_number: string;
-  type: string; // VehicleType as string
-  fuel_type: string; // FuelType as string
-  status: string; // VehicleStatus as string
-  freeze_reason?: string | null; // Optional, can be null
-  last_used_at?: string | null; // ISO date string or null
+  type: string;
+  fuel_type: string;
+  status: string; 
+  freeze_reason?: string | null; 
+  last_used_at?: string | null;
   mileage: number;
   vehicle_model: string;
   image_url: string;
@@ -18,7 +18,7 @@ export enum FreezeReason {
 export enum FuelType {
   Electric = 'electric',
   Hybrid = 'hybrid',
-  Gasoline = 'gasoline'
+  Gasoline = 'gasoline',
 }
 
 export interface FuelTypeResponse {

@@ -1,12 +1,12 @@
 :host {
   display: block;
-  min-height: 100vh; 
-  background-image: url('/assets/images/vehicle-dashboard-bg.png');
+  min-height: 100vh;
+  background-image: url("/assets/images/vehicle-dashboard-bg.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   font-family: var(--font-family-alef);
-  padding: 1.5rem; 
+  padding: 1.5rem;
 }
 
 label {
@@ -37,8 +37,6 @@ textarea {
   min-height: 80px;
 }
 
-
-
 .cute-red-button:active {
   transform: scale(0.97);
 }
@@ -55,7 +53,6 @@ textarea {
   font-weight: bold;
   color: #333;
 }
-
 
 .fuel-bar {
   height: 10px;
@@ -96,7 +93,7 @@ textarea {
 
 .vehicle-issues-table td:first-child {
   font-weight: bold;
-  color:rgb(128, 0, 0);
+  color: rgb(128, 0, 0);
 }
 
 .vehicle-issues-table input[type="checkbox"] {
@@ -116,7 +113,7 @@ textarea {
 }
 
 .vehicle-issues-table input[type="checkbox"]:checked::after {
-  content: '✓';
+  content: "✓";
   position: absolute;
   top: 50%;
   left: 50%;
@@ -142,9 +139,7 @@ textarea {
   margin: 1rem auto;
   display: block;
   transition: background 0.2s ease;
-  margin-bottom: 50px !important
-  
-  
+  margin-bottom: 50px !important;
 }
 
 .cute-red-button:hover {
@@ -254,10 +249,10 @@ textarea {
 }
 
 .no-vehicles-message p {
-  color: #343a40; 
+  color: #343a40;
   font-size: 1.1rem;
   margin-bottom: 2rem;
-  font-weight: 600; 
+  font-weight: 600;
 }
 .refresh-button {
   background: linear-gradient(135deg, #8b0000 0%, #b22222 100%);

@@ -6,50 +6,83 @@
       <div class="filters-row">
         <div class="filter-section">
           <button class="filter-button" (click)="showFilters = !showFilters">
-            {{ showFilters ? 'הסתר חיפוש' : 'הצג חיפוש' }}
+            {{ showFilters ? "הסתר חיפוש" : "הצג חיפוש" }}
           </button>
         </div>
         <div class="filter-actions-row">
-          <button class="collapse-btn" (click)="filtersCollapsed = !filtersCollapsed">
-            {{ filtersCollapsed ? 'הצג אפשרויות סינון וייצוא' : 'הסתר אפשרויות סינון וייצוא' }}
+          <button
+            class="collapse-btn"
+            (click)="filtersCollapsed = !filtersCollapsed"
+          >
+            {{
+              filtersCollapsed
+                ? "הצג אפשרויות סינון וייצוא"
+                : "הסתר אפשרויות סינון וייצוא"
+            }}
           </button>
         </div>
       </div>
 
       <div *ngIf="showFilters" class="search-container">
-        <input type="text" class="audit-search-input" placeholder="חיפוש לפי סוג פעולה, סוג ישות, שם מבצע הפעולה"
-          [(ngModel)]="searchTerm" (input)="filterLogs()" />
+        <input
+          type="text"
+          class="audit-search-input"
+          placeholder="חיפוש לפי סוג פעולה, סוג ישות, שם מבצע הפעולה"
+          [(ngModel)]="searchTerm"
+          (input)="filterLogs()"
+        />
       </div>
 
       <div *ngIf="!filtersCollapsed">
         <div class="date-range-filter">
-          <select class="range-select" [(ngModel)]="selectedRange" (change)="onRangeChange()">
-            <option value="" disabled selected>בחר טווח תאריכים להצגת לוגים</option>
+          <select
+            class="range-select"
+            [(ngModel)]="selectedRange"
+            (change)="onRangeChange()"
+          >
+            <option value="" disabled selected>
+              בחר טווח תאריכים להצגת לוגים
+            </option>
             <option value="7days">7 ימים אחרונים</option>
             <option value="thisMonth">החודש</option>
             <option value="30days">30 ימים אחרונים</option>
             <option value="custom">טווח מותאם אישית</option>
           </select>
-          <button class="export-button" (click)="resetFilters()">הסר סינון</button>
+          <button class="export-button" (click)="resetFilters()">
+            הסר סינון
+          </button>
         </div>
         <div *ngIf="selectedRange === 'custom'" class="custom-range-fields">
-          <input type="date" class="date-input" [(ngModel)]="customFromDate" title="תאריך התחלה">
-          <span style="margin: 0 0.5rem;">עד</span>
-          <input type="date" class="date-input" [(ngModel)]="customToDate" title="תאריך סיום">
+          <input
+            type="date"
+            class="date-input"
+            [(ngModel)]="customFromDate"
+            title="תאריך התחלה"
+          />
+          <span style="margin: 0 0.5rem">עד</span>
+          <input
+            type="date"
+            class="date-input"
+            [(ngModel)]="customToDate"
+            title="תאריך סיום"
+          />
           <span class="date-note">(שימ/י לב, התאריך האחרון לא כולל)</span>
-          <button class="filter-apply-btn" (click)="onRangeChange()">סנן</button>
+          <button class="filter-apply-btn" (click)="onRangeChange()">
+            סנן
+          </button>
         </div>
         <div class="export-buttons">
           <h3>דיווחים בהתאם לסינון</h3>
           <button class="export-button" (click)="exportPDF()">ייצוא PDF</button>
           <button class="export-button" (click)="exportCSV()">ייצוא CSV</button>
-          <button class="export-button" (click)="exportExcel()">ייצוא Excel</button>
-
+          <button class="export-button" (click)="exportExcel()">
+            ייצוא Excel
+          </button>
         </div>
       </div>
 
       <div class="status-indicators">
-        <p style="margin-bottom: 0.75rem; font-weight: 600;">מקרא צבעים</p>
+        <p style="margin-bottom: 0.75rem; font-weight: 600">מקרא צבעים</p>
         <div class="status-box">
           <div class="status-item">
             <span class="status-indicator approved"></span> אושר / הסתיים
@@ -76,11 +109,9 @@
             <span class="status-indicator delete"></span> נמחק
           </div>
           <div class="status-item">
-            <span class="status-indicator cancelled-due-to-no-show"></span> בוטל עקב אי הגעה
+            <span class="status-indicator cancelled-due-to-no-show"></span> בוטל
+            עקב אי הגעה
           </div>
-          <!-- <div class="status-item">
-            <span class="status-indicator exceeded-monthly-trip-quota"></span> חריגה מהמכסה החודשית
-          </div> -->
         </div>
       </div>
 
@@ -95,7 +126,10 @@
             </tr>
           </thead>
           <tbody class="audit-tbody">
-            <tr *ngFor="let log of pagedLogs" class="audit-tr" [ngClass]="{
+            <tr
+              *ngFor="let log of pagedLogs"
+              class="audit-tr"
+              [ngClass]="{
                   'delete-row': log.action === 'DELETE',
                   'emergency-row': log.action === 'UPDATE' && log.entity_type === 'Ride' &&
                     (log.change_data?.new?.emergency_event === true || log.change_data?.new?.emergency_event === 'true'),
@@ -123,14 +157,21 @@
     (log.change_data?.new?.status === 'cancelled_due_to_no_show' ||
      log.change_data?.new?.status === 'cancelled-due-to-no-show')),
      'exceeded-monthly-trip-quota-row': log.entity_type === 'User' && log.change_data?.new?.exceeded_monthly_trip_quota === true,
-                }" (click)="showDetails(log)">
+                }"
+              (click)="showDetails(log)"
+            >
               <td class="audit-td">{{ log.action }}</td>
               <td class="audit-td">{{ log.entity_type }}</td>
               <td class="audit-td">{{ log.full_name }}</td>
-              <td class="audit-td">{{ log.created_at | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td class="audit-td">
+                {{ log.created_at | date : "dd/MM/yyyy HH:mm" }}
+              </td>
             </tr>
           </tbody>
-          <div *ngIf="filteredLogs?.length === 0 && !selectedLog" class="empty-state">
+          <div
+            *ngIf="filteredLogs?.length === 0 && !selectedLog"
+            class="empty-state"
+          >
             לא נמצאו רשומות ביקורת
           </div>
         </table>
@@ -138,7 +179,11 @@
         <div class="pagination-controls">
           <button (click)="prevPage()" [disabled]="currentPage === 1">
             <span class="icon">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
                 <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z" />
               </svg>
             </span>
@@ -146,14 +191,17 @@
           <span>עמוד {{ currentPage }} מתוך {{ totalPages }}</span>
           <button (click)="nextPage()" [disabled]="currentPage === totalPages">
             <span class="icon">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
                 <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
               </svg>
             </span>
           </button>
         </div>
       </div>
-
 
       <div *ngIf="selectedLog" class="log-details-card">
         <h2>פרטי יומן ביקורת</h2>
@@ -182,51 +230,63 @@
             </div>
             <div class="info-item">
               <div class="info-label">תאריך יצירה</div>
-              <div class="info-value">{{ selectedLog.created_at | date:'dd/MM/yyyy HH:mm:ss' }}</div>
+              <div class="info-value">
+                {{ selectedLog.created_at | date : "dd/MM/yyyy HH:mm:ss" }}
+              </div>
             </div>
             <div class="info-item">
               <div class="info-label">שונה על ידי</div>
-              <div class="info-value">{{ UsernameById(selectedLog.changed_by) }}</div>
+              <div class="info-value">
+                {{ UsernameById(selectedLog.changed_by) }}
+              </div>
             </div>
           </div>
         </div>
 
         <div class="change-section">
-          
-<h3 class="change-header">
-    <i class="pi pi-clipboard copy-icon"></i>
+          <h3 class="change-header">
+            <i class="pi pi-clipboard copy-icon"></i>
 
-  נתוני שינוי
-</h3>
+            נתוני שינוי
+          </h3>
 
-        <app-insert-log *ngIf="selectedLog.action === 'INSERT'"
-          [log]="selectedLog"
-          [cityMap]="cityMap"
-          [departments]="departments"
-          [users]="users"
-          [vehicles]="vehicles">
-        </app-insert-log>
+          <app-insert-log
+            *ngIf="selectedLog.action === 'INSERT'"
+            [log]="selectedLog"
+            [cityMap]="cityMap"
+            [departments]="departments"
+            [users]="users"
+            [vehicles]="vehicles"
+          >
+          </app-insert-log>
 
-
-          <app-update-log *ngIf="selectedLog.action === 'UPDATE'"
+          <app-update-log
+            *ngIf="selectedLog.action === 'UPDATE'"
             [selectedLog]="selectedLog"
             [departments]="departments"
             [users]="users"
-            [vehicles]="vehicles">
+            [vehicles]="vehicles"
+          >
           </app-update-log>
 
-         <app-delete-log
+          <app-delete-log
             [selectedLog]="selectedLog"
             [getCityName]="getCityName.bind(this)"
             [translateRideType]="translateRideType.bind(this)"
             [translateRideStatus]="translateRideStatus.bind(this)"
             [translateUserRole]="translateUserRole.bind(this)"
             [translateFuelType]="translateFuelType.bind(this)"
-            [getDepartmentNameById]="DepartmentNameById.bind(this)">
-         </app-delete-log>
+            [getDepartmentNameById]="DepartmentNameById.bind(this)"
+          >
+          </app-delete-log>
 
           <div
-            *ngIf="selectedLog.action !== 'INSERT' && selectedLog.action !== 'UPDATE' && selectedLog.action !== 'DELETE'">
+            *ngIf="
+              selectedLog.action !== 'INSERT' &&
+              selectedLog.action !== 'UPDATE' &&
+              selectedLog.action !== 'DELETE'
+            "
+          >
             <div class="data-card">
               <h4>נתוני שינוי גולמיים</h4>
               <div class="json-container">
@@ -235,7 +295,9 @@
             </div>
           </div>
 
-          <button class="close-details-button" (click)="closeDetails()">סגור</button>
+          <button class="close-details-button" (click)="closeDetails()">
+            סגור
+          </button>
         </div>
       </div>
     </div>
