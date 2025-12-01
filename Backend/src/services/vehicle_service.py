@@ -335,15 +335,19 @@ def update_vehicle(vehicle_id: str, vehicle_data: VehicleUpdateRequest, db: Sess
         raise HTTPException(status_code=404, detail="רכב לא נמצא")
     if vehicle.is_archived:
         raise HTTPException(status_code=400, detail="לא ניתן לערוך רכב מארכב")
-    if vehicle_data.department_id:
-        from ..models.department_model import Department
-        dept = db.query(Department).filter(
-            Department.id == vehicle_data.department_id,
-        ).first()
-        if not dept:
-            raise HTTPException(status_code=400, detail="מחלקה לא נמצאה או לא פעילה")
-    if vehicle_data.department_id is not None:
-        vehicle.department_id = vehicle_data.department_id
+    if hasattr(vehicle_data, 'department_id'):
+        if vehicle_data.department_id is None or vehicle_data.department_id == '':
+            vehicle.department_id = None
+        elif isinstance(vehicle_data.department_id, str) and vehicle_data.department_id.lower() == "null":
+            vehicle.department_id = None
+        else:
+            from ..models.department_model import Department
+            dept = db.query(Department).filter(
+                Department.id == vehicle_data.department_id,
+            ).first()
+            if not dept:
+                raise HTTPException(status_code=400, detail="מחלקה לא נמצאה או לא פעילה")
+            vehicle.department_id = vehicle_data.department_id
     if vehicle_data.mileage is not None:
         if vehicle_data.mileage < 0:
             raise HTTPException(status_code=400, detail="קילומטראז' לא יכול להיות שלילי")
@@ -356,11 +360,9 @@ def update_vehicle(vehicle_id: str, vehicle_data: VehicleUpdateRequest, db: Sess
     try:
         db.commit()
         db.refresh(vehicle)
-        print(f"✅ Vehicle {vehicle.plate_number} updated successfully")
         return get_vehicle_by_id(vehicle_id, db)
     except Exception as e:
         db.rollback()
-        print(f"❌ Error updating vehicle: {str(e)}")
         raise HTTPException(status_code=500, detail=f"שגיאה בעדכון הרכב: {str(e)}")
 
 def freeze_vehicle_service(db: Session, vehicle_id: UUID, reason: str, changed_by: UUID):
