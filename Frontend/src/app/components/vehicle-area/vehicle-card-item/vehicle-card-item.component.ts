@@ -5,7 +5,10 @@ import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { ConfirmDialogComponent, ConfirmDialogData } from '../../page-area/confirm-dialog/confirm-dialog.component';
+import {
+  ConfirmDialogComponent,
+  ConfirmDialogData,
+} from '../../page-area/confirm-dialog/confirm-dialog.component';
 import { MatIconModule } from '@angular/material/icon';
 import { Observable } from 'rxjs';
 import { Location } from '@angular/common';
@@ -20,27 +23,38 @@ import { ToastService } from '../../../services/toast.service';
 })
 export class VehicleCardItemComponent implements OnInit {
   vehicle: any;
-  originalVehicle: any; 
+  originalVehicle: any;
   isEditMode: boolean = false;
   isFreezeReasonFieldVisible: boolean = false;
   freezeReason: string = '';
   freezeDetails: string = '';
   topUsedVehiclesMap: Record<string, number> = {};
-  vehicleUsageData: { plate_number: string; vehicle_model: string; ride_count: number }[] = [];
+  vehicleUsageData: {
+    plate_number: string;
+    vehicle_model: string;
+    ride_count: number;
+  }[] = [];
   currentVehicleRideCount: number = 0;
   departmentName: string = '';
   departments: any[] = [];
   currentDate = new Date();
-  vehicleTypes = ['Private', 'Small Commercial', 'Large Commercial', '4x4 Pickup', '4x4 SUV', '8-Seater'];
+  vehicleTypes = [
+    'Private',
+    'Small Commercial',
+    'Large Commercial',
+    '4x4 Pickup',
+    '4x4 SUV',
+    '8-Seater',
+  ];
   fuelTypes = ['electric', 'hybrid', 'gasoline'];
   constructor(
     private navigateRouter: Router,
     private route: ActivatedRoute,
     private vehicleService: VehicleService,
-    private dialog: MatDialog, 
+    private dialog: MatDialog,
     private toastService: ToastService,
     private location: Location
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -49,7 +63,7 @@ export class VehicleCardItemComponent implements OnInit {
 
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
-      this.vehicleService.getVehicleById(id).subscribe(vehicleData => {
+      this.vehicleService.getVehicleById(id).subscribe((vehicleData) => {
         this.vehicle = vehicleData;
         this.originalVehicle = JSON.parse(JSON.stringify(vehicleData));
         this.vehicle.displayStatus = this.translateStatus(vehicleData.status);
@@ -59,15 +73,17 @@ export class VehicleCardItemComponent implements OnInit {
         }
 
         if (vehicleData.department_id) {
-          this.vehicleService.getDepartmentById(vehicleData.department_id).subscribe({
-            next: (dept) => {
-              this.departmentName = dept.name;
-            },
-            error: (err) => {
-              console.error('Failed to fetch department name:', err);
-              this.departmentName = 'לא ידוע';
-            }
-          });
+          this.vehicleService
+            .getDepartmentById(vehicleData.department_id)
+            .subscribe({
+              next: (dept) => {
+                this.departmentName = dept.name;
+              },
+              error: (err) => {
+                console.error('Failed to fetch department name:', err);
+                this.departmentName = 'לא ידוע';
+              },
+            });
         } else {
           this.departmentName = 'לא משוייך למחלקה';
         }
@@ -83,7 +99,7 @@ export class VehicleCardItemComponent implements OnInit {
       },
       error: (err) => {
         console.error('Failed to load departments:', err);
-      }
+      },
     });
   }
   enterEditMode(): void {
@@ -95,128 +111,149 @@ export class VehicleCardItemComponent implements OnInit {
     this.isEditMode = false;
   }
   saveChanges(): void {
-  const dialogData: ConfirmDialogData = {
-    title: 'שמירת שינויים',
-    message: 'האם אתה בטוח שברצונך לשמור את השינויים?',
-    confirmText: 'שמור',
-    cancelText: 'בטל',
-    noRestoreText: '',
-    isDestructive: false
-  };
+    const dialogData: ConfirmDialogData = {
+      title: 'שמירת שינויים',
+      message: 'האם אתה בטוח שברצונך לשמור את השינויים?',
+      confirmText: 'שמור',
+      cancelText: 'בטל',
+      noRestoreText: '',
+      isDestructive: false,
+    };
 
-  const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-    data: dialogData,
-    width: '400px',
-    maxWidth: '90vw',
-    panelClass: 'confirm-dialog-no-scroll'
-  });
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      data: dialogData,
+      width: '400px',
+      maxWidth: '90vw',
+      panelClass: 'confirm-dialog-no-scroll',
+    });
 
-  dialogRef.afterClosed().subscribe(result => {
-    if (result) {
-      const cleanedVehicle = {
-        ...this.vehicle,
-        department_id: (!this.vehicle.department_id || this.vehicle.department_id === '') 
-          ? null 
-          : this.vehicle.department_id
-      };
-      this.vehicleService.updateVehicle(this.vehicle.id, cleanedVehicle).subscribe({
-        next: () => {
-          this.toastService.show('הרכב עודכן בהצלחה', 'success');
-          this.isEditMode = false;
-          this.originalVehicle = JSON.parse(JSON.stringify(this.vehicle));
-          
-          if (this.vehicle.department_id && this.vehicle.department_id !== '') {
-            const dept = this.departments.find(d => d.id === this.vehicle.department_id);
-            this.departmentName = dept ? dept.name : 'לא ידוע';
-          } else {
-            this.departmentName = 'לא משוייך למחלקה';
-          }
-        },
-        error: (err) => {
-          this.toastService.show(err.error?.detail || 'שגיאה בעדכון הרכב', 'error');
-        }
-      });
-    }
-  });
-}
-
-  getCardClass(status: string): string {
-    switch (status) {
-      case 'available': return 'card-available';
-      case 'in_use': return 'card-inuse';
-      case 'frozen': return 'card-frozen';
-      case 'archived': return 'card-archived';
-      default: return '';
-    }
-  }
-
-    goBack(): void {
-      if (this.isEditMode) {
-        const dialogData: ConfirmDialogData = {
-          title: 'יציאה ממצב עריכה',
-          message: 'יש לך שינויים שלא נשמרו. האם אתה בטוח שברצונך לצאת?',
-          confirmText: 'צא',
-          cancelText: 'בטל',
-          noRestoreText: 'השינויים לא יישמרו',
-          isDestructive: true
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        const cleanedVehicle = {
+          ...this.vehicle,
+          department_id:
+            !this.vehicle.department_id || this.vehicle.department_id === ''
+              ? null
+              : this.vehicle.department_id,
         };
+        this.vehicleService
+          .updateVehicle(this.vehicle.id, cleanedVehicle)
+          .subscribe({
+            next: () => {
+              this.toastService.show('הרכב עודכן בהצלחה', 'success');
+              this.isEditMode = false;
+              this.originalVehicle = JSON.parse(JSON.stringify(this.vehicle));
 
-        const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-          data: dialogData
-        });
-
-        dialogRef.afterClosed().subscribe(result => {
-          if (result) {
-            this.location.back();
-          }
-        });
-      } else {
-        this.location.back();
-      }
-    }
-
-  loadVehicleUsageData(): void {
-   this.vehicleService.getTopUsedVehicles().subscribe({
-      next: data => {
-        this.vehicleUsageData = data;
-        this.topUsedVehiclesMap = {};
-        data.forEach(vehicle => {
-          this.topUsedVehiclesMap[vehicle.plate_number] = vehicle.ride_count;
-        });
-      },
-      error: err => {
-        console.error(' Error fetching vehicle usage data:', err);
+              if (
+                this.vehicle.department_id &&
+                this.vehicle.department_id !== ''
+              ) {
+                const dept = this.departments.find(
+                  (d) => d.id === this.vehicle.department_id
+                );
+                this.departmentName = dept ? dept.name : 'לא ידוע';
+              } else {
+                this.departmentName = 'לא משוייך למחלקה';
+              }
+            },
+            error: (err) => {
+              this.toastService.show(
+                err.error?.detail || 'שגיאה בעדכון הרכב',
+                'error'
+              );
+            },
+          });
       }
     });
   }
-confirmDeleteVehicle(vehicle: any) {
-  if (vehicle.status === 'in-use') return;
 
-  const dialogData: ConfirmDialogData = {
-    title: 'מחיקת רכב',
-    message: 'האם אתה בטוח שברצונך למחוק את הרכב? פעולה זו אינה ניתנת לשחזור.',
-    confirmText: 'מחק',
-    cancelText: 'בטל',
-    noRestoreText: 'לא ניתן לשחזור',
-    isDestructive: true
-  };
-
-  const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-    data: dialogData
-  });
-
-  dialogRef.afterClosed().subscribe(result => {
-    if (result) {
-      this.vehicleService.deleteVehicle(vehicle.id).subscribe({
-        next: () => {
-          this.toastService.show('הרכב נמחק בהצלחה', 'success');
-          this.navigateRouter.navigate(['/vehicle-dashboard'])
-        },
-        error: err => this.toastService.show(err.error.detail || 'שגיאה במחיקת הרכב', 'error')
-      });
+  getCardClass(status: string): string {
+    switch (status) {
+      case 'available':
+        return 'card-available';
+      case 'in_use':
+        return 'card-inuse';
+      case 'frozen':
+        return 'card-frozen';
+      case 'archived':
+        return 'card-archived';
+      default:
+        return '';
     }
-  });
-}
+  }
+
+  goBack(): void {
+    if (this.isEditMode) {
+      const dialogData: ConfirmDialogData = {
+        title: 'יציאה ממצב עריכה',
+        message: 'יש לך שינויים שלא נשמרו. האם אתה בטוח שברצונך לצאת?',
+        confirmText: 'צא',
+        cancelText: 'בטל',
+        noRestoreText: 'השינויים לא יישמרו',
+        isDestructive: true,
+      };
+
+      const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+        data: dialogData,
+      });
+
+      dialogRef.afterClosed().subscribe((result) => {
+        if (result) {
+          this.location.back();
+        }
+      });
+    } else {
+      this.location.back();
+    }
+  }
+
+  loadVehicleUsageData(): void {
+    this.vehicleService.getTopUsedVehicles().subscribe({
+      next: (data) => {
+        this.vehicleUsageData = data;
+        this.topUsedVehiclesMap = {};
+        data.forEach((vehicle) => {
+          this.topUsedVehiclesMap[vehicle.plate_number] = vehicle.ride_count;
+        });
+      },
+      error: (err) => {
+        console.error(' Error fetching vehicle usage data:', err);
+      },
+    });
+  }
+  confirmDeleteVehicle(vehicle: any) {
+    if (vehicle.status === 'in-use') return;
+
+    const dialogData: ConfirmDialogData = {
+      title: 'מחיקת רכב',
+      message:
+        'האם אתה בטוח שברצונך למחוק את הרכב? פעולה זו אינה ניתנת לשחזור.',
+      confirmText: 'מחק',
+      cancelText: 'בטל',
+      noRestoreText: 'לא ניתן לשחזור',
+      isDestructive: true,
+    };
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      data: dialogData,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.vehicleService.deleteVehicle(vehicle.id).subscribe({
+          next: () => {
+            this.toastService.show('הרכב נמחק בהצלחה', 'success');
+            this.navigateRouter.navigate(['/vehicle-dashboard']);
+          },
+          error: (err) =>
+            this.toastService.show(
+              err.error.detail || 'שגיאה במחיקת הרכב',
+              'error'
+            ),
+        });
+      }
+    });
+  }
 
   deleteVehicle(vehicleId: string) {
     console.log('Delete vehicle ID:', vehicleId);
@@ -237,17 +274,17 @@ confirmDeleteVehicle(vehicle: any) {
     }
   }
 
-translateType(type: string | undefined): string {
-  const map: { [key: string]: string } = {
-    'Private': 'פרטי',
-    'Small Commercial': 'קטן מסחרי',
-    'Large Commercial': 'גדול מסחרי',
-    '4x4 Pickup': 'טנדר 4x4',
-    '4x4 SUV': 'ג׳יפ 4x4',
-    '8-Seater': '8 מושבים'
-  };
-  return map[type || ''] || type || '';
-}
+  translateType(type: string | undefined): string {
+    const map: { [key: string]: string } = {
+      Private: 'פרטי',
+      'Small Commercial': 'קטן מסחרי',
+      'Large Commercial': 'גדול מסחרי',
+      '4x4 Pickup': 'טנדר 4x4',
+      '4x4 SUV': 'ג׳יפ 4x4',
+      '8-Seater': '8 מושבים',
+    };
+    return map[type || ''] || type || '';
+  }
 
   translateFuelType(fuelType: string | null | undefined): string {
     if (!fuelType) return '';
@@ -261,7 +298,7 @@ translateType(type: string | undefined): string {
       default:
         return fuelType;
     }
-}
+  }
   translateFreezeReason(freezeReason: string | null | undefined): string {
     if (!freezeReason) return '';
     switch (freezeReason.toLowerCase()) {
@@ -279,23 +316,32 @@ translateType(type: string | undefined): string {
   updateVehicleStatus(newStatus: string, reason?: string): void {
     if (!this.vehicle?.id) return;
 
-    this.vehicleService.updateVehicleStatus(this.vehicle.id, newStatus, reason).subscribe({
-      next: (response) => {
-        this.vehicle.status = newStatus;
-        this.vehicle.freeze_reason = newStatus === 'frozen' ? reason : null;
+    this.vehicleService
+      .updateVehicleStatus(this.vehicle.id, newStatus, reason)
+      .subscribe({
+        next: (response) => {
+          this.vehicle.status = newStatus;
+          this.vehicle.freeze_reason = newStatus === 'frozen' ? reason : null;
 
-        if (newStatus === 'frozen') {
-          this.freezeReason = '';
-          this.isFreezeReasonFieldVisible = false;
-        }
+          if (newStatus === 'frozen') {
+            this.freezeReason = '';
+            this.isFreezeReasonFieldVisible = false;
+          }
 
-        this.location.back();
-      },
-      error: (err) => {
-        console.error(`Failed to update vehicle status to '${newStatus}':`, err);
-        alert(`Failed to update vehicle status: ${err.error?.detail || err.message}`);
-      }
-    });
+          this.location.back();
+        },
+        error: (err) => {
+          console.error(
+            `Failed to update vehicle status to '${newStatus}':`,
+            err
+          );
+          alert(
+            `Failed to update vehicle status: ${
+              err.error?.detail || err.message
+            }`
+          );
+        },
+      });
   }
 
   showFreezeReasonField(): void {
@@ -305,11 +351,16 @@ translateType(type: string | undefined): string {
   getUsageBarColor(plateNumber: string): string {
     const level = this.getUsageLevel(plateNumber);
     switch (level) {
-      case 'high': return '#FF5252';
-      case 'medium': return '#FFC107';
-      case 'good': return '#42A5F5';
-      case 'hide': return 'rgba(255, 255, 255, 0)';
-      default: return '#E0E0E0';
+      case 'high':
+        return '#FF5252';
+      case 'medium':
+        return '#FFC107';
+      case 'good':
+        return '#42A5F5';
+      case 'hide':
+        return 'rgba(255, 255, 255, 0)';
+      default:
+        return '#E0E0E0';
     }
   }
 
@@ -334,26 +385,30 @@ translateType(type: string | undefined): string {
   getAllRidesForCurrentVehicle(vehicleId: string): void {
     this.vehicleService.getAllOrders().subscribe({
       next: (rides) => {
-        const count = rides.filter(ride => {
+        const count = rides.filter((ride) => {
           if (ride.vehicle_id !== vehicleId) return false;
           if (!ride.date_and_time) return false;
           const rideDate = new Date(ride.date_and_time);
           const currentDate = new Date();
-          return rideDate.getMonth() === currentDate.getMonth() &&
-            rideDate.getFullYear() === currentDate.getFullYear();
+          return (
+            rideDate.getMonth() === currentDate.getMonth() &&
+            rideDate.getFullYear() === currentDate.getFullYear()
+          );
         }).length;
         this.currentVehicleRideCount = count;
       },
       error: (err) => {
         console.error('Error fetching rides:', err);
         this.currentVehicleRideCount = 0;
-      }
+      },
     });
   }
 
   navigateToTimeline(): void {
     if (this.vehicle?.id) {
-      this.navigateRouter.navigate([`/vehicle-details/${this.vehicle.id}/timeline`]);
+      this.navigateRouter.navigate([
+        `/vehicle-details/${this.vehicle.id}/timeline`,
+      ]);
     }
   }
   confirmArchive(vehicle: any): void {
@@ -367,11 +422,11 @@ translateType(type: string | undefined): string {
         confirmText: 'ארכב',
         cancelText: 'בטל',
         noRestoreText: '',
-        isDestructive: false
-      }
+        isDestructive: false,
+      },
     });
 
-    dialogRef.afterClosed().subscribe(confirmed => {
+    dialogRef.afterClosed().subscribe((confirmed) => {
       if (!confirmed) return;
 
       this.vehicleService.archiveVehicle(vehicle.id).subscribe({
@@ -380,10 +435,10 @@ translateType(type: string | undefined): string {
           this.location.back();
         },
         error: (err) => {
-          console.error(" ארכוב נכשל:", err);
-          const msg = err?.error?.detail || "הארכוב נכשל.";
+          console.error(' ארכוב נכשל:', err);
+          const msg = err?.error?.detail || 'הארכוב נכשל.';
           this.toastService.show(msg, 'error');
-        }
+        },
       });
     });
   }
@@ -399,11 +454,11 @@ translateType(type: string | undefined): string {
         confirmText: 'שחרר',
         cancelText: 'בטל',
         noRestoreText: '',
-        isDestructive: false
-      }
+        isDestructive: false,
+      },
     });
 
-    dialogRef.afterClosed().subscribe(confirmed => {
+    dialogRef.afterClosed().subscribe((confirmed) => {
       if (!confirmed) return;
       this.updateVehicleStatus('available');
     });
@@ -426,11 +481,11 @@ translateType(type: string | undefined): string {
         confirmText: 'הקפא',
         cancelText: 'בטל',
         noRestoreText: '',
-        isDestructive: false
-      }
+        isDestructive: false,
+      },
     });
 
-    dialogRef.afterClosed().subscribe(confirmed => {
+    dialogRef.afterClosed().subscribe((confirmed) => {
       if (!confirmed) return;
       this.updateVehicleStatus('frozen', this.freezeReason);
       this.freezeReason = '';
@@ -446,90 +501,118 @@ translateType(type: string | undefined): string {
     if (!dateStr) return 'לא בוצעו נסיעות';
     const date = new Date(dateStr);
     const now = new Date();
-    const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const dateOnly = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate()
+    );
     const nowOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const diffDays = Math.floor((+nowOnly - +dateOnly) / (1000 * 60 * 60 * 24));
 
     if (diffDays === 0) {
-      return `היום, ${date.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}`;
+      return `היום, ${date.toLocaleTimeString('he-IL', {
+        hour: '2-digit',
+        minute: '2-digit',
+      })}`;
     }
     if (diffDays === 1) {
-      return `אתמול, ${date.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}`;
+      return `אתמול, ${date.toLocaleTimeString('he-IL', {
+        hour: '2-digit',
+        minute: '2-digit',
+      })}`;
     }
-    return date.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' }) +
+    return (
+      date.toLocaleDateString('he-IL', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      }) +
       ' ' +
-      date.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+      date.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })
+    );
   }
 
   restoreVehicle(vehicle: any): void {
     const message = `האם את/ה בטוח/ה שברצונך לשחזר את הרכב ${vehicle.plate_number} מהארכיון ולהחזיר אותו לפעילות?`;
-    
+
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
-      data: { 
+      data: {
         title: 'שחזור רכב מהארכיון',
         message,
         confirmText: 'שחזר',
         cancelText: 'בטל',
         noRestoreText: '',
-        isDestructive: false
-      }
+        isDestructive: false,
+      },
     });
 
-    dialogRef.afterClosed().subscribe(confirmed => {
+    dialogRef.afterClosed().subscribe((confirmed) => {
       if (!confirmed) return;
 
       this.vehicleService.restoreVehicle(vehicle.id).subscribe({
         next: () => {
-          this.toastService.show(`הרכב ${vehicle.plate_number} שוחזר בהצלחה מהארכיון`, 'success');
+          this.toastService.show(
+            `הרכב ${vehicle.plate_number} שוחזר בהצלחה מהארכיון`,
+            'success'
+          );
           this.location.back();
         },
         error: (err) => {
           console.error(' Error restoring vehicle:', err);
           this.toastService.show('שגיאה בשחזור הרכב מהארכיון', 'error');
-        }
+        },
       });
     });
   }
 
-updateVehiclemileage(vehicle: any): void {
-  this.vehicleService.updatemileage(vehicle.id, vehicle.mileage).subscribe({
-    next: () => {
-      this.toastService.show(`קילומטראז' הרכב ${vehicle.plate_number} עודכן בהצלחה`, 'success');
-    },
-    error: (err) => {
-      this.toastService.show(err.error?.detail || 'אירעה שגיאה בעת עדכון הקילומטראז׳', 'error');
-    }
-  });
-}
+  updateVehiclemileage(vehicle: any): void {
+    this.vehicleService.updatemileage(vehicle.id, vehicle.mileage).subscribe({
+      next: () => {
+        this.toastService.show(
+          `קילומטראז' הרכב ${vehicle.plate_number} עודכן בהצלחה`,
+          'success'
+        );
+      },
+      error: (err) => {
+        this.toastService.show(
+          err.error?.detail || 'אירעה שגיאה בעת עדכון הקילומטראז׳',
+          'error'
+        );
+      },
+    });
+  }
 
   permanentlyDeleteVehicle(vehicle: any): void {
     const message = `⚠️ האם את/ה בטוח/ה שברצונך למחוק לצמיתות את הרכב ${vehicle.plate_number}?\n\nפעולה זו לא ניתנת לביטול ותמחק את כל הנתונים הקשורים לרכב!`;
-    
+
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '450px',
-      data: { 
+      data: {
         title: 'מחיקה לצמיתות',
         message,
         confirmText: 'מחק לצמיתות',
         cancelText: 'בטל',
         noRestoreText: 'לא ניתן לשחזור',
-        isDestructive: true
-      }
+        isDestructive: true,
+      },
     });
 
-    dialogRef.afterClosed().subscribe(confirmed => {
+    dialogRef.afterClosed().subscribe((confirmed) => {
       if (!confirmed) return;
 
       this.vehicleService.permanentlyDeleteVehicle(vehicle.id).subscribe({
         next: () => {
-          this.toastService.show(`הרכב ${vehicle.plate_number} נמחק לצמיתות`, 'success');
+          this.toastService.show(
+            `הרכב ${vehicle.plate_number} נמחק לצמיתות`,
+            'success'
+          );
           this.location.back();
         },
         error: (err) => {
           console.error(' Error permanently deleting vehicle:', err);
           this.toastService.show('שגיאה במחיקה לצמיתות של הרכב', 'error');
-        }
+        },
       });
     });
   }

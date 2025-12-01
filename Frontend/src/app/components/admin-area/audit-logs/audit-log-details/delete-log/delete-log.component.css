@@ -61,10 +61,9 @@ field-row {
   font-weight: 500;
 }
 .delete-data {
-  border-right: 4px solid #b33c2f; 
+  border-right: 4px solid #b33c2f;
 }
 
 .delete-data h4 {
-  color: #b33c2f; 
+  color: #b33c2f;
 }
-

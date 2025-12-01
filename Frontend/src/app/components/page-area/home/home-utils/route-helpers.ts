@@ -14,7 +14,10 @@ export function extractCityId(raw: any): string | null {
   return null;
 }
 
-export function buildRouteStops(extraStops: string[], finalStopId: string): string[] {
+export function buildRouteStops(
+  extraStops: string[],
+  finalStopId: string
+): string[] {
   const cleanExtraStops = (extraStops || []).filter(
     (id) => !!id && typeof id === 'string' && id.trim() !== ''
   );
@@ -22,7 +25,10 @@ export function buildRouteStops(extraStops: string[], finalStopId: string): stri
   return [...cleanExtraStops, finalStopId];
 }
 
-export function shouldResetDistance(startId: string | null, stopId: string | null): boolean {
+export function shouldResetDistance(
+  startId: string | null,
+  stopId: string | null
+): boolean {
   if (!startId || !stopId) return true;
   if (startId === stopId) return true;
   return false;

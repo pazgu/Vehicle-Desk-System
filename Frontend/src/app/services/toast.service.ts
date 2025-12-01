@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
 
-type ToastType = 'success' | 'error' | 'neutral' | 'warning' | 'info' ;
+type ToastType = 'success' | 'error' | 'neutral' | 'warning' | 'info';
 
 @Injectable({ providedIn: 'root' })
 export class ToastService {
-
   private getContainer(): HTMLElement {
     let container = document.querySelector<HTMLElement>('.toast-container');
     if (!container) {
@@ -17,20 +16,24 @@ export class ToastService {
 
   show(message: string, type: ToastType = 'success') {
     const container = this.getContainer();
-const existing = Array.from(container.querySelectorAll('.custom-toast'))
-    .find(toast => toast.textContent?.trim() === 'הסתיים תוקף ההתחברות שלך. התחבר מחדש');
+    const existing = Array.from(
+      container.querySelectorAll('.custom-toast')
+    ).find(
+      (toast) =>
+        toast.textContent?.trim() === 'הסתיים תוקף ההתחברות שלך. התחבר מחדש'
+    );
 
-  if (existing) {
-    console.warn('Duplicate toast blocked:', message);
-    return;
-  }
+    if (existing) {
+      console.warn('Duplicate toast blocked:', message);
+      return;
+    }
     const toast = document.createElement('div');
     toast.className = `custom-toast ${type}`;
     toast.innerText = message;
     container.appendChild(toast);
 
     const sound = new Audio('assets/sounds/notif.mp3');
-    sound.play().catch(e => console.warn('Sound play failed:', e));
+    sound.play().catch((e) => console.warn('Sound play failed:', e));
 
     setTimeout(() => {
       toast.remove();
@@ -38,32 +41,34 @@ const existing = Array.from(container.querySelectorAll('.custom-toast'))
   }
 
   showPersistent(message: string, type: ToastType = 'neutral') {
-  const container = this.getContainer();
+    const container = this.getContainer();
 
-  const existing = Array.from(container.querySelectorAll('.toast.persistent'))
-    .find(toast => toast.textContent?.replace('OK', '').trim() === message.trim());
+    const existing = Array.from(
+      container.querySelectorAll('.toast.persistent')
+    ).find(
+      (toast) => toast.textContent?.replace('OK', '').trim() === message.trim()
+    );
 
-  if (existing) {
-    console.warn('Duplicate persistent toast blocked:', message);
-    return;
+    if (existing) {
+      console.warn('Duplicate persistent toast blocked:', message);
+      return;
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type} persistent`;
+    toast.innerText = message;
+
+    const okButton = document.createElement('button');
+    okButton.className = 'toast-ok-btn';
+    okButton.innerText = 'OK';
+    okButton.onclick = () => toast.remove();
+    toast.appendChild(okButton);
+
+    container.appendChild(toast);
+
+    const sound = new Audio('assets/sounds/info.mp3');
+    sound.play().catch((e) => console.warn('Sound play failed:', e));
   }
-
-  const toast = document.createElement('div');
-  toast.className = `toast ${type} persistent`;
-  toast.innerText = message;
-
-  const okButton = document.createElement('button');
-  okButton.className = 'toast-ok-btn';
-  okButton.innerText = 'OK';
-  okButton.onclick = () => toast.remove();
-  toast.appendChild(okButton);
-
-  container.appendChild(toast);
-
-  const sound = new Audio('assets/sounds/info.mp3');
-  sound.play().catch(e => console.warn('Sound play failed:', e));
-}
-
 
   clearAll() {
     const container = document.querySelector('.toast-container');

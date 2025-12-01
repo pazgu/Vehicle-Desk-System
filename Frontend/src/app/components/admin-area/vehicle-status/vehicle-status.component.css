@@ -10,7 +10,7 @@
   font-weight: 700;
   color: #4a5568;
   font-size: 1rem;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
 }
 
 .filter-container select {
@@ -18,7 +18,7 @@
   border-radius: 10px;
   border: 2px solid rgba(102, 126, 234, 0.2);
   font-size: 0.9rem;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   font-weight: 600;
   background: #ffffff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
@@ -65,5 +65,5 @@
   padding: 2rem;
   color: #4a5568;
   font-weight: 600;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
 }

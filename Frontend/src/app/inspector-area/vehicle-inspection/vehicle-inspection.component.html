@@ -1,79 +1,102 @@
 <div *ngIf="formSubmitted" class="success-container">
   <div class="success-message">
-    <h2> הבדיקה נשלחה בהצלחה!</h2>
+    <h2>הבדיקה נשלחה בהצלחה!</h2>
     <p>כל הנתונים נשמרו במערכת</p>
     <button (click)="openNewForm()" class="new-form-button">
       פתח טופס חדש
     </button>
   </div>
 </div>
-<div *ngIf="!formSubmitted && noVehiclesAvailable" class="no-vehicles-container">
+<div
+  *ngIf="!formSubmitted && noVehiclesAvailable"
+  class="no-vehicles-container"
+>
   <div class="no-vehicles-message">
-    <h2> אין רכבים זמינים לבדיקה</h2>
+    <h2>אין רכבים זמינים לבדיקה</h2>
     <p>כל הרכבים נמצאים כעת בהקפאה או בטיפול</p>
   </div>
 </div>
 <div *ngIf="!formSubmitted && !noVehiclesAvailable">
-<div class="search-container" style="max-width: 800px; margin: 0 auto 1.5rem auto; text-align: center;">
-  <input
-    type="text"
-    placeholder="חפש לפי לוחית רישוי"
-    [(ngModel)]="searchTerm"
-    (ngModelChange)="onSearchTermChange()"
-    class="search-input"
-    style="width: 100%; max-width: 400px;"
-  />
+  <div
+    class="search-container"
+    style="max-width: 800px; margin: 0 auto 1.5rem auto; text-align: center"
+  >
+    <input
+      type="text"
+      placeholder="חפש לפי לוחית רישוי"
+      [(ngModel)]="searchTerm"
+      (ngModelChange)="onSearchTermChange()"
+      class="search-input"
+      style="width: 100%; max-width: 400px"
+    />
+  </div>
+
+  <div *ngIf="showScrollArrow" class="scroll-arrow-container">
+    <button
+      (click)="scrollToBottom()"
+      class="scroll-arrow-button"
+      title="לך לכפתור שליחה"
+    >
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M12 5V19M12 19L19 12M12 19L5 12"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </button>
+  </div>
+
+  <table class="vehicle-issues-table">
+    <thead>
+      <tr>
+        <th>לוחית רישוי</th>
+        <th>מלוכלך</th>
+        <th>לא מתודלק</th>
+        <th>נשכחו חפצים</th>
+        <th>אירוע חריג</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let issue of filteredIssues">
+        <td>{{ issue.plate }}</td>
+        <td><input type="checkbox" [(ngModel)]="issue.dirty" /></td>
+        <td>
+          <input type="checkbox" [(ngModel)]="issue.fuel_checked" />
+        </td>
+        <td><input type="checkbox" [(ngModel)]="issue.items_left" /></td>
+        <td>
+          <input type="checkbox" [(ngModel)]="issue.critical_issue" />
+          <div
+            *ngIf="issue.critical_issue"
+            class="critical-description"
+            style="margin-top: 8px"
+          >
+            <textarea
+              [(ngModel)]="issue.issues_found"
+              rows="3"
+              placeholder="הכנס תיאור כאן"
+              required
+            ></textarea>
+          </div>
+        </td>
+      </tr>
+
+      <tr *ngIf="filteredIssues.length === 0">
+        <td colspan="5" class="empty-state-message">לא נמצאו רכבים תואמים</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <button (click)="submitIssues()" class="cute-red-button">שלח בדיקות</button>
+  <div *ngIf="submitting">שולח...</div>
+  <div #bottom></div>
 </div>
-
-<div *ngIf="showScrollArrow" class="scroll-arrow-container">
-  <button (click)="scrollToBottom()" class="scroll-arrow-button" title="לך לכפתור שליחה">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M12 5V19M12 19L19 12M12 19L5 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-  </button>
-</div>
-
-<table class="vehicle-issues-table">
-  <thead>
-    <tr>
-      <th>לוחית רישוי</th>
-      <th>מלוכלך</th>
-      <th>לא מתודלק</th>
-      <th>נשכחו חפצים</th>
-      <th>אירוע חריג</th>
-    </tr>
-  </thead>
-<tbody>
-    <tr *ngFor="let issue of filteredIssues">
-      <td>{{ issue.plate }}</td>
-      <td><input type="checkbox" [(ngModel)]="issue.dirty" /></td>
-      <td>
-        <input type="checkbox" [(ngModel)]="issue.fuel_checked" />
-      </td>
-      <td><input type="checkbox" [(ngModel)]="issue.items_left" /></td>
-      <td>
-        <input type="checkbox" [(ngModel)]="issue.critical_issue" />
-        <div *ngIf="issue.critical_issue" class="critical-description" style="margin-top:8px;">
-          <textarea
-            [(ngModel)]="issue.issues_found"
-            rows="3"
-            placeholder="הכנס תיאור כאן"
-            required
-          ></textarea>
-        </div>
-      </td>
-    </tr>
-
-    <tr *ngIf="filteredIssues.length === 0">
-      <td colspan="5" class="empty-state-message">
-        לא נמצאו רכבים תואמים
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-<button (click)="submitIssues()" class="cute-red-button">שלח בדיקות</button>
-<div *ngIf="submitting">שולח...</div>
-<div #bottom></div>
-</div>
-

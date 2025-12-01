@@ -1,14 +1,14 @@
 export interface RawCriticalIssue {
-  inspection_id?: string;  // ← use this if backend sends "id" as inspection ID
+  inspection_id?: string; 
   ride_id?: string | null;
   approved_by?: string;
-  submitted_by?: string; // ← support both
+  submitted_by?: string; 
   role?: string;
-  type?: string; // ← support both
+  type?: string; 
   status?: string;
   severity: string;
   issue_description?: string;
-  issue_text?: string; // ← support both
+  issue_text?: string;
   timestamp: string;
   vehicle_id?: string;
   vehicle_info?: string;

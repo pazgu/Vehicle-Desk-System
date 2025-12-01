@@ -117,7 +117,7 @@ export class FilterPanelComponent implements OnInit, OnChanges {
     this.updateQueryParams.emit();
   }
 
-    loadVehicleUsageDataAllTime(): void {
+  loadVehicleUsageDataAllTime(): void {
     this.vehicleService.getMostUsedVehiclesAllTime().subscribe({
       next: (response) => {
         this.vehicleUsageDataAllTime.clear();

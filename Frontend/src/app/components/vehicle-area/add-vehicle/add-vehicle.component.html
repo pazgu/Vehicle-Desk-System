@@ -1,104 +1,165 @@
-
-
-<div class="page-wrapper">             
-<div class="vehicle-form-container">
-  <div class="vehicle-wrapper-header">
-    <button class="back-btn" (click)="goBack()"> חזור ←</button>
-    <h2>הוסף רכב חדש</h2>
-  </div>
-  
-
+<div class="page-wrapper">
+  <div class="vehicle-form-container">
+    <div class="vehicle-wrapper-header">
+      <button class="back-btn" (click)="goBack()">חזור ←</button>
+      <h2>הוסף רכב חדש</h2>
+    </div>
 
     <form (ngSubmit)="submitForm()" [formGroup]="vehicleForm" novalidate>
-
       <label>סוג רכב (קטן, גדול...)</label>
       <input formControlName="type" type="text" />
-      <div class="error" *ngIf="vehicleForm.get('type')?.touched && vehicleForm.get('type')?.invalid">
+      <div
+        class="error"
+        *ngIf="
+          vehicleForm.get('type')?.touched && vehicleForm.get('type')?.invalid
+        "
+      >
         סוג רכב נדרש
       </div>
 
       <label>דגם רכב</label>
       <input formControlName="vehicle_model" type="text" />
-      <div class="error" *ngIf="vehicleForm.get('vehicle_model')?.touched && vehicleForm.get('vehicle_model')?.invalid">
+      <div
+        class="error"
+        *ngIf="
+          vehicleForm.get('vehicle_model')?.touched &&
+          vehicleForm.get('vehicle_model')?.invalid
+        "
+      >
         דגם נדרש
       </div>
 
       <label>מספר רישוי</label>
       <input formControlName="plate_number" type="text" />
-      <div class="error" *ngIf="vehicleForm.get('plate_number')?.touched && vehicleForm.get('plate_number')?.invalid">
+      <div
+        class="error"
+        *ngIf="
+          vehicleForm.get('plate_number')?.touched &&
+          vehicleForm.get('plate_number')?.invalid
+        "
+      >
         מספר רישוי נדרש
       </div>
 
       <label for="department_id">מחלקה:</label>
       <select formControlName="department_id" id="department_id">
         <option [ngValue]="null" disabled selected>בחר מחלקה</option>
-        <option *ngFor="let dept of departments" [ngValue]="dept.value">{{ dept.name }}</option>
+        <option *ngFor="let dept of departments" [ngValue]="dept.value">
+          {{ dept.name }}
+        </option>
       </select>
-      <div class="error" *ngIf="vehicleForm.get('department_id')?.touched && vehicleForm.get('department_id')?.invalid">
+      <div
+        class="error"
+        *ngIf="
+          vehicleForm.get('department_id')?.touched &&
+          vehicleForm.get('department_id')?.invalid
+        "
+      >
         סוג מחלקה נדרש
       </div>
 
       <label for="fuel_type">סוג דלק:</label>
       <select formControlName="fuel_type" id="fuel_type">
         <option value="" disabled selected>בחר סוג דלק</option>
-        <option *ngFor="let fuel of fuelTypes" [value]="fuel.value">{{ fuel.label }}</option>
+        <option *ngFor="let fuel of fuelTypes" [value]="fuel.value">
+          {{ fuel.label }}
+        </option>
       </select>
-      <div class="error" *ngIf="vehicleForm.get('fuel_type')?.touched && vehicleForm.get('fuel_type')?.invalid">
+      <div
+        class="error"
+        *ngIf="
+          vehicleForm.get('fuel_type')?.touched &&
+          vehicleForm.get('fuel_type')?.invalid
+        "
+      >
         סוג דלק נדרש
       </div>
 
       <label>תוקף חוזה השכרה</label>
       <input formControlName="lease_expiry" type="date" />
-      <div class="error" *ngIf="vehicleForm.get('lease_expiry')?.touched && vehicleForm.get('lease_expiry')?.invalid">
+      <div
+        class="error"
+        *ngIf="
+          vehicleForm.get('lease_expiry')?.touched &&
+          vehicleForm.get('lease_expiry')?.invalid
+        "
+      >
         תאריך נדרש
       </div>
 
       <label>כמה הרכב עבר ב-ק"מ</label>
       <input formControlName="mileage" type="number" />
-      <div class="error"
-        *ngIf="vehicleForm.get('mileage')?.touched && vehicleForm.get('mileage')?.invalid">
+      <div
+        class="error"
+        *ngIf="
+          vehicleForm.get('mileage')?.touched &&
+          vehicleForm.get('mileage')?.invalid
+        "
+      >
         חובה להזין מספר ק"מ חוקי
       </div>
 
-      
-
       <label>תמונה (URL)</label>
-      <input formControlName="image_url" type="text" (blur)="onImageUrlBlur()" />
+      <input
+        formControlName="image_url"
+        type="text"
+        (blur)="onImageUrlBlur()"
+      />
 
-      <div class="error" *ngIf="vehicleForm.get('image_url')?.touched && vehicleForm.get('image_url')?.invalid">
-  <ng-container *ngIf="vehicleForm.get('image_url')?.hasError('required')">
-    כתובת תמונה נדרשת
-  </ng-container>
-  <ng-container *ngIf="vehicleForm.get('image_url')?.hasError('urlInvalid')">
-    כתובת ה-URL אינה תקינה
-  </ng-container>
-  <ng-container *ngIf="vehicleForm.get('image_url')?.hasError('urlProtocol')">
-    יש להזין קישור שמתחיל ב- http:// או https://
-  </ng-container>
-  <ng-container *ngIf="vehicleForm.get('image_url')?.hasError('urlHostname')">
-    יש להזין דומיין תקין (למשל example.com)
-  </ng-container>
-  <ng-container *ngIf="vehicleForm.get('image_url')?.hasError('urlImageExt')">
-    הקישור חייב להסתיים בסיומת תמונה תקפה (png/jpg/jpeg/gif/webp/bmp/svg)
-  </ng-container>
-  <ng-container *ngIf="vehicleForm.get('image_url')?.hasError('urlSpaces')">
-    ה-URL אינו יכול להכיל רווחים
-  </ng-container>
-  <ng-container *ngIf="vehicleForm.get('image_url')?.hasError('urlLoadFailed')">
-    לא הצלחנו לטעון את התמונה מהקישור שסופק
-  </ng-container>
-</div>
+      <div
+        class="error"
+        *ngIf="
+          vehicleForm.get('image_url')?.touched &&
+          vehicleForm.get('image_url')?.invalid
+        "
+      >
+        <ng-container
+          *ngIf="vehicleForm.get('image_url')?.hasError('required')"
+        >
+          כתובת תמונה נדרשת
+        </ng-container>
+        <ng-container
+          *ngIf="vehicleForm.get('image_url')?.hasError('urlInvalid')"
+        >
+          כתובת ה-URL אינה תקינה
+        </ng-container>
+        <ng-container
+          *ngIf="vehicleForm.get('image_url')?.hasError('urlProtocol')"
+        >
+          יש להזין קישור שמתחיל ב- http:// או https://
+        </ng-container>
+        <ng-container
+          *ngIf="vehicleForm.get('image_url')?.hasError('urlHostname')"
+        >
+          יש להזין דומיין תקין (למשל example.com)
+        </ng-container>
+        <ng-container
+          *ngIf="vehicleForm.get('image_url')?.hasError('urlImageExt')"
+        >
+          הקישור חייב להסתיים בסיומת תמונה תקפה (png/jpg/jpeg/gif/webp/bmp/svg)
+        </ng-container>
+        <ng-container
+          *ngIf="vehicleForm.get('image_url')?.hasError('urlSpaces')"
+        >
+          ה-URL אינו יכול להכיל רווחים
+        </ng-container>
+        <ng-container
+          *ngIf="vehicleForm.get('image_url')?.hasError('urlLoadFailed')"
+        >
+          לא הצלחנו לטעון את התמונה מהקישור שסופק
+        </ng-container>
+      </div>
 
+      <img
+        *ngIf="imagePreview"
+        [src]="imagePreview"
+        alt="תצוגת תמונה"
+        class="vehicle-image"
+      />
 
-<img
-  *ngIf="imagePreview"
-  [src]="imagePreview"
-  alt="תצוגת תמונה"
-  class="vehicle-image"
-/>
-
-
-      <button type="submit" [disabled]="vehicleForm.invalid || !imageVerified">שלח</button>
+      <button type="submit" [disabled]="vehicleForm.invalid || !imageVerified">
+        שלח
+      </button>
     </form>
   </div>
 </div>

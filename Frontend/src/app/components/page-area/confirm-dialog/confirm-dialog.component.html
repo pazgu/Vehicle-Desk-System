@@ -1,16 +1,19 @@
 <div class="custom-confirm-dialog-wrapper">
-<h2 class='mat-dialog-title' dir="rtl">{{ data.title }}</h2>
-<mat-dialog-content>
-  <p style="white-space: pre-line;">{{ data.message }}</p>
-  <small class="smalltxt" *ngIf="data.isDestructive">{{data.noRestoreText}}</small>
-</mat-dialog-content>
-<mat-dialog-actions align="end">
-  <button mat-button [mat-dialog-close]="false">{{ data.cancelText }}</button>
-  <button 
-    mat-raised-button 
-    [color]="data.isDestructive ? 'warn' : 'primary'" 
-    [mat-dialog-close]="true">
-    {{ data.confirmText }}
-  </button>
-</mat-dialog-actions>
+  <h2 class="mat-dialog-title" dir="rtl">{{ data.title }}</h2>
+  <mat-dialog-content>
+    <p style="white-space: pre-line">{{ data.message }}</p>
+    <small class="smalltxt" *ngIf="data.isDestructive">{{
+      data.noRestoreText
+    }}</small>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button [mat-dialog-close]="false">{{ data.cancelText }}</button>
+    <button
+      mat-raised-button
+      [color]="data.isDestructive ? 'warn' : 'primary'"
+      [mat-dialog-close]="true"
+    >
+      {{ data.confirmText }}
+    </button>
+  </mat-dialog-actions>
 </div>

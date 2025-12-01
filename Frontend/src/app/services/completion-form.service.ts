@@ -5,7 +5,7 @@ import { RideLocationItem } from '../models/ride.model';
 import { Observable } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class RideReportService {
   private CompletionFormUrl = environment.CompletionFormUrl;
@@ -14,15 +14,14 @@ export class RideReportService {
 
   submitCompletionForm(formData: any, token: string) {
     const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
     });
 
     return this.http.post(this.CompletionFormUrl, formData, { headers });
   }
-    getRidesWithLocations(): Observable<RideLocationItem[]> {
+  getRidesWithLocations(): Observable<RideLocationItem[]> {
     const url = `${environment.rideLocationsUrl}`;
     return this.http.get<RideLocationItem[]>(url);
   }
-  
 }

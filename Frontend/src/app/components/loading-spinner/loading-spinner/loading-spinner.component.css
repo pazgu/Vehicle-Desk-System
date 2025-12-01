@@ -4,7 +4,7 @@
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 9999;
-  width: 100px;   /* You can change this to fit your image size */
+  width: 100px;
   height: auto;
 }
 

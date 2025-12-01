@@ -14,7 +14,7 @@ import { NoShowsComponent } from '../no-shows/no-shows.component';
 import { VehicleUsageComponent } from '../vehicle-usage/vehicle-usage.component';
 import { RideStatusComponent } from '../ride-status/ride-status.component';
 import { VehicleStatusComponent } from '../vehicle-status/vehicle-status.component';
-import { StatisticsService } from '../../../services/statistics.service'; 
+import { StatisticsService } from '../../../services/statistics.service';
 import { RideStartTimeStatsResponse } from '../../../models/ride-start-time-stats.model';
 import { ChartModule } from 'primeng/chart';
 import { PurposeOfTravelStatsResponse } from '../../../models/purpose-of-travel-stats.model';
@@ -27,7 +27,7 @@ pdfMake.vfs = pdfFonts.vfs;
   imports: [
     CommonModule,
     FormsModule,
-    TabViewModule,   
+    TabViewModule,
     DropdownModule,
     UserOrdersExportComponent,
     NoShowsComponent,
@@ -40,7 +40,7 @@ pdfMake.vfs = pdfFonts.vfs;
   styleUrls: ['./admin-analytics.component.css'],
 })
 export class AdminAnalyticsComponent implements OnInit {
-    constructor(private statisticsService: StatisticsService) {}
+  constructor(private statisticsService: StatisticsService) {}
   @ViewChild(NoShowsComponent) noShowsComponent!: NoShowsComponent;
   @ViewChild(VehicleUsageComponent)
   vehicleUsageComponent!: VehicleUsageComponent;
@@ -63,6 +63,7 @@ export class AdminAnalyticsComponent implements OnInit {
   rideStartSingleMonth: string = (new Date().getMonth() + 1).toString();
   rideStartSingleYear: string = new Date().getFullYear().toString();
 
+  rideStartRangeYear: string = new Date().getFullYear().toString();
   rideStartRangeStartDate: string = '';
   rideStartRangeEndDate: string = '';  
   purposeStats: PurposeOfTravelStatsResponse | null = null;
@@ -76,20 +77,19 @@ export class AdminAnalyticsComponent implements OnInit {
   purposeRangeStartDate: string = '';
   purposeRangeEndDate: string = '';
 
-
   years = Array.from({ length: 5 }, (_, i) =>
     (new Date().getFullYear() - i).toString()
   );
 
   ngOnInit() {
-  this.loadDefaultRideStartTimeStats();
-  this.loadDefaultPurposeStats();
-}
+    this.loadDefaultRideStartTimeStats();
+    this.loadDefaultPurposeStats();
+  }
 
   ngAfterViewInit() {
-        setTimeout(() => {
-      this.activeTabIndex = 0;})
-        
+    setTimeout(() => {
+      this.activeTabIndex = 0;
+    });
   }
 
   resolveDepartment(departmentId: string): string {
@@ -97,39 +97,39 @@ export class AdminAnalyticsComponent implements OnInit {
   }
 
     public exportPDF(): void {
-    const isVehicleTab = this.activeTabIndex === 0;
-    const isRideTab = this.activeTabIndex === 1;
-    const isTopUsedTab = this.activeTabIndex === 2;
-    const isNoShowTab = this.activeTabIndex === 4;
-    const isRideStartTimeTab = this.activeTabIndex === 5;
-    const isPurposeTab = this.activeTabIndex === 6; 
+      const isVehicleTab = this.activeTabIndex === 0;
+      const isRideTab = this.activeTabIndex === 1;
+      const isTopUsedTab = this.activeTabIndex === 2;
+      const isNoShowTab = this.activeTabIndex === 4;
+      const isRideStartTimeTab = this.activeTabIndex === 5;
+      const isPurposeTab = this.activeTabIndex === 6; 
 
-    if (isNoShowTab && this.noShowsComponent.filteredNoShowUsers.length === 0) {
-      this.showExportWarningTemporarily();
-      return;
-    }
+      if (isNoShowTab && this.noShowsComponent.filteredNoShowUsers.length === 0) {
+        this.showExportWarningTemporarily();
+        return;
+      }
 
-    let chartData: any;
+      let chartData: any;
 
-    if (isRideStartTimeTab) {
-      chartData = this.rideStartTimeChartData;
-    } else if (isPurposeTab) {
-      chartData = this.purposeChartData;
-    } else if (!isNoShowTab) {
-      chartData = isVehicleTab
-        ? this.vehicleStatusComponent.vehicleChartData
-        : isRideTab
-        ? this.rideStatusComponent.rideChartData
-        : this.vehicleUsageComponent.topUsedVehiclesData;
-    }
+      if (isRideStartTimeTab) {
+        chartData = this.rideStartTimeChartData;
+      } else if (isPurposeTab) {
+        chartData = this.purposeChartData;
+      } else if (!isNoShowTab) {
+        chartData = isVehicleTab
+          ? this.vehicleStatusComponent.vehicleChartData
+          : isRideTab
+          ? this.rideStatusComponent.rideChartData
+          : this.vehicleUsageComponent.topUsedVehiclesData;
+      }
 
-    const englishTitle = this.getEnglishTitle();         
-    const fileBaseName = this.getHebrewFileBaseName();  
+      const englishTitle = this.getEnglishTitle();         
+      const fileBaseName = this.getHebrewFileBaseName();  
 
-    const timestamp = new Date().toLocaleString();
-    const safeTimestamp = timestamp.replace(/[/:]/g, '-');
+      const timestamp = new Date().toLocaleString();
+      const safeTimestamp = timestamp.replace(/[/:]/g, '-');
 
-    let body: any[] = [];
+      let body: any[] = [];
 
     if (isPurposeTab) {
       body.push([
@@ -365,7 +365,8 @@ export class AdminAnalyticsComponent implements OnInit {
     pdfMake.createPdf(docDefinition).download(`${fileBaseName}-${safeTimestamp}.pdf`); 
   }
 
-
+    pdfMake.createPdf(docDefinition).download(`${title}-${safeTimestamp}.pdf`);
+  }
 
   trackByUserId(index: number, user: any): any {
     return user.user_id;
@@ -385,6 +386,19 @@ export class AdminAnalyticsComponent implements OnInit {
     this.fetchRideStartTimeStats(fromStr, toStr);
   }
   onApplyRangeFilter(): void {
+    const year = parseInt(this.rideStartRangeYear, 10);
+    let startMonth = parseInt(this.rideStartRangeStartMonth, 10);
+    let endMonth = parseInt(this.rideStartRangeEndMonth, 10);
+
+    if (startMonth > endMonth) {
+      const tmp = startMonth;
+      startMonth = endMonth;
+      endMonth = tmp;
+    }
+
+    if (endMonth - startMonth > 3) {
+      endMonth = startMonth + 3;
+    }
   if (!this.rideStartRangeStartDate || !this.rideStartRangeEndDate) {
     return;
   }
@@ -418,100 +432,98 @@ export class AdminAnalyticsComponent implements OnInit {
     }
   }
 
-public exportExcel(): void {
-  const isVehicleTab = this.activeTabIndex === 0;
-  const isRideTab = this.activeTabIndex === 1;
-  const isTopUsedTab = this.activeTabIndex === 2;
-  const isNoShowTab = this.activeTabIndex === 4;
-  const isRideStartTimeTab = this.activeTabIndex === 5;
-  const isPurposeTab = this.activeTabIndex === 6;
+  public exportExcel(): void {
+    const isVehicleTab = this.activeTabIndex === 0;
+    const isRideTab = this.activeTabIndex === 1;
+    const isTopUsedTab = this.activeTabIndex === 2;
+    const isNoShowTab = this.activeTabIndex === 4;
+    const isRideStartTimeTab = this.activeTabIndex === 5;
+    const isPurposeTab = this.activeTabIndex === 6;
 
-  let chartData: any;
-  let title: string;
+    let chartData: any;
+    let title: string;
 
-  if (isNoShowTab) {
-    title = 'טבלת אי-הגעות';
-  } else if (isRideStartTimeTab) {
-    title = 'זמני התחלת נסיעות';
-    chartData = this.rideStartTimeChartData;
-  } else if (isPurposeTab) {
-    title = 'מטרת נסיעה';
-    chartData = this.purposeChartData;
-  } 
-   else {
-    chartData = isVehicleTab
-      ? this.vehicleStatusComponent.vehicleChartData
-      : isRideTab
-      ? this.rideStatusComponent.rideChartData
-      : this.vehicleUsageComponent.topUsedVehiclesData;
+    if (isNoShowTab) {
+      title = 'טבלת אי-הגעות';
+    } else if (isRideStartTimeTab) {
+      title = 'זמני התחלת נסיעות';
+      chartData = this.rideStartTimeChartData;
+    } else if (isPurposeTab) {
+      title = 'מטרת נסיעה';
+      chartData = this.purposeChartData;
+    } else {
+      chartData = isVehicleTab
+        ? this.vehicleStatusComponent.vehicleChartData
+        : isRideTab
+        ? this.rideStatusComponent.rideChartData
+        : this.vehicleUsageComponent.topUsedVehiclesData;
 
-    title = isVehicleTab
-      ? this.vehicleStatusComponent.selectedVehicleType !== ''
-        ? `סטטוס רכבים (${this.vehicleStatusComponent.selectedVehicleType})`
-        : 'סטטוס רכבים (כל הסוגים)'
-      : isRideTab
-      ? 'סטטוס נסיעות'
-      : 'רכבים בשימוש גבוה';
-  }
-
-  const timestamp = new Date().toISOString().substring(0, 10);
-  let data: any[] = [];
-
-  if (isPurposeTab) {
-    if (!this.purposeStats || !this.purposeStats.months) {
-      return;
+      title = isVehicleTab
+        ? this.vehicleStatusComponent.selectedVehicleType !== ''
+          ? `סטטוס רכבים (${this.vehicleStatusComponent.selectedVehicleType})`
+          : 'סטטוס רכבים (כל הסוגים)'
+        : isRideTab
+        ? 'סטטוס נסיעות'
+        : 'רכבים בשימוש גבוה';
     }
 
-    data = this.purposeStats.months.map((month) => ({
-      'חודש': month.month_label,
-      'מנהלי': `${month.administrative_count} (${month.administrative_percentage}%)`,
-      'תפעולי': `${month.operational_count} (${month.operational_percentage}%)`,
-      'סה"כ': month.total_rides,
-    }));
-  }
+    const timestamp = new Date().toISOString().substring(0, 10);
+    let data: any[] = [];
 
-  if (isNoShowTab) {
-    if (this.noShowsComponent.filteredNoShowUsers.length === 0) {
-      this.showExportWarningTemporarily();
-      return;
+    if (isPurposeTab) {
+      if (!this.purposeStats || !this.purposeStats.months) {
+        return;
+      }
+
+      data = this.purposeStats.months.map((month) => ({
+        חודש: month.month_label,
+        מנהלי: `${month.administrative_count} (${month.administrative_percentage}%)`,
+        תפעולי: `${month.operational_count} (${month.operational_percentage}%)`,
+        'סה"כ': month.total_rides,
+      }));
     }
 
-    data = this.noShowsComponent.filteredNoShowUsers.map((user) => {
-      const count = user.no_show_count ?? 0;
-      let status = '';
-      if (count >= 3) status = 'Critical';
-      else if (count >= 1) status = 'Warning';
-      else status = 'Good';
+    if (isNoShowTab) {
+      if (this.noShowsComponent.filteredNoShowUsers.length === 0) {
+        this.showExportWarningTemporarily();
+        return;
+      }
 
-      return {
-        'User Name': user.name || 'Unknown',
-        Email: user.email || 'unknown@example.com',
-        'Employee ID': user.employee_id || user.user_id || 'N/A',
-        Department: this.resolveDepartment(user.department_id || ''),
-        Role: user.role || 'לא ידוע',
-        'No-Show Count': count,
-        Status: status,
-      };
-    });
+      data = this.noShowsComponent.filteredNoShowUsers.map((user) => {
+        const count = user.no_show_count ?? 0;
+        let status = '';
+        if (count >= 3) status = 'Critical';
+        else if (count >= 1) status = 'Warning';
+        else status = 'Good';
 
-  } else if (isTopUsedTab) {
-    const labels = chartData.labels;
-    const counts = chartData.datasets[0].data;
+        return {
+          'User Name': user.name || 'Unknown',
+          Email: user.email || 'unknown@example.com',
+          'Employee ID': user.employee_id || user.user_id || 'N/A',
+          Department: this.resolveDepartment(user.department_id || ''),
+          Role: user.role || 'לא ידוע',
+          'No-Show Count': count,
+          Status: status,
+        };
+      });
+    } else if (isTopUsedTab) {
+      const labels = chartData.labels;
+      const counts = chartData.datasets[0].data;
 
-    data = labels.map((label: string, i: number) => {
-      const count = counts[i];
-      let usageLevel = '';
+      data = labels.map((label: string, i: number) => {
+        const count = counts[i];
+        let usageLevel = '';
 
-      if (count > 10) usageLevel = 'High Usage';
-      else if (count >= 5) usageLevel = 'Medium';
-      else usageLevel = 'Good';
+        if (count > 10) usageLevel = 'High Usage';
+        else if (count >= 5) usageLevel = 'Medium';
+        else usageLevel = 'Good';
 
-      return {
-        Vehicle: label,
-        'Ride Count': count,
-        'Usage Level': usageLevel,
-      };
-    });
+        return {
+          Vehicle: label,
+          'Ride Count': count,
+          'Usage Level': usageLevel,
+        };
+      });
 
   } else if (isRideStartTimeTab) {
     if (!this.rideStartTimeChartData) {
@@ -608,27 +620,104 @@ public exportExcel(): void {
         }
       });
     }
-  }
 
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Analytics');
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const range = XLSX.utils.decode_range(worksheet['!ref']!);
 
-  const excelBuffer: any = XLSX.write(workbook, {
-    bookType: 'xlsx',
-    type: 'array',
-    cellStyles: true,
-  });
+    if (isNoShowTab) {
+      for (let row = 1; row <= range.e.r; row++) {
+        const count = Number(worksheet[`F${row + 1}`]?.v);
+        let fillColor = 'FFFFFFFF';
 
-  const blob = new Blob([excelBuffer], {
-    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8',
-  });
+        if (count >= 3) fillColor = 'FFFFCDD2';
+        else if (count >= 1) fillColor = 'FFFFFFCC';
+        else fillColor = 'FFBBDEFB';
 
-    const fileBaseName = this.getHebrewFileBaseName();
-  saveAs(blob, `${fileBaseName}__${timestamp}.xlsx`);
+        ['A', 'B', 'C', 'D', 'E', 'F', 'G'].forEach((col) => {
+          const cell = worksheet[`${col}${row + 1}`];
+          if (cell) {
+            cell.s = {
+              fill: {
+                patternType: 'solid',
+                fgColor: { rgb: fillColor },
+              },
+            };
+          }
+        });
+      }
+    } else if (isTopUsedTab) {
+      for (let row = 1; row <= range.e.r; row++) {
+        const rideCount = Number(worksheet[`B${row + 1}`]?.v);
+        let fillColor =
+          rideCount > 10
+            ? 'FFFFCDD2'
+            : rideCount >= 5
+            ? 'FFFFFFCC'
+            : 'FFBBDEFB';
+
+        ['A', 'B', 'C'].forEach((col) => {
+          const cell = worksheet[`${col}${row + 1}`];
+          if (cell) {
+            cell.s = {
+              fill: {
+                patternType: 'solid',
+                fgColor: { rgb: fillColor },
+              },
+            };
+          }
+        });
+      }
+
+    } else if (!isRideStartTimeTab) {
+      for (let row = 1; row <= range.e.r; row++) {
+        const label = worksheet[`A${row + 1}`]?.v as string;
+        let fillColor = 'FFFFFFFF';
+
+        if (label.includes('זמין')) fillColor = 'FFC8E6C9';
+        else if (label.includes('מוקפא')) fillColor = 'FFFFCDD2';
+        else if (label.includes('בשימוש')) fillColor = 'FFFFE0B2';
+        if (label.includes('ממתין')) fillColor = 'FFFFF9C4';
+        else if (label.includes('מאושר')) fillColor = 'FFC8E6C9';
+        else if (label.includes('הושלם')) fillColor = 'FFBBDEFB';
+        else if (label.includes('בוטל')) fillColor = 'FFF8BBD0';
+        else if (label.includes('נדחה')) fillColor = 'FFFFCDD2';
+        else if (label.includes('בתהליך')) fillColor = 'FFD1C4E9';
+
+        ['A', 'B'].forEach((col) => {
+          const cell = worksheet[`${col}${row + 1}`];
+          if (cell) {
+            cell.s = {
+              fill: {
+                patternType: 'solid',
+                fgColor: { rgb: fillColor },
+              },
+            };
+          }
+        });
+      }
+    }
+
+   const fileBaseName = this.getHebrewFileBaseName();
+   saveAs(blob, `${fileBaseName}__${timestamp}.xlsx`);
 
 }
 
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Analytics');
 
+
+    const excelBuffer: any = XLSX.write(workbook, {
+      bookType: 'xlsx',
+      type: 'array',
+      cellStyles: true,
+    });
+
+    const blob = new Blob([excelBuffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8',
+    });
+
+    saveAs(blob, `${title}__${timestamp}.xlsx`);
+  }
 
   public exportCSV(): void {
     const isVehicleTab = this.activeTabIndex === 0;
@@ -644,23 +733,23 @@ public exportExcel(): void {
     }
 
     let chartData: any;
-    if (!isNoShowTab && !isPurposeTab) { 
-    chartData = isVehicleTab
-      ? this.vehicleStatusComponent.vehicleChartData
-      : isRideTab
-      ? this.rideStatusComponent.rideChartData
-      : this.vehicleUsageComponent.topUsedVehiclesData;
-  }
+    if (!isNoShowTab && !isPurposeTab) {
+      chartData = isVehicleTab
+        ? this.vehicleStatusComponent.vehicleChartData
+        : isRideTab
+        ? this.rideStatusComponent.rideChartData
+        : this.vehicleUsageComponent.topUsedVehiclesData;
+    }
     const title = isNoShowTab
       ? 'טבלת אי-הגעות'
-      : isPurposeTab 
+      : isPurposeTab
       ? 'מטרת נסיעה'
       : isVehicleTab
       ? this.vehicleStatusComponent.selectedVehicleType !== ''
         ? `סטטוס רכבים (${this.vehicleStatusComponent.selectedVehicleType})`
         : 'סטטוס רכבים (כל הסוגים)'
       : isRideTab
-      ? 'סטטוס נסיעות'
+      ? 'סטטוס נסיעות
       : this.vehicleUsageComponent.isMonthlyView
       ? 'שימוש חודשי ברכבים'
       : 'רכבים בשימוש גבוה';
@@ -669,18 +758,19 @@ public exportExcel(): void {
     let data: any[] = [];
 
     if (isPurposeTab) {
-  if (!this.purposeStats || !this.purposeStats.months) {
-    return;
-  }
 
-  data = this.purposeStats.months.map((month) => ({
-    חודש: month.month_label,
-    מנהלי: `${month.administrative_count} (${month.administrative_percentage}%)`,
-    תפעולי: `${month.operational_count} (${month.operational_percentage}%)`,
-    'סה"כ': month.total_rides,
-  }));
-} else if (isNoShowTab) {
-      data = this.noShowsComponent.filteredNoShowUsers.map((user) => {
+      if (!this.purposeStats || !this.purposeStats.months) {
+        return;
+      } 
+
+      data = this.purposeStats.months.map((month) => ({
+        חודש: month.month_label,
+        מנהלי: `${month.administrative_count} (${month.administrative_percentage}%)`,
+        תפעולי: `${month.operational_count} (${month.operational_percentage}%)`,
+        'סה"כ': month.total_rides,
+      }));
+    } else if (isNoShowTab) { 
+        data = this.noShowsComponent.filteredNoShowUsers.map((user) => {
         const count = user.no_show_count ?? 0;
         let status = '';
 
@@ -757,7 +847,7 @@ public exportExcel(): void {
     };
     return statusMap[status] || status;
   }
-    private loadDefaultPurposeStats(): void {
+  private loadDefaultPurposeStats(): void {
     this.purposeFilterMode = 'last4';
     this.fetchPurposeStats();
   }
@@ -781,7 +871,7 @@ public exportExcel(): void {
     let fromYear = year;
     let fromMonth = startMonth;
     let toYear = year;
-    let toMonth = startMonth + 3; 
+    let toMonth = startMonth + 3;
 
     if (toMonth > 12) {
       toMonth -= 12;
@@ -846,12 +936,8 @@ public exportExcel(): void {
   private buildPurposeChart(res: PurposeOfTravelStatsResponse): void {
     const labels = res.months.map((m) => m.month_label);
 
-    const administrativeData = res.months.map(
-      (m) => m.administrative_count
-    );
-    const operationalData = res.months.map(
-      (m) => m.operational_count
-    );
+    const administrativeData = res.months.map((m) => m.administrative_count);
+    const operationalData = res.months.map((m) => m.operational_count);
 
     this.purposeChartData = {
       labels,
@@ -1035,9 +1121,10 @@ public exportExcel(): void {
     };
     return reverseMap[hebrewLabel] || hebrewLabel;
   }
-    private buildRideStartChart(res: RideStartTimeStatsResponse): void {
-    const labels = Array.from({ length: 24 }, (_, h) =>
-      h.toString().padStart(2, '0') + ':00'
+  private buildRideStartChart(res: RideStartTimeStatsResponse): void {
+    const labels = Array.from(
+      { length: 24 },
+      (_, h) => h.toString().padStart(2, '0') + ':00'
     );
     const data = new Array(24).fill(0);
 
@@ -1053,7 +1140,7 @@ public exportExcel(): void {
         {
           label: 'מספר נסיעות המתחילות בשעה זו',
           data,
-          backgroundColor: '#103e76', 
+          backgroundColor: '#103e76',
         },
       ],
     };
@@ -1072,8 +1159,7 @@ public exportExcel(): void {
         },
         tooltip: {
           callbacks: {
-            label: (ctx: any) =>
-              `שעה ${ctx.label} - ${ctx.parsed.y} נסיעות`,
+            label: (ctx: any) => `שעה ${ctx.label} - ${ctx.parsed.y} נסיעות`,
           },
         },
       },
@@ -1113,14 +1199,13 @@ public exportExcel(): void {
   }
   private loadDefaultRideStartTimeStats(): void {
     const now = new Date();
-    const to = new Date(now.getFullYear(), now.getMonth() + 1, 0); 
+    const to = new Date(now.getFullYear(), now.getMonth() + 1, 0);
     const from = new Date(to);
-    from.setMonth(from.getMonth() - 3); 
+    from.setMonth(from.getMonth() - 3);
 
     const fromStr = from.toISOString().substring(0, 10);
     const toStr = to.toISOString().substring(0, 10);
 
     this.fetchRideStartTimeStats(fromStr, toStr);
   }
-
 }
