@@ -7,8 +7,10 @@ from fastapi import status as fastapi_status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
+from ..models.user_model import User
+
 # Utils
-from ..utils.auth import identity_check, role_check, supervisor_check, token_check
+from ..utils.auth import get_current_user, identity_check, role_check, supervisor_check, token_check
 from ..utils.database import get_db
 from ..utils.scheduler import schedule_ride_start
 from ..utils.socket_manager import sio
@@ -44,8 +46,11 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 @router.get("/orders/{department_id}")
-def get_department_orders_route(department_id: UUID, db: Session = Depends(get_db)):
-    return get_department_orders(str(department_id), db)
+def get_department_orders_route(department_id: UUID,
+     db: Session = Depends(get_db)
+    ,current_user: User = Depends(get_current_user)
+):
+    return get_department_orders(str(department_id), db,current_user=current_user)
 
 @router.get("/orders/{department_id}/{order_id}")
 def get_department_specific_order_route(department_id: UUID, order_id: UUID, db: Session = Depends(get_db)):

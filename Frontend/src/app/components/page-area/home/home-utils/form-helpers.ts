@@ -92,6 +92,8 @@ export function buildRideForm(fb: FormBuilder, isRebook: boolean = false): FormG
 
       four_by_four_reason: [''],
       extended_ride_reason: [''],
+      
+      approving_supervisor: [null],
     },
     { validators }
   );

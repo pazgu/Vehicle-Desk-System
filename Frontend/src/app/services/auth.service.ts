@@ -65,6 +65,10 @@ export class AuthService {
     localStorage.removeItem('employee_id');
     localStorage.removeItem('role');
     localStorage.removeItem('pending_feedback_ride');
+    localStorage.removeItem('department_id');
+    localStorage.removeItem('user_id');
+    localStorage.removeItem('user_orders');
+
     this.fullNameSubject.next('משתמש');
     this.roleSubject.next('');
     this.setLoginState(false);

@@ -99,7 +99,8 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate, license_chec
         status=initial_status, 
         license_check_passed=license_check_passed,  
         submitted_at=datetime.now(timezone.utc),
-        extra_stops=ride.extra_stops or None
+        extra_stops=ride.extra_stops or None,
+        approving_supervisor=ride.approving_supervisor 
     )
    
 
@@ -157,6 +158,8 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate, license_chec
     ride_response_dict.pop('_sa_instance_state', None)
 
     return ride_response
+
+
 async def create_supervisor_ride(db: Session, user_id: UUID, ride: RideCreate):
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id)})
 

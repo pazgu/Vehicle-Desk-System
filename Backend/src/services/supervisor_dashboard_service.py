@@ -4,8 +4,10 @@ from typing import List
 from uuid import UUID
 
 from fastapi import HTTPException
-from sqlalchemy import String, func, text, desc
+from sqlalchemy import String, func, or_, text, desc
 from sqlalchemy.orm import Session
+
+from ..models.department_model import Department
 
 # Utils
 from ..utils.audit_utils import log_action
@@ -35,23 +37,36 @@ from ..models.vehicle_model import VehicleStatus, Vehicle
 
 
 from ..utils.socket_manager import sio
-def get_department_orders(department_id: str, db: Session) -> List[RideDashboardItem]:
-    """
-    Fetch all orders for a specific department by joining the Ride and User tables.
-    """
-    orders = (
-    db.query(Ride, Vehicle.vehicle_model)
-    .join(User, User.employee_id == Ride.user_id)
-    .join(Vehicle, Ride.vehicle_id == Vehicle.id)
-    .filter(User.department_id == department_id)
-    .filter(User.role == "employee") 
-    .order_by(desc(Ride.submitted_at))
-    .all()
-)
+def get_department_orders(department_id: str, db: Session, current_user: User) -> List[RideDashboardItem]:
 
+    department = db.query(Department).filter(Department.id == department_id).first()
+    official_supervisor_id = department.supervisor_id if department else None
+
+    is_official = (str(current_user.employee_id) == str(official_supervisor_id))
+
+
+    query = (
+        db.query(Ride, Vehicle.vehicle_model)
+        .join(User, User.employee_id == Ride.user_id)
+        .join(Vehicle, Ride.vehicle_id == Vehicle.id)
+        .filter(User.department_id == department_id)
+        .filter(User.role == "employee")
+    )
+
+
+    if is_official:
+        query = query.filter(
+            or_(
+                Ride.approving_supervisor == None,
+                Ride.approving_supervisor == current_user.employee_id
+            )
+        )
+    else:
+        query = query.filter(Ride.approving_supervisor == current_user.employee_id)
+
+    orders = query.order_by(desc(Ride.submitted_at)).all()
 
     dashboard_items = []
-
     for order, vehicle_model in orders:
         user = db.query(User).filter(User.employee_id == order.user_id).first()
         employee_name = f"{user.first_name} {user.last_name}" if user else "Unknown"
@@ -64,11 +79,10 @@ def get_department_orders(department_id: str, db: Session) -> List[RideDashboard
             date_and_time=order.start_datetime,
             end_datetime=order.end_datetime,
             destination=order.destination,
-            distance = math.ceil(order.estimated_distance_km),
-            status=order.status.value,  
-            submitted_at=order.submitted_at 
+            distance=math.ceil(order.estimated_distance_km),
+            status=order.status.value,
+            submitted_at=order.submitted_at,
         )
-
         dashboard_items.append(dashboard_item)
 
     return dashboard_items

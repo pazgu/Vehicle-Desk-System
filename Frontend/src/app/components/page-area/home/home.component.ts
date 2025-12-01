@@ -83,6 +83,7 @@ import {
   ConfirmDialogData,
 } from '../../page-area/confirm-dialog/confirm-dialog.component';
 import { RebookData } from '../../../services/myrides.service';
+import { Supervisor } from '../../../models/user.model';
 
 interface Employee { id: string; full_name: string; }
 
@@ -144,6 +145,11 @@ export class NewRideComponent implements OnInit {
     { value: 'administrative', label: 'מנהלתית' },
     { value: 'operational', label: 'מבצעית' },
   ];
+  supervisors: Supervisor[] = [];
+  selectedSupervisor: string | null = null;
+  departmentId=''
+
+
   isVIP=false
   constructor(
     private fb: FormBuilder,
@@ -164,6 +170,7 @@ export class NewRideComponent implements OnInit {
    ngOnInit(): void {
     this,this.checkVipStatus();
   this.currentUserId = getUserIdFromToken(localStorage.getItem('access_token'));
+  this.departmentId=localStorage.getItem('department_id') || ""
   this.initializeComponent();
     if (this.currentUserId){
       this.rideUserChecksService.checkUserBlock(this.currentUserId).subscribe((result) => {
@@ -177,6 +184,15 @@ export class NewRideComponent implements OnInit {
 
         }});
     }
+
+    this.myRidesService.getSupervisors(this.departmentId).subscribe({
+      next: (data) =>{
+        (this.supervisors = data)
+
+      } ,
+      error: (err) => console.error('Failed to load supervisors:', err),
+    });
+
    this.myRidesService.checkPendingRebook().subscribe({
   next: (res) => {
     if (res.has_pending && !rebookData) {
@@ -287,7 +303,6 @@ private applyRebookData(data: RebookData): void {
   const start = new Date(data.start_datetime);
   const end = new Date(data.end_datetime);
   const pad = (num: number) => num.toString().padStart(2, '0');
-
   this.rideForm.patchValue({
     start_location: data.start_location,
     stop: data.stop,
@@ -309,6 +324,7 @@ private applyRebookData(data: RebookData): void {
 
     start_time: `${pad(start.getHours())}:${pad(start.getMinutes())}`,
     end_time: `${pad(end.getHours())}:${pad(end.getMinutes())}`,
+    approving_supervisor: data.approving_supervisor ?? null
   });
 
   this.rideForm.clearValidators();
@@ -1125,7 +1141,10 @@ private applyRebookData(data: RebookData): void {
         ? `${rideDate}T${endTime}`
         : `${nightEndDate}T${endTime}`;
 
-    const formData: RideFormPayload = buildRideFormPayload({
+    const approvingSupervisor = this.rideForm.get('approving_supervisor')?.value;
+
+    const formData: RideFormPayload ={
+      ...buildRideFormPayload({
       form: this.rideForm,
       riderId: rider_id,
       requesterId: requester_id,
@@ -1134,8 +1153,10 @@ private applyRebookData(data: RebookData): void {
       vehicleId,
       isExtendedRequest: this.isExtendedRequest,
       estimatedDistanceWithBuffer: this.estimated_distance_with_buffer,
-    });
+    }),
+    approving_supervisor: approvingSupervisor || null, 
 
+} 
         const role = localStorage.getItem('role');
           if (this.isRebookMode) {
             const rebookD=this.myRidesService.getRebookDatafromService()
@@ -1163,6 +1184,7 @@ private applyRebookData(data: RebookData): void {
       user_id: formData.user_id,
       status: 'pending',
       submitted_at: new Date().toISOString(),
+      approving_supervisor:formData.approving_supervisor || null
     }
   };
 

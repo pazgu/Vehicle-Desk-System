@@ -38,3 +38,9 @@ export interface User {
   is_unassigned_user?: boolean;
 
 }
+
+
+export interface Supervisor {
+  id: string;
+  name: string;
+}
