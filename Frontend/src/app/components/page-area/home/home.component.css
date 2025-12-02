@@ -815,9 +815,3 @@ option:hover {
   background-color: #ffffff;
   color: #333;
 }
-.optional-text {
-  font-weight: normal;
-  font-size: 0.85rem;
-  color: #666;
-  font-style: italic;
-}
