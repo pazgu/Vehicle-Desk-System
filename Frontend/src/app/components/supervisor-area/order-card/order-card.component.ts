@@ -199,7 +199,7 @@ export class OrderCardComponent implements OnInit {
       case 'cancelled_vehicle_unavailable':
         return 'בוטל - רכב לא זמין';
       case 'cancelled_due_to_no_show':
-        return 'בוטל - נסיעה לא יצאה';
+        return 'בוטל עקב אי-הגעה';
       default:
         return status;
     }
