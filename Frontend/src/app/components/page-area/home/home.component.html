@@ -513,7 +513,7 @@
                   </ng-container>
                 </div>
               </div>
-              <div class="form-field-group">
+              <div class="form-field-group" *ngIf="!isSupervisor">
                  <label> מאשר הבקשה:</label>
               <select formControlName="approving_supervisor" class="styled-select">
                 <option value="" disabled>בחר משתמש</option>
