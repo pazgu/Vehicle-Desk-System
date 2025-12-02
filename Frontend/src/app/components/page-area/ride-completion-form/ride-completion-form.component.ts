@@ -21,6 +21,7 @@ import {
 } from '../../../models/vehicle-dashboard-item/vehicle-out-item.module';
 import { VehicleService } from '../../../services/vehicle.service';
 import { Router } from '@angular/router';
+import { th } from 'date-fns/locale';
 
 @Component({
   selector: 'app-ride-completion-form',
@@ -132,7 +133,7 @@ export class RideCompletionFormComponent implements OnInit {
     this.loadFuelType(this.currentRide.vehicle_id);
 
     if (this.form.value.fueled == 'false') {
-      if (localStorage.getItem('role') == 'employee') {
+    
         if (this.VehicleFuelType === 'electric') {
           this.toastService.showPersistent(
             'הרכב טרם נטען. אנא טען לפני ההחזרה.',
@@ -148,7 +149,7 @@ export class RideCompletionFormComponent implements OnInit {
             'הרכב לא תודלק. יש לתדלק לפני ההחזרה.',
             'neutral'
           );
-        }
+        
       }
     }
 
@@ -180,7 +181,7 @@ export class RideCompletionFormComponent implements OnInit {
         this.loading = false;
       },
     });
-
+    this.formCompleted.emit();
     this.router.navigate(['/home']);
   }
 }
