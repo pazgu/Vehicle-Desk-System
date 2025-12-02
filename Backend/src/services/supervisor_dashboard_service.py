@@ -55,8 +55,6 @@ def get_department_orders(department_id: str, db: Session, current_user: User) -
     else:
         query = query.filter(Ride.approving_supervisor == current_user.employee_id)
 
-    # Order by: in_progress first, then by submitted_at descending
-    # This ensures in-progress rides appear at the top
     orders = query.order_by(
         # Sort in_progress to the top
         (Ride.status != RideStatus.in_progress),
