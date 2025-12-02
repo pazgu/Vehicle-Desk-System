@@ -43,15 +43,7 @@ def create_user_by_admin(user_data: UserCreate, changed_by, db: Session):
         db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(changed_by)})
         db.commit()
         db.refresh(new_user)
-        
-        # Handle supervisor role
-        if user_data.role == UserRole.supervisor and user_data.department_id:
-            department = db.query(Department).filter(Department.id == user_data.department_id).first()
-            if not department:
-                db.rollback()
-                raise HTTPException(status_code=404, detail="Department not found")
-            department.supervisor_id = new_user.employee_id
-            db.commit()
+
 
         # Return the created user data
         created_user = {
