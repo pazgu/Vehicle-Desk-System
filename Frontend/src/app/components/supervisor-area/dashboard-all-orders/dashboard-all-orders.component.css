@@ -143,6 +143,11 @@
   border: #9dbaa4 1.6px solid;
 }
 
+.status-indicators-inline .status-indicator.in_progress {
+  background-color: #d9e7dc;
+  border: #9dbaa4 1.6px solid;
+}
+
 .status-indicators-inline .status-indicator.pending {
   background-color: #f3ebd6;
   border: #cec3a4 1.6px solid;
@@ -355,6 +360,21 @@
 
 .row-approved {
   background-color: #e8f5e8;
+}
+
+.row-in-progress {
+  background: linear-gradient(
+    -45deg,
+    rgba(74, 144, 226, 0.15) 25%,
+    rgba(107, 163, 240, 0.15) 25%,
+    rgba(107, 163, 240, 0.15) 50%,
+    rgba(74, 144, 226, 0.15) 50%,
+    rgba(74, 144, 226, 0.15) 75%,
+    rgba(107, 163, 240, 0.15) 75%,
+    rgba(107, 163, 240, 0.15)
+  );
+  background-size: 20px 20px;
+  animation: moveStripes 1s linear infinite;
 }
 
 .row-pending {
