@@ -169,6 +169,12 @@ export class OrderCardComponent implements OnInit {
         return 'card-pending';
       case 'rejected':
         return 'card-rejected';
+      case 'completed':
+        return 'card-completed';
+      case 'cancelled_vehicle_unavailable':
+        return 'card-cancelled-vehicle-unavailable';
+      case 'cancelled_due_to_no_show':
+        return 'card-cancelled-due-to-no-show';
       case 'in_progress':
         return 'card-in-progress';
       default:
@@ -188,8 +194,12 @@ export class OrderCardComponent implements OnInit {
         return 'נדחה';
       case 'in_progress':
         return 'בתהליך';
+      case 'completed':
+        return 'בוצע';
+      case 'cancelled_vehicle_unavailable':
+        return 'בוטל - רכב לא זמין';
       case 'cancelled_due_to_no_show':
-        return 'בוטלה-נסיעה לא יצאה';
+        return 'בוטל - נסיעה לא יצאה';
       default:
         return status;
     }
