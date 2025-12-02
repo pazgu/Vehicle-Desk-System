@@ -164,7 +164,7 @@ button:disabled {
     rgba(107, 163, 240, 0.15)
   );
   background-size: 20px 20px;
-  animation: moveStripes 1s linear infinite;
+  animation: moveStripes 0.5s linear infinite;
 }
 
 @keyframes moveStripes {
