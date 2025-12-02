@@ -144,8 +144,19 @@
 }
 
 .status-indicators-inline .status-indicator.in_progress {
-  background-color: #d9e7dc;
-  border: #9dbaa4 1.6px solid;
+    background: linear-gradient(
+    -45deg,
+    rgba(74, 144, 226, 0.15) 25%,
+    rgba(107, 163, 240, 0.15) 25%,
+    rgba(107, 163, 240, 0.15) 50%,
+    rgba(74, 144, 226, 0.15) 50%,
+    rgba(74, 144, 226, 0.15) 75%,
+    rgba(107, 163, 240, 0.15) 75%,
+    rgba(107, 163, 240, 0.15)
+  );
+  background-size: 7px 7px;
+  border: #b3a7bd 1.6px solid;
+  animation: moveStripes 0.5s linear infinite;
 }
 
 .status-indicators-inline .status-indicator.pending {
@@ -374,7 +385,16 @@
     rgba(107, 163, 240, 0.15)
   );
   background-size: 20px 20px;
-  animation: moveStripes 1s linear infinite;
+  animation: moveStripes 0.5s linear infinite;
+}
+
+@keyframes moveStripes {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 20px 0;
+  }
 }
 
 .row-pending {
