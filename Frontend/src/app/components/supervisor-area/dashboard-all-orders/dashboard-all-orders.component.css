@@ -153,9 +153,14 @@
   border: #c97b83 1.6px solid;
 }
 
-.status-indicators-inline .status-indicator.cancelled {
+.status-indicators-inline .status-indicator.cancelled_no_show {
   background-color: #dfdddd;
   border: #8d8d90 1.6px solid;
+}
+
+.status-indicators-inline .status-indicator.cancelled_unavilable {
+  background-color: #d4c9c0;
+  border: #a48770c4 1.6px solid;
 }
 
 .status-indicators-inline .status-indicator.completed {
@@ -360,8 +365,8 @@
   background-color: #f8d7da;
 }
 
-.row-cancelled {
-  background-color: #ffe1e184;
+.row-cancelled-unavailable {
+  background-color: #c0a691bc;
 }
 
 .row-completed {
