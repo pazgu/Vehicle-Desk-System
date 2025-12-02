@@ -1,47 +1,58 @@
 <div class="page-container">
   <div class="login-box">
-    <a routerLink="/home" routerLinkActive="active">
-      
-    </a>
+    <a routerLink="/home" routerLinkActive="active"> </a>
     <h2>התחברות</h2>
 
     <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
       <label>שם משתמש</label>
-<input
-  type="text"
-  formControlName="username"
-  [class.error-border]="formSubmitted && loginForm && !loginForm.value.username"
-/>
+      <input
+        type="text"
+        formControlName="username"
+        [class.error-border]="
+          formSubmitted && loginForm && !loginForm.value.username
+        "
+      />
 
-    
-<label>סיסמה</label>
-<div class="password-container">
-  <input 
-    [type]="showPassword ? 'text' : 'password'" 
-    formControlName="password" 
-    class="password-input"
-    [class.error-border]="formSubmitted && loginForm && !loginForm.value.password"
-  />
-  <mat-icon 
-    class="show-password"
-    (click)="togglePassword()">
-    {{ showPassword ? 'visibility' : 'visibility_off' }}
-  </mat-icon>
-</div>
+      <label>סיסמה</label>
+      <div class="password-container">
+        <input
+          [type]="showPassword ? 'text' : 'password'"
+          formControlName="password"
+          class="password-input"
+          [class.error-border]="
+            formSubmitted && loginForm && !loginForm.value.password
+          "
+        />
+        <mat-icon class="show-password" (click)="togglePassword()">
+          {{ showPassword ? "visibility" : "visibility_off" }}
+        </mat-icon>
+      </div>
 
+      <div style="display: flex; align-items: center; justify-content: center">
+        <a
+          style="
+            text-align: center;
+            color: gray;
+            text-decoration: none;
+            cursor: pointer;
+          "
+          routerLink="/forgot-password"
+        >
+          שכחת סיסמה?</a
+        >
+      </div>
 
-<div style="display:flex; align-items:center; justify-content: center;"><a style="text-align: center; color: gray; text-decoration: none; cursor: pointer;"
-     routerLink="/forgot-password">
-    שכחת סיסמה?</a>
-</div>
+      <button type="submit">התחבר</button>
 
-<button type="submit">התחבר</button>
-
-      <a routerLink="/register" routerLinkActive="active" style="text-decoration: none;">
-        <p class="register-link" >אין לי משתמש</p>
+      <a
+        routerLink="/register"
+        routerLinkActive="active"
+        style="text-decoration: none"
+      >
+        <p class="register-link">אין לי משתמש</p>
       </a>
 
-      <p *ngIf="errorMessage" style="color:red">{{ errorMessage }}</p>
+      <p *ngIf="errorMessage" style="color: red">{{ errorMessage }}</p>
     </form>
   </div>
 </div>

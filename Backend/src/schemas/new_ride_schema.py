@@ -39,7 +39,7 @@ class RideCreate(BaseModel):
     target_type: Optional[str] = "self" 
     extra_stops: Optional[List[UUID]] = None 
     is_extended_request: Optional[bool] = False
-
+    approving_supervisor: Optional[UUID] = None
     
 class RideResponse(BaseModel):
     id: UUID
@@ -64,7 +64,7 @@ class RideResponse(BaseModel):
     extra_stops: Optional[List[UUID]] = None
     is_extended_request: Optional[bool] = False
     vehicle_model:Optional[str]= None
-
+    approving_supervisor: Optional[UUID] = None
     class Config:
         from_attributes = True
         json_encoders = {

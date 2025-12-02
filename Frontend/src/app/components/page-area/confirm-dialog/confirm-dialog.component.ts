@@ -1,5 +1,9 @@
 import { Component, Inject } from '@angular/core';
-import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import {
+  MatDialogModule,
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+} from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
 
@@ -8,8 +12,8 @@ export interface ConfirmDialogData {
   message: string;
   confirmText: string;
   cancelText: string;
-  noRestoreText: string; // Text to show for irreversible action
-  isDestructive?: boolean; // For styling dangerous actions differently
+  noRestoreText: string; 
+  isDestructive?: boolean; 
 }
 
 @Component({
@@ -17,7 +21,7 @@ export interface ConfirmDialogData {
   standalone: true,
   imports: [CommonModule, MatDialogModule, MatButtonModule],
   templateUrl: './confirm-dialog.component.html',
-  styleUrls: ['./confirm-dialog.component.css']
+  styleUrls: ['./confirm-dialog.component.css'],
 })
 export class ConfirmDialogComponent {
   constructor(

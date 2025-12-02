@@ -21,7 +21,7 @@ export class RideUserChecksService {
     private userService: UserService,
     private toastService: ToastService
   ) {}
-  
+
   checkGovernmentLicence(employeeId: string): Observable<boolean> {
     if (!employeeId) {
       console.warn(
@@ -128,7 +128,7 @@ export class RideUserChecksService {
         blockExpirationDate: null,
       });
     }
-    
+
     return this.userService.getUserById(userId).pipe(
       map((user: any) => {
         const isBlocked = user.is_blocked === true;
@@ -140,7 +140,10 @@ export class RideUserChecksService {
       }),
       catchError((err) => {
         console.error('Failed to check user block status:', err);
-        this.toastService.show('אירעה שגיאה בבדיקת סטטוס המשתמש. אנא נסה שנית.', 'error');
+        this.toastService.show(
+          'אירעה שגיאה בבדיקת סטטוס המשתמש. אנא נסה שנית.',
+          'error'
+        );
         return of({
           isBlocked: false,
           blockExpirationDate: null,

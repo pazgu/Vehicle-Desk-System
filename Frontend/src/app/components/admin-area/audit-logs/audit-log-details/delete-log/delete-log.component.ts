@@ -5,8 +5,8 @@ import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'app-delete-log',
   templateUrl: './delete-log.component.html',
-  imports:[CommonModule,FormsModule],
-  styleUrls: ['./delete-log.component.css']
+  imports: [CommonModule, FormsModule],
+  styleUrls: ['./delete-log.component.css'],
 })
 export class DeleteDataDisplayComponent {
   @Input() selectedLog: any;

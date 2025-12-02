@@ -1,5 +1,5 @@
 :host ::ng-deep .p-card.vehicle-card:hover {
-  transform: translateY(-6px) scale(1.02); 
+  transform: translateY(-6px) scale(1.02);
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
   cursor: pointer;
 }
@@ -7,8 +7,6 @@
 :host ::ng-deep .p-card.vehicle-card:hover img {
   transform: none;
 }
-
-
 
 :host ::ng-deep .p-card.vehicle-card {
   border-radius: 12px;
@@ -21,12 +19,9 @@
   flex-direction: column;
   position: relative;
   box-sizing: border-box;
-  transition:
-    transform 0.22s ease-out,
-    box-shadow 0.22s ease-out,
+  transition: transform 0.22s ease-out, box-shadow 0.22s ease-out,
     border 0.22s ease-out;
 }
-
 
 :host ::ng-deep .p-card.vehicle-card.card-available {
   background: #e1f0e4 !important;
@@ -74,7 +69,7 @@
 }
 
 :host ::ng-deep .p-card.vehicle-card > div:last-child {
-  padding-bottom: 2.5rem; 
+  padding-bottom: 2.5rem;
 }
 .no-department-tag {
   background: linear-gradient(135deg, #bcc0c7 0%, #929bab 100%) !important;
@@ -115,7 +110,7 @@
 
 .usage-number {
   position: absolute;
-  top: 1.2rem; 
+  top: 1.2rem;
   right: 4rem;
   font-size: 13px;
   font-weight: bold;
@@ -127,12 +122,12 @@
 :host ::ng-deep .p-card.vehicle-card {
   display: flex;
   flex-direction: column;
-  height: 100%;        
+  height: 100%;
   box-sizing: border-box;
 }
 
 :host ::ng-deep .p-card.vehicle-card .p-card-body {
-  flex: 1 1 auto;    
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
 }
@@ -148,7 +143,7 @@
   height: 160px;
   max-width: 240px;
   object-fit: contain;
-  margin: 3rem auto 0.3rem auto; 
+  margin: 3rem auto 0.3rem auto;
 }
 
 @media (max-width: 420px) {
@@ -165,7 +160,7 @@
   font-size: 1.1rem !important;
   color: #2c3e50 !important;
   text-align: right;
-  min-height: 2.4rem; 
+  min-height: 2.4rem;
   display: flex;
   align-items: center;
 }

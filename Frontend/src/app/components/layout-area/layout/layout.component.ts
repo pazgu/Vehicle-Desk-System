@@ -8,16 +8,21 @@ import { Subscription, Subject } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
 import { takeUntil } from 'rxjs/operators';
 import { LoadingSpinnerComponent } from '../../loading-spinner/loading-spinner/loading-spinner.component';
-import { LayoutService } from '../../../services/layout.service'; 
+import { LayoutService } from '../../../services/layout.service';
 
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [HeaderComponent, RouterModule, CommonModule,LoadingSpinnerComponent],
+  imports: [
+    HeaderComponent,
+    RouterModule,
+    CommonModule,
+    LoadingSpinnerComponent,
+  ],
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.css',
 })
-export class LayoutComponent implements OnInit,OnDestroy {
+export class LayoutComponent implements OnInit, OnDestroy {
   private subscription = new Subscription();
   pendingRideId: string | null = null;
   feedbackCheckComplete = false;
@@ -30,11 +35,10 @@ export class LayoutComponent implements OnInit,OnDestroy {
     private socketService: SocketService,
     private router: Router,
     private authService: AuthService,
-    private layoutService: LayoutService 
+    private layoutService: LayoutService
   ) {}
 
   ngOnInit() {
-
     this.authService.isLoggedIn$
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((isLoggedIn: boolean) => {
@@ -46,9 +50,11 @@ export class LayoutComponent implements OnInit,OnDestroy {
         }
       });
 
-    this.routerSubscription = this.router.events.subscribe(event => {
+    this.routerSubscription = this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
-        this.isFeedbackPage = event.urlAfterRedirects.includes('/ride-completion-form');
+        this.isFeedbackPage = event.urlAfterRedirects.includes(
+          '/ride-completion-form'
+        );
       }
     });
 
@@ -62,11 +68,10 @@ export class LayoutComponent implements OnInit,OnDestroy {
     this.socketService.feedbackNeeded$.subscribe((data) => {
       if (data) {
         this.checkFeedbackNeeded();
-
       } else {
         console.warn('Received null or empty feedback data');
       }
-    })
+    });
   }
 
   ngOnDestroy(): void {
@@ -90,7 +95,7 @@ export class LayoutComponent implements OnInit,OnDestroy {
     if (!userId) {
       this.hideFeedbackButton();
       return;
-    }  
+    }
 
     this.layoutService.checkPendingFeedback(userId).subscribe(
       (res) => {
@@ -111,7 +116,6 @@ export class LayoutComponent implements OnInit,OnDestroy {
       }
     );
   }
-
 
   onFormCompleted(): void {
     localStorage.removeItem('pending_feedback_ride');

@@ -28,7 +28,7 @@ export class VehicleCardComponent {
     const statusClass = this.vehicle?.status
       ? `card-${this.vehicle.status}`
       : 'card-available';
-    return `vehicle-card ${statusClass}`; 
+    return `vehicle-card ${statusClass}`;
   }
 
   isInactive(lastUsedAt: string | null | undefined): boolean {

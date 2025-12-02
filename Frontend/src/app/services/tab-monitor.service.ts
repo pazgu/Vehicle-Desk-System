@@ -15,7 +15,7 @@ export class TabMonitorService implements OnDestroy {
   private startHeartbeat() {
     this.intervalId = window.setInterval(() => {
       localStorage.setItem(this.heartbeatKey, Date.now().toString());
-    }, 1000); // Update every second
+    }, 1000); 
   }
 
   private checkIfLastTabClosed() {
@@ -23,7 +23,6 @@ export class TabMonitorService implements OnDestroy {
     const now = Date.now();
 
     if (!last || now - parseInt(last) > 3000) {
-      // If the last heartbeat is old, assume a tab was closed and none were active
       localStorage.clear();
     }
   }

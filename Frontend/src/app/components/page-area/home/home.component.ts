@@ -11,7 +11,10 @@ import {
 import { Router, RouterModule } from '@angular/router';
 import { ToastService } from '../../../services/toast.service';
 import { RideService } from '../../../services/ride.service';
-import { MyRidesService, RebookRequest } from '../../../services/myrides.service';
+import {
+  MyRidesService,
+  RebookRequest,
+} from '../../../services/myrides.service';
 import { HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { VehicleService } from '../../../services/vehicle.service';
@@ -83,6 +86,7 @@ import {
   ConfirmDialogData,
 } from '../../page-area/confirm-dialog/confirm-dialog.component';
 import { RebookData } from '../../../services/myrides.service';
+import { Supervisor } from '../../../models/user.model';
 
 interface Employee { id: string; full_name: string; }
 
@@ -144,6 +148,11 @@ export class NewRideComponent implements OnInit {
     { value: 'administrative', label: 'מנהלתית' },
     { value: 'operational', label: 'מבצעית' },
   ];
+  supervisors: Supervisor[] = [];
+  selectedSupervisor: string | null = null;
+  departmentId=''
+
+
   isVIP=false
   constructor(
     private fb: FormBuilder,
@@ -164,6 +173,7 @@ export class NewRideComponent implements OnInit {
    ngOnInit(): void {
     this,this.checkVipStatus();
   this.currentUserId = getUserIdFromToken(localStorage.getItem('access_token'));
+  this.departmentId=localStorage.getItem('department_id') || ""
   this.initializeComponent();
     if (this.currentUserId){
       this.rideUserChecksService.checkUserBlock(this.currentUserId).subscribe((result) => {
@@ -177,6 +187,15 @@ export class NewRideComponent implements OnInit {
 
         }});
     }
+
+    this.myRidesService.getSupervisors(this.departmentId).subscribe({
+      next: (data) =>{
+        (this.supervisors = data)
+
+      } ,
+      error: (err) => console.error('Failed to load supervisors:', err),
+    });
+
    this.myRidesService.checkPendingRebook().subscribe({
   next: (res) => {
     if (res.has_pending && !rebookData) {
@@ -189,35 +208,31 @@ export class NewRideComponent implements OnInit {
   const rebookData = this.myRidesService.getRebookDatafromService();
 
 
-  if (rebookData) {
-    this.applyRebookData(rebookData);  
-    this.rideForm.get('target_type')?.setValue('self');
+    if (rebookData) {
+      this.applyRebookData(rebookData);
+      this.rideForm.get('target_type')?.setValue('self');
       this.handleStep1Next();
-
-  }
-
-  
- 
-
-  
-  this.loadUserOrders();
-  const initialTargetType = this.rideForm.get('target_type')?.value;
-  if (initialTargetType === 'self') {
-    if (this.currentUserId) {
-      this.checkUserDepartment(this.currentUserId);
-      this.checkGovernmentLicence(this.currentUserId);
-    } else {
-      this.toastService.show('שגיאה: מזהה משתמש נוכחי לא נמצא.', 'error');
-      this.disableRequest = true;
-  }
-}}
-    hasTouchedVehicleType(): boolean {
-        const value = this.rideForm.get('vehicle_type')?.value;
-        if (value) {
-            return true
-        }
-        return false;
     }
+
+    this.loadUserOrders();
+    const initialTargetType = this.rideForm.get('target_type')?.value;
+    if (initialTargetType === 'self') {
+      if (this.currentUserId) {
+        this.checkUserDepartment(this.currentUserId);
+        this.checkGovernmentLicence(this.currentUserId);
+      } else {
+        this.toastService.show('שגיאה: מזהה משתמש נוכחי לא נמצא.', 'error');
+        this.disableRequest = true;
+      }
+    }
+  }
+  hasTouchedVehicleType(): boolean {
+    const value = this.rideForm.get('vehicle_type')?.value;
+    if (value) {
+      return true;
+    }
+    return false;
+  }
 
   @HostListener('window:beforeunload', ['$event'])
   onBeforeUnload(e: BeforeUnloadEvent) {
@@ -227,18 +242,17 @@ export class NewRideComponent implements OnInit {
     }
   }
 
-
   checkVipStatus(): void {
-  this.myRidesService.isVip().subscribe({
-    next: (res) => {
-      this.isVIP = res.is_vip;
-    },
-    error: (err) => {
-      console.error("Failed to check VIP status", err);
-      this.isVIP = false; // fallback
-    }
-  });
-}
+    this.myRidesService.isVip().subscribe({
+      next: (res) => {
+        this.isVIP = res.is_vip;
+      },
+      error: (err) => {
+        console.error('Failed to check VIP status', err);
+        this.isVIP = false; 
+      },
+    });
+  }
   canChooseVehicle(): boolean {
     const distance = this.rideForm.get('estimated_distance_km')?.value;
     const rideDate = this.rideForm.get('ride_date')?.value;
@@ -260,61 +274,60 @@ export class NewRideComponent implements OnInit {
     }
   }
 
-    private initializeComponent(): void {
-  this.fetchVehicleTypes();
-  this.minDate = calculateMinDate();
-  this.initializeForm();
-  this.setupFormSubscriptions();
-  this.fetchCities();
-  this.loadPendingVehicles();
-  this.timeOptions = generateTimeOptions();
-  setClosestQuarterHourTimeOnForm(this.rideForm, this.timeOptions);
-}
-
-private applyRebookData(data: RebookData): void {
-  this.isRebookMode = true;
-  this.rebookOriginalRideId = data.user_id;
-
-  const extraStopsArray = this.rideForm.get('extraStops') as FormArray;
-  extraStopsArray.clear();
-
-  if (data.extra_stops && Array.isArray(data.extra_stops)) {
-    data.extra_stops.forEach(stopId => {
-      extraStopsArray.push(this.fb.control(stopId));
-    });
+  private initializeComponent(): void {
+    this.fetchVehicleTypes();
+    this.minDate = calculateMinDate();
+    this.initializeForm();
+    this.setupFormSubscriptions();
+    this.fetchCities();
+    this.loadPendingVehicles();
+    this.timeOptions = generateTimeOptions();
+    setClosestQuarterHourTimeOnForm(this.rideForm, this.timeOptions);
   }
+
+  private applyRebookData(data: RebookData): void {
+    this.isRebookMode = true;
+    this.rebookOriginalRideId = data.user_id;
+
+    const extraStopsArray = this.rideForm.get('extraStops') as FormArray;
+    extraStopsArray.clear();
+
+    if (data.extra_stops && Array.isArray(data.extra_stops)) {
+      data.extra_stops.forEach((stopId) => {
+        extraStopsArray.push(this.fb.control(stopId));
+      });
+    }
 
   const start = new Date(data.start_datetime);
   const end = new Date(data.end_datetime);
   const pad = (num: number) => num.toString().padStart(2, '0');
-
   this.rideForm.patchValue({
     start_location: data.start_location,
     stop: data.stop,
     destination: data.destination,
 
-    ride_type: data.ride_type,
-    estimated_distance_km: data.estimated_distance,
+      ride_type: data.ride_type,
+      estimated_distance_km: data.estimated_distance,
 
-    four_by_four_reason: data.four_by_four_reason ?? '',
-    extended_ride_reason: data.extended_ride_reason ?? '',
+      four_by_four_reason: data.four_by_four_reason ?? '',
+      extended_ride_reason: data.extended_ride_reason ?? '',
 
-    car: null,
+      car: null,
 
-    ride_date: start.toISOString().split('T')[0],
-    start_hour: pad(start.getHours()),
-    start_minute: pad(start.getMinutes()),
-    end_hour: pad(end.getHours()),
-    end_minute: pad(end.getMinutes()),
+      ride_date: start.toISOString().split('T')[0],
+      start_hour: pad(start.getHours()),
+      start_minute: pad(start.getMinutes()),
+      end_hour: pad(end.getHours()),
+      end_minute: pad(end.getMinutes()),
 
     start_time: `${pad(start.getHours())}:${pad(start.getMinutes())}`,
     end_time: `${pad(end.getHours())}:${pad(end.getMinutes())}`,
+    approving_supervisor: data.approving_supervisor ?? null
   });
 
-  this.rideForm.clearValidators();
-  this.rideForm.updateValueAndValidity({ emitEvent: false });
-}
-
+    this.rideForm.clearValidators();
+    this.rideForm.updateValueAndValidity({ emitEvent: false });
+  }
 
   private isVehicleFrozenError(err: any): boolean {
     const detail =
@@ -400,17 +413,18 @@ private applyRebookData(data: RebookData): void {
     return `${hours}:${minutes}`;
   }
 
-    private initializeForm(): void {
-  this.rideForm = buildRideForm(this.fb, this.isRebookMode);
-  this.setDefaultStartAndDestination();
-  this.socketService.usersLicense$.subscribe(update => {
-  const { id, has_government_license, license_expiry_date } = update;
-  const selfUserId =
-    this.currentUserId ?? getUserIdFromToken(localStorage.getItem('access_token'));
-  const selectedUserId =
-    this.rideForm.get('target_type')?.value === 'self'
-      ? selfUserId
-      : this.rideForm.get('target_employee_id')?.value;
+  private initializeForm(): void {
+    this.rideForm = buildRideForm(this.fb, this.isRebookMode);
+    this.setDefaultStartAndDestination();
+    this.socketService.usersLicense$.subscribe((update) => {
+      const { id, has_government_license, license_expiry_date } = update;
+      const selfUserId =
+        this.currentUserId ??
+        getUserIdFromToken(localStorage.getItem('access_token'));
+      const selectedUserId =
+        this.rideForm.get('target_type')?.value === 'self'
+          ? selfUserId
+          : this.rideForm.get('target_employee_id')?.value;
 
       if (id !== selectedUserId) return;
 
@@ -680,40 +694,39 @@ private applyRebookData(data: RebookData): void {
     });
   }
 
- private loadVehicles(
-  distance: number,
-  rideDate: string,
-  vehicleType: string,
-  startTime: string,
-  endTime: string
-): void {
+  private loadVehicles(
+    distance: number,
+    rideDate: string,
+    vehicleType: string,
+    startTime: string,
+    endTime: string
+  ): void {
+    const request$ = this.isVIP
+      ? this.vehicleService.getVIPVehiclesForNewRide(
+          distance,
+          rideDate,
+          vehicleType,
+          startTime,
+          endTime
+        )
+      : this.vehicleService.getAllVehiclesForNewRide(
+          distance,
+          rideDate,
+          vehicleType,
+          startTime,
+          endTime
+        );
 
-  const request$ = this.isVIP
-    ? this.vehicleService.getVIPVehiclesForNewRide(
-        distance,
-        rideDate,
-        vehicleType,
-        startTime,
-        endTime
-      )
-    : this.vehicleService.getAllVehiclesForNewRide(
-        distance,
-        rideDate,
-        vehicleType,
-        startTime,
-        endTime
-      );
-
-  request$.subscribe({
-    next: (vehicles) => {
-      this.allCars = normalizeVehiclesResponse(vehicles);
-      this.updateAvailableCars();
-    },
-    error: () => {
-      this.toastService.show('שגיאה בטעינת רכבים זמינים', 'error');
-    },
-  });
-}
+    request$.subscribe({
+      next: (vehicles) => {
+        this.allCars = normalizeVehiclesResponse(vehicles);
+        this.updateAvailableCars();
+      },
+      error: () => {
+        this.toastService.show('שגיאה בטעינת רכבים זמינים', 'error');
+      },
+    });
+  }
 
   private loadPendingVehicles(): void {
     this.vehicleService.getPendingCars().subscribe({
@@ -761,9 +774,9 @@ private applyRebookData(data: RebookData): void {
     const selectedType = this.rideForm.get('vehicle_type')?.value;
     const carControl = this.rideForm.get('car');
 
-  let filtered = filterAvailableCars(this.allCars, selectedType);
+    let filtered = filterAvailableCars(this.allCars, selectedType);
 
-  filtered = filtered.filter(car => car.status === 'available');
+    filtered = filtered.filter((car) => car.status === 'available');
 
     this.availableCars = filtered;
 
@@ -783,59 +796,80 @@ private applyRebookData(data: RebookData): void {
     });
   }
 
-    shouldShowCarError(): boolean {
-        const carControl = this.rideForm.get('car');
-        if (!carControl) return false;
-        const hasValidationErrors = carControl.invalid;
-        const hasPendingError = carControl.errors?.['pending'];
-        const hasRequiredError = carControl.errors?.['required'];
-        return (carControl.touched || carControl.dirty) && (hasValidationErrors || hasPendingError || hasRequiredError);
-    }
- onRideTypeChange(): void {
-  const isPrefilled = this.isRebookMode;
+  shouldShowCarError(): boolean {
+    const carControl = this.rideForm.get('car');
+    if (!carControl) return false;
+    const hasValidationErrors = carControl.invalid;
+    const hasPendingError = carControl.errors?.['pending'];
+    const hasRequiredError = carControl.errors?.['required'];
+    return (
+      (carControl.touched || carControl.dirty) &&
+      (hasValidationErrors || hasPendingError || hasRequiredError)
+    );
+  }
+  onRideTypeChange(): void {
+    const isPrefilled = this.isRebookMode;
 
-  const distance = this.rideForm.get('estimated_distance_km')?.value;
-  const rideDate = this.rideForm.get('ride_date')?.value;
-  const vehicleType = this.rideForm.get('vehicle_type')?.value;
-  const rideDateNight = this.rideForm.get('ride_date_night_end')?.value;
-  const startHour = this.rideForm.get('start_hour')?.value;
-  const startMinute = this.rideForm.get('start_minute')?.value;
-  const endHour = this.rideForm.get('end_hour')?.value;
-  const endMinute = this.rideForm.get('end_minute')?.value;
-  const period = this.rideForm.get('ride_period')?.value;
-  const startDateTime = buildDateTime(rideDate, startHour, startMinute);
-  const endDateTime = buildDateTime(rideDate, endHour, endMinute);
+    const distance = this.rideForm.get('estimated_distance_km')?.value;
+    const rideDate = this.rideForm.get('ride_date')?.value;
+    const vehicleType = this.rideForm.get('vehicle_type')?.value;
+    const rideDateNight = this.rideForm.get('ride_date_night_end')?.value;
+    const startHour = this.rideForm.get('start_hour')?.value;
+    const startMinute = this.rideForm.get('start_minute')?.value;
+    const endHour = this.rideForm.get('end_hour')?.value;
+    const endMinute = this.rideForm.get('end_minute')?.value;
+    const period = this.rideForm.get('ride_period')?.value;
+    const startDateTime = buildDateTime(rideDate, startHour, startMinute);
+    const endDateTime = buildDateTime(rideDate, endHour, endMinute);
 
-  if (period !== 'morning') {
-    if (distance && rideDateNight && vehicleType) {
-      const isoDate = toIsoDate(rideDate);
-      this.loadVehicles(distance, isoDate, vehicleType, startDateTime, endDateTime);
-    } else if (!isPrefilled) {
-      this.toastService.show('אנא הזן תאריך וסוג רכב לפני סינון רכבים', 'error');
-      this.availableCars = [];
-      this.rideForm.get('car')?.setValue(null);
-    }
-  } else {
-    if (distance && rideDate && vehicleType) {
-      const isoDate = toIsoDate(rideDate);
-      this.loadVehicles(distance, isoDate, vehicleType, startDateTime, endDateTime);
-    } else if (!isPrefilled) {
-      this.toastService.show('אנא הזן תאריך וסוג רכב לפני סינון רכבים', 'error');
-      this.availableCars = [];
-      this.rideForm.get('car')?.setValue(null);
+    if (period !== 'morning') {
+      if (distance && rideDateNight && vehicleType) {
+        const isoDate = toIsoDate(rideDate);
+        this.loadVehicles(
+          distance,
+          isoDate,
+          vehicleType,
+          startDateTime,
+          endDateTime
+        );
+      } else if (!isPrefilled) {
+        this.toastService.show(
+          'אנא הזן תאריך וסוג רכב לפני סינון רכבים',
+          'error'
+        );
+        this.availableCars = [];
+        this.rideForm.get('car')?.setValue(null);
+      }
+    } else {
+      if (distance && rideDate && vehicleType) {
+        const isoDate = toIsoDate(rideDate);
+        this.loadVehicles(
+          distance,
+          isoDate,
+          vehicleType,
+          startDateTime,
+          endDateTime
+        );
+      } else if (!isPrefilled) {
+        this.toastService.show(
+          'אנא הזן תאריך וסוג רכב לפני סינון רכבים',
+          'error'
+        );
+        this.availableCars = [];
+        this.rideForm.get('car')?.setValue(null);
+      }
     }
   }
-}
 
-    private updateVehicleTypeValidation(value: string): void {
-        const vehicleTypeReason = this.rideForm.get('four_by_four_reason');
-        vehicleTypeReason?.clearValidators();
-        vehicleTypeReason?.updateValueAndValidity();
-    }
-    isPendingVehicle(vehicle_id: string): boolean {
-  const rideDate = this.rideForm.get('ride_date')?.value;
-  const startTime = this.startTime;
-  const endTime = this.endTime;
+  private updateVehicleTypeValidation(value: string): void {
+    const vehicleTypeReason = this.rideForm.get('four_by_four_reason');
+    vehicleTypeReason?.clearValidators();
+    vehicleTypeReason?.updateValueAndValidity();
+  }
+  isPendingVehicle(vehicle_id: string): boolean {
+    const rideDate = this.rideForm.get('ride_date')?.value;
+    const startTime = this.startTime;
+    const endTime = this.endTime;
 
     if (!rideDate || !vehicle_id || !startTime || !endTime) {
       return false;
@@ -1125,7 +1159,10 @@ private applyRebookData(data: RebookData): void {
         ? `${rideDate}T${endTime}`
         : `${nightEndDate}T${endTime}`;
 
-    const formData: RideFormPayload = buildRideFormPayload({
+    const approvingSupervisor = this.rideForm.get('approving_supervisor')?.value;
+
+    const formData: RideFormPayload ={
+      ...buildRideFormPayload({
       form: this.rideForm,
       riderId: rider_id,
       requesterId: requester_id,
@@ -1134,8 +1171,10 @@ private applyRebookData(data: RebookData): void {
       vehicleId,
       isExtendedRequest: this.isExtendedRequest,
       estimatedDistanceWithBuffer: this.estimated_distance_with_buffer,
-    });
+    }),
+    approving_supervisor: approvingSupervisor || null, 
 
+} 
         const role = localStorage.getItem('role');
           if (this.isRebookMode) {
             const rebookD=this.myRidesService.getRebookDatafromService()
@@ -1163,79 +1202,81 @@ private applyRebookData(data: RebookData): void {
       user_id: formData.user_id,
       status: 'pending',
       submitted_at: new Date().toISOString(),
+      approving_supervisor:formData.approving_supervisor || null
     }
   };
 
-  this.myRidesService.rebookReservation(payload).subscribe({
-    next: (res) => {
-      this.toastService.show('הנסיעה עודכנה בהצלחה', 'success');
-      this.router.navigate(['/all-rides']);
-      this.myRidesService.clearRebookData();
-
-    },
-    error: (err) => {
-      this.toastService.show('שגיאה בעדכון הנסיעה', 'error');
-    }
-  });
-
-}else{
-        if (role === 'employee') {
-            this.rideService.createRide(formData, user_id).subscribe({
-                next: (createdRide) => {
-                    this.orderSubmitted = true;
-                    this.loadFuelType(formData.vehicle_id);
-                    this.socketService.sendMessage('new_ride_request', { ...createdRide, user_id });
-
-          this.loadUserOrders();
-
-          this.createdRideId =
-            createdRide?.id ??
-            createdRide?.ride_id ??
-            createdRide?.data?.id ??
-            'mock-ride';
-          this.showGuidelines = true;
+      this.myRidesService.rebookReservation(payload).subscribe({
+        next: (res) => {
+          this.toastService.show('הנסיעה עודכנה בהצלחה', 'success');
+          this.router.navigate(['/all-rides']);
+          this.myRidesService.clearRebookData();
         },
         error: (err) => {
-          if (this.isVehicleFrozenError(err)) {
-            this.openVehicleFrozenDialog();
-            return;
-          }
-
-          const translated = getRideSubmitErrorMessage(err);
-          this.toastService.show(translated, 'error');
-          console.error('Submit error:', err);
+          this.toastService.show('שגיאה בעדכון הנסיעה', 'error');
         },
       });
-    } else if (role === 'supervisor') {
-      this.rideService.createSupervisorRide(formData, user_id).subscribe({
-        next: (createdRide) => {
-          this.orderSubmitted = true;
-
-          this.loadFuelType(formData.vehicle_id);
-
-          this.loadUserOrders();
-
-          this.createdRideId =
-            createdRide?.id ??
-            createdRide?.ride_id ??
-            createdRide?.data?.id ??
-            'mock-ride';
-          this.showGuidelines = true;
-        },
-        error: (err) => {
-          if (this.isVehicleFrozenError(err)) {
-            this.openVehicleFrozenDialog();
-            return;
-          }
-
-    const translated = getRideSubmitErrorMessage(err);
-    this.toastService.show(translated, 'error');
-    console.error('Submit error:', err);
-  },
-
+    } else {
+      if (role === 'employee') {
+        this.rideService.createRide(formData, user_id).subscribe({
+          next: (createdRide) => {
+            this.orderSubmitted = true;
+            this.loadFuelType(formData.vehicle_id);
+            this.socketService.sendMessage('new_ride_request', {
+              ...createdRide,
+              user_id,
             });
-        }
-    }}
+
+            this.loadUserOrders();
+
+            this.createdRideId =
+              createdRide?.id ??
+              createdRide?.ride_id ??
+              createdRide?.data?.id ??
+              'mock-ride';
+            this.showGuidelines = true;
+          },
+          error: (err) => {
+            if (this.isVehicleFrozenError(err)) {
+              this.openVehicleFrozenDialog();
+              return;
+            }
+
+            const translated = getRideSubmitErrorMessage(err);
+            this.toastService.show(translated, 'error');
+            console.error('Submit error:', err);
+          },
+        });
+      } else if (role === 'supervisor') {
+        this.rideService.createSupervisorRide(formData, user_id).subscribe({
+          next: (createdRide) => {
+            this.orderSubmitted = true;
+
+            this.loadFuelType(formData.vehicle_id);
+
+            this.loadUserOrders();
+
+            this.createdRideId =
+              createdRide?.id ??
+              createdRide?.ride_id ??
+              createdRide?.data?.id ??
+              'mock-ride';
+            this.showGuidelines = true;
+          },
+          error: (err) => {
+            if (this.isVehicleFrozenError(err)) {
+              this.openVehicleFrozenDialog();
+              return;
+            }
+
+            const translated = getRideSubmitErrorMessage(err);
+            this.toastService.show(translated, 'error');
+            console.error('Submit error:', err);
+          },
+        });
+      }
+    }
+  }
 
   get f() {
     return getRideFormControls(this.rideForm);

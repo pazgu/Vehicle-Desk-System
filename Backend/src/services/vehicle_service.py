@@ -375,7 +375,7 @@ def get_vehicle_by_id(vehicle_id: str, db: Session):
         "mileage_last_updated": vehicle.mileage_last_updated
     }
 
-def update_vehicle(vehicle_id: str, vehicle_data: VehicleUpdateRequest, db: Session):
+def update_vehicle(vehicle_id: str, vehicle_data: VehicleUpdateRequest, db: Session, user_id: UUID):
     vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
     
     if not vehicle:
@@ -398,6 +398,8 @@ def update_vehicle(vehicle_id: str, vehicle_data: VehicleUpdateRequest, db: Sess
     if vehicle_data.mileage is not None:
         if vehicle_data.mileage < 0:
             raise HTTPException(status_code=400, detail="קילומטראז' לא יכול להיות שלילי")
+        if vehicle_data.mileage > 2147483647:
+            raise HTTPException(status_code=400, detail="קילומטראז' גבוה מדי (מקסימום: 2,147,483,647)")
         vehicle.mileage = vehicle_data.mileage
         vehicle.mileage_last_updated = datetime.utcnow()
     if vehicle_data.image_url is not None:
@@ -405,11 +407,14 @@ def update_vehicle(vehicle_id: str, vehicle_data: VehicleUpdateRequest, db: Sess
     if hasattr(vehicle, 'updated_at'):
         vehicle.updated_at = datetime.utcnow()
     try:
+        db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id)})     
         db.commit()
         db.refresh(vehicle)
+        db.execute(text("SET session.audit.user_id = DEFAULT"))
         return get_vehicle_by_id(vehicle_id, db)
     except Exception as e:
         db.rollback()
+        db.execute(text("SET session.audit.user_id = DEFAULT"))
         raise HTTPException(status_code=500, detail=f"שגיאה בעדכון הרכב: {str(e)}")
 
 def freeze_vehicle_service(db: Session, vehicle_id: UUID, reason: str, changed_by: UUID):

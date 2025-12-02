@@ -1,4 +1,4 @@
- <!-- <ng-container *ngIf="state$ | async as s">
+<!-- <ng-container *ngIf="state$ | async as s">
   <div
     class="retry-toast"
     *ngIf="(s.visible || s.showRetry)"
@@ -38,25 +38,17 @@
   </div>
 </ng-container> -->
 
-
-
 <ng-container *ngIf="state$ | async as s">
   <div
     class="retry-toast-overlay"
-    *ngIf="(s.visible || s.showRetry)"
+    *ngIf="s.visible || s.showRetry"
     role="alertdialog"
     aria-live="assertive"
     aria-labelledby="emailRetryTitle"
     aria-describedby="emailRetryMsg"
   >
     <div class="retry-toast-card" role="document">
-      <button
-        class="close-btn"
-        (click)="onClose()"
-        aria-label="סגור"
-      >
-        ✕
-      </button>
+      <button class="close-btn" (click)="onClose()" aria-label="סגור">✕</button>
 
       <div class="toast-header">
         <span class="error-icon" aria-hidden="true">⚠️</span>

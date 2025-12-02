@@ -52,7 +52,10 @@ function createSameStopAndDestinationValidator(form: FormGroup): ValidatorFn {
   };
 }
 
-export function buildRideForm(fb: FormBuilder, isRebook: boolean = false): FormGroup {
+export function buildRideForm(
+  fb: FormBuilder,
+  isRebook: boolean = false
+): FormGroup {
   const validators = [
     createTripDurationValidator(),
     createSameDayValidator(),
@@ -92,6 +95,8 @@ export function buildRideForm(fb: FormBuilder, isRebook: boolean = false): FormG
 
       four_by_four_reason: [''],
       extended_ride_reason: [''],
+      
+      approving_supervisor: [null],
     },
     { validators }
   );

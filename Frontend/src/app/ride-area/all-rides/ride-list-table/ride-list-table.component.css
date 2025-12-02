@@ -245,8 +245,7 @@ button:disabled {
   justify-content: center;
   align-items: center;
   direction: rtl;
-  flex-wrap: nowrap;  
-
+  flex-wrap: nowrap;
 }
 
 .modify-buttons button.modify {
@@ -280,14 +279,13 @@ button:disabled {
   height: 32px;
 }
 
-.modify-buttons button.status:hover{
+.modify-buttons button.status:hover {
   background-color: #c1c1c1;
   border-color: #353535;
 }
-.switch{
-  width:20px;
-  height:20px;
-
+.switch {
+  width: 20px;
+  height: 20px;
 }
 
 .delete {
