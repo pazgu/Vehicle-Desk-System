@@ -1078,7 +1078,6 @@ export class NewRideComponent implements OnInit {
       next: () => {
         this.pendingConfirmation = false;
         this.showGuidelines = false;
-        this.toastService.show('אישור נקלט. נסיעה נעימה! ', 'success');
       },
       error: () => {
         this.pendingConfirmation = false;
