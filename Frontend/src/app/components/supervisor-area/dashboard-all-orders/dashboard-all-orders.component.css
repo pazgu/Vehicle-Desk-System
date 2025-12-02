@@ -139,23 +139,23 @@
 }
 
 .status-indicators-inline .status-indicator.approved {
-  background-color: #c9e4cf;
-  border: #75a480 1.6px solid;
+  background-color: #d9e7dc;
+  border: #9dbaa4 1.6px solid;
 }
 
 .status-indicators-inline .status-indicator.pending {
-  background-color: #efe5c7;
-  border: #c8b88a 1.6px solid;
+  background-color: #f3ebd6;
+  border: #cec3a4 1.6px solid;
 }
 
 .status-indicators-inline .status-indicator.rejected {
-  background-color: #ecc9c9;
-  border: #c97b83 1.6px solid;
+  background-color: #eed1d1;
+  border: #cb9499 1.6px solid;
 }
 
 .status-indicators-inline .status-indicator.cancelled_no_show {
   background-color: #dfdddd;
-  border: #8d8d90 1.6px solid;
+  border: #a5a5a9 1.6px solid;
 }
 
 .status-indicators-inline .status-indicator.cancelled_unavilable {
@@ -164,8 +164,8 @@
 }
 
 .status-indicators-inline .status-indicator.completed {
-  background-color: #c6e2f5;
-  border: #5babb8 1.6px solid;
+  background-color: #cce4f4;
+  border: #8ea5bc 1.6px solid;
 }
 
 .filters-panel {
@@ -358,23 +358,23 @@
 }
 
 .row-pending {
-  background-color: #fff8e1;
+  background-color: #fcf7e6;
 }
 
 .row-rejected {
-  background-color: #f8d7da;
+  background-color: #f7e2e4;
 }
 
 .row-cancelled-unavailable {
-  background-color: #c0a691bc;
+  background-color: #dac9bbbc;
 }
 
 .row-completed {
-  background-color: #c9e6f9;
+  background-color: #dceef9;
 }
 
 .row-cancelled-no-show {
-  background-color: #dfdddd;
+  background-color: #e5e3e3;
 }
 
 .empty-state-container {
