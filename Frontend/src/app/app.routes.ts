@@ -44,11 +44,6 @@ export const routes: Routes = [
     canActivate: [ProtectedRouteGuard],
   },
   {
-    path: 'new-ride',
-    component: AllRidesComponent,
-    canActivate: [ProtectedRouteGuard],
-  },
-  {
     path: 'all-rides',
     component: AllRidesComponent,
     canActivate: [ProtectedRouteGuard],
