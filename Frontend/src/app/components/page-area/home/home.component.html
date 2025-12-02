@@ -514,9 +514,9 @@
                 </div>
               </div>
               <div class="form-field-group">
-                 <label> מאשר הבקשה:</label>
+                 <label> מאשר הבקשה <span class="optional-text">(אופציונלי)</span></label>
               <select formControlName="approving_supervisor" class="styled-select">
-                <option value="" disabled>בחר משתמש</option>
+                <option value="">ללא מאשר</option>
                 <option *ngFor="let sup of supervisors" [value]="sup.id">{{ sup.name }}</option>
               </select>
 
