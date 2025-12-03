@@ -1,5 +1,5 @@
 import pandas as pd
-from datetime import datetime, time, date, timedelta
+from datetime import datetime, time, date, timedelta, timezone
 from typing import Optional, List, Dict, Any
 from uuid import UUID
 import calendar
@@ -764,10 +764,10 @@ async def delete_vehicle_route(
     db: Session = Depends(get_db),
     token: str = Depends(oauth2_scheme)
 ):
-    user = get_current_user(request)  # this expects the real Request
+    user = get_current_user(request)
     role_check(["admin"], token)
 
-    # Pass db and user_id to your async delete function
+    
     result = await delete_vehicle(vehicle_id, db, user.employee_id)
 
     if "error" in result:
@@ -810,7 +810,7 @@ def get_archived_vehicles(
             else:
                 archived_at_dt = v.archived_at
 
-            archive_age = (datetime.now() - archived_at_dt).days
+            archive_age = (datetime.now(timezone.utc) - archived_at_dt).days
             if archive_age >= 90:
                 data["canDelete"] = True
 

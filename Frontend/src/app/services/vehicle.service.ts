@@ -165,6 +165,8 @@ export class VehicleService {
       .get<{ vehicle_types: string[] }>(`${this.apiUrl}/vehicles/types`)
       .pipe(map((res) => res.vehicle_types));
   }
+
+  
   deleteVehicle(vehicleId: string): Observable<void> {
     return this.http.delete<void>(
       `${environment.apiUrl}/vehicles/${vehicleId}`
@@ -182,17 +184,14 @@ export class VehicleService {
     return this.http.get<VehicleInItem[]>(`${this.apiUrl}/archived-vehicles`);
   }
 
-  deleteArchivedVehicle(vehicleId: string) {
-    return this.http.delete(`${this.apiUrl}/archived-vehicles/${vehicleId}`);
-  }
 
   restoreVehicle(vehicleId: string): Observable<any> {
     return this.http.put(`${this.apiUrl}/vehicles/${vehicleId}/restore`, {});
   }
 
-  permanentlyDeleteVehicle(vehicleId: string): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/vehicles/${vehicleId}/permanent`);
-  }
+  // permanentlyDeleteVehicle(vehicleId: string): Observable<any> {
+  //   return this.http.delete(`${this.apiUrl}/vehicles/${vehicleId}/permanent`);
+  // }
 
   uploadMileageReport(file: File): Observable<any> {
     const formData = new FormData();
