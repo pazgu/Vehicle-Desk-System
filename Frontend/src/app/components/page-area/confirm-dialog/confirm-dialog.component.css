@@ -14,10 +14,18 @@
 }
 
 mat-dialog-content,
-mat-dialog-actions,
+mat-dialog-actions {
+  overflow: visible !important;
+  max-height: none !important;
+  font-size: 1.05rem;
+  text-align: right;
+  direction: rtl;
+}
+
 p {
   font-size: 1.05rem;
   text-align: right;
+  direction: rtl;
 }
 
 .mat-dialog-title {
@@ -32,7 +40,6 @@ p {
 
 mat-dialog-actions {
   display: flex !important;
-  flex-direction: row !important;
-  justify-content: flex-start !important;
-  direction: ltr;
+  flex-direction: row-reverse !important; 
+  justify-content: flex-start !important; 
 }

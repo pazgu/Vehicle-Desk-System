@@ -1,7 +1,7 @@
-<div class="custom-confirm-dialog-wrapper">
+<div class="custom-confirm-dialog-wrapper" style="height: auto;">
   <h2 class="mat-dialog-title" dir="rtl">{{ data.title }}</h2>
   <mat-dialog-content>
-    <p style="white-space: pre-line">{{ data.message }}</p>
+    <p style="white-space: pre-line" dir="rtl">{{ data.message }}</p>
     <small class="smalltxt" *ngIf="data.isDestructive">{{
       data.noRestoreText
     }}</small>
