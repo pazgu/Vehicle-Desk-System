@@ -853,10 +853,10 @@ async def notify_ride_cancelled_due_to_no_show(ride_id: uuid.UUID):
                 plate_number = vehicle.plate_number
                 
 
-        notif_message = f"הנסיעה שלך ליעד {destination_name} בוטלה עקב אי התייצבות."
+        notif_message = f"הנסיעה שלך ליעד {destination_name} בוטל עקב אי-הגעה."
         notification = create_system_notification(
             user_id=user.employee_id,
-            title="עדכון: הנסיעה בוטלה עקב אי התייצבות",
+            title="עדכון: הנסיעה בוטל עקב אי-הגעה",
             message=notif_message,
             order_id=ride.id
         )
@@ -872,8 +872,8 @@ async def notify_ride_cancelled_due_to_no_show(ride_id: uuid.UUID):
 
                 supervisor_notification = create_system_notification(
                     user_id=supervisor_id,
-                    title="הודעה: הנסיעה בוטלה עקב אי התייצבות",
-                    message=f"הנסיעה של {user_name_safe} ליעד {destination_safe} בוטלה עקב אי התייצבות.",
+                    title="הודעה: הנסיעה בוטל עקב אי-הגעה",
+                    message=f"הנסיעה של {user_name_safe} ליעד {destination_safe} בוטל עקב אי-הגעה.",
                     order_id=ride.id
                 )
 
@@ -886,8 +886,8 @@ async def notify_ride_cancelled_due_to_no_show(ride_id: uuid.UUID):
                 continue
             admin_notification = create_system_notification(
                 user_id=admin_id,
-                title=f"הודעה: הנסיעה בוטלה עקב אי התייצבות",
-                message=f"הנסיעה של {user_name} ליעד {destination_name} בוטלה עקב אי התייצבות.",
+                title=f"הודעה: הנסיעה בוטל עקב אי-הגעה",
+                message=f"הנסיעה של {user_name} ליעד {destination_name} בוטל עקב אי-הגעה.",
                 order_id=ride.id
             )
             await emit_new_notification(
@@ -905,7 +905,7 @@ async def notify_ride_cancelled_due_to_no_show(ride_id: uuid.UUID):
 
         #     await async_send_email(
         #         to_email=user_email,
-        #         subject=f"❌ עדכון: הנסיעה שלך בוטלה עקב אי התייצבות",
+        #         subject=f"❌ עדכון: הנסיעה שלך בוטל עקב אי-הגעה",
         #         html_content=html_content_user
         #     )
        
@@ -930,7 +930,7 @@ async def notify_ride_cancelled_due_to_no_show(ride_id: uuid.UUID):
                 #         })
                 #         await async_send_email(
                 #             to_email=admin_email,
-                #             subject=f"🚨 הודעה: הנסיעה של {user_name} בוטלה עקב אי התייצבות",
+                #             subject=f"🚨 הודעה: הנסיעה של {user_name} בוטל עקב אי-הגעה",
                 #             html_content=html_content_admin
                 #         )
                 #     except Exception as email_err:
@@ -953,7 +953,7 @@ async def notify_ride_cancelled_due_to_no_show(ride_id: uuid.UUID):
 
         #             await async_send_email(
         #                 to_email=supervisor_email,
-        #                 subject=f"🚨 הודעה: הנסיעה של {user_name} בוטלה עקב אי התייצבות",
+        #                 subject=f"🚨 הודעה: הנסיעה של {user_name} בוטל עקב אי-הגעה",
         #                 html_content=html_content_supervisor
 
         #             )

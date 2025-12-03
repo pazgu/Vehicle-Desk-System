@@ -154,6 +154,7 @@ export class NewRideComponent implements OnInit {
 
 
   isVIP=false
+  isSupervisor=false
   constructor(
     private fb: FormBuilder,
     private router: Router,
@@ -174,6 +175,10 @@ export class NewRideComponent implements OnInit {
     this,this.checkVipStatus();
   this.currentUserId = getUserIdFromToken(localStorage.getItem('access_token'));
   this.departmentId=localStorage.getItem('department_id') || ""
+  
+  const role = localStorage.getItem('role');
+  this.isSupervisor = role === 'supervisor';
+  
   this.initializeComponent();
     if (this.currentUserId){
       this.rideUserChecksService.checkUserBlock(this.currentUserId).subscribe((result) => {
@@ -1078,7 +1083,6 @@ export class NewRideComponent implements OnInit {
       next: () => {
         this.pendingConfirmation = false;
         this.showGuidelines = false;
-        this.toastService.show('אישור נקלט. נסיעה נעימה! ', 'success');
       },
       error: () => {
         this.pendingConfirmation = false;

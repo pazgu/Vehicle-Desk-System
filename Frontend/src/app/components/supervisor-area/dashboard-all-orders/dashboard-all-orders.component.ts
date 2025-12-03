@@ -223,9 +223,14 @@ export class DashboardAllOrdersComponent implements OnInit {
         case 'בתהליך':
           filtered = filtered.filter((order) => order.status === 'in_progress');
           break;
-        case 'בוטל':
+        case 'בוטל עקב אי-הגעה':
           filtered = filtered.filter(
             (order) => order.status === 'cancelled_due_to_no_show'
+          );
+          break;
+        case 'בוטל - רכב לא זמין':
+          filtered = filtered.filter(
+            (order) => order.status === 'cancelled_vehicle_unavailable'
           );
           break;
         default:
@@ -288,6 +293,8 @@ export class DashboardAllOrdersComponent implements OnInit {
         return 'row-in-progress';
       case 'cancelled_due_to_no_show':
         return 'row-cancelled-no-show';
+      case 'cancelled_vehicle_unavailable':
+        return 'row-cancelled-unavailable';
       default:
         return '';
     }
@@ -312,7 +319,9 @@ export class DashboardAllOrdersComponent implements OnInit {
       case 'in_progress':
         return 'בתהליך';
       case 'cancelled_due_to_no_show':
-        return 'בוטלה-נסיעה לא יצאה';
+        return 'בוטל עקב אי-הגעה';
+      case 'cancelled_vehicle_unavailable':
+        return 'בוטל - רכב לא זמין';
       default:
         return status;
     }
@@ -332,6 +341,8 @@ export class DashboardAllOrdersComponent implements OnInit {
         return 'status-in-progress';
       case 'cancelled_due_to_no_show':
         return 'status-cancelled-no-show';
+      case 'cancelled_vehicle_unavailable':
+        return 'status-cancelled-unavailable';
       default:
         return '';
     }
