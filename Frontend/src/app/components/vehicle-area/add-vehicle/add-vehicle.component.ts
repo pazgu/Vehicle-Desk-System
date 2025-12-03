@@ -57,7 +57,7 @@ export class AddVehicleComponent implements OnInit {
         ],
       ],
 
-      lease_expiry: ['', Validators.required],
+      lease_expiry: ['', [Validators.required, this.futureDateValidator()]],
     });
     this.fetchDepartments();
 
@@ -205,6 +205,23 @@ export class AddVehicleComponent implements OnInit {
       return null;
     };
   }
+
+private futureDateValidator() {
+  return (control: any) => {
+    const value = control?.value;
+    if (!value) return null;
+
+    const selectedDate = new Date(value);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); 
+
+    if (selectedDate < today) {
+      return { pastDate: true };
+    }
+
+    return null;
+  };
+}
 
   onImageUrlBlur() {
     const ctrl = this.vehicleForm.get('image_url');
