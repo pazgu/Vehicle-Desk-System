@@ -183,29 +183,33 @@ export class VehicleCardItemComponent implements OnInit {
   }
 
   goBack(): void {
-    if (this.isEditMode) {
-      const dialogData: ConfirmDialogData = {
-        title: 'יציאה ממצב עריכה',
-        message: 'יש לך שינויים שלא נשמרו. האם אתה בטוח שברצונך לצאת?',
-        confirmText: 'צא',
-        cancelText: 'בטל',
-        noRestoreText: 'השינויים לא יישמרו',
-        isDestructive: true,
-      };
+  if (this.isEditMode) {
+    const dialogData: ConfirmDialogData = {
+      title: 'יציאה ממצב עריכה',
+      message: 'יש לך שינויים שלא נשמרו. האם אתה בטוח שברצונך לצאת?',
+      confirmText: 'צא',
+      cancelText: 'בטל',
+      noRestoreText: 'השינויים לא יישמרו',
+      isDestructive: true,
+    };
 
-      const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-        data: dialogData,
-      });
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      data: dialogData,
+    });
 
-      dialogRef.afterClosed().subscribe((result) => {
-        if (result) {
-          this.location.back();
-        }
-      });
-    } else {
-      this.location.back();
-    }
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.navigateToDashboard();
+      }
+    });
+  } else {
+    this.navigateToDashboard();
   }
+}
+
+private navigateToDashboard(): void {
+  this.navigateRouter.navigate(['/vehicle-dashboard']);
+}
 
   loadVehicleUsageData(): void {
     this.vehicleService.getTopUsedVehicles().subscribe({
