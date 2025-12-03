@@ -75,30 +75,52 @@ export class AdminGuidelinesComponent implements OnInit {
     );
   }
 
-  save() {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
+canSave(): { valid: boolean; message: string } {
+  const titleValue = this.form.get('title')?.value?.trim();
+  const itemsArray = this.items.value;
 
-    if (!this.hasChanges()) {
-      this.toastService.show('לא בוצעו שינויים לשמירה', 'info');
-      return;
-    }
-
-    const payload = {
-      title: this.form.value.title as string,
-      items: this.items.value as string[],
-    };
-
-    this.guidelinesService.update(payload).subscribe({
-      next: () => {
-        this.toastService.show('הנתונים נשמרו בהצלחה!', 'success');
-        this.originalValue = this.form.getRawValue(); 
-      },
-      error: () => {
-        this.toastService.show('שגיאה בשמירת נתונים', 'error');
-      },
-    });
+  if (!titleValue) {
+    return { valid: false, message: 'יש להזין כותרת לפני השמירה' };
   }
+
+  if (itemsArray.length === 0) {
+    return { valid: false, message: 'יש להוסיף לפחות נקודה אחת לפני השמירה' };
+  }
+
+  const hasEmptyItems = itemsArray.some((item: string) => !item?.trim());
+  if (hasEmptyItems) {
+    return { valid: false, message: 'אי אפשר לשמור עם נקודות ריקות. מלא את כל הנקודות או מחק אותן' };
+  }
+
+  if (!this.hasChanges()) {
+    return { valid: false, message: 'לא בוצעו שינויים לשמירה' };
+  }
+
+  return { valid: true, message: '' };
+}
+
+  save() {
+  const validation = this.canSave();
+  
+  if (!validation.valid) {
+    this.toastService.show(validation.message, 'info');
+    this.form.markAllAsTouched();
+    return;
+  }
+
+  const payload = {
+    title: this.form.value.title.trim(),
+    items: this.items.value.map((item: string) => item.trim()),
+  };
+
+  this.guidelinesService.update(payload).subscribe({
+    next: () => {
+      this.toastService.show('הנתונים נשמרו בהצלחה!', 'success');
+      this.originalValue = this.form.getRawValue();
+    },
+    error: () => {
+      this.toastService.show('שגיאה בשמירת נתונים', 'error');
+    },
+  });
+}
 }
