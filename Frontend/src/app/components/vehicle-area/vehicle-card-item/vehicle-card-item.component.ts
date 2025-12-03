@@ -412,8 +412,10 @@ export class VehicleCardItemComponent implements OnInit {
     }
   }
   confirmArchive(vehicle: any): void {
-    const message = `תוקף חוזה ההשכרה של רכב ${vehicle.plate_number} פג והרכב מוקפא.\nלא ניתן למחוק את הרכב, אך ניתן לארכב אותו.\n\nהאם את/ה בטוח/ה שברצונך לארכב את הרכב?`;
+    const message = `תוקף חוזה ההשכרה של רכב ${vehicle.plate_number} פג והרכב מוקפא.
+ניתן לשחזר את הרכב המאורכב בכל שלב.
 
+האם את/ה בטוח/ה שברצונך לארכב את הרכב?`;
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
       data: {
