@@ -202,7 +202,8 @@ export class VehicleCardItemComponent implements OnInit {
         this.navigateToDashboard();
       }
     });
-  } else {
+  } 
+  else {
     this.navigateToDashboard();
   }
 }
