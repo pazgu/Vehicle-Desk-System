@@ -498,34 +498,7 @@ async def delete_vehicle(vehicle_id: UUID, db: Session, user_id: UUID):
         db.close()
 
 
-async def notify_users_vehicle_deleted(vehicle, user_ids: list[UUID]):
-    db = SessionLocal()
-    try:
-        notifications = []
-        for user_id in user_ids:
-            notif = Notification(
-                user_id=user_id,
-                notification_type=NotificationType.system,
-                title="רכב נמחק",
-                message = f"כל הנסיעות שלך הקשורות לרכב {vehicle.plate_number} בוטלו מכיוון שהרכב אינו זמין עוד.",
-                sent_at=datetime.now(timezone.utc),
-            )
-            db.add(notif)
-            notifications.append(notif)
 
-        db.commit()
-
-        for notif in notifications:
-            await sio.emit(
-                "new_notification",
-                {"updated_notifications": [notif.to_dict()]},
-                room=str(notif.user_id)
-            )
-
-    except Exception as e:
-        print(f"Exception in notify_users_vehicle_deleted: {e}")
-    finally:
-        db.close()
 async def get_inactive_vehicles():
     db: Session = SessionLocal()
     try:
