@@ -764,10 +764,10 @@ async def delete_vehicle_route(
     db: Session = Depends(get_db),
     token: str = Depends(oauth2_scheme)
 ):
-    user = get_current_user(request)  # this expects the real Request
+    user = get_current_user(request)
     role_check(["admin"], token)
 
-    # Pass db and user_id to your async delete function
+    
     result = await delete_vehicle(vehicle_id, db, user.employee_id)
 
     if "error" in result:
