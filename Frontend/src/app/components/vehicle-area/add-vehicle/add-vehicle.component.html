@@ -75,17 +75,22 @@
         סוג דלק נדרש
       </div>
 
-      <label>תוקף חוזה השכרה</label>
-      <input formControlName="lease_expiry" type="date" />
-      <div
-        class="error"
-        *ngIf="
-          vehicleForm.get('lease_expiry')?.touched &&
-          vehicleForm.get('lease_expiry')?.invalid
-        "
-      >
-        תאריך נדרש
-      </div>
+     <label>תוקף חוזה השכרה</label>
+<input formControlName="lease_expiry" type="date" />
+<div
+  class="error"
+  *ngIf="
+    vehicleForm.get('lease_expiry')?.touched &&
+    vehicleForm.get('lease_expiry')?.invalid
+  "
+>
+  <ng-container *ngIf="vehicleForm.get('lease_expiry')?.hasError('required')">
+    תאריך תוקף חוזה נדרש
+  </ng-container>
+  <ng-container *ngIf="vehicleForm.get('lease_expiry')?.hasError('pastDate')">
+    לא ניתן לבחור תאריך בעבר. תאריך התוקף חייב להיות היום או בעתיד
+  </ng-container>
+</div>
 
       <label>כמה הרכב עבר ב-ק"מ</label>
       <input formControlName="mileage" type="number" />

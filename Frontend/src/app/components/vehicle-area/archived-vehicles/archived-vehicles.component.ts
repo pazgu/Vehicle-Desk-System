@@ -208,7 +208,7 @@ export class ArchivedVehiclesComponent implements OnInit {
     dialogRef.afterClosed().subscribe((confirmed) => {
       if (!confirmed) return;
 
-      this.vehicleService.permanentlyDeleteVehicle(vehicle.id).subscribe({
+      this.vehicleService.deleteVehicle(vehicle.id).subscribe({
         next: () => {
           this.toastService.show(
             `הרכב ${vehicle.plate_number} נמחק לצמיתות`,

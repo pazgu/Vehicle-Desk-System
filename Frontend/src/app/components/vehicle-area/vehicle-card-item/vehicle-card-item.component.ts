@@ -255,9 +255,7 @@ export class VehicleCardItemComponent implements OnInit {
     });
   }
 
-  deleteVehicle(vehicleId: string) {
-    console.log('Delete vehicle ID:', vehicleId);
-  }
+  
   translateStatus(status: string | null | undefined): string {
     if (!status) return '';
     switch (status.toLowerCase()) {
@@ -603,7 +601,7 @@ export class VehicleCardItemComponent implements OnInit {
     dialogRef.afterClosed().subscribe((confirmed) => {
       if (!confirmed) return;
 
-      this.vehicleService.permanentlyDeleteVehicle(vehicle.id).subscribe({
+      this.vehicleService.deleteVehicle(vehicle.id).subscribe({
         next: () => {
           this.toastService.show(
             `הרכב ${vehicle.plate_number} נמחק לצמיתות`,
