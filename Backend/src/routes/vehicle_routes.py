@@ -69,13 +69,10 @@ def get_all_vehicles_route(
     start_time:Optional[datetime]=Query(None),
     end_time:Optional[datetime]=Query(None),
     db: Session = Depends(get_db),
-    payload: dict = Depends(token_check),
+    current_user: User = Depends(get_current_user)
 ):
-    user_id = payload.get("user_id") or payload.get("sub")
-    if not user_id:
-        raise HTTPException(status_code=401, detail="User ID not found in token")
-    vehicles = get_available_vehicles_new_ride(db,start_time,end_time,type,user_id=UUID(user_id))
-
+    user_department_id = current_user.department_id
+    vehicles = get_available_vehicles_new_ride(db,start_time,end_time,type,user_department_id)
 
     if type:
         vehicles = [v for v in vehicles if v.type and v.type.lower() == type.lower()]
@@ -90,26 +87,28 @@ def get_all_vehicles_route(
             km_today = get_vehicle_km_driven_on_date(db, v.id, ride_date or date.today())
             if distance_km + float(km_today) <= 200:
                 electric.append(v)
+            else:
+                if "electric_low" not in locals():
+                    electric_low = []
+                electric_low.append(v)
+
         elif v.fuel_type == "hybrid":
             hybrid.append(v)
         elif v.fuel_type =="gasoline":
             fuel.append(v)
 
-    prioritized = []
+    if "electric_low" not in locals():
+        electric_low = []
     if distance_km <= 200 and electric:
         prioritized = electric
     elif hybrid:
         prioritized = hybrid
     elif fuel:
         prioritized = fuel
-    elif electric:  
-        prioritized = electric
+    else:
+        prioritized = electric_low
 
     return prioritized
-
-
-
-
 
 
 
@@ -123,10 +122,7 @@ def get_vip_vehicles_route(
     db: Session = Depends(get_db),
     payload: dict = Depends(token_check),
 ):
-    user_id = payload.get("user_id") or payload.get("sub")
-    if not user_id:
-        raise HTTPException(status_code=401, detail="User ID not found in token")
-    vehicles = get_vip_vehicles_for_ride(db, start_time, end_time, type,user_id=UUID(user_id))
+    vehicles = get_vip_vehicles_for_ride(db, start_time, end_time, type)
 
     if type:
         vehicles = [v for v in vehicles if v.type and v.type.lower() == type.lower()]
@@ -232,13 +228,10 @@ async def patch_vehicle_status(
 def available_vehicles_for_ride(
     ride_id: UUID,
     db: Session = Depends(get_db),
-    payload: dict = Depends(token_check),
+    current_user: User = Depends(get_current_user)
 ):
     try:
-        user_id = payload.get("user_id") or payload.get("sub")
-        if not user_id:
-            raise HTTPException(status_code=401, detail="User ID not found in token")
-        return get_available_vehicles_for_ride_by_id(db, ride_id,user_id=UUID(user_id))
+        return get_available_vehicles_for_ride_by_id(db, ride_id,current_user.department_id)
     except HTTPException as e:
         raise e
     except Exception as e:
