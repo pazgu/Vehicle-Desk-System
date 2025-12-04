@@ -18,7 +18,7 @@ import { StatisticsService } from '../../../services/statistics.service';
 import { RideStartTimeStatsResponse } from '../../../models/ride-start-time-stats.model';
 import { ChartModule } from 'primeng/chart';
 import { PurposeOfTravelStatsResponse } from '../../../models/purpose-of-travel-stats.model';
-
+import { ToastService } from '../../../services/toast.service';
 pdfMake.vfs = pdfFonts.vfs;
 
 @Component({
@@ -40,7 +40,10 @@ pdfMake.vfs = pdfFonts.vfs;
   styleUrls: ['./admin-analytics.component.css'],
 })
 export class AdminAnalyticsComponent implements OnInit {
-  constructor(private statisticsService: StatisticsService) {}
+  constructor(
+  private statisticsService: StatisticsService,
+  private toastService: ToastService
+) {}
   @ViewChild(NoShowsComponent) noShowsComponent!: NoShowsComponent;
   @ViewChild(VehicleUsageComponent)
   vehicleUsageComponent!: VehicleUsageComponent;
@@ -406,7 +409,7 @@ export class AdminAnalyticsComponent implements OnInit {
   const endDate = new Date(this.rideStartRangeEndDate);
 
   if (endDate < startDate) {
-    alert('תאריך הסיום חייב להיות אחרי תאריך ההתחלה');
+    this.toastService.show('תאריך הסיום חייב להיות אחרי תאריך ההתחלה', 'error');
     return;
   }
 
@@ -414,7 +417,7 @@ export class AdminAnalyticsComponent implements OnInit {
                      (endDate.getMonth() - startDate.getMonth());
   
   if (monthsDiff > 3) {
-    alert('ניתן לבחור טווח של עד 4 חודשים בלבד');
+    this.toastService.show('ניתן לבחור טווח של עד 4 חודשים בלבד', 'error');
     return;
   }
 
@@ -886,7 +889,7 @@ export class AdminAnalyticsComponent implements OnInit {
   const endDate = new Date(this.purposeRangeEndDate);
 
   if (endDate < startDate) {
-    alert('תאריך הסיום חייב להיות אחרי תאריך ההתחלה');
+    this.toastService.show('תאריך הסיום חייב להיות אחרי תאריך ההתחלה', 'error');
     return;
   }
 
@@ -894,7 +897,7 @@ export class AdminAnalyticsComponent implements OnInit {
                      (endDate.getMonth() - startDate.getMonth());
   
   if (monthsDiff > 3) {
-    alert('ניתן לבחור טווח של עד 4 חודשים בלבד');
+    this.toastService.show('תאריך הסיום חייב להיות אחרי תאריך ההתחלה', 'error');
     return;
   }
 
