@@ -12,6 +12,11 @@ import { SocketService } from '../../../services/socket.service';
 import { ToastService } from '../../../services/toast.service';
 import { ChangeDetectorRef } from '@angular/core';
 import { Location } from '@angular/common';
+import { Dialog } from '@angular/cdk/dialog';
+import { RideDetailsComponent } from '../../../ride-area/ride-details/ride-details.component';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { Inject } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-notifications',
@@ -31,7 +36,8 @@ export class NotificationsComponent implements OnInit {
     private toastService: ToastService,
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private location: Location
+    private location: Location,
+    private dialog: MatDialog
   ) {}
   goBack(): void {
     this.location.back();
@@ -269,45 +275,48 @@ export class NotificationsComponent implements OnInit {
     }
   }
 
-  handleNotificationClick(notif: MyNotification): void {
-    const role = localStorage.getItem('role');
+ handleNotificationClick(notif: MyNotification): void {
+  const role = localStorage.getItem('role');
+
+  if (notif.order_id) {
+    const dialogRef = this.dialog.open(RideDetailsComponent, {
+      width: '500px',
+      data: { rideId: notif.order_id },
+    });
+
+    dialogRef.afterClosed().subscribe(() => {
+      this.notifications = [...this.notifications];
+      this.cdr.detectChanges();
+    });
 
     if (!notif.seen) {
       this.notificationService.markNotificationAsSeen(notif.id).subscribe({
         next: () => {
-          notif.seen = true;
+          setTimeout(() => {
+            notif.seen = true;
+            this.notifications = [...this.notifications];
+            this.cdr.detectChanges(); 
+          });
         },
-        error: (err) => {
-          console.error('Failed to mark notification as seen:', err);
-        },
+        error: (err) => console.error('Failed to mark notification as seen:', err),
       });
     }
-
-    if (this.isVehicleFreezeCancellation(notif)) {
-      this.router.navigate(['/all-rides'], {
-        queryParams: {
-          mode: 'future',
-          highlight: notif.order_id,
-        },
-      });
-      return;
-    }
-
-    if (role != 'admin' && notif.message.includes('לא הוחזר בזמן')) {
-      return;
-    }
-
-    if (role === 'admin' && notif.message.includes('בעיה חמורה')) {
-      this.router.navigate(['/admin/critical-issues'], {
-        queryParams: { highlight: '1' },
-      });
-    } else if (notif.order_id) {
-      this.goToOrder(notif.order_id);
-    } else if (notif.vehicle_id) {
-      this.goToVehicle(notif.vehicle_id);
-    }
+    
+    return;
   }
 
+  if (this.isVehicleFreezeCancellation(notif)) {
+    this.router.navigate(['/all-rides'], {
+      queryParams: { mode: 'future', highlight: notif.order_id },
+    });
+  } else if (role === 'admin' && notif.message.includes('בעיה חמורה')) {
+    this.router.navigate(['/admin/critical-issues'], {
+      queryParams: { highlight: '1' },
+    });
+  } else if (notif.vehicle_id) { 
+    this.goToVehicle(notif.vehicle_id);
+  }
+}
   getLeaseAlerts(title: string): string {
     return title == 'Vehicle Lease Expiry' ? 'lease-alert' : '';
   }
