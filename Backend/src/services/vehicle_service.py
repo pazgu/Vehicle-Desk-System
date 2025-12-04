@@ -77,15 +77,10 @@ def get_available_vehicles_new_ride(
     start_time: Optional[datetime] = None,
     end_time: Optional[datetime] = None,
     type: Optional[str] = None,
-    user_id: Optional[UUID] = None
+    department_id: Optional[str] = None
 ) -> List[Vehicle]:
     now = datetime.utcnow()  
 
-    user_department_id = None
-    if user_id:
-        user = db.query(User).filter(User.employee_id == user_id).first()
-        if user:
-            user_department_id = user.department_id
     query = (
         db.query(Vehicle)
         .filter(
@@ -95,17 +90,15 @@ def get_available_vehicles_new_ride(
         )
     )
 
-    if user_department_id:
-        query = query.filter(
-            or_(
-                Vehicle.department_id.is_(None),
-                Vehicle.department_id == user_department_id
-            )
-        )
-    else:
-        query = query.filter(Vehicle.department_id.is_(None))
     if type:
         query = query.filter(func.lower(Vehicle.type) == type.lower())
+    if department_id:
+        query = query.filter(
+            or_(
+                Vehicle.department_id == department_id,
+                Vehicle.department_id == None
+            )
+        )
 
     if start_time and end_time:
         end_time_with_buffer = end_time + timedelta(hours=2)
@@ -308,7 +301,7 @@ def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_re
     db.execute(text("SET session.audit.user_id = DEFAULT"))
     return {"vehicle_id": vehicle.id, "new_status": vehicle.status, "freeze_reason": vehicle.freeze_reason}
 
-def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID,user_id: Optional[UUID] = None) -> List[Vehicle]:
+def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID, user_department_id: Optional[UUID] = None) -> List[VehicleOut]:
     ride = db.query(Ride).filter(Ride.id == ride_id).first()
     if not ride:
         raise HTTPException(status_code=404, detail="Ride not found")
@@ -316,11 +309,6 @@ def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID,user_id: Op
     if ride.status != RideStatus.approved:
         raise HTTPException(status_code=400, detail="Ride is not approved")
 
-    user_department_id = None
-    if user_id:
-        user = db.query(User).filter(User.employee_id == user_id).first()
-        if user:
-            user_department_id = user.department_id
     start_datetime = ride.start_datetime
     end_datetime = ride.end_datetime
     ride_distance = ride.estimated_distance_km
@@ -329,6 +317,7 @@ def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID,user_id: Op
         db.query(Ride.vehicle_id)
         .filter(
             Ride.status.in_(["approved", "in_progress"]),
+            Ride.id != ride_id,
             or_(
                 and_(Ride.start_datetime <= start_datetime, Ride.end_datetime > start_datetime),
                 and_(Ride.start_datetime < end_datetime, Ride.end_datetime >= end_datetime),
@@ -339,20 +328,21 @@ def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID,user_id: Op
         .subquery()
     )
 
-    candidate_query = db.query(Vehicle).filter(
-        Vehicle.status == "available",
-        ~Vehicle.id.in_(conflicting_vehicles_subquery)
+    candidate_vehicles = (
+        db.query(Vehicle).filter(
+            Vehicle.status == "available",
+            Vehicle.is_archived == False,
+            ~Vehicle.id.in_(select(conflicting_vehicles_subquery.c.vehicle_id))
+        )
     )
     if user_department_id:
-        candidate_query = candidate_query.filter(
+        candidate_vehicles = candidate_vehicles.filter(
             or_(
-                Vehicle.department_id.is_(None),
+                Vehicle.department_id == None,
                 Vehicle.department_id == user_department_id
             )
         )
-    else:
-        candidate_query = candidate_query.filter(Vehicle.department_id.is_(None))
-    candidate_vehicles = candidate_query.all()
+    candidate_vehicles = candidate_vehicles.all()
     today_start = datetime.combine(start_datetime.date(), datetime.min.time())
     today_end = today_start + timedelta(days=1)
 
@@ -364,6 +354,7 @@ def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID,user_id: Op
 
         used_distance = db.query(func.coalesce(func.sum(Ride.actual_distance_km), 0)).filter(
             Ride.vehicle_id == vehicle.id,
+            Ride.id != ride_id,
             Ride.start_datetime >= today_start,
             Ride.start_datetime < today_end,
             Ride.status.in_(["approved", "in_progress", "completed"]) 
@@ -372,7 +363,7 @@ def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID,user_id: Op
         if (vehicle.max_daily_distance_km - used_distance) >= ride_distance:
             available_vehicles.append(vehicle)
 
-    return available_vehicles
+    return [VehicleOut.from_orm(vehicle) for vehicle in available_vehicles]
 
 def get_vehicle_by_id(vehicle_id: str, db: Session):
     vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
