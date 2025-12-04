@@ -36,9 +36,9 @@ class RideSchema(BaseModel):
     submitted_at: datetime
     user_id: UUID 
     vehicle_id: Optional[UUID] = None
-    vehicle: FuelType
-    vehicle_type: str
-    vehicle_model: str
+    vehicle: Optional[FuelType]=None
+    vehicle_type: Optional[str]=None
+    vehicle_model: Optional[str]=None
     actual_pickup_time: Optional[datetime] = None
     extended_ride_reason: Optional[str] = None
     four_by_four_reason: Optional[str] = None

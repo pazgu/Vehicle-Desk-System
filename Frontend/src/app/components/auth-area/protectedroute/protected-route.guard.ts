@@ -105,13 +105,9 @@ export class ProtectedRouteGuard implements CanActivate {
       return false;
     }
 
-    if (url.includes('ride-completion-form') && role != 'employee') {
+    if (url.includes('ride-completion-form') && role != 'employee'&& role != 'supervisor') {
       if (role == 'admin') {
         this.router.navigate(['/admin/critical-issues']);
-        return false;
-      }
-      if (role == 'supervisor') {
-        this.router.navigate(['/supervisor-dashboard']);
         return false;
       }
       if (role == 'inspector') {

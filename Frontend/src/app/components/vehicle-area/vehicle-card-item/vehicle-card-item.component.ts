@@ -183,29 +183,34 @@ export class VehicleCardItemComponent implements OnInit {
   }
 
   goBack(): void {
-    if (this.isEditMode) {
-      const dialogData: ConfirmDialogData = {
-        title: 'יציאה ממצב עריכה',
-        message: 'יש לך שינויים שלא נשמרו. האם אתה בטוח שברצונך לצאת?',
-        confirmText: 'צא',
-        cancelText: 'בטל',
-        noRestoreText: 'השינויים לא יישמרו',
-        isDestructive: true,
-      };
+  if (this.isEditMode) {
+    const dialogData: ConfirmDialogData = {
+      title: 'יציאה ממצב עריכה',
+      message: 'יש לך שינויים שלא נשמרו. האם אתה בטוח שברצונך לצאת?',
+      confirmText: 'צא',
+      cancelText: 'בטל',
+      noRestoreText: 'השינויים לא יישמרו',
+      isDestructive: true,
+    };
 
-      const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-        data: dialogData,
-      });
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      data: dialogData,
+    });
 
-      dialogRef.afterClosed().subscribe((result) => {
-        if (result) {
-          this.location.back();
-        }
-      });
-    } else {
-      this.location.back();
-    }
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.navigateToDashboard();
+      }
+    });
+  } 
+  else {
+    this.navigateToDashboard();
   }
+}
+
+private navigateToDashboard(): void {
+  this.navigateRouter.navigate(['/vehicle-dashboard']);
+}
 
   loadVehicleUsageData(): void {
     this.vehicleService.getTopUsedVehicles().subscribe({
@@ -255,9 +260,7 @@ export class VehicleCardItemComponent implements OnInit {
     });
   }
 
-  deleteVehicle(vehicleId: string) {
-    console.log('Delete vehicle ID:', vehicleId);
-  }
+  
   translateStatus(status: string | null | undefined): string {
     if (!status) return '';
     switch (status.toLowerCase()) {
@@ -412,8 +415,10 @@ export class VehicleCardItemComponent implements OnInit {
     }
   }
   confirmArchive(vehicle: any): void {
-    const message = `תוקף חוזה ההשכרה של רכב ${vehicle.plate_number} פג והרכב מוקפא.\nלא ניתן למחוק את הרכב, אך ניתן לארכב אותו.\n\nהאם את/ה בטוח/ה שברצונך לארכב את הרכב?`;
+    const message = `תוקף חוזה ההשכרה של רכב ${vehicle.plate_number} פג והרכב מוקפא.
+ניתן לשחזר את הרכב המאורכב בכל שלב.
 
+האם את/ה בטוח/ה שברצונך לארכב את הרכב?`;
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
       data: {
@@ -601,7 +606,7 @@ export class VehicleCardItemComponent implements OnInit {
     dialogRef.afterClosed().subscribe((confirmed) => {
       if (!confirmed) return;
 
-      this.vehicleService.permanentlyDeleteVehicle(vehicle.id).subscribe({
+      this.vehicleService.deleteVehicle(vehicle.id).subscribe({
         next: () => {
           this.toastService.show(
             `הרכב ${vehicle.plate_number} נמחק לצמיתות`,

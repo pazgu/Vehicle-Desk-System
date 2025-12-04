@@ -83,7 +83,7 @@ export class RideListTableComponent implements OnChanges {
       case 'in_progress':
         return 'בתהליך';
       case 'cancelled_due_to_no_show':
-        return 'בוטל – אי הגעה';
+        return 'בוטל עקב אי-הגעה';
       case 'reserved':
         return 'מוזמן';
       case 'cancelled':
@@ -106,13 +106,13 @@ export class RideListTableComponent implements OnChanges {
       case 'in_progress':
         return 'status_in_progress';
       case 'cancelled_due_to_no_show':
-        return 'status-cancelled-no-show';
+        return 'status-cancelled_due_to_no_show';
       case 'reserved':
         return 'status-reserved';
       case 'cancelled':
         return 'status-cancelled';
       case 'cancelled_vehicle_unavailable':
-        return 'status-cancelled-vehicle-unavailable';
+        return 'status-cancelled_vehicle_unavailable';
       default:
         return '';
     }
@@ -220,8 +220,7 @@ export class RideListTableComponent implements OnChanges {
     const isSupervisor = userRole === 'supervisor';
 
     if (
-      status === 'cancelled_vehicle_unavailable' ||
-      status === 'cancelled_vehicle_unavilable'
+      status === 'cancelled_vehicle_unavailable' 
     ) {
       return true;
     }
