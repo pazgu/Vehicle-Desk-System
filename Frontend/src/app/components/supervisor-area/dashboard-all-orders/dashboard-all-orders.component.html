@@ -128,13 +128,14 @@
         <div class="cell">סטטוס</div>
       </div>
 
-      <div
-        class="orders-data-row"
-        *ngFor="let trip of trips"
-        (click)="onRowSelect(trip)"
-        [ngClass]="getRowClass(trip.status)"
-        style="cursor: pointer"
-      >
+     <div
+     class="orders-data-row"
+  *ngFor="let trip of trips"
+  (click)="onRowSelect(trip)"
+  [ngClass]="[getRowClass(trip.status), isPastOrder(trip) ? 'past-order' : '']"
+  style="cursor: pointer"
+>
+
         <div class="icon-cell">
           <div class="duration-indicator-inline">
             {{ getDurationIndicator(trip) }}

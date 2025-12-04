@@ -585,3 +585,8 @@ button:disabled {
     grid-template-columns: 1fr;
   }
 }
+.past-order {
+  opacity: 0.6;
+  background-color: #ebe6ea !important;
+  color: #000000 !important;
+}
