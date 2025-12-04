@@ -78,7 +78,8 @@ def get_available_vehicles_new_ride(
     db: Session,
     start_time: Optional[datetime] = None,
     end_time: Optional[datetime] = None,
-    type: Optional[str] = None
+    type: Optional[str] = None,
+    department_id: Optional[str] = None
 ) -> List[Vehicle]:
     now = datetime.utcnow()  
 
@@ -93,9 +94,15 @@ def get_available_vehicles_new_ride(
 
     if type:
         query = query.filter(func.lower(Vehicle.type) == type.lower())
+    if department_id:
+        query = query.filter(
+            or_(
+                Vehicle.department_id == department_id,
+                Vehicle.department_id == None
+            )
+        )
 
     if start_time and end_time:
-
         end_time_with_buffer = end_time + timedelta(hours=2)
 
         overlapping_rides = db.query(Ride.vehicle_id).filter(
@@ -106,19 +113,17 @@ def get_available_vehicles_new_ride(
             )
         ).subquery()
 
-
         query = query.filter(~Vehicle.id.in_(overlapping_rides))
 
-    final_query = query.all()
-
-    return final_query
+    return query.all()
 
 
 def get_vip_vehicles_for_ride(
     db: Session,
     start_time: Optional[datetime] = None,
     end_time: Optional[datetime] = None,
-    type: Optional[str] = None
+    type: Optional[str] = None,
+    user_id: Optional[UUID] = None
 ) -> List[Vehicle]:
     now = datetime.utcnow()
 
@@ -127,6 +132,13 @@ def get_vip_vehicles_for_ride(
         func.lower(Department.name) == vip_name.lower()
     ).first()
 
+    if not vip_department:
+        return []
+    user_department_id = None
+    if user_id:
+        user = db.query(User).filter(User.employee_id == user_id).first()
+        if user:
+            user_department_id = user.department_id
     query = (
         db.query(Vehicle)
         .filter(
@@ -141,7 +153,6 @@ def get_vip_vehicles_for_ride(
         query = query.filter(func.lower(Vehicle.type) == type.lower())
 
     if start_time and end_time:
-
         end_time_with_buffer = end_time + timedelta(hours=2)
 
         overlapping_rides = db.query(Ride.vehicle_id).filter(
@@ -292,7 +303,7 @@ def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_re
     db.execute(text("SET session.audit.user_id = DEFAULT"))
     return {"vehicle_id": vehicle.id, "new_status": vehicle.status, "freeze_reason": vehicle.freeze_reason}
 
-def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID) -> List[VehicleOut]:
+def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID, user_department_id: Optional[UUID] = None) -> List[VehicleOut]:
     ride = db.query(Ride).filter(Ride.id == ride_id).first()
     if not ride:
         raise HTTPException(status_code=404, detail="Ride not found")
@@ -308,6 +319,7 @@ def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID) -> List[Ve
         db.query(Ride.vehicle_id)
         .filter(
             Ride.status.in_(["approved", "in_progress"]),
+            Ride.id != ride_id,
             or_(
                 and_(Ride.start_datetime <= start_datetime, Ride.end_datetime > start_datetime),
                 and_(Ride.start_datetime < end_datetime, Ride.end_datetime >= end_datetime),
@@ -319,19 +331,24 @@ def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID) -> List[Ve
     )
 
     candidate_vehicles = (
-        db.query(Vehicle)
-        .filter(
+        db.query(Vehicle).filter(
             Vehicle.status == "available",
+            Vehicle.is_archived == False,
             ~Vehicle.id.in_(select(conflicting_vehicles_subquery.c.vehicle_id))
         )
-        .all()
     )
-
+    if user_department_id:
+        candidate_vehicles = candidate_vehicles.filter(
+            or_(
+                Vehicle.department_id == None,
+                Vehicle.department_id == user_department_id
+            )
+        )
+    candidate_vehicles = candidate_vehicles.all()
     today_start = datetime.combine(start_datetime.date(), datetime.min.time())
     today_end = today_start + timedelta(days=1)
 
     available_vehicles = []
-
     for vehicle in candidate_vehicles:
         if vehicle.max_daily_distance_km is None:
             available_vehicles.append(vehicle)
@@ -339,6 +356,7 @@ def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID) -> List[Ve
 
         used_distance = db.query(func.coalesce(func.sum(Ride.actual_distance_km), 0)).filter(
             Ride.vehicle_id == vehicle.id,
+            Ride.id != ride_id,
             Ride.start_datetime >= today_start,
             Ride.start_datetime < today_end,
             Ride.status.in_(["approved", "in_progress", "completed"]) 
