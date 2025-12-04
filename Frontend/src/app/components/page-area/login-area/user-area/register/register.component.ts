@@ -78,7 +78,9 @@ export class RegisterComponent implements OnInit {
   fetchDepartments(): void {
     this.departmentService.getDepartments().subscribe({
       next: (data) => {
-        this.departments = data;
+        this.departments = data.filter(
+          (dept: any) => dept.name !== 'Unassigned' && dept.name !== 'לא משויך'
+        );
       },
       error: () => {
         this.toastService.show('שגיאה בטעינת מחלקות', 'error');
