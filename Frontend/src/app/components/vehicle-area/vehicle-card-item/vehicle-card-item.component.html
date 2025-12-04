@@ -114,11 +114,11 @@
               flex-wrap: wrap;
             "
           >
-            <strong style="color: #842020">קילומטראז':</strong>
+            <strong>קילומטראז':</strong>
             {{ vehicle.mileage | number }} ק"מ
           </p>
           <div *ngIf="isEditMode" class="edit-field">
-            <label><strong style="color: #842020">קילומטראז':</strong></label>
+            <label><strong>קילומטראז':</strong></label>
             <input
               type="number"
               [(ngModel)]="vehicle.mileage"
