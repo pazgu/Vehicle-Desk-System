@@ -166,6 +166,18 @@ export class DashboardAllOrdersComponent implements OnInit {
   onFilterChange(): void {
     this.currentPage = 1;
   }
+
+  isPastOrder(order: any): boolean {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const orderDate = this.parseDate(order?.date_and_time);
+    if (!orderDate) return false;
+
+    orderDate.setHours(0, 0, 0, 0);
+    return orderDate < today;
+  }
+
   updateQueryParams() {
     this.router.navigate([], {
       relativeTo: this.route,
@@ -348,11 +360,11 @@ export class DashboardAllOrdersComponent implements OnInit {
     }
   }
 
-  parseDate(dateTime: string): Date {
-    const [datePart, timePart] = dateTime.split(' ');
-    const [year, month, day] = datePart.split('-').map(Number);
-    const [hours, minutes] = timePart.split(':').map(Number);
-    return new Date(year, month - 1, day, hours, minutes);
+  private parseDate(d: string | undefined): Date | null {
+    if (!d) return null;
+    const parsed = new Date(d);
+    if (isNaN(parsed.getTime())) return null; // invalid date fallback
+    return parsed;
   }
 
   resetFilters() {
