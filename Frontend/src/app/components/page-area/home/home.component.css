@@ -52,7 +52,7 @@ input[type="date"],
 select {
   padding: 10px;
   border-radius: 5px;
-  border: 1px solid #cf8686;
+  border: 1px solid #6e6e6e;
   background-color: #ffffff;
   font-family: "Assistant", sans-serif;
   font-size: 16px;
@@ -125,13 +125,7 @@ form .removeBtn:hover {
   gap: 0.5rem;
 }
 
-.extra-stop-fields {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  flex: 1;
-  border: 1px solid #cf8686;
-}
+
 
 .extra-stop-fields label {
   margin-left: 0.5rem;
@@ -181,7 +175,7 @@ form .removeBtn:hover {
 .custom-hour-dropdown {
   max-height: 150px !important;
   background-color: #ffffff;
-  border: 1px solid #cf8686;
+  border: 1px solid #6e6e6e;
   color: #333;
   border-radius: 4px;
 }
@@ -328,7 +322,7 @@ form .removeBtn:hover {
   padding: 10px;
   border-radius: 5px;
   background-color: #ffffff;
-  border: 1px solid #cf8686;
+  border: 1px solid #6e6e6e;
 }
 
 .submit-btn {
@@ -350,14 +344,14 @@ form .removeBtn:hover {
   padding: 10px;
   border-radius: 5px;
   background-color: #ffffff;
-  border: 1px solid #cf8686;
+  border: 1px solid #6e6e6e;
 }
 
 .input-group select {
   padding: 10px;
   border-radius: 5px;
   background-color: #ffffff;
-  border: 1px solid #cf8686;
+  border: 1px solid #6e6e6e;
   font-family: "Assistant", sans-serif;
   font-size: 16px;
 }
@@ -650,7 +644,7 @@ hr {
   outline: none !important;
   display: flex;
   align-items: center;
-  border: 1px solid #cf8686;
+  border: 1px solid #6e6e6e;
 }
 
 ::ng-deep .styled-select.ng-select .ng-placeholder {
