@@ -474,7 +474,7 @@
       [class.disabled]="isPendingVehicle(car.id)"
       [class.selected]="car.id === selectedCarId"
       (click)="selectCar(car.id)"
-      [title]="isPendingVehicle(car.id) ? 'הרכב זה ממתין לעיבוד לתאריך/תקופה שנבחרו' : ''"
+      [title]="isPendingVehicle(car.id) ? 'רכב זה ממתין לעיבוד לתאריך/תקופה שנבחרו' : ''"
     >
       <img 
         [src]="car.image_url" 
