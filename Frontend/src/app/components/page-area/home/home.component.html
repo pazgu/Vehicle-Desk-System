@@ -9,6 +9,7 @@
 </div>
 <div *ngIf="!orderSubmitted">
   <div class="overlay">
+   
     <div class="quota-header-wrapper" *ngIf="step === 2">
       <app-quota-indicator [allOrders]="orders"></app-quota-indicator>
     </div>
@@ -210,11 +211,12 @@
             </div>
 
             <div class="time-fields-container">
-              <div class="info-text-container">
-                <small class="info-text">
-                  * לא ניתן להזמין נסיעות בשעות 11:15-12:15 (מנהל רכבים לא זמין)
-                </small>
-              </div>
+ <div class="info-text-container" *ngIf="!rideForm.errors?.['futureDateTime']">
+  <small class="info-text">
+    * לא ניתן להזמין נסיעות בשעות 11:15-12:15 (מנהל רכבים לא זמין)
+  </small>
+</div>
+
               <div class="error-messages-container">
                 <small
                   *ngIf="rideForm.errors?.['futureDateTime']"
@@ -440,25 +442,52 @@
 
               <div class="form-field-group">
                 <label *ngIf="!shouldShowCarError()">בחר רכב זמין</label>
-                <select
-                  *ngIf="availableCars.length > 0"
-                  formControlName="car"
-                  class="styled-select"
-                >
-                  <option value="" disabled selected>בחר רכב</option>
-                  <option
-                    *ngFor="let car of availableCars"
-                    [value]="car.id"
-                    [disabled]="isPendingVehicle(car.id)"
-                    [title]="
-                      isPendingVehicle(car.id)
-                        ? 'הרכב זה ממתין לעיבוד לתאריך/תקופה שנבחרו'
-                        : ''
-                    "
-                  >
-                    {{ car.vehicle_model }}
-                  </option>
-                </select>
+<div class="custom-select">
+  <div 
+       *ngIf="availableCars.length > 0"
+    class="select-header" 
+    (click)="toggleDropdown()"
+    [class.open]="isDropdownOpen"
+  >
+    <div class="selected-car" *ngIf="getSelectedCar(); else placeholder">
+      <img 
+        [src]="getSelectedCar().image_url" 
+        [alt]="getSelectedCar().vehicle_model"
+        class="car-thumbnail"
+      />
+      <span>{{ getSelectedCar().vehicle_model }}</span>
+    </div>
+    <ng-template #placeholder>
+      <span class="placeholder">בחר רכב</span>
+    </ng-template>
+    <div class="select-arrow">
+      <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+        <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="select-options" *ngIf="isDropdownOpen">
+    <div 
+      *ngFor="let car of availableCars"
+      class="option"
+      [class.disabled]="isPendingVehicle(car.id)"
+      [class.selected]="car.id === selectedCarId"
+      (click)="selectCar(car.id)"
+      [title]="isPendingVehicle(car.id) ? 'רכב זה ממתין לעיבוד לתאריך/תקופה שנבחרו' : ''"
+    >
+      <img 
+        [src]="car.image_url" 
+        [alt]="car.vehicle_model"
+        class="car-thumbnail"
+      />
+      <span>{{ car.vehicle_model }}</span>
+    </div>
+  </div>
+</div>
+
+<div class="dropdown-backdrop" *ngIf="isDropdownOpen" (click)="closeDropdown()"></div>
+
                 <div
                   class="car-validation-message"
                   *ngIf="
@@ -513,7 +542,12 @@
                   </ng-container>
                 </div>
               </div>
-              <div class="form-field-group">
+              
+             
+            </div>
+          </div>
+          <br>
+           <div class="form-field-group">
                  <label> מאשר הבקשה</label>
               <select formControlName="approving_supervisor" class="styled-select">
                 <option value="" disabled>בחר משתמש</option>
@@ -521,8 +555,6 @@
               </select>
 
               </div>
-            </div>
-          </div>
 
           <div class="button-container">
             <button
