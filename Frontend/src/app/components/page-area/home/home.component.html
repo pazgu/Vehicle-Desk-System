@@ -210,11 +210,12 @@
             </div>
 
             <div class="time-fields-container">
-              <div class="info-text-container">
-                <small class="info-text">
-                  * לא ניתן להזמין נסיעות בשעות 11:15-12:15 (מנהל רכבים לא זמין)
-                </small>
-              </div>
+ <div class="info-text-container" *ngIf="!rideForm.errors?.['futureDateTime']">
+  <small class="info-text">
+    * לא ניתן להזמין נסיעות בשעות 11:15-12:15 (מנהל רכבים לא זמין)
+  </small>
+</div>
+
               <div class="error-messages-container">
                 <small
                   *ngIf="rideForm.errors?.['futureDateTime']"

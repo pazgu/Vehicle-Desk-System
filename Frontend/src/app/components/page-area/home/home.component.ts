@@ -229,7 +229,7 @@ export class NewRideComponent implements OnInit {
         this.toastService.show('שגיאה: מזהה משתמש נוכחי לא נמצא.', 'error');
         this.disableRequest = true;
       }
-    }
+    } 
   }
   hasTouchedVehicleType(): boolean {
     const value = this.rideForm.get('vehicle_type')?.value;
