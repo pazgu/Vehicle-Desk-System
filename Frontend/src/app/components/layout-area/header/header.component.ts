@@ -25,7 +25,7 @@ export class HeaderComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private router: Router,
+    public router: Router,
     private toastService: ToastService,
     private notificationService: NotificationService,
     private socketService: SocketService,
@@ -109,5 +109,8 @@ export class HeaderComponent implements OnInit {
       url.startsWith('/register') ||
       url.startsWith('/reset-password')
     );
+  }
+  get currentRoute(): string {
+    return this.router.url;
   }
 }
