@@ -1,120 +1,151 @@
-<div class="page-container" dir="rtl">
-  <div class="user-data-container">
-    <div class="content">
-      <a
-        class="edit-button"
-        routerLink="/user-data-edit/{{ user?.employee_id }}"
-      >
-        עריכת משתמש
-      </a>
+<div class="modal-overlay" dir="rtl">
+  <div class="modal-content">
+    <button class="close-button" (click)="closeModal()">
+      <i class="pi pi-times"></i>
+    </button>
 
-      <a routerLink="/user-data" class="back-button"> חזרה לרשימה ← </a>
+    <div *ngIf="loading" class="loading-state">
+      <i
+        class="pi pi-spin pi-spinner"
+        style="font-size: 2rem; color: #942222"
+      ></i>
+      <p>טוען פרטי משתמש...</p>
+    </div>
 
-      <div class="header">
-        <h2 class="header-title">פרטי משתמש</h2>
+    <div *ngIf="!loading && user" class="user-card-modal-container">
+      <div class="modal-header">
+        <h1>פרטי משתמש</h1>
       </div>
 
-      <div class="user-details">
-        <div class="detail-row">
-          <span class="label">שם פרטי:</span>
-          <span class="value">{{ user?.first_name }}</span>
-        </div>
-        <div class="detail-row">
-          <span class="label">שם משפחה:</span>
-          <span class="value">{{ user?.last_name }}</span>
-        </div>
-        <div class="detail-row">
-          <span class="label">שם משתמש:</span>
-          <span class="value">{{ user?.username }}</span>
-        </div>
-        <div class="detail-row">
-          <span class="label">תפקיד:</span>
-          <span class="value">{{ user?.role }}</span>
-        </div>
-        <div class="detail-row">
-          <span class="label">מחלקה:</span>
-          <span class="value">{{ departmentName || "טוען..." }}</span>
-        </div>
-        <div class="detail-row">
-          <span class="label">דוא"ל:</span>
-          <span class="value">{{ user?.email }}</span>
-        </div>
-        <div class="detail-row">
-          <span class="label">מספר טלפון:</span>
-          <span class="value">{{ user?.phone || "לא זמין" }}</span>
-        </div>
-        <div class="detail-row">
-          <span class="label">רישיון ממשלתי:</span>
-          <span class="value">{{
-            user?.has_government_license ? "יש" : "אין"
-          }}</span>
-        </div>
-      </div>
-      <div class="detail-row license-file-row" *ngIf="user?.license_file_url">
-        <span class="label">קובץ רישיון:</span>
-        <span class="value">
-          <button (click)="openLicenseInNewTab()">הצג קובץ/תמונה</button>
-        </span>
-      </div>
+      <div class="user-details-card">
+        <button class="edit-user-btn" (click)="editUser()">
+          <i class="pi pi-pencil"></i>
+          ערוך משתמש
+        </button>
 
-      <div *ngIf="NoShowsData">
-        <div class="no-show-count">
-          <i class="pi pi-exclamation-triangle"></i>
-          אירועי היעדרות מנסיעות שהוזמנו
+        <div class="details-section">
+          <div class="section-title">
+            <i class="pi pi-user"></i>
+            מידע אישי
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label">שם פרטי:</span>
+            <span class="detail-value">{{ user?.first_name }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label">שם משפחה:</span>
+            <span class="detail-value">{{ user?.last_name }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label">שם משתמש:</span>
+            <span class="detail-value">{{ user?.username }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label">דוא"ל:</span>
+            <span class="detail-value">{{ user?.email }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label">מספר טלפון:</span>
+            <span class="detail-value">{{ user?.phone || "לא זמין" }}</span>
+          </div>
         </div>
+
+        <div class="details-section">
+          <div class="section-title">
+            <i class="pi pi-briefcase"></i>
+            פרטי תעסוקה
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label">תפקיד:</span>
+            <span class="detail-value">{{ user?.role }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label">מחלקה:</span>
+            <span class="detail-value">{{ departmentName || "טוען..." }}</span>
+          </div>
+        </div>
+
+        <div class="details-section">
+          <div class="section-title">
+            <i class="pi pi-id-card"></i>
+            רישיון נהיגה
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label">רישיון ממשלתי:</span>
+            <span class="detail-value">
+              <span
+                [ngClass]="{
+                  'license-yes': user?.has_government_license,
+                  'license-no': !user?.has_government_license
+                }"
+              >
+                {{ user?.has_government_license ? "יש" : "אין" }}
+              </span>
+            </span>
+          </div>
+
+          <div class="detail-item" *ngIf="user?.license_file_url">
+            <span class="detail-label">קובץ רישיון:</span>
+            <span class="detail-value">
+              <button class="view-license-btn" (click)="openLicenseInNewTab()">
+                <i class="pi pi-eye"></i>
+                הצג קובץ/תמונה
+              </button>
+            </span>
+          </div>
+        </div>
+
         <div
-          class="no-show-events"
-          *ngIf="
-            NoShowsData?.events && NoShowsData.events.length > 0;
-            else noNoShows
-          "
+          class="details-section"
+          *ngIf="NoShowsData && NoShowsData.events && NoShowsData.events.length > 0"
         >
-          <table class="no-show-table">
-            <thead>
-              <tr>
-                <th>תאריך</th>
-                <th>רכב</th>
-                <th>סיבה</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let event of NoShowsData.events">
-                <td>{{ event.occurred_at | date : "dd/MM/yyyy" }}</td>
-                <td>{{ event.plate_number }}</td>
-                <td>לא הגיע/ה</td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="section-title warning">
+            <i class="pi pi-exclamation-triangle"></i>
+            אירועי היעדרות מנסיעות ({{ NoShowsCNT }})
+          </div>
+
+          <div class="no-show-table-wrapper">
+            <table class="no-show-table">
+              <thead>
+                <tr>
+                  <th>תאריך</th>
+                  <th>רכב</th>
+                  <th>סיבה</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let event of NoShowsData.events">
+                  <td>{{ event.occurred_at | date : "dd/MM/yyyy" }}</td>
+                  <td>{{ event.plate_number }}</td>
+                  <td>לא הגיע/ה</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <ng-template #noNoShows>
-          <p class="no-shows-message">לא נמצאו אירועי היעדרות אחרונים.</p>
-        </ng-template>
-      </div>
-      <div *ngIf="user?.is_blocked" class="block-section">
-        <h3 class="block-section-title">
-          <span class="icon">🚫</span>
-          פרטי חסימת משתמש
-        </h3>
-        <div class="block-details">
-          <div class="detail-row">
-            <span class="label">סטטוס:</span>
-            <span class="value status">חסום</span>
-          </div>
-          <div class="detail-row" *ngIf="user?.block_reason">
-            <span class="label">סיבת חסימה:</span>
-            <span class="value reason">{{ user?.block_reason }}</span>
-          </div>
-          <div class="detail-row" *ngIf="user?.block_expires_at">
-            <span class="label">תאריך סיום חסימה:</span>
-            <span class="value date">{{
-              user?.block_expires_at | date : "dd/MM/yyyy HH:mm"
-            }}</span>
+        <div *ngIf="user?.is_blocked" class="block-notice">
+          <i class="pi pi-ban"></i>
+          <div class="notice-content">
+            <strong>משתמש חסום</strong>
+            <p *ngIf="user?.block_reason">
+              <span class="notice-label">סיבה:</span> {{ user?.block_reason }}
+            </p>
+            <p *ngIf="user?.block_expires_at">
+              <span class="notice-label">תוקף עד:</span>
+              {{ user?.block_expires_at | date : "dd/MM/yyyy HH:mm" }}
+            </p>
           </div>
         </div>
       </div>
     </div>
   </div>
-
-  <router-outlet></router-outlet>
 </div>

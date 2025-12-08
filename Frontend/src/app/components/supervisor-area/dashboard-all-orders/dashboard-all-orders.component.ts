@@ -220,10 +220,10 @@ export class DashboardAllOrdersComponent implements OnInit {
 
     if (this.statusFilter) {
       switch (this.statusFilter) {
-        case 'בהמתנה':
+        case 'ממתין לאישור':
           filtered = filtered.filter((order) => order.status === 'pending');
           break;
-        case 'מאושר':
+        case 'אושר':
           filtered = filtered.filter((order) => order.status === 'approved');
           break;
         case 'נדחה':
@@ -232,7 +232,7 @@ export class DashboardAllOrdersComponent implements OnInit {
         case 'בוצע':
           filtered = filtered.filter((order) => order.status === 'completed');
           break;
-        case 'בתהליך':
+        case 'בנסיעה':
           filtered = filtered.filter((order) => order.status === 'in_progress');
           break;
         case 'בוטל עקב אי-הגעה':
@@ -321,7 +321,7 @@ export class DashboardAllOrdersComponent implements OnInit {
 
     switch (status.toLowerCase()) {
       case 'approved':
-        return 'מאושר';
+        return 'אושר';
       case 'pending':
         return 'ממתין לאישור';
       case 'rejected':
@@ -329,7 +329,7 @@ export class DashboardAllOrdersComponent implements OnInit {
       case 'completed':
         return 'בוצע';
       case 'in_progress':
-        return 'בתהליך';
+        return 'בנסיעה';
       case 'cancelled_due_to_no_show':
         return 'בוטל עקב אי-הגעה';
       case 'cancelled_vehicle_unavailable':

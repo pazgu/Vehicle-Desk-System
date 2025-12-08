@@ -1,6 +1,10 @@
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { Component, Inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogRef,
+  MatDialogModule,
+} from '@angular/material/dialog';
 import { forkJoin } from 'rxjs';
 import { User } from '../../../../models/user.model';
 import { UserService, NoShowResponse } from '../../../../services/user_service';
@@ -13,31 +17,31 @@ interface Department {
 
 @Component({
   selector: 'app-user-card',
+  standalone: true,
+  imports: [CommonModule, MatDialogModule],
   templateUrl: './user-card.component.html',
   styleUrls: ['./user-card.component.css'],
-  imports: [RouterModule, CommonModule],
 })
 export class UserCardComponent implements OnInit {
   user: User | null = null;
-  userId: string | null = null;
   NoShowsCNT = 0;
   NoShowsData!: NoShowResponse;
-
   departmentName: string = '';
   departments: Department[] = [];
+  loading: boolean = true;
 
   constructor(
-    private route: ActivatedRoute,
+    @Inject(MAT_DIALOG_DATA) public data: { userId: string },
+    private dialogRef: MatDialogRef<UserCardComponent>,
     private userService: UserService
   ) {}
 
   ngOnInit(): void {
-    this.userId = this.route.snapshot.paramMap.get('user_id');
-
-    if (this.userId) {
-      this.loadAllData(this.userId);
+    if (this.data.userId) {
+      this.loadAllData(this.data.userId);
     } else {
-      console.warn('No user_id found in route params');
+      console.warn('No userId provided to modal');
+      this.loading = false;
     }
   }
 
@@ -57,8 +61,12 @@ export class UserCardComponent implements OnInit {
         );
         this.departmentName =
           userDepartment?.name || user.department_id || 'לא זמין';
+        this.loading = false;
       },
-      error: (err) => console.error('Failed to load data:', err),
+      error: (err) => {
+        console.error('Failed to load data:', err);
+        this.loading = false;
+      },
     });
   }
 
@@ -66,5 +74,13 @@ export class UserCardComponent implements OnInit {
     if (!this.user?.license_file_url) return;
     const fullUrl = environment.socketUrl + this.user.license_file_url;
     window.open(fullUrl, '_blank');
+  }
+
+  closeModal(): void {
+    this.dialogRef.close();
+  }
+
+  editUser(): void {
+    this.dialogRef.close({ action: 'edit', userId: this.user?.employee_id });
   }
 }

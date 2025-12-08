@@ -117,7 +117,7 @@ export class AllRidesComponent implements OnInit {
       const isPending = order.status.toLowerCase() === 'pending';
       if (!isPending) {
         this.toastService.show(
-          'אפשר לערוך רק הזמנות עתידיות במצב "ממתין" ',
+          'אפשר לערוך רק הזמנות עתידיות במצב "ממתין לאישור" ',
           'error'
         );
         return;
@@ -128,7 +128,7 @@ export class AllRidesComponent implements OnInit {
       );
       if (!isEditableStatus) {
         this.toastService.show(
-          'אפשר לערוך רק הזמנות במצב "ממתין" או "מאושר" ',
+          'אפשר לערוך רק הזמנות במצב "ממתין לאישור" או "אושר" ',
           'error'
         );
         return;
@@ -189,7 +189,7 @@ export class AllRidesComponent implements OnInit {
         const isPending = status === 'pending';
         if (!isPending) {
           this.toastService.show(
-            'אפשר לבטל רק הזמנות עתידיות במצב "ממתין" ',
+            'אפשר לבטל רק הזמנות עתידיות במצב "ממתין לאישור" ',
             'error'
           );
           return;
@@ -208,7 +208,7 @@ export class AllRidesComponent implements OnInit {
         const isDeletableStatus = ['pending', 'approved'].includes(status);
         if (!isDeletableStatus) {
           this.toastService.show(
-            'אפשר לבטל רק הזמנות במצב "ממתין" או "מאושר" ',
+            'אפשר לבטל רק הזמנות במצב "ממתין לאישור" או "אושר" ',
             'error'
           );
           return;

@@ -17,6 +17,7 @@ import {
   Validators,
   ReactiveFormsModule,
 } from '@angular/forms';
+import { UserCardComponent } from '../user-card/user-card.component';
 
 @Component({
   selector: 'app-user-data',
@@ -370,18 +371,30 @@ export class UserDataComponent implements OnInit {
   }
 
   goToUserCard(userId: string): void {
-    this.router.navigate(['/user-card', userId]);
-  }
+    const dialogRef = this.dialog.open(UserCardComponent, {
+      width: '90%',
+      maxWidth: '900px',
+      maxHeight: '90vh',
+      panelClass: 'user-card-dialog',
+      data: { userId: userId },
+      disableClose: false,
+    });
 
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result?.action === 'edit') {
+        this.router.navigate(['/user-data-edit', result.userId]);
+      }
+    });
+  }
   get totalPages(): number {
     return Math.ceil(this.filteredLogs.length / this.pageSize) || 1;
   }
 
   get pagedUsers(): User[] {
-  const start = (this.currentPage - 1) * this.pageSize;
-  const end = start + this.pageSize;
-  return this.filteredLogs.slice(start, end);
-}
+    const start = (this.currentPage - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    return this.filteredLogs.slice(start, end);
+  }
 
   nextPage(): void {
     if (this.currentPage < this.totalPages) this.currentPage++;

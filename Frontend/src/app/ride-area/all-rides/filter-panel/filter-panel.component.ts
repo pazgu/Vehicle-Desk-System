@@ -87,12 +87,12 @@ export class FilterPanelComponent implements OnChanges {
 
   private translateStatusToEnglish(hebrewStatus: string): string {
     const statusMap: { [key: string]: string } = {
-      מאושר: 'approved',
-      בהמתנה: 'pending',
+      אושר: 'approved',
+      'ממתין לאישור': 'pending',
       נדחה: 'rejected',
       בוצע: 'completed',
-      בתהליך: 'in_progress',
-    'בוטל עקב אי-הגעה': 'cancelled_due_to_no_show',
+      בנסיעה: 'in_progress',
+      'בוטל עקב אי-הגעה': 'cancelled_due_to_no_show',
       'בוטל - רכב לא זמין': 'cancelled_vehicle_unavailable',
     };
     return statusMap[hebrewStatus] || hebrewStatus;
