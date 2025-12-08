@@ -98,7 +98,7 @@ export class VehicleCardItemComponent implements OnInit {
       next: (departments) => {
         this.departments = departments;
         this.filteredDepartments = departments.filter(
-          dept => dept.name.toLowerCase() !== 'unassigned'
+          (dept) => dept.name.toLowerCase() !== 'unassigned'
         );
       },
       error: (err) => {
@@ -211,7 +211,7 @@ export class VehicleCardItemComponent implements OnInit {
     }
   }
 
-    goBacklocation(): void {
+  goBacklocation(): void {
     this.location.back();
   }
 
@@ -420,12 +420,16 @@ export class VehicleCardItemComponent implements OnInit {
     }
   }
   confirmArchive(vehicle: any): void {
-    const message = `תוקף חוזה ההשכרה של רכב ${vehicle.plate_number} פג והרכב מוקפא.
-ניתן לשחזר את הרכב המאורכב בכל שלב.
+    const message = `שים/י לב: רכב ${vehicle.plate_number} עומד בתנאי ארכוב מסיבות אלו:
+- הרכב מוקפא
+- תוקף חוזה ההשכרה פג
+- יש עליו נסיעות
+
+ניתן לשחזר את הרכב המאורכב בכל שלב, או למחוק אותו לצמיתות.
 
 האם את/ה בטוח/ה שברצונך לארכב את הרכב?`;
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: '400px',
+      width: '500px',
       data: {
         title: 'ארכוב רכב',
         message,
