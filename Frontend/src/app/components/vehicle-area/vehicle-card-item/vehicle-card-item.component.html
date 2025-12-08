@@ -91,7 +91,7 @@
             <label><strong>מחלקה:</strong></label>
             <select [(ngModel)]="vehicle.department_id" class="edit-select">
               <option value="">לא משוייך למחלקה</option>
-              <option *ngFor="let dept of departments" [value]="dept.id">
+              <option *ngFor="let dept of filteredDepartments" [value]="dept.id">
                 {{ dept.name }}
               </option>
             </select>
