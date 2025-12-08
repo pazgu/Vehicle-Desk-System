@@ -268,8 +268,11 @@ export class VehicleTimelineComponent implements OnInit, OnDestroy {
       });
   }
 
+  getFilteredLegend() {
+  return this.statusLegend.filter(item => item.status !== 'pending');
+  }
+
   processRidesForDisplay(): void {
-    console.log('🔄 Processing rides for display');
 
     this.processedRides.clear();
     const daysInView = this.getDaysRange();
@@ -279,8 +282,9 @@ export class VehicleTimelineComponent implements OnInit, OnDestroy {
     });
 
     for (const ride of this.vehicleTimelineData) {
-      console.log('⏳ Processing ride:', ride);
-
+      if (ride.status == 'pending') {
+        continue;
+      } 
       const rideStart = new Date(ride.start_datetime);
       const rideEnd = new Date(ride.end_datetime);
 
