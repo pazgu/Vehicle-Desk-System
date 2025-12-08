@@ -46,6 +46,8 @@ export class EditRideComponent implements OnInit {
   fetchedDistance: number | null = null;
   originalVehicleId: string | undefined = undefined;
   originalVehicleType: string | undefined = undefined;
+  selectedCarId: string = '';
+  isDropdownOpen: boolean = false;
 
   allCars: {
     id: string;
@@ -551,6 +553,7 @@ export class EditRideComponent implements OnInit {
         this.availableCars = [...this.allCars];
         setTimeout(() => {
           const carControl = this.rideForm.get('car');
+          this.selectedCarId = originalVehicleId || '';
           if (originalVehicleId) {
             const selectedVehicle = this.allCars.find(
               (car) => car.id === originalVehicleId
@@ -917,5 +920,21 @@ export class EditRideComponent implements OnInit {
     const endMinutes = endHour * 60 + endMin;
 
     return endMinutes <= startMinutes || endMinutes - startMinutes < 15;
+  }
+  selectCar(carId: string) {
+  if (!this.isCarDisabled(this.allCars.find(c => c.id === carId)!)) {
+    this.selectedCarId = carId;
+    this.rideForm.get('car')?.setValue(carId);
+    this.isDropdownOpen = false;
+  }
+  }
+  getSelectedCar(): any | undefined {
+    return this.availableCars.find(car => car.id === this.selectedCarId);
+  }
+  toggleDropdown() {
+    this.isDropdownOpen = !this.isDropdownOpen;
+  }
+  closeDropdown() {
+    this.isDropdownOpen = false;
   }
 }

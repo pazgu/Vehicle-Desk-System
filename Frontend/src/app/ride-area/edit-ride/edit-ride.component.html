@@ -133,17 +133,52 @@
 
           <div class="input-group">
             <label>דגם רכב</label>
-            <select formControlName="car" class="styled-select">
-              <option value="">בחר רכב</option>
-              <option
-                *ngFor="let car of availableCars"
-                [value]="car.id"
-                [disabled]="isCarDisabled(car)"
+            <div class="custom-select">
+              <div 
+                *ngIf="availableCars.length > 0"
+                class="select-header" 
+                (click)="toggleDropdown()"
+                [class.open]="isDropdownOpen"
               >
-                {{ car.vehicle_model }}
-                <span *ngIf="isCarDisabled(car)"> - לא זמין</span>
-              </option>
-            </select>
+                <div class="selected-car" *ngIf="getSelectedCar(); else placeholder">
+                  <img 
+                    [src]="getSelectedCar().image_url" 
+                    [alt]="getSelectedCar().vehicle_model"
+                    class="car-thumbnail"
+                  />
+                  <span>{{ getSelectedCar().vehicle_model }}</span>
+                </div>
+                <ng-template #placeholder>
+                  <span class="placeholder">בחר רכב</span>
+                </ng-template>
+                <div class="select-arrow">
+                  <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+                    <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="select-options" *ngIf="isDropdownOpen">
+                <div 
+                  *ngFor="let car of availableCars"
+                  class="option"
+                  [class.disabled]="isCarDisabled(car)"
+                  [class.selected]="car.id === selectedCarId"
+                  (click)="selectCar(car.id)"
+                  [title]="isCarDisabled(car) ? 'רכב לא זמין' : ''"
+                >
+                  <img 
+                    [src]="car.image_url" 
+                    [alt]="car.vehicle_model"
+                    class="car-thumbnail"
+                  />
+                  <span>{{ car.vehicle_model }}</span>
+                  <span *ngIf="isCarDisabled(car)" class="disabled-text"> - לא זמין</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="dropdown-backdrop" *ngIf="isDropdownOpen" (click)="closeDropdown()"></div>
+            
             <small
               class="info-text"
               *ngIf="
@@ -151,11 +186,11 @@
                 availableCars.length === 0
               "
             >
-              אין רכבים זמינים מסוג זה לתאריך ושעות שנבחרו
+              אין רכבים זמינים מסוג זה בשעות שנבחרו. נא לבחור סוג רכב אחר.
             </small>
             <small
               class="error-text"
-              *ngIf="rideForm.get('car')?.touched && rideForm.get('car')?.errors?.['required']"
+              *ngIf="rideForm.get('car')?.touched && rideForm.get('car')?.errors?.['required'] && availableCars.length > 0"
             >
               חובה לבחור רכב
             </small>
