@@ -16,7 +16,23 @@
   <button class="back-btn" (click)="navigateBack()">חזור ←</button>
 
   <div class="header-sub">
-    <p>מזהה רכב: {{ vehicleId }}</p>
+    <div *ngIf="vehicleInfo" class="vehicle-info-card">
+      <img
+        *ngIf="vehicleInfo.image_url"
+        [src]="vehicleInfo.image_url"
+        alt="Vehicle Image"
+        class="vehicle-image"
+      />
+      <div class="vehicle-details">
+        <p class="vehicle-plate">
+          <strong>מספר רישוי:</strong> {{ vehicleInfo.plate_number }}
+        </p>
+        <p class="vehicle-model">
+          <strong>דגם:</strong> {{ vehicleInfo.vehicle_model || "לא צוין" }}
+        </p>
+      </div>
+    </div>
+
     <div class="week-controls">
       <button (click)="navigateWeek(-1)">→ שבוע קודם</button>
       <span class="week-label">
@@ -110,10 +126,6 @@
           <span class="hover-card-value">{{
             hoveredRide.end_datetime | date : "dd/MM/yyyy HH:mm"
           }}</span>
-        </div>
-        <div class="hover-card-row" *ngIf="hoveredRide.purpose">
-          <span class="hover-card-label">מטרה:</span>
-          <span class="hover-card-value">{{ hoveredRide.purpose }}</span>
         </div>
         <div class="hover-card-row">
           <span class="hover-card-label">מזהה משתמש:</span>
