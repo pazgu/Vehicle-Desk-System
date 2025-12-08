@@ -71,7 +71,7 @@ export class DepartmentDataComponent implements OnInit {
     this.userService.getAllUsers().subscribe({
       next: (usersData) => {
         const allSupervisors = usersData.filter(
-          (user) => user.role === 'supervisor'
+          (user) => user.role === 'supervisor' && !user.isRaan
         );
         const assignedSupervisorIds = new Set(
           this.departments.map((dep) => dep.supervisor_id)
