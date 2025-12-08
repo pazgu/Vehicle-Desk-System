@@ -11,6 +11,7 @@ import {
 import { Vehicle } from '../models/vehicle.model';
 import { map } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { VehicleUsageStats } from '../models/vehicle-dashboard-item/vehicle-stats.module';
 
 @Injectable({
   providedIn: 'root',
@@ -232,6 +233,12 @@ export class VehicleService {
       `${this.apiUrl}/vehicles/${vehicleId}/mileage`,
       body
     );
+  }
+
+
+  
+  getCurrentMonthVehicleUsage(): Observable<VehicleUsageStats[]> {
+    return this.http.get<VehicleUsageStats[]>(`${this.apiUrl}/vehicle-usage-stats`);
   }
 
   addVehicle(vehicleData: any): Observable<any> {
