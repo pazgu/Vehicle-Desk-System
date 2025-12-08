@@ -21,7 +21,7 @@ class User(Base):
     phone = Column(String(20), nullable=True)
     email = Column(String, nullable=False, unique=True)
     employee_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    password = Column(String, nullable=False)  # hashing afterwards
+    password = Column(String, nullable=False)
     role = Column(Enum(UserRole), nullable=False)
     department_id = Column(UUID(as_uuid=True), ForeignKey("departments.id"), nullable=True)
     has_government_license = Column(Boolean, default=False)

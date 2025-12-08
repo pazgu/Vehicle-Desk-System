@@ -17,10 +17,6 @@ async def submit_inspection(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """
-    Submit a new vehicle inspection.
-    Only accessible by users with the 'inspector' role.
-    """
     token = request.headers.get("Authorization")
     if not token or not token.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Missing or invalid token")
