@@ -81,7 +81,7 @@
             <strong>סוג דלק:</strong> {{ translateFuelType(vehicle.fuel_type) }}
           </p>
           <p>
-            <strong>פעם אחרונה בשימוש:</strong>
+            <strong>שימוש אחרון:</strong>
             {{ formatLastUsedAt(vehicle.last_used_at) }}
           </p>
           <p *ngIf="!isEditMode">
