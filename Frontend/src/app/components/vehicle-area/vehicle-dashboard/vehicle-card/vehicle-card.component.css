@@ -19,7 +19,7 @@
   flex-direction: column;
   position: relative;
   box-sizing: border-box;
-  transition: transform 0.22s ease-out, box-shadow 0.22s ease-out,
+  transition: transform 0.22s ease-out,
     border 0.22s ease-out;
 }
 
