@@ -44,6 +44,7 @@ class UserResponse(BaseModel):
     block_expires_at: Optional[datetime] = None
     block_reason: Optional[str] = None
     is_unassigned_user: Optional[bool] = False
+    isRaan: bool = False
     class Config:
         from_attributes = True
         
