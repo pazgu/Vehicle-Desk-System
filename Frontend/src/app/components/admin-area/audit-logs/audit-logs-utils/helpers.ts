@@ -1,6 +1,6 @@
 export function getRowBackgroundColor(log: any): string {
   if (log.action === 'DELETE') {
-    return '#f8e2e2'; 
+    return '#f8e2e2';
   }
 
   if (
@@ -9,7 +9,7 @@ export function getRowBackgroundColor(log: any): string {
     (log.change_data?.new?.emergency_event === true ||
       log.change_data?.new?.emergency_event === 'true')
   ) {
-    return '#feaf66'; 
+    return '#feaf66';
   }
 
   if (
@@ -24,7 +24,7 @@ export function getRowBackgroundColor(log: any): string {
     ((log.action === 'UPDATE' && log.change_data?.new?.status === 'pending') ||
       (log.action === 'INSERT' && log.change_data?.status === 'pending'))
   ) {
-    return '#fbf3da'; 
+    return '#fbf3da';
   }
 
   if (
@@ -47,7 +47,7 @@ export function getRowBackgroundColor(log: any): string {
     log.entity_type === 'Ride' &&
     log.change_data?.new?.status === 'rejected'
   ) {
-    return '#dc5b5b'; 
+    return '#dc5b5b';
   }
 
   if (
@@ -56,14 +56,14 @@ export function getRowBackgroundColor(log: any): string {
     (log.change_data?.new?.status === 'cancelled_due_to_no_show' ||
       log.change_data?.new?.status === 'cancelled-due-to-no-show')
   ) {
-    return '#e0d6e8'; 
+    return '#e0d6e8';
   }
 
   if (
     log.entity_type === 'User' &&
     log.change_data?.new?.exceeded_monthly_trip_quota === true
   ) {
-    return '#cdb69b'; 
+    return '#cdb69b';
   }
 
   if (
@@ -77,7 +77,7 @@ export function getRowBackgroundColor(log: any): string {
           log.change_data?.new?.status === 'approved')) ||
         log.action === 'INSERT'))
   ) {
-    return '#dcf1e1'; 
+    return '#dcf1e1';
   }
 
   return '#ffffff';
@@ -189,13 +189,13 @@ export function translateRideStatus(status: string | null | undefined): string {
   if (!status) return '';
   switch (status.toLowerCase()) {
     case 'pending':
-      return 'ממתין';
+      return 'ממתין לאישור';
     case 'approved':
-      return 'מאושר';
+      return 'אושר';
     case 'rejected':
       return 'נדחה';
     case 'in_progress':
-      return 'בתהליך';
+      return 'בנסיעה';
     case 'completed':
       return 'הושלם';
     case 'cancelled_due_to_no_show':
@@ -275,7 +275,7 @@ export function getVehicleAuditRows(
       label: 'שימוש אחרון',
       oldValue: oldData.last_used_at,
       newValue: newData.last_used_at,
-    }, 
+    },
     {
       label: 'סיבת הקפאה',
       oldValue: translateFreezeReason(oldData.freeze_reason),
@@ -386,7 +386,7 @@ export function formatRouteFromChangeData(
   const start = changeData.start_location;
   const stop = changeData.stop;
   const destination = changeData.destination;
-  const extraStops = changeData.extra_stops; 
+  const extraStops = changeData.extra_stops;
 
   const allStops = [start, stop, ...(extraStops || []), destination];
 

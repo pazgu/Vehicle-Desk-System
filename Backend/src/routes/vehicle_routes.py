@@ -21,6 +21,7 @@ from ..services.vehicle_service import (
     get_vehicle_km_driven_on_date,
     get_vehicles_with_optional_status,
     get_available_vehicles_new_ride,
+    get_vehicles_for_ride_edit,
     get_vip_vehicles_for_ride,
     update_vehicle_status,
     get_vehicle_by_id, update_vehicle,
@@ -42,24 +43,6 @@ from src.models.vehicle_model import VehicleStatus, Vehicle
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 router = APIRouter()
-
-# @router.post("/vehicle-inspection")
-# def vehicle_inspection(data: VehicleInspectionSchema, db: Session = Depends(get_db),payload: dict = Depends(token_check)):
-#     try:
-#         return vehicle_inspection_logic(data, db)
-#     except HTTPException as e:
-#         raise e
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
-    
-
-# @router.get("/all-vehicles", response_model=List[VehicleOut])
-# def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = Depends(get_db), payload: dict = Depends(token_check)):
-#     vehicles = get_vehicles_with_optional_status(db, status)
-#     return vehicles
-
-
-
 
 @router.get("/all-vehicles-new-ride", response_model=List[VehicleOut])
 def get_all_vehicles_route(
@@ -111,7 +94,38 @@ def get_all_vehicles_route(
     return prioritized
 
 
-
+@router.get("/vehicles-for-ride-edit", response_model=List[VehicleOut])
+def get_vehicles_for_ride_edit_route(
+    distance_km: float = Query(...),
+    ride_date: Optional[date] = Query(None),
+    type: Optional[str] = Query(None),
+    start_time: Optional[datetime] = Query(None),
+    end_time: Optional[datetime] = Query(None),
+    exclude_ride_id: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    try:
+        vehicles = get_vehicles_for_ride_edit(
+            db=db,
+            distance_km=distance_km,
+            ride_date=ride_date,
+            vehicle_type=type,
+            start_time=start_time,
+            end_time=end_time,
+            exclude_ride_id=exclude_ride_id,
+            user_department_id=current_user.department_id
+        )
+        return vehicles   
+    except Exception as e:
+        import traceback
+        print(f"❌ Error in get_vehicles_for_ride_edit_route: {e}")
+        print(traceback.format_exc())
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Internal server error: {str(e)}"
+        )
+    
 @router.get("/vip-vehicles-new-ride", response_model=List[VehicleOut])
 def get_vip_vehicles_route(
     distance_km: float = Query(...),
@@ -441,9 +455,6 @@ def permanently_delete_vehicle(
 
 @router.get("/vehicles/usage-stats-all-time")
 async def get_usage_stats_all_time(db: Session = Depends(get_db)):
-    """
-    Get vehicle usage statistics for all time
-    """
     try:
         stats_dict = get_most_used_vehicles_all_time(db)
         stats_list = [
