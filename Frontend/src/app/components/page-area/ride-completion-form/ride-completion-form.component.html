@@ -26,21 +26,15 @@
             <div class="trip-info-header">פרטי הנסיעה</div>
             <div class="trip-info-content">
               <div class="trip-info-row">
-                <span class="info-label">מוצא:</span>
-                <span class="info-value">{{ start_location_name }}</span>
+                <span class="info-label">מוצא ויעד:</span>
+                <span class="info-value"
+                  >תל אביב</span
+                >
               </div>
-              <div class="trip-info-row">
-                <span class="info-label">יעד:</span>
-                <span class="info-value">{{ stop_name }}</span>
-              </div>
-              <div
-                class="trip-info-row"
-                *ngIf="extra_stops_names && extra_stops_names.length > 0"
-              >
+
+              <div class="trip-info-row" *ngIf="allStopsNames">
                 <span class="info-label">דרך:</span>
-                <span class="info-value">{{
-                  extra_stops_names.join(", ")
-                }}</span>
+                <span class="info-value">{{ allStopsNames }}</span>
               </div>
             </div>
           </div>
