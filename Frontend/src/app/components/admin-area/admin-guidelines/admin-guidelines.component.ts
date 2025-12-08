@@ -84,12 +84,12 @@ canSave(): { valid: boolean; message: string } {
   }
 
   if (itemsArray.length === 0) {
-    return { valid: false, message: 'יש להוסיף לפחות נקודה אחת לפני השמירה' };
+    return { valid: false, message: 'יש להוסיף לפחות הנחיה אחת לפני השמירה' };
   }
 
   const hasEmptyItems = itemsArray.some((item: string) => !item?.trim());
   if (hasEmptyItems) {
-    return { valid: false, message: 'אי אפשר לשמור עם נקודות ריקות. מלא את כל הנקודות או מחק אותן' };
+    return { valid: false, message: 'אי אפשר לשמור עם הנחיות ריקות. מלא את כל ההנחיות או מחק אותן' };
   }
 
   if (!this.hasChanges()) {
