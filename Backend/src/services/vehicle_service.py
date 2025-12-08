@@ -117,6 +117,146 @@ def get_available_vehicles_new_ride(
 
     return query.all()
 
+def get_vehicles_for_ride_edit(
+    db: Session,
+    distance_km: float,
+    ride_date: Optional[date],
+    vehicle_type: Optional[str],
+    start_time: Optional[datetime],
+    end_time: Optional[datetime],
+    exclude_ride_id: Optional[str],
+    user_department_id: Optional[UUID]
+) -> List[Vehicle]:
+    original_vehicle = None
+    original_vehicle_id = None
+    if exclude_ride_id:
+        try:
+            ride_uuid = UUID(exclude_ride_id) if isinstance(exclude_ride_id, str) else exclude_ride_id
+            original_ride = db.query(Ride).filter(Ride.id == ride_uuid).first()
+            if original_ride and original_ride.vehicle_id:
+                original_vehicle_id = original_ride.vehicle_id
+                original_vehicle = db.query(Vehicle).filter(
+                    Vehicle.id == original_vehicle_id
+                ).first()
+        except Exception as e:
+            print(f"Error fetching original vehicle: {e}")
+    now = datetime.utcnow()
+    query = (
+        db.query(Vehicle)
+        .filter(
+            Vehicle.is_archived == False,
+            Vehicle.status == VehicleStatus.available,
+            Vehicle.lease_expiry > now
+        )
+    )
+    if vehicle_type:
+        query = query.filter(func.lower(Vehicle.type) == vehicle_type.lower())
+    if user_department_id:
+        query = query.filter(
+            or_(
+                Vehicle.department_id == user_department_id,
+                Vehicle.department_id == None
+            )
+        )
+    if start_time and end_time:
+        end_time_with_buffer = end_time + timedelta(hours=2)
+        overlapping_rides_query = db.query(Ride.vehicle_id).filter(
+            or_(
+                and_(Ride.start_datetime <= start_time, Ride.end_datetime > start_time),
+                and_(Ride.start_datetime < end_time_with_buffer, Ride.end_datetime >= end_time_with_buffer),
+                and_(Ride.start_datetime >= start_time, Ride.end_datetime <= end_time_with_buffer)
+            )
+        )
+        if exclude_ride_id:
+            try:
+                ride_uuid = UUID(exclude_ride_id) if isinstance(exclude_ride_id, str) else exclude_ride_id
+                overlapping_rides_query = overlapping_rides_query.filter(
+                    Ride.id != ride_uuid
+                )
+            except Exception as e:
+                print(f"Error excluding ride from conflicts: {e}")
+        
+        overlapping_rides = overlapping_rides_query.subquery()
+        query = query.filter(~Vehicle.id.in_(overlapping_rides))
+    
+    vehicles = query.all()
+    if original_vehicle and original_vehicle_id:
+        is_available = (
+            original_vehicle.status == VehicleStatus.available and
+            not original_vehicle.freeze_reason and
+            not original_vehicle.is_archived and
+            original_vehicle.lease_expiry > now
+        )
+        is_correct_type = (
+            not vehicle_type or 
+            (original_vehicle.type and original_vehicle.type.lower() == vehicle_type.lower())
+        )
+        is_correct_department = (
+            not user_department_id or
+            original_vehicle.department_id == user_department_id or
+            original_vehicle.department_id is None
+        )
+        is_not_conflicting = True
+        if start_time and end_time:
+            try:
+                end_time_with_buffer = end_time + timedelta(hours=2)
+                conflicting_ride_query = db.query(Ride).filter(
+                    Ride.vehicle_id == original_vehicle_id,
+                    or_(
+                        and_(Ride.start_datetime <= start_time, Ride.end_datetime > start_time),
+                        and_(Ride.start_datetime < end_time_with_buffer, Ride.end_datetime >= end_time_with_buffer),
+                        and_(Ride.start_datetime >= start_time, Ride.end_datetime <= end_time_with_buffer)
+                    )
+                )
+                if exclude_ride_id:
+                    try:
+                        ride_uuid = UUID(exclude_ride_id) if isinstance(exclude_ride_id, str) else exclude_ride_id
+                        conflicting_ride_query = conflicting_ride_query.filter(
+                            Ride.id != ride_uuid
+                        )
+                    except:
+                        pass
+                conflicting_ride = conflicting_ride_query.first()
+                is_not_conflicting = conflicting_ride is None
+            except Exception as e:
+                print(f"Error checking conflicts for original vehicle: {e}")
+                is_not_conflicting = False
+        all_checks_passed = (
+            is_available and 
+            is_correct_type and 
+            is_correct_department and 
+            is_not_conflicting
+        )
+        if all_checks_passed and not any(v.id == original_vehicle_id for v in vehicles):
+            vehicles.insert(0, original_vehicle)
+    if not vehicles:
+        return []
+    electric, hybrid, fuel, electric_low = [], [], [], []
+    for v in vehicles:
+        try:
+            if v.fuel_type == "electric":
+                km_today = get_vehicle_km_driven_on_date(
+                    db, v.id, ride_date or date.today()
+                )
+                if distance_km + float(km_today) <= 200:
+                    electric.append(v)
+                else:
+                    electric_low.append(v)
+            elif v.fuel_type == "hybrid":
+                hybrid.append(v)
+            elif v.fuel_type == "gasoline":
+                fuel.append(v)
+        except Exception as e:
+            print(f"Error processing vehicle {v.id}: {e}")
+            continue
+    if distance_km <= 200 and electric:
+        return electric
+    elif hybrid:
+        return hybrid
+    elif fuel:
+        return fuel
+    else:
+        return electric_low
 
 def get_vip_vehicles_for_ride(
     db: Session,

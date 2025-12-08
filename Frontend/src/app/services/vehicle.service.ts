@@ -66,6 +66,29 @@ export class VehicleService {
       { params }
     );
   }
+  getVehiclesForRideEdit(
+    distance: number,
+    rideDate: string,
+    vehicleType: string,
+    startTime: string,
+    endTime: string,
+    excludeRideId?: string
+  ): Observable<Vehicle[]> {
+    const params: any = {
+      distance_km: distance,
+      ride_date: rideDate,
+      type: vehicleType,
+      start_time: startTime,
+      end_time: endTime,
+    };
+    if (excludeRideId) {
+      params.exclude_ride_id = excludeRideId;
+    }
+    return this.http.get<Vehicle[]>(
+      `${environment.apiUrl}/vehicles-for-ride-edit`,
+      { params }
+    );
+  }
 
   getVIPVehiclesForNewRide(
     distance: number,

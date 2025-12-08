@@ -28,6 +28,9 @@ export class VehicleUsageComponent {
   allTimeStatsChartOptions: any;
   allTimeChartData: any;
   allTimeChartOptions: any;
+  currentMonthlyPage = 1;
+  currentAllTimePage = 1;
+  itemsPerPage = 4;
 
   months = [
     { value: '1', label: 'ינואר' },
@@ -66,7 +69,7 @@ export class VehicleUsageComponent {
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: params,
-      queryParamsHandling: 'merge', 
+      queryParamsHandling: 'merge',
     });
   }
   toggleUsageView() {
@@ -316,5 +319,81 @@ export class VehicleUsageComponent {
           console.error('Error fetching top used vehicles:', err);
         },
       });
+  }
+
+  get paginatedMonthlyData() {
+    return this.getPaginatedData(
+      this.monthlyStatsChartData,
+      this.currentMonthlyPage
+    );
+  }
+
+  get paginatedAllTimeData() {
+    return this.getPaginatedData(
+      this.allTimeStatsChartData,
+      this.currentAllTimePage
+    );
+  }
+
+  get totalMonthlyPages(): number {
+    if (!this.monthlyStatsChartData?.labels) return 0;
+    return Math.ceil(
+      this.monthlyStatsChartData.labels.length / this.itemsPerPage
+    );
+  }
+
+  get totalAllTimePages(): number {
+    if (!this.allTimeStatsChartData?.labels) return 0;
+    return Math.ceil(
+      this.allTimeStatsChartData.labels.length / this.itemsPerPage
+    );
+  }
+
+  getPaginatedData(chartData: any, currentPage: number) {
+    if (!chartData?.labels || !chartData?.datasets?.[0]?.data) {
+      return [];
+    }
+
+    const startIndex = (currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+
+    return chartData.labels
+      .slice(startIndex, endIndex)
+      .map((label: string, index: number) => {
+        return {
+          name: label,
+          trips: chartData.datasets[0].data[startIndex + index],
+        };
+      });
+  }
+
+  nextMonthlyPage() {
+    if (this.currentMonthlyPage < this.totalMonthlyPages) {
+      this.currentMonthlyPage++;
+    }
+  }
+
+  prevMonthlyPage() {
+    if (this.currentMonthlyPage > 1) {
+      this.currentMonthlyPage--;
+    }
+  }
+
+  nextAllTimePage() {
+    if (this.currentAllTimePage < this.totalAllTimePages) {
+      this.currentAllTimePage++;
+    }
+  }
+
+  prevAllTimePage() {
+    if (this.currentAllTimePage > 1) {
+      this.currentAllTimePage--;
+    }
+  }
+
+  getUsageStatus(trips: number): string {
+    if (trips <= 4) return 'טוב';
+    if (trips >= 5 && trips <= 10) return 'בינוני';
+    return 'גבוה';
   }
 }
