@@ -38,6 +38,7 @@ export class VehicleCardItemComponent implements OnInit {
   departmentName: string = '';
   departments: any[] = [];
   currentDate = new Date();
+  filteredDepartments: any[] = [];
   vehicleTypes = [
     'Private',
     'Small Commercial',
@@ -96,6 +97,9 @@ export class VehicleCardItemComponent implements OnInit {
     this.vehicleService.getAllDepartments().subscribe({
       next: (departments) => {
         this.departments = departments;
+        this.filteredDepartments = departments.filter(
+          dept => dept.name.toLowerCase() !== 'unassigned'
+        );
       },
       error: (err) => {
         console.error('Failed to load departments:', err);
