@@ -8,7 +8,7 @@
     class="usage-number"
     *ngIf="getVehicleUsageCount(vehicle.plate_number) > 0"
   >
-    {{ getVehicleUsageCount(vehicle.plate_number) }} נסיעות</span
+    {{ getVehicleUsageCount(vehicle.plate_number) }} נסיעות לחודש זה. </span
   >
 
   <div *ngIf="isInactive(vehicle.last_used_at)" class="inactive-badge">

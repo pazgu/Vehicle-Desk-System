@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
+import { VehicleService } from '../../../../services/vehicle.service';
 
 @Component({
   selector: 'app-vehicle-usage-stats',
@@ -13,29 +14,27 @@ import { environment } from '../../../../../environments/environment';
 export class VehicleUsageStatsComponent implements OnInit {
   topUsedVehiclesMap: Record<string, number> = {};
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient,private vehicleService:VehicleService) {}
 
   ngOnInit(): void {
     this.loadVehicleUsageData();
   }
 
-  loadVehicleUsageData(): void {
-    this.http
-      .get<
-        { plate_number: string; vehicle_model: string; ride_count: number }[]
-      >(`${environment.apiUrl}/analytics/top-used-vehicles`)
-      .subscribe({
-        next: (data) => {
-          this.topUsedVehiclesMap = {};
-          data.forEach((vehicle) => {
-            this.topUsedVehiclesMap[vehicle.plate_number] = vehicle.ride_count;
-          });
-        },
-        error: (err) => {
-          console.error(' Error fetching vehicle usage data:', err);
-        },
+ 
+loadVehicleUsageData(): void {
+  this.vehicleService.getCurrentMonthVehicleUsage().subscribe({
+    next: (data) => {
+      this.topUsedVehiclesMap = {};
+
+      data.forEach((vehicle) => {
+        this.topUsedVehiclesMap[vehicle.plate_number] = vehicle.total_rides;
       });
-  }
+    },
+    error: (err) => {
+      console.error('Error fetching vehicle usage stats:', err);
+    },
+  });
+}
 
   getVehicleUsageCount(plateNumber: string): number {
     return this.topUsedVehiclesMap[plateNumber] || 0;

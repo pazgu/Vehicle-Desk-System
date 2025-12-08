@@ -44,6 +44,8 @@ export class EditRideComponent implements OnInit {
   private originalEndTime: string = '';
   private originalStartTime: string = '';
   fetchedDistance: number | null = null;
+  originalVehicleId: string | undefined = undefined;
+  originalVehicleType: string | undefined = undefined;
 
   allCars: {
     id: string;
@@ -283,12 +285,37 @@ export class EditRideComponent implements OnInit {
         fourByFourControl?.setValue('');
       }
       fourByFourControl?.updateValueAndValidity();
+      const carControl = this.rideForm.get('car');
+      const currentCarValue = carControl?.value;
+      
       this.filterAvailableVehicles();
-      this.rideForm.get('car')?.setValue('');
-    });
-    this.loadRide();
+      setTimeout(() => {
+        if (currentCarValue) {
+          const isStillValid = this.availableCars.some(
+            car => car.id === currentCarValue && 
+                  car.status === 'available' && 
+                  !car.freeze_reason
+          );
+          if (isStillValid) {
+            carControl?.setValue(currentCarValue, { emitEvent: false });
+            return;
+          }
+        }
+        if (this.availableCars.length > 0) {
+          const firstAvailable = this.availableCars.find(
+            car => car.status === 'available' && !car.freeze_reason
+          );
+          if (firstAvailable) {
+            carControl?.setValue(firstAvailable.id, { emitEvent: false });
+          } else {
+            carControl?.setValue(null, { emitEvent: false });
+          }
+        } else {
+          carControl?.setValue(null, { emitEvent: false });
+        }
+      }, 0);
+    });this.loadRide();
   }
-
   buildForm(): void {
     this.rideForm = this.fb.group({
       ride_period: ['morning'],
@@ -308,10 +335,6 @@ export class EditRideComponent implements OnInit {
       four_by_four_reason: [''],
     });
 
-    this.rideForm.get('vehicle_type')?.valueChanges.subscribe((value) => {
-      this.filterAvailableVehicles();
-      this.rideForm.get('car')?.setValue('');
-    });
   }
 
   private filterAvailableVehicles(): void {
@@ -335,19 +358,19 @@ export class EditRideComponent implements OnInit {
           selectedDate,
           vehicleType,
           startDateTime,
-          endDateTime
+          endDateTime,
+          this.originalVehicleId,
+          this.rideId
         );
         return;
       }
     }
-    let filteredCars = this.allCars.filter(
+    this.availableCars = this.allCars.filter(
       (car) =>
         car.type === vehicleType &&
         car.status === 'available' &&
         !car.freeze_reason
     );
-
-    this.availableCars = filteredCars;
   }
   private updateExtendedRideReasonValidation(): void {
     const extendedReasonControl = this.rideForm.get('extended_ride_reason');
@@ -378,7 +401,8 @@ export class EditRideComponent implements OnInit {
         this.status = ride.status || 'pending';
         this.submittedAt = ride.submitted_at || new Date().toISOString();
         this.licenseCheckPassed = ride.license_check_passed ?? true;
-        const originalVehicleId = ride.vehicle_id;
+        this.originalVehicleId = ride.vehicle_id;
+        this.originalVehicleType = ride.vehicle_type;
         const isPending =
           ride.status && ride.status.toLowerCase() === 'pending';
         const isApproved =
@@ -487,7 +511,7 @@ export class EditRideComponent implements OnInit {
           ride.vehicle_type,
           startDateTime,
           endDateTime,
-          originalVehicleId,
+          this.originalVehicleId,
           this.rideId
         );
       },
@@ -505,67 +529,17 @@ export class EditRideComponent implements OnInit {
     vehicleType: string,
     startTime: string,
     endTime: string,
-    originalVehicleId?: string,
+    originalVehicleId: string | undefined,
     excludeRideId?: string
   ): void {
-    if (originalVehicleId && excludeRideId) {
-      this.vehicleService.getVehicleById(originalVehicleId).subscribe({
-        next: (vehicle) => {
-          const request$ = this.vehicleService.getAllVehiclesForNewRide(
-            distance,
-            rideDate,
-            vehicleType,
-            startTime,
-            endTime
-          );
-          request$.subscribe({
-            next: (vehicles) => {
-              let filteredCars = vehicles.filter(
-                (v) =>
-                  !!v.id &&
-                  !!v.type &&
-                  !!v.vehicle_model &&
-                  typeof v.mileage === 'number'
-              );
-              const originalExists = filteredCars.some(
-                (c) => c.id === originalVehicleId
-              );
-              if (!originalExists && vehicle) {
-                filteredCars = [vehicle, ...filteredCars];
-              }
-              this.allCars = filteredCars;
-              this.availableCars = [...this.allCars];
-              setTimeout(() => {
-                const selectedVehicle = this.allCars.find(
-                  (car) => car.id === originalVehicleId
-                );
-                if (selectedVehicle) {
-                  this.rideForm.get('car')?.setValue(selectedVehicle.id);
-                }
-                this.isLoadingExistingRide = false;
-              }, 300);
-            },
-            error: () => {
-              this.toastService.show('שגיאה בטעינת רכבים זמינים', 'error');
-              this.isLoadingExistingRide = false;
-            },
-          });
-        },
-        error: (err) => {
-          this.toastService.show('שגיאה בטעינת הרכב המקורי', 'error');
-          this.isLoadingExistingRide = false;
-        },
-      });
-      return;
-    }
-    const request$ = this.vehicleService.getAllVehiclesForNewRide(
+    this.vehicleService.getVehiclesForRideEdit(
       distance,
       rideDate,
       vehicleType,
       startTime,
-      endTime
-    );
-    request$.subscribe({
+      endTime,
+      excludeRideId
+    ).subscribe({
       next: (vehicles) => {
         this.allCars = vehicles.filter(
           (v) =>
@@ -575,12 +549,39 @@ export class EditRideComponent implements OnInit {
             typeof v.mileage === 'number'
         );
         this.availableCars = [...this.allCars];
-        this.isLoadingExistingRide = false;
+        setTimeout(() => {
+          const carControl = this.rideForm.get('car');
+          if (originalVehicleId) {
+            const selectedVehicle = this.allCars.find(
+              (car) => car.id === originalVehicleId
+            );
+            if (selectedVehicle) {
+              carControl?.setValue(selectedVehicle.id);
+            } else {
+              const firstAvailable = this.availableCars.find(
+                car => car.status === 'available' && !car.freeze_reason
+              );
+              if (firstAvailable) {
+                carControl?.setValue(firstAvailable.id);
+              } else {
+                carControl?.setValue(null);
+              }
+            }
+          } else if (this.availableCars.length > 0) {
+            const firstAvailable = this.availableCars.find(
+              car => car.status === 'available' && !car.freeze_reason
+            );
+            if (firstAvailable) {
+              carControl?.setValue(firstAvailable.id);
+            }
+          }
+          this.isLoadingExistingRide = false;
+        }, 300);
       },
       error: () => {
         this.toastService.show('שגיאה בטעינת רכבים זמינים', 'error');
         this.isLoadingExistingRide = false;
-      },
+      }
     });
   }
   isCarDisabled(car: (typeof this.allCars)[0]): boolean {

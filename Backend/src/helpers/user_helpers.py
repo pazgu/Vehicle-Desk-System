@@ -38,6 +38,7 @@ def cancel_future_rides_for_vehicle(vehicle_id: str, db: Session, admin_id: str)
 
     for ride in rides:
         ride.status = RideStatus.cancelled_vehicle_unavailable
+        ride.vehicle_id = None
         db.flush()
 
         affected_users.add(ride.user_id)

@@ -21,6 +21,7 @@ from ..services.vehicle_service import (
     get_vehicle_km_driven_on_date,
     get_vehicles_with_optional_status,
     get_available_vehicles_new_ride,
+    get_vehicles_for_ride_edit,
     get_vip_vehicles_for_ride,
     update_vehicle_status,
     get_vehicle_by_id, update_vehicle,
@@ -93,7 +94,38 @@ def get_all_vehicles_route(
     return prioritized
 
 
-
+@router.get("/vehicles-for-ride-edit", response_model=List[VehicleOut])
+def get_vehicles_for_ride_edit_route(
+    distance_km: float = Query(...),
+    ride_date: Optional[date] = Query(None),
+    type: Optional[str] = Query(None),
+    start_time: Optional[datetime] = Query(None),
+    end_time: Optional[datetime] = Query(None),
+    exclude_ride_id: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    try:
+        vehicles = get_vehicles_for_ride_edit(
+            db=db,
+            distance_km=distance_km,
+            ride_date=ride_date,
+            vehicle_type=type,
+            start_time=start_time,
+            end_time=end_time,
+            exclude_ride_id=exclude_ride_id,
+            user_department_id=current_user.department_id
+        )
+        return vehicles   
+    except Exception as e:
+        import traceback
+        print(f"❌ Error in get_vehicles_for_ride_edit_route: {e}")
+        print(traceback.format_exc())
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Internal server error: {str(e)}"
+        )
+    
 @router.get("/vip-vehicles-new-ride", response_model=List[VehicleOut])
 def get_vip_vehicles_route(
     distance_km: float = Query(...),
@@ -300,15 +332,26 @@ def get_ride_statuses(
 
 
 
-@router.get("/vehicles/{vehicle_id}/timeline", response_model=List[RideTimelineSchema])
+@router.get("/vehicles/{vehicle_id}/timeline")
 def get_vehicle_timeline(
     vehicle_id: UUID,
     from_date: date = Query(..., alias="from"),
     to_date: date = Query(..., alias="to"),
     db: Session = Depends(get_db),
 ):
-    start_dt = datetime.combine(from_date, time.min)
-    end_dt = datetime.combine(to_date, time.max)
+    vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="Vehicle not found")
+    
+    vehicle_info = {
+        "plate_number": vehicle.plate_number,
+        "vehicle_model": vehicle.vehicle_model,
+        "image_url": vehicle.image_url
+    }
+    
+    start_dt = datetime.combine(from_date, time.min)  
+    end_dt = datetime.combine(to_date, time.max)    
+    visible_statuses = ['approved', 'in_progress']
 
     rides = (
         db.query(
@@ -323,16 +366,19 @@ def get_vehicle_timeline(
         .join(User, Ride.user_id == User.employee_id)
         .filter(
             Ride.vehicle_id == vehicle_id,
-            Ride.start_datetime < end_dt,
-            Ride.end_datetime > start_dt,
-           
+            Ride.start_datetime < end_dt,  
+            Ride.end_datetime > start_dt,  
+            Ride.status.in_(visible_statuses) 
         )
         .all()
     )
 
-  
-    return [RideTimelineSchema(**dict(row._mapping)) for row in rides]
-
+    rides_data = [RideTimelineSchema(**dict(row._mapping)) for row in rides]
+    
+    return {
+        "vehicle_info": vehicle_info,
+        "rides": rides_data
+    }
    
 @router.get("/vehicles/inactive", response_model=List[VehicleOut])
 def return_inactive_vehicle(db: Session = Depends(get_db)):
@@ -400,7 +446,7 @@ def permanently_delete_vehicle(
         raise HTTPException(status_code=404, detail="Archived vehicle not found")
     
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user.employee_id)})
-
+    
     db.delete(vehicle)
     db.commit()
     db.execute(text("SET session.audit.user_id = DEFAULT"))

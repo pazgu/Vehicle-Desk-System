@@ -9,11 +9,16 @@ interface RenderableRide {
   status: string;
   first_name: string;
   last_name: string;
-  purpose: string;
   start_datetime: string;
   end_datetime: string;
   user_id: string;
   [key: string]: any;
+}
+
+interface VehicleInfo {
+  plate_number: string;
+  vehicle_model: string;
+  image_url: string;
 }
 
 @Component({
@@ -25,6 +30,7 @@ interface RenderableRide {
 })
 export class VehicleTimelineComponent implements OnInit, OnDestroy {
   vehicleId: string | null = null;
+  vehicleInfo: VehicleInfo | null = null;
   vehicleTimelineData: any[] = [];
   processedRides = new Map<string, RenderableRide[]>();
 
@@ -38,9 +44,6 @@ export class VehicleTimelineComponent implements OnInit, OnDestroy {
     { status: 'approved', color: '#a4d1ae', label: 'אושר' },
     { status: 'pending', color: '#f5e2a8', label: 'ממתין לאישור' },
     { status: 'in_progress', color: '#6aa5d6', label: 'בנסיעה' },
-    { status: 'rejected', color: '#f1b5b5', label: 'נדחה' },
-    { status: 'completed', color: '#b7dbf3', label: 'הושלם' },
-    { status: 'cancelled', color: '#bfb9b9', label: 'בוטל' },
   ];
 
   hoverCardVisible: boolean = false;
@@ -125,7 +128,7 @@ export class VehicleTimelineComponent implements OnInit, OnDestroy {
         );
       } else {
         initialDesiredDate = new Date(today);
-        console.log('📅 Defaulting to today’s week:', initialDesiredDate);
+        console.log("📅 Defaulting to today's week:", initialDesiredDate);
         window.scrollTo({ top: 0 });
       }
     }
@@ -255,14 +258,16 @@ export class VehicleTimelineComponent implements OnInit, OnDestroy {
     this.vehicleTimelineService
       .getVehicleTimeline(this.vehicleId, from, to)
       .subscribe({
-        next: (data) => {
-          console.log(' API response:', data);
-          this.vehicleTimelineData = data;
+        next: (data: any) => {
+          console.log('✅ API response:', data);
+          this.vehicleTimelineData = data.rides || [];
+          this.vehicleInfo = data.vehicle_info || null;
           this.processRidesForDisplay();
         },
         error: (err) => {
-          console.error(' Error loading vehicle timeline:', err);
+          console.error('❌ Error loading vehicle timeline:', err);
           this.vehicleTimelineData = [];
+          this.vehicleInfo = null;
           this.processRidesForDisplay();
         },
       });
@@ -303,7 +308,11 @@ export class VehicleTimelineComponent implements OnInit, OnDestroy {
           const startMinutes =
             blockStart.getHours() * 60 + blockStart.getMinutes();
           const endMinutes = blockEnd.getHours() * 60 + blockEnd.getMinutes();
-          let durationMinutes = Math.max(1, endMinutes - startMinutes);
+          let durationMinutes = endMinutes - startMinutes;
+
+          if (durationMinutes < 15) {
+            durationMinutes = 15;
+          }
 
           let baseTop = (startMinutes / 60) * this.HOUR_SLOT_HEIGHT;
           let baseHeight = (durationMinutes / 60) * this.HOUR_SLOT_HEIGHT;
@@ -331,7 +340,7 @@ export class VehicleTimelineComponent implements OnInit, OnDestroy {
         loopDay.setDate(loopDay.getDate() + 1);
       }
     }
-    console.log(' Finished processing rides:', this.processedRides);
+    console.log('✅ Finished processing rides:', this.processedRides);
   }
 
   private formatDateToYYYYMMDD(date: Date): string {
@@ -361,12 +370,6 @@ export class VehicleTimelineComponent implements OnInit, OnDestroy {
         return '#f5e2a8';
       case 'in_progress':
         return '#6aa5d6';
-      case 'rejected':
-        return '#f1b5b5';
-      case 'completed':
-        return '#b7dbf3';
-      case 'cancelled':
-        return '#bfb9b9';
       default:
         return '#90a4ae';
     }
@@ -452,9 +455,7 @@ export class VehicleTimelineComponent implements OnInit, OnDestroy {
       approved: 'אושר',
       pending: 'ממתין לאישור',
       in_progress: 'בנסיעה',
-      rejected: 'נדחה',
-      completed: 'הושלם',
-      cancelled: 'בוטל',
+
     };
     return statusMap[status?.toLowerCase()] || status;
   }
