@@ -31,27 +31,27 @@
 
           <div class="detail-item">
             <span class="detail-label">שם פרטי:</span>
-            <span class="detail-value">{{ user?.first_name }}</span>
+            <span class="detail-value">{{ user.first_name }}</span>
           </div>
 
           <div class="detail-item">
             <span class="detail-label">שם משפחה:</span>
-            <span class="detail-value">{{ user?.last_name }}</span>
+            <span class="detail-value">{{ user.last_name }}</span>
           </div>
 
           <div class="detail-item">
             <span class="detail-label">שם משתמש:</span>
-            <span class="detail-value">{{ user?.username }}</span>
+            <span class="detail-value">{{ user.username }}</span>
           </div>
 
           <div class="detail-item">
             <span class="detail-label">דוא"ל:</span>
-            <span class="detail-value">{{ user?.email }}</span>
+            <span class="detail-value">{{ user.email }}</span>
           </div>
 
           <div class="detail-item">
             <span class="detail-label">מספר טלפון:</span>
-            <span class="detail-value">{{ user?.phone || "לא זמין" }}</span>
+            <span class="detail-value">{{ user.phone || "לא זמין" }}</span>
           </div>
         </div>
 
@@ -63,7 +63,7 @@
 
           <div class="detail-item">
             <span class="detail-label">תפקיד:</span>
-            <span class="detail-value">{{ user?.role }}</span>
+            <span class="detail-value">{{ user.role }}</span>
           </div>
 
           <div class="detail-item">
@@ -83,16 +83,16 @@
             <span class="detail-value">
               <span
                 [ngClass]="{
-                  'license-yes': user?.has_government_license,
-                  'license-no': !user?.has_government_license
+                  'license-yes': user.has_government_license,
+                  'license-no': !user.has_government_license
                 }"
               >
-                {{ user?.has_government_license ? "יש" : "אין" }}
+                {{ user.has_government_license ? "יש" : "אין" }}
               </span>
             </span>
           </div>
 
-          <div class="detail-item" *ngIf="user?.license_file_url">
+          <div class="detail-item" *ngIf="user.license_file_url">
             <span class="detail-label">קובץ רישיון:</span>
             <span class="detail-value">
               <button class="view-license-btn" (click)="openLicenseInNewTab()">
@@ -132,16 +132,16 @@
           </div>
         </div>
 
-        <div *ngIf="user?.is_blocked" class="block-notice">
+        <div *ngIf="user.is_blocked" class="block-notice">
           <i class="pi pi-ban"></i>
           <div class="notice-content">
             <strong>משתמש חסום</strong>
-            <p *ngIf="user?.block_reason">
-              <span class="notice-label">סיבה:</span> {{ user?.block_reason }}
+            <p *ngIf="user.block_reason">
+              <span class="notice-label">סיבה:</span> {{ user.block_reason }}
             </p>
-            <p *ngIf="user?.block_expires_at">
+            <p *ngIf="user.block_expires_at">
               <span class="notice-label">תוקף עד:</span>
-              {{ user?.block_expires_at | date : "dd/MM/yyyy HH:mm" }}
+              {{ user.block_expires_at | date : "dd/MM/yyyy HH:mm" }}
             </p>
           </div>
         </div>

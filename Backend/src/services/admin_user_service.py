@@ -35,7 +35,8 @@ def create_user_by_admin(user_data: UserCreate, changed_by, db: Session):
         password=hash_password(user_data.password),
         has_government_license=user_data.has_government_license,
         license_file_url=user_data.license_file_url,
-        license_expiry_date= user_data.license_expiry_date
+        license_expiry_date= user_data.license_expiry_date,
+        isRaan=user_data.isRaan
     )
 
     try:
@@ -57,6 +58,7 @@ def create_user_by_admin(user_data: UserCreate, changed_by, db: Session):
             "department_id": new_user.department_id,
             "has_government_license": new_user.has_government_license,
             "license_file_url": new_user.license_file_url,
+            "isRaan": new_user.isRaan
         }
 
         return created_user

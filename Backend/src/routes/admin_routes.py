@@ -413,9 +413,8 @@ async def add_user_as_admin(
     has_government_license: bool = Form(...),
     license_file: UploadFile = File(None),
     db: Session = Depends(get_db),
-    license_expiry_date: Optional[str] = Form(None)
-
-
+    license_expiry_date: Optional[str] = Form(None),
+    isRaan: bool = Form(...)
 ):
     current_user = get_current_user(request)
     changed_by = current_user.employee_id
@@ -445,7 +444,8 @@ async def add_user_as_admin(
         password=password,
         has_government_license=has_government_license,
         license_file_url=license_file_url,
-        license_expiry_date= license_expiry_date
+        license_expiry_date= license_expiry_date,
+        isRaan=isRaan
     )
 
    
