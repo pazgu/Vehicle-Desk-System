@@ -84,10 +84,6 @@ FROM_CITY_NAME = os.getenv("FROM_CITY", "Unknown City")
 async def get_email_service(
     sio_server: Annotated[socketio.AsyncServer, Depends(lambda: sio)]
 ) -> EmailService:
-    """
-    Dependency injector for EmailService.
-    Ensures EmailService is initialized with the correct Socket.IO server instance.
-    """
     return EmailService(sio_server=sio_server)
 
 
@@ -320,7 +316,7 @@ def check_pending_rebook(db: Session = Depends(get_db), user: User = Depends(get
         .filter(
             Ride.user_id == user.employee_id,
             Ride.status == RideStatus.cancelled_vehicle_unavailable,
-            Ride.start_datetime > now  # Only future rides
+            Ride.start_datetime > now
         )
         .count()
     )
@@ -544,9 +540,6 @@ def get_notifications_for_user(user_id: UUID, db: Session = Depends(get_db)):
 
 @router.delete("/api/all-orders/{order_id}")
 async def delete_order(order_id: UUID, db: Session = Depends(get_db),current_user: User = Depends(get_current_user)):
-    """
-    Delete an order by its ID.
-    """
     try:
         db.execute(text('SET session "session.audit.user_id" = :user_id'), {"user_id": str(current_user.employee_id)})
         ride = db.query(Ride).filter(Ride.id == order_id).first()

@@ -176,7 +176,7 @@ async def retry_email(
                 "ride_id": str(ride_db_object.id),
                 "start_location": ride_db_object.start_location,
                 "destination": destination_name,
-                "cancellation_reason": "N/A", # Placeholder, retrieve actual reason if available
+                "cancellation_reason": "N/A",
             }
             
             email_sent_successfully = await email_service.send_ride_cancellation_email(
@@ -184,7 +184,7 @@ async def retry_email(
                 recipient_id=recipient_id,
                 db=db,
                 ride_details=ride_details_for_email,
-                cancellation_reason="N/A", # Placeholder, provide actual reason
+                cancellation_reason="N/A",
                 use_retries=True
             )
 

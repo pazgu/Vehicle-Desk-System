@@ -1,7 +1,7 @@
 <div class="status-legend">
   <h3 class="legend-title">מקרא סטטוסים:</h3>
   <div class="legend-items">
-    <div *ngFor="let item of statusLegend" class="legend-item">
+    <div *ngFor="let item of getFilteredLegend()" class="legend-item">
       <div
         class="legend-color"
         [ngStyle]="{ 'background-color': item.color }"

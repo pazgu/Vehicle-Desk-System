@@ -11,6 +11,7 @@ import {
 import { Vehicle } from '../models/vehicle.model';
 import { map } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { VehicleUsageStats } from '../models/vehicle-dashboard-item/vehicle-stats.module';
 
 @Injectable({
   providedIn: 'root',
@@ -62,6 +63,29 @@ export class VehicleService {
 
     return this.http.get<Vehicle[]>(
       `${environment.apiUrl}/all-vehicles-new-ride`,
+      { params }
+    );
+  }
+  getVehiclesForRideEdit(
+    distance: number,
+    rideDate: string,
+    vehicleType: string,
+    startTime: string,
+    endTime: string,
+    excludeRideId?: string
+  ): Observable<Vehicle[]> {
+    const params: any = {
+      distance_km: distance,
+      ride_date: rideDate,
+      type: vehicleType,
+      start_time: startTime,
+      end_time: endTime,
+    };
+    if (excludeRideId) {
+      params.exclude_ride_id = excludeRideId;
+    }
+    return this.http.get<Vehicle[]>(
+      `${environment.apiUrl}/vehicles-for-ride-edit`,
       { params }
     );
   }
@@ -209,6 +233,12 @@ export class VehicleService {
       `${this.apiUrl}/vehicles/${vehicleId}/mileage`,
       body
     );
+  }
+
+
+  
+  getCurrentMonthVehicleUsage(): Observable<VehicleUsageStats[]> {
+    return this.http.get<VehicleUsageStats[]>(`${this.apiUrl}/vehicle-usage-stats`);
   }
 
   addVehicle(vehicleData: any): Observable<any> {

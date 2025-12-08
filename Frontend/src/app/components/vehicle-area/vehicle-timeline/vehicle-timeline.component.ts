@@ -35,9 +35,9 @@ export class VehicleTimelineComponent implements OnInit, OnDestroy {
   private VERTICAL_GAP_PX = 4;
 
   statusLegend = [
-    { status: 'approved', color: '#a4d1ae', label: 'מאושר' },
-    { status: 'pending', color: '#f5e2a8', label: 'ממתין' },
-    { status: 'in_progress', color: '#6aa5d6', label: 'בביצוע' },
+    { status: 'approved', color: '#a4d1ae', label: 'אושר' },
+    { status: 'pending', color: '#f5e2a8', label: 'ממתין לאישור' },
+    { status: 'in_progress', color: '#6aa5d6', label: 'בנסיעה' },
     { status: 'rejected', color: '#f1b5b5', label: 'נדחה' },
     { status: 'completed', color: '#b7dbf3', label: 'הושלם' },
     { status: 'cancelled', color: '#bfb9b9', label: 'בוטל' },
@@ -268,8 +268,11 @@ export class VehicleTimelineComponent implements OnInit, OnDestroy {
       });
   }
 
+  getFilteredLegend() {
+  return this.statusLegend.filter(item => item.status !== 'pending');
+  }
+
   processRidesForDisplay(): void {
-    console.log('🔄 Processing rides for display');
 
     this.processedRides.clear();
     const daysInView = this.getDaysRange();
@@ -279,8 +282,9 @@ export class VehicleTimelineComponent implements OnInit, OnDestroy {
     });
 
     for (const ride of this.vehicleTimelineData) {
-      console.log('⏳ Processing ride:', ride);
-
+      if (ride.status == 'pending') {
+        continue;
+      } 
       const rideStart = new Date(ride.start_datetime);
       const rideEnd = new Date(ride.end_datetime);
 
@@ -445,9 +449,9 @@ export class VehicleTimelineComponent implements OnInit, OnDestroy {
 
   getStatusLabel(status: string): string {
     const statusMap: { [key: string]: string } = {
-      approved: 'מאושר',
+      approved: 'אושר',
       pending: 'ממתין לאישור',
-      in_progress: 'בביצוע',
+      in_progress: 'בנסיעה',
       rejected: 'נדחה',
       completed: 'הושלם',
       cancelled: 'בוטל',

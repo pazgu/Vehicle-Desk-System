@@ -21,5 +21,5 @@ class RideApproval(Base):
     role = Column(Enum(ApprovalRole), nullable=False)
     status = Column(Enum(ApprovalStatus), nullable=False)
     timestamp = Column(DateTime, nullable=False, default=datetime.utcnow)
-    severity = Column(String, nullable=True)  # Should match the DB check constraint
+    severity = Column(String, nullable=True)
     issue_description = Column(Text, nullable=True)
