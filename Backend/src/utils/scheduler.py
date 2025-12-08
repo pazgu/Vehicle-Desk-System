@@ -6,6 +6,7 @@ from datetime import datetime, time, timezone, timedelta, date
 
 
 import pytz
+from ..models.ride_requirements_confirmation import RideRequirementConfirmation
 from apscheduler.jobstores.base import JobLookupError
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -699,9 +700,75 @@ def periodic_check_unstarted_rides():
 #         db.close()
 
 # scheduler.add_job(check_and_schedule_ride_emails, 'interval', minutes=60)
+
+def periodic_delete_stale_rides():
+    future = asyncio.run_coroutine_threadsafe(
+        delete_stale_pending_or_rejected_rides(),
+        main_loop
+    )
+    try:
+        future.result(timeout=10)
+    except Exception as e:
+        print(f"Stale rides deletion failed: {e}")
+
+
 scheduler.add_job(check_and_complete_rides, 'interval', minutes=5)
 scheduler.add_job(periodic_check_overdue_rides, 'interval', minutes=10)
 scheduler.add_job(periodic_check_unblock_users, 'interval', minutes=1)
+scheduler.add_job(periodic_delete_stale_rides, 'interval', minutes=1)
+
+
+
+async def delete_stale_pending_or_rejected_rides():
+ 
+    db: Session = SessionLocal()
+    try:
+        israel_tz = pytz.timezone("Asia/Jerusalem")
+        now_il = datetime.now(israel_tz)
+        two_hours_ago = now_il - timedelta(hours=2)
+
+        rides_to_delete = db.query(Ride).filter(
+            and_(
+                Ride.status.in_(["pending", "rejected","cancelled_vehicle_unavailable"]),
+                Ride.start_datetime <= two_hours_ago
+            )
+        ).all()
+
+        if not rides_to_delete:
+            return
+
+        print("rides to d:",rides_to_delete)
+        for ride in rides_to_delete:
+
+            events = db.query(NoShowEvent).filter(
+                NoShowEvent.ride_id == ride.id
+            ).all()
+            for e in events:
+                db.delete(e)
+
+            notifications = db.query(Notification).filter(
+                Notification.order_id == ride.id
+            ).all()
+            for n in notifications:
+                db.delete(n)
+
+            confirmations = db.query(RideRequirementConfirmation).filter(
+                RideRequirementConfirmation.ride_id == ride.id
+            ).all()
+            for c in confirmations:
+                db.delete(c)
+
+            db.delete(ride)
+
+        db.commit()
+
+    except Exception as e:
+        db.rollback()
+        print("Error deleting old rides:", e)
+
+    finally:
+        db.close()
+
 
 
 def notify_admins_daily():
