@@ -351,7 +351,7 @@ def get_vehicle_timeline(
     
     start_dt = datetime.combine(from_date, time.min)  
     end_dt = datetime.combine(to_date, time.max)    
-    visible_statuses = ['approved', 'pending', 'in_progress']
+    visible_statuses = ['approved', 'in_progress']
 
     rides = (
         db.query(
