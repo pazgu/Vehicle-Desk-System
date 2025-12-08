@@ -42,6 +42,72 @@
   gap: 1.5rem;
 }
 
+.vehicle-info-card {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 20px 30px;
+  background: linear-gradient(145deg, #ffffff 0%, #fefefe 100%);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(148, 34, 34, 0.08);
+  margin-bottom: 20px;
+  border: 2px solid rgba(148, 34, 34, 0.1);
+  transition: all 0.3s ease;
+  max-width: 500px;
+}
+
+.vehicle-info-card:hover {
+  box-shadow: 0 6px 30px rgba(148, 34, 34, 0.12);
+  transform: translateY(-2px);
+}
+
+.vehicle-image {
+  width: 40%;
+  height: auto;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 2px solid rgba(148, 34, 34, 0.15);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.vehicle-image:hover {
+  transform: scale(1.05);
+}
+
+.vehicle-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.vehicle-plate,
+.vehicle-model {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(148, 34, 34, 0.03);
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+.vehicle-plate:hover,
+.vehicle-model:hover {
+  background: rgba(148, 34, 34, 0.06);
+}
+
+.vehicle-plate strong,
+.vehicle-model strong {
+  color: #942222;
+  font-weight: 700;
+  min-width: 80px;
+}
+
 .week-controls {
   position: relative;
   display: flex;
@@ -293,8 +359,8 @@
 
 .ride-block {
   position: absolute;
-  right: 10px;
-  left: 10px;
+  width: 90%;
+  left: 5%;
   border-radius: 12px;
   color: #000000;
   z-index: 5;
@@ -307,18 +373,6 @@
   font-size: 0.8rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   background: rgba(255, 255, 255, 0.95);
-  position: relative;
-}
-
-.timeline-hours {
-  position: relative;
-}
-.ride-block {
-  position: absolute;
-  width: 90%;
-  left: 5%;
-  border-radius: 4px;
-  cursor: pointer;
 }
 
 .ride-block:hover {
@@ -344,8 +398,7 @@
 
 .back-btn {
   position: absolute;
-  margin-top: 35px;
-  top: 60px;
+  top: 20px;
   left: 20px;
   width: 100px;
   height: 30px;
@@ -365,10 +418,6 @@
   transform: scale(1.03);
 }
 
-.back-btn:hover {
-  transform: scale(1.03);
-}
-
 .hover-card {
   position: fixed;
   z-index: 9999;
@@ -376,15 +425,27 @@
   max-width: calc(100vw - 48px);
   pointer-events: auto;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
-  background: #fff;
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 12px;
   overflow: hidden;
   transition: transform 0.12s ease;
+  border: 1px solid rgba(148, 34, 34, 0.1);
+  backdrop-filter: blur(10px);
 }
 
 @media (max-width: 720px) {
   .hover-card {
     width: calc(100vw - 48px);
+  }
+
+  .vehicle-info-card {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .vehicle-image {
+    width: 100%;
+    max-width: 200px;
   }
 }
 
@@ -398,6 +459,7 @@
   align-items: center;
   justify-content: center;
 }
+
 .hover-card-close {
   position: absolute;
   left: 10px;
@@ -422,40 +484,6 @@
   background: #942222;
   color: white;
   transform: translateY(-50%) scale(1.1);
-}
-
-.hover-card-content {
-  padding: 1rem 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.hover-card-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.hover-card-row:last-child {
-  border-bottom: none;
-}
-
-.hover-card-label {
-  font-weight: 600;
-  color: #666;
-  min-width: 80px;
-  text-align: right;
-}
-
-.hover-card-value {
-  color: #333;
-  font-size: 0.85rem;
-  text-align: left;
-  flex: 1;
 }
 
 .hover-card-title {
@@ -512,18 +540,6 @@
   font-style: italic;
 }
 
-.hover-card {
-  background: rgba(255, 255, 255, 0.98);
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-  border: 1px solid rgba(148, 34, 34, 0.1);
-  backdrop-filter: blur(10px);
-  min-width: 300px;
-  max-width: 350px;
-  overflow: hidden;
-  z-index: 1000;
-}
-
 .ride-hint {
   position: absolute;
   bottom: 0;
@@ -543,22 +559,4 @@
 .ride-block:hover .ride-hint {
   opacity: 1;
   visibility: visible;
-}
-
-.back-btn {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  width: 100px;
-  height: 30px;
-  color: #942222;
-  font-family: var(--font-family-alef);
-  font-size: 16px;
-  font-weight: bold;
-  padding: 1px 2px;
-  border: none;
-  border-radius: 20px;
-  cursor: pointer;
-  background: none;
-  transition: background-color 0.2s ease, transform 0.15s ease;
 }
