@@ -26,19 +26,21 @@ import { DepartmentDataComponent } from './components/admin-area/departments/dep
 import { EditRideComponent } from './ride-area/edit-ride/edit-ride.component';
 import { LoginRedirectGuard } from './components/auth-area/login-redirect/login-redirect.component';
 
-
 export const routes: Routes = [
-  { path: 'login', component: LoginComponent, canActivate: [LoginRedirectGuard] },
-  { path: 'register', component: RegisterComponent, canActivate: [LoginRedirectGuard] },
+  {
+    path: 'login',
+    component: LoginComponent,
+    canActivate: [LoginRedirectGuard],
+  },
+  {
+    path: 'register',
+    component: RegisterComponent,
+    canActivate: [LoginRedirectGuard],
+  },
 
   {
     path: 'home',
     component: NewRideComponent,
-    canActivate: [ProtectedRouteGuard],
-  },
-  {
-    path: 'new-ride',
-    component: AllRidesComponent,
     canActivate: [ProtectedRouteGuard],
   },
   {
@@ -47,11 +49,7 @@ export const routes: Routes = [
     canActivate: [ProtectedRouteGuard],
   },
 
-  //   {
-  //   path: 'ride/edit/:id',
-  //   loadComponent: () => import('./ride-area/edit-ride/edit-ride.component').then(m => m.EditRideComponent),
-  //   canActivate: [ProtectedRouteGuard]
-  // },
+
   {
     path: 'ride/edit/:id',
     component: EditRideComponent,
@@ -78,12 +76,12 @@ export const routes: Routes = [
     path: 'user-data-edit/:user_id',
     component: UserDataEditComponent,
     canActivate: [ProtectedRouteGuard],
-  }, // Moved lower
+  },
   {
     path: 'user-card/:user_id',
     component: UserCardComponent,
     canActivate: [ProtectedRouteGuard],
-  }, // Moved lower
+  },
   {
     path: 'user-data',
     component: UserDataComponent,
@@ -186,7 +184,7 @@ export const routes: Routes = [
       import(
         './components/admin-area/users/add-new-user/add-new-user.component'
       ).then((m) => m.AddNewUserComponent),
-    canActivate: [ProtectedRouteGuard], // assuming this is your existing guard
+    canActivate: [ProtectedRouteGuard], 
   },
 
   { path: '**', component: Page404Component },

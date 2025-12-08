@@ -12,6 +12,11 @@ import { SocketService } from '../../../services/socket.service';
 import { ToastService } from '../../../services/toast.service';
 import { ChangeDetectorRef } from '@angular/core';
 import { Location } from '@angular/common';
+import { Dialog } from '@angular/cdk/dialog';
+import { RideDetailsComponent } from '../../../ride-area/ride-details/ride-details.component';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { Inject } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-notifications',
@@ -31,7 +36,8 @@ export class NotificationsComponent implements OnInit {
     private toastService: ToastService,
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private location: Location
+    private location: Location,
+    private dialog: MatDialog
   ) {}
   goBack(): void {
     this.location.back();
@@ -45,7 +51,7 @@ export class NotificationsComponent implements OnInit {
       },
       error: (err) => {
         console.error('Failed to mark notifications as seen:', err);
-      }
+      },
     });
 
     const role = localStorage.getItem('role');
@@ -86,8 +92,6 @@ export class NotificationsComponent implements OnInit {
               const audio = new Audio('assets/sounds/notif.mp3');
               audio.play();
             }
-
-           
           }
         }
       });
@@ -123,8 +127,6 @@ export class NotificationsComponent implements OnInit {
                 const audio = new Audio('assets/sounds/notif.mp3');
                 audio.play();
               }
-
-            
             }
           });
         }
@@ -146,57 +148,54 @@ export class NotificationsComponent implements OnInit {
       });
     }
     this.socketService.notifications$.subscribe((newNotif) => {
-  if (newNotif && newNotif.user_id == userId) {
-    const notifWithTimeAgo = {
-      ...newNotif,
-      timeAgo: formatDistanceToNow(new Date(newNotif.sent_at), {
-        addSuffix: true,
-        locale: he,
-      }),
-    };
+      if (newNotif && newNotif.user_id == userId) {
+        const notifWithTimeAgo = {
+          ...newNotif,
+          timeAgo: formatDistanceToNow(new Date(newNotif.sent_at), {
+            addSuffix: true,
+            locale: he,
+          }),
+        };
 
-    this.notifications = [notifWithTimeAgo, ...this.notifications];
-    this.cdr.detectChanges();
+        this.notifications = [notifWithTimeAgo, ...this.notifications];
+        this.cdr.detectChanges();
 
-    if (this.router.url != '/notifications') {
-      // special case: reservation cancelled due to vehicle freeze
-      if (this.isVehicleFreezeCancellation(newNotif)) {
-        this.toastService.show(
-          'הנסיעה שלך בוטלה כי הרכב יצא משימוש (תקלת מוסך / תאונה). אנא הזמן/י נסיעה חדשה.',
-          'error'
-        );
-        return;
+        if (this.router.url != '/notifications') {
+          if (this.isVehicleFreezeCancellation(newNotif)) {
+            this.toastService.show(
+              'הנסיעה שלך בוטלה כי הרכב יצא משימוש (תקלת מוסך / תאונה). אנא הזמן/י נסיעה חדשה.',
+              'error'
+            );
+            return;
+          }
+
+          if (
+            newNotif.message?.includes('בעיה חמורה') ||
+            newNotif.notification_type === 'critical'
+          ) {
+            const audio = new Audio('assets/sounds/notif.mp3');
+            audio.play();
+          }
+
+          if (newNotif.message?.includes('נדחתה')) {
+            this.toastService.show(newNotif.message, 'error');
+          } else {
+            this.toastService.show(newNotif.message || '', 'success');
+          }
+        }
       }
-
-      if (
-        newNotif.message?.includes('בעיה חמורה') ||
-        newNotif.notification_type === 'critical'
-      ) {
-        const audio = new Audio('assets/sounds/notif.mp3');
-        audio.play();
-      }
-
-      if (newNotif.message?.includes('נדחתה')) {
-        this.toastService.show(newNotif.message, 'error');
-      } else {
-        this.toastService.show(newNotif.message || '', 'success');
-      }
-    }
-  }
-});
-
+    });
   }
 
   goToOrder(orderId: string): void {
-  const role = localStorage.getItem('role');
+    const role = localStorage.getItem('role');
 
-  if (role === 'supervisor') {
-    this.router.navigate([`/order-card/${orderId}`]);
-  } else {
-    this.router.navigate([`/ride/details/${orderId}`]);
+    if (role === 'supervisor') {
+      this.router.navigate([`/order-card/${orderId}`]);
+    } else {
+      this.router.navigate([`/ride/details/${orderId}`]);
+    }
   }
-}
-
 
   goToVehicle(vehicleId: string): void {
     this.router.navigate([`/vehicle-details/${vehicleId}`]);
@@ -225,10 +224,13 @@ export class NotificationsComponent implements OnInit {
     }
   }
 
-    translateMessage(message: string): string {
+  translateMessage(message: string): string {
     const lower = message.toLowerCase();
 
-    if (lower.includes('vehicle unavailable due to technical issues') || lower.includes('בוטלה עקב תקלה ברכב')) {
+    if (
+      lower.includes('vehicle unavailable due to technical issues') ||
+      lower.includes('בוטלה עקב תקלה ברכב')
+    ) {
       return 'ההזמנה שלך בוטלה כי הרכב הוקפא בעקבות תקלה. אנא הזמן/י נסיעה חדשה עם רכב אחר.';
     } else if (lower.includes('נשלחה בהצלחה')) {
       return 'ההזמנה שלך נשלחה בהצלחה. תקבל/י התראה לאחר הבדיקה והאישור.';
@@ -273,47 +275,48 @@ export class NotificationsComponent implements OnInit {
     }
   }
 
-    handleNotificationClick(notif: MyNotification): void {
-    const role = localStorage.getItem('role');
+ handleNotificationClick(notif: MyNotification): void {
+  const role = localStorage.getItem('role');
+
+  if (notif.order_id) {
+    const dialogRef = this.dialog.open(RideDetailsComponent, {
+      width: '500px',
+      data: { rideId: notif.order_id },
+    });
+
+    dialogRef.afterClosed().subscribe(() => {
+      this.notifications = [...this.notifications];
+      this.cdr.detectChanges();
+    });
 
     if (!notif.seen) {
       this.notificationService.markNotificationAsSeen(notif.id).subscribe({
         next: () => {
-          notif.seen = true;
+          setTimeout(() => {
+            notif.seen = true;
+            this.notifications = [...this.notifications];
+            this.cdr.detectChanges(); 
+          });
         },
-        error: (err) => {
-          console.error('Failed to mark notification as seen:', err);
-        }
+        error: (err) => console.error('Failed to mark notification as seen:', err),
       });
     }
-
-    // Vehicle freeze → go to "הנסיעות שלי" (My Reservations)
-    if (this.isVehicleFreezeCancellation(notif)) {
-      this.router.navigate(['/all-rides'], {
-        queryParams: {
-          mode: 'future',      
-          highlight: notif.order_id 
-        },
-      });
-      return;
-    }
-
-    if (role != 'admin' && notif.message.includes('לא הוחזר בזמן')) {
-      return;
-    }
-
-    if (role === 'admin' && notif.message.includes('בעיה חמורה')) {
-      this.router.navigate(['/admin/critical-issues'], {
-        queryParams: { highlight: '1' },
-      });
-    } else if (notif.order_id) {
-      this.goToOrder(notif.order_id);
-    } else if (notif.vehicle_id) {
-      this.goToVehicle(notif.vehicle_id);
-    }
+    
+    return;
   }
 
-
+  if (this.isVehicleFreezeCancellation(notif)) {
+    this.router.navigate(['/all-rides'], {
+      queryParams: { mode: 'future', highlight: notif.order_id },
+    });
+  } else if (role === 'admin' && notif.message.includes('בעיה חמורה')) {
+    this.router.navigate(['/admin/critical-issues'], {
+      queryParams: { highlight: '1' },
+    });
+  } else if (notif.vehicle_id) { 
+    this.goToVehicle(notif.vehicle_id);
+  }
+}
   getLeaseAlerts(title: string): string {
     return title == 'Vehicle Lease Expiry' ? 'lease-alert' : '';
   }
@@ -326,16 +329,14 @@ export class NotificationsComponent implements OnInit {
   }
 
   isVehicleFreezeCancellation(notif: MyNotification): boolean {
-  const type = (notif as any).notification_type?.toLowerCase?.() || '';
-  const msg = notif.message?.toLowerCase?.() || '';
+    const type = (notif as any).notification_type?.toLowerCase?.() || '';
+    const msg = notif.message?.toLowerCase?.() || '';
 
-  return (
-    type === 'reservation_vehicle_frozen' ||
-    type === 'ride_cancelled_vehicle_freeze' ||
-    msg.includes('vehicle unavailable due to technical issues') ||
-    msg.includes('בוטלה עקב תקלה ברכב')
-  );
-}
-
-
+    return (
+      type === 'reservation_vehicle_frozen' ||
+      type === 'ride_cancelled_vehicle_freeze' ||
+      msg.includes('vehicle unavailable due to technical issues') ||
+      msg.includes('בוטלה עקב תקלה ברכב')
+    );
+  }
 }

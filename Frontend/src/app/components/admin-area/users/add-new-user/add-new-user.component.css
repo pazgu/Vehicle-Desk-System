@@ -4,7 +4,7 @@
   display: block;
   min-height: 100vh;
   background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
 }
 
 .wrapper {
@@ -98,7 +98,7 @@
   border-radius: 8px;
   border: 2px solid #e5e7eb;
   background-color: #f9fafb;
-  font-family: 'Assistant', sans-serif;
+  font-family: "Assistant", sans-serif;
   font-size: 1rem;
   direction: rtl;
   text-align: right;
@@ -151,7 +151,7 @@
   border-radius: 8px;
   font-size: 1rem;
   direction: rtl;
-  font-family: 'Assistant', sans-serif;
+  font-family: "Assistant", sans-serif;
   transition: all 0.3s ease;
   color: #1f2937;
 }
@@ -319,7 +319,7 @@ input:checked + .slider::after {
   font-weight: 600;
   white-space: nowrap;
   transition: all 0.3s ease;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
 }
 
 .choose-file-btn:hover {
@@ -345,7 +345,7 @@ input:checked + .slider::after {
   cursor: pointer;
   font-size: 1.1rem;
   font-weight: 600;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   transition: all 0.3s ease;
   min-width: 200px;
   box-shadow: 0 4px 8px rgba(148, 34, 34, 0.3);
@@ -488,5 +488,6 @@ input:checked + .slider::after {
 }
 
 * {
-  transition: border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+  transition: border-color 0.3s ease, background-color 0.3s ease,
+    box-shadow 0.3s ease;
 }

@@ -66,41 +66,41 @@ export class UserOrdersExportComponent implements OnInit {
       const users = (await this.userService.getAllUsers().toPromise()) || [];
 
       const year = this.selectedYear;
-      const month = this.viewMode === 'monthly' ? parseInt(this.selectedMonth) : undefined;
-      
-      const userOrdersPromises = users.map(async (user: any) => {
-        const rides = await this.myRidesService.getAllOrders(user.employee_id).toPromise();
+      const month =
+        this.viewMode === 'monthly' ? parseInt(this.selectedMonth) : undefined;
 
-       
+      const userOrdersPromises = users.map(async (user: any) => {
+        const rides = await this.myRidesService
+          .getAllOrders(user.employee_id)
+          .toPromise();
 
         const filtered = rides.filter((ride: any) => {
-          // Check status (try different possible field names and values)
-          const status = ride.status || ride.Status || ride.ride_status || ride.orderStatus;
-          const isCompleted = status && (
-            status.toLowerCase() === 'completed' || 
-            status.toLowerCase() === 'complete' ||
-            status.toLowerCase() === 'הושלם' ||
-            status === 'completed'
-          );
-          
+          const status =
+            ride.status || ride.Status || ride.ride_status || ride.orderStatus;
+          const isCompleted =
+            status &&
+            (status.toLowerCase() === 'completed' ||
+              status.toLowerCase() === 'complete' ||
+              status.toLowerCase() === 'הושלם' ||
+              status === 'completed');
+
           if (!isCompleted) {
             return false;
           }
-          
-          const dateValue = ride.start_datetime || ride.end_datetime || ride.submitted_at;
-if (!dateValue) {
-  return false;
-}
 
-          
+          const dateValue =
+            ride.start_datetime || ride.end_datetime || ride.submitted_at;
+          if (!dateValue) {
+            return false;
+          }
+
           const d = new Date(dateValue);
           const matchesYear = d.getFullYear() === year;
           const matchesMonth = !month || d.getMonth() + 1 === month;
-                  
+
           return matchesYear && matchesMonth;
         });
 
-    
         return {
           username: user.username || 'N/A',
           email: user.email || 'N/A',
@@ -120,7 +120,9 @@ if (!dateValue) {
   applySorting() {
     switch (this.sortOption) {
       case 'name_asc':
-        this.userOrders.sort((a, b) => a.username.localeCompare(b.username, 'he'));
+        this.userOrders.sort((a, b) =>
+          a.username.localeCompare(b.username, 'he')
+        );
         break;
       case 'orders_desc':
         this.userOrders.sort((a, b) => b.completedOrders - a.completedOrders);

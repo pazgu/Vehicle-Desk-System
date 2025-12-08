@@ -4,7 +4,7 @@ import {
   HttpRequest,
   HttpHandler,
   HttpEvent,
-  HttpErrorResponse
+  HttpErrorResponse,
 } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -14,13 +14,19 @@ import { AuthService } from '../services/auth.service';
 import { ToastService } from '../services/toast.service';
 
 @Injectable({
-  providedIn: 'root' // Important for DI to pick it up
+  providedIn: 'root',
 })
 export class AuthInterceptor implements HttpInterceptor {
-  constructor(private router: Router,private authService:AuthService,  private toastService: ToastService
-) {}
+  constructor(
+    private router: Router,
+    private authService: AuthService,
+    private toastService: ToastService
+  ) {}
 
-  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+  intercept(
+    req: HttpRequest<any>,
+    next: HttpHandler
+  ): Observable<HttpEvent<any>> {
     const token = localStorage.getItem('access_token');
 
     const authReq = token
@@ -31,17 +37,20 @@ export class AuthInterceptor implements HttpInterceptor {
 
     return next.handle(authReq).pipe(
       catchError((err: HttpErrorResponse) => {
-        console.log('Caught in interceptor:', err); 
+        console.log('Caught in interceptor:', err);
 
         if (isEmailOp && err.status === 422) {
           return throwError(() => err);
         }
 
-          if (err.status === 401 && err.error?.detail === 'Invalid token') {
+        if (err.status === 401 && err.error?.detail === 'Invalid token') {
           localStorage.clear();
           this.authService.setFullName('משתמש', '');
           this.authService.logout();
-          this.toastService.show('הסתיים תוקף ההתחברות שלך. התחבר מחדש', 'error'); 
+          this.toastService.show(
+            'הסתיים תוקף ההתחברות שלך. התחבר מחדש',
+            'error'
+          );
           this.router.navigate(['/login']);
         } else if (err.status === 403) {
           this.toastService.show('אין לך הרשאות לגשת למשאב זה.', 'error');
@@ -58,4 +67,3 @@ export const authInterceptorProvider = {
   useClass: AuthInterceptor,
   multi: true,
 };
-

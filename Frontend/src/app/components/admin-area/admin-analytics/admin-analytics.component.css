@@ -1,11 +1,11 @@
-
 *,
 *::before,
 *::after {
-  box-sizing: border-box;        
+  box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   background: white;
   margin: 0;
   padding: 0;
@@ -17,11 +17,11 @@ html, body {
 :host {
   display: block;
   min-height: 100vh;
-  background-image: url('/assets/images/vehicle-dashboard-bg.png'); 
+  background-image: url("/assets/images/vehicle-dashboard-bg.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-attachment: fixed; 
+  background-attachment: fixed;
 }
 
 .analytics-container {
@@ -29,12 +29,12 @@ html, body {
   margin: 0 auto;
   padding: 0.5rem;
   min-height: 100vh;
-  background: rgba(255,250,245,255);
+  background: rgba(255, 250, 245, 255);
   position: relative;
   z-index: 1;
 }
 body {
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   background: white;
   min-height: 100vh;
   margin: 0;
@@ -48,21 +48,19 @@ body {
   padding: 0.75rem 1rem;
   margin: 0.5rem auto;
   max-width: 75%;
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.06),
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06),
     0 1px 0px rgba(255, 255, 255, 0.2) inset;
   border: 1px solid rgba(255, 255, 255, 0.15);
   position: relative;
   overflow: hidden;
   transition: all 0.3s ease-in-out;
   direction: rtl;
-    max-width: 1000px;
+  max-width: 1000px;
   width: 100%;
-
 }
 
 .chart-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -73,8 +71,12 @@ body {
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 .export-buttons {
@@ -95,24 +97,28 @@ body {
   cursor: pointer;
   font-size: 0.9rem;
   font-weight: 700;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
   min-width: 120px;
-  box-shadow: 
-    0 3px 10px rgba(148, 34, 34, 0.08),
+  box-shadow: 0 3px 10px rgba(148, 34, 34, 0.08),
     0 1px 0 rgba(255, 255, 255, 0.9) inset;
 }
 
 .export-buttons button::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
   transition: left 0.5s ease;
 }
 
@@ -125,8 +131,7 @@ body {
   color: #ffffff;
   border-color: #942222;
   transform: translateY(-2px);
-  box-shadow: 
-    0 6px 20px rgba(148, 34, 34, 0.25),
+  box-shadow: 0 6px 20px rgba(148, 34, 34, 0.25),
     0 1px 0 rgba(255, 255, 255, 0.2) inset;
 }
 
@@ -154,7 +159,7 @@ body {
   padding: 0.75rem 1.5rem;
   font-size: 0.9rem;
   font-weight: 600;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   border: none;
   border-radius: 12px;
   background: transparent;
@@ -168,7 +173,7 @@ body {
 }
 
 .tab-buttons button::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -188,8 +193,7 @@ body {
 .tab-buttons button.active {
   color: white !important;
   background: linear-gradient(145deg, #660000, #880000);
-  box-shadow: 
-    0 4px 15px rgba(0, 51, 102, 0.25),
+  box-shadow: 0 4px 15px rgba(0, 51, 102, 0.25),
     0 1px 0 rgba(255, 255, 255, 0.2) inset;
   transform: translateY(-1px);
   position: relative;
@@ -204,7 +208,7 @@ body {
 }
 
 .tab-buttons button.active i {
-  color: inherit
+  color: inherit;
 }
 
 .tab-buttons button span {
@@ -227,9 +231,8 @@ body {
   overflow: hidden;
 }
 
-
 .section-heading {
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   font-size: 1.1rem;
   font-weight: 800;
   background: linear-gradient(135deg, #942222, #c53030);
@@ -244,7 +247,7 @@ body {
 }
 
 .section-heading::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -6px;
   left: 50%;
@@ -259,12 +262,12 @@ body {
   .analytics-container {
     padding: 1rem;
   }
-  
+
   .chart-card {
     padding: 1rem;
     max-width: 95%;
   }
-  
+
   .section-heading {
     font-size: 1.3rem;
   }
@@ -274,66 +277,66 @@ body {
   .analytics-container {
     padding: 0.75rem;
   }
-  
+
   .chart-card {
     padding: 1rem;
     border-radius: 14px;
     max-width: 98%;
   }
-  
+
   .section-heading {
     font-size: 1.2rem;
   }
-  
+
   .sort-container,
   .date-filter-container {
     flex-direction: column;
     gap: 0.75rem;
     max-width: 95%;
   }
-  
+
   .export-buttons {
     flex-direction: column;
     align-items: center;
     gap: 0.5rem;
   }
-  
+
   .export-buttons button {
     width: 90%;
     max-width: 200px;
   }
-  
+
   .tab-buttons {
     flex-direction: column;
     gap: 0.25rem;
     max-width: 95%;
   }
-  
+
   .tab-buttons button {
     width: 100%;
   }
-  
+
   .usage-legend {
     flex-direction: column;
     gap: 0.75rem;
     align-items: center;
     max-width: 95%;
   }
-  
+
   .filter-button,
   .toggle-view-button {
     width: 90%;
     max-width: 200px;
   }
-  
+
   .chart-container {
     height: 250px;
   }
-  
+
   .p-chart {
     height: 240px !important;
   }
-  
+
   .p-chart canvas {
     max-height: 240px !important;
     height: 240px !important;
@@ -345,11 +348,11 @@ body {
     padding: 0.75rem;
     margin: 0.5rem auto;
   }
-  
+
   .section-heading {
     font-size: 1.1rem;
   }
-  
+
   .sort-container select,
   .date-filter-container select {
     min-width: 100%;
@@ -359,11 +362,11 @@ body {
     height: 160px;
     padding: 0.1rem;
   }
-  
+
   .p-chart {
     height: 150px !important;
   }
-  
+
   .p-chart canvas {
     max-height: 150px !important;
     height: 150px !important;
@@ -399,7 +402,7 @@ body {
 }
 
 .chart-loading::after {
-  content: '';
+  content: "";
   width: 30px;
   height: 30px;
   border: 3px solid rgba(102, 126, 234, 0.3);
@@ -409,10 +412,13 @@ body {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
-
 
 .no-data-state {
   display: flex;
@@ -420,7 +426,11 @@ body {
   align-items: center;
   justify-content: center;
   padding: 4rem 2rem;
-  background: linear-gradient(135deg, rgba(148, 34, 34, 0.05), rgba(248, 250, 252, 0.8));
+  background: linear-gradient(
+    135deg,
+    rgba(148, 34, 34, 0.05),
+    rgba(248, 250, 252, 0.8)
+  );
   border-radius: 20px;
   margin: 2rem 0;
   backdrop-filter: blur(10px);
@@ -438,14 +448,13 @@ body {
 }
 
 .no-data-message {
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   font-size: 1.2rem;
   font-weight: 600;
   color: #4a5568;
   text-align: center;
   margin: 20px;
 }
-
 
 .export-warning {
   color: #b71c1c;
@@ -478,25 +487,26 @@ body {
     padding: 0;
     margin: 0;
   }
-
-  
 }
 .export-disclaimer {
   display: block;
   margin: 0.75rem auto 1.5rem auto;
   padding: 0.6rem 1.2rem;
-  background: linear-gradient(135deg, rgba(148, 34, 34, 0.08), rgba(185, 28, 28, 0.05));
+  background: linear-gradient(
+    135deg,
+    rgba(148, 34, 34, 0.08),
+    rgba(185, 28, 28, 0.05)
+  );
   border: 1px solid rgba(148, 34, 34, 0.2);
   border-radius: 8px;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   font-size: 0.85rem;
   font-weight: 600;
   color: #942222;
   text-align: center;
   position: relative;
   backdrop-filter: blur(5px);
-  box-shadow: 
-    0 2px 8px rgba(148, 34, 34, 0.1),
+  box-shadow: 0 2px 8px rgba(148, 34, 34, 0.1),
     0 1px 0 rgba(255, 255, 255, 0.3) inset;
   transition: all 0.3s ease;
   direction: rtl;
@@ -510,17 +520,22 @@ body {
 
 .export-disclaimer::after {
   content: "\e90a";
-  font-family: 'PrimeIcons';
+  font-family: "PrimeIcons";
   margin-left: 0.5rem;
+  margin-right: 0.5rem;
+  margin-top: 0.3rem;
   font-size: 0.9rem;
 }
 
 .export-disclaimer:hover {
-  background: linear-gradient(135deg, rgba(148, 34, 34, 0.12), rgba(185, 28, 28, 0.08));
+  background: linear-gradient(
+    135deg,
+    rgba(148, 34, 34, 0.12),
+    rgba(185, 28, 28, 0.08)
+  );
   border-color: rgba(148, 34, 34, 0.3);
   transform: translateY(-1px);
-  box-shadow: 
-    0 4px 12px rgba(148, 34, 34, 0.15),
+  box-shadow: 0 4px 12px rgba(148, 34, 34, 0.15),
     0 1px 0 rgba(255, 255, 255, 0.4) inset;
 }
 
@@ -530,22 +545,20 @@ body {
   font-weight: 700;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
   border: 2px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 
-    0 4px 15px rgba(148, 34, 34, 0.25),
+  box-shadow: 0 4px 15px rgba(148, 34, 34, 0.25),
     0 1px 0 rgba(255, 255, 255, 0.2) inset;
 }
 
 .export-disclaimer.bold-version::before {
   content: "\e91b";
-  font-family: 'PrimeIcons';
+  font-family: "PrimeIcons";
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
 }
 
 .export-disclaimer.bold-version:hover {
   background: linear-gradient(135deg, #7f1d1d, #991b1b);
   transform: translateY(-2px);
-  box-shadow: 
-    0 6px 20px rgba(148, 34, 34, 0.35),
+  box-shadow: 0 6px 20px rgba(148, 34, 34, 0.35),
     0 1px 0 rgba(255, 255, 255, 0.3) inset;
 }
 
@@ -554,14 +567,13 @@ body {
 }
 
 @keyframes subtlePulse {
-  0%, 100% { 
-    box-shadow: 
-      0 2px 8px rgba(148, 34, 34, 0.1),
+  0%,
+  100% {
+    box-shadow: 0 2px 8px rgba(148, 34, 34, 0.1),
       0 1px 0 rgba(255, 255, 255, 0.3) inset;
   }
-  50% { 
-    box-shadow: 
-      0 4px 15px rgba(148, 34, 34, 0.2),
+  50% {
+    box-shadow: 0 4px 15px rgba(148, 34, 34, 0.2),
       0 1px 0 rgba(255, 255, 255, 0.4) inset;
   }
 }
@@ -584,14 +596,17 @@ body {
 }
 
 .ride-start-filters {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9));
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.95),
+    rgba(248, 250, 252, 0.9)
+  );
   border-radius: 12px;
   padding: 1rem;
   margin: 1rem auto;
   max-width: 85%;
   border: 2px solid rgba(148, 34, 34, 0.1);
-  box-shadow: 
-    0 4px 15px rgba(148, 34, 34, 0.08),
+  box-shadow: 0 4px 15px rgba(148, 34, 34, 0.08),
     0 1px 0 rgba(255, 255, 255, 0.5) inset;
   backdrop-filter: blur(10px);
   direction: rtl;
@@ -615,7 +630,7 @@ body {
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   font-weight: 600;
   font-size: 0.9rem;
   color: #4a5568;
@@ -625,13 +640,18 @@ body {
 }
 
 .filter-mode-toggle label::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(148, 34, 34, 0.05), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(148, 34, 34, 0.05),
+    transparent
+  );
   transition: left 0.5s ease;
 }
 
@@ -661,8 +681,7 @@ body {
   background: linear-gradient(135deg, #942222, #b91c1c);
   color: white;
   border-color: #942222;
-  box-shadow: 
-    0 4px 12px rgba(148, 34, 34, 0.25),
+  box-shadow: 0 4px 12px rgba(148, 34, 34, 0.25),
     0 1px 0 rgba(255, 255, 255, 0.2) inset;
 }
 
@@ -681,7 +700,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   font-weight: 600;
   color: #2d3748;
   font-size: 0.9rem;
@@ -691,7 +710,7 @@ body {
   padding: 0.5rem 2rem 0.5rem 0.75rem;
   border: 2px solid rgba(148, 34, 34, 0.2);
   border-radius: 8px;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   font-size: 0.85rem;
   background: white;
   color: #2d3748;
@@ -721,7 +740,7 @@ body {
   color: white;
   border: none;
   border-radius: 8px;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   font-weight: 700;
   font-size: 0.85rem;
   cursor: pointer;
@@ -754,7 +773,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   font-weight: 600;
   color: #2d3748;
   font-size: 0.9rem;
@@ -764,7 +783,7 @@ body {
   padding: 0.5rem 2rem 0.5rem 0.75rem;
   border: 2px solid rgba(148, 34, 34, 0.2);
   border-radius: 8px;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   font-size: 0.85rem;
   background: white;
   color: #2d3748;
@@ -794,7 +813,7 @@ body {
   color: white;
   border: none;
   border-radius: 8px;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   font-weight: 700;
   font-size: 0.85rem;
   cursor: pointer;
@@ -826,7 +845,7 @@ body {
   justify-content: center;
   align-items: center;
   padding: 3rem;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   font-size: 1.1rem;
   font-weight: 600;
   color: #942222;
@@ -836,7 +855,7 @@ body {
 }
 
 .loading-state::after {
-  content: '';
+  content: "";
   position: absolute;
   width: 30px;
   height: 30px;
@@ -933,22 +952,23 @@ body {
   }
 }
 
-/* Ride Start Time Filters Container */
 .ride-start-filters {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9));
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.95),
+    rgba(248, 250, 252, 0.9)
+  );
   border-radius: 12px;
   padding: 1rem;
   margin: 1rem auto;
   max-width: 85%;
   border: 2px solid rgba(148, 34, 34, 0.1);
-  box-shadow: 
-    0 4px 15px rgba(148, 34, 34, 0.08),
+  box-shadow: 0 4px 15px rgba(148, 34, 34, 0.08),
     0 1px 0 rgba(255, 255, 255, 0.5) inset;
   backdrop-filter: blur(10px);
   direction: rtl;
 }
 
-/* Filter Mode Toggle (Radio Buttons) */
 .filter-mode-toggle {
   display: flex;
   flex-direction: column;
@@ -967,7 +987,7 @@ body {
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   font-weight: 600;
   font-size: 0.9rem;
   color: #4a5568;
@@ -977,13 +997,18 @@ body {
 }
 
 .filter-mode-toggle label::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(148, 34, 34, 0.05), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(148, 34, 34, 0.05),
+    transparent
+  );
   transition: left 0.5s ease;
 }
 
@@ -1013,12 +1038,10 @@ body {
   background: linear-gradient(135deg, #942222, #b91c1c);
   color: white;
   border-color: #942222;
-  box-shadow: 
-    0 4px 12px rgba(148, 34, 34, 0.25),
+  box-shadow: 0 4px 12px rgba(148, 34, 34, 0.25),
     0 1px 0 rgba(255, 255, 255, 0.2) inset;
 }
 
-/* Single Month Filter */
 .single-month-filter {
   display: flex;
   flex-wrap: wrap;
@@ -1034,7 +1057,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   font-weight: 600;
   color: #2d3748;
   font-size: 0.9rem;
@@ -1044,7 +1067,7 @@ body {
   padding: 0.5rem 2rem 0.5rem 0.75rem;
   border: 2px solid rgba(148, 34, 34, 0.2);
   border-radius: 8px;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   font-size: 0.85rem;
   background: white;
   color: #2d3748;
@@ -1074,7 +1097,7 @@ body {
   color: white;
   border: none;
   border-radius: 8px;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   font-weight: 700;
   font-size: 0.85rem;
   cursor: pointer;
@@ -1092,7 +1115,6 @@ body {
   transform: translateY(0);
 }
 
-/* Range Filter */
 .range-filter {
   display: flex;
   flex-wrap: wrap;
@@ -1108,7 +1130,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   font-weight: 600;
   color: #2d3748;
   font-size: 0.9rem;
@@ -1118,7 +1140,7 @@ body {
   padding: 0.5rem 2rem 0.5rem 0.75rem;
   border: 2px solid rgba(148, 34, 34, 0.2);
   border-radius: 8px;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   font-size: 0.85rem;
   background: white;
   color: #2d3748;
@@ -1148,7 +1170,7 @@ body {
   color: white;
   border: none;
   border-radius: 8px;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   font-weight: 700;
   font-size: 0.85rem;
   cursor: pointer;
@@ -1166,7 +1188,6 @@ body {
   transform: translateY(0);
 }
 
-/* Chart Wrapper */
 .ride-start-chart-wrapper {
   margin-top: 1.5rem;
   padding: 1rem;
@@ -1181,7 +1202,7 @@ body {
   justify-content: center;
   align-items: center;
   padding: 3rem;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   font-size: 1.1rem;
   font-weight: 600;
   color: #942222;
@@ -1191,7 +1212,7 @@ body {
 }
 
 .loading-state::after {
-  content: '';
+  content: "";
   position: absolute;
   width: 30px;
   height: 30px;
@@ -1286,4 +1307,25 @@ body {
     padding: 0.75rem;
     margin-top: 1rem;
   }
+}
+
+.date-input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  direction: ltr;
+}
+
+.range-filter label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 0 10px;
+}
+
+.hint-text {
+  color: #666;
+  font-size: 12px;
+  margin-top: 5px;
 }

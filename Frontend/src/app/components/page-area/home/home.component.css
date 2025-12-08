@@ -6,7 +6,7 @@
 
 html,
 body {
-  font-family: 'Assistant', sans-serif;
+  font-family: "Assistant", sans-serif;
   direction: rtl;
   height: 100vh;
   overflow: hidden;
@@ -52,13 +52,12 @@ input[type="date"],
 select {
   padding: 10px;
   border-radius: 5px;
-  border: 1px solid #cf8686;
+  border: 1px solid #6e6e6e;
   background-color: #ffffff;
-  font-family: 'Assistant', sans-serif;
+  font-family: "Assistant", sans-serif;
   font-size: 16px;
   width: 100%;
 }
-
 
 form .row,
 form .column,
@@ -81,11 +80,11 @@ form .removeBtn {
 }
 
 form .addBtn {
-  color: #353ddc; 
-  align-self: flex-end; 
-  margin-right: 0; 
+  color: #353ddc;
+  align-self: flex-end;
+  margin-right: 0;
   direction: rtl;
-   align-self: flex-start;  
+  align-self: flex-start;
 }
 
 form .addBtn:hover:not(:disabled) {
@@ -93,9 +92,9 @@ form .addBtn:hover:not(:disabled) {
 }
 
 form .removeBtn {
-  color: #942222;      
-  font-size: 0.9rem;     
-  font-weight: bold;    
+  color: #942222;
+  font-size: 0.9rem;
+  font-weight: bold;
   border: none;
   background: transparent;
   cursor: pointer;
@@ -103,20 +102,20 @@ form .removeBtn {
   align-items: center;
   gap: 4px;
   padding: 2px 4px;
-  text-decoration: none; 
+  text-decoration: none;
 }
 
 form .removeBtn:hover {
-color: #b30000;       
-transform: scale(1.05);
-text-decoration: none;}
+  color: #b30000;
+  transform: scale(1.05);
+  text-decoration: none;
+}
 
 #extrastops {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   margin-top: -1rem;
-  
 }
 
 .extra-stop-item {
@@ -124,17 +123,9 @@ text-decoration: none;}
   align-items: center;
   margin: 0;
   gap: 0.5rem;
-  
 }
 
-.extra-stop-fields {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  flex: 1;
-    border: 1px solid #cf8686;
 
-}
 
 .extra-stop-fields label {
   margin-left: 0.5rem;
@@ -184,7 +175,7 @@ text-decoration: none;}
 .custom-hour-dropdown {
   max-height: 150px !important;
   background-color: #ffffff;
-  border: 1px solid #cf8686;
+  border: 1px solid #6e6e6e;
   color: #333;
   border-radius: 4px;
 }
@@ -195,7 +186,8 @@ text-decoration: none;}
   overflow-x: hidden;
   border: none;
   border: 1px solid #767676;
-  background-color: #eceff1 ;}
+  background-color: #eceff1;
+}
 
 ::ng-deep ng-select.ng-select .ng-dropdown-panel {
   border: none !important;
@@ -214,22 +206,19 @@ text-decoration: none;}
   text-align: center;
   font-size: 14px;
   padding: 8px;
-
 }
-  ::ng-deep .select .ng-option {
+::ng-deep .select .ng-option {
   border: 1px solid #cecece;
-  background-color: #eceff1 ;
+  background-color: #eceff1;
 }
 ::ng-deep .custom-hour-dropdown .ng-option:hover {
   background-color: #767676;
   color: #ffffff;
-
 }
 
-::ng-deep .custom-hour-dropdown .ng-option{
+::ng-deep .custom-hour-dropdown .ng-option {
   border: 1px solid #cecece;
-  background-color: #eceff1 ;
-
+  background-color: #eceff1;
 }
 
 #extra-stop {
@@ -242,20 +231,19 @@ text-decoration: none;}
   display: flex;
   flex-direction: column;
   margin-left: 30px;
-;
 }
 
 .overlay {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-image: url('/assets/images/left-hand-car.png');
+  background-image: url("/assets/images/left-hand-car.png");
   background-color: #fbe6c9;
   background-repeat: no-repeat;
   background-size: 100% auto;
   background-position: center center;
   backdrop-filter: blur(2px);
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   direction: rtl;
   position: fixed;
   top: 0;
@@ -265,7 +253,15 @@ text-decoration: none;}
   z-index: 10;
   overflow: hidden;
 }
-
+.vehicle-details-img {
+  border-radius: 10px;
+  box-shadow: 0 2px 8px #c6282822;
+  width: 260px;
+  max-width: 260px;
+  min-width: 180px;
+  margin-bottom: 0;
+  display: block;
+}
 .modal {
   background-color: white;
   padding: 20px 28px;
@@ -334,7 +330,7 @@ text-decoration: none;}
   padding: 10px;
   border-radius: 5px;
   background-color: #ffffff;
-  border: 1px solid #cf8686;
+  border: 1px solid #6e6e6e;
 }
 
 .submit-btn {
@@ -356,15 +352,15 @@ text-decoration: none;}
   padding: 10px;
   border-radius: 5px;
   background-color: #ffffff;
-  border: 1px solid #cf8686;
+  border: 1px solid #6e6e6e;
 }
 
 .input-group select {
   padding: 10px;
   border-radius: 5px;
   background-color: #ffffff;
-  border: 1px solid #cf8686;
-  font-family: 'Assistant', sans-serif;
+  border: 1px solid #6e6e6e;
+  font-family: "Assistant", sans-serif;
   font-size: 16px;
 }
 
@@ -463,7 +459,7 @@ text-decoration: none;}
   padding: 0.7rem 1.5rem;
   border-radius: 6px;
   font-size: 15px;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
   font-weight: bold;
   cursor: pointer;
   border: none;
@@ -572,7 +568,7 @@ text-decoration: none;}
   top: 25%;
   transform: translate(-50%, -25%);
   direction: rtl;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
 }
 
 .step-header {
@@ -647,7 +643,7 @@ hr {
   padding: 10px !important;
   background-color: #ffffff !important;
   border-radius: 6px;
-  font-family: 'Assistant', sans-serif !important;
+  font-family: "Assistant", sans-serif !important;
   font-size: 16px !important;
   width: 100% !important;
   min-height: 40px !important;
@@ -656,24 +652,23 @@ hr {
   outline: none !important;
   display: flex;
   align-items: center;
-  border: 1px solid #cf8686;
-
+  border: 1px solid #6e6e6e;
 }
 
 ::ng-deep .styled-select.ng-select .ng-placeholder {
   color: #666;
-  font-family: 'Assistant', sans-serif;
+  font-family: "Assistant", sans-serif;
   font-size: 16px;
 }
 
 ::ng-deep .styled-select.ng-select .ng-single-filter-input {
-  font-family: 'Assistant', sans-serif;
+  font-family: "Assistant", sans-serif;
   font-size: 16px;
   color: #333;
 }
 
 ::ng-deep .styled-select.ng-select .ng-value {
-  font-family: 'Assistant', sans-serif;
+  font-family: "Assistant", sans-serif;
   font-size: 16px;
   color: #333;
 }
@@ -683,9 +678,9 @@ hr {
 }
 
 ::ng-deep .styled-select.ng-select .ng-dropdown-panel {
-   border: 1px solid #cecece;
-  background-color: #eceff1 ;
-  font-family: 'Assistant', sans-serif;
+  border: 1px solid #cecece;
+  background-color: #eceff1;
+  font-family: "Assistant", sans-serif;
   box-shadow: none;
   margin: 0;
   padding: 0;
@@ -701,8 +696,8 @@ hr {
   padding: 10px;
   font-size: 16px;
   color: #333;
- border: 1px solid #cecece;
-  background-color: #eceff1 ;
+  border: 1px solid #cecece;
+  background-color: #eceff1;
 }
 
 ::ng-deep .styled-select.ng-select .ng-option:hover {
@@ -710,17 +705,14 @@ hr {
   color: #ffffff;
 }
 
-
 ::ng-deep .styled-select.ng-select .ng-option.ng-option-disabled {
   border: 1px solid #cecece;
-  background-color: #eceff1 ;
+  background-color: #eceff1;
   color: #666;
   text-align: center;
   font-style: italic;
   padding: 15px;
 }
-
-
 
 ::ng-deep .styled-select.ng-select {
   border: none !important;
@@ -728,8 +720,9 @@ hr {
 }
 
 ::ng-deep .styled-select.ng-select.ng-select-focused .ng-select-container {
- border: 1px solid #cecece;
-  background-color: #eceff1 ;  box-shadow: none !important;
+  border: 1px solid #cecece;
+  background-color: #eceff1;
+  box-shadow: none !important;
   outline: none !important;
 }
 
@@ -791,7 +784,7 @@ hr {
 .new-form-button:active {
   transform: scale(0.97);
 }
- 
+
 .disabled-button {
   opacity: 0.5;
   cursor: not-allowed;
@@ -820,8 +813,121 @@ option {
   background-color: #eceff1 !important;
 }
 
-option:hover{
+option:hover {
   background-color: #ffffff;
   color: #333;
 }
 
+.custom-select {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  direction: rtl;
+}
+
+.select-header {
+  padding: 8px 5px 0px 12px;
+  border: 1px solid #6e6e6e;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  min-height: 45px;
+  min-width: 60px;
+  position: relative;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.select-header:hover {
+  border-color: #999;
+}
+
+.select-header:focus-within {
+  outline: 2px solid #2196F3;
+  outline-offset: 2px;
+}
+
+.select-header.open {
+  border-color: #2196F3;
+}
+
+.selected-car {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.placeholder {
+  color: #757575;
+}
+
+.select-arrow {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  pointer-events: none;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+
+.select-options {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 300px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.option {
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  font-size: 14px;
+}
+
+.option:hover:not(.disabled) {
+  background-color: #f5f5f5;
+}
+
+.option.selected {
+  background-color: #e3f2fd;
+}
+
+.option.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #fafafa;
+}
+
+.car-thumbnail {
+  width: 80px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  flex-shrink: 0;
+}
+
+.dropdown-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+}

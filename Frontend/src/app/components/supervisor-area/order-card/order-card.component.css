@@ -41,17 +41,27 @@
 }
 
 :host ::ng-deep .trip-card.card-approved {
-  border-right: 5px solid #28a745;
+  border-right: 5px solid #92ba92;
 }
 
 :host ::ng-deep .trip-card.card-pending {
-  border-right: 5px solid #ffc107;
+  border-right: 5px solid #e3d39abd;
 }
 
 :host ::ng-deep .trip-card.card-rejected {
-  border-right: 5px solid #811313;
+  border-right: 5px solid #a85353;
 }
 
+:host ::ng-deep .trip-card.card-completed {
+  border-right: 5px solid #82b5d4;
+}
+
+:host ::ng-deep .trip-card.card-cancelled-due-to-no-show {
+  border-right: 5px solid #b0acac;
+}
+:host ::ng-deep .trip-card.card-cancelled-vehicle-unavailable {
+  border-right: 5px solid #c1a68fd4;
+}
 :host ::ng-deep .trip-card.card-in-progress {
   border-right: 5px solid #17a2b8;
 }
@@ -68,7 +78,7 @@
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  direction: rtl; 
+  direction: rtl;
 }
 
 .card-header h2 {
@@ -306,5 +316,3 @@
 .back-btn i {
   font-size: 1rem;
 }
-
-

@@ -16,15 +16,18 @@ export class RideStatusComponent {
   selectedRideStatus: string = '';
   rideChartInitialized = false;
 
-  constructor(private socketService: SocketService, private rideService: RideService) {}
+  constructor(
+    private socketService: SocketService,
+    private rideService: RideService
+  ) {}
   ngOnInit() {
     this.loadRideChart();
     this.socketService.rideStatusUpdated$.subscribe(() => {
       this.loadRideChart();
     });
-     this.socketService.deleteRequests$.subscribe(() => {
+    this.socketService.deleteRequests$.subscribe(() => {
       this.loadRideChart();
-     })
+    });
   }
 
   get isNoData(): boolean {
@@ -33,17 +36,18 @@ export class RideStatusComponent {
       this.rideChartData.labels[0] === 'אין נתונים'
     );
   }
-    onRideStatusFilterChange() {
+  onRideStatusFilterChange() {
     this.loadRideChart();
   }
   getRideStatusHebrew(status: string): string {
     const statusMap: { [key: string]: string } = {
-      pending: 'ממתין',
+      pending: 'בהמתנה',
       approved: 'מאושר',
       rejected: 'נדחה',
       in_progress: 'בתהליך',
-      completed: 'הושלם',
-      cancelled_due_to_no_show: 'בוטלה-נסיעה לא בוצעה',
+      completed: 'בוצע',
+      cancelled_due_to_no_show: 'בוטל עקב אי-הגעה',
+      cancelled_vehicle_unavailable: 'בוטל - רכב לא זמין',
     };
     return statusMap[status] || status;
   }

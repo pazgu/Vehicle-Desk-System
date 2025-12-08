@@ -3,7 +3,6 @@ import { appConfig } from './app/app.config';
 import { AppComponent } from './app/app.component';
 import { LayoutComponent } from './app/components/layout-area/layout/layout.component';
 
-
 import { registerLocaleData } from '@angular/common';
 import localeHe from '@angular/common/locales/he';
 registerLocaleData(localeHe);
@@ -16,7 +15,7 @@ import {
   CategoryScale,
   LinearScale,
   PointElement,
-  LineElement
+  LineElement,
 } from 'chart.js';
 
 ChartJS.register(
@@ -29,6 +28,6 @@ ChartJS.register(
   LineElement
 );
 
-
-bootstrapApplication(LayoutComponent, appConfig)
-  .catch((err) => console.error(err));
+bootstrapApplication(LayoutComponent, appConfig).catch((err) =>
+  console.error(err)
+);

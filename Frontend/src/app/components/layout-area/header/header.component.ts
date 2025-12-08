@@ -13,23 +13,22 @@ import { HeaderService } from '../../../services/header.service';
   standalone: true,
   imports: [RouterModule, CommonModule],
   templateUrl: './header.component.html',
-  styleUrls: ['./header.component.css']
+  styleUrls: ['./header.component.css'],
 })
-
 export class HeaderComponent implements OnInit {
   fullName$: Observable<string> = of('');
   role$: Observable<string> = of('');
-  unreadCount$!: Observable<number>; 
+  unreadCount$!: Observable<number>;
   isLoggedIn = false;
   showFeedbackModal = false;
   rideIdToComplete: string | null = null;
 
   constructor(
     private authService: AuthService,
-    private router: Router,
+    public router: Router,
     private toastService: ToastService,
     private notificationService: NotificationService,
-    private socketService:SocketService,
+    private socketService: SocketService,
     private headerService: HeaderService
   ) {}
 
@@ -38,7 +37,7 @@ export class HeaderComponent implements OnInit {
     this.role$ = this.authService.role$;
     this.unreadCount$ = this.notificationService.unreadCount$;
 
-    this.authService.isLoggedIn$.subscribe(value => {
+    this.authService.isLoggedIn$.subscribe((value) => {
       this.isLoggedIn = value;
     });
 
@@ -47,7 +46,6 @@ export class HeaderComponent implements OnInit {
       this.rideIdToComplete = pendingRideId;
       this.showFeedbackModal = true;
     } else {
-
       this.checkFeedbackNeeded();
     }
 
@@ -83,7 +81,6 @@ export class HeaderComponent implements OnInit {
     const userId = this.getUserId();
     if (!userId) return;
 
-
     this.headerService.checkFeedbackNeeded(userId).subscribe(
       (res) => {
         if (res?.ride_id && res?.showPage) {
@@ -99,7 +96,6 @@ export class HeaderComponent implements OnInit {
     );
   }
 
-
   onFormCompleted(): void {
     localStorage.removeItem('pending_feedback_ride');
     this.rideIdToComplete = null;
@@ -108,7 +104,13 @@ export class HeaderComponent implements OnInit {
 
   get isAuthPage(): boolean {
     const url = this.router.url;
-    return url.startsWith('/login') || url.startsWith('/register') || url.startsWith('/reset-password');
+    return (
+      url.startsWith('/login') ||
+      url.startsWith('/register') ||
+      url.startsWith('/reset-password')
+    );
   }
-
+  get currentRoute(): string {
+    return this.router.url;
+  }
 }

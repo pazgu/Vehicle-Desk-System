@@ -23,6 +23,7 @@ export interface RideFormPayload {
   four_by_four_reason: string | null;
   extended_ride_reason: string | null;
   is_extended_request: boolean;
+  approving_supervisor : string |null;
 }
 
 function extractCityName(raw: any): string {
@@ -31,7 +32,6 @@ function extractCityName(raw: any): string {
   if (typeof raw === 'object' && raw.name) return String(raw.name);
   return '';
 }
-
 
 export function buildRideFormPayload(params: {
   form: FormGroup;
@@ -59,6 +59,7 @@ export function buildRideFormPayload(params: {
   const distance = form.get('estimated_distance_km')?.value;
   const startLocationRaw = form.get('start_location')?.value;
   const destinationRaw = form.get('destination')?.value;
+  const approvingSupervisor = form.get('approving_supervisor')?.value;
 
   return {
     user_id: riderId,
@@ -74,9 +75,9 @@ export function buildRideFormPayload(params: {
     estimated_distance_km: Number(distance),
     actual_distance_km: Number(estimatedDistanceWithBuffer),
     four_by_four_reason: form.get('four_by_four_reason')?.value || null,
-    extended_ride_reason:
-      form.get('extended_ride_reason')?.value || null,
+    extended_ride_reason: form.get('extended_ride_reason')?.value || null,
     is_extended_request: isExtendedRequest,
+    approving_supervisor:approvingSupervisor || null,
   };
 }
 
@@ -189,14 +190,16 @@ export function runPreSubmitChecks(
   const extendedReasonControl = form.get('extended_ride_reason');
   if (
     isExtendedRequest &&
-    (!extendedReasonControl?.value ||
-      extendedReasonControl.value.trim() === '')
+    (!extendedReasonControl?.value || extendedReasonControl.value.trim() === '')
   ) {
     extendedReasonControl?.setErrors({ required: true });
     extendedReasonControl?.markAsTouched();
     toastService.show('נא לפרט את הסיבה לנסיעה ממושכת', 'error');
     return { blocked: true, showInspectorWarning: false };
-  } else if (extendedReasonControl?.hasError('required') && !isExtendedRequest) {
+  } else if (
+    extendedReasonControl?.hasError('required') &&
+    !isExtendedRequest
+  ) {
     extendedReasonControl.setErrors(null);
   }
 
@@ -238,20 +241,19 @@ export function runPreSubmitChecks(
     );
 
     if (isPending) {
-      toastService.show(
-        'הרכב שבחרת ממתין לעיבוד ולא זמין כרגע',
-        'error'
-      );
+      toastService.show('הרכב שבחרת ממתין לעיבוד ולא זמין כרגע', 'error');
       return { blocked: true, showInspectorWarning: false };
     }
   }
 
   const ridePeriod = form.get('ride_period')?.value as 'morning' | 'night';
-  if (ridePeriod === 'morning' && startTime && endTime && startTime >= endTime) {
-    toastService.show(
-      'שעת הסיום חייבת להיות אחרי שעת ההתחלה',
-      'error'
-    );
+  if (
+    ridePeriod === 'morning' &&
+    startTime &&
+    endTime &&
+    startTime >= endTime
+  ) {
+    toastService.show('שעת הסיום חייבת להיות אחרי שעת ההתחלה', 'error');
     return { blocked: true, showInspectorWarning: false };
   }
 

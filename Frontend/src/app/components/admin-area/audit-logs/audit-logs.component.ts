@@ -18,15 +18,25 @@ import { userFieldLabels } from './audit-logs-utils/entities-fields';
 import { vehicleFieldLabels } from './audit-logs-utils/entities-fields';
 import { departmentFieldLabels } from './audit-logs-utils/entities-fields';
 import { rideFieldLabels } from './audit-logs-utils/entities-fields';
-import { exportToCSV,exportToExcel,exportToPDF } from './audit-logs-utils/exports';
-import { translateFreezeReason,translateFuelType,
+import {
+  exportToCSV,
+  exportToExcel,
+  exportToPDF,
+} from './audit-logs-utils/exports';
+import {
+  translateFreezeReason,
+  translateFuelType,
   translateRideStatus,
   translateRideType,
   translateUserRole,
-  translateVehicleStatus,getVehicleAuditRows,getUsernameById,getDepartmentNameById} from './audit-logs-utils/helpers';
-import { InsertLogComponent } from "./audit-log-details/insert-log/insert-log.component";
+  translateVehicleStatus,
+  getVehicleAuditRows,
+  getUsernameById,
+  getDepartmentNameById,
+} from './audit-logs-utils/helpers';
+import { InsertLogComponent } from './audit-log-details/insert-log/insert-log.component';
 import { UpdateLogComponent } from './audit-log-details/update-log/update-log.component';
-import { DeleteDataDisplayComponent } from "./audit-log-details/delete-log/delete-log.component";
+import { DeleteDataDisplayComponent } from './audit-log-details/delete-log/delete-log.component';
 (pdfMake as any).vfs = pdfFonts.vfs;
 (pdfMake as any).fonts = {
   Roboto: {
@@ -34,15 +44,21 @@ import { DeleteDataDisplayComponent } from "./audit-log-details/delete-log/delet
     bold: 'Roboto-Medium.ttf',
     italics: 'Roboto-Italic.ttf',
     bolditalics: 'Roboto-MediumItalic.ttf',
-  }
+  },
 };
 
 @Component({
   selector: 'app-audit-logs',
   standalone: true,
-  imports: [CommonModule, FormsModule, InsertLogComponent, UpdateLogComponent, DeleteDataDisplayComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    InsertLogComponent,
+    UpdateLogComponent,
+    DeleteDataDisplayComponent,
+  ],
   templateUrl: './audit-logs.component.html',
-  styleUrls: ['./audit-logs.component.css']
+  styleUrls: ['./audit-logs.component.css'],
 })
 export class AuditLogsComponent implements OnInit {
   showFilters = false;
@@ -64,18 +80,23 @@ export class AuditLogsComponent implements OnInit {
 
   cityMap: { [id: string]: string } = {};
   departments: { id: string; name: string }[] = [];
-  users: { id: string; first_name: string; last_name: string; user_name: string }[] = [];
+  users: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    user_name: string;
+  }[] = [];
   vehicles: { id: string; vehicle_model: string; plate_number: string }[] = [];
 
   loading = true;
   highlighted = false;
   private lastInspectionId: string | null = null;
-translateFuelType = translateFuelType;
-translateVehicleStatus = translateVehicleStatus;
-translateRideStatus = translateRideStatus;
-translateUserRole = translateUserRole;
-translateFreezeReason = translateFreezeReason;
-translateRideType = translateRideType;
+  translateFuelType = translateFuelType;
+  translateVehicleStatus = translateVehicleStatus;
+  translateRideStatus = translateRideStatus;
+  translateUserRole = translateUserRole;
+  translateFreezeReason = translateFreezeReason;
+  translateRideType = translateRideType;
 
   getUserFieldLabel(key: string): string {
     return userFieldLabels[key] || key;
@@ -93,9 +114,6 @@ translateRideType = translateRideType;
     return rideFieldLabels[key] || key;
   }
 
-
-
-
   constructor(
     private route: ActivatedRoute,
     private socketService: SocketService,
@@ -105,7 +123,7 @@ translateRideType = translateRideType;
     private router: Router,
     private auditLogService: AuditLogsService,
     private vehicleService: VehicleService
-  ) { }
+  ) {}
 
   getCityName(id: string): string {
     return this.cityMap[id] || id;
@@ -114,25 +132,25 @@ translateRideType = translateRideType;
   fetchDepartments(): void {
     this.auditLogService.getDepartments().subscribe({
       next: (data) => {
-        this.departments = data.map(dep => ({
+        this.departments = data.map((dep) => ({
           ...dep,
-          name: dep.name
+          name: dep.name,
         }));
       },
       error: (err: any) => {
         this.toastService.show('שגיאה בטעינת רשימת מחלקות', 'error');
 
         this.departments = [];
-      }
+      },
     });
   }
 
   DepartmentNameById(id: string | null | undefined): string {
-    return getDepartmentNameById(id,this.departments)
+    return getDepartmentNameById(id, this.departments);
   }
 
   UsernameById(id: string): string {
-    return getUsernameById(id,this.users)
+    return getUsernameById(id, this.users);
   }
 
   fetchUsers(): void {
@@ -149,30 +167,38 @@ translateRideType = translateRideType;
       error: (err: any) => {
         this.toastService.show('שגיאה בטעינת רשימת משתמשים', 'error');
         this.users = [];
-      }
+      },
     });
   }
- 
-   getVehicleAuditRows(oldData: any, newData: any) {
-    return getVehicleAuditRows(oldData, newData, this.DepartmentNameById.bind(this));
+
+  getVehicleAuditRows(oldData: any, newData: any) {
+    return getVehicleAuditRows(
+      oldData,
+      newData,
+      this.DepartmentNameById.bind(this)
+    );
   }
 
   fetchAuditLogs(fromDate?: string, toDate?: string) {
     this.loading = true;
     this.auditLogService.getAuditLogs(fromDate, toDate).subscribe({
       next: (data) => {
-        this.logs = Array.isArray(data) ? data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()) : [];
+        this.logs = Array.isArray(data)
+          ? data.sort(
+              (a, b) =>
+                new Date(b.created_at).getTime() -
+                new Date(a.created_at).getTime()
+            )
+          : [];
         this.loading = false;
         this.filterLogs();
-
-
       },
       error: () => {
         this.toastService.show('שגיאה בטעינת יומני ביקורת', 'error');
         this.logs = [];
         this.filteredLogs = [];
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -187,19 +213,16 @@ translateRideType = translateRideType;
       },
       error: () => {
         this.toastService.show('שגיאה בטעינת רשימת ערים', 'error');
-
-      }
+      },
     });
 
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.subscribe((params) => {
       this.highlighted = params['highlight'] === '1';
     });
 
     this.fetchDepartments();
     this.fetchUsers();
     this.fetchVehicles();
-
-
   }
 
   resetFilters() {
@@ -215,22 +238,33 @@ translateRideType = translateRideType;
     const today = new Date();
 
     if (this.selectedRange === '7days') {
-      fromDate = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      fromDate = new Date(
+        today.getTime() - 7 * 24 * 60 * 60 * 1000
+      ).toISOString();
       toDate = today.toISOString();
     } else if (this.selectedRange === 'thisMonth') {
       const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
       fromDate = firstDay.toISOString();
       toDate = today.toISOString();
     } else if (this.selectedRange === '30days') {
-      fromDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      fromDate = new Date(
+        today.getTime() - 30 * 24 * 60 * 60 * 1000
+      ).toISOString();
       toDate = today.toISOString();
     } else if (this.selectedRange === 'custom') {
-      const from = this.customFromDate ? new Date(this.customFromDate + 'T00:00:00') : undefined;
-      const to = this.customToDate ? new Date(this.customToDate + 'T23:59:59') : undefined;
+      const from = this.customFromDate
+        ? new Date(this.customFromDate + 'T00:00:00')
+        : undefined;
+      const to = this.customToDate
+        ? new Date(this.customToDate + 'T23:59:59')
+        : undefined;
 
       if (from && to && from > to) {
-        this.toastService.show('תאריך ההתחלה לא יכול להיות אחרי תאריך הסיום.', 'error');
-        return; 
+        this.toastService.show(
+          'תאריך ההתחלה לא יכול להיות אחרי תאריך הסיום.',
+          'error'
+        );
+        return;
       }
 
       fromDate = from?.toISOString();
@@ -245,20 +279,22 @@ translateRideType = translateRideType;
     let tempLogs = [...this.logs];
 
     if (this.showExceededQuotaOnly) {
-      tempLogs = tempLogs.filter(log =>
-        log.entity_type === 'User' &&
-        log.action === 'UPDATE' &&
-        log.change_data &&
-        log.change_data.new &&
-        log.change_data.new.exceeded_monthly_trip_quota === true
+      tempLogs = tempLogs.filter(
+        (log) =>
+          log.entity_type === 'User' &&
+          log.action === 'UPDATE' &&
+          log.change_data &&
+          log.change_data.new &&
+          log.change_data.new.exceeded_monthly_trip_quota === true
       );
     }
 
-    this.filteredLogs = tempLogs.filter(log =>
-      log.action?.toLowerCase().includes(searchLower) ||
-      log.entity_type?.toLowerCase().includes(searchLower) ||
-      log.entity_id?.toLowerCase().includes(searchLower) ||
-      log.full_name?.toLowerCase().includes(searchLower)
+    this.filteredLogs = tempLogs.filter(
+      (log) =>
+        log.action?.toLowerCase().includes(searchLower) ||
+        log.entity_type?.toLowerCase().includes(searchLower) ||
+        log.entity_id?.toLowerCase().includes(searchLower) ||
+        log.full_name?.toLowerCase().includes(searchLower)
     );
 
     this.currentPage = 1;
@@ -267,7 +303,6 @@ translateRideType = translateRideType;
   showDetails(log: AuditLogs) {
     this.selectedLog = log;
   }
-
 
   closeDetails() {
     this.selectedLog = null;
@@ -291,31 +326,32 @@ translateRideType = translateRideType;
   }
 
   async exportPDF() {
-  const logs = await this.filteredLogs;
-  exportToPDF(logs);
-}
+    const logs = await this.filteredLogs;
+    exportToPDF(logs);
+  }
 
-async exportCSV() {
-  const logs = await this.filteredLogs;
-  exportToCSV(logs);
-}
+  async exportCSV() {
+    const logs = await this.filteredLogs;
+    exportToCSV(logs);
+  }
 
-async exportExcel() {
-  const logs = await this.filteredLogs;
-  exportToExcel(logs);
-}
+  async exportExcel() {
+    const logs = await this.filteredLogs;
+    exportToExcel(logs);
+  }
 
   fetchVehicles(): void {
     this.vehicleService.getAllVehicles().subscribe(
       (data) => {
-        this.vehicles = Array.isArray(data) ? data.map(vehicle => ({
-          ...vehicle,
-        })) : [];
+        this.vehicles = Array.isArray(data)
+          ? data.map((vehicle) => ({
+              ...vehicle,
+            }))
+          : [];
       },
       (error) => {
         this.toastService.show('שגיאה בטעינת רכבים', 'error');
       }
     );
   }
-
 }

@@ -113,14 +113,45 @@
   border: #c8b88a 1.6px solid;
 }
 
+
+.status-indicators-inline .status-indicator.in_progress {
+  background: linear-gradient(
+    -45deg,
+    rgba(74, 144, 226, 0.15) 25%,
+    rgba(107, 163, 240, 0.15) 25%,
+    rgba(107, 163, 240, 0.15) 50%,
+    rgba(74, 144, 226, 0.15) 50%,
+    rgba(74, 144, 226, 0.15) 75%,
+    rgba(107, 163, 240, 0.15) 75%,
+    rgba(107, 163, 240, 0.15)
+  );
+  background-size: 7px 7px;
+  border: #b3a7bd 1.6px solid;
+  animation: moveStripes 0.5s linear infinite;
+}
+
+@keyframes moveStripes {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 20px 0;
+  }
+}
+
 .status-indicators-inline .status-indicator.rejected {
   background-color: #ecc9c9;
   border: #c97b83 1.6px solid;
 }
 
-.status-indicators-inline .status-indicator.cancelled {
+.status-indicators-inline .status-indicator.cancelled_due_to_no_show {
   background-color: #dfdddd;
   border: #8d8d90 1.6px solid;
+}
+
+.status-indicators-inline .status-indicator.cancelled_vehicle_unavailable{
+  background-color: #d4c9c0;
+  border: #a48770c4 1.6px solid;
 }
 
 .status-indicators-inline .status-indicator.completed {
@@ -291,5 +322,3 @@
     font-size: 0.85rem;
   }
 }
-
-

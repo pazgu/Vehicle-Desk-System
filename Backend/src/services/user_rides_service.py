@@ -107,13 +107,13 @@ def get_all_rides(user_id: UUID, db: Session, status=None, from_date=None, to_da
        Vehicle.fuel_type.label("vehicle"),
        Vehicle.type.label("vehicle_type"),
        Vehicle.vehicle_model.label("vehicle_model")
-    ).join(Vehicle, Ride.vehicle_id == Vehicle.id).filter(Ride.user_id == user_id)
+    ).outerjoin(Vehicle, Ride.vehicle_id == Vehicle.id).filter(Ride.user_id == user_id)
 
     query = filter_rides(query, status, from_date, to_date)
 
     rows = query.all() 
 
-    return [RideSchema(**dict(row._mapping)) for row in rows]  #convert rows to Pydantic objects
+    return [RideSchema(**dict(row._mapping)) for row in rows] 
 
     
 def update_ride_status(db: Session, ride_id: UUID, new_status: str, changed_by: UUID):
@@ -152,11 +152,13 @@ def get_ride_by_id(db: Session, ride_id: UUID) -> RideSchema:
         Ride.extra_stops,
         Ride.extended_ride_reason,
         Ride.four_by_four_reason,
+        Ride.vehicle_id,
         Vehicle.fuel_type.label("vehicle"),
         Vehicle.type.label("vehicle_type"),
         Vehicle.vehicle_model.label("vehicle_model"),
         Ride.actual_pickup_time,
-    ).join(Vehicle, Ride.vehicle_id == Vehicle.id).filter(Ride.id == ride_id).first()
+        Ride.approving_supervisor,
+    ).outerjoin(Vehicle, Ride.vehicle_id == Vehicle.id).filter(Ride.id == ride_id).first()
     if not ride:
         raise HTTPException(status_code=404, detail="Ride not found")
     return RideSchema(**dict(ride._mapping))

@@ -95,7 +95,17 @@ export class RideDetailsComponent implements OnInit {
     const startDate = new Date(this.ride.start_datetime);
     const endDate = new Date(this.ride.end_datetime);
 
-    const diffInMs = endDate.getTime() - startDate.getTime();
+    const startDay = new Date(
+      startDate.getFullYear(),
+      startDate.getMonth(),
+      startDate.getDate()
+    );
+    const endDay = new Date(
+      endDate.getFullYear(),
+      endDate.getMonth(),
+      endDate.getDate()
+    );
+    const diffInMs = endDay.getTime() - startDay.getTime();
     const diffInDays = diffInMs / (1000 * 60 * 60 * 24) + 1;
 
     return diffInDays >= 4;
@@ -138,8 +148,8 @@ export class RideDetailsComponent implements OnInit {
       completed: 'הושלם',
       in_progress: 'בתהליך',
       rejected: 'נדחה',
-      cancelled_due_to_no_show: 'בוטלה - נסיעה לא יצאה',
-      cancelled_vehicle_unavailable:'בוטלה - רכב לא זמין'
+      cancelled_due_to_no_show: 'בוטל עקב אי-הגעה',
+      cancelled_vehicle_unavailable: 'בוטלה - רכב לא זמין',
     };
     return statusMap[status] || status;
   }

@@ -11,7 +11,6 @@
     {{ getVehicleUsageCount(vehicle.plate_number) }} נסיעות</span
   >
 
-
   <div *ngIf="isInactive(vehicle.last_used_at)" class="inactive-badge">
     לא פעיל
   </div>
@@ -30,16 +29,16 @@
     />
   </div>
 
- <div style="display: flex; flex-direction: column; flex: 1;">
-  <h3>{{ vehicle.vehicle_model }}</h3>
-  <p><strong>מספר רכב:</strong> {{ vehicle.plate_number }}</p>
-  <p><strong>סוג:</strong> {{ vehicle.type }}</p>
-</div>
+  <div style="display: flex; flex-direction: column; flex: 1">
+    <h3>{{ vehicle.vehicle_model }}</h3>
+    <p><strong>מספר רכב:</strong> {{ vehicle.plate_number }}</p>
+    <p><strong>סוג:</strong> {{ vehicle.type }}</p>
+  </div>
 
-<span
-  class="department-tag"
-  [ngClass]="{ 'no-department-tag': !vehicle.department_id }"
->
-  {{ vehicle.department || "לא משוייך למחלקה" }}
-</span>
+  <span
+    class="department-tag"
+    [ngClass]="{ 'no-department-tag': !vehicle.department_id }"
+  >
+    {{ vehicle.department || "לא משוייך למחלקה" }}
+  </span>
 </p-card>

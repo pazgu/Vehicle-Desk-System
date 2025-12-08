@@ -22,7 +22,7 @@ async def patch_order_in_db(order_id: UUID, patch_data: OrderCardItem, db: Sessi
     
     is_vip = is_vip_department(db, UUID(changed_by))
     
-    if order.status == "APPROVED" and not is_vip:
+    if order.status == "approvrd" and not is_vip:
         raise HTTPException(status_code=400, detail="אי אפשר לערוך הזמנה שאושרה. ניתן רק לבטל ולהזמין חדשה.")
 
     # Save the original status to check for changes
@@ -54,11 +54,10 @@ async def patch_order_in_db(order_id: UUID, patch_data: OrderCardItem, db: Sessi
                 status_code=400,
                 detail="יש למלא סיבה לבחירת רכב 4X4"
             )
-    print("updated order:",order.status)
     db.commit()
     db.refresh(order)
 
-    if "status" in data and order.status != original_status and order.status.value in ["APPROVED", "REJECTED"]:
+    if "status" in data and order.status != original_status and order.status.value in ["approved", "rejected"]:
         employee = db.query(User).filter(User.employee_id == order.user_id).first()
         destination_city = db.query(City).filter(City.id == order.stop).first()
         destination_name = destination_city.name if destination_city else order.stop

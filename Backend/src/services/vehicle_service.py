@@ -7,6 +7,10 @@ from sqlalchemy.types import String
 from datetime import datetime, timezone, date, timedelta
 from typing import Optional, List, Dict, Union
 from uuid import UUID
+
+from ..helpers.user_helpers import cancel_future_rides_for_vehicle
+
+from ..models.department_model import Department
 from ..utils.socket_manager import sio
 
 from ..models.audit_log_model import AuditLog
@@ -74,7 +78,8 @@ def get_available_vehicles_new_ride(
     db: Session,
     start_time: Optional[datetime] = None,
     end_time: Optional[datetime] = None,
-    type: Optional[str] = None
+    type: Optional[str] = None,
+    department_id: Optional[str] = None
 ) -> List[Vehicle]:
     now = datetime.utcnow()  
 
@@ -89,9 +94,15 @@ def get_available_vehicles_new_ride(
 
     if type:
         query = query.filter(func.lower(Vehicle.type) == type.lower())
+    if department_id:
+        query = query.filter(
+            or_(
+                Vehicle.department_id == department_id,
+                Vehicle.department_id == None
+            )
+        )
 
     if start_time and end_time:
-
         end_time_with_buffer = end_time + timedelta(hours=2)
 
         overlapping_rides = db.query(Ride.vehicle_id).filter(
@@ -102,12 +113,61 @@ def get_available_vehicles_new_ride(
             )
         ).subquery()
 
+        query = query.filter(~Vehicle.id.in_(overlapping_rides))
+
+    return query.all()
+
+
+def get_vip_vehicles_for_ride(
+    db: Session,
+    start_time: Optional[datetime] = None,
+    end_time: Optional[datetime] = None,
+    type: Optional[str] = None,
+    user_id: Optional[UUID] = None
+) -> List[Vehicle]:
+    now = datetime.utcnow()
+
+    vip_name='VIP'
+    vip_department  = db.query(Department).filter(
+        func.lower(Department.name) == vip_name.lower()
+    ).first()
+
+    if not vip_department:
+        return []
+    user_department_id = None
+    if user_id:
+        user = db.query(User).filter(User.employee_id == user_id).first()
+        if user:
+            user_department_id = user.department_id
+    query = (
+        db.query(Vehicle)
+        .filter(
+            Vehicle.is_archived == False,
+            Vehicle.status == VehicleStatus.available,
+            Vehicle.lease_expiry > now,
+            Vehicle.department_id == vip_department.id   
+        )
+    )
+
+    if type:
+        query = query.filter(func.lower(Vehicle.type) == type.lower())
+
+    if start_time and end_time:
+        end_time_with_buffer = end_time + timedelta(hours=2)
+
+        overlapping_rides = db.query(Ride.vehicle_id).filter(
+            or_(
+                and_(Ride.start_datetime <= start_time, Ride.end_datetime > start_time),
+                and_(Ride.start_datetime < end_time_with_buffer, Ride.end_datetime >= end_time_with_buffer),
+                and_(Ride.start_datetime >= start_time, Ride.end_datetime <= end_time_with_buffer)
+            )
+        ).subquery()
 
         query = query.filter(~Vehicle.id.in_(overlapping_rides))
 
-    final_query = query.all()
+    return query.all()
 
-    return final_query
+
 
 
 def get_most_used_vehicles_all_time(db: Session) -> Dict[str, int]:
@@ -243,7 +303,7 @@ def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_re
     db.execute(text("SET session.audit.user_id = DEFAULT"))
     return {"vehicle_id": vehicle.id, "new_status": vehicle.status, "freeze_reason": vehicle.freeze_reason}
 
-def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID) -> List[VehicleOut]:
+def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID, user_department_id: Optional[UUID] = None) -> List[VehicleOut]:
     ride = db.query(Ride).filter(Ride.id == ride_id).first()
     if not ride:
         raise HTTPException(status_code=404, detail="Ride not found")
@@ -259,6 +319,7 @@ def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID) -> List[Ve
         db.query(Ride.vehicle_id)
         .filter(
             Ride.status.in_(["approved", "in_progress"]),
+            Ride.id != ride_id,
             or_(
                 and_(Ride.start_datetime <= start_datetime, Ride.end_datetime > start_datetime),
                 and_(Ride.start_datetime < end_datetime, Ride.end_datetime >= end_datetime),
@@ -270,19 +331,24 @@ def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID) -> List[Ve
     )
 
     candidate_vehicles = (
-        db.query(Vehicle)
-        .filter(
+        db.query(Vehicle).filter(
             Vehicle.status == "available",
+            Vehicle.is_archived == False,
             ~Vehicle.id.in_(select(conflicting_vehicles_subquery.c.vehicle_id))
         )
-        .all()
     )
-
+    if user_department_id:
+        candidate_vehicles = candidate_vehicles.filter(
+            or_(
+                Vehicle.department_id == None,
+                Vehicle.department_id == user_department_id
+            )
+        )
+    candidate_vehicles = candidate_vehicles.all()
     today_start = datetime.combine(start_datetime.date(), datetime.min.time())
     today_end = today_start + timedelta(days=1)
 
     available_vehicles = []
-
     for vehicle in candidate_vehicles:
         if vehicle.max_daily_distance_km is None:
             available_vehicles.append(vehicle)
@@ -290,6 +356,7 @@ def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID) -> List[Ve
 
         used_distance = db.query(func.coalesce(func.sum(Ride.actual_distance_km), 0)).filter(
             Ride.vehicle_id == vehicle.id,
+            Ride.id != ride_id,
             Ride.start_datetime >= today_start,
             Ride.start_datetime < today_end,
             Ride.status.in_(["approved", "in_progress", "completed"]) 
@@ -328,25 +395,31 @@ def get_vehicle_by_id(vehicle_id: str, db: Session):
         "mileage_last_updated": vehicle.mileage_last_updated
     }
 
-def update_vehicle(vehicle_id: str, vehicle_data: VehicleUpdateRequest, db: Session):
+def update_vehicle(vehicle_id: str, vehicle_data: VehicleUpdateRequest, db: Session, user_id: UUID):
     vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
     
     if not vehicle:
         raise HTTPException(status_code=404, detail="רכב לא נמצא")
     if vehicle.is_archived:
         raise HTTPException(status_code=400, detail="לא ניתן לערוך רכב מארכב")
-    if vehicle_data.department_id:
-        from ..models.department_model import Department
-        dept = db.query(Department).filter(
-            Department.id == vehicle_data.department_id,
-        ).first()
-        if not dept:
-            raise HTTPException(status_code=400, detail="מחלקה לא נמצאה או לא פעילה")
-    if vehicle_data.department_id is not None:
-        vehicle.department_id = vehicle_data.department_id
+    if hasattr(vehicle_data, 'department_id'):
+        if vehicle_data.department_id is None or vehicle_data.department_id == '':
+            vehicle.department_id = None
+        elif isinstance(vehicle_data.department_id, str) and vehicle_data.department_id.lower() == "null":
+            vehicle.department_id = None
+        else:
+            from ..models.department_model import Department
+            dept = db.query(Department).filter(
+                Department.id == vehicle_data.department_id,
+            ).first()
+            if not dept:
+                raise HTTPException(status_code=400, detail="מחלקה לא נמצאה או לא פעילה")
+            vehicle.department_id = vehicle_data.department_id
     if vehicle_data.mileage is not None:
         if vehicle_data.mileage < 0:
             raise HTTPException(status_code=400, detail="קילומטראז' לא יכול להיות שלילי")
+        if vehicle_data.mileage > 2147483647:
+            raise HTTPException(status_code=400, detail="קילומטראז' גבוה מדי (מקסימום: 2,147,483,647)")
         vehicle.mileage = vehicle_data.mileage
         vehicle.mileage_last_updated = datetime.utcnow()
     if vehicle_data.image_url is not None:
@@ -354,13 +427,14 @@ def update_vehicle(vehicle_id: str, vehicle_data: VehicleUpdateRequest, db: Sess
     if hasattr(vehicle, 'updated_at'):
         vehicle.updated_at = datetime.utcnow()
     try:
+        db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id)})     
         db.commit()
         db.refresh(vehicle)
-        print(f"✅ Vehicle {vehicle.plate_number} updated successfully")
+        db.execute(text("SET session.audit.user_id = DEFAULT"))
         return get_vehicle_by_id(vehicle_id, db)
     except Exception as e:
         db.rollback()
-        print(f"❌ Error updating vehicle: {str(e)}")
+        db.execute(text("SET session.audit.user_id = DEFAULT"))
         raise HTTPException(status_code=500, detail=f"שגיאה בעדכון הרכב: {str(e)}")
 
 def freeze_vehicle_service(db: Session, vehicle_id: UUID, reason: str, changed_by: UUID):
@@ -422,22 +496,15 @@ async def delete_vehicle(vehicle_id: UUID, db: Session, user_id: UUID):
         db.query(VehicleInspection).filter(VehicleInspection.vehicle_id == vehicle_id).delete()
 
         rides = db.query(Ride).filter(Ride.vehicle_id == vehicle_id).all()
-        ride_ids = [r.id for r in rides]
-        ride_users = list({r.user_id for r in rides if r.user_id})  
 
-        if ride_ids:
-            db.query(NoShowEvent).filter(NoShowEvent.ride_id.in_(ride_ids)).delete(synchronize_session=False)
-            db.query(Notification).filter(Notification.order_id.in_(ride_ids)).delete(synchronize_session=False)
-            db.query(RideApproval).filter(RideApproval.ride_id.in_(ride_ids)).delete(synchronize_session=False)
-            db.query(RideLog).filter(RideLog.ride_id.in_(ride_ids)).delete(synchronize_session=False)
-            db.query(Ride).filter(Ride.id.in_(ride_ids)).delete(synchronize_session=False)
+        cancel_future_rides_for_vehicle(vehicle_id=vehicle_id,db=db,admin_id=user_id)
+
+        for ride in rides:
+            ride.vehicle_id=None
 
         db.delete(vehicle)
         db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id)})
         db.commit()
-
-        if ride_users:
-            await notify_users_vehicle_deleted(vehicle, ride_users)
 
         return {"message": "Vehicle and all related data deleted successfully."}
 
@@ -449,34 +516,7 @@ async def delete_vehicle(vehicle_id: UUID, db: Session, user_id: UUID):
         db.close()
 
 
-async def notify_users_vehicle_deleted(vehicle, user_ids: list[UUID]):
-    db = SessionLocal()
-    try:
-        notifications = []
-        for user_id in user_ids:
-            notif = Notification(
-                user_id=user_id,
-                notification_type=NotificationType.system,
-                title="רכב נמחק",
-                message = f"כל הנסיעות שלך הקשורות לרכב {vehicle.plate_number} בוטלו מכיוון שהרכב אינו זמין עוד.",
-                sent_at=datetime.now(timezone.utc),
-            )
-            db.add(notif)
-            notifications.append(notif)
 
-        db.commit()
-
-        for notif in notifications:
-            await sio.emit(
-                "new_notification",
-                {"updated_notifications": [notif.to_dict()]},
-                room=str(notif.user_id)
-            )
-
-    except Exception as e:
-        print(f"Exception in notify_users_vehicle_deleted: {e}")
-    finally:
-        db.close()
 async def get_inactive_vehicles():
     db: Session = SessionLocal()
     try:
@@ -529,7 +569,7 @@ def archive_vehicle_by_id(vehicle_id: UUID, db: Session, user_id: UUID) -> Vehic
     ).scalar()
 
     if not has_related_data:
-        raise HTTPException(status_code=400, detail="Cannot archive: vehicle has no related data (rides, logs, etc.).")
+        raise HTTPException(status_code=400, detail="לא ניתן לארכב רכב ללא נסיעות.")
 
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id)})
 

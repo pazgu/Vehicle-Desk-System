@@ -8,84 +8,139 @@
       </div>
 
       <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="user-form">
-        <!-- Row 1 -->
         <div class="form-row">
           <div class="form-group">
             <label for="last_name">שם משפחה</label>
-            <input type="text" id="last_name" formControlName="last_name" class="form-control" />
+            <input
+              type="text"
+              id="last_name"
+              formControlName="last_name"
+              class="form-control"
+            />
           </div>
 
           <div class="form-group">
             <label for="first_name">שם פרטי</label>
-            <input type="text" id="first_name" formControlName="first_name" class="form-control" />
+            <input
+              type="text"
+              id="first_name"
+              formControlName="first_name"
+              class="form-control"
+            />
           </div>
 
           <div class="form-group">
             <label for="username">שם משתמש</label>
-            <input type="text" id="username" formControlName="username" class="form-control" />
+            <input
+              type="text"
+              id="username"
+              formControlName="username"
+              class="form-control"
+            />
           </div>
         </div>
 
-        <!-- Row 2: Role and Department side-by-side -->
         <div class="form-row">
           <div class="form-group">
             <label for="role">תפקיד</label>
             <select id="role" formControlName="role" class="form-control">
               <option value="" disabled>בחר תפקיד</option>
-              <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+              <option *ngFor="let role of roles" [value]="role">
+                {{ role }}
+              </option>
+              <option value="supervisor">רע"ן</option>
             </select>
           </div>
 
-          <div class="form-group" *ngIf="userForm.get('role')?.value !== 'admin' && userForm.get('role')?.value !== 'inspector'">
+          <div
+            class="form-group"
+            *ngIf="
+              userForm.get('role')?.value !== 'admin' &&
+              userForm.get('role')?.value !== 'inspector'
+            "
+          >
             <label for="department">
               מחלקה
-              <span *ngIf="userForm.get('role')?.value === 'employee'" class="required-asterisk">*</span>
-              <span *ngIf="userForm.get('role')?.value === 'supervisor'" class="optional-label">(אופציונלי)</span>
+              <span
+                *ngIf="userForm.get('role')?.value === 'employee'"
+                class="required-asterisk"
+                >*</span
+              >
+              <span
+                *ngIf="userForm.get('role')?.value === 'supervisor'"
+                class="optional-label"
+                >(אופציונלי)</span
+              >
             </label>
-            <select id="department" formControlName="department_id" class="form-control">
+            <select
+              id="department"
+              formControlName="department_id"
+              class="form-control"
+            >
               <option value="">בחר מחלקה</option>
               <option *ngFor="let dept of departments" [value]="dept.id">
                 {{ dept.name }}
               </option>
             </select>
-            <small *ngIf="f['department_id'].touched && f['department_id'].errors?.['required']" class="error-message">
+            <small
+              *ngIf="f['department_id'].touched && f['department_id'].errors?.['required']"
+              class="error-message"
+            >
               יש לבחור מחלקה
             </small>
           </div>
         </div>
-        <!-- Row 3 -->
         <div class="form-row">
           <div class="form-group">
             <label for="phone">מספר טלפון</label>
-            <input type="tel" id="phone" formControlName="phone" class="form-control" />
-            <small *ngIf="f['phone'].touched && f['phone'].invalid" class="phone-error">
-               טלפון חייב להכיל 10 ספרות ולהתחיל ב-05
+            <input
+              type="tel"
+              id="phone"
+              formControlName="phone"
+              class="form-control"
+            />
+            <small
+              *ngIf="f['phone'].touched && f['phone'].invalid"
+              class="phone-error"
+            >
+              טלפון חייב להכיל 10 ספרות ולהתחיל ב-05
             </small>
           </div>
         </div>
 
-        <!-- Row 4: License Expiry -->
         <div class="form-row">
           <div class="form-group">
             <label for="license_expiry_date">תוקף רישיון</label>
-            <input type="date" id="license_expiry_date" formControlName="license_expiry_date" class="form-control" />
+            <input
+              type="date"
+              id="license_expiry_date"
+              formControlName="license_expiry_date"
+              class="form-control"
+            />
           </div>
         </div>
 
-        <!-- Row 5: Email -->
         <div class="form-row">
           <div class="form-group">
-            <label for="email">כתובת דואר אלקטרוני</label>
-            <input type="email" id="email" formControlName="email" class="form-control" />
+            <label for="email">כתובת מייל </label>
+            <input
+              type="email"
+              id="email"
+              formControlName="email"
+              class="form-control"
+            />
           </div>
         </div>
 
-        <!-- Government License -->
         <div class="form-row">
           <div class="form-group">
             <label>האם למשתמש יש רישיון ממשלתי?</label>
             <label class="switch">
-              <input type="checkbox" formControlName="has_government_license" [disabled]="hasExistingLicenseFile" />
+              <input
+                type="checkbox"
+                formControlName="has_government_license"
+                [disabled]="hasExistingLicenseFile"
+              />
               <span class="slider round"></span>
             </label>
             <div *ngIf="showFileRemovedMessage" class="file-removed-message">
@@ -94,7 +149,6 @@
           </div>
         </div>
 
-        <!-- License File Upload -->
         <ng-container *ngIf="!hasExistingLicenseFile">
           <div class="form-row">
             <div class="form-group">
@@ -109,49 +163,68 @@
           <div class="form-row">
             <div class="form-group">
               <label>קובץ רישיון ממשלתי שהועלה:</label>
-              <a [href]="userForm.get('license_file_url')?.value" target="_blank" class="uploaded-file-link">
-                <button type="button" (click)="openLicenseInNewTab()">הצג קובץ/תמונה</button>
+              <a
+                [href]="userForm.get('license_file_url')?.value"
+                target="_blank"
+                class="uploaded-file-link"
+              >
+                <button type="button" (click)="openLicenseInNewTab()">
+                  הצג קובץ/תמונה
+                </button>
               </a>
             </div>
           </div>
         </ng-container>
-        <!-- Block Section -->
         <div *ngIf="user?.is_blocked" class="block-section">
-          <h3>חסימת משתמש</h3> 
+          <h3>חסימת משתמש</h3>
           <div class="form-row">
             <div class="form-group">
-              <label for="block_reason">סיבת חסימה <span class="required-asterisk">*</span></label>
-              <textarea 
-                id="block_reason" 
-                formControlName="block_reason" 
-                class="form-control" 
+              <label for="block_reason"
+                >סיבת חסימה <span class="required-asterisk">*</span></label
+              >
+              <textarea
+                id="block_reason"
+                formControlName="block_reason"
+                class="form-control"
                 rows="3"
-                placeholder="הזן את סיבת החסימה..."></textarea>
-              <small *ngIf="f['block_reason'].touched && f['block_reason'].errors?.['required']" class="error-message">
+                placeholder="הזן את סיבת החסימה..."
+              ></textarea>
+              <small
+                *ngIf="f['block_reason'].touched && f['block_reason'].errors?.['required']"
+                class="error-message"
+              >
                 יש להזין סיבת חסימה
               </small>
             </div>
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label for="block_expires_at">תאריך סיום חסימה <span class="required-asterisk">*</span></label>
-              <input 
-                type="datetime-local" 
-                id="block_expires_at" 
-                formControlName="block_expires_at" 
+              <label for="block_expires_at"
+                >תאריך סיום חסימה
+                <span class="required-asterisk">*</span></label
+              >
+              <input
+                type="datetime-local"
+                id="block_expires_at"
+                formControlName="block_expires_at"
                 [min]="minDateTime"
                 (blur)="validateBlockExpiryOnBlur()"
                 (change)="validateBlockExpiryOnBlur()"
-                class="form-control" />
-              <small *ngIf="f['block_expires_at'].touched && f['block_expires_at'].errors?.['required']" class="error-message">
+                class="form-control"
+              />
+              <small
+                *ngIf="f['block_expires_at'].touched && f['block_expires_at'].errors?.['required']"
+                class="error-message"
+              >
                 יש להזין תאריך סיום חסימה
               </small>
             </div>
           </div>
         </div>
-        <!-- Submit -->
         <div class="form-actions">
-          <button type="submit" class="btn-submit" [disabled]="isSubmitting">שמירה</button>
+          <button type="submit" class="btn-submit" [disabled]="isSubmitting">
+            שמירה
+          </button>
         </div>
       </form>
     </div>

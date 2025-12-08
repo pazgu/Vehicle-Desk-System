@@ -131,7 +131,7 @@
   color: #811313;
 }
 
-.status-cancelled-no-show {
+.status-cancelled_due_to_no_show {
   background-color: #ffe1e184;
 }
 
@@ -164,7 +164,7 @@ button:disabled {
     rgba(107, 163, 240, 0.15)
   );
   background-size: 20px 20px;
-  animation: moveStripes 1s linear infinite;
+  animation: moveStripes 0.5s linear infinite;
 }
 
 @keyframes moveStripes {
@@ -245,8 +245,7 @@ button:disabled {
   justify-content: center;
   align-items: center;
   direction: rtl;
-  flex-wrap: nowrap;  
-
+  flex-wrap: nowrap;
 }
 
 .modify-buttons button.modify {
@@ -280,14 +279,13 @@ button:disabled {
   height: 32px;
 }
 
-.modify-buttons button.status:hover{
+.modify-buttons button.status:hover {
   background-color: #c1c1c1;
   border-color: #353535;
 }
-.switch{
-  width:20px;
-  height:20px;
-
+.switch {
+  width: 20px;
+  height: 20px;
 }
 
 .delete {
@@ -388,15 +386,15 @@ button:disabled {
   vertical-align: middle;
 }
 
-.status-cancelled-vehicle-unavailable {
+.status-cancelled_vehicle_unavailable {
   position: relative;
-  background-color: #bcbbbb;
+  background-color: #a4938589;
   opacity: 0.8;
   font-style: italic;
-  color: rgb(125, 125, 125);
+  color: rgb(54, 41, 41);
 }
 
-.status-cancelled-vehicle-unavailable::after {
+.status-cancelled_vehicle_unavailable::after {
   content: "(הרכב אינו זמין)";
   position: absolute;
   top: 50%;

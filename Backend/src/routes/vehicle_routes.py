@@ -21,6 +21,7 @@ from ..services.vehicle_service import (
     get_vehicle_km_driven_on_date,
     get_vehicles_with_optional_status,
     get_available_vehicles_new_ride,
+    get_vip_vehicles_for_ride,
     update_vehicle_status,
     get_vehicle_by_id, update_vehicle,
     get_available_vehicles_for_ride_by_id,
@@ -50,10 +51,60 @@ def get_all_vehicles_route(
     start_time:Optional[datetime]=Query(None),
     end_time:Optional[datetime]=Query(None),
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    user_department_id = current_user.department_id
+    vehicles = get_available_vehicles_new_ride(db,start_time,end_time,type,user_department_id)
+
+    if type:
+        vehicles = [v for v in vehicles if v.type and v.type.lower() == type.lower()]
+
+    if not vehicles:
+        return []
+
+    electric, hybrid, fuel = [], [], []
+
+    for v in vehicles:
+        if v.fuel_type == "electric":
+            km_today = get_vehicle_km_driven_on_date(db, v.id, ride_date or date.today())
+            if distance_km + float(km_today) <= 200:
+                electric.append(v)
+            else:
+                if "electric_low" not in locals():
+                    electric_low = []
+                electric_low.append(v)
+
+        elif v.fuel_type == "hybrid":
+            hybrid.append(v)
+        elif v.fuel_type =="gasoline":
+            fuel.append(v)
+
+    if "electric_low" not in locals():
+        electric_low = []
+    if distance_km <= 200 and electric:
+        prioritized = electric
+    elif hybrid:
+        prioritized = hybrid
+    elif fuel:
+        prioritized = fuel
+    else:
+        prioritized = electric_low
+
+    return prioritized
+
+
+
+@router.get("/vip-vehicles-new-ride", response_model=List[VehicleOut])
+def get_vip_vehicles_route(
+    distance_km: float = Query(...),
+    ride_date: Optional[date] = Query(None),
+    type: Optional[str] = Query(None),
+    start_time: Optional[datetime] = Query(None),
+    end_time: Optional[datetime] = Query(None),
+    db: Session = Depends(get_db),
     payload: dict = Depends(token_check),
 ):
-    vehicles = get_available_vehicles_new_ride(db,start_time,end_time,type)
-
+    vehicles = get_vip_vehicles_for_ride(db, start_time, end_time, type)
 
     if type:
         vehicles = [v for v in vehicles if v.type and v.type.lower() == type.lower()]
@@ -70,10 +121,9 @@ def get_all_vehicles_route(
                 electric.append(v)
         elif v.fuel_type == "hybrid":
             hybrid.append(v)
-        elif v.fuel_type =="gasoline":
+        elif v.fuel_type == "gasoline":
             fuel.append(v)
 
-   
     prioritized = []
     if distance_km <= 200 and electric:
         prioritized = electric
@@ -85,6 +135,8 @@ def get_all_vehicles_route(
         prioritized = electric
 
     return prioritized
+
+
 
 @router.get("/all-vehicles", response_model=List[VehicleOut])
 def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = Depends(get_db), payload: dict = Depends(token_check)):
@@ -157,15 +209,15 @@ async def patch_vehicle_status(
 @router.get("/{ride_id}/available-vehicles", response_model=List[VehicleOut])
 def available_vehicles_for_ride(
     ride_id: UUID,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     try:
-        return get_available_vehicles_for_ride_by_id(db, ride_id)
+        return get_available_vehicles_for_ride_by_id(db, ride_id,current_user.department_id)
     except HTTPException as e:
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
-
 
 @router.get("/vehicle/{vehicle_id}")
 def get_vehicle_by_id_route(vehicle_id: str, db: Session = Depends(get_db)):
@@ -180,7 +232,7 @@ def update_vehicle_route(
     current_user: User = Depends(get_current_user)
 ):
     try:
-        updated_vehicle = update_vehicle(vehicle_id, vehicle_data, db)
+        updated_vehicle = update_vehicle(vehicle_id, vehicle_data, db, current_user.employee_id)
         return updated_vehicle
     except HTTPException as e:
         raise e
@@ -321,9 +373,11 @@ def restore_vehicle(
         raise HTTPException(status_code=404, detail="Archived vehicle not found")
     
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user.employee_id)})
-
+    
     vehicle.is_archived = False
     vehicle.archived_at = None
+    vehicle.freeze_reason = None
+    vehicle.freeze_details = None
     vehicle.status = VehicleStatus.available
     
     db.commit()

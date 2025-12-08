@@ -1,58 +1,120 @@
-  
- <div class="entity-fields">
-              <table class="audit-ride-table">
-                <thead>
-                  <tr>
-                    <th>שדה</th>
-                    <th>ערך ישן</th>
-                    <th>ערך חדש</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let row of getAuditRows()">
-                    <td>{{ row.label }}</td>
-                    <td [ngClass]="{'old-value-cell': row.oldValue !== row.newValue}">
-                      <ng-container
-                        *ngIf="row.label === 'בדיקת רישיון עברה' || row.label === 'אירוע חירום' || row.label === 'רישיון ממשלתי'; else oldValueContent">
-                        {{ row.oldValue === true ? 'כן' : row.oldValue === false ? 'לא' : (row.oldValue ?? '-') }}
-                      </ng-container>
-                      <ng-template #oldValueContent>
-                        <ng-container *ngIf="row.label.includes('זמן') || row.label.includes('תאריך')|| row.label.includes('שימוש'); else plainOld">
-                          {{ row.oldValue ? (row.oldValue | date:'dd/MM/yyyy HH:mm') : '-' }}
-                        </ng-container>
-                        <ng-template #plainOld>
-                          <ng-container *ngIf="row.label === 'תמונה'; else plainOldValue">
-                            <img *ngIf="row.oldValue && row.oldValue.length > 0" [src]="row.oldValue" alt="תמונה ישנה"
-                              style="max-width: 120px; max-height: 80px;" />
-                            <span *ngIf="!row.oldValue || row.oldValue.length === 0">-</span>
-                          </ng-container>
-                          <ng-template #plainOldValue>{{ row.oldValue !== undefined && row.oldValue !== null &&
-                            row.oldValue !== '' ? row.oldValue : '-' }}</ng-template>
-                        </ng-template>
-                      </ng-template>
-                    </td>
-                    <td [ngClass]="{'new-value-cell': row.oldValue !== row.newValue}">
-                      <ng-container
-                        *ngIf="row.label === 'בדיקת רישיון עברה' || row.label === 'אירוע חירום' || row.label === 'רישיון ממשלתי'; else newValueContent">
-                        {{ row.newValue === true ? 'כן' : row.newValue === false ? 'לא' : (row.newValue ?? '-') }}
-                      </ng-container>
-                      <ng-template #newValueContent>
-                        <ng-container *ngIf="row.label.includes('זמן') || row.label.includes('תאריך')|| row.label.includes('שימוש'); else plainNew">
-                          {{ row.newValue ? (row.newValue | date:'dd/MM/yyyy HH:mm') : '-' }}
-                        </ng-container>
-                        <ng-template #plainNew>
-                          <ng-container *ngIf="row.label === 'תמונה'; else plainNewValue">
-                            <img *ngIf="row.newValue && row.newValue.length > 0" [src]="row.newValue" alt="תמונה חדשה"
-                              style="max-width: 120px; max-height: 80px;" />
-                            <span *ngIf="!row.newValue || row.newValue.length === 0">-</span>
-                          </ng-container>
-                          <ng-template #plainNewValue>{{ row.newValue !== undefined && row.newValue !== null &&
-                            row.newValue !== '' ? row.newValue : '-' }}</ng-template>
-                        </ng-template>
-                      </ng-template>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-         
+<div class="entity-fields">
+  <table class="audit-ride-table">
+    <thead>
+      <tr>
+        <th>שדה</th>
+        <th>ערך ישן</th>
+        <th>ערך חדש</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of getAuditRows()">
+        <td>{{ row.label }}</td>
+        <td [ngClass]="{ 'old-value-cell': row.oldValue !== row.newValue }">
+          <ng-container
+            *ngIf="
+              row.label === 'בדיקת רישיון עברה' ||
+                row.label === 'אירוע חירום' ||
+                row.label === 'רישיון ממשלתי';
+              else oldValueContent
+            "
+          >
+            {{
+              row.oldValue === true
+                ? "כן"
+                : row.oldValue === false
+                ? "לא"
+                : row.oldValue ?? "-"
+            }}
+          </ng-container>
+          <ng-template #oldValueContent>
+            <ng-container
+              *ngIf="
+                row.label.includes('זמן') ||
+                  row.label.includes('תאריך') ||
+                  row.label.includes('שימוש');
+                else plainOld
+              "
+            >
+              {{
+                row.oldValue ? (row.oldValue | date : "dd/MM/yyyy HH:mm") : "-"
+              }}
+            </ng-container>
+            <ng-template #plainOld>
+              <ng-container *ngIf="row.label === 'תמונה'; else plainOldValue">
+                <img
+                  *ngIf="row.oldValue && row.oldValue.length > 0"
+                  [src]="row.oldValue"
+                  alt="תמונה ישנה"
+                  style="max-width: 120px; max-height: 80px"
+                />
+                <span *ngIf="!row.oldValue || row.oldValue.length === 0"
+                  >-</span
+                >
+              </ng-container>
+              <ng-template #plainOldValue>{{
+                row.oldValue !== undefined &&
+                row.oldValue !== null &&
+                row.oldValue !== ""
+                  ? row.oldValue
+                  : "-"
+              }}</ng-template>
+            </ng-template>
+          </ng-template>
+        </td>
+        <td [ngClass]="{ 'new-value-cell': row.oldValue !== row.newValue }">
+          <ng-container
+            *ngIf="
+              row.label === 'בדיקת רישיון עברה' ||
+                row.label === 'אירוע חירום' ||
+                row.label === 'רישיון ממשלתי';
+              else newValueContent
+            "
+          >
+            {{
+              row.newValue === true
+                ? "כן"
+                : row.newValue === false
+                ? "לא"
+                : row.newValue ?? "-"
+            }}
+          </ng-container>
+          <ng-template #newValueContent>
+            <ng-container
+              *ngIf="
+                row.label.includes('זמן') ||
+                  row.label.includes('תאריך') ||
+                  row.label.includes('שימוש');
+                else plainNew
+              "
+            >
+              {{
+                row.newValue ? (row.newValue | date : "dd/MM/yyyy HH:mm") : "-"
+              }}
+            </ng-container>
+            <ng-template #plainNew>
+              <ng-container *ngIf="row.label === 'תמונה'; else plainNewValue">
+                <img
+                  *ngIf="row.newValue && row.newValue.length > 0"
+                  [src]="row.newValue"
+                  alt="תמונה חדשה"
+                  style="max-width: 120px; max-height: 80px"
+                />
+                <span *ngIf="!row.newValue || row.newValue.length === 0"
+                  >-</span
+                >
+              </ng-container>
+              <ng-template #plainNewValue>{{
+                row.newValue !== undefined &&
+                row.newValue !== null &&
+                row.newValue !== ""
+                  ? row.newValue
+                  : "-"
+              }}</ng-template>
+            </ng-template>
+          </ng-template>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

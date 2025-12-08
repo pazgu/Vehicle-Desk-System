@@ -1,5 +1,5 @@
 import pandas as pd
-from datetime import datetime, time, date, timedelta
+from datetime import datetime, time, date, timedelta, timezone
 from typing import Optional, List, Dict, Any
 from uuid import UUID
 import calendar
@@ -809,7 +809,7 @@ def get_archived_vehicles(
             else:
                 archived_at_dt = v.archived_at
 
-            archive_age = (datetime.now() - archived_at_dt).days
+            archive_age = (datetime.now(timezone.utc) - archived_at_dt).days
             if archive_age >= 90:
                 data["canDelete"] = True
 

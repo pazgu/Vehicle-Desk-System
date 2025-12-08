@@ -39,8 +39,9 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate, license_chec
         )
     rider_id = ride.user_id if ride.user_id else user_id
     rider = db.query(User).filter(User.employee_id == rider_id).first()
-    initial_status = RideStatus.approved if is_vip_department(db, rider_id) else RideStatus.pending
-
+    is_vip = is_vip_department(db, rider_id)
+    initial_status = RideStatus.approved if is_vip else RideStatus.pending
+ 
     if not rider:
         raise HTTPException(status_code=404, detail="Rider not found")
     if rider_id != user_id: 
@@ -98,8 +99,10 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate, license_chec
         status=initial_status, 
         license_check_passed=license_check_passed,  
         submitted_at=datetime.now(timezone.utc),
-        extra_stops=ride.extra_stops or None
+        extra_stops=ride.extra_stops or None,
+        approving_supervisor=ride.approving_supervisor 
     )
+   
 
     vehicle.mileage += ride.estimated_distance_km
 
@@ -107,6 +110,16 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate, license_chec
     db.commit()
     db.refresh(new_ride)
     db.refresh(vehicle)
+
+
+    if is_vip:
+        admins = db.query(User).filter(User.role == "admin").all()
+        for admin in admins:
+            create_system_notification(
+                user_id=admin.employee_id,
+                title="בקשת נסיעה חדשה ",
+                message = f"העובד {rider.first_name} {rider.last_name} ממחלקת VIP יצר בקשת נסיעה חדשה.",
+            )
 
     await sio.emit("ride_status_updated", {
         "ride_id": str(new_ride.id),
@@ -145,6 +158,8 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate, license_chec
     ride_response_dict.pop('_sa_instance_state', None)
 
     return ride_response
+
+
 async def create_supervisor_ride(db: Session, user_id: UUID, ride: RideCreate):
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id)})
 

@@ -4,8 +4,10 @@ from typing import List
 from uuid import UUID
 
 from fastapi import HTTPException
-from sqlalchemy import String, func, text, desc
+from sqlalchemy import String, func, or_, text, desc
 from sqlalchemy.orm import Session
+
+from ..models.department_model import Department
 
 # Utils
 from ..utils.audit_utils import log_action
@@ -24,34 +26,42 @@ from ..models.ride_model import Ride, RideStatus
 from ..models.user_model import User
 from ..models.vehicle_inspection_model import VehicleInspection
 from ..models.vehicle_model import VehicleStatus, Vehicle
-  
-  #helper function
-# def get_user_email(user_id: UUID, db: Session) -> str | None:
-#     """Fetches a user's email from the database by their ID."""
-#     user = db.query(User).filter(User.employee_id == user_id).first()
-#     if user and user.email:
-#         return user.email
-#     return None
-
 
 from ..utils.socket_manager import sio
-def get_department_orders(department_id: str, db: Session) -> List[RideDashboardItem]:
-    """
-    Fetch all orders for a specific department by joining the Ride and User tables.
-    """
-    orders = (
-    db.query(Ride, Vehicle.vehicle_model)
-    .join(User, User.employee_id == Ride.user_id)
-    .join(Vehicle, Ride.vehicle_id == Vehicle.id)
-    .filter(User.department_id == department_id)
-    .filter(User.role == "employee") 
-    .order_by(desc(Ride.submitted_at))
-    .all()
-)
 
+def get_department_orders(department_id: str, db: Session, current_user: User) -> List[RideDashboardItem]:
+
+    department = db.query(Department).filter(Department.id == department_id).first()
+    official_supervisor_id = department.supervisor_id if department else None
+
+    is_official = (str(current_user.employee_id) == str(official_supervisor_id))
+
+    query = (
+        db.query(Ride, Vehicle.vehicle_model)
+        .join(User, User.employee_id == Ride.user_id)
+        .join(Vehicle, Ride.vehicle_id == Vehicle.id)
+        .filter(User.department_id == department_id)
+        .filter(User.role == "employee")
+    )
+
+    # Filter based on supervisor assignment
+    if is_official:
+        query = query.filter(
+            or_(
+                Ride.approving_supervisor == None,
+                Ride.approving_supervisor == current_user.employee_id
+            )
+        )
+    else:
+        query = query.filter(Ride.approving_supervisor == current_user.employee_id)
+
+    orders = query.order_by(
+        # Sort in_progress to the top
+        (Ride.status != RideStatus.in_progress),
+        desc(Ride.submitted_at)
+    ).all()
 
     dashboard_items = []
-
     for order, vehicle_model in orders:
         user = db.query(User).filter(User.employee_id == order.user_id).first()
         employee_name = f"{user.first_name} {user.last_name}" if user else "Unknown"
@@ -64,11 +74,10 @@ def get_department_orders(department_id: str, db: Session) -> List[RideDashboard
             date_and_time=order.start_datetime,
             end_datetime=order.end_datetime,
             destination=order.destination,
-            distance = math.ceil(order.estimated_distance_km),
-            status=order.status.value,  
-            submitted_at=order.submitted_at 
+            distance=math.ceil(order.estimated_distance_km),
+            status=order.status.value,
+            submitted_at=order.submitted_at,
         )
-
         dashboard_items.append(dashboard_item)
 
     return dashboard_items
@@ -118,7 +127,6 @@ async def edit_order_status(department_id: str, order_id: str, new_status: str,u
     """
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id)})
     
-
     order = (
         db.query(Ride)
         .join(User, User.employee_id == Ride.user_id)
@@ -127,8 +135,7 @@ async def edit_order_status(department_id: str, order_id: str, new_status: str,u
     )
 
     if not order:
-            raise HTTPException(status_code=404, detail="ההזמנה לא נמצאה")
-
+        raise HTTPException(status_code=404, detail="ההזמנה לא נמצאה")
 
     order.status = new_status
     if new_status.lower() == "rejected":
@@ -158,57 +165,6 @@ async def edit_order_status(department_id: str, order_id: str, new_status: str,u
     user = db.query(User).filter(User.employee_id == order.user_id).first()
     vehicle = db.query(Vehicle).filter(Vehicle.id == order.vehicle_id).first()
 
-
-    # if user and vehicle:
-    #     employee_email = get_user_email(order.user_id, db) # Use the helper function
-
-    #     if employee_email:
-    #         # Determine which template to use and the subject
-    #         template_name = ""
-    #         email_subject = ""
-    #         if new_status.lower() == "approved":
-    #             template_name = "ride_approved.html"
-    #             email_subject = "✅ הנסיעה שלך אושרה"
-    #         elif new_status.lower() == "rejected":
-    #             template_name = "ride_rejected.html"
-    #             email_subject = "❌ הבקשה שלך נדחתה"
-
-    #         if template_name: # Only proceed if a valid template name was set
-    #             template_context = {
-    #                 "EMPLOYEE_NAME": f"{user.first_name} {user.last_name}",
-    #                 "DESTINATION": order.destination,
-    #                 "DATE_TIME": order.start_datetime.strftime("%Y-%m-%d %H:%M"),
-    #                 "PLATE_NUMBER": vehicle.plate_number,
-    #                 "DISTANCE": f"{order.estimated_distance_km} ק״מ",
-    #                 "APPROVER_NAME": "המנהל שלך" # Keep this static for now, or fetch actual approver name
-    #             }
-
-    #             # Add rejection reason to context only if status is rejected
-    #             if new_status.lower() == "rejected":
-    #                 template_context["REJECTION_REASON"] = rejection_reason or "לא צוינה סיבה"
-    #             else:
-    #                 # Ensure REJECTION_REASON is cleared even if template for approved has it
-    #                 template_context["REJECTION_REASON"] = ""
-
-    #             # Load the email template and automatically replace placeholders using the context
-    #             body = load_email_template(template_name, template_context)
-
-
-
-
-    #             # Handle REJECTION_REASON for both approved and rejected emails
-    #             if new_status.lower() == "rejected":
-    #                 body = body.replace("{{REJECTION_REASON}}", rejection_reason or "לא צוינה סיבה")
-    #             else:
-    #                 body = body.replace("{{REJECTION_REASON}}", "")
-
-    #             body = body.replace("{{APPROVER_NAME}}", "המנהל שלך")
-    #             await async_send_email(
-    #                 to_email = employee_email,
-    #                 subject=email_subject,
-    #                 html_content=body
-    #             )
-
     db.execute(text("SET session.audit.user_id = DEFAULT"))
 
     await sio.emit("ride_status_updated", {
@@ -229,8 +185,6 @@ async def edit_order_status(department_id: str, order_id: str, new_status: str,u
     })
 
     return order, notification
-    
-
 
 
 def get_department_notifications(department_id: UUID, db: Session) -> List[Notification]:
@@ -266,7 +220,6 @@ async def start_ride(db: Session, ride_id: UUID):
     if vehicle.status != VehicleStatus.available:
         raise HTTPException(status_code=400, detail="Vehicle is not available")
 
-
     update_vehicle_status(
         vehicle_id=vehicle.id,
         new_status=VehicleStatus.in_use,
@@ -278,8 +231,6 @@ async def start_ride(db: Session, ride_id: UUID):
 
     ride.actual_pickup_time = datetime.now(timezone.utc)
     ride.status = RideStatus.in_progress
-
-   
 
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": f"{ride.user_id}"})
 
@@ -297,25 +248,23 @@ async def start_ride(db: Session, ride_id: UUID):
         "new_status": vehicle.status.value
     })
 
-    return ride,vehicle
+    return ride, vehicle
+
 
 def vehicle_inspection_logic(data: VehicleInspectionSchema, db: Session):
-
     inspection = VehicleInspection(
-    inspection_id=data.inspection_id,
-    inspected_by=data.inspected_by,
-    inspection_date=datetime.now(timezone.utc),
-    clean=data.clean,
-    fuel_checked=data.fuel_checked,
-    no_items_left=data.no_items_left,
-    critical_issue_bool=data.critical_issue_bool,
-    issues_found=data.issues_found,
-    vehicle_id=data.vehicle_id,
-)   
+        inspection_id=data.inspection_id,
+        inspected_by=data.inspected_by,
+        inspection_date=datetime.now(timezone.utc),
+        clean=data.clean,
+        fuel_checked=data.fuel_checked,
+        no_items_left=data.no_items_left,
+        critical_issue_bool=data.critical_issue_bool,
+        issues_found=data.issues_found,
+        vehicle_id=data.vehicle_id,
+    )   
 
     db.add(inspection)
-
     db.commit()
 
     return {"message": "Ride completed and vehicle inspection recorded successfully"}
-

@@ -32,7 +32,7 @@ import { ToastService } from '../../../services/toast.service';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './email-retry.component.html',
-  styleUrls: ['./email-retry.component.css']
+  styleUrls: ['./email-retry.component.css'],
 })
 export class EmailRetryComponent {
   constructor(
@@ -40,16 +40,16 @@ export class EmailRetryComponent {
     private toastService: ToastService
   ) {}
 
-  get state$() { 
-    return this.emailHandlerService.state$; 
+  get state$() {
+    return this.emailHandlerService.state$;
   }
 
-  onRetry() { 
-    this.emailHandlerService.retry(); 
+  onRetry() {
+    this.emailHandlerService.retry();
   }
 
-  onClose() { 
-    this.emailHandlerService.reset(); 
+  onClose() {
+    this.emailHandlerService.reset();
   }
 
   // Map error messages to more specific Hebrew messages
@@ -59,41 +59,53 @@ export class EmailRetryComponent {
     }
 
     const lowerMessage = message.toLowerCase();
-    
+
     // Check for specific error patterns in English
-    if (lowerMessage.includes('could not send the password reset email') ||
-        lowerMessage.includes('password reset email')) {
+    if (
+      lowerMessage.includes('could not send the password reset email') ||
+      lowerMessage.includes('password reset email')
+    ) {
       return 'לא ניתן לשלוח מייל איפוס סיסמה, נסה שנית מאוחר יותר';
     }
-    
-    if (lowerMessage.includes('user not found') || 
-        lowerMessage.includes('email not found') || 
-        lowerMessage.includes('not exist') ||
-        lowerMessage.includes('לא נמצא')) {
+
+    if (
+      lowerMessage.includes('user not found') ||
+      lowerMessage.includes('email not found') ||
+      lowerMessage.includes('not exist') ||
+      lowerMessage.includes('לא נמצא')
+    ) {
       return 'כתובת האימייל לא קיימת במערכת. אנא בדוק את הכתובת ונסה שוב.';
     }
-    
-    if (lowerMessage.includes('invalid email') || 
-        lowerMessage.includes('email format') ||
-        lowerMessage.includes('לא תקין')) {
+
+    if (
+      lowerMessage.includes('invalid email') ||
+      lowerMessage.includes('email format') ||
+      lowerMessage.includes('לא תקין')
+    ) {
       return 'כתובת האימייל לא תקינה. אנא בדוק את הכתובת ונסה שוב.';
     }
-    
-    if (lowerMessage.includes('rate limit') || 
-        lowerMessage.includes('too many') ||
-        lowerMessage.includes('יותר מדי')) {
+
+    if (
+      lowerMessage.includes('rate limit') ||
+      lowerMessage.includes('too many') ||
+      lowerMessage.includes('יותר מדי')
+    ) {
       return 'נשלחו יותר מדי בקשות. אנא המתן מספר דקות ונסה שוב.';
     }
-    
-    if (lowerMessage.includes('server error') || 
-        lowerMessage.includes('internal error') ||
-        lowerMessage.includes('שרת')) {
+
+    if (
+      lowerMessage.includes('server error') ||
+      lowerMessage.includes('internal error') ||
+      lowerMessage.includes('שרת')
+    ) {
       return 'אירעה שגיאת שרת זמנית. אנא נסה שוב בעוד מספר דקות.';
     }
-    
-    if (lowerMessage.includes('network') || 
-        lowerMessage.includes('connection') ||
-        lowerMessage.includes('רשת')) {
+
+    if (
+      lowerMessage.includes('network') ||
+      lowerMessage.includes('connection') ||
+      lowerMessage.includes('רשת')
+    ) {
       return 'בעיית חיבור לאינטרנט. אנא בדוק את החיבור ונסה שוב.';
     }
 

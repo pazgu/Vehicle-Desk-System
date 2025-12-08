@@ -4,59 +4,45 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Alef', sans-serif;
-  
+  font-family: "Alef", sans-serif;
 }
 
-
-/* Single toast container at bottom right */
 .toast-container {
   position: fixed;
   right: 20px;
   top: 70px;
   display: flex;
-  flex-direction: column-reverse; /* Newest toast at bottom */
-  align-items: flex-end; /* Aligns them neatly to the right */
-  gap: 10px;
+  flex-direction: column-reverse;
+  align-items: flex-end;
+  gap: 12px;
   z-index: 99999;
 }
 
-/* Remove positioning from toasts themselves */
-
 .toast.persistent {
-  /* position: fixed !important;
-  bottom: 20px !important;
-  right: 20px !important;
-  top: auto !important;
-  left: auto !important; */
-  position: relative; /* Not fixed */
-
+  position: relative;
   padding: 16px 20px;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   z-index: 1290;
   display: flex;
   align-items: center;
   gap: 16px;
-
   width: fit-content;
   max-width: 400px;
-
-  /* 🔹 Remove fixed height so it can grow with text */
-  height: auto;  
-
-  /* 🔹 Wrap long text */
+  height: auto;
   white-space: normal;
   overflow-wrap: break-word;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-right: 4px solid #942222;
 }
 
-
 .toast-ok-btn {
-  background: rgba(255, 255, 255, 0.2);
-  color: black;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: #942222;
+  color: #ffffff;
+  border: none;
   padding: 6px 16px;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -65,89 +51,93 @@
 }
 
 .toast-ok-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-  border-color: rgba(255, 255, 255, 0.4);
-  transform: translateY(-1px);
+  background: #7a1b1b;
 }
 
 .toast-ok-btn:active {
-  transform: translateY(0);
-  background: rgba(255, 255, 255, 0.1);
+  background: #631616;
 }
 
-
 .custom-toast {
-  /* position: fixed;
-  top: 80px;
-  right: 20px; */
-    position: relative; /* Not fixed */
-
-  padding: 1rem 1.5rem;
+  position: relative;
+  padding: 14px 20px;
   border-radius: 8px;
-  color: #fff;
-  font-family: 'Alef', sans-serif;
-  font-size: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  font-family: "Alef", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   z-index: 99999;
   animation: slideIn 0.3s ease forwards, fadeOut 0.5s ease 2.5s forwards;
-  max-width: 300px;
-  opacity: 0; /* Start hidden until slideIn runs */
+  max-width: 320px;
+  opacity: 0;
   direction: rtl;
   text-align: right;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-right: 4px solid;
 }
 
 .custom-toast.success {
-  background-color: #64d398;
+  border-right-color: #10b981;
+  color: #065f46;
 }
+
 .toast.success {
-  background-color: #64d398;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-right: 4px solid #10b981;
+  color: #065f46;
 }
 
 .custom-toast.error {
-  background-color: #ed6868;
+  border-right-color: #942222;
+  color: #7f1d1d;
 }
+
 .toast.error {
-  background-color: #ed6868;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-right: 4px solid #942222;
+  color: #7f1d1d;
 }
 
 .custom-toast.neutral {
-  background-color: #afbff3;
-  color: black;
-}
-.toast.neutral {
-  background-color: #afbff3;
-  color: black;
+  border-right-color: #6b7280;
+  color: #374151;
 }
 
+.toast.neutral {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-right: 4px solid #6b7280;
+  color: #374151;
+}
 
 @keyframes slideIn {
   from {
     opacity: 0;
-    transform: translateY(-15px);
+    transform: translateX(100px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(0);
   }
 }
 
 @keyframes fadeOut {
-  from {
-    opacity: 1;
-  }
   to {
     opacity: 0;
+    transform: translateX(100px);
   }
 }
 
-
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
   padding: 0;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
 }
-
 
 body {
   direction: rtl;
@@ -155,7 +145,5 @@ body {
   background-repeat: repeat;
   background-attachment: fixed;
   background-position: center;
-  font-family: 'Alef', sans-serif;
+  font-family: "Alef", sans-serif;
 }
-
-

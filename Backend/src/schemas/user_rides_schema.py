@@ -35,12 +35,14 @@ class RideSchema(BaseModel):
     status: RideStatus
     submitted_at: datetime
     user_id: UUID 
-    vehicle: FuelType
-    vehicle_type: str
-    vehicle_model: str
+    vehicle_id: Optional[UUID] = None
+    vehicle: Optional[FuelType]=None
+    vehicle_type: Optional[str]=None
+    vehicle_model: Optional[str]=None
     actual_pickup_time: Optional[datetime] = None
     extended_ride_reason: Optional[str] = None
     four_by_four_reason: Optional[str] = None
+    approving_supervisor:Optional[UUID]=None
 
     class Config:
         from_attributes = True
