@@ -480,7 +480,7 @@ export class AdminAnalyticsComponent implements OnInit {
       data = this.purposeStats.months.map((month) => ({
         חודש: month.month_label,
         מנהלי: `${month.administrative_count} (${month.administrative_percentage}%)`,
-        תפעולי: `${month.operational_count} (${month.operational_percentage}%)`,
+        מבצעי: `${month.operational_count} (${month.operational_percentage}%)`,
         'סה"כ': month.total_rides,
       }));
     }
@@ -765,7 +765,7 @@ export class AdminAnalyticsComponent implements OnInit {
       data = this.purposeStats.months.map((month) => ({
         חודש: month.month_label,
         מנהלי: `${month.administrative_count} (${month.administrative_percentage}%)`,
-        תפעולי: `${month.operational_count} (${month.operational_percentage}%)`,
+        מבצעי: `${month.operational_count} (${month.operational_percentage}%)`,
         'סה"כ': month.total_rides,
       }));
     } else if (isNoShowTab) { 
@@ -948,7 +948,7 @@ export class AdminAnalyticsComponent implements OnInit {
           stack: 'purpose',
         },
         {
-          label: 'נסיעות תפעוליות',
+          label: 'נסיעות מבצעיות',
           data: operationalData,
           backgroundColor: '#811313',
           stack: 'purpose',
@@ -982,7 +982,7 @@ export class AdminAnalyticsComponent implements OnInit {
               if (datasetIndex === 0) {
                 return `מנהלי: ${month.administrative_count} (${month.administrative_percentage}%)`;
               } else {
-                return `תפעולי: ${month.operational_count} (${month.operational_percentage}%)`;
+                return `מבצעי: ${month.operational_count} (${month.operational_percentage}%)`;
               }
             },
           },
