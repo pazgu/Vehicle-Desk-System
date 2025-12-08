@@ -63,7 +63,7 @@
 }
 
 .trip-info-section {
-  background: linear-gradient(135deg, #942222 0%, #c13232 100%);
+  background: linear-gradient(135deg, #942222 0%, #932b2b 100%);
   padding: 1.5rem;
   color: white;
 }
@@ -203,7 +203,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #942222 0%, #c13232 100%);
+  background: linear-gradient(135deg, #942222 0%, #932b2b 100%);
   color: white;
   border: none;
   padding: 0.85rem 2.5rem;

@@ -35,11 +35,11 @@ export class RideCompletionFormComponent implements OnInit {
   loading = false;
   currentRide!: any;
   ridesWithLocations: RideLocationItem[] = [];
-  start_location_name: string = '';
   stop_name: string = '';
-  destination_name: string = '';
   VehicleFuelType: FuelType = FuelType.Gasoline;
   extra_stops_names: string[] = [];
+
+  allStopsNames: string = '';
 
   showForm = true;
   @Input() rideId!: string;
@@ -76,10 +76,10 @@ export class RideCompletionFormComponent implements OnInit {
           );
 
           if (matchingRide) {
-            this.start_location_name = matchingRide.start_location_name;
             this.stop_name = matchingRide.stop_name;
-            this.destination_name = matchingRide.destination_name;
             this.extra_stops_names = matchingRide.extra_stops_names || [];
+            const allStops = [this.stop_name, ...this.extra_stops_names];
+            this.allStopsNames = allStops.filter((name) => name).join(', ');
           }
         });
     });
@@ -133,23 +133,21 @@ export class RideCompletionFormComponent implements OnInit {
     this.loadFuelType(this.currentRide.vehicle_id);
 
     if (this.form.value.fueled == 'false') {
-    
-        if (this.VehicleFuelType === 'electric') {
-          this.toastService.showPersistent(
-            'הרכב טרם נטען. אנא טען לפני ההחזרה.',
-            'neutral'
-          );
-        } else if (this.VehicleFuelType === 'hybrid') {
-          this.toastService.showPersistent(
-            'הרכב לא תודלק ולא נטען. יש להשלים לפני ההחזרה.',
-            'neutral'
-          );
-        } else if (this.VehicleFuelType === 'gasoline') {
-          this.toastService.showPersistent(
-            'הרכב לא תודלק. יש לתדלק לפני ההחזרה.',
-            'neutral'
-          );
-        
+      if (this.VehicleFuelType === 'electric') {
+        this.toastService.showPersistent(
+          'הרכב טרם נטען. אנא טען לפני ההחזרה.',
+          'neutral'
+        );
+      } else if (this.VehicleFuelType === 'hybrid') {
+        this.toastService.showPersistent(
+          'הרכב לא תודלק ולא נטען. יש להשלים לפני ההחזרה.',
+          'neutral'
+        );
+      } else if (this.VehicleFuelType === 'gasoline') {
+        this.toastService.showPersistent(
+          'הרכב לא תודלק. יש לתדלק לפני ההחזרה.',
+          'neutral'
+        );
       }
     }
 
