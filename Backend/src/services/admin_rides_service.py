@@ -146,14 +146,21 @@ def get_order_by_ride_id(db: Session, ride_id: UUID) -> Optional[RideDashboardIt
     )
 
 
+
 def update_monthly_usage_stats(db: Session, ride: Ride):
 
     if not ride.end_datetime:
         ride.end_datetime = datetime.utcnow()
 
-    year = ride.start_datetime.year
-    month = ride.start_datetime.month
-    duration_hours = (ride.end_datetime - ride.start_datetime).total_seconds() / 3600.0
+    israel_tz = pytz.timezone("Asia/Jerusalem")
+    start_local = ride.start_datetime.astimezone(israel_tz)
+    end_local = ride.end_datetime.astimezone(israel_tz)
+
+    year = start_local.year
+    month = start_local.month
+
+    duration_hours = (end_local - start_local).total_seconds() / 3600.0
+
     distance = float(ride.actual_distance_km or 0)
 
     stats = db.query(MonthlyVehicleUsage).filter_by(

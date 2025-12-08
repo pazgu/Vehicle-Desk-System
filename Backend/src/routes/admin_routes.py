@@ -31,7 +31,7 @@ from src.services.ride_requirements import get_latest_requirement,create_require
 from ..utils.auth import get_current_user, token_check, role_check
 from ..utils.database import get_db
 from ..utils.socket_manager import sio
-from src.utils.stats import generate_monthly_vehicle_usage
+
 
 # Services
 from src.services import admin_service, department_service 
@@ -668,8 +668,6 @@ def vehicle_usage_stats(
         raise HTTPException(status_code=400, detail="Missing year or month for monthly stats.")
 
     try:
-        generate_monthly_vehicle_usage(db, year, month)  
-
         stats = get_vehicle_usage_stats(db, year, month)
         return {
             "year": year,
