@@ -21,6 +21,7 @@ export class AddNewUserComponent implements OnInit {
     { key: 'employee', label: 'עובד' },
     { key: 'supervisor', label: 'מפקח' },
     { key: 'inspector', label: 'בודק רכבים' },
+    { key: 'raan', label: 'רע"ן' },
   ];
   showPassword = false;
 
@@ -73,7 +74,7 @@ export class AddNewUserComponent implements OnInit {
 
     if (role === 'employee') {
       departmentControl?.setValidators([Validators.required]);
-    } else if (role === 'supervisor') {
+    } else if (role === 'supervisor' || role === 'raan') {
       departmentControl?.clearValidators();
     } else {
       departmentControl?.clearValidators();
@@ -94,19 +95,28 @@ export class AddNewUserComponent implements OnInit {
       return;
     }
 
-    const formData = new FormData();
-    const formValues = this.addUserForm.value;
+  const formValues = this.addUserForm.value;
 
-    for (const key in formValues) {
-      const value = formValues[key];
-      if (value !== null && value !== undefined && value !== '') {
-        formData.append(key, value.toString());
-      }
-    }
+const isRaan = formValues.role?.toLowerCase() === 'raan';
 
-    if (this.checkIfHasGovernmentlicense() && this.selectedFile) {
-      formData.append('license_file', this.selectedFile);
-    }
+const processedValues = {
+  ...formValues,
+  role: isRaan ? 'supervisor' : formValues.role,
+  isRaan: isRaan,
+};
+
+const formData = new FormData();
+
+for (const key in processedValues) {
+  const value = processedValues[key];
+  if (value !== null && value !== undefined && value !== '') {
+    formData.append(key, typeof value === 'boolean' ? String(value) : value);
+  }
+}
+
+if (this.checkIfHasGovernmentlicense() && this.selectedFile) {
+  formData.append('license_file', this.selectedFile);
+}
 
     this.userService.addNewUser(formData).subscribe({
       next: () => {
@@ -193,7 +203,7 @@ export class AddNewUserComponent implements OnInit {
   }
   shouldShowDepartment(): boolean {
     const role = this.addUserForm.get('role')?.value;
-    return role === 'employee' || role === 'supervisor';
+    return role === 'employee' || role === 'supervisor' || role === 'raan';
   }
 
   hasGovlicenseButNoFile(): boolean {
