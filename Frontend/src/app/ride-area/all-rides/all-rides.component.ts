@@ -128,7 +128,7 @@ export class AllRidesComponent implements OnInit {
       );
       if (!isEditableStatus) {
         this.toastService.show(
-          'אפשר לערוך רק הזמנות במצב "ממתין לאישור" או "מאושר" ',
+          'אפשר לערוך רק הזמנות במצב "ממתין לאישור" או "אושר" ',
           'error'
         );
         return;
@@ -208,7 +208,7 @@ export class AllRidesComponent implements OnInit {
         const isDeletableStatus = ['pending', 'approved'].includes(status);
         if (!isDeletableStatus) {
           this.toastService.show(
-            'אפשר לבטל רק הזמנות במצב "ממתין לאישור" או "מאושר" ',
+            'אפשר לבטל רק הזמנות במצב "ממתין לאישור" או "אושר" ',
             'error'
           );
           return;

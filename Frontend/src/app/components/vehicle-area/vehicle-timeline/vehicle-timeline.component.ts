@@ -35,7 +35,7 @@ export class VehicleTimelineComponent implements OnInit, OnDestroy {
   private VERTICAL_GAP_PX = 4;
 
   statusLegend = [
-    { status: 'approved', color: '#a4d1ae', label: 'מאושר' },
+    { status: 'approved', color: '#a4d1ae', label: 'אושר' },
     { status: 'pending', color: '#f5e2a8', label: 'ממתין לאישור' },
     { status: 'in_progress', color: '#6aa5d6', label: 'בנסיעה' },
     { status: 'rejected', color: '#f1b5b5', label: 'נדחה' },
@@ -445,7 +445,7 @@ export class VehicleTimelineComponent implements OnInit, OnDestroy {
 
   getStatusLabel(status: string): string {
     const statusMap: { [key: string]: string } = {
-      approved: 'מאושר',
+      approved: 'אושר',
       pending: 'ממתין לאישור',
       in_progress: 'בנסיעה',
       rejected: 'נדחה',

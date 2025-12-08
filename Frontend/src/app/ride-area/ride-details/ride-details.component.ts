@@ -144,7 +144,7 @@ export class RideDetailsComponent implements OnInit {
   getStatusText(status: string): string {
     const statusMap: { [key: string]: string } = {
       pending: 'ממתין לאישור',
-      approved: 'מאושר',
+      approved: 'אושר',
       completed: 'הושלם',
       in_progress: 'בנסיעה',
       rejected: 'נדחה',

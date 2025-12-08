@@ -187,7 +187,7 @@ export class OrderCardComponent implements OnInit {
 
     switch (status.toLowerCase()) {
       case 'approved':
-        return 'מאושר';
+        return 'אושר';
       case 'pending':
         return 'ממתין לאישור';
       case 'rejected':

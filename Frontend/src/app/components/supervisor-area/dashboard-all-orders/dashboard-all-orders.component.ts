@@ -223,7 +223,7 @@ export class DashboardAllOrdersComponent implements OnInit {
         case 'בהמתנה':
           filtered = filtered.filter((order) => order.status === 'pending');
           break;
-        case 'מאושר':
+        case 'אושר':
           filtered = filtered.filter((order) => order.status === 'approved');
           break;
         case 'נדחה':
@@ -321,7 +321,7 @@ export class DashboardAllOrdersComponent implements OnInit {
 
     switch (status.toLowerCase()) {
       case 'approved':
-        return 'מאושר';
+        return 'אושר';
       case 'pending':
         return 'ממתין לאישור';
       case 'rejected':
