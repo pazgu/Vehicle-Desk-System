@@ -220,7 +220,7 @@ export class DashboardAllOrdersComponent implements OnInit {
 
     if (this.statusFilter) {
       switch (this.statusFilter) {
-        case 'בהמתנה':
+        case 'ממתין לאישור':
           filtered = filtered.filter((order) => order.status === 'pending');
           break;
         case 'אושר':

@@ -88,7 +88,7 @@ export class FilterPanelComponent implements OnChanges {
   private translateStatusToEnglish(hebrewStatus: string): string {
     const statusMap: { [key: string]: string } = {
       אושר: 'approved',
-      בהמתנה: 'pending',
+      'ממתין לאישור': 'pending',
       נדחה: 'rejected',
       בוצע: 'completed',
       בנסיעה: 'in_progress',

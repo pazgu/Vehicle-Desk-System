@@ -41,7 +41,7 @@ export class RideStatusComponent {
   }
   getRideStatusHebrew(status: string): string {
     const statusMap: { [key: string]: string } = {
-      pending: 'בהמתנה',
+      pending: 'ממתין לאישור',
       approved: 'אושר',
       rejected: 'נדחה',
       in_progress: 'בנסיעה',
