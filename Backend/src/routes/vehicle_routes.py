@@ -21,6 +21,7 @@ from ..services.vehicle_service import (
     get_vehicle_km_driven_on_date,
     get_vehicles_with_optional_status,
     get_available_vehicles_new_ride,
+    get_vehicles_for_ride_edit,
     get_vip_vehicles_for_ride,
     update_vehicle_status,
     get_vehicle_by_id, update_vehicle,
@@ -111,7 +112,38 @@ def get_all_vehicles_route(
     return prioritized
 
 
-
+@router.get("/vehicles-for-ride-edit", response_model=List[VehicleOut])
+def get_vehicles_for_ride_edit_route(
+    distance_km: float = Query(...),
+    ride_date: Optional[date] = Query(None),
+    type: Optional[str] = Query(None),
+    start_time: Optional[datetime] = Query(None),
+    end_time: Optional[datetime] = Query(None),
+    exclude_ride_id: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    try:
+        vehicles = get_vehicles_for_ride_edit(
+            db=db,
+            distance_km=distance_km,
+            ride_date=ride_date,
+            vehicle_type=type,
+            start_time=start_time,
+            end_time=end_time,
+            exclude_ride_id=exclude_ride_id,
+            user_department_id=current_user.department_id
+        )
+        return vehicles   
+    except Exception as e:
+        import traceback
+        print(f"❌ Error in get_vehicles_for_ride_edit_route: {e}")
+        print(traceback.format_exc())
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Internal server error: {str(e)}"
+        )
+    
 @router.get("/vip-vehicles-new-ride", response_model=List[VehicleOut])
 def get_vip_vehicles_route(
     distance_km: float = Query(...),
