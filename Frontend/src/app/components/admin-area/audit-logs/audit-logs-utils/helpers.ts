@@ -189,7 +189,7 @@ export function translateRideStatus(status: string | null | undefined): string {
   if (!status) return '';
   switch (status.toLowerCase()) {
     case 'pending':
-      return 'ממתין';
+      return 'ממתין לאישור';
     case 'approved':
       return 'מאושר';
     case 'rejected':

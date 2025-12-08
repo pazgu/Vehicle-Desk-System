@@ -272,7 +272,7 @@ export class AdminAnalyticsComponent implements OnInit {
         }
 
         if (isRideTab) {
-          if (hebrew.includes('ממתין')) bgColor = '#FFF9C4';
+          if (hebrew.includes('ממתין לאישור')) bgColor = '#FFF9C4';
           else if (hebrew.includes('מאושר')) bgColor = '#C8E6C9';
           else if (hebrew.includes('הושלם')) bgColor = '#BBDEFB';
           else if (hebrew.includes('בוטל')) bgColor = '#F8BBD0';
@@ -603,7 +603,7 @@ export class AdminAnalyticsComponent implements OnInit {
       if (label.includes('זמין')) fillColor = 'FFC8E6C9';
       else if (label.includes('מוקפא')) fillColor = 'FFFFCDD2';
       else if (label.includes('בשימוש')) fillColor = 'FFFFE0B2';
-      if (label.includes('ממתין')) fillColor = 'FFFFF9C4';
+      if (label.includes('ממתין לאישור')) fillColor = 'FFFFF9C4';
       else if (label.includes('מאושר')) fillColor = 'FFC8E6C9';
       else if (label.includes('הושלם')) fillColor = 'FFBBDEFB';
       else if (label.includes('בוטל')) fillColor = 'FFF8BBD0';
@@ -676,7 +676,7 @@ export class AdminAnalyticsComponent implements OnInit {
         if (label.includes('זמין')) fillColor = 'FFC8E6C9';
         else if (label.includes('מוקפא')) fillColor = 'FFFFCDD2';
         else if (label.includes('בשימוש')) fillColor = 'FFFFE0B2';
-        if (label.includes('ממתין')) fillColor = 'FFFFF9C4';
+        if (label.includes('ממתין לאישור')) fillColor = 'FFFFF9C4';
         else if (label.includes('מאושר')) fillColor = 'FFC8E6C9';
         else if (label.includes('הושלם')) fillColor = 'FFBBDEFB';
         else if (label.includes('בוטל')) fillColor = 'FFF8BBD0';
@@ -1111,7 +1111,7 @@ export class AdminAnalyticsComponent implements OnInit {
       זמין: 'available',
       בשימוש: 'in_use',
       מוקפא: 'frozen',
-      ממתין: 'pending',
+      'ממתין לאישור' : 'pending',
       מאושר: 'approved',
       נדחה: 'rejected',
       בתהליך: 'in_progress',

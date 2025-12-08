@@ -36,7 +36,7 @@ export class VehicleTimelineComponent implements OnInit, OnDestroy {
 
   statusLegend = [
     { status: 'approved', color: '#a4d1ae', label: 'מאושר' },
-    { status: 'pending', color: '#f5e2a8', label: 'ממתין' },
+    { status: 'pending', color: '#f5e2a8', label: 'ממתין לאישור' },
     { status: 'in_progress', color: '#6aa5d6', label: 'בביצוע' },
     { status: 'rejected', color: '#f1b5b5', label: 'נדחה' },
     { status: 'completed', color: '#b7dbf3', label: 'הושלם' },
