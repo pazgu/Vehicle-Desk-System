@@ -101,15 +101,15 @@
 }
 
 .color-box.good {
-  background: linear-gradient(145deg, #42a5f5, #1976d2);
+  background: linear-gradient(145deg, #ccffd8, #a2ffb8);
 }
 
 .color-box.medium {
-  background: linear-gradient(145deg, #ffc107, #f57c00);
+  background: linear-gradient(145deg, #fff3cd, #ffe590);
 }
 
 .color-box.high {
-  background: linear-gradient(145deg, #ff5252, #d32f2f);
+  background: linear-gradient(145deg, #ffc1c6, #ff98a0);
 }
 
 .filter-button,
@@ -160,26 +160,114 @@
   box-shadow: 0 6px 20px rgba(0, 51, 102, 0.35),
     0 1px 0 rgba(255, 255, 255, 0.1) inset;
 }
-
-.p-chart {
-  transition: all 0.3s ease;
-  border-radius: 10px;
-  overflow: hidden;
-  width: 100% !important;
-  height: 200px !important;
-  margin: 0 auto;
-  padding: 0;
+.usage-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  direction: rtl;
 }
 
-.p-chart canvas {
-  max-width: 100% !important;
-  max-height: 200px !important;
-  width: 100% !important;
-  height: 200px !important;
-  object-fit: contain;
+.usage-table th,
+.usage-table td {
+  padding: 12px;
+  text-align: right;
+  border: 1px solid #ddd;
 }
 
-.p-chart:hover {
-  transform: scale(1.005);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+.usage-table th {
+  background-color: #f5f5f5;
+  font-weight: bold;
+}
+
+.usage-table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.status-badge.good {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-badge.medium {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-badge.high {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+.no-data-message {
+  padding: 40px 20px;
+  text-align: center;
+  color: #6c757d;
+  font-size: 16px;
+  margin: 20px 0;
+}
+
+
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-top: 30px;
+}
+
+.pagination-controls button {
+  background: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+  color: #666;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.pagination-controls button:hover:not(:disabled) {
+  background-color: #e6e6e6;
+  transform: translateY(-2px);
+}
+
+.pagination-controls button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-controls button .icon {
+  width: 24px;
+  height: 24px;
+}
+
+.pagination-controls button svg {
+  width: 100%;
+  height: 100%;
+}
+
+.pagination-controls span {
+  font-size: 1.1rem;
+  color: #555;
+  font-weight: 500;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 80vh;
+  text-align: center;
+  color: #555;
 }

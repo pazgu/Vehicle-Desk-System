@@ -140,8 +140,8 @@ export class VehicleInspectionComponent implements OnInit {
 
     if (inspectedVehicles.length === 0) {
       this.toastService.show(
-        'לא נבחרה אף בעיה לרכב. יש לבחור לפחות שדה אחד לפני השליחה.',
-        'error'
+        'בדיקה ללא בעיות לא תישלח למנהל, תודה על העדכון!',
+        'neutral'
       );
       return;
     }
