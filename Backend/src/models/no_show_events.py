@@ -13,6 +13,5 @@ class NoShowEvent(Base):
     ride_id = Column(UUID(as_uuid=True), ForeignKey("rides.id"))
     occurred_at = Column(TIMESTAMP(timezone=False), default=datetime.utcnow)
 
-    # Optional relationships:
     user = relationship("User", back_populates="no_show_events")
     ride = relationship("Ride", back_populates="no_show_events")

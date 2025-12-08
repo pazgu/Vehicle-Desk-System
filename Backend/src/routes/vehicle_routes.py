@@ -42,31 +42,13 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 router = APIRouter()
 
-# @router.post("/vehicle-inspection")
-# def vehicle_inspection(data: VehicleInspectionSchema, db: Session = Depends(get_db),payload: dict = Depends(token_check)):
-#     try:
-#         return vehicle_inspection_logic(data, db)
-#     except HTTPException as e:
-#         raise e
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
-    
-
-# @router.get("/all-vehicles", response_model=List[VehicleOut])
-# def get_all_vehicles_route(status: Optional[str] = Query(None), db: Session = Depends(get_db), payload: dict = Depends(token_check)):
-#     vehicles = get_vehicles_with_optional_status(db, status)
-#     return vehicles
-
-
-
-
 @router.get("/all-vehicles-new-ride", response_model=List[VehicleOut])
 def get_all_vehicles_route(
     distance_km: float = Query(...),
     ride_date: Optional[date] = Query(None),
     type: Optional[str] = Query(None), 
     start_time:Optional[datetime]=Query(None),
-    end_time:Optional[datetime]=Query(None),# renamed here
+    end_time:Optional[datetime]=Query(None),
     db: Session = Depends(get_db),
     payload: dict = Depends(token_check),
 ):
@@ -77,7 +59,7 @@ def get_all_vehicles_route(
         vehicles = [v for v in vehicles if v.type and v.type.lower() == type.lower()]
 
     if not vehicles:
-        return []  # No vehicles of the requested type
+        return []
 
     electric, hybrid, fuel = [], [], []
 
@@ -92,7 +74,6 @@ def get_all_vehicles_route(
             fuel.append(v)
 
    
-    # Step 2: Apply fuel priority within selected vehicle_type
     prioritized = []
     if distance_km <= 200 and electric:
         prioritized = electric
@@ -100,7 +81,7 @@ def get_all_vehicles_route(
         prioritized = hybrid
     elif fuel:
         prioritized = fuel
-    elif electric:  # fallback even if distance > 200
+    elif electric:
         prioritized = electric
 
     return prioritized
@@ -274,10 +255,8 @@ def get_vehicle_timeline(
     to_date: date = Query(..., alias="to"),
     db: Session = Depends(get_db),
 ):
-    # Define the start of the first day and the end of the last day
-    start_dt = datetime.combine(from_date, time.min)  # 00:00:00 on from_date
-    # We need to go up to the *end* of the to_date
-    end_dt = datetime.combine(to_date, time.max)    # 23:59:59.999999 on to_date
+    start_dt = datetime.combine(from_date, time.min)
+    end_dt = datetime.combine(to_date, time.max)
 
     rides = (
         db.query(
@@ -292,8 +271,8 @@ def get_vehicle_timeline(
         .join(User, Ride.user_id == User.employee_id)
         .filter(
             Ride.vehicle_id == vehicle_id,
-            Ride.start_datetime < end_dt,  # Ride starts before the requested period ends
-            Ride.end_datetime > start_dt,  # Ride ends after the requested period starts
+            Ride.start_datetime < end_dt,
+            Ride.end_datetime > start_dt,
            
         )
         .all()
@@ -342,11 +321,9 @@ def restore_vehicle(
         raise HTTPException(status_code=404, detail="Archived vehicle not found")
     
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user.employee_id)})
-    
-    # Restore the vehicle
+
     vehicle.is_archived = False
     vehicle.archived_at = None
-    # Set status back to available (or you can keep the previous status if you store it)
     vehicle.status = VehicleStatus.available
     
     db.commit()
@@ -369,8 +346,7 @@ def permanently_delete_vehicle(
         raise HTTPException(status_code=404, detail="Archived vehicle not found")
     
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user.employee_id)})
-    
-    # Permanently delete the vehicle
+
     db.delete(vehicle)
     db.commit()
     db.execute(text("SET session.audit.user_id = DEFAULT"))
@@ -379,9 +355,6 @@ def permanently_delete_vehicle(
 
 @router.get("/vehicles/usage-stats-all-time")
 async def get_usage_stats_all_time(db: Session = Depends(get_db)):
-    """
-    Get vehicle usage statistics for all time
-    """
     try:
         stats_dict = get_most_used_vehicles_all_time(db)
         stats_list = [

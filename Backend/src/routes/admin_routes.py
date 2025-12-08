@@ -636,7 +636,7 @@ def ride_status_summary(status: str = None, db: Session = Depends(get_db)):
 def get_all_audit_logs_route(
     from_date: Optional[datetime] = None,
     to_date: Optional[datetime] = None,
-    problematic_only: bool = Query(False, alias="problematicOnly"),  # <-- add alias
+    problematic_only: bool = Query(False, alias="problematicOnly"),
     db: Session = Depends(get_db),
     payload: dict = Depends(token_check)
 ):
@@ -655,7 +655,7 @@ def vehicle_usage_stats(
     db: Session = Depends(get_db),
     token: str = Depends(oauth2_scheme)
 ):
-    role_check(["admin"], token)  # רק מנהלים מורשים
+    role_check(["admin"], token)
 
     if range == "all":
         try:
@@ -764,10 +764,9 @@ async def delete_vehicle_route(
     db: Session = Depends(get_db),
     token: str = Depends(oauth2_scheme)
 ):
-    user = get_current_user(request)  # this expects the real Request
+    user = get_current_user(request)
     role_check(["admin"], token)
 
-    # Pass db and user_id to your async delete function
     result = await delete_vehicle(vehicle_id, db, user.employee_id)
 
     if "error" in result:
@@ -961,9 +960,7 @@ def get_no_show_statistics(
     db: Session = Depends(get_db),
 ):
     
-    
 
-    # 1. Get total no-shows
     query = db.query(NoShowEvent)
     if from_date:
         query = query.filter(NoShowEvent.occurred_at >= from_date)
@@ -973,7 +970,6 @@ def get_no_show_statistics(
     total_no_show_events = query.count()
     unique_no_show_users = query.with_entities(NoShowEvent.user_id).distinct().count()
 
-    # 2. Get completed rides in same range
     completed_query = db.query(Ride).filter(
         Ride.status == "completed",
         Ride.completion_date != None)
@@ -984,7 +980,6 @@ def get_no_show_statistics(
 
     completed_rides_count = completed_query.count()
 
-    # 3. Get top users with pagination
     offset = (page - 1) * page_size
     top_users_query = (
     db.query(
@@ -1048,11 +1043,7 @@ def get_ride_start_time_statistics(
     ),
     db: Session = Depends(get_db),
 ):
-    """
-    Returns how many rides start at each hour of the day (0–23),
-    within an optional date range. If no dates are provided, defaults
-    to the last 4 full months up to the end of the current month.
-    """
+    
     today = date.today()
 
     if to_date is None:
@@ -1122,12 +1113,6 @@ def get_purpose_of_travel_statistics(
     ),
     db: Session = Depends(get_db),
 ):
-    """
-    Purpose-of-travel stats (administrative vs operational) per month.
-
-    - Default: last 4 months (including current month).
-    - Admin can pass from_year/from_month/to_year/to_month to view any month range.
-    """
 
     today = date.today()
 
@@ -1263,12 +1248,10 @@ async def upload_mileage_excel(
 ):
     user_id_from_token = payload.get("user_id") or payload.get("sub")
 
-    # בדיקת הרשאה – רק admin
     role_check(["admin"], token)
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id_from_token)})
 
 
-    # בדיקה שהקובץ הוא מסוג xlsx
     if not file.filename.endswith(".xlsx"):
         raise HTTPException(status_code=400, detail="File must be .xlsx format")
 
@@ -1288,7 +1271,7 @@ async def upload_mileage_excel(
     errors = []
 
     for index, row in df.iterrows():
-        row_number = index + 2  # שורת כותרת באקסל היא מספר 1
+        row_number = index + 2 
 
         try:
             vehicle_id = UUID(str(row["Vehicle ID"]))
@@ -1320,7 +1303,6 @@ async def upload_mileage_excel(
             })
             continue
 
-        # עדכון הרכב
         vehicle.mileage = int(mileage)
         vehicle.mileage_last_updated = datetime.utcnow()
 
