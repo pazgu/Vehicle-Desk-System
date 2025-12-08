@@ -31,7 +31,7 @@ from src.services.ride_requirements import get_latest_requirement,create_require
 from ..utils.auth import get_current_user, token_check, role_check
 from ..utils.database import get_db
 from ..utils.socket_manager import sio
-from src.utils.stats import generate_monthly_vehicle_usage
+
 
 # Services
 from src.services import admin_service, department_service 
@@ -668,8 +668,6 @@ def vehicle_usage_stats(
         raise HTTPException(status_code=400, detail="Missing year or month for monthly stats.")
 
     try:
-        generate_monthly_vehicle_usage(db, year, month)  
-
         stats = get_vehicle_usage_stats(db, year, month)
         return {
             "year": year,
@@ -707,7 +705,7 @@ def get_top_used_vehicles(db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"שגיאה בעת טעינת נסיעות לפי רכב: {str(e)}")
 
-@router.get("/api/vehicle-usage-stats", response_model=List[dict])
+@router.get("/vehicle-usage-stats", response_model=List[dict])
 def get_vehicle_usage_current_month(db: Session = Depends(get_db)):
     stats = get_current_month_vehicle_usage(db)
 
