@@ -91,8 +91,6 @@ import { Supervisor } from '../../../models/user.model';
 interface Employee { id: string; full_name: string; }
 
 
-
-
 @Component({
   selector: 'app-new-ride',
   standalone: true,
@@ -229,7 +227,7 @@ export class NewRideComponent implements OnInit {
         this.toastService.show('שגיאה: מזהה משתמש נוכחי לא נמצא.', 'error');
         this.disableRequest = true;
       }
-    }
+    } 
   }
   hasTouchedVehicleType(): boolean {
     const value = this.rideForm.get('vehicle_type')?.value;
@@ -1297,4 +1295,29 @@ export class NewRideComponent implements OnInit {
     this.step = 1;
     this.showStep1Error = false;
   }
+
+
+  selectedCarId: string = '';
+  isDropdownOpen: boolean = false;
+
+  selectCar(carId: string) {
+    if (!this.isPendingVehicle(carId)) {
+      this.selectedCarId = carId;
+      this.isDropdownOpen = false;
+    }
+  }
+
+ getSelectedCar(): any | undefined {
+  return this.availableCars.find(car => car.id === this.selectedCarId);
+}
+  toggleDropdown() {
+    this.isDropdownOpen = !this.isDropdownOpen;
+  }
+
+  closeDropdown() {
+    this.isDropdownOpen = false;
+  }
+
+
+
 }

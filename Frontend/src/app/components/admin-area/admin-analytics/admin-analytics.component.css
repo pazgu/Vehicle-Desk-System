@@ -522,6 +522,8 @@ body {
   content: "\e90a";
   font-family: "PrimeIcons";
   margin-left: 0.5rem;
+  margin-right: 0.5rem;
+  margin-top: 0.3rem;
   font-size: 0.9rem;
 }
 
