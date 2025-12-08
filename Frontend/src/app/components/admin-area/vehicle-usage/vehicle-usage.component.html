@@ -30,25 +30,128 @@
   <button (click)="toggleUsageView()" class="toggle-view-button">
     {{ isMonthlyView ? "הצג לפי כל הזמנים" : "הצג לפי חודש" }}
   </button>
+  
   <div *ngIf="isMonthlyNoData && isMonthlyView" class="no-data-message">
     אין נתונים להצגה
   </div>
-  <p-chart
-    *ngIf="isMonthlyView && !isMonthlyNoData"
-    type="bar"
-    [data]="monthlyStatsChartData"
-    [options]="monthlyStatsChartOptions"
-  ></p-chart>
+  
+  <div *ngIf="isMonthlyView && !isMonthlyNoData">
+    <table class="usage-table">
+      <thead>
+        <tr>
+          <th>רכב</th>
+          <th>מספר נסיעות</th>
+          <th>סטטוס</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let vehicle of paginatedMonthlyData; let i = index">
+          <td>{{ vehicle.name }}</td>
+          <td>{{ vehicle.trips }}</td>
+          <td>
+            <span 
+              class="status-badge" 
+              [ngClass]="{
+                'good': vehicle.trips <= 4,
+                'medium': vehicle.trips >= 5 && vehicle.trips <= 10,
+                'high': vehicle.trips >= 11
+              }">
+              {{ getUsageStatus(vehicle.trips) }}
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <div class="pagination-controls" *ngIf="totalMonthlyPages > 1">
+      <button (click)="prevMonthlyPage()" [disabled]="currentMonthlyPage === 1">
+        <span class="icon">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z" />
+          </svg>
+        </span>
+      </button>
+
+      <span>עמוד {{ currentMonthlyPage }} מתוך {{ totalMonthlyPages }}</span>
+      
+      <button (click)="nextMonthlyPage()" [disabled]="currentMonthlyPage === totalMonthlyPages">
+        <span class="icon">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+          </svg>
+        </span>
+      </button>
+    </div>
+  </div>
 
   <div *ngIf="isAllTimeNoData && !isMonthlyView" class="no-data-message">
     אין נתונים להצגה
   </div>
-  <p-chart
-    *ngIf="!isMonthlyView && !isAllTimeNoData"
-    type="bar"
-    [data]="allTimeStatsChartData"
-    [options]="allTimeStatsChartOptions"
-  ></p-chart>
+  
+  <div *ngIf="!isMonthlyView && !isAllTimeNoData">
+    <table class="usage-table">
+      <thead>
+        <tr>
+          <th>רכב</th>
+          <th>מספר נסיעות</th>
+          <th>סטטוס</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let vehicle of paginatedAllTimeData; let i = index">
+          <td>{{ vehicle.name }}</td>
+          <td>{{ vehicle.trips }}</td>
+          <td>
+            <span 
+              class="status-badge" 
+              [ngClass]="{
+                'good': vehicle.trips <= 4,
+                'medium': vehicle.trips >= 5 && vehicle.trips <= 10,
+                'high': vehicle.trips >= 11
+              }">
+              {{ getUsageStatus(vehicle.trips) }}
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <div class="pagination-controls" *ngIf="totalAllTimePages > 1">
+      <button (click)="prevAllTimePage()" [disabled]="currentAllTimePage === 1">
+        <span class="icon">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z" />
+          </svg>
+        </span>
+      </button>
+
+      <span>עמוד {{ currentAllTimePage }} מתוך {{ totalAllTimePages }}</span>
+      
+      <button (click)="nextAllTimePage()" [disabled]="currentAllTimePage === totalAllTimePages">
+        <span class="icon">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+          </svg>
+        </span>
+      </button>
+    </div>
+  </div>
 
   <div class="usage-legend" *ngIf="showChart">
     <div class="legend-item">
@@ -58,7 +161,7 @@
       <span class="color-box medium"></span> בינוני (5–10 נסיעות)
     </div>
     <div class="legend-item">
-      <span class="color-box high"></span> שימוש גבוה (11+ נסיעות)
+      <span class="color-box high"></span> גבוה (11+ נסיעות)
     </div>
   </div>
 </div>
