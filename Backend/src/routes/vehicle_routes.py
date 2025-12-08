@@ -325,10 +325,9 @@ def get_vehicle_timeline(
     to_date: date = Query(..., alias="to"),
     db: Session = Depends(get_db),
 ):
-    # Define the start of the first day and the end of the last day
-    start_dt = datetime.combine(from_date, time.min)  # 00:00:00 on from_date
-    # We need to go up to the *end* of the to_date
-    end_dt = datetime.combine(to_date, time.max)    # 23:59:59.999999 on to_date
+    start_dt = datetime.combine(from_date, time.min)  
+    end_dt = datetime.combine(to_date, time.max)    
+    visible_statuses = ['approved', 'pending', 'in_progress']
 
     rides = (
         db.query(
@@ -343,8 +342,10 @@ def get_vehicle_timeline(
         .join(User, Ride.user_id == User.employee_id)
         .filter(
             Ride.vehicle_id == vehicle_id,
-            Ride.start_datetime < end_dt,  # Ride starts before the requested period ends
-            Ride.end_datetime > start_dt,  # Ride ends after the requested period starts
+            Ride.start_datetime < end_dt,  
+            Ride.end_datetime > start_dt,  
+            Ride.status.in_(visible_statuses) 
+
            
         )
         .all()

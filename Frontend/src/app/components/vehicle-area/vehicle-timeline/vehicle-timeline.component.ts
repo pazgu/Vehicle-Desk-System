@@ -38,9 +38,6 @@ export class VehicleTimelineComponent implements OnInit, OnDestroy {
     { status: 'approved', color: '#a4d1ae', label: 'מאושר' },
     { status: 'pending', color: '#f5e2a8', label: 'ממתין' },
     { status: 'in_progress', color: '#6aa5d6', label: 'בביצוע' },
-    { status: 'rejected', color: '#f1b5b5', label: 'נדחה' },
-    { status: 'completed', color: '#b7dbf3', label: 'הושלם' },
-    { status: 'cancelled', color: '#bfb9b9', label: 'בוטל' },
   ];
 
   hoverCardVisible: boolean = false;
@@ -299,7 +296,11 @@ export class VehicleTimelineComponent implements OnInit, OnDestroy {
           const startMinutes =
             blockStart.getHours() * 60 + blockStart.getMinutes();
           const endMinutes = blockEnd.getHours() * 60 + blockEnd.getMinutes();
-          let durationMinutes = Math.max(1, endMinutes - startMinutes);
+          let durationMinutes = endMinutes - startMinutes;
+
+          if (durationMinutes < 15) {
+            durationMinutes = 15;
+          }
 
           let baseTop = (startMinutes / 60) * this.HOUR_SLOT_HEIGHT;
           let baseHeight = (durationMinutes / 60) * this.HOUR_SLOT_HEIGHT;
