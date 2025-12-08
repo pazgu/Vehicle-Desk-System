@@ -34,6 +34,7 @@ export interface User {
   block_expires_at?: Date | null; 
   block_reason?: string | null;
   is_unassigned_user?: boolean;
+  isRaan?: boolean;
 }
 
 

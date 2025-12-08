@@ -24,4 +24,5 @@ class UserCreate(BaseModel):
     has_government_license: bool = False
     license_file_url: Optional[str] = None
     license_expiry_date: Optional[date] = None
+    isRaan: bool = False
 

@@ -32,6 +32,7 @@ class User(Base):
     block_reason = Column(String, nullable=True)
     is_unassigned_user = Column(Boolean, default=False, nullable=False)
     has_pending_rebook = Column(Boolean, nullable=False, default=False)
+    isRaan = Column(Boolean, default=False, nullable=False)
 
 
     
