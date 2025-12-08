@@ -837,7 +837,7 @@ export class NewRideComponent implements OnInit {
         );
       } else if (!isPrefilled) {
         this.toastService.show(
-          'אנא הזן תאריך וסוג רכב לפני סינון רכבים',
+          'אנא הזן תאריך ותחנה לפני סינון רכבים',
           'error'
         );
         this.availableCars = [];
@@ -855,7 +855,7 @@ export class NewRideComponent implements OnInit {
         );
       } else if (!isPrefilled) {
         this.toastService.show(
-          'אנא הזן תאריך וסוג רכב לפני סינון רכבים',
+          'אנא הזן תאריך ותחנה לפני סינון רכבים',
           'error'
         );
         this.availableCars = [];

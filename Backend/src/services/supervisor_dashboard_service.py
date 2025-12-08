@@ -145,7 +145,7 @@ async def edit_order_status(department_id: str, order_id: str, new_status: str,u
     hebrew_status_map = {
         "approved": "אושרה",
         "rejected": "נדחתה",
-        "pending": "ממתינה"
+        "pending": "ממתינה לאישור"
     }
     message_he = f"ההזמנה שלך {hebrew_status_map.get(new_status.lower(), new_status)}"
 
