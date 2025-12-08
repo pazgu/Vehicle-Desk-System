@@ -33,6 +33,7 @@ export class FilterPanelComponent implements OnInit, OnChanges {
   statusFilter: string = '';
   typeFilter: string = '';
   showFilters: boolean = false;
+  showSort: boolean = false;
   sortByMostUsed: boolean = false;
   sortByMostUsedAllTime: boolean = false;
   showInactive: boolean = false;
@@ -83,9 +84,19 @@ export class FilterPanelComponent implements OnInit, OnChanges {
     this.updateQueryParams.emit();
   }
 
-  toggleFilters() {
-    this.showFilters = !this.showFilters;
+toggleFilters() {
+  this.showFilters = !this.showFilters;
+  if (this.showFilters) {
+    this.showSort = false; 
   }
+}
+
+ toggleSort() {
+  this.showSort = !this.showSort;
+  if (this.showSort) {
+    this.showFilters = false; 
+  }
+}
 
   onInactiveChange() {
     if (this.showInactive) {
