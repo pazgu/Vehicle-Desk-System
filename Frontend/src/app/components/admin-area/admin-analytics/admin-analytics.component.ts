@@ -277,7 +277,7 @@ export class AdminAnalyticsComponent implements OnInit {
           else if (hebrew.includes('הושלם')) bgColor = '#BBDEFB';
           else if (hebrew.includes('בוטל')) bgColor = '#F8BBD0';
           else if (hebrew.includes('נדחה')) bgColor = '#FFCDD2';
-          else if (hebrew.includes('בתהליך')) bgColor = '#D1C4E9';
+          else if (hebrew.includes('בנסיעה')) bgColor = '#D1C4E9';
         }
 
         body.push([
@@ -608,7 +608,7 @@ export class AdminAnalyticsComponent implements OnInit {
       else if (label.includes('הושלם')) fillColor = 'FFBBDEFB';
       else if (label.includes('בוטל')) fillColor = 'FFF8BBD0';
       else if (label.includes('נדחה')) fillColor = 'FFFFCDD2';
-      else if (label.includes('בתהליך')) fillColor = 'FFD1C4E9';
+      else if (label.includes('בנסיעה')) fillColor = 'FFD1C4E9';
 
       ['A', 'B'].forEach((col) => {
         const cell = worksheet[`${col}${row + 1}`];
@@ -681,7 +681,7 @@ export class AdminAnalyticsComponent implements OnInit {
         else if (label.includes('הושלם')) fillColor = 'FFBBDEFB';
         else if (label.includes('בוטל')) fillColor = 'FFF8BBD0';
         else if (label.includes('נדחה')) fillColor = 'FFFFCDD2';
-        else if (label.includes('בתהליך')) fillColor = 'FFD1C4E9';
+        else if (label.includes('בנסיעה')) fillColor = 'FFD1C4E9';
 
         ['A', 'B'].forEach((col) => {
           const cell = worksheet[`${col}${row + 1}`];
@@ -1114,7 +1114,7 @@ export class AdminAnalyticsComponent implements OnInit {
       'ממתין לאישור' : 'pending',
       מאושר: 'approved',
       נדחה: 'rejected',
-      בתהליך: 'in_progress',
+      בנסיעה: 'in_progress',
       הושלם: 'completed',
       'בוטלה-נסיעה לא בוצעה': 'cancelled_due_to_no_show',
     };

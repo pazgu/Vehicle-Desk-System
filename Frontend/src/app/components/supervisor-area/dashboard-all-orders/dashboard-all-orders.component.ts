@@ -232,7 +232,7 @@ export class DashboardAllOrdersComponent implements OnInit {
         case 'בוצע':
           filtered = filtered.filter((order) => order.status === 'completed');
           break;
-        case 'בתהליך':
+        case 'בנסיעה':
           filtered = filtered.filter((order) => order.status === 'in_progress');
           break;
         case 'בוטל עקב אי-הגעה':
@@ -329,7 +329,7 @@ export class DashboardAllOrdersComponent implements OnInit {
       case 'completed':
         return 'בוצע';
       case 'in_progress':
-        return 'בתהליך';
+        return 'בנסיעה';
       case 'cancelled_due_to_no_show':
         return 'בוטל עקב אי-הגעה';
       case 'cancelled_vehicle_unavailable':

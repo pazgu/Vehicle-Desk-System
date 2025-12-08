@@ -193,7 +193,7 @@ export class OrderCardComponent implements OnInit {
       case 'rejected':
         return 'נדחה';
       case 'in_progress':
-        return 'בתהליך';
+        return 'בנסיעה';
       case 'completed':
         return 'בוצע';
       case 'cancelled_vehicle_unavailable':

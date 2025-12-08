@@ -44,7 +44,7 @@ export class RideStatusComponent {
       pending: 'בהמתנה',
       approved: 'מאושר',
       rejected: 'נדחה',
-      in_progress: 'בתהליך',
+      in_progress: 'בנסיעה',
       completed: 'בוצע',
       cancelled_due_to_no_show: 'בוטל עקב אי-הגעה',
       cancelled_vehicle_unavailable: 'בוטל - רכב לא זמין',

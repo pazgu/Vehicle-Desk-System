@@ -91,7 +91,7 @@ export class FilterPanelComponent implements OnChanges {
       בהמתנה: 'pending',
       נדחה: 'rejected',
       בוצע: 'completed',
-      בתהליך: 'in_progress',
+      בנסיעה: 'in_progress',
     'בוטל עקב אי-הגעה': 'cancelled_due_to_no_show',
       'בוטל - רכב לא זמין': 'cancelled_vehicle_unavailable',
     };

@@ -195,7 +195,7 @@ export function translateRideStatus(status: string | null | undefined): string {
     case 'rejected':
       return 'נדחה';
     case 'in_progress':
-      return 'בתהליך';
+      return 'בנסיעה';
     case 'completed':
       return 'הושלם';
     case 'cancelled_due_to_no_show':
