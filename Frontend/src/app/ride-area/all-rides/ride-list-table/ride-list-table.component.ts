@@ -75,13 +75,13 @@ export class RideListTableComponent implements OnChanges {
       case 'approved':
         return 'אושר';
       case 'pending':
-        return 'בהמתנה';
+        return 'ממתין לאישור';
       case 'rejected':
         return 'נדחה';
       case 'completed':
         return 'בוצע';
       case 'in_progress':
-        return 'בתהליך';
+        return 'בנסיעה';
       case 'cancelled_due_to_no_show':
         return 'בוטל עקב אי-הגעה';
       case 'reserved':
@@ -219,9 +219,7 @@ export class RideListTableComponent implements OnChanges {
     const userRole = localStorage.getItem('role');
     const isSupervisor = userRole === 'supervisor';
 
-    if (
-      status === 'cancelled_vehicle_unavailable' 
-    ) {
+    if (status === 'cancelled_vehicle_unavailable') {
       return true;
     }
 

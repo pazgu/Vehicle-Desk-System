@@ -135,21 +135,8 @@
           <p>
             <strong>מספר נסיעות לחודש זה:</strong> {{ currentVehicleRideCount }}
           </p>
-          <p><strong>אחוז נסיעות לחודש זה:</strong></p>
+        
 
-          <div class="ride-progress">
-            <span
-              >{{
-                (currentVehicleRideCount / 20) * 100 | number : "1.0-0"
-              }}%</span
-            >
-            <div class="progress-bar">
-              <div
-                class="progress-fill"
-                [style.width.%]="(currentVehicleRideCount / 20) * 100"
-              ></div>
-            </div>
-          </div>
 
           <p>
             <strong>תוקף חוזה השכרה:</strong>

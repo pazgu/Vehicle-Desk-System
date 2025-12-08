@@ -25,7 +25,6 @@ class CityAlias(Base):
     city = relationship("City", back_populates="aliases")
 
     __table_args__ = (
-        # This ensures (city_id, alias) is unique
         {'sqlite_autoincrement': True},
     )
 

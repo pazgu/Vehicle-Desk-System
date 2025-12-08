@@ -187,13 +187,13 @@ export class OrderCardComponent implements OnInit {
 
     switch (status.toLowerCase()) {
       case 'approved':
-        return 'מאושר';
+        return 'אושר';
       case 'pending':
         return 'ממתין לאישור';
       case 'rejected':
         return 'נדחה';
       case 'in_progress':
-        return 'בתהליך';
+        return 'בנסיעה';
       case 'completed':
         return 'בוצע';
       case 'cancelled_vehicle_unavailable':

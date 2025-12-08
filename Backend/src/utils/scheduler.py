@@ -175,7 +175,7 @@ async def check_inactive_vehicles():
                 notif = create_system_notification(
                     user_id=admin.employee_id,
                     title="Inactive Vehicle",
-                    message=f"הרכב עם מספר רישוי {vehicle.plate_number} לא היה בשימוש מאז {last_used_date}",
+                    message=f"הרכב עם מספר רישוי {vehicle.plate_number} לא היה בשימוש מתאריך {last_used_date}",
                     vehicle_id=vehicle.id
                 )
 

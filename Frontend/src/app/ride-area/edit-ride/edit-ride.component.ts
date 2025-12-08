@@ -429,7 +429,7 @@ export class EditRideComponent implements OnInit {
 
             if (timeDifferenceHours <= 2) {
               this.toastService.show(
-                'אפשר לערוך הזמנה מאושרת עד שעתיים לפני זמן הנסיעה',
+                'אפשר לערוך הזמנה אושרת עד שעתיים לפני זמן הנסיעה',
                 'error'
               );
               this.router.navigate(['/home']);
@@ -502,7 +502,9 @@ export class EditRideComponent implements OnInit {
         this.updateFilteredEndTimes();
         const distance = parseFloat(ride.estimated_distance || '0');
         const startDateTime = `${startDateStr}T${this.originalStartTime}:00`;
-        const endDateTime = `${nightEndDate || startDateStr}T${this.originalEndTime}:00`;
+        const endDateTime = `${nightEndDate || startDateStr}T${
+          this.originalEndTime
+        }:00`;
         this.loadVehiclesForEditRide(
           distance,
           startDateStr,

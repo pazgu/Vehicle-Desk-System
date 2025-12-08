@@ -91,8 +91,6 @@ import { Supervisor } from '../../../models/user.model';
 interface Employee { id: string; full_name: string; }
 
 
-
-
 @Component({
   selector: 'app-new-ride',
   standalone: true,
@@ -229,7 +227,7 @@ export class NewRideComponent implements OnInit {
         this.toastService.show('שגיאה: מזהה משתמש נוכחי לא נמצא.', 'error');
         this.disableRequest = true;
       }
-    }
+    } 
   }
   hasTouchedVehicleType(): boolean {
     const value = this.rideForm.get('vehicle_type')?.value;
@@ -775,22 +773,42 @@ export class NewRideComponent implements OnInit {
       },
     });
   }
-  private updateAvailableCars(): void {
-    const selectedType = this.rideForm.get('vehicle_type')?.value;
-    const carControl = this.rideForm.get('car');
+ private updateAvailableCars(): void {
+  const selectedType = this.rideForm.get('vehicle_type')?.value;
+  const carControl = this.rideForm.get('car');
 
-    let filtered = filterAvailableCars(this.allCars, selectedType);
+  let filtered = filterAvailableCars(this.allCars, selectedType);
+  filtered = filtered.filter((car) => car.status === 'available');
 
-    filtered = filtered.filter((car) => car.status === 'available');
+  this.availableCars = filtered;
 
-    this.availableCars = filtered;
+  syncCarControlWithAvailableCars(
+    carControl,
+    this.availableCars,
+    (id: string) => this.isPendingVehicle(id)
+  );
 
-    syncCarControlWithAvailableCars(
-      carControl,
-      this.availableCars,
-      (id: string) => this.isPendingVehicle(id)
-    );
+  if (this.availableCars.length === 0) {
+    this.selectedCarId = '';
+    carControl?.setValue(null, { emitEvent: false });
+    return;
   }
+
+  if (carControl?.value && this.availableCars.some(c => c.id === carControl.value)) {
+    this.selectedCarId = carControl.value;
+    return;
+  }
+
+  const firstCarId = this.availableCars[0].id;
+  this.selectedCarId = firstCarId;
+  carControl?.setValue(firstCarId, { emitEvent: false });
+  carControl?.markAsDirty();
+  carControl?.markAsTouched();
+
+  this.loadFuelType(firstCarId);
+}
+
+
 
   private setDefaultStartAndDestination(): void {
     this.cityService.getCity('תל אביב').subscribe((city) => {
@@ -839,7 +857,7 @@ export class NewRideComponent implements OnInit {
         );
       } else if (!isPrefilled) {
         this.toastService.show(
-          'אנא הזן תאריך וסוג רכב לפני סינון רכבים',
+          'אנא הזן תאריך ותחנה לפני סינון רכבים',
           'error'
         );
         this.availableCars = [];
@@ -857,7 +875,7 @@ export class NewRideComponent implements OnInit {
         );
       } else if (!isPrefilled) {
         this.toastService.show(
-          'אנא הזן תאריך וסוג רכב לפני סינון רכבים',
+          'אנא הזן תאריך ותחנה לפני סינון רכבים',
           'error'
         );
         this.availableCars = [];
@@ -1036,6 +1054,8 @@ export class NewRideComponent implements OnInit {
     this.step = 1;
     this.orderSubmitted = false;
     this.availableCars = [];
+    this.selectedCarId = '';
+    this.isDropdownOpen = false;
     this.showStep1Error = false;
     this.fetchedDistance = null;
     this.estimated_distance_with_buffer = null;
@@ -1297,4 +1317,39 @@ export class NewRideComponent implements OnInit {
     this.step = 1;
     this.showStep1Error = false;
   }
+
+
+  selectedCarId: string = '';
+  isDropdownOpen: boolean = false;
+
+  selectCar(carId: string) {
+  if (this.isPendingVehicle(carId)) {
+    return;
+  }
+
+  this.selectedCarId = carId;
+  this.isDropdownOpen = false;
+
+  const carControl = this.rideForm.get('car');
+  carControl?.setValue(carId);
+  carControl?.markAsDirty();
+  carControl?.markAsTouched();
+
+  this.loadFuelType(carId);
+}
+
+
+ getSelectedCar(): any | undefined {
+  return this.availableCars.find(car => car.id === this.selectedCarId);
+}
+  toggleDropdown() {
+    this.isDropdownOpen = !this.isDropdownOpen;
+  }
+
+  closeDropdown() {
+    this.isDropdownOpen = false;
+  }
+
+
+
 }
