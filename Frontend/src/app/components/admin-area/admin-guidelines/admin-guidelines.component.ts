@@ -20,7 +20,7 @@ import { ToastService } from '../../../services/toast.service';
 })
 export class AdminGuidelinesComponent implements OnInit {
   form!: FormGroup;
-  originalValue: any = null; 
+  originalValue: any = null;
 
   constructor(
     private fb: FormBuilder,
@@ -75,52 +75,56 @@ export class AdminGuidelinesComponent implements OnInit {
     );
   }
 
-canSave(): { valid: boolean; message: string } {
-  const titleValue = this.form.get('title')?.value?.trim();
-  const itemsArray = this.items.value;
+  canSave(): { valid: boolean; message: string } {
+    const titleValue = this.form.get('title')?.value?.trim();
+    const itemsArray = this.items.value;
 
-  if (!titleValue) {
-    return { valid: false, message: 'יש להזין כותרת לפני השמירה' };
+    if (!titleValue) {
+      return { valid: false, message: 'יש להזין כותרת לפני השמירה' };
+    }
+
+    if (itemsArray.length === 0) {
+      return { valid: false, message: 'יש להוסיף לפחות הנחיה אחת לפני השמירה' };
+    }
+
+    const hasEmptyItems = itemsArray.some((item: string) => !item?.trim());
+    if (hasEmptyItems) {
+      return {
+        valid: false,
+        message: 'אי אפשר לשמור עם הנחיות ריקות. מלא את כל ההנחיות או מחק אותן',
+      };
+    }
+
+    return { valid: true, message: '' };
   }
-
-  if (itemsArray.length === 0) {
-    return { valid: false, message: 'יש להוסיף לפחות נקודה אחת לפני השמירה' };
-  }
-
-  const hasEmptyItems = itemsArray.some((item: string) => !item?.trim());
-  if (hasEmptyItems) {
-    return { valid: false, message: 'אי אפשר לשמור עם נקודות ריקות. מלא את כל הנקודות או מחק אותן' };
-  }
-
-  if (!this.hasChanges()) {
-    return { valid: false, message: 'לא בוצעו שינויים לשמירה' };
-  }
-
-  return { valid: true, message: '' };
-}
 
   save() {
-  const validation = this.canSave();
-  
-  if (!validation.valid) {
-    this.toastService.show(validation.message, 'info');
-    this.form.markAllAsTouched();
-    return;
+    const validation = this.canSave();
+
+    if (!validation.valid) {
+      this.toastService.show(validation.message, 'info');
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    if (!this.hasChanges()) {
+      this.toastService.show('לא בוצעו שינויים לשמירה', 'info');
+      return;
+    }
+
+    const payload = {
+      title: this.form.value.title.trim(),
+      items: this.items.value.map((item: string) => item.trim()),
+    };
+
+    this.guidelinesService.update(payload).subscribe({
+      next: () => {
+        this.toastService.show('הנתונים נשמרו בהצלחה!', 'success');
+        this.originalValue = this.form.getRawValue();
+      },
+      error: () => {
+        this.toastService.show('שגיאה בשמירת נתונים', 'error');
+      },
+    });
   }
-
-  const payload = {
-    title: this.form.value.title.trim(),
-    items: this.items.value.map((item: string) => item.trim()),
-  };
-
-  this.guidelinesService.update(payload).subscribe({
-    next: () => {
-      this.toastService.show('הנתונים נשמרו בהצלחה!', 'success');
-      this.originalValue = this.form.getRawValue();
-    },
-    error: () => {
-      this.toastService.show('שגיאה בשמירת נתונים', 'error');
-    },
-  });
-}
 }
