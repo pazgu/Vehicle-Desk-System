@@ -707,7 +707,7 @@ def get_top_used_vehicles(db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"שגיאה בעת טעינת נסיעות לפי רכב: {str(e)}")
 
-@router.get("/api/vehicle-usage-stats", response_model=List[dict])
+@router.get("/vehicle-usage-stats", response_model=List[dict])
 def get_vehicle_usage_current_month(db: Session = Depends(get_db)):
     stats = get_current_month_vehicle_usage(db)
 

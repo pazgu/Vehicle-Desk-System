@@ -5,6 +5,7 @@ from uuid import UUID
 
 from sqlalchemy import String, extract, func, and_, or_
 from sqlalchemy.orm import Session
+import pytz
 
 # Schemas
 from ..schemas.ride_dashboard_item import RideDashboardItem
@@ -178,10 +179,13 @@ def update_monthly_usage_stats(db: Session, ride: Ride):
 
 
 def get_current_month_vehicle_usage(db: Session) -> List[Dict]:
-    now = datetime.utcnow()
+    tz = pytz.timezone("Asia/Jerusalem")
+    now = datetime.now(tz)
+
     current_year = now.year
     current_month = now.month
-
+    print('current month',current_month)
+    print('current year',current_year)
     usage_entries = (
         db.query(
             MonthlyVehicleUsage.vehicle_id,
@@ -199,7 +203,7 @@ def get_current_month_vehicle_usage(db: Session) -> List[Dict]:
         .all()
     )
 
-    return [
+    res= [
         {
             "vehicle_id": str(entry.vehicle_id),
             "plate_number": entry.plate_number,
@@ -210,6 +214,8 @@ def get_current_month_vehicle_usage(db: Session) -> List[Dict]:
         }
         for entry in usage_entries
     ]
+    print("res",res)
+    return res
 
 
 def get_vehicle_usage_stats(db: Session, year: int, month: int) -> List[dict]:
