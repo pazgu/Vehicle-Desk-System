@@ -107,10 +107,9 @@ export class AdminAnalyticsComponent implements OnInit {
           this._activeTabIndex = tabIndex;
         }
       }
+      this.loadDefaultRideStartTimeStats();
+      this.loadDefaultPurposeStats();
     });
-    
-    this.loadDefaultRideStartTimeStats();
-    this.loadDefaultPurposeStats();
   }
 
   ngAfterViewInit() {
