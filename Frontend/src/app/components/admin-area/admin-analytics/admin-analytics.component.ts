@@ -1200,10 +1200,11 @@ export class AdminAnalyticsComponent implements OnInit {
   }
   private loadDefaultRideStartTimeStats(): void {
     const now = new Date();
-    const to = new Date(Date.UTC(now.getFullYear(), now.getMonth() + 1, 0)); 
-    const from = new Date(Date.UTC(now.getFullYear(), 8, 1)); 
-    const fromStr = from.toISOString().substring(0, 10); 
-    const toStr = to.toISOString().substring(0, 10);     
+    const to = new Date(Date.UTC(now.getFullYear(), now.getMonth() + 1, 0));
+    const from = new Date(Date.UTC(now.getFullYear(), now.getMonth() - 3, 1));
+    from.setUTCDate(from.getUTCDate() - 1);
+    const fromStr = from.toISOString().substring(0, 10);
+    const toStr = to.toISOString().substring(0, 10);
     this.fetchRideStartTimeStats(fromStr, toStr);
-}
+  }
 }
