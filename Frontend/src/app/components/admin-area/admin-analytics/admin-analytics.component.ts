@@ -301,9 +301,8 @@ export class AdminAnalyticsComponent implements OnInit {
 
         if (isRideTab) {
           if (
-            hebrew.includes('בוטל עקב אי-הגעה') ||
-            hebrew.includes('בוטלה-רכב לא זמין') || 
-            hebrew.includes('בוטל')
+            hebrew.includes('בוטלה עקב אי-הגעה') ||
+            hebrew.includes('בוטל-רכב לא זמין') 
           ) {
             bgColor = '#F8BBD0'; 
           }
@@ -317,15 +316,9 @@ export class AdminAnalyticsComponent implements OnInit {
             bgColor = '#FFCDD2';
           } else if (hebrew.includes('בנסיעה')) {
             bgColor = '#D1C4E9'; 
-          } else if (hebrew.includes('זמין')) {
-            bgColor = '#FFF59D'; 
-          } else if (hebrew.includes('בשימוש')) {
-            bgColor = '#90CAF9'; 
-          } else if (hebrew.includes('מוקפא')) {
-            bgColor = '#B0BEC5'; 
-          } else if (hebrew.includes('בוטל עקב אי-הגעה')) {
+          } else if (hebrew.includes('בוטלה עקב אי-הגעה')) {
             bgColor = '#FFAB91'; 
-          } else if (hebrew.includes('בוטלה-רכב לא זמין')) {
+          } else if (hebrew.includes('בוטל-רכב לא זמין')) {
             bgColor = '#FF8A65'; 
           }
         }
@@ -1169,9 +1162,8 @@ export class AdminAnalyticsComponent implements OnInit {
       נדחה: 'rejected',
       בנסיעה: 'in_progress',
       בוצע: 'completed',
-      'בוטל עקב אי-הגעה': 'cancelled_due_to_no_show',
-      'בוטלה-רכב לא זמין': 'cancelled_vehicle_unavailable',
-      בוטלה: 'cancelled',
+      'בוטלה עקב אי-הגעה': 'cancelled_due_to_no_show',
+      'בוטל-רכב לא זמין': 'cancelled_vehicle_unavailable'
     };
 
     return reverseMap[hebrewLabel] || hebrewLabel;

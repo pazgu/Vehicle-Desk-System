@@ -47,7 +47,7 @@ export class RideStatusComponent {
       in_progress: 'בנסיעה',
       completed: 'בוצע',
       cancelled_due_to_no_show: 'בוטלה עקב אי-הגעה',
-      cancelled_vehicle_unavailable: 'בוטל - רכב לא זמין',
+      cancelled_vehicle_unavailable: 'בוטל-רכב לא זמין',
     };
     return statusMap[status] || status;
   }
@@ -71,12 +71,13 @@ export class RideStatusComponent {
         {
           data: [...values],
           backgroundColor: [
-            '#FF6384',
-            '#36A2EB',
-            '#FFCE56',
-            '#4BC0C0',
-            '#9966FF',
-            '#FF9F40',
+            '#FF6384CC',
+            '#36A2EBCC',
+            '#FFCE56CC',
+            '#4BC0C0CC',
+            '#9966FFCC',
+            '#FF9F40CC',
+            '#E74C3CCC',
           ],
           hoverBackgroundColor: [
             '#FF6384CC',
@@ -85,6 +86,7 @@ export class RideStatusComponent {
             '#4BC0C0CC',
             '#9966FFCC',
             '#FF9F40CC',
+            '#E74C3CCC',
           ],
         },
       ],
