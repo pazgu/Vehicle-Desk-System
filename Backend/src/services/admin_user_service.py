@@ -16,11 +16,13 @@ from ..utils.auth import hash_password
 
 def create_user_by_admin(user_data: UserCreate, changed_by, db: Session):
     existing_user = db.query(User).filter(
-        (User.email == user_data.email) | (User.username == user_data.username)
+        (User.email == user_data.email) | 
+        (User.username == user_data.username) | 
+        (User.phone == user_data.phone)
     ).first()
 
     if existing_user:
-        raise HTTPException(status_code=400, detail="Email or username already in use.")
+        raise HTTPException(status_code=400, detail="Email, username, or phone already in use.")
 
     # Create new user with only the fields that exist in your User model
     new_user = User(

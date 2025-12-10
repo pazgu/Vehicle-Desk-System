@@ -126,10 +126,54 @@ if (this.checkIfHasGovernmentlicense() && this.selectedFile) {
         this.selectedFileName = '';
         this.router.navigate(['/user-data']);
       },
-      error: (err) => {
-        console.error(err);
-        this.toast.show('שגיאה בהוספת משתמש', 'error');
-      },
+    error: (err) => {
+  if (err.status === 0) {
+    this.toast.show(
+      'השרת אינו זמין כרגע. נסה שוב מאוחר יותר',
+      'error'
+    );
+  } else if (err.status === 400 || err.status === 422) {
+    const details = err.error?.detail;
+
+    if (typeof details === 'string') {
+      const lowerDetails = details.toLowerCase();
+      
+      if (
+        lowerDetails.includes('already in use') ||
+        lowerDetails.includes('already exists') ||
+        lowerDetails.includes('exist') ||
+        lowerDetails.includes('קיים')
+      ) {
+        this.toast.show(
+          'שם המשתמש, מייל או מספר טלפון כבר קיימים במערכת',
+          'error'
+        );
+        return;
+      }
+    }
+    
+    if (Array.isArray(details)) {
+      const existsError = details.find(
+        (d) =>
+          typeof d.msg === 'string' &&
+          (d.msg.toLowerCase().includes('already exists') ||
+            d.msg.toLowerCase().includes('already in use') ||
+            d.msg.toLowerCase().includes('exist'))
+      );
+      if (existsError) {
+        this.toast.show(
+          'שם המשתמש, מייל או מספר טלפון כבר קיימים במערכת',
+          'error'
+        );
+        return;
+      }
+    }
+
+    this.toast.show('שגיאה בהוספת משתמש', 'error');
+  } else {
+    this.toast.show('שגיאה כללית בהוספת משתמש', 'error');
+  }
+},
     });
   }
 
