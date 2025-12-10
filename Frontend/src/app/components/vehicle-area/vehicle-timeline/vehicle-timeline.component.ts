@@ -104,31 +104,20 @@ export class VehicleTimelineComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    console.log('🔄 VehicleTimelineComponent initialized');
-
     this.vehicleId = this.route.snapshot.paramMap.get('id');
-    console.log('📌 vehicleId from route:', this.vehicleId);
-
     const fromParam = this.route.snapshot.queryParamMap.get('from');
-    console.log('📌 fromParam:', fromParam);
 
     let initialDesiredDate: Date;
 
     if (fromParam && this.isValidDateString(fromParam)) {
       initialDesiredDate = new Date(fromParam + 'T00:00:00');
-      console.log('📅 Using fromParam as initial date:', initialDesiredDate);
     } else {
       const today = new Date();
       if (today.getDay() === 6) {
         initialDesiredDate = new Date(today);
         initialDesiredDate.setDate(today.getDate() + 1);
-        console.log(
-          '📅 Today is Saturday, moving to next Sunday:',
-          initialDesiredDate
-        );
       } else {
         initialDesiredDate = new Date(today);
-        console.log("📅 Defaulting to today's week:", initialDesiredDate);
         window.scrollTo({ top: 0 });
       }
     }
@@ -136,7 +125,6 @@ export class VehicleTimelineComponent implements OnInit, OnDestroy {
     this.currentWeekStart = this.getStartOfWeek(initialDesiredDate);
     this.weekEnd = this.getWeekEnd(this.currentWeekStart);
 
-    console.log('🗓️ Week range:', this.currentWeekStart, '→', this.weekEnd);
 
     this.updateUrlQueryParams();
 
@@ -240,32 +228,24 @@ export class VehicleTimelineComponent implements OnInit, OnDestroy {
     this.currentHoveredElement = null;
   }
 
-  onRideClick(ride: RenderableRide): void {
-    console.log('🖱️ Clicked ride:', ride);
-  }
-
   loadVehicleTimeline(weekStart: Date): void {
     if (!this.vehicleId) {
-      console.warn('⚠️ No vehicleId, skipping API call');
       return;
     }
 
     const from = this.formatDateToYYYYMMDD(this.currentWeekStart);
     const to = this.formatDateToYYYYMMDD(this.weekEnd);
 
-    console.log(`📡 Fetching timeline: ${from} → ${to}`);
-
     this.vehicleTimelineService
       .getVehicleTimeline(this.vehicleId, from, to)
       .subscribe({
         next: (data: any) => {
-          console.log('✅ API response:', data);
           this.vehicleTimelineData = data.rides || [];
           this.vehicleInfo = data.vehicle_info || null;
           this.processRidesForDisplay();
         },
         error: (err) => {
-          console.error('❌ Error loading vehicle timeline:', err);
+          console.error(' Error loading vehicle timeline:', err);
           this.vehicleTimelineData = [];
           this.vehicleInfo = null;
           this.processRidesForDisplay();
@@ -331,16 +311,11 @@ export class VehicleTimelineComponent implements OnInit, OnDestroy {
             purpose: ride.purpose,
             user_id: ride.user_id,
           });
-
-          console.log(
-            `📌 Added ride to ${dayKey}: top=${top}, height=${height}`
-          );
         }
 
         loopDay.setDate(loopDay.getDate() + 1);
       }
     }
-    console.log('✅ Finished processing rides:', this.processedRides);
   }
 
   private formatDateToYYYYMMDD(date: Date): string {
@@ -358,7 +333,6 @@ export class VehicleTimelineComponent implements OnInit, OnDestroy {
 
   navigateBack(): void {
     const vehicleId = this.route.snapshot.paramMap.get('id');
-    console.log('⬅️ Navigating back to vehicle:', vehicleId);
     this.router.navigate(['/vehicle-details', vehicleId]);
   }
 
@@ -415,12 +389,7 @@ export class VehicleTimelineComponent implements OnInit, OnDestroy {
     this.currentWeekStart = this.getStartOfWeek(newDate);
     this.weekEnd = this.getWeekEnd(this.currentWeekStart);
 
-    console.log(
-      '⏭️ Navigating weeks:',
-      this.currentWeekStart,
-      '→',
-      this.weekEnd
-    );
+
 
     this.loadVehicleTimeline(this.currentWeekStart);
     this.updateUrlQueryParams();
@@ -430,7 +399,6 @@ export class VehicleTimelineComponent implements OnInit, OnDestroy {
     const fromDateString = this.formatDateToYYYYMMDD(this.currentWeekStart);
     const toDateString = this.formatDateToYYYYMMDD(this.weekEnd);
 
-    console.log('🔗 Updating query params:', fromDateString, toDateString);
 
     this.router.navigate([], {
       relativeTo: this.route,

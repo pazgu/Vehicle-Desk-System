@@ -72,7 +72,6 @@ export class SocketService {
 
     this.socket.on('reservationCanceledDueToVehicleFreeze', (data: any) => {
       this.reservationCanceledDueToVehicleFreeze$.next(data);
-      console.log('reservationCanceledDueToVehicleFreeze:', data);
     });
 
     this.socket.on('feedback_needed', (data) => {

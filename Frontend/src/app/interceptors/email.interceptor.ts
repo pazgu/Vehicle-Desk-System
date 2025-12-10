@@ -19,7 +19,6 @@ export class EmailInterceptor implements HttpInterceptor {
       return next.handle(request).pipe(
         catchError((error: HttpErrorResponse) => {
           if (error.status === 422) {
-            console.log('EmailInterceptor caught a 422 error:', error.error);
             return throwError(() => error);
           }
           return throwError(() => error);
