@@ -148,7 +148,7 @@ export class RideDetailsComponent implements OnInit {
       completed: 'הושלם',
       in_progress: 'בנסיעה',
       rejected: 'נדחה',
-      cancelled_due_to_no_show: 'בוטל עקב אי-הגעה',
+      cancelled_due_to_no_show: 'בוטלה עקב אי-הגעה',
       cancelled_vehicle_unavailable: 'בוטלה - רכב לא זמין',
     };
     return statusMap[status] || status;

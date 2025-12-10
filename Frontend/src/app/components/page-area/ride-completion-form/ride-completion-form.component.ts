@@ -11,9 +11,7 @@ import { ActivatedRoute } from '@angular/router';
 import { ToastService } from '../../../services/toast.service';
 import { RideReportService } from '../../../services/completion-form.service';
 import { Location } from '@angular/common';
-import { environment } from '../../../../environments/environment';
 import { RideService } from '../../../services/ride.service';
-import { RideDashboardItem } from '../../../models/ride-dashboard-item/ride-dashboard-item.module';
 import { RideLocationItem } from '../../../models/ride.model';
 import {
   FuelType,
@@ -21,7 +19,6 @@ import {
 } from '../../../models/vehicle-dashboard-item/vehicle-out-item.module';
 import { VehicleService } from '../../../services/vehicle.service';
 import { Router } from '@angular/router';
-import { th } from 'date-fns/locale';
 
 @Component({
   selector: 'app-ride-completion-form',
@@ -177,7 +174,7 @@ export class RideCompletionFormComponent implements OnInit {
 
       this.formCompleted.emit();
 
-      this.router.navigate(['/home']);
+      this.router.navigate(['/all-rides']);
     },
 
       error: () => {
@@ -186,6 +183,6 @@ export class RideCompletionFormComponent implements OnInit {
       },
     });
     this.formCompleted.emit();
-    this.router.navigate(['/home']);
+    this.router.navigate(['/all-rides']);
   }
 }
