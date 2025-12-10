@@ -274,12 +274,34 @@ export class AdminAnalyticsComponent implements OnInit {
         }
 
         if (isRideTab) {
-          if (hebrew.includes('ממתין לאישור')) bgColor = '#FFF9C4';
-          else if (hebrew.includes('אושר')) bgColor = '#C8E6C9';
-          else if (hebrew.includes('הושלם')) bgColor = '#BBDEFB';
-          else if (hebrew.includes('בוטל')) bgColor = '#F8BBD0';
-          else if (hebrew.includes('נדחה')) bgColor = '#FFCDD2';
-          else if (hebrew.includes('בנסיעה')) bgColor = '#D1C4E9';
+          if (
+            hebrew.includes('בוטל עקב אי-הגעה') ||
+            hebrew.includes('בוטלה-רכב לא זמין') || 
+            hebrew.includes('בוטל')
+          ) {
+            bgColor = '#F8BBD0'; 
+          }
+          if (hebrew.includes('ממתין לאישור')) {
+            bgColor = '#FFF9C4'; 
+          } else if (hebrew.includes('אושר')) {
+            bgColor = '#C8E6C9'; 
+          } else if (hebrew.includes('בוצע')) {
+            bgColor = '#BBDEFB'; 
+          } else if (hebrew.includes('נדחה')) {
+            bgColor = '#FFCDD2';
+          } else if (hebrew.includes('בנסיעה')) {
+            bgColor = '#D1C4E9'; 
+          } else if (hebrew.includes('זמין')) {
+            bgColor = '#FFF59D'; 
+          } else if (hebrew.includes('בשימוש')) {
+            bgColor = '#90CAF9'; 
+          } else if (hebrew.includes('מוקפא')) {
+            bgColor = '#B0BEC5'; 
+          } else if (hebrew.includes('בוטל עקב אי-הגעה')) {
+            bgColor = '#FFAB91'; 
+          } else if (hebrew.includes('בוטלה-רכב לא זמין')) {
+            bgColor = '#FF8A65'; 
+          }
         }
 
         body.push([
@@ -837,11 +859,14 @@ export class AdminAnalyticsComponent implements OnInit {
       rejected: 'Rejected',
       in_progress: 'In Progress',
       completed: 'Completed',
+      cancelled_vehicle_unavailable: 'Cancelled – Vehicle Unavailable',
+      cancelled_due_to_no_show: 'Cancelled – No Show',
       cancelled: 'Cancelled',
-      cancelled_due_to_no_show: 'Cancelled - No Show',
     };
+
     return statusMap[status] || status;
   }
+
   private loadDefaultPurposeStats(): void {
     this.purposeFilterMode = 'last4';
     this.fetchPurposeStats();
@@ -1117,11 +1142,15 @@ export class AdminAnalyticsComponent implements OnInit {
       אושר: 'approved',
       נדחה: 'rejected',
       בנסיעה: 'in_progress',
-      הושלם: 'completed',
-      'בוטלה-נסיעה לא בוצעה': 'cancelled_due_to_no_show',
+      בוצע: 'completed',
+      'בוטל עקב אי-הגעה': 'cancelled_due_to_no_show',
+      'בוטלה-רכב לא זמין': 'cancelled_vehicle_unavailable',
+      בוטלה: 'cancelled',
     };
+
     return reverseMap[hebrewLabel] || hebrewLabel;
   }
+
   private buildRideStartChart(res: RideStartTimeStatsResponse): void {
     const labels = Array.from(
       { length: 24 },
