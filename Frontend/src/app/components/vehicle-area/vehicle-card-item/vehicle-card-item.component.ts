@@ -598,7 +598,7 @@ export class VehicleCardItemComponent implements OnInit {
   }
 
   permanentlyDeleteVehicle(vehicle: any): void {
-    const message = `⚠️ האם את/ה בטוח/ה שברצונך למחוק לצמיתות את הרכב ${vehicle.plate_number}?\n\nפעולה זו לא ניתנת לביטול ותמחק את כל הנתונים הקשורים לרכב!`;
+    const message = `האם את/ה בטוח/ה שברצונך למחוק לצמיתות את הרכב ${vehicle.plate_number}?\n\nפעולה זו לא ניתנת לביטול ותמחק את כל הנתונים הקשורים לרכב!`;
 
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '450px',

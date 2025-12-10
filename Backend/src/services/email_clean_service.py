@@ -97,7 +97,7 @@ class EmailService:
             return None
 
         except Exception as e:
-            logger.error(f"❌ Error while fetching email for user {user_id}: {e}")
+            logger.error(f" Error while fetching email for user {user_id}: {e}")
             return None
 
 
@@ -126,7 +126,7 @@ class EmailService:
             await self.sio_server.emit(event_name, data, room=str(user_id))
         except Exception as e:
             logger.error(
-                f"❌ Failed to emit email status for user {user_id}, event {event_name}: {e}"
+                f" Failed to emit email status for user {user_id}, event {event_name}: {e}"
             )
 
 
