@@ -211,13 +211,9 @@ export class VehicleCardItemComponent implements OnInit {
     }
   }
 
-  goBacklocation(): void {
-    this.location.back();
-  }
-
   private navigateToDashboard(): void {
-    this.goBacklocation();
-  }
+  this.navigateRouter.navigate(['/vehicle-dashboard']);
+}
 
   loadVehicleUsageData(): void {
     this.vehicleService.getTopUsedVehicles().subscribe({
