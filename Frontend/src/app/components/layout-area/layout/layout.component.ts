@@ -57,6 +57,16 @@ export class LayoutComponent implements OnInit, OnDestroy {
         );
       }
     });
+      this.router.events.subscribe(event => {
+        if (event instanceof NavigationEnd) {
+          const lastSubmitted = localStorage.getItem('last_submitted_ride');
+
+          if (lastSubmitted) {
+            this.hideFeedbackButton();
+            localStorage.removeItem('last_submitted_ride');
+          }
+        }
+      });
 
     this.isFeedbackPage = this.router.url.includes('/ride-completion-form');
 
