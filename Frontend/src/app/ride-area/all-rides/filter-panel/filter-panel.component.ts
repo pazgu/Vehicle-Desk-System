@@ -92,7 +92,7 @@ export class FilterPanelComponent implements OnChanges {
       נדחה: 'rejected',
       בוצע: 'completed',
       בנסיעה: 'in_progress',
-      'בוטל עקב אי-הגעה': 'cancelled_due_to_no_show',
+      'בוטלה עקב אי-הגעה': 'cancelled_due_to_no_show',
       'בוטל - רכב לא זמין': 'cancelled_vehicle_unavailable',
     };
     return statusMap[hebrewStatus] || hebrewStatus;

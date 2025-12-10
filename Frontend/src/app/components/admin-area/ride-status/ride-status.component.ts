@@ -46,7 +46,7 @@ export class RideStatusComponent {
       rejected: 'נדחה',
       in_progress: 'בנסיעה',
       completed: 'בוצע',
-      cancelled_due_to_no_show: 'בוטל עקב אי-הגעה',
+      cancelled_due_to_no_show: 'בוטלה עקב אי-הגעה',
       cancelled_vehicle_unavailable: 'בוטל - רכב לא זמין',
     };
     return statusMap[status] || status;

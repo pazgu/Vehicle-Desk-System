@@ -37,7 +37,6 @@ export class AuthInterceptor implements HttpInterceptor {
 
     return next.handle(authReq).pipe(
       catchError((err: HttpErrorResponse) => {
-        console.log('Caught in interceptor:', err);
 
         if (isEmailOp && err.status === 422) {
           return throwError(() => err);

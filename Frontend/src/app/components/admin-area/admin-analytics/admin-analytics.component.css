@@ -492,26 +492,17 @@ body {
   display: block;
   margin: 0.75rem auto 1.5rem auto;
   padding: 0.6rem 1.2rem;
-  background: linear-gradient(
-    135deg,
-    rgba(148, 34, 34, 0.08),
-    rgba(185, 28, 28, 0.05)
-  );
-  border: 1px solid rgba(148, 34, 34, 0.2);
-  border-radius: 8px;
   font-family: "Alef", sans-serif;
   font-size: 0.85rem;
   font-weight: 600;
   color: #942222;
   text-align: center;
   position: relative;
-  backdrop-filter: blur(5px);
-  box-shadow: 0 2px 8px rgba(148, 34, 34, 0.1),
-    0 1px 0 rgba(255, 255, 255, 0.3) inset;
   transition: all 0.3s ease;
   direction: rtl;
   width: fit-content;
   max-width: 90%;
+  opacity: 0.8;
 }
 
 .export-disclaimer::before {
@@ -527,44 +518,6 @@ body {
   font-size: 0.9rem;
 }
 
-.export-disclaimer:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(148, 34, 34, 0.12),
-    rgba(185, 28, 28, 0.08)
-  );
-  border-color: rgba(148, 34, 34, 0.3);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(148, 34, 34, 0.15),
-    0 1px 0 rgba(255, 255, 255, 0.4) inset;
-}
-
-.export-disclaimer.bold-version {
-  background: linear-gradient(135deg, #942222, #b91c1c);
-  color: white;
-  font-weight: 700;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 15px rgba(148, 34, 34, 0.25),
-    0 1px 0 rgba(255, 255, 255, 0.2) inset;
-}
-
-.export-disclaimer.bold-version::before {
-  content: "\e91b";
-  font-family: "PrimeIcons";
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
-}
-
-.export-disclaimer.bold-version:hover {
-  background: linear-gradient(135deg, #7f1d1d, #991b1b);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(148, 34, 34, 0.35),
-    0 1px 0 rgba(255, 255, 255, 0.3) inset;
-}
-
-.export-disclaimer.animated {
-  animation: subtlePulse 3s ease-in-out infinite;
-}
 
 @keyframes subtlePulse {
   0%,

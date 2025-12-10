@@ -25,6 +25,7 @@ import { ArchivedVehiclesComponent } from './components/vehicle-area/archived-ve
 import { DepartmentDataComponent } from './components/admin-area/departments/department-data/department-data.component';
 import { EditRideComponent } from './ride-area/edit-ride/edit-ride.component';
 import { LoginRedirectGuard } from './components/auth-area/login-redirect/login-redirect.component';
+import { provideRouter, withInMemoryScrolling } from '@angular/router';
 
 export const routes: Routes = [
   {
@@ -188,4 +189,13 @@ export const routes: Routes = [
   },
 
   { path: '**', component: Page404Component },
+];
+
+export const appRouterProviders = [
+  provideRouter(
+    routes,
+    withInMemoryScrolling({
+      scrollPositionRestoration: 'top',
+    })
+  )
 ];

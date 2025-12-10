@@ -243,7 +243,8 @@ if (this.checkIfHasGovernmentlicense() && this.selectedFile) {
 
   isDepartmentRequired(): boolean {
     const role = this.addUserForm.get('role')?.value;
-    return role === 'employee';
+    return role === 'employee' || role === 'raan';
+  
   }
   shouldShowDepartment(): boolean {
     const role = this.addUserForm.get('role')?.value;

@@ -677,7 +677,7 @@ def periodic_check_unblock_users():
     try:
         future.result(timeout=10)
     except Exception as e:
-        print(f"❌ Failed periodic_check_unblock_users: {e}")
+        print(f" Failed periodic_check_unblock_users: {e}")
 
 
 def periodic_check_unstarted_rides(): 
@@ -823,12 +823,12 @@ async def check_ride_status_and_notify_user():
                 status_hebrew = "ממתין לאישור"
                 status_color = "#FFC107"
                 status_message = "בקשתך ממתינה לאישור. אנא המתן בסבלנות."
-                subject = f"✅ בקשתך ממתינה לאישור: נסיעה ליעד {ride.stop}" 
+                subject = f" בקשתך ממתינה לאישור: נסיעה ליעד {ride.stop}" 
             elif ride.status == RideStatus.rejected:
                 status_hebrew = "נדחתה"
                 status_color = "#DC3545"
                 status_message = "בקשתך נדחתה. ייתכן שאין רכב זמין או שהבקשה אינה עומדת בתנאים."
-                subject = f"❌ בקשתך נדחתה: נסיעה ליעד {ride.stop}" 
+                subject = f" בקשתך נדחתה: נסיעה ליעד {ride.stop}" 
             else:
                 continue 
 
@@ -920,10 +920,10 @@ async def notify_ride_cancelled_due_to_no_show(ride_id: uuid.UUID):
                 plate_number = vehicle.plate_number
                 
 
-        notif_message = f"הנסיעה שלך ליעד {destination_name} בוטל עקב אי-הגעה."
+        notif_message = f"הנסיעה שלך ליעד {destination_name} בוטלה עקב אי-הגעה."
         notification = create_system_notification(
             user_id=user.employee_id,
-            title="עדכון: הנסיעה בוטל עקב אי-הגעה",
+            title="עדכון: הנסיעה בוטלה עקב אי-הגעה",
             message=notif_message,
             order_id=ride.id
         )
@@ -939,8 +939,8 @@ async def notify_ride_cancelled_due_to_no_show(ride_id: uuid.UUID):
 
                 supervisor_notification = create_system_notification(
                     user_id=supervisor_id,
-                    title="הודעה: הנסיעה בוטל עקב אי-הגעה",
-                    message=f"הנסיעה של {user_name_safe} ליעד {destination_safe} בוטל עקב אי-הגעה.",
+                    title="הודעה: הנסיעה בוטלה עקב אי-הגעה",
+                    message=f"הנסיעה של {user_name_safe} ליעד {destination_safe} בוטלה עקב אי-הגעה.",
                     order_id=ride.id
                 )
 
@@ -953,8 +953,8 @@ async def notify_ride_cancelled_due_to_no_show(ride_id: uuid.UUID):
                 continue
             admin_notification = create_system_notification(
                 user_id=admin_id,
-                title=f"הודעה: הנסיעה בוטל עקב אי-הגעה",
-                message=f"הנסיעה של {user_name} ליעד {destination_name} בוטל עקב אי-הגעה.",
+                title=f"הודעה: הנסיעה בוטלה עקב אי-הגעה",
+                message=f"הנסיעה של {user_name} ליעד {destination_name} בוטלה עקב אי-הגעה.",
                 order_id=ride.id
             )
             await emit_new_notification(
@@ -972,7 +972,7 @@ async def notify_ride_cancelled_due_to_no_show(ride_id: uuid.UUID):
 
         #     await async_send_email(
         #         to_email=user_email,
-        #         subject=f"❌ עדכון: הנסיעה שלך בוטל עקב אי-הגעה",
+        #         subject=f"❌ עדכון: הנסיעה שלך בוטלה עקב אי-הגעה",
         #         html_content=html_content_user
         #     )
        
@@ -997,7 +997,7 @@ async def notify_ride_cancelled_due_to_no_show(ride_id: uuid.UUID):
                 #         })
                 #         await async_send_email(
                 #             to_email=admin_email,
-                #             subject=f"🚨 הודעה: הנסיעה של {user_name} בוטל עקב אי-הגעה",
+                #             subject=f"🚨 הודעה: הנסיעה של {user_name} בוטלה עקב אי-הגעה",
                 #             html_content=html_content_admin
                 #         )
                 #     except Exception as email_err:
@@ -1020,7 +1020,7 @@ async def notify_ride_cancelled_due_to_no_show(ride_id: uuid.UUID):
 
         #             await async_send_email(
         #                 to_email=supervisor_email,
-        #                 subject=f"🚨 הודעה: הנסיעה של {user_name} בוטל עקב אי-הגעה",
+        #                 subject=f"🚨 הודעה: הנסיעה של {user_name} בוטלה עקב אי-הגעה",
         #                 html_content=html_content_supervisor
 
         #             )
@@ -1360,7 +1360,7 @@ async def check_expired_government_licenses():
                         "relevant_user_id": str(user.employee_id)
                     }, room=str(admin.employee_id))
                     
-                    print(f"✅ Socket notification sent to admin {admin.employee_id}")
+                    print(f"Socket notification sent to admin {admin.employee_id}")
 
                 except Exception as e:
                     print(f"Error processing admin {admin.employee_id}: {str(e)}")

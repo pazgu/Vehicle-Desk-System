@@ -128,11 +128,11 @@ export class RideDetailsComponent implements OnInit {
     this.rideService.startRide(this.ride.ride_id).subscribe({
       next: (updatedRide) => {
         this.ride = updatedRide;
-        this.toastService.show('הנסיעה החלה בהצלחה! 🚗', 'success');
+        this.toastService.show('הנסיעה החלה בהצלחה!', 'success');
       },
       error: (err) => {
         console.error('Error starting ride:', err);
-        this.toastService.show('שגיאה בהתחלת הנסיעה ❌', 'error');
+        this.toastService.show('שגיאה בהתחלת הנסיעה', 'error');
       },
     });
   }
@@ -148,7 +148,7 @@ export class RideDetailsComponent implements OnInit {
       completed: 'הושלם',
       in_progress: 'בנסיעה',
       rejected: 'נדחה',
-      cancelled_due_to_no_show: 'בוטל עקב אי-הגעה',
+      cancelled_due_to_no_show: 'בוטלה עקב אי-הגעה',
       cancelled_vehicle_unavailable: 'בוטלה - רכב לא זמין',
     };
     return statusMap[status] || status;
