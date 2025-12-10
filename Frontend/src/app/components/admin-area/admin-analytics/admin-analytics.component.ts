@@ -42,7 +42,9 @@ pdfMake.vfs = pdfFonts.vfs;
 export class AdminAnalyticsComponent implements OnInit {
   constructor(
     private statisticsService: StatisticsService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
   @ViewChild(NoShowsComponent) noShowsComponent!: NoShowsComponent;
   @ViewChild(VehicleUsageComponent)
@@ -52,7 +54,19 @@ export class AdminAnalyticsComponent implements OnInit {
   vehicleStatusComponent!: VehicleStatusComponent;
 
   selectedSortOption = 'countDesc';
-  activeTabIndex = 0;
+  private _activeTabIndex = 0;
+  get activeTabIndex(): number {
+    return this._activeTabIndex;
+  }
+  set activeTabIndex(value: number) {
+    this._activeTabIndex = value;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab: value },
+      queryParamsHandling: 'merge'
+    });
+  }
+  
   selectedMonth = (new Date().getMonth() + 1).toString();
   selectedYear = new Date().getFullYear().toString();
   private departmentsMap = new Map<string, string>();
@@ -74,7 +88,7 @@ export class AdminAnalyticsComponent implements OnInit {
   purposeChartOptions: any;
   purposeLoading = false;
 
-  purposeFilterMode: 'last4' | 'custom' | 'range' = 'last4';
+  purposeFilterMode: 'last4' | 'range' = 'last4';
   purposeYear: string = new Date().getFullYear().toString();
   purposeStartMonth: string = '1';
   purposeRangeStartDate: string = '';
@@ -85,13 +99,25 @@ export class AdminAnalyticsComponent implements OnInit {
   );
 
   ngOnInit() {
-    this.loadDefaultRideStartTimeStats();
-    this.loadDefaultPurposeStats();
+    this.route.queryParams.subscribe(params => {
+      const tabParam = params['tab'];
+      if (tabParam !== undefined) {
+        const tabIndex = parseInt(tabParam, 10);
+        if (!isNaN(tabIndex) && tabIndex >= 0 && tabIndex <= 6) {
+          this._activeTabIndex = tabIndex;
+        }
+      }
+      this.loadDefaultRideStartTimeStats();
+      this.loadDefaultPurposeStats();
+    });
   }
 
   ngAfterViewInit() {
+    // Keep the initialization but don't override if we have a query param
     setTimeout(() => {
-      this.activeTabIndex = 0;
+      if (!this.route.snapshot.queryParams['tab']) {
+        this.activeTabIndex = 0;
+      }
     });
   }
 
@@ -847,7 +873,7 @@ export class AdminAnalyticsComponent implements OnInit {
     this.fetchPurposeStats();
   }
 
-  onPurposeFilterModeChange(mode: 'last4' | 'custom' | 'range'): void {
+  onPurposeFilterModeChange(mode: 'last4' | 'range'): void {
     this.purposeFilterMode = mode;
 
     if (mode === 'last4') {
@@ -1200,13 +1226,11 @@ export class AdminAnalyticsComponent implements OnInit {
   }
   private loadDefaultRideStartTimeStats(): void {
     const now = new Date();
-    const to = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    const from = new Date(to);
-    from.setMonth(from.getMonth() - 3);
-
+    const to = new Date(Date.UTC(now.getFullYear(), now.getMonth() + 1, 0));
+    const from = new Date(Date.UTC(now.getFullYear(), now.getMonth() - 3, 1));
+    from.setUTCDate(from.getUTCDate() - 1);
     const fromStr = from.toISOString().substring(0, 10);
     const toStr = to.toISOString().substring(0, 10);
-
     this.fetchRideStartTimeStats(fromStr, toStr);
   }
 }

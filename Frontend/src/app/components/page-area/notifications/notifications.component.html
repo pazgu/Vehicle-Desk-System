@@ -1,6 +1,6 @@
 <div class="wrapper">
   <img
-    src="/assets/images/notifIcon.png"
+    src="/assets/images/falling_envelop.png"
     *ngIf="pagedNotifications.length > 0"
     class="icon-img"
   />
@@ -13,9 +13,10 @@
       class="notification"
       *ngFor="let note of pagedNotifications"
       (click)="handleNotificationClick(note)"
-      [ngClass]="
-        isVehicleFreezeCancellation(note) ? 'vehicle-freeze-banner' : 'neutral'
-      "
+        [ngClass]="[
+    isVehicleFreezeCancellation(note) ? 'vehicle-freeze-banner' : 'neutral',
+    note.seen ? 'seen-note' : 'unseen-note'
+  ]"
     >
       <div class="content">
         <span
