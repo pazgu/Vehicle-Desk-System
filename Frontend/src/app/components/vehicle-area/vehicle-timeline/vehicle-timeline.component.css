@@ -16,6 +16,7 @@
 }
 
 .timeline-header {
+  position: relative;
   margin-top: 30px;
   text-align: center;
   padding: 2rem 1.5rem;
@@ -395,27 +396,32 @@
   font-size: 1vw;
   padding-top: 5%;
 }
-
 .back-btn {
   position: absolute;
   top: 20px;
   left: 20px;
-  width: 100px;
-  height: 30px;
-  color: #942222;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: linear-gradient(145deg, #942222 0%, #a52828 100%);  
+  border: 2px solid rgba(148, 34, 34, 0.2);
+  border-radius: 25px;
+  color: white;  
   font-family: var(--font-family-alef);
   font-size: 16px;
   font-weight: bold;
-  padding: 1px 2px;
-  border: none;
-  border-radius: 20px;
   cursor: pointer;
-  background: none;
-  transition: background-color 0.2s ease, transform 0.15s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(148, 34, 34, 0.3);
+  z-index: 1000; 
 }
 
 .back-btn:hover {
-  transform: scale(1.03);
+  background: linear-gradient(145deg, #a52828 0%, #942222 100%);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(148, 34, 34, 0.4);
 }
 
 .hover-card {

@@ -83,7 +83,7 @@ export class RideListTableComponent implements OnChanges {
       case 'in_progress':
         return 'בנסיעה';
       case 'cancelled_due_to_no_show':
-        return 'בוטל עקב אי-הגעה';
+        return 'בוטלה עקב אי-הגעה';
       case 'reserved':
         return 'מוזמן';
       case 'cancelled':

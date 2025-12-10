@@ -19,7 +19,7 @@ def delete_user_by_id(user_id: UUID, current_user: User, db: Session):
     if str(user_id) == str(current_user.employee_id):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="⚠️ You cannot delete yourself"
+            detail="You cannot delete yourself"
         )
 
     user_to_delete = db.query(User).filter(User.employee_id == user_id).first()

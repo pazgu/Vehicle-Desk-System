@@ -33,7 +33,7 @@ export class RideUserChecksService {
     return this.userService.getUserById(employeeId).pipe(
       map((user: any) => {
         if (!('has_government_license' in user)) {
-          console.error('🚨 user object missing has_government_license:', user);
+          console.error('user object missing has_government_license:', user);
           this.toastService.show(
             'שגיאה: פרטי רישיון ממשלתי לא נמצאו.',
             'error'
