@@ -446,7 +446,7 @@ export class NewRideComponent implements OnInit {
         this.disableRequest = false;
       } else {
         this.disableRequest = true;
-        console.warn('🚫 License is missing or expired via socket');
+        console.warn('License is missing or expired via socket');
         this.toastService.showPersistent(
           'לא ניתן לשלוח בקשה: למשתמש שנבחר אין רישיון ממשלתי תקף. לעדכון פרטים יש ליצור קשר עם המנהל.',
           'error'

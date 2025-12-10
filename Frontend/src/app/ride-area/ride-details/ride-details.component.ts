@@ -128,11 +128,11 @@ export class RideDetailsComponent implements OnInit {
     this.rideService.startRide(this.ride.ride_id).subscribe({
       next: (updatedRide) => {
         this.ride = updatedRide;
-        this.toastService.show('הנסיעה החלה בהצלחה! ', 'success');
+        this.toastService.show('הנסיעה החלה בהצלחה!', 'success');
       },
       error: (err) => {
         console.error('Error starting ride:', err);
-        this.toastService.show('שגיאה בהתחלת הנסיעה ', 'error');
+        this.toastService.show('שגיאה בהתחלת הנסיעה', 'error');
       },
     });
   }

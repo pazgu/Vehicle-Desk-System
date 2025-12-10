@@ -667,7 +667,7 @@ async def forgot_password(
     frontend_url = os.getenv("BOOKIT_FRONTEND_URL", "http://localhost:4200")
     reset_link = f"{frontend_url}/reset-password/{token}"
 
-    subject = "🚗 Reset Your Password - Vehicle Desk System"
+    subject = "Reset Your Password - Vehicle Desk System"
     context = { "username": user.first_name, "reset_link": reset_link }
 
     try:
