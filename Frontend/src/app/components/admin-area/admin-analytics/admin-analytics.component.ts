@@ -88,7 +88,7 @@ export class AdminAnalyticsComponent implements OnInit {
   purposeChartOptions: any;
   purposeLoading = false;
 
-  purposeFilterMode: 'last4' | 'custom' | 'range' = 'last4';
+  purposeFilterMode: 'last4' | 'range' = 'last4';
   purposeYear: string = new Date().getFullYear().toString();
   purposeStartMonth: string = '1';
   purposeRangeStartDate: string = '';
@@ -874,7 +874,7 @@ export class AdminAnalyticsComponent implements OnInit {
     this.fetchPurposeStats();
   }
 
-  onPurposeFilterModeChange(mode: 'last4' | 'custom' | 'range'): void {
+  onPurposeFilterModeChange(mode: 'last4' | 'range'): void {
     this.purposeFilterMode = mode;
 
     if (mode === 'last4') {
@@ -1227,13 +1227,11 @@ export class AdminAnalyticsComponent implements OnInit {
   }
   private loadDefaultRideStartTimeStats(): void {
     const now = new Date();
-    const to = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    const from = new Date(to);
-    from.setMonth(from.getMonth() - 3);
-
+    const to = new Date(Date.UTC(now.getFullYear(), now.getMonth() + 1, 0));
+    const from = new Date(Date.UTC(now.getFullYear(), now.getMonth() - 3, 1));
+    from.setUTCDate(from.getUTCDate() - 1);
     const fromStr = from.toISOString().substring(0, 10);
     const toStr = to.toISOString().substring(0, 10);
-
     this.fetchRideStartTimeStats(fromStr, toStr);
   }
 }
