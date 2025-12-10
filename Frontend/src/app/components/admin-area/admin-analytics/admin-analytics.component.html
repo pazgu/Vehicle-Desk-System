@@ -110,16 +110,7 @@
                 />
                 4 חודשים אחרונים (ברירת מחדל)
               </label>
-              <label>
-                <input
-                  type="radio"
-                  name="rideStartMode"
-                  value="single"
-                  [(ngModel)]="rideStartFilterMode"
-                  (change)="onRideStartFilterModeChange('single')"
-                />
-                חודש בודד
-              </label>
+          
               <label>
                 <input
                   type="radio"
@@ -203,21 +194,12 @@
       4 חודשים אחרונים (ברירת מחדל)
     </label>
     <label>
-      <input type="radio" name="purposeMode" value="custom" [(ngModel)]="purposeFilterMode" (change)="onPurposeFilterModeChange('custom')" />
-      טווח מותאם (חודש התחלה)
-    </label>
-    <label>
       <input type="radio" name="purposeMode" value="range" [(ngModel)]="purposeFilterMode" (change)="onPurposeFilterModeChange('range')" />
       טווח תאריכים
     </label>
   </div>
 
-  <div class="range-filter" *ngIf="purposeFilterMode === 'custom'">
-    <label>שנה: <select [(ngModel)]="purposeYear"><option *ngFor="let y of years" [value]="y">{{ y }}</option></select></label>
-    <label>חודש התחלה: <select [(ngModel)]="purposeStartMonth"><option *ngFor="let m of [1,2,3,4,5,6,7,8,9,10,11,12]" [value]="m">{{ m }}</option></select></label>
-    <button (click)="onApplyPurposeRange()">הצג</button>
-    <small class="hint-text">יוצגו 4 חודשים ברצף החל מחודש זה.</small>
-  </div>
+
 
   <div class="range-filter" *ngIf="purposeFilterMode === 'range'">
     <label>
