@@ -151,29 +151,35 @@ export class RideCompletionFormComponent implements OnInit {
       }
     }
 
-    const rawForm = this.form.value;
-    const formData = {
-      ride_id: this.rideId,
-      emergency_event: rawForm.emergency_event === 'true' ? 'true' : 'false',
-      freeze_details: rawForm.freeze_details || '',
-      fueled: rawForm.fueled === 'true',
-      is_vehicle_ready_for_next_ride:
-        rawForm.is_vehicle_ready_for_next_ride === true,
-      changed_by: localStorage.getItem('user_id') || '',
-    };
+   const rawForm = this.form.value;
+  const formData = {
+    ride_id: this.rideId,
+    emergency_event: rawForm.emergency_event === 'true' ? 'true' : 'false',
+    freeze_details: rawForm.freeze_details || '',
+    fueled: rawForm.fueled === 'true',
+    is_vehicle_ready_for_next_ride: rawForm.is_vehicle_ready_for_next_ride === true,
+    changed_by: localStorage.getItem('user_id') || '',
+  };
 
-    const token = localStorage.getItem('access_token') || '';
-    this.loading = true;
+  const token = localStorage.getItem('access_token') || '';
+  this.loading = true;
 
-    this.rideReportService.submitCompletionForm(formData, token).subscribe({
-      next: () => {
-        const submittedKey = `feedback_submitted_${this.rideId}`;
-        localStorage.setItem(submittedKey, 'true');
-        this.toastService.show('הטופס נשלח בהצלחה', 'success');
-        this.showForm = false;
-        this.loading = false;
-        localStorage.removeItem('pending_feedback_ride');
-      },
+  this.rideReportService.submitCompletionForm(formData, token).subscribe({
+    next: () => {
+  
+      localStorage.setItem(`feedback_submitted_${this.rideId}`, 'true');
+      localStorage.setItem('last_submitted_ride', this.rideId);
+      localStorage.removeItem('pending_feedback_ride');
+
+      this.toastService.show('הטופס נשלח בהצלחה', 'success');
+      this.showForm = false;
+      this.loading = false;
+
+      this.formCompleted.emit();
+
+      this.router.navigate(['/home']);
+    },
+
       error: () => {
         this.toastService.show('אירעה שגיאה בשליחת הטופס', 'error');
         this.loading = false;
