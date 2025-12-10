@@ -202,7 +202,8 @@ async def check_inactive_vehicles():
                     "notification_type": notif.notification_type.value,
                     "sent_at": notif.sent_at.isoformat(),
                     "vehicle_id": str(vehicle.id),
-                    "plate_number": vehicle.plate_number
+                    "plate_number": vehicle.plate_number,
+                    "seen":False
                 }, room=str(admin.employee_id))
 
     finally:
@@ -270,7 +271,8 @@ async def check_vehicle_lease_expiry():
                         "notification_type": notif.notification_type.value,
                         "sent_at": notif.sent_at.isoformat(),
                         "vehicle_id": str(vehicle.id),
-                        "plate_number": vehicle.plate_number
+                        "plate_number": vehicle.plate_number,
+                        "seen":False
                     }, room=str(supervisor_id))
 
             for admin in admins:
@@ -314,7 +316,8 @@ async def check_vehicle_lease_expiry():
                         "notification_type": admin_notif.notification_type.value,
                         "sent_at": admin_notif.sent_at.isoformat(),
                         "vehicle_id": str(vehicle.id),
-                        "plate_number": vehicle.plate_number
+                        "plate_number": vehicle.plate_number,
+                        "seen":False
                     }, room=str(admin.employee_id))
 
     finally:

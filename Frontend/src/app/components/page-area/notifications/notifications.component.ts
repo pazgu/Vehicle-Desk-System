@@ -98,10 +98,6 @@ export class NotificationsComponent implements OnInit {
       this.socketService.odometerNotif$.subscribe(
         (payload: { updated_notifications: MyNotification[] } | null) => {
           if (!payload || !payload.updated_notifications) {
-            console.warn(
-              'Got null or bad odometer notification payload:',
-              payload
-            );
             return;
           }
 
@@ -278,16 +274,6 @@ export class NotificationsComponent implements OnInit {
  handleNotificationClick(notif: MyNotification): void {
   const role = localStorage.getItem('role');
 
-  if (notif.order_id) {
-    const dialogRef = this.dialog.open(RideDetailsComponent, {
-      width: '500px',
-      data: { rideId: notif.order_id },
-    });
-
-    dialogRef.afterClosed().subscribe(() => {
-      this.notifications = [...this.notifications];
-      this.cdr.detectChanges();
-    });
 
     if (!notif.seen) {
       this.notificationService.markNotificationAsSeen(notif.id).subscribe({
@@ -301,6 +287,17 @@ export class NotificationsComponent implements OnInit {
         error: (err) => console.error('Failed to mark notification as seen:', err),
       });
     }
+  if (notif.order_id) {
+    const dialogRef = this.dialog.open(RideDetailsComponent, {
+      width: '500px',
+      data: { rideId: notif.order_id },
+    });
+
+    dialogRef.afterClosed().subscribe(() => {
+      this.notifications = [...this.notifications];
+      this.cdr.detectChanges();
+    });
+   
     
     return;
   }
