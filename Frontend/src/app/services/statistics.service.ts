@@ -118,7 +118,7 @@ export class StatisticsService {
           //   statusText: err.statusText,
           //   url: err.url,
           //   message: err.message,
-          });
+          // });
           return throwError(() => err);
         })
       );
