@@ -105,25 +105,20 @@ export class StatisticsService {
 
     const url = `${this.apiUrl}/statistics/purpose-of-travel`;
 
-    console.log('Calling purpose-of-travel API:', url);
-    console.log('Params:', params.toString());
-    console.log('Token exists:', !!localStorage.getItem('token'));
-
     return this.http
       .get<PurposeOfTravelStatsResponse>(url, { headers, params })
       .pipe(
         map((response) => {
-          console.log('Purpose stats received:', response);
           return response;
         }),
         catchError((err) => {
           console.error('Failed to fetch purpose-of-travel stats', err);
-          console.error('Error details:', {
-            status: err.status,
-            statusText: err.statusText,
-            url: err.url,
-            message: err.message,
-          });
+          // console.error('Error details:', {
+          //   status: err.status,
+          //   statusText: err.statusText,
+          //   url: err.url,
+          //   message: err.message,
+          // });
           return throwError(() => err);
         })
       );
