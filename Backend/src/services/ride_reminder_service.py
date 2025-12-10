@@ -41,7 +41,7 @@ def schedule_ride_reminder_email(ride_id: UUID, scheduled_start_time: datetime):
         )
         logger.info(f" Scheduled ride reminder email for ride {ride_id} at {reminder_time}")
     except Exception as e:
-        logger.error(f"❌ Error scheduling ride reminder for {ride_id}: {e}")
+        logger.error(f" Error scheduling ride reminder for {ride_id}: {e}")
 
 
 def send_ride_reminder(ride_id: str):
@@ -93,6 +93,6 @@ def send_ride_reminder(ride_id: str):
         logger.info(f"📧 Ride reminder email sent to {user.email} for ride {ride.id}")
 
     except Exception as e:
-        logger.error(f"❌ Error sending ride reminder email for ride {ride_id}: {e}", exc_info=True)
+        logger.error(f" Error sending ride reminder email for ride {ride_id}: {e}", exc_info=True)
     finally:
         db.close()

@@ -67,6 +67,7 @@ export class StatisticsService {
 
     const url = `${this.apiUrl}/statistics/ride-start-time`;
 
+
     return this.http
       .get<RideStartTimeStatsResponse>(url, { headers, params })
       .pipe(
@@ -112,13 +113,7 @@ export class StatisticsService {
           return response;
         }),
         catchError((err) => {
-          console.error('Failed to fetch purpose-of-travel stats', err);
-          // console.error('Error details:', {
-          //   status: err.status,
-          //   statusText: err.statusText,
-          //   url: err.url,
-          //   message: err.message,
-          // });
+          console.error(' Failed to fetch purpose-of-travel stats', err);
           return throwError(() => err);
         })
       );

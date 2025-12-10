@@ -680,7 +680,7 @@ def periodic_check_unblock_users():
     try:
         future.result(timeout=10)
     except Exception as e:
-        print(f"❌ Failed periodic_check_unblock_users: {e}")
+        print(f" Failed periodic_check_unblock_users: {e}")
 
 
 def periodic_check_unstarted_rides(): 
@@ -826,12 +826,12 @@ async def check_ride_status_and_notify_user():
                 status_hebrew = "ממתין לאישור"
                 status_color = "#FFC107"
                 status_message = "בקשתך ממתינה לאישור. אנא המתן בסבלנות."
-                subject = f"✅ בקשתך ממתינה לאישור: נסיעה ליעד {ride.stop}" 
+                subject = f" בקשתך ממתינה לאישור: נסיעה ליעד {ride.stop}" 
             elif ride.status == RideStatus.rejected:
                 status_hebrew = "נדחתה"
                 status_color = "#DC3545"
                 status_message = "בקשתך נדחתה. ייתכן שאין רכב זמין או שהבקשה אינה עומדת בתנאים."
-                subject = f"❌ בקשתך נדחתה: נסיעה ליעד {ride.stop}" 
+                subject = f" בקשתך נדחתה: נסיעה ליעד {ride.stop}" 
             else:
                 continue 
 
@@ -1363,7 +1363,7 @@ async def check_expired_government_licenses():
                         "relevant_user_id": str(user.employee_id)
                     }, room=str(admin.employee_id))
                     
-                    print(f"✅ Socket notification sent to admin {admin.employee_id}")
+                    print(f"Socket notification sent to admin {admin.employee_id}")
 
                 except Exception as e:
                     print(f"Error processing admin {admin.employee_id}: {str(e)}")
