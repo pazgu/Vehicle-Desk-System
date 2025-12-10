@@ -15,6 +15,7 @@ import { Router } from '@angular/router';
 import { SocketService } from '../../../../services/socket.service';
 import { Subscription } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-user-data',
@@ -46,7 +47,8 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
     private toastService: ToastService,
     private router: Router,
     private socketService: SocketService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private location: Location
   ) {}
 
   ngOnInit(): void {
@@ -60,6 +62,10 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
     this.setupRoleBasedValidation();
   }
 
+  goBack(): void {
+    this.location.back();
+  }
+  
   ngOnDestroy(): void {
     this.subs.forEach((sub) => sub.unsubscribe());
   }

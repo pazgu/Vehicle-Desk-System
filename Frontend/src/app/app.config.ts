@@ -3,7 +3,7 @@ import {
   LOCALE_ID,
   provideZoneChangeDetection,
 } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { routes } from './app.routes';
 import {
   provideHttpClient,
@@ -16,7 +16,12 @@ import { loadingInterceptorProvider } from './interceptors/loading.interceptor';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes),
+    provideRouter(
+      routes,
+      withInMemoryScrolling({
+        scrollPositionRestoration: 'top', 
+      })
+    ),
     provideAnimations(),
     provideHttpClient(withInterceptorsFromDi()),
     authInterceptorProvider,
