@@ -460,3 +460,40 @@ form .removeBtn:hover {
   color: #999;
   font-style: italic;
 }
+
+.no-vehicles-banner {
+  margin-top: 0.4rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 10px;
+  background: #fff7e6;          
+  border: 1px solid #f3c86b;    
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-family: var(--font-family-alef, "Alef", sans-serif);
+  direction: rtl;
+}
+
+.no-vehicles-banner .icon {
+  margin-top: 2px;
+  font-size: 1rem;
+  color: #c97a11;           
+  flex-shrink: 0;
+}
+
+.no-vehicles-banner .text-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.no-vehicles-banner .title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #7a4a00;
+}
+
+.no-vehicles-banner .subtitle {
+  font-size: 0.85rem;
+  color: #8a6b3b;
+}

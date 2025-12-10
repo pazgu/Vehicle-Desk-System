@@ -292,30 +292,40 @@ export class EditRideComponent implements OnInit {
       
       this.filterAvailableVehicles();
       setTimeout(() => {
-        if (currentCarValue) {
-          const isStillValid = this.availableCars.some(
-            car => car.id === currentCarValue && 
-                  car.status === 'available' && 
-                  !car.freeze_reason
-          );
-          if (isStillValid) {
-            carControl?.setValue(currentCarValue, { emitEvent: false });
-            return;
-          }
-        }
-        if (this.availableCars.length > 0) {
-          const firstAvailable = this.availableCars.find(
-            car => car.status === 'available' && !car.freeze_reason
-          );
-          if (firstAvailable) {
-            carControl?.setValue(firstAvailable.id, { emitEvent: false });
-          } else {
-            carControl?.setValue(null, { emitEvent: false });
-          }
-        } else {
-          carControl?.setValue(null, { emitEvent: false });
-        }
-      }, 0);
+    if (!carControl) return;
+
+    if (currentCarValue) {
+      const isStillValid = this.availableCars.some(
+        car =>
+          car.id === currentCarValue &&
+          car.status === 'available' &&
+          !car.freeze_reason
+      );
+
+      if (isStillValid) {
+        this.selectedCarId = currentCarValue;
+        carControl.setValue(currentCarValue, { emitEvent: false });
+        return;
+      }
+    }
+
+    if (this.availableCars.length > 0) {
+      const firstAvailable = this.availableCars.find(
+        car => car.status === 'available' && !car.freeze_reason
+      );
+
+      if (firstAvailable) {
+        this.selectedCarId = firstAvailable.id;
+        carControl.setValue(firstAvailable.id, { emitEvent: false });
+      } else {
+        this.selectedCarId = '';
+        carControl.setValue(null, { emitEvent: false });
+      }
+    } else {
+      this.selectedCarId = '';
+      carControl.setValue(null, { emitEvent: false });
+    }
+  }, 0);
     });this.loadRide();
   }
   buildForm(): void {
@@ -552,34 +562,43 @@ export class EditRideComponent implements OnInit {
         );
         this.availableCars = [...this.allCars];
         setTimeout(() => {
-          const carControl = this.rideForm.get('car');
-          this.selectedCarId = originalVehicleId || '';
-          if (originalVehicleId) {
-            const selectedVehicle = this.allCars.find(
-              (car) => car.id === originalVehicleId
-            );
-            if (selectedVehicle) {
-              carControl?.setValue(selectedVehicle.id);
-            } else {
-              const firstAvailable = this.availableCars.find(
-                car => car.status === 'available' && !car.freeze_reason
-              );
-              if (firstAvailable) {
-                carControl?.setValue(firstAvailable.id);
-              } else {
-                carControl?.setValue(null);
-              }
-            }
-          } else if (this.availableCars.length > 0) {
-            const firstAvailable = this.availableCars.find(
-              car => car.status === 'available' && !car.freeze_reason
-            );
-            if (firstAvailable) {
-              carControl?.setValue(firstAvailable.id);
-            }
-          }
-          this.isLoadingExistingRide = false;
-        }, 300);
+  const carControl = this.rideForm.get('car');
+  if (!carControl) {
+    this.isLoadingExistingRide = false;
+    return;
+  }
+
+  const pickFirstAvailable = () => {
+    const firstAvailable = this.availableCars.find(
+      car => !this.isCarDisabled(car)
+    );
+    if (firstAvailable) {
+      this.selectedCarId = firstAvailable.id;
+      carControl.setValue(firstAvailable.id, { emitEvent: false });
+    } else {
+      this.selectedCarId = '';
+      carControl.setValue(null, { emitEvent: false });
+    }
+  };
+
+  if (originalVehicleId) {
+    const selectedVehicle = this.allCars.find(
+      car => car.id === originalVehicleId
+    );
+
+    if (selectedVehicle && !this.isCarDisabled(selectedVehicle)) {
+      this.selectedCarId = selectedVehicle.id;
+      carControl.setValue(selectedVehicle.id, { emitEvent: false });
+    } else {
+      pickFirstAvailable();
+    }
+  } else {
+    pickFirstAvailable();
+  }
+
+  this.isLoadingExistingRide = false;
+}, 300);
+
       },
       error: () => {
         this.toastService.show('שגיאה בטעינת רכבים זמינים', 'error');

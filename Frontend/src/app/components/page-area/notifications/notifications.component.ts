@@ -45,14 +45,14 @@ export class NotificationsComponent implements OnInit {
 
   ngOnInit(): void {
     const userId = localStorage.getItem('employee_id');
-    this.notificationService.markAllNotificationsAsSeen().subscribe({
-      next: () => {
-        this.notificationService.unreadCount$.next(0);
-      },
-      error: (err) => {
-        console.error('Failed to mark notifications as seen:', err);
-      },
-    });
+    // this.notificationService.markAllNotificationsAsSeen().subscribe({
+    //   next: () => {
+    //     this.notificationService.unreadCount$.next(0);
+    //   },
+    //   error: (err) => {
+    //     console.error('Failed to mark notifications as seen:', err);
+    //   },
+    // });
 
     const role = localStorage.getItem('role');
     if (role === 'admin') {

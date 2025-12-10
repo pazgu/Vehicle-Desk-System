@@ -179,15 +179,24 @@
 
             <div class="dropdown-backdrop" *ngIf="isDropdownOpen" (click)="closeDropdown()"></div>
             
-            <small
-              class="info-text"
-              *ngIf="
-                rideForm.get('vehicle_type')?.value &&
-                availableCars.length === 0
-              "
-            >
-              אין רכבים זמינים מסוג זה בשעות שנבחרו. נא לבחור סוג רכב אחר.
-            </small>
+            <div
+  class="no-vehicles-banner"
+  *ngIf="
+    rideForm.get('vehicle_type')?.value &&
+    availableCars.length === 0
+  "
+>
+  <i class="pi pi-exclamation-triangle icon"></i>
+  <div class="text-wrapper">
+    <div class="title">
+      אין רכבים זמינים מסוג זה בשעות שנבחרו
+    </div>
+    <div class="subtitle">
+      נא לבחור סוג רכב אחר או לעדכן את זמני הנסיעה
+    </div>
+  </div>
+</div>
+
             <small
               class="error-text"
               *ngIf="rideForm.get('car')?.touched && rideForm.get('car')?.errors?.['required'] && availableCars.length > 0"
