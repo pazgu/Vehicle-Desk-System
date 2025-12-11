@@ -352,10 +352,12 @@ def get_no_show_events_count_per_user(db: Session = Depends(get_db)):
 
 
 @router.get("/no-show-events/recent")
-def get_recent_no_show_events_per_user(
-    per_user_limit: int = Query(1, ge=1, le=3),
+def get_recent_no_show_events_for_single_user(
+    user_id: str = Query(...),
+    per_user_limit: int = Query(3, ge=1, le=5),
     db: Session = Depends(get_db)
 ):
+
     row_number = func.row_number().over(
         partition_by=NoShowEvent.user_id,
         order_by=NoShowEvent.occurred_at.desc()
@@ -368,7 +370,9 @@ def get_recent_no_show_events_per_user(
             NoShowEvent.ride_id,
             NoShowEvent.occurred_at,
             row_number
-        ).subquery()
+        )
+        .filter(NoShowEvent.user_id == user_id) 
+        .subquery()
     )
 
     results = (
