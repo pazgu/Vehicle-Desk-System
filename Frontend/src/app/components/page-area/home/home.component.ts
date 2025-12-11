@@ -149,8 +149,6 @@ export class NewRideComponent implements OnInit {
   supervisors: Supervisor[] = [];
   selectedSupervisor: string | null = null;
   departmentId=''
-
-
   isVIP=false
   isSupervisor=false
   constructor(
