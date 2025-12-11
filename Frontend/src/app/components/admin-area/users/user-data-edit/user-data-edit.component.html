@@ -45,10 +45,9 @@
             <label for="role">תפקיד</label>
             <select id="role" formControlName="role" class="form-control">
               <option value="" disabled>בחר תפקיד</option>
-              <option *ngFor="let role of roles" [value]="role">
-                {{ role }}
+              <option *ngFor="let role of roles" [value]="role.key">
+                {{ role.label }}
               </option>
-              <option value="supervisor">רע"ן</option>
             </select>
           </div>
 

@@ -165,7 +165,8 @@ async def edit_user_by_id_route(
     license_expiry_date: Optional[str] = Form(None),
     is_blocked: Optional[bool] = Form(False),
     block_expires_at: Optional[str] = Form(None),
-    block_reason: Optional[str] = Form(None)
+    block_reason: Optional[str] = Form(None),
+    isRaan: Optional[str] = Form(None)
 ):
     user_id_from_token = payload.get("user_id") or payload.get("sub")
     user_role_from_token = payload.get("role")
@@ -187,6 +188,7 @@ async def edit_user_by_id_route(
         department_id = str(vip_dep.id)  
 
     has_gov_license = has_government_license.lower() == "true"
+    is_raan_bool = isRaan.lower() == 'true' if isRaan else False  # ← ADD THIS LINE HERE
 
     if not has_gov_license and user.has_government_license:
         user.license_file_url = None
@@ -250,6 +252,7 @@ async def edit_user_by_id_route(
                 detail=f"Invalid role provided: {role}. Must be one of: {', '.join([r.value for r in UserRole])}"
             )
         user.role = new_role
+        user.isRaan = is_raan_bool
 
         if new_role == UserRole.admin or new_role == UserRole.inspector:
             user.department_id = None
