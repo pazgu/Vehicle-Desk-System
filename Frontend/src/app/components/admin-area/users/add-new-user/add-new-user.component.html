@@ -9,29 +9,69 @@
         <div class="form-group">
           <label>שם פרטי</label>
           <input type="text" formControlName="first_name" />
+          <div class="validation-wrapper">
           <small
             *ngIf="
-              addUserForm.get('first_name')?.touched &&
-              addUserForm.get('first_name')?.invalid
+              (addUserForm.get('first_name')?.touched || addUserForm.get('first_name')?.dirty) &&
+              addUserForm.get('first_name')?.hasError('required')
             "
             class="error"
           >
             חובה להזין שם פרטי
           </small>
+            <small
+              *ngIf="
+                (addUserForm.get('first_name')?.touched || addUserForm.get('first_name')?.dirty) &&
+                addUserForm.get('first_name')?.hasError('minlength')
+              "
+              class="error"
+            >
+               לפחות 2 אותיות
+            </small>
+            <small
+              *ngIf="
+                (addUserForm.get('first_name')?.touched || addUserForm.get('first_name')?.dirty) &&
+                addUserForm.get('first_name')?.hasError('pattern')
+              "
+              class="error"
+            >
+               רק אותיות בעברית או באנגלית
+         </small>
+        </div>
         </div>
 
         <div class="form-group">
           <label>שם משפחה</label>
           <input type="text" formControlName="last_name" />
+          <div class="validation-wrapper">
           <small
             *ngIf="
-              addUserForm.get('last_name')?.touched &&
-              addUserForm.get('last_name')?.invalid
+              (addUserForm.get('last_name')?.touched || addUserForm.get('last_name')?.dirty) &&
+              addUserForm.get('last_name')?.hasError('required')
             "
             class="error"
           >
             חובה להזין שם משפחה
           </small>
+          <small
+            *ngIf="
+              (addUserForm.get('last_name')?.touched || addUserForm.get('last_name')?.dirty) &&
+              addUserForm.get('last_name')?.hasError('minlength')
+            "
+            class="error"
+          >
+             לפחות 2 אותיות
+          </small>
+          <small
+            *ngIf="
+              (addUserForm.get('last_name')?.touched || addUserForm.get('last_name')?.dirty) &&
+              addUserForm.get('last_name')?.hasError('pattern')
+            "
+            class="error"
+          >
+             רק אותיות בעברית או באנגלית
+          </small>
+        </div>
         </div>
 
         <div class="form-group">
@@ -39,12 +79,21 @@
           <input type="text" formControlName="username" />
           <small
             *ngIf="
-              addUserForm.get('username')?.touched &&
-              addUserForm.get('username')?.invalid
+              (addUserForm.get('username')?.touched || addUserForm.get('username')?.dirty) &&
+              addUserForm.get('username')?.hasError('required')
             "
             class="error"
           >
             חובה להזין שם משתמש
+          </small>
+          <small
+            *ngIf="
+              (addUserForm.get('username')?.touched || addUserForm.get('username')?.dirty) &&
+              addUserForm.get('username')?.hasError('minlength')
+            "
+            class="error"
+          >
+             לפחות 3 תווים
           </small>
         </div>
       </div>
@@ -55,7 +104,7 @@
           <input type="email" formControlName="email" />
           <small
             *ngIf="
-              addUserForm.get('email')?.touched &&
+              (addUserForm.get('email')?.touched || addUserForm.get('email')?.dirty) &&
               addUserForm.get('email')?.hasError('required')
             "
             class="error"
@@ -64,7 +113,7 @@
           </small>
           <small
             *ngIf="
-              addUserForm.get('email')?.touched &&
+              (addUserForm.get('email')?.touched || addUserForm.get('email')?.dirty) &&
               addUserForm.get('email')?.hasError('email')
             "
             class="error"
@@ -78,7 +127,7 @@
           <input type="text" formControlName="phone" />
           <small
             *ngIf="
-              addUserForm.get('phone')?.touched &&
+              (addUserForm.get('phone')?.touched || addUserForm.get('phone')?.dirty) &&
               addUserForm.get('phone')?.hasError('required')
             "
             class="error"
@@ -87,7 +136,7 @@
           </small>
           <small
             *ngIf="
-              addUserForm.get('phone')?.touched &&
+              (addUserForm.get('phone')?.touched || addUserForm.get('phone')?.dirty) &&
               addUserForm.get('phone')?.hasError('pattern')
             "
             class="error"
@@ -113,7 +162,7 @@
             "
             class="error"
           >
-            שדה חובה
+             חובה לבחור תפקיד
           </small>
         </div>
 
@@ -155,10 +204,10 @@
               {{ showPassword ? "visibility" : "visibility_off" }}
             </mat-icon>
           </div>
-
+          <div class="validation-wrapper">
           <small
             *ngIf="
-              addUserForm.get('password')?.touched &&
+              (addUserForm.get('password')?.touched || addUserForm.get('password')?.dirty) &&
               addUserForm.get('password')?.hasError('required')
             "
             class="error"
@@ -167,23 +216,33 @@
           </small>
           <small
             *ngIf="
-              addUserForm.get('password')?.touched &&
-              addUserForm.get('password')?.hasError('pattern')
-            "
-            class="error"
-          >
-            הסיסמה חייבת להכיל לפחות אות גדולה אחת באנגלית
-          </small>
-          <small
-            *ngIf="
-              addUserForm.get('password')?.touched &&
+              (addUserForm.get('password')?.touched || addUserForm.get('password')?.dirty) &&
               addUserForm.get('password')?.hasError('minlength')
             "
             class="error"
           >
             הסיסמה חייבת להיות באורך של לפחות 8 תווים
           </small>
+          <small
+            *ngIf="
+              (addUserForm.get('password')?.touched || addUserForm.get('password')?.dirty) &&
+              addUserForm.get('password')?.hasError('uppercase')
+            "
+            class="error"
+          >
+             לפחות אות גדולה אחת
+          </small>
+          <small
+            *ngIf="
+              (addUserForm.get('password')?.touched || addUserForm.get('password')?.dirty) &&
+              addUserForm.get('password')?.hasError('digit')
+            "
+            class="error"
+          >
+             לפחות מספר אחד
+          </small>
         </div>
+      </div>
       </div>
 
       <div class="form-section">
