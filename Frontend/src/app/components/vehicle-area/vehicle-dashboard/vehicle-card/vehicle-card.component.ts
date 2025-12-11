@@ -43,6 +43,10 @@ export class VehicleCardComponent {
     return lastUsedDate < sevenDaysAgo;
   }
 
+   isLeaseExpired(expiry: string): boolean {
+    return new Date(expiry) < new Date();
+  }
+
   onCardClick() {
     this.cardClick.emit(this.vehicle?.id);
   }

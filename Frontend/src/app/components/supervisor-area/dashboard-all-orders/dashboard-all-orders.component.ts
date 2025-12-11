@@ -235,7 +235,7 @@ export class DashboardAllOrdersComponent implements OnInit {
         case 'בנסיעה':
           filtered = filtered.filter((order) => order.status === 'in_progress');
           break;
-        case 'בוטל עקב אי-הגעה':
+        case 'בוטלה עקב אי-הגעה':
           filtered = filtered.filter(
             (order) => order.status === 'cancelled_due_to_no_show'
           );
@@ -331,7 +331,7 @@ export class DashboardAllOrdersComponent implements OnInit {
       case 'in_progress':
         return 'בנסיעה';
       case 'cancelled_due_to_no_show':
-        return 'בוטל עקב אי-הגעה';
+        return 'בוטלה עקב אי-הגעה';
       case 'cancelled_vehicle_unavailable':
         return 'בוטל - רכב לא זמין';
       default:

@@ -119,7 +119,7 @@ def get_vehicles_for_ride_edit_route(
         return vehicles   
     except Exception as e:
         import traceback
-        print(f"❌ Error in get_vehicles_for_ride_edit_route: {e}")
+        print(f" Error in get_vehicles_for_ride_edit_route: {e}")
         print(traceback.format_exc())
         raise HTTPException(
             status_code=500, 

@@ -199,7 +199,7 @@ export function translateRideStatus(status: string | null | undefined): string {
     case 'completed':
       return 'הושלם';
     case 'cancelled_due_to_no_show':
-      return 'בוטל עקב אי הגעה';
+      return 'בוטלה עקב אי הגעה';
     default:
       return status;
   }

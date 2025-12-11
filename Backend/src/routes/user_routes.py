@@ -334,8 +334,8 @@ async def get_rebook_data(
     if not ride:
         raise HTTPException(status_code=404, detail="Ride not found")
 
-    start=get_city_by_name(ride.start_location,db=db)
-    end=get_city_by_name(ride.destination,db=db)
+    start=get_city_by_name(FROM_CITY,db=db)
+    end=get_city_by_name(FROM_CITY,db=db)
 
     rebook_data = {
         "id":ride.ride_id,
@@ -667,7 +667,7 @@ async def forgot_password(
     frontend_url = os.getenv("BOOKIT_FRONTEND_URL", "http://localhost:4200")
     reset_link = f"{frontend_url}/reset-password/{token}"
 
-    subject = "🚗 Reset Your Password - Vehicle Desk System"
+    subject = "Reset Your Password - Vehicle Desk System"
     context = { "username": user.first_name, "reset_link": reset_link }
 
     try:

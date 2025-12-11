@@ -550,7 +550,7 @@ export class AllRidesComponent implements OnInit {
       error: (err) => {
         console.error('Failed to load rebook data:', err);
         this.toastService.show(
-          'שגיאה בטעינת פרטי ההזמנה לביצוע הזמנה מחדש ❌',
+          'שגיאה בטעינת פרטי ההזמנה לביצוע הזמנה מחדש',
           'error'
         );
       },
