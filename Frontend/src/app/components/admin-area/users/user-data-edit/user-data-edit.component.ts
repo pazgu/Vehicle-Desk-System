@@ -29,7 +29,13 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
   userId: string | null = null;
   user: any = null;
   departments: Array<{ id: string; name: string }> = [];
-  roles: string[] = [];
+  roles = [
+    { key: 'admin', label: 'אדמין' },
+    { key: 'employee', label: 'עובד' },
+    { key: 'supervisor', label: 'מנהל מחלקה' },
+    { key: 'inspector', label: 'בודק רכבים' },
+    { key: 'raan', label: 'רע"ן' },
+  ];
   selectedFile: File | null = null;
   selectedFileName = '';
   hasExistingLicenseFile = false;
@@ -55,11 +61,10 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
     this.setMinDateTime();
     this.initForm();
     this.loadUserData();
-    this.fetchDepartments();
-    this.loadRoles();
     this.setupFormSubscriptions();
     this.setupSocketSubscriptions();
     this.setupRoleBasedValidation();
+    this.loadRoles();
   }
 
   goBack(): void {
@@ -169,24 +174,25 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
     return this.userForm.controls;
   }
 
-  fetchDepartments(): void {
-    this.departmentService.getDepartments().subscribe({
+  fetchDepartments(role: string): void {
+    this.userService.getDepartments().subscribe({
       next: (data) => {
         const dbDepartments = data.filter(
-          (dept: any) => dept.name.toLowerCase() !== 'unassigned'
+          (dep) => dep.name.toLowerCase() !== 'unassigned'
         );
-        const hasVip = dbDepartments.some(
-          (dept: any) => dept.name.toLowerCase() === 'vip'
-        );
-
-        if (!hasVip) {
-          dbDepartments.push({
-            id: 'vip',
-            name: 'VIP',
-          });
+        if (role === 'raan' || role === 'supervisor') {
+          this.departments = dbDepartments.filter(
+            (dep) => dep.name.toLowerCase() !== 'vip'
+          );
+        } else {
+          const vipExists = dbDepartments.some(
+            (dep) => dep.name.toLowerCase() === 'vip'
+          );
+          this.departments = vipExists
+            ? [...dbDepartments]
+            : [...dbDepartments, { id: 'vip', name: 'VIP' }];
         }
-
-        this.departments = dbDepartments;
+        
       },
       error: (err) => {
         this.toastService.show('שגיאה בטעינת מחלקות', 'error');
@@ -198,33 +204,63 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
   loadRoles(): void {
     this.userService.getRoles().subscribe({
       next: (rolesData) => {
-        this.roles = rolesData;
+        this.roles = rolesData.map(role => ({
+          key: role,
+          label: this.getRoleLabel(role)
+        }));
+        const hasRaan = this.roles.some(r => r.key === 'raan');
+        if (!hasRaan) {
+          this.roles.push({ key: 'raan', label: 'רע"ן' });
+        }
       },
       error: (err) => {
         this.toastService.show('שגיאה בטעינת תפקידים', 'error');
-        this.roles = [];
+        this.roles = [
+          { key: 'admin', label: 'אדמין' },
+          { key: 'employee', label: 'עובד' },
+          { key: 'supervisor', label: 'מנהל מחלקה' },
+          { key: 'inspector', label: 'בודק רכבים' },
+          { key: 'raan', label: 'רע"ן' },
+        ];
       },
     });
   }
+
+  private getRoleLabel(role: string): string {
+    const roleLabels: { [key: string]: string } = {
+      'admin': 'אדמין',
+      'employee': 'עובד',
+      'supervisor': 'מנהל מחלקה',
+      'inspector': 'בודק רכבים',
+      'raan': 'רע"ן',
+    };
+    return roleLabels[role] || role;
+  }
+
   setupRoleBasedValidation(): void {
     const roleSub = this.userForm
       .get('role')
       ?.valueChanges.subscribe((role: string) => {
-        const deptControl = this.userForm.get('department_id');
-
-        if (role === 'employee') {
-          deptControl?.setValidators([Validators.required]);
-        } else {
-          deptControl?.clearValidators();
-          if (role === 'admin' || role === 'inspector') {
-            deptControl?.setValue('');
-          }
-        }
-
-        deptControl?.updateValueAndValidity();
+        this.updateDepartmentValidation(role);
+        this.fetchDepartments(role);
       });
 
     if (roleSub) this.subs.push(roleSub);
+  }
+
+  updateDepartmentValidation(role: string): void {
+    const departmentControl = this.userForm.get('department_id');
+
+    if (role === 'employee') {
+      departmentControl?.setValidators([Validators.required]);
+    } else if (role === 'supervisor' || role === 'raan') {
+      departmentControl?.clearValidators();
+    } else {
+      departmentControl?.clearValidators();
+      departmentControl?.setValue('');
+    }
+
+    departmentControl?.updateValueAndValidity();
   }
 
   loadUserData(): void {
@@ -237,12 +273,15 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
           this.hasExistingLicenseFile = !!user.license_file_url;
           this.hasExistingExpiryDate = !!user.license_expiry_date;
           this.showFileRemovedMessage = false;
+          const displayRole = user.isRaan ? 'raan' : user.role;
+          
+          this.fetchDepartments(displayRole);
           this.userForm.patchValue({
             first_name: user.first_name,
             last_name: user.last_name,
             username: user.username,
             email: user.email,
-            role: user.role,
+            role: displayRole,
             department_id: user.department_id,
             has_government_license: user.has_government_license,
             license_file_url: user.license_file_url,
@@ -372,12 +411,15 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
       this.isSubmitting = true;
       const formData = new FormData();
       const formValues = this.userForm.value;
+      const isRaan = formValues.role?.toLowerCase() === 'raan';
+      const roleToSend = isRaan ? 'supervisor' : formValues.role;
 
       formData.append('first_name', formValues.first_name);
       formData.append('last_name', formValues.last_name);
       formData.append('username', formValues.username);
       formData.append('email', formValues.email);
-      formData.append('role', formValues.role);
+      formData.append('role', roleToSend);
+      formData.append('isRaan', String(isRaan)); 
       if (formValues.department_id) {
         formData.append('department_id', formValues.department_id);
       }
