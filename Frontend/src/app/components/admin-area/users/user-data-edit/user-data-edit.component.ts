@@ -30,9 +30,9 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
   user: any = null;
   departments: Array<{ id: string; name: string }> = [];
   roles = [
-    { key: 'admin', label: 'מנהל' },
+    { key: 'admin', label: 'אדמין' },
     { key: 'employee', label: 'עובד' },
-    { key: 'supervisor', label: 'מפקח' },
+    { key: 'supervisor', label: 'מנהל מחלקה' },
     { key: 'inspector', label: 'בודק רכבים' },
     { key: 'raan', label: 'רע"ן' },
   ];
@@ -216,9 +216,9 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
       error: (err) => {
         this.toastService.show('שגיאה בטעינת תפקידים', 'error');
         this.roles = [
-          { key: 'admin', label: 'מנהל' },
+          { key: 'admin', label: 'אדמין' },
           { key: 'employee', label: 'עובד' },
-          { key: 'supervisor', label: 'מפקח' },
+          { key: 'supervisor', label: 'מנהל מחלקה' },
           { key: 'inspector', label: 'בודק רכבים' },
           { key: 'raan', label: 'רע"ן' },
         ];
@@ -228,9 +228,9 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
 
   private getRoleLabel(role: string): string {
     const roleLabels: { [key: string]: string } = {
-      'admin': 'מנהל',
+      'admin': 'אדמין',
       'employee': 'עובד',
-      'supervisor': 'מפקח',
+      'supervisor': 'מנהל מחלקה',
       'inspector': 'בודק רכבים',
       'raan': 'רע"ן',
     };
