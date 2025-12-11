@@ -334,8 +334,8 @@ async def get_rebook_data(
     if not ride:
         raise HTTPException(status_code=404, detail="Ride not found")
 
-    start=get_city_by_name(ride.start_location,db=db)
-    end=get_city_by_name(ride.destination,db=db)
+    start=get_city_by_name(FROM_CITY,db=db)
+    end=get_city_by_name(FROM_CITY,db=db)
 
     rebook_data = {
         "id":ride.ride_id,

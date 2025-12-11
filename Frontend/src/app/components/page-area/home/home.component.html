@@ -440,114 +440,123 @@
                 </small>
               </div>
 
-              <div class="form-field-group">
-                <label *ngIf="!shouldShowCarError()">בחר רכב זמין</label>
-<div class="custom-select">
-  <div 
-       *ngIf="availableCars.length > 0"
-    class="select-header" 
-    (click)="toggleDropdown()"
-    [class.open]="isDropdownOpen"
-  >
-    <div class="selected-car" *ngIf="getSelectedCar(); else placeholder">
-      <img 
-        [src]="getSelectedCar().image_url" 
-        [alt]="getSelectedCar().vehicle_model"
-        class="car-thumbnail"
-      />
-      <span>{{ getSelectedCar().vehicle_model }}</span>
+
+<div class="form-field-group">
+  <label *ngIf="!shouldShowCarError()">בחר רכב זמין</label>
+  
+  <div class="custom-select">
+    <div 
+         *ngIf="availableCars.length > 0"
+      class="select-header" 
+      (click)="toggleDropdown()"
+      [class.open]="isDropdownOpen"
+    >
+      <div class="selected-car" *ngIf="getSelectedCar(); else placeholder">
+        <img 
+          [src]="getSelectedCar().image_url" 
+          [alt]="getSelectedCar().vehicle_model"
+          class="car-thumbnail"
+        />
+        <div class="car-info">
+          <span class="car-model">{{ getSelectedCar().vehicle_model }}</span>
+          <span class="car-fuel-type">{{ getFuelTypeLabel(getSelectedCar().fuel_type) }}</span>
+        </div>
+      </div>
+      <ng-template #placeholder>
+        <span class="placeholder">בחר רכב</span>
+      </ng-template>
+      <div class="select-arrow">
+        <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+          <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
     </div>
-    <ng-template #placeholder>
-      <span class="placeholder">בחר רכב</span>
-    </ng-template>
-    <div class="select-arrow">
-      <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
-        <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+
+    <div class="select-options" *ngIf="isDropdownOpen">
+      <div 
+        *ngFor="let car of availableCars"
+        class="option"
+        [class.disabled]="isPendingVehicle(car.id)"
+        [class.selected]="car.id === selectedCarId"
+        (click)="selectCar(car.id)"
+        [title]="isPendingVehicle(car.id) ? 'רכב זה ממתין לעיבוד לתאריך/תקופה שנבחרו' : ''"
+      >
+        <img 
+          [src]="car.image_url" 
+          [alt]="car.vehicle_model"
+          class="car-thumbnail"
+        />
+        <div class="car-info">
+          <span class="car-model">{{ car.vehicle_model }}</span>
+          <span class="car-fuel-type">{{ getFuelTypeLabel(car.fuel_type) }}</span>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="select-options" *ngIf="isDropdownOpen">
-    <div 
-      *ngFor="let car of availableCars"
-      class="option"
-      [class.disabled]="isPendingVehicle(car.id)"
-      [class.selected]="car.id === selectedCarId"
-      (click)="selectCar(car.id)"
-      [title]="isPendingVehicle(car.id) ? 'רכב זה ממתין לעיבוד לתאריך/תקופה שנבחרו' : ''"
+  <div class="dropdown-backdrop" *ngIf="isDropdownOpen" (click)="closeDropdown()"></div>
+
+  <!-- Rest of your existing validation messages -->
+  <div
+    class="car-validation-message"
+    *ngIf="
+      availableCars.length === 0 &&
+      isRebookMode &&
+      hasTouchedVehicleType()
+    "
+  >
+    <ng-container>
+      אין רכבים זמינים מסוג זה בשעות שנבחרו. נא לבחור סוג רכב אחר.
+    </ng-container>
+  </div>
+
+  <div
+    *ngIf="
+      rideForm?.get('vehicle_type') &&
+      availableCars.length === 0 &&
+        hasTouchedVehicleType() &&
+        shouldShowCarError() &&
+        canChooseVehicle() &&
+      !isRebookMode
+    "
+    class="car-validation-message"
+  >
+    <ng-container
+      *ngIf="
+        availableCars.length === 0 &&
+        !shouldShowCarError() &&
+        !isRebookMode
+      "
     >
-      <img 
-        [src]="car.image_url" 
-        [alt]="car.vehicle_model"
-        class="car-thumbnail"
-      />
-      <span>{{ car.vehicle_model }}</span>
-    </div>
+      אין רכבים זמינים מסוג זה בשעות שנבחרו,
+    </ng-container>
+    <ng-container
+      *ngIf="
+        availableCars.length === 0 &&
+        shouldShowCarError() &&
+        !isRebookMode
+      "
+    >
+      אין רכבים זמינים מסוג זה בשעות שנבחרו. נא לבחור סוג רכב אחר.
+    </ng-container>
+
+    <ng-container
+      *ngIf="availableCars.length > 0 && shouldShowCarError()"
+    >
+      {{
+        isPendingVehicle(f.car.value)
+          ? "רכב זה אינו זמין בשעות שנבחרו"
+          : "חובה לבחור רכב"
+      }}
+    </ng-container>
   </div>
 </div>
-
-<div class="dropdown-backdrop" *ngIf="isDropdownOpen" (click)="closeDropdown()"></div>
-
-                <div
-                  class="car-validation-message"
-                  *ngIf="
-                    availableCars.length === 0 &&
-                    isRebookMode &&
-                    hasTouchedVehicleType()
-                  "
-                >
-                  <ng-container>
-                    אין רכבים זמינים מסוג זה בשעות שנבחרו. נא לבחור סוג רכב אחר.
-                  </ng-container>
-                </div>
-
-                <div
-                  *ngIf="
-                    rideForm?.get('vehicle_type') &&
-                    availableCars.length === 0 &&
-                      hasTouchedVehicleType() &&
-                      shouldShowCarError() &&
-                      canChooseVehicle() &&
-                    !isRebookMode
-                  "
-                  class="car-validation-message"
-                >
-                  <ng-container
-                    *ngIf="
-                      availableCars.length === 0 &&
-                      !shouldShowCarError() &&
-                      !isRebookMode
-                    "
-                  >
-                    אין רכבים זמינים מסוג זה בשעות שנבחרו,
-                  </ng-container>
-                  <ng-container
-                    *ngIf="
-                      availableCars.length === 0 &&
-                      shouldShowCarError() &&
-                      !isRebookMode
-                    "
-                  >
-                    אין רכבים זמינים מסוג זה בשעות שנבחרו. נא לבחור סוג רכב אחר.
-                  </ng-container>
-
-                  <ng-container
-                    *ngIf="availableCars.length > 0 && shouldShowCarError()"
-                  >
-                    {{
-                      isPendingVehicle(f.car.value)
-                        ? "רכב זה אינו זמין בשעות שנבחרו"
-                        : "חובה לבחור רכב"
-                    }}
-                  </ng-container>
-                </div>
-              </div>
               
              
             </div>
           </div>
           <br>
-           <div class="form-field-group">
+           <div  *ngIf="!isVIP" class="form-field-group">
                  <label> מאשר הבקשה</label>
               <select formControlName="approving_supervisor" class="styled-select">
                 <option value="" disabled>בחר משתמש</option>

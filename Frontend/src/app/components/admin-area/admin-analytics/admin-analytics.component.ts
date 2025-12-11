@@ -69,7 +69,6 @@ export class AdminAnalyticsComponent implements OnInit {
   
   selectedMonth = (new Date().getMonth() + 1).toString();
   selectedYear = new Date().getFullYear().toString();
-  private departmentsMap = new Map<string, string>();
   noShowExportWarningVisible: boolean = false;
   rideStartTimeChartData: any;
   rideStartTimeChartOptions: any;
@@ -119,10 +118,6 @@ export class AdminAnalyticsComponent implements OnInit {
         this.activeTabIndex = 0;
       }
     });
-  }
-
-  resolveDepartment(departmentId: string): string {
-    return this.departmentsMap.get(departmentId) || 'מחלקה לא ידועה';
   }
 
   public exportPDF(): void {
@@ -189,7 +184,6 @@ export class AdminAnalyticsComponent implements OnInit {
         { text: 'User Name', style: 'tableHeader' },
         { text: 'Email', style: 'tableHeader' },
         { text: 'Employee ID', style: 'tableHeader' },
-        { text: 'Department', style: 'tableHeader' },
         { text: 'Role', style: 'tableHeader' },
         { text: 'No-Show Count', style: 'tableHeader' },
         { text: 'Status', style: 'tableHeader' },
@@ -215,11 +209,7 @@ export class AdminAnalyticsComponent implements OnInit {
           { text: user.name || 'Unknown', fillColor: bgColor },
           { text: user.email || 'unknown@example.com', fillColor: bgColor },
           {
-            text: user.employee_id || user.user_id || 'N/A',
-            fillColor: bgColor,
-          },
-          {
-            text: this.resolveDepartment(user.department_id || ''),
+            text: user.employee_id || 'N/A',
             fillColor: bgColor,
           },
           { text: user.role || 'לא ידוע', fillColor: bgColor },
@@ -352,7 +342,7 @@ export class AdminAnalyticsComponent implements OnInit {
           table: {
             headerRows: 1,
             widths: isNoShowTab
-              ? ['auto', '*', 'auto', '*', 'auto', 'auto', 'auto']
+              ? ['auto', '*', 'auto', 'auto', 'auto', 'auto']
               : isTopUsedTab
               ? ['*', '*', '*']
               : isPurposeTab
@@ -549,7 +539,6 @@ export class AdminAnalyticsComponent implements OnInit {
           'User Name': user.name || 'Unknown',
           Email: user.email || 'unknown@example.com',
           'Employee ID': user.employee_id || user.user_id || 'N/A',
-          Department: this.resolveDepartment(user.department_id || ''),
           Role: user.role || 'לא ידוע',
           'No-Show Count': count,
           Status: status,
@@ -819,7 +808,6 @@ export class AdminAnalyticsComponent implements OnInit {
           שם: user.name || 'לא ידוע',
           אימייל: user.email || 'unknown@example.com',
           'מזהה עובד': user.employee_id || user.user_id || 'N/A',
-          מחלקה: this.resolveDepartment(user.department_id || ''),
           תפקיד: user.role || 'לא ידוע',
           'כמות אי-הגעות': count,
           סטטוס: status,
