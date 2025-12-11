@@ -11,9 +11,13 @@
     {{ getVehicleUsageCount(vehicle.plate_number) }} נסיעות לחודש זה. </span
   >
 
+  <div *ngIf="isLeaseExpired(vehicle.lease_expiry)" class="expired-badge">
+    חוזה השכרה פג
+  </div>
   <div *ngIf="isInactive(vehicle.last_used_at)" class="inactive-badge">
     לא פעיל
   </div>
+
 
   <div style="text-align: center; margin-top: 2rem; margin-bottom: 0.2rem">
     <img

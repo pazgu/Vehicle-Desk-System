@@ -160,7 +160,7 @@
             <button
               class="unfreeze-button button-spacing"
               (click)="confirmUnfreeze()"
-              *ngIf="vehicle.status === 'frozen'"
+              *ngIf="vehicle.status === 'frozen' && !isLeaseExpired(vehicle.lease_expiry)"
             >
               שחרור מהקפאה
             </button>

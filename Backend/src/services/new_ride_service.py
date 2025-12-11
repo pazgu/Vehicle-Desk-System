@@ -118,7 +118,7 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate, license_chec
             create_system_notification(
                 user_id=admin.employee_id,
                 title="בקשת נסיעה חדשה ",
-                message = f"העובד {rider.first_name} {rider.last_name} ממחלקת VIP יצר בקשת נסיעה חדשה.",
+                message = f"העובד/ת {rider.first_name} {rider.last_name} ממחלקת VIP יצר בקשת נסיעה חדשה.",
             )
 
     await sio.emit("ride_status_updated", {
