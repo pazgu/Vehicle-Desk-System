@@ -34,14 +34,11 @@ export class NoShowsComponent {
 
   noShowFromDate?: string;
   noShowToDate?: string;
-  private departmentsMap = new Map<string, string>();
-  private departmentsLoaded: boolean = false;
 
   constructor(
     private router: Router,
     private route: ActivatedRoute,
     private statisticsService: StatisticsService,
-    private userService: UserService,
     private toastService: ToastService,
     private dialog: MatDialog
 
@@ -49,7 +46,6 @@ export class NoShowsComponent {
 
   ngOnInit() {
     this.loadNoShowStatistics();
-    this.loadDepartments();
     this.route.queryParams.subscribe((params) => {
       this.noShowSortOption = params['noShowSort'] || 'countAsc';
       this.selectedSortOption = params['selectedSort'] || 'countAsc';
@@ -159,20 +155,7 @@ export class NoShowsComponent {
     });  
   }
 
-  public loadDepartments(): void {
-    this.userService.getDepartments().subscribe({
-      next: (departments) => {
-        departments.forEach((dep) => this.departmentsMap.set(dep.id, dep.name));
-        this.departmentsLoaded = true;
-        this.loadNoShowStatistics();
-      },
-      error: () => {
-        this.toastService.show('אירעה שגיאה בטעינת נתוני מחלקות.', 'error');
-        this.departmentsLoaded = false;
-        this.loadNoShowStatistics();
-      },
-    });
-  }
+
   public loadNoShowStatistics(): void {
     const formattedFromDate = this.noShowFromDate || undefined;
     const formattedToDate = this.noShowToDate || undefined;
