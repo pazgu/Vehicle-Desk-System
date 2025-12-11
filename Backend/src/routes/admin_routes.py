@@ -188,7 +188,7 @@ async def edit_user_by_id_route(
         department_id = str(vip_dep.id)  
 
     has_gov_license = has_government_license.lower() == "true"
-    is_raan_bool = isRaan.lower() == 'true' if isRaan else False  # ← ADD THIS LINE HERE
+    is_raan_bool = isRaan.lower() == 'true' if isRaan else False
 
     if not has_gov_license and user.has_government_license:
         user.license_file_url = None
