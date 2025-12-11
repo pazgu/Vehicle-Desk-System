@@ -1,5 +1,5 @@
 from datetime import date, time, datetime, timedelta, timezone
-from typing import List, Optional, Union
+from typing import List, Optional, Dict
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status, Query
@@ -464,3 +464,16 @@ async def get_usage_stats_all_time(db: Session = Depends(get_db)):
         return {"stats": stats_list}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@router.get("/fuel-types/translations", response_model=Dict[str, str])
+def get_fuel_type_translations(db: Session = Depends(get_db)):
+    """
+    Returns Hebrew translations for fuel types.
+    This maps the database enum values to Hebrew labels.
+    """
+    translations = {
+        "electric": "חשמלי",
+        "hybrid": "היברידי",
+        "gasoline": "בנזין"
+    }
+    return translations

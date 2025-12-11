@@ -66,7 +66,10 @@ export class AddNewUserComponent implements OnInit {
       this.updateDepartmentValidation(role);
     });
 
-    this.fetchDepartments();
+    this.addUserForm.get('role')?.valueChanges.subscribe((role) => {
+      this.updateDepartmentValidation(role);
+      this.fetchDepartments(role);
+    });
   }
 
   updateDepartmentValidation(role: string): void {
@@ -206,27 +209,24 @@ if (this.checkIfHasGovernmentlicense() && this.selectedFile) {
     return map[field] || field;
   }
 
-  fetchDepartments(): void {
+  fetchDepartments(role: string): void {
     this.userService.getDepartments().subscribe({
       next: (data) => {
-        const dbDepartments = data
-          .filter((dep) => dep.name.toLowerCase() !== 'unassigned')
-          .map((dep) => ({
-            ...dep,
-            name: dep.name,
-          }));
-
-        const vipExists = dbDepartments.some(
-          (dep) => dep.name.toLowerCase() === 'vip'
+        const dbDepartments = data.filter(
+          (dep) => dep.name.toLowerCase() !== 'unassigned'
         );
-        if (!vipExists) {
-          const vipDepartment = {
-            id: 'vip',
-            name: 'VIP',
-          };
-          this.departments = [...dbDepartments, vipDepartment];
+
+        if (role === 'raan' || role === 'supervisor') {
+          this.departments = dbDepartments.filter(
+            (dep) => dep.name.toLowerCase() !== 'vip'
+          );
         } else {
-          this.departments = [...dbDepartments];
+          const vipExists = dbDepartments.some(
+            (dep) => dep.name.toLowerCase() === 'vip'
+          );
+          this.departments = vipExists
+            ? [...dbDepartments]
+            : [...dbDepartments, { id: 'vip', name: 'VIP' }];
         }
       },
       error: (err: any) => {
