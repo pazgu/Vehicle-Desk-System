@@ -149,8 +149,7 @@ export class NewRideComponent implements OnInit {
   supervisors: Supervisor[] = [];
   selectedSupervisor: string | null = null;
   departmentId=''
-
-
+  fuelTypeTranslations: { [key: string]: string } = {};
   isVIP=false
   isSupervisor=false
   constructor(
@@ -166,7 +165,8 @@ export class NewRideComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private acknowledgmentService: AcknowledgmentService,
     private rideUserChecksService: RideUserChecksService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+
   ) {}
 
    ngOnInit(): void {
@@ -228,7 +228,26 @@ export class NewRideComponent implements OnInit {
         this.disableRequest = true;
       }
     } 
+  
+   this.vehicleService.getFuelTypeTranslations().subscribe({
+      next: (translations) => {
+        this.fuelTypeTranslations = translations;
+      },
+      error: (err) => {
+        console.error('Failed to load fuel type translations:', err);
+        this.fuelTypeTranslations = {
+          electric: 'חשמלי',
+          hybrid: 'היברידי',
+          gasoline: 'בנזין'
+        };
+      }
+    });
   }
+
+   getFuelTypeLabel(fuelType: string): string {
+    return this.fuelTypeTranslations[fuelType] || fuelType;
+  }
+
   hasTouchedVehicleType(): boolean {
     const value = this.rideForm.get('vehicle_type')?.value;
     if (value) {
