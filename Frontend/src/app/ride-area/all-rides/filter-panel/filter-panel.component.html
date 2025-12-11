@@ -46,7 +46,7 @@
       <span class="status-indicator approved"></span>
       <span>אושר</span>
     </div>
-    <div class="status-item">
+    <div *ngIf="!isVIP" class="status-item">
       <span class="status-indicator pending"></span>
       <span>ממתין לאישור</span>
     </div>
@@ -54,7 +54,7 @@
       <span class="status-indicator in_progress"></span>
       <span>בנסיעה</span>
     </div>
-    <div class="status-item">
+    <div *ngIf="!isVIP"  class="status-item">
       <span class="status-indicator rejected"></span>
       <span>נדחה</span>
     </div>

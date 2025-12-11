@@ -150,9 +150,6 @@ export class NewRideComponent implements OnInit {
   selectedSupervisor: string | null = null;
   departmentId=''
   fuelTypeTranslations: { [key: string]: string } = {};
-
-
-
   isVIP=false
   isSupervisor=false
   constructor(
