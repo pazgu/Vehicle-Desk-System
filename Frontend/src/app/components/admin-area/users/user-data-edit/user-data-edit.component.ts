@@ -160,7 +160,7 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
       username: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       role: ['', Validators.required],
-      department_id: [''],
+      department_id: [null],
       has_government_license: [false],
       license_file_url: [''],
       license_expiry_date: [''],

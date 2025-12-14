@@ -71,14 +71,16 @@
                 >(אופציונלי)</span
               >
             </label>
-            <select
-              id="department"
+           <select
+              id="department_id"
               formControlName="department_id"
               class="form-control"
-            >
-              <option value="">בחר מחלקה</option>
-              <option *ngFor="let dept of departments" [value]="dept.id">
-                {{ dept.name }}
+              >
+                <option [ngValue]="null" [selected]="!f['department_id'].value">
+                 בחר מחלקה
+                </option>
+                 <option *ngFor="let dept of departments" [ngValue]="dept.id">
+                  {{ dept.name }}
               </option>
             </select>
             <small
