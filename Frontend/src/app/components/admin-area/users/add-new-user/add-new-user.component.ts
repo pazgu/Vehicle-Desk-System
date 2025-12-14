@@ -308,21 +308,19 @@ if (this.checkIfHasGovernmentlicense() && this.selectedFile) {
     return /\d/.test(pw);
   }
 
-  // Custom validator to check for at least one uppercase letter
   uppercaseValidator() {
     return (control: any) => {
-      if (!control.value) return null; // let required validator handle empty
-      if (/[A-Z]/.test(control.value)) return null; // has uppercase, pass
-      return { uppercase: true }; // missing uppercase
+      if (!control.value) return null;
+      if (/[A-Z]/.test(control.value)) return null; 
+      return { uppercase: true }; 
     };
   }
 
-  // Custom validator to check for at least one digit
   digitValidator() {
     return (control: any) => {
-      if (!control.value) return null; // let required validator handle empty
-      if (/\d/.test(control.value)) return null; // has digit, pass
-      return { digit: true }; // missing digit
+      if (!control.value) return null; 
+      if (/\d/.test(control.value)) return null; 
+      return { digit: true }; 
     };
   }
 }
