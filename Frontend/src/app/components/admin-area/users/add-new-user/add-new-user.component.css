@@ -491,3 +491,27 @@ input:checked + .slider::after {
   transition: border-color 0.3s ease, background-color 0.3s ease,
     box-shadow 0.3s ease;
 }
+
+.validation-wrapper {
+    display: flex; 
+    flex-wrap: wrap; 
+    margin-top: 5px; 
+}
+.validation-wrapper .error {
+    display: inline; 
+    
+
+    white-space: nowrap; 
+
+
+    margin: 0; 
+    padding: 0;
+}
+.validation-wrapper .error:after {
+    content: " | ";
+    padding-left: 0.25rem; 
+    color: inherit;
+}
+.validation-wrapper .error:last-child:after {
+    content: none; 
+}
