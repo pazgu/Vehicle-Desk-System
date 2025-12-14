@@ -46,7 +46,7 @@
       <span class="status-indicator approved"></span>
       <span>אושר</span>
     </div>
-    <div class="status-item">
+    <div *ngIf="!isVIP" class="status-item">
       <span class="status-indicator pending"></span>
       <span>ממתין לאישור</span>
     </div>
@@ -54,7 +54,7 @@
       <span class="status-indicator in_progress"></span>
       <span>בנסיעה</span>
     </div>
-    <div class="status-item">
+    <div *ngIf="!isVIP"  class="status-item">
       <span class="status-indicator rejected"></span>
       <span>נדחה</span>
     </div>
@@ -64,7 +64,7 @@
     </div>
     <div class="status-item">
       <span class="status-indicator cancelled_due_to_no_show"></span>
-      <span>בוטל עקב אי-הגעה</span>
+      <span>בוטלה עקב אי-הגעה</span>
     </div>
     <div class="status-item">
       <span class="status-indicator cancelled_vehicle_unavailable"></span>
@@ -89,7 +89,7 @@
         <option value="בנסיעה">בנסיעה</option>
         <option value="נדחה">נדחה</option>
         <option value="בוצע">בוצע</option>
-        <option value="בוטל עקב אי-הגעה">בוטל עקב אי-הגעה</option>
+        <option value="בוטלה עקב אי-הגעה">בוטלה עקב אי-הגעה</option>
         <option value="בוטל - רכב לא זמין">בוטל - רכב לא זמין</option>
       </select>
     </div>

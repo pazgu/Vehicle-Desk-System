@@ -307,7 +307,7 @@ def get_critical_trip_issues(db: Session) -> List[dict]:
 def get_all_critical_issues_combined(db: Session) -> List[Dict[str, Any]]:
     results = []
 
-    # 🚨 From inspector table (VehicleInspection)
+    # From inspector table (VehicleInspection)
     inspector_issues = db.query(VehicleInspection).filter(
         VehicleInspection.critical_issue_bool == True
     ).all()
@@ -325,7 +325,7 @@ def get_all_critical_issues_combined(db: Session) -> List[Dict[str, Any]]:
             "vehicle_info": f"Vehicle ID: {issue.vehicle_id}" if hasattr(issue, 'vehicle_id') else ""
         })
 
-    # 🚨 From ride approvals table (Trip Completion)
+    #From ride approvals table (Trip Completion)
     trip_issues = db.query(RideApproval).filter(
         RideApproval.status == "rejected"
     ).all()

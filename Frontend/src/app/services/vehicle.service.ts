@@ -1,6 +1,5 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { VehicleInItem } from '../models/vehicle-dashboard-item/vehicle-in-use-item.module';
 import {
@@ -9,15 +8,17 @@ import {
   VehicleOutItem,
 } from '../models/vehicle-dashboard-item/vehicle-out-item.module';
 import { Vehicle } from '../models/vehicle.model';
-import { map } from 'rxjs/operators';
-import { of } from 'rxjs';
 import { VehicleUsageStats } from '../models/vehicle-dashboard-item/vehicle-stats.module';
+import { Observable, of } from 'rxjs';
+import { map, catchError, shareReplay } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
 })
 export class VehicleService {
   private apiUrl = environment.apiUrl;
+  private fuelTypeTranslations$: Observable<{ [key: string]: string }> | null = null;
+
 
   constructor(private http: HttpClient) {}
 
@@ -293,4 +294,23 @@ export class VehicleService {
     };
     return this.http.put(`${this.apiUrl}/vehicle/${vehicleId}`, updatePayload);
   }
+
+   getFuelTypeTranslations(): Observable<{ [key: string]: string }> {
+    if (!this.fuelTypeTranslations$) {
+      this.fuelTypeTranslations$ = this.http
+        .get<{ [key: string]: string }>(`${this.apiUrl}/fuel-types/translations`)
+        .pipe(
+          shareReplay(1), 
+          catchError((error) => {
+            console.error('Error fetching fuel type translations:', error);
+            return of({
+              electric: 'חשמלי',
+              hybrid: 'היברידי',
+              gasoline: 'בנזין'
+            });
+          })
+        );
+    }
+    return this.fuelTypeTranslations$;
+   }
 }

@@ -136,11 +136,11 @@ export class AddVehicleComponent implements OnInit {
 
       this.vehicleService.addVehicle(vehicleData).subscribe({
         next: (response) => {
-          this.toastService.show('הרכב נוסף בהצלחה ✅', 'success');
+          this.toastService.show('הרכב נוסף בהצלחה ', 'success');
           this.router.navigate(['/vehicle-dashboard']);
         },
         error: (error) => {
-          let errorMessage = 'שגיאה בהוספת רכב ❌';
+          let errorMessage = 'שגיאה בהוספת רכב ';
           if (
             error.status === 422 &&
             error.error &&
@@ -160,7 +160,7 @@ export class AddVehicleComponent implements OnInit {
         },
       });
     } else {
-      this.toastService.show('נא למלא את כל השדות הנדרשים ❗', 'error');
+      this.toastService.show('נא למלא את כל השדות הנדרשים', 'error');
     }
   }
 

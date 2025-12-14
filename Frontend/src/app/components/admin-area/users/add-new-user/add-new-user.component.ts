@@ -66,7 +66,10 @@ export class AddNewUserComponent implements OnInit {
       this.updateDepartmentValidation(role);
     });
 
-    this.fetchDepartments();
+    this.addUserForm.get('role')?.valueChanges.subscribe((role) => {
+      this.updateDepartmentValidation(role);
+      this.fetchDepartments(role);
+    });
   }
 
   updateDepartmentValidation(role: string): void {
@@ -126,10 +129,54 @@ if (this.checkIfHasGovernmentlicense() && this.selectedFile) {
         this.selectedFileName = '';
         this.router.navigate(['/user-data']);
       },
-      error: (err) => {
-        console.error(err);
-        this.toast.show('שגיאה בהוספת משתמש', 'error');
-      },
+    error: (err) => {
+  if (err.status === 0) {
+    this.toast.show(
+      'השרת אינו זמין כרגע. נסה שוב מאוחר יותר',
+      'error'
+    );
+  } else if (err.status === 400 || err.status === 422) {
+    const details = err.error?.detail;
+
+    if (typeof details === 'string') {
+      const lowerDetails = details.toLowerCase();
+      
+      if (
+        lowerDetails.includes('already in use') ||
+        lowerDetails.includes('already exists') ||
+        lowerDetails.includes('exist') ||
+        lowerDetails.includes('קיים')
+      ) {
+        this.toast.show(
+          'שם המשתמש, מייל או מספר טלפון כבר קיימים במערכת',
+          'error'
+        );
+        return;
+      }
+    }
+    
+    if (Array.isArray(details)) {
+      const existsError = details.find(
+        (d) =>
+          typeof d.msg === 'string' &&
+          (d.msg.toLowerCase().includes('already exists') ||
+            d.msg.toLowerCase().includes('already in use') ||
+            d.msg.toLowerCase().includes('exist'))
+      );
+      if (existsError) {
+        this.toast.show(
+          'שם המשתמש, מייל או מספר טלפון כבר קיימים במערכת',
+          'error'
+        );
+        return;
+      }
+    }
+
+    this.toast.show('שגיאה בהוספת משתמש', 'error');
+  } else {
+    this.toast.show('שגיאה כללית בהוספת משתמש', 'error');
+  }
+},
     });
   }
 
@@ -162,27 +209,24 @@ if (this.checkIfHasGovernmentlicense() && this.selectedFile) {
     return map[field] || field;
   }
 
-  fetchDepartments(): void {
+  fetchDepartments(role: string): void {
     this.userService.getDepartments().subscribe({
       next: (data) => {
-        const dbDepartments = data
-          .filter((dep) => dep.name.toLowerCase() !== 'unassigned')
-          .map((dep) => ({
-            ...dep,
-            name: dep.name,
-          }));
-
-        const vipExists = dbDepartments.some(
-          (dep) => dep.name.toLowerCase() === 'vip'
+        const dbDepartments = data.filter(
+          (dep) => dep.name.toLowerCase() !== 'unassigned'
         );
-        if (!vipExists) {
-          const vipDepartment = {
-            id: 'vip',
-            name: 'VIP',
-          };
-          this.departments = [...dbDepartments, vipDepartment];
+
+        if (role === 'raan' || role === 'supervisor') {
+          this.departments = dbDepartments.filter(
+            (dep) => dep.name.toLowerCase() !== 'vip'
+          );
         } else {
-          this.departments = [...dbDepartments];
+          const vipExists = dbDepartments.some(
+            (dep) => dep.name.toLowerCase() === 'vip'
+          );
+          this.departments = vipExists
+            ? [...dbDepartments]
+            : [...dbDepartments, { id: 'vip', name: 'VIP' }];
         }
       },
       error: (err: any) => {
@@ -199,7 +243,8 @@ if (this.checkIfHasGovernmentlicense() && this.selectedFile) {
 
   isDepartmentRequired(): boolean {
     const role = this.addUserForm.get('role')?.value;
-    return role === 'employee';
+    return role === 'employee' || role === 'raan';
+  
   }
   shouldShowDepartment(): boolean {
     const role = this.addUserForm.get('role')?.value;

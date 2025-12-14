@@ -7,6 +7,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { UserService } from '../../../services/user_service';
 import { StatisticsService } from '../../../services/statistics.service';
 import { ToastService } from '../../../services/toast.service';
+import { UserCardComponent } from '../users/user-card/user-card.component';
+import { MatDialog } from '@angular/material/dialog';
+
 @Component({
   selector: 'no-shows',
   imports: [CommonModule, FormsModule],
@@ -31,20 +34,18 @@ export class NoShowsComponent {
 
   noShowFromDate?: string;
   noShowToDate?: string;
-  private departmentsMap = new Map<string, string>();
-  private departmentsLoaded: boolean = false;
 
   constructor(
     private router: Router,
     private route: ActivatedRoute,
     private statisticsService: StatisticsService,
-    private userService: UserService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private dialog: MatDialog
+
   ) {}
 
   ngOnInit() {
     this.loadNoShowStatistics();
-    this.loadDepartments();
     this.route.queryParams.subscribe((params) => {
       this.noShowSortOption = params['noShowSort'] || 'countAsc';
       this.selectedSortOption = params['selectedSort'] || 'countAsc';
@@ -138,23 +139,23 @@ export class NoShowsComponent {
     return this.filteredNoShowUsers.length === 0;
   }
   goToUserDetails(userId: string) {
-    this.router.navigate(['/user-card', userId]);
+  const dialogRef = this.dialog.open(UserCardComponent, {
+      width: '90%',
+      maxWidth: '900px',
+      maxHeight: '90vh',
+      panelClass: 'user-card-dialog',
+      data: { userId: userId },
+      disableClose: false,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result?.action === 'edit') {
+        this.router.navigate(['/user-data-edit', result.userId]);
+      }
+    });  
   }
 
-  public loadDepartments(): void {
-    this.userService.getDepartments().subscribe({
-      next: (departments) => {
-        departments.forEach((dep) => this.departmentsMap.set(dep.id, dep.name));
-        this.departmentsLoaded = true;
-        this.loadNoShowStatistics();
-      },
-      error: () => {
-        this.toastService.show('אירעה שגיאה בטעינת נתוני מחלקות.', 'error');
-        this.departmentsLoaded = false;
-        this.loadNoShowStatistics();
-      },
-    });
-  }
+
   public loadNoShowStatistics(): void {
     const formattedFromDate = this.noShowFromDate || undefined;
     const formattedToDate = this.noShowToDate || undefined;

@@ -22,7 +22,6 @@ export class CityService {
 
   getCityNameById(id: string) {
     const url = `${this.apiUrl}/cityname`;
-    console.log('Fetching city name for ID:', id);
     return this.http.get<CityDropdown>(url, { params: { id } });
   }
 }

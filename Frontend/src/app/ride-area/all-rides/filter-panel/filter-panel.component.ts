@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
+import { MyRidesService } from '../../../services/myrides.service';
 @Component({
   selector: 'app-ride-filter-panel',
   standalone: true,
@@ -26,10 +26,10 @@ export class FilterPanelComponent implements OnChanges {
   @Input() showFilters: boolean = false;
   @Input() minDate: string = '';
   @Input() maxDate: string = '';
-
   @Output() filteredOrdersChanged = new EventEmitter<any[]>();
 
   private filteredOrders: any[] = [];
+  constructor(private myrideservice: MyRidesService) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (
@@ -41,8 +41,10 @@ export class FilterPanelComponent implements OnChanges {
       changes['endDate']
     ) {
       this.applyFiltersAndSort();
+      this.checkVipStatus();
     }
   }
+  isVIP: boolean = false;
 
   onRideViewModeChange(mode: 'all' | 'future' | 'past'): void {
     this.rideViewMode = mode;
@@ -84,6 +86,16 @@ export class FilterPanelComponent implements OnChanges {
     max.setHours(0, 0, 0, 0);
     return date >= min && date <= max;
   }
+  checkVipStatus(): void {
+    this.myrideservice.isVip().subscribe({
+      next: (res) => {
+        this.isVIP = res.is_vip;
+      },
+      error: (err) => {
+        this.isVIP = false;
+      },
+    });
+  }
 
   private translateStatusToEnglish(hebrewStatus: string): string {
     const statusMap: { [key: string]: string } = {
@@ -92,7 +104,7 @@ export class FilterPanelComponent implements OnChanges {
       נדחה: 'rejected',
       בוצע: 'completed',
       בנסיעה: 'in_progress',
-      'בוטל עקב אי-הגעה': 'cancelled_due_to_no_show',
+      'בוטלה עקב אי-הגעה': 'cancelled_due_to_no_show',
       'בוטל - רכב לא זמין': 'cancelled_vehicle_unavailable',
     };
     return statusMap[hebrewStatus] || hebrewStatus;

@@ -42,7 +42,9 @@ pdfMake.vfs = pdfFonts.vfs;
 export class AdminAnalyticsComponent implements OnInit {
   constructor(
     private statisticsService: StatisticsService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
   @ViewChild(NoShowsComponent) noShowsComponent!: NoShowsComponent;
   @ViewChild(VehicleUsageComponent)
@@ -52,10 +54,21 @@ export class AdminAnalyticsComponent implements OnInit {
   vehicleStatusComponent!: VehicleStatusComponent;
 
   selectedSortOption = 'countDesc';
-  activeTabIndex = 0;
+  private _activeTabIndex = 0;
+  get activeTabIndex(): number {
+    return this._activeTabIndex;
+  }
+  set activeTabIndex(value: number) {
+    this._activeTabIndex = value;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab: value },
+      queryParamsHandling: 'merge'
+    });
+  }
+  
   selectedMonth = (new Date().getMonth() + 1).toString();
   selectedYear = new Date().getFullYear().toString();
-  private departmentsMap = new Map<string, string>();
   noShowExportWarningVisible: boolean = false;
   rideStartTimeChartData: any;
   rideStartTimeChartOptions: any;
@@ -74,7 +87,7 @@ export class AdminAnalyticsComponent implements OnInit {
   purposeChartOptions: any;
   purposeLoading = false;
 
-  purposeFilterMode: 'last4' | 'custom' | 'range' = 'last4';
+  purposeFilterMode: 'last4' | 'range' = 'last4';
   purposeYear: string = new Date().getFullYear().toString();
   purposeStartMonth: string = '1';
   purposeRangeStartDate: string = '';
@@ -85,18 +98,26 @@ export class AdminAnalyticsComponent implements OnInit {
   );
 
   ngOnInit() {
-    this.loadDefaultRideStartTimeStats();
-    this.loadDefaultPurposeStats();
-  }
-
-  ngAfterViewInit() {
-    setTimeout(() => {
-      this.activeTabIndex = 0;
+    this.route.queryParams.subscribe(params => {
+      const tabParam = params['tab'];
+      if (tabParam !== undefined) {
+        const tabIndex = parseInt(tabParam, 10);
+        if (!isNaN(tabIndex) && tabIndex >= 0 && tabIndex <= 6) {
+          this._activeTabIndex = tabIndex;
+        }
+      }
+      this.loadDefaultRideStartTimeStats();
+      this.loadDefaultPurposeStats();
     });
   }
 
-  resolveDepartment(departmentId: string): string {
-    return this.departmentsMap.get(departmentId) || 'מחלקה לא ידועה';
+  ngAfterViewInit() {
+    // Keep the initialization but don't override if we have a query param
+    setTimeout(() => {
+      if (!this.route.snapshot.queryParams['tab']) {
+        this.activeTabIndex = 0;
+      }
+    });
   }
 
   public exportPDF(): void {
@@ -163,7 +184,6 @@ export class AdminAnalyticsComponent implements OnInit {
         { text: 'User Name', style: 'tableHeader' },
         { text: 'Email', style: 'tableHeader' },
         { text: 'Employee ID', style: 'tableHeader' },
-        { text: 'Department', style: 'tableHeader' },
         { text: 'Role', style: 'tableHeader' },
         { text: 'No-Show Count', style: 'tableHeader' },
         { text: 'Status', style: 'tableHeader' },
@@ -189,11 +209,7 @@ export class AdminAnalyticsComponent implements OnInit {
           { text: user.name || 'Unknown', fillColor: bgColor },
           { text: user.email || 'unknown@example.com', fillColor: bgColor },
           {
-            text: user.employee_id || user.user_id || 'N/A',
-            fillColor: bgColor,
-          },
-          {
-            text: this.resolveDepartment(user.department_id || ''),
+            text: user.employee_id || 'N/A',
             fillColor: bgColor,
           },
           { text: user.role || 'לא ידוע', fillColor: bgColor },
@@ -274,12 +290,27 @@ export class AdminAnalyticsComponent implements OnInit {
         }
 
         if (isRideTab) {
-          if (hebrew.includes('ממתין לאישור')) bgColor = '#FFF9C4';
-          else if (hebrew.includes('אושר')) bgColor = '#C8E6C9';
-          else if (hebrew.includes('הושלם')) bgColor = '#BBDEFB';
-          else if (hebrew.includes('בוטל')) bgColor = '#F8BBD0';
-          else if (hebrew.includes('נדחה')) bgColor = '#FFCDD2';
-          else if (hebrew.includes('בנסיעה')) bgColor = '#D1C4E9';
+          if (
+            hebrew.includes('בוטלה עקב אי-הגעה') ||
+            hebrew.includes('בוטל-רכב לא זמין') 
+          ) {
+            bgColor = '#F8BBD0'; 
+          }
+          if (hebrew.includes('ממתין לאישור')) {
+            bgColor = '#FFF9C4'; 
+          } else if (hebrew.includes('אושר')) {
+            bgColor = '#C8E6C9'; 
+          } else if (hebrew.includes('בוצע')) {
+            bgColor = '#BBDEFB'; 
+          } else if (hebrew.includes('נדחה')) {
+            bgColor = '#FFCDD2';
+          } else if (hebrew.includes('בנסיעה')) {
+            bgColor = '#D1C4E9'; 
+          } else if (hebrew.includes('בוטלה עקב אי-הגעה')) {
+            bgColor = '#FFAB91'; 
+          } else if (hebrew.includes('בוטל-רכב לא זמין')) {
+            bgColor = '#FF8A65'; 
+          }
         }
 
         body.push([
@@ -311,7 +342,7 @@ export class AdminAnalyticsComponent implements OnInit {
           table: {
             headerRows: 1,
             widths: isNoShowTab
-              ? ['auto', '*', 'auto', '*', 'auto', 'auto', 'auto']
+              ? ['auto', '*', 'auto', 'auto', 'auto', 'auto']
               : isTopUsedTab
               ? ['*', '*', '*']
               : isPurposeTab
@@ -508,7 +539,6 @@ export class AdminAnalyticsComponent implements OnInit {
           'User Name': user.name || 'Unknown',
           Email: user.email || 'unknown@example.com',
           'Employee ID': user.employee_id || user.user_id || 'N/A',
-          Department: this.resolveDepartment(user.department_id || ''),
           Role: user.role || 'לא ידוע',
           'No-Show Count': count,
           Status: status,
@@ -778,7 +808,6 @@ export class AdminAnalyticsComponent implements OnInit {
           שם: user.name || 'לא ידוע',
           אימייל: user.email || 'unknown@example.com',
           'מזהה עובד': user.employee_id || user.user_id || 'N/A',
-          מחלקה: this.resolveDepartment(user.department_id || ''),
           תפקיד: user.role || 'לא ידוע',
           'כמות אי-הגעות': count,
           סטטוס: status,
@@ -837,17 +866,20 @@ export class AdminAnalyticsComponent implements OnInit {
       rejected: 'Rejected',
       in_progress: 'In Progress',
       completed: 'Completed',
+      cancelled_vehicle_unavailable: 'Cancelled – Vehicle Unavailable',
+      cancelled_due_to_no_show: 'Cancelled – No Show',
       cancelled: 'Cancelled',
-      cancelled_due_to_no_show: 'Cancelled - No Show',
     };
+
     return statusMap[status] || status;
   }
+
   private loadDefaultPurposeStats(): void {
     this.purposeFilterMode = 'last4';
     this.fetchPurposeStats();
   }
 
-  onPurposeFilterModeChange(mode: 'last4' | 'custom' | 'range'): void {
+  onPurposeFilterModeChange(mode: 'last4' | 'range'): void {
     this.purposeFilterMode = mode;
 
     if (mode === 'last4') {
@@ -1117,11 +1149,14 @@ export class AdminAnalyticsComponent implements OnInit {
       אושר: 'approved',
       נדחה: 'rejected',
       בנסיעה: 'in_progress',
-      הושלם: 'completed',
-      'בוטלה-נסיעה לא בוצעה': 'cancelled_due_to_no_show',
+      בוצע: 'completed',
+      'בוטלה עקב אי-הגעה': 'cancelled_due_to_no_show',
+      'בוטל-רכב לא זמין': 'cancelled_vehicle_unavailable'
     };
+
     return reverseMap[hebrewLabel] || hebrewLabel;
   }
+
   private buildRideStartChart(res: RideStartTimeStatsResponse): void {
     const labels = Array.from(
       { length: 24 },
@@ -1200,13 +1235,11 @@ export class AdminAnalyticsComponent implements OnInit {
   }
   private loadDefaultRideStartTimeStats(): void {
     const now = new Date();
-    const to = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    const from = new Date(to);
-    from.setMonth(from.getMonth() - 3);
-
+    const to = new Date(Date.UTC(now.getFullYear(), now.getMonth() + 1, 0));
+    const from = new Date(Date.UTC(now.getFullYear(), now.getMonth() - 3, 1));
+    from.setUTCDate(from.getUTCDate() - 1);
     const fromStr = from.toISOString().substring(0, 10);
     const toStr = to.toISOString().substring(0, 10);
-
     this.fetchRideStartTimeStats(fromStr, toStr);
   }
 }
