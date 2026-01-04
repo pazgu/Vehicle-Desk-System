@@ -11,7 +11,13 @@ from ..models.ride_model import Ride,RideStatus
 from ..utils.socket_manager import sio
 
 
-def cancel_future_rides_for_vehicle(vehicle_id: str, db: Session, admin_id: str):
+
+def cancel_future_rides_for_vehicle(
+    vehicle_id: str,
+    db: Session,
+    admin_id: str,
+    current_ride_id: str = None, 
+):
     db.execute(
         text("SET session.audit.user_id = :user_id"),
         {"user_id": str(admin_id) if admin_id else None}
@@ -19,20 +25,19 @@ def cancel_future_rides_for_vehicle(vehicle_id: str, db: Session, admin_id: str)
 
     now = datetime.utcnow()
 
-    rides = (
-        db.execute(
-            select(Ride)
-            .where(Ride.vehicle_id == vehicle_id)
-            .where(Ride.start_datetime > now)
-            .where(Ride.status != RideStatus.cancelled_due_to_no_show)
-        )
-    ).scalars().all()
+    query = select(Ride).where(
+        Ride.vehicle_id == vehicle_id,
+        Ride.start_datetime > now,
+        Ride.status != RideStatus.cancelled_due_to_no_show
+    )
+
+    if current_ride_id:
+        query = query.where(Ride.id != current_ride_id)
+
+    rides = db.execute(query).scalars().all()
 
     if not rides:
-        return {
-            "cancelled": 0,
-            "users": []
-        }
+        return {"cancelled": 0, "users": []}
 
     affected_users = set()
 
@@ -52,22 +57,16 @@ def cancel_future_rides_for_vehicle(vehicle_id: str, db: Session, admin_id: str)
             message=message,
             order_id=ride.id
         )
+
     for user_id in affected_users:
         user = db.query(User).filter(User.employee_id == user_id).first()
         if user:
             user.has_pending_rebook = True
             db.add(user)
 
-
     db.commit()
 
-    return {
-        "cancelled": len(rides),
-        "users": list(affected_users)
-    }
-
-
-
+    return {"cancelled": len(rides), "users": list(affected_users)}
 
 def update_user_pending_rebook_status(db, user_id: int):
     now = datetime.now(timezone.utc)
