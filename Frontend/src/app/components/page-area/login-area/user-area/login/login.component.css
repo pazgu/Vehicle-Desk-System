@@ -113,3 +113,6 @@ button:hover {
 .error-border {
   border: 2px solid #942222 !important;
 }
+input[type="password"]::-ms-reveal {
+  display: none;
+}
