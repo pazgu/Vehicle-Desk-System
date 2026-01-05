@@ -152,7 +152,7 @@ export class RegisterComponent implements OnInit {
         this.authService.setLoginState(true);
         this.authService.setRole(response.role);
 
-        this.toastService.show('ההרשמה בוצעה בהצלחה 🎉', 'success');
+        this.toastService.show('ההרשמה בוצעה בהצלחה', 'success');
 
         const role = response.role;
         if (role === 'admin') {
