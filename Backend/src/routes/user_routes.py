@@ -497,7 +497,7 @@ async def patch_order(
 
     await sio.emit("order_updated", convert_decimal(order_data))
     return {
-        "message": "ההזמנה עודכנה בהצלחה",
+        "message": "הנסיעה עודכנה בהצלחה",
         "order": updated_order
     }
 

@@ -151,7 +151,7 @@ export class AllRidesComponent implements OnInit {
     }
 
     if (!order.ride_id) {
-      this.toastService.show('שגיאה בזיהוי ההזמנה', 'error');
+      this.toastService.show('שגיאה בזיהוי הנסיעה', 'error');
       return;
     }
 
@@ -228,13 +228,13 @@ export class AllRidesComponent implements OnInit {
     }
 
     if (!order.ride_id) {
-      this.toastService.show('שגיאה בזיהוי ההזמנה', 'error');
+      this.toastService.show('שגיאה בזיהוי הנסיעה', 'error');
       return;
     }
 
     const dialogData: ConfirmDialogData = {
       title: 'ביטול הזמנה',
-      message: `?האם אתה בטוח שברצונך לבטל את ההזמנה\n\nתאריך: ${order.date}\nשעה: ${order.time}\nסוג: ${order.type}`,
+      message: `?האם אתה בטוח שברצונך לבטל את הנסיעה\n\nתאריך: ${order.date}\nשעה: ${order.time}\nסוג: ${order.type}`,
       confirmText: 'בטל הזמנה',
       cancelText: 'חזור',
       noRestoreText: isRebookContext ? '' : 'שימ/י לב שלא ניתן לשחזר את הנסיעה',
@@ -252,7 +252,7 @@ export class AllRidesComponent implements OnInit {
 
       this.rideService.deleteOrder(order.ride_id).subscribe({
         next: () => {
-          this.toastService.show('ההזמנה בוטלה בהצלחה ', 'success');
+          this.toastService.show('הנסיעה בוטלה בהצלחה ', 'success');
           this.socketService.deleteRequests$.subscribe(() => {});
           this.fetchRides();
           const index = this.orders.findIndex(
@@ -267,7 +267,7 @@ export class AllRidesComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error deleting order:', error);
-          this.toastService.show('שגיאה בביטול ההזמנה ', 'error');
+          this.toastService.show('שגיאה בביטול הנסיעה ', 'error');
         },
       });
     });
@@ -361,7 +361,7 @@ export class AllRidesComponent implements OnInit {
 
   onViewRide(order: any): void {
     if (!order.ride_id) {
-      this.toastService.show('שגיאה בזיהוי ההזמנה', 'error');
+      this.toastService.show('שגיאה בזיהוי הנסיעה', 'error');
       return;
     }
 
@@ -538,7 +538,7 @@ export class AllRidesComponent implements OnInit {
 
   onRebookRide(order: any): void {
     if (!order?.ride_id) {
-      this.toastService.show('שגיאה בזיהוי ההזמנה לביצוע הזמנה מחדש', 'error');
+      this.toastService.show('שגיאה בזיהוי הנסיעה לביצוע הזמנה מחדש', 'error');
       return;
     }
 
@@ -550,7 +550,7 @@ export class AllRidesComponent implements OnInit {
       error: (err) => {
         console.error('Failed to load rebook data:', err);
         this.toastService.show(
-          'שגיאה בטעינת פרטי ההזמנה לביצוע הזמנה מחדש',
+          'שגיאה בטעינת פרטי הנסיעה לביצוע הזמנה מחדש',
           'error'
         );
       },

@@ -18,7 +18,7 @@ async def patch_order_in_db(order_id: UUID, patch_data: OrderCardItem, db: Sessi
 
     order = db.query(Ride).filter(Ride.id == order_id).first()
     if not order:
-        raise HTTPException(status_code=404, detail="ההזמנה לא נמצאה")
+        raise HTTPException(status_code=404, detail="הנסיעה לא נמצאה")
     
     is_vip = is_vip_department(db, UUID(changed_by))
     

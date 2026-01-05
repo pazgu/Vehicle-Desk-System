@@ -582,6 +582,19 @@ export class AdminAnalyticsComponent implements OnInit {
     }
 
     const worksheet = XLSX.utils.json_to_sheet(data);
+
+const needsExtraSpace = isPurposeTab || this.activeTabIndex === 3;
+
+this.autoFitColumns(worksheet, data, {
+  minWch: 14,
+  maxWch: needsExtraSpace ? 110 : 80,
+});
+
+this.applySheetWrapAndCenter(worksheet);
+this.freezeHeaderRow(worksheet);
+this.setRowHeights(worksheet, 28, needsExtraSpace ? 28 : 22);
+
+
     const range = XLSX.utils.decode_range(worksheet['!ref']!);
 
     if (isNoShowTab) {
@@ -878,6 +891,73 @@ export class AdminAnalyticsComponent implements OnInit {
     this.purposeFilterMode = 'last4';
     this.fetchPurposeStats();
   }
+
+private autoFitColumns(
+  worksheet: XLSX.WorkSheet,
+  data: any[],
+  opts?: { minWch?: number; maxWch?: number }
+): void {
+  if (!data || data.length === 0) return;
+
+  const minWch = opts?.minWch ?? 12;
+  const maxWch = opts?.maxWch ?? 80; 
+  const keys = Object.keys(data[0] ?? {});
+  const colWidths = keys.map((key) => {
+    const headerLen = String(key).length;
+
+    const maxCellLen = data.reduce((max, row) => {
+      const val = row?.[key];
+      const str = val === null || val === undefined ? '' : String(val);
+      return Math.max(max, str.length);
+    }, 0);
+
+    const wch = Math.min(Math.max(minWch, headerLen, maxCellLen) + 3, maxWch);
+    return { wch };
+  });
+
+  (worksheet as any)['!cols'] = colWidths;
+}
+
+private applySheetWrapAndCenter(worksheet: XLSX.WorkSheet): void {
+  const ref = worksheet['!ref'];
+  if (!ref) return;
+
+  const range = XLSX.utils.decode_range(ref);
+
+  for (let r = range.s.r; r <= range.e.r; r++) {
+    for (let c = range.s.c; c <= range.e.c; c++) {
+      const addr = XLSX.utils.encode_cell({ r, c });
+      const cell = worksheet[addr];
+      if (!cell) continue;
+
+      cell.s = cell.s || {};
+      cell.s.alignment = {
+        horizontal: 'center',
+        vertical: 'center',
+        wrapText: true,
+      };
+    }
+  }
+}
+
+private freezeHeaderRow(worksheet: XLSX.WorkSheet): void {
+  (worksheet as any)['!freeze'] = { xSplit: 0, ySplit: 1 };
+}
+
+private setRowHeights(worksheet: XLSX.WorkSheet, headerHpt = 26, rowHpt = 22): void {
+  const ref = worksheet['!ref'];
+  if (!ref) return;
+
+  const range = XLSX.utils.decode_range(ref);
+  const rows = [];
+
+  for (let r = 0; r <= range.e.r; r++) {
+    rows.push({ hpt: r === 0 ? headerHpt : rowHpt });
+  }
+
+  (worksheet as any)['!rows'] = rows;
+}
+
 
   onPurposeFilterModeChange(mode: 'last4' | 'range'): void {
     this.purposeFilterMode = mode;
