@@ -317,29 +317,26 @@ export class VehicleCardItemComponent implements OnInit {
         return freezeReason;
     }
   }
-
-  updateVehicleStatus(newStatus: string, reason?: string): void {
+  updateVehicleStatus(newStatus: string, reason?: string, details?: string): void {
     if (!this.vehicle?.id) return;
 
     this.vehicleService
-      .updateVehicleStatus(this.vehicle.id, newStatus, reason)
+      .updateVehicleStatus(this.vehicle.id, newStatus, reason, details)
       .subscribe({
         next: (response) => {
           this.vehicle.status = newStatus;
           this.vehicle.freeze_reason = newStatus === 'frozen' ? reason : null;
+          this.vehicle.freeze_details = newStatus === 'frozen' ? details : null;
 
           if (newStatus === 'frozen') {
             this.freezeReason = '';
+            this.freezeDetails = '';
             this.isFreezeReasonFieldVisible = false;
           }
 
           this.location.back();
         },
         error: (err) => {
-          console.error(
-            `Failed to update vehicle status to '${newStatus}':`,
-            err
-          );
           this.toastService.show(
             `שגיאה בעדכון סטטוס הרכב: ${err.error?.detail || err.message}`,
             'error'
@@ -479,9 +476,16 @@ export class VehicleCardItemComponent implements OnInit {
       this.toastService.show('יש להזין סיבת הקפאה', 'error');
       return;
     }
+    if (this.freezeReason === 'personal' && !this.freezeDetails.trim()) {
+      this.toastService.show('יש להזין פרטי הקפאה אישיים', 'error');
+      return;
+    }
 
     const reasonText = this.translateFreezeReason(this.freezeReason);
-    const message = `האם את/ה בטוח/ה שברצונך להקפיא את הרכב ${this.vehicle.plate_number}?\n\nסיבת הקפאה: ${reasonText}`;
+    let message = `האם את/ה בטוח/ה שברצונך להקפיא את הרכב ${this.vehicle.plate_number}?\n\nסיבת הקפאה: ${reasonText}`;
+    if (this.freezeReason === 'personal' && this.freezeDetails.trim()) {
+      message += `\n\nפרטים: ${this.freezeDetails}`;
+    }
 
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
@@ -497,12 +501,9 @@ export class VehicleCardItemComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((confirmed) => {
       if (!confirmed) return;
-      this.updateVehicleStatus('frozen', this.freezeReason);
-      this.freezeReason = '';
-      this.isFreezeReasonFieldVisible = false;
+      this.updateVehicleStatus('frozen', this.freezeReason, this.freezeDetails);
     });
   }
-
   isLeaseExpired(expiry: string): boolean {
     return new Date(expiry) < new Date();
   }

@@ -104,6 +104,10 @@
             <strong>סיבת הקפאה:</strong>
             {{ translateFreezeReason(vehicle.freeze_reason) }}
           </p>
+          <p *ngIf="vehicle.status === 'frozen' && vehicle.freeze_details">
+            <strong>פרטי הקפאה:</strong>
+            {{ vehicle.freeze_details }}
+          </p>
 
           <p
             *ngIf="!isEditMode"
@@ -135,8 +139,6 @@
           <p>
             <strong>מספר נסיעות לחודש זה:</strong> {{ currentVehicleRideCount }}
           </p>
-        
-
 
           <p>
             <strong>תוקף חוזה השכרה:</strong>
@@ -202,6 +204,7 @@
                     [(ngModel)]="freezeDetails"
                     rows="2"
                     class="personal-textarea"
+                    placeholder="הכנס פרטים נוספים על סיבת ההקפאה..."
                   ></textarea>
                 </div>
 
