@@ -47,20 +47,35 @@ export class AddNewUserComponent implements OnInit {
         '',
         [
           Validators.required,
-          Validators.pattern(/^[A-Za-zא-ת]+$/), // pattern FIRST (priority)
-          Validators.minLength(2), // then minlength
+          Validators.pattern(/^[A-Za-zא-ת]+$/),
+          Validators.minLength(2),
         ],
       ],
       last_name: [
         '',
         [
           Validators.required,
-          Validators.pattern(/^[A-Za-zא-ת]+$/), // pattern FIRST
+          Validators.pattern(/^[A-Za-zא-ת]+$/),
           Validators.minLength(2),
         ],
       ],
-      username: ['', [Validators.required, Validators.minLength(3)]],
-      email: ['', [Validators.required, Validators.email]],
+      username: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(3),
+          Validators.pattern(/^\S+$/),
+        ],
+      ],
+      email: [
+        '',
+        [
+          Validators.required,
+          Validators.pattern(
+            /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+          ),
+        ],
+      ],
       phone: ['', [Validators.required, Validators.pattern(/^05\d{8}$/)]],
       role: ['', Validators.required],
       has_government_license: [false],
@@ -113,21 +128,21 @@ export class AddNewUserComponent implements OnInit {
       return;
     }
 
-  const formValues = this.addUserForm.value;
+    const formValues = this.addUserForm.value;
 
-const isRaan = formValues.role?.toLowerCase() === 'raan';
+    const isRaan = formValues.role?.toLowerCase() === 'raan';
 
-const processedValues = {
-  ...formValues,
-  role: isRaan ? 'supervisor' : formValues.role,
-  isRaan: isRaan,
-};
+    const processedValues = {
+      ...formValues,
+      role: isRaan ? 'supervisor' : formValues.role,
+      isRaan: isRaan,
+    };
 
-const formData = new FormData();
+    const formData = new FormData();
 
-for (const key in processedValues) {
-  const value = processedValues[key];
-  if (value !== null && value !== undefined && value !== '') {
+    for (const key in processedValues) {
+      const value = processedValues[key];
+      if (value !== null && value !== undefined && value !== '') {
         formData.append(
           key,
           typeof value === 'boolean' ? String(value) : value
@@ -135,9 +150,9 @@ for (const key in processedValues) {
       }
     }
 
-if (this.checkIfHasGovernmentlicense() && this.selectedFile) {
-  formData.append('license_file', this.selectedFile);
-}
+    if (this.checkIfHasGovernmentlicense() && this.selectedFile) {
+      formData.append('license_file', this.selectedFile);
+    }
 
     this.userService.addNewUser(formData).subscribe({
       next: () => {
@@ -187,11 +202,11 @@ if (this.checkIfHasGovernmentlicense() && this.selectedFile) {
             }
           }
 
-    this.toast.show('שגיאה בהוספת משתמש', 'error');
-  } else {
-    this.toast.show('שגיאה כללית בהוספת משתמש', 'error');
-  }
-},
+          this.toast.show('שגיאה בהוספת משתמש', 'error');
+        } else {
+          this.toast.show('שגיאה כללית בהוספת משתמש', 'error');
+        }
+      },
     });
   }
 
@@ -311,16 +326,16 @@ if (this.checkIfHasGovernmentlicense() && this.selectedFile) {
   uppercaseValidator() {
     return (control: any) => {
       if (!control.value) return null;
-      if (/[A-Z]/.test(control.value)) return null; 
-      return { uppercase: true }; 
+      if (/[A-Z]/.test(control.value)) return null;
+      return { uppercase: true };
     };
   }
 
   digitValidator() {
     return (control: any) => {
-      if (!control.value) return null; 
-      if (/\d/.test(control.value)) return null; 
-      return { digit: true }; 
+      if (!control.value) return null;
+      if (/\d/.test(control.value)) return null;
+      return { digit: true };
     };
   }
 }
