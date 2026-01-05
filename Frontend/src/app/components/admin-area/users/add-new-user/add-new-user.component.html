@@ -152,26 +152,28 @@
         <div class="form-group">
           <label>אימייל</label>
           <input type="email" formControlName="email" />
-          <small
-            *ngIf="
-              (addUserForm.get('email')?.touched ||
-                addUserForm.get('email')?.dirty) &&
-              addUserForm.get('email')?.hasError('required')
-            "
-            class="error"
-          >
-            חובה להזין אימייל
-          </small>
-          <small
-            *ngIf="
-              (addUserForm.get('email')?.touched ||
-                addUserForm.get('email')?.dirty) &&
-              addUserForm.get('email')?.hasError('pattern')
-            "
-            class="error"
-          >
-            אימייל לא תקין - הסיומת חייבת להכיל לפחות 2 אותיות
-          </small>
+          <div class="validation-wrapper">
+            <small
+              *ngIf="
+                (addUserForm.get('email')?.touched ||
+                  addUserForm.get('email')?.dirty) &&
+                addUserForm.get('email')?.hasError('required')
+              "
+              class="error"
+            >
+              חובה להזין אימייל
+            </small>
+            <small
+              *ngIf="
+                (addUserForm.get('email')?.touched ||
+                  addUserForm.get('email')?.dirty) &&
+                addUserForm.get('email')?.hasError('invalidEmail')
+              "
+              class="error"
+            >
+              אימייל לא תקין
+            </small>
+          </div>
         </div>
 
         <div class="form-group">

@@ -6,6 +6,7 @@ import { ToastService } from '../../../../services/toast.service';
 import { UserService } from '../../../../services/user_service';
 import { MatIconModule } from '@angular/material/icon';
 import { Router } from '@angular/router';
+import * as validator from 'validator';
 
 @Component({
   selector: 'app-add-new-user',
@@ -74,9 +75,7 @@ export class AddNewUserComponent implements OnInit {
         '',
         [
           Validators.required,
-          Validators.pattern(
-            /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
-          ),
+          this.emailValidator(),
         ],
       ],
       phone: ['', [Validators.required, Validators.pattern(/^05\d{8}$/)]],
@@ -117,6 +116,18 @@ export class AddNewUserComponent implements OnInit {
       }
 
       return null;
+    };
+  }
+
+  emailValidator() {
+    return (control: any) => {
+      if (!control.value) return null;
+
+      if (validator.isEmail(control.value)) {
+        return null;
+      }
+
+      return { invalidEmail: true };
     };
   }
 
