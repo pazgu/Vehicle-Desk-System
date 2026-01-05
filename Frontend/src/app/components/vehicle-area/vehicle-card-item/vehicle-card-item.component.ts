@@ -479,14 +479,35 @@ export class VehicleCardItemComponent implements OnInit {
     });
   }
 
+  validateFreezeDetails(event: any): void {
+    const input = event.target.value;
+    const validPattern = /^[א-ת\u05D0-\u05EAa-zA-Z0-9\s]*$/;
+    
+    if (!validPattern.test(input)) {
+      this.freezeDetails = input.replace(/[^א-ת\u05D0-\u05EAa-zA-Z0-9\s]/g, '');
+      event.target.value = this.freezeDetails;
+    }
+  }
   confirmFreeze(): void {
     if (!this.freezeReason.trim()) {
       this.toastService.show('יש להזין סיבת הקפאה', 'error');
       return;
     }
-    if (this.freezeReason === 'personal' && !this.freezeDetails.trim()) {
-      this.toastService.show('יש להזין פרטי הקפאה אישיים', 'error');
-      return;
+    if (this.freezeReason === 'personal') {
+      if (!this.freezeDetails.trim()) {
+        this.toastService.show('יש להזין פרטי הקפאה אישיים', 'error');
+        return;
+      }
+      const validPattern = /^[א-ת\u05D0-\u05EAa-zA-Z0-9\s]+$/;
+      if (!validPattern.test(this.freezeDetails)) {
+        this.toastService.show('פרטי ההקפאה יכולים להכיל רק אותיות, מספרים ורווחים', 'error');
+        return;
+      }
+      const letterCount = (this.freezeDetails.match(/[א-ת\u05D0-\u05EAa-zA-Z]/g) || []).length;
+      if (letterCount < 3) {
+        this.toastService.show('פרטי ההקפאה חייבים להכיל לפחות 3 אותיות', 'error');
+        return;
+      }
     }
 
     const reasonText = this.translateFreezeReason(this.freezeReason);
