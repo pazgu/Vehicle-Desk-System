@@ -64,7 +64,7 @@ export class AddNewUserComponent implements OnInit {
         [
           Validators.required,
           Validators.minLength(3),
-          Validators.pattern(/^\S+$/),
+          Validators.pattern(/^[A-Za-zא-ת]+$/),
         ],
       ],
       email: [
