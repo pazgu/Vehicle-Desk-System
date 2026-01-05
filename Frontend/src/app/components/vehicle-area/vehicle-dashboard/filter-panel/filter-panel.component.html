@@ -57,8 +57,9 @@
           *ngIf="userRole === 'admin' || userRole === 'manager'"
         >
           <input
-            type="checkbox"
-            [(ngModel)]="sortByMostUsed"
+            type="radio"
+            name="sortOption"
+            [checked]="sortByMostUsed"
             (change)="onSortByMostUsedChange()"
           />
           <span>מיין רכבים לפי השימוש הכי גבוה בחודש זה</span>
@@ -69,8 +70,9 @@
           *ngIf="userRole === 'admin' || userRole === 'manager'"
         >
           <input
-            type="checkbox"
-            [(ngModel)]="sortByMostUsedAllTime"
+            type="radio"
+            name="sortOption"
+            [checked]="sortByMostUsedAllTime"
             (change)="onSortByMostUsedAllTimeChange()"
           />
           <span>מיין רכבים לפי השימוש הכי גבוה בכל הזמנים</span>
