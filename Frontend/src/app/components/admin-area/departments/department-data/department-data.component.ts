@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import {
   FormBuilder,
   FormGroup,
@@ -101,6 +101,14 @@ export class DepartmentDataComponent implements OnInit {
     return department.name === 'Unassigned';
   }
 
+  isVIPDepartment(department: any): boolean {
+    return department.name === 'VIP';
+  }
+
+  isProtectedDepartment(department: any): boolean {
+    return this.isUnassignedDepartment(department) || this.isVIPDepartment(department);
+  }
+
   setHoveredDepartment(departmentId: string | null): void {
     this.hoveredDepartmentId = departmentId;
   }
@@ -110,6 +118,11 @@ export class DepartmentDataComponent implements OnInit {
       this.toastService.show('לא ניתן לערוך את מחלקת "Unassigned"', 'error');
       return;
     }
+    if (this.isVIPDepartment(department)) {
+      this.toastService.show('לא ניתן לערוך את מחלקת "VIP"', 'error');
+      return;
+    }
+    
     this.editedDepartmentId = department.id;
     this.editDepartmentForm.patchValue({
       department_id: department.id,
@@ -156,6 +169,10 @@ export class DepartmentDataComponent implements OnInit {
   openDeleteModal(department: any) {
     if (this.isUnassignedDepartment(department)) {
       this.toastService.show('לא ניתן למחוק את מחלקת "Unassigned"', 'error');
+      return;
+    }
+    if (this.isVIPDepartment(department)) {
+      this.toastService.show('לא ניתן למחוק את מחלקת "VIP"', 'error');
       return;
     }
 

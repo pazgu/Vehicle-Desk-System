@@ -135,7 +135,7 @@ async def edit_order_status(department_id: str, order_id: str, new_status: str,u
     )
 
     if not order:
-        raise HTTPException(status_code=404, detail="ההזמנה לא נמצאה")
+        raise HTTPException(status_code=404, detail="הנסיעה לא נמצאה")
 
     order.status = new_status
     if new_status.lower() == "rejected":
@@ -147,7 +147,7 @@ async def edit_order_status(department_id: str, order_id: str, new_status: str,u
         "rejected": "נדחתה",
         "pending": "ממתינה לאישור"
     }
-    message_he = f"ההזמנה שלך {hebrew_status_map.get(new_status.lower(), new_status)}"
+    message_he = f"הנסיעה שלך {hebrew_status_map.get(new_status.lower(), new_status)}"
 
     notification = Notification(
         user_id=order.user_id,

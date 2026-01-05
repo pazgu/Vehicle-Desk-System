@@ -129,7 +129,7 @@ export class LoginComponent implements OnInit {
 
         if (err.status === 400 || err.status === 401) {
           this.toastService.show(
-            'שם משתמש וסיסמה לא נכונים. אנא נסה שוב',
+            'שם משתמש או סיסמה לא נכונים. אנא נסה שוב',
             'error'
           );
         } else {
