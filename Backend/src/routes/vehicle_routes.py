@@ -4,6 +4,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status, Query
 from fastapi.security import OAuth2PasswordBearer
+from pydantic import BaseModel
 from sqlalchemy import text, func, or_
 from sqlalchemy.orm import Session
 
@@ -194,21 +195,21 @@ async def patch_vehicle_status(
     user_id = payload.get("user_id") or payload.get("sub")
     if not user_id:
         return {"error": "User ID not found in token"}, 401
-    
     res = update_vehicle_status(
         vehicle_id,
         status_update.new_status,
         status_update.freeze_reason,
+        status_update.freeze_details,
         db,
         user_id
     )
-
     new_status = res["new_status"]
 
     await sio.emit('vehicle_status_updated', {
         "vehicle_id": str(vehicle_id),
         "status": new_status,
-        "freeze_reason": res.get("freeze_reason", "")
+        "freeze_reason": res.get("freeze_reason", ""),
+        "freeze_details": res.get("freeze_details", "")
     })
 
     cancelled_result = None
@@ -218,15 +219,14 @@ async def patch_vehicle_status(
     if cancelled_result is None:
         cancelled_result = {"cancelled": [], "users": []}
 
-
     await sio.emit('reservationCanceledDueToVehicleFreeze', {
         "vehicle_id": str(vehicle_id),
         "cancelled_rides": cancelled_result["cancelled"],
         "affected_users": [str(u) for u in cancelled_result["users"]],
         "status": new_status,
-        "freeze_reason": res.get("freeze_reason", "")
+        "freeze_reason": res.get("freeze_reason", ""),
+        "freeze_details": res.get("freeze_details", "")
     })
-
 
     if cancelled_result:
         res["cancelled_rides"] = cancelled_result["cancelled"]

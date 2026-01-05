@@ -1,7 +1,7 @@
 <div>
   <div
     class="exceeded-warning-banner"
-    *ngIf="exceeded && warningVisible"
+    *ngIf="freeQuotaExceeded && warningVisible"
     (click)="onBannerClick()"
     style="cursor: pointer"
   >
@@ -40,7 +40,7 @@
 
   <button
     class="floating-warning-btn"
-    *ngIf="!warningVisible && exceeded"
+    *ngIf="!warningVisible && freeQuotaExceeded"
     (click)="showWarning()"
     title="הצג אזהרה"
   >

@@ -65,6 +65,7 @@ export class NotificationsComponent implements OnInit {
               locale: he,
             }),
           }));
+           this.syncUnreadCount(); 
         },
         error: (err) => {
           console.error('Failed to fetch notifications:', err);
@@ -82,6 +83,8 @@ export class NotificationsComponent implements OnInit {
           };
 
           this.notifications = [notifWithTimeAgo, ...this.notifications];
+          this.syncUnreadCount(); 
+
           this.cdr.detectChanges();
 
           if (this.router.url != '/notifications') {
@@ -113,6 +116,8 @@ export class NotificationsComponent implements OnInit {
             };
 
             this.notifications = [notifWithTimeAgo, ...this.notifications];
+            this.syncUnreadCount(); 
+
             this.cdr.detectChanges();
 
             if (this.router.url !== '/notifications') {
@@ -137,6 +142,7 @@ export class NotificationsComponent implements OnInit {
               locale: he,
             }),
           }));
+           this.syncUnreadCount(); 
         },
         error: (err) => {
           console.error('Failed to fetch notifications:', err);
@@ -154,6 +160,8 @@ export class NotificationsComponent implements OnInit {
         };
 
         this.notifications = [notifWithTimeAgo, ...this.notifications];
+        this.syncUnreadCount(); 
+
         this.cdr.detectChanges();
 
         if (this.router.url != '/notifications') {
@@ -227,13 +235,13 @@ export class NotificationsComponent implements OnInit {
       lower.includes('vehicle unavailable due to technical issues') ||
       lower.includes('בוטלה עקב תקלה ברכב')
     ) {
-      return 'ההזמנה שלך בוטלה כי הרכב הוקפא בעקבות תקלה. אנא הזמן/י נסיעה חדשה עם רכב אחר.';
+      return 'הנסיעה שלך בוטלה כי הרכב הוקפא בעקבות תקלה. אנא הזמן/י נסיעה חדשה עם רכב אחר.';
     } else if (lower.includes('נשלחה בהצלחה')) {
-      return 'ההזמנה שלך נשלחה בהצלחה. תקבל/י התראה לאחר הבדיקה והאישור.';
+      return 'הנסיעה שלך נשלחה בהצלחה. תקבל/י התראה לאחר הבדיקה והאישור.';
     } else if (lower.includes('אושרה')) {
-      return 'ההזמנה שלך אושרה.';
+      return 'הנסיעה שלך אושרה.';
     } else if (lower.includes('נדחתה')) {
-      return 'ההזמנה שלך נדחתה.';
+      return 'הנסיעה שלך נדחתה.';
     } else {
       return message;
     }
@@ -271,49 +279,59 @@ export class NotificationsComponent implements OnInit {
     }
   }
 
- handleNotificationClick(notif: MyNotification): void {
+  private syncUnreadCount(): void {
+  const unread = this.notifications.filter(n => !n.seen).length;
+  this.notificationService.unreadCount$.next(unread);
+}
+
+
+ handleNotificationClick(notif: MyNotification, event?: MouseEvent): void {
+  if (!this.isClickable(notif)) {
+    event?.stopPropagation();
+    event?.preventDefault();
+    return; 
+  }
   const role = localStorage.getItem('role');
 
 
     if (!notif.seen) {
-      this.notificationService.markNotificationAsSeen(notif.id).subscribe({
-        next: () => {
-          setTimeout(() => {
-            notif.seen = true;
-            this.notifications = [...this.notifications];
-            this.cdr.detectChanges(); 
-          });
-        },
-        error: (err) => console.error('Failed to mark notification as seen:', err),
-      });
-    }
+  this.notificationService.markNotificationAsSeen(notif.id).subscribe({
+    next: () => {
+      notif.seen = true;
+      this.notifications = [...this.notifications];
+      this.syncUnreadCount();
+      this.cdr.detectChanges();
+    },
+    error: (err) => console.error('Failed to mark notification as seen:', err),
+  });
+}
+
   if (notif.order_id) {
     const dialogRef = this.dialog.open(RideDetailsComponent, {
       width: '500px',
       data: { rideId: notif.order_id },
     });
 
-    dialogRef.afterClosed().subscribe(() => {
-      this.notifications = [...this.notifications];
-      this.cdr.detectChanges();
-    });
-   
-    
-    return;
-  }
+      dialogRef.afterClosed().subscribe(() => {
+        this.notifications = [...this.notifications];
+        this.cdr.detectChanges();
+      });
 
-  if (this.isVehicleFreezeCancellation(notif)) {
-    this.router.navigate(['/all-rides'], {
-      queryParams: { mode: 'future', highlight: notif.order_id },
-    });
-  } else if (role === 'admin' && notif.message.includes('בעיה חמורה')) {
-    this.router.navigate(['/admin/critical-issues'], {
-      queryParams: { highlight: '1' },
-    });
-  } else if (notif.vehicle_id) { 
-    this.goToVehicle(notif.vehicle_id);
+      return;
+    }
+
+    if (this.isVehicleFreezeCancellation(notif)) {
+      this.router.navigate(['/all-rides'], {
+        queryParams: { mode: 'future', highlight: notif.order_id },
+      });
+    } else if (role === 'admin' && notif.message.includes('בעיה חמורה')) {
+      this.router.navigate(['/admin/critical-issues'], {
+        queryParams: { highlight: '1' },
+      });
+    } else if (notif.vehicle_id) {
+      this.goToVehicle(notif.vehicle_id);
+    }
   }
-}
   getLeaseAlerts(title: string): string {
     return title == 'Vehicle Lease Expiry' ? 'lease-alert' : '';
   }
@@ -336,4 +354,39 @@ export class NotificationsComponent implements OnInit {
       msg.includes('בוטלה עקב תקלה ברכב')
     );
   }
+
+  private getRole(): string {
+  return localStorage.getItem('role') || '';
+}
+
+isAdminOnlyNotification(notif: MyNotification): boolean {
+  const role = this.getRole();
+  if (role === 'admin') return false;
+
+  const type = (notif as any).notification_type?.toLowerCase?.() || '';
+  const msg = (notif.message || '').toLowerCase();
+
+  if (
+    type.includes('critical') ||
+    type.includes('odometer') ||
+    type.includes('lease') ||
+    type.includes('inactive') ||
+    type.includes('vehicle') 
+  ) return true;
+
+  if (msg.includes('לא הוחזר בזמן')) return true;
+
+  if (!!notif.vehicle_id && !notif.order_id && !this.isVehicleFreezeCancellation(notif)) {
+    return true;
+  }
+
+  return false;
+}
+
+isClickable(notif: MyNotification): boolean {
+  if (this.isAdminOnlyNotification(notif)) return false;
+  return true;
+}
+
+
 }

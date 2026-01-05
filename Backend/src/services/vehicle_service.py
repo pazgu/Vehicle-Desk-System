@@ -110,17 +110,31 @@ def get_available_vehicles_new_ride(
     if start_time and end_time:
         end_time_with_buffer = end_time + timedelta(hours=2)
 
-        overlapping_rides = db.query(Ride.vehicle_id).filter(
-            or_(
-                and_(Ride.start_datetime <= start_time, Ride.end_datetime > start_time),
-                and_(Ride.start_datetime < end_time_with_buffer, Ride.end_datetime >= end_time_with_buffer),
-                and_(Ride.start_datetime >= start_time, Ride.end_datetime <= end_time_with_buffer)
-            )
-        ).subquery()
+        overlapping_rides = (
+    db.query(Ride.vehicle_id)
+    .filter(
+        Ride.status.in_([
+            RideStatus.pending,
+            RideStatus.approved,
+            RideStatus.in_progress
+        ]),
+        or_(
+            and_(Ride.start_datetime <= start_time,
+                 Ride.end_datetime > start_time),
+
+            and_(Ride.start_datetime < end_time_with_buffer,
+                 Ride.end_datetime >= end_time_with_buffer),
+
+            and_(Ride.start_datetime >= start_time,
+                 Ride.end_datetime <= end_time_with_buffer)
+        )
+    )
+    .subquery()
+)
 
         query = query.filter(~Vehicle.id.in_(overlapping_rides))
-
-    return query.all()
+    cars=query.all()
+    return cars
 
 def get_vehicles_for_ride_edit(
     db: Session,
@@ -330,13 +344,15 @@ def get_most_used_vehicles_all_time(db: Session) -> Dict[str, int]:
     return {str(stat.vehicle_id): stat.total_rides for stat in stats}
 
 
-def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_reason: str, db: Session, changed_by: UUID, notes: Optional[str] = None):
-    FREEZE_REASON_TRANSLATIONS = {
-    "accident": "תאונה",
-    "maintenance": "תחזוקה",
-    "personal": "אישי "
-}
-
+def update_vehicle_status(
+    vehicle_id: UUID, 
+    new_status: VehicleStatus, 
+    freeze_reason: Optional[str],
+    freeze_details: Optional[str],  
+    db: Session, 
+    changed_by: UUID, 
+    notes: Optional[str] = None
+):
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(changed_by)})
     vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
     if not vehicle:
@@ -346,15 +362,24 @@ def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_re
         old_status = vehicle.status
         if new_status == VehicleStatus.frozen:
             if not freeze_reason:
-                raise HTTPException(status_code=400, detail="freeze_reason is required when setting status to 'frozen'")
+                raise HTTPException(
+                    status_code=400, 
+                    detail="freeze_reason is required when setting status to 'frozen'"
+                )
+            if freeze_reason == "personal" and not freeze_details:
+                raise HTTPException(
+                    status_code=400,
+                    detail="freeze_details is required when freeze_reason is 'personal'"
+                )
             vehicle.freeze_reason = freeze_reason
+            vehicle.freeze_details = freeze_details
         elif vehicle.status == VehicleStatus.frozen and new_status != VehicleStatus.frozen:
             vehicle.freeze_reason = None
+            vehicle.freeze_details = None
 
         vehicle.status = new_status
         db.commit()
         db.refresh(vehicle)
-
         # Try to find a supervisor from the same department (if any)
         # --- Email Recipient Determination Logic ---
         # recipient_emails_set: set[str] = set() # Use a set to handle duplicates automatically
@@ -443,10 +468,18 @@ def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_re
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"An internal server error occurred: {str(e)}")
-    
-    db.execute(text("SET session.audit.user_id = DEFAULT"))
-    return {"vehicle_id": vehicle.id, "new_status": vehicle.status, "freeze_reason": vehicle.freeze_reason}
+        raise HTTPException(
+            status_code=500, 
+            detail=f"An internal server error occurred: {str(e)}"
+        )
+    finally:
+        db.execute(text("SET session.audit.user_id = DEFAULT"))
+    return {
+        "vehicle_id": vehicle.id, 
+        "new_status": vehicle.status, 
+        "freeze_reason": vehicle.freeze_reason,
+        "freeze_details": vehicle.freeze_details
+    }
 
 def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID, user_department_id: Optional[UUID] = None) -> List[VehicleOut]:
     ride = db.query(Ride).filter(Ride.id == ride_id).first()
@@ -528,6 +561,7 @@ def get_vehicle_by_id(vehicle_id: str, db: Session):
         "fuel_type": vehicle.fuel_type,
         "status": vehicle.status,
         "freeze_reason": vehicle.freeze_reason,
+        "freeze_details": vehicle.freeze_details,
         "last_used_at": vehicle.last_used_at,
         "mileage": vehicle.mileage,
         "vehicle_model": vehicle.vehicle_model,

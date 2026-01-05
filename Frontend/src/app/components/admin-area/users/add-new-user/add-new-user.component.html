@@ -5,143 +5,215 @@
 
   <div class="form-container">
     <form [formGroup]="addUserForm" (ngSubmit)="submit()">
+      <input type="text" name="prevent_autofill" style="display: none" />
+      <input type="password" name="password_fake" style="display: none" />
       <div class="form-section">
         <div class="form-group">
           <label>שם פרטי</label>
-          <input type="text" formControlName="first_name" />
+          <input
+            type="text"
+            formControlName="first_name"
+            (keypress)="preventSpaces($event)"
+          />
           <div class="validation-wrapper">
-          <small
-            *ngIf="
-              (addUserForm.get('first_name')?.touched || addUserForm.get('first_name')?.dirty) &&
-              addUserForm.get('first_name')?.hasError('required')
-            "
-            class="error"
-          >
-            חובה להזין שם פרטי
-          </small>
             <small
               *ngIf="
-                (addUserForm.get('first_name')?.touched || addUserForm.get('first_name')?.dirty) &&
+                (addUserForm.get('first_name')?.touched ||
+                  addUserForm.get('first_name')?.dirty) &&
+                addUserForm.get('first_name')?.hasError('required')
+              "
+              class="error"
+            >
+              חובה להזין שם פרטי
+            </small>
+            <small
+              *ngIf="
+                (addUserForm.get('first_name')?.touched ||
+                  addUserForm.get('first_name')?.dirty) &&
                 addUserForm.get('first_name')?.hasError('minlength')
               "
               class="error"
             >
-               לפחות 2 אותיות
+              לפחות 2 אותיות
             </small>
             <small
               *ngIf="
-                (addUserForm.get('first_name')?.touched || addUserForm.get('first_name')?.dirty) &&
+                (addUserForm.get('first_name')?.touched ||
+                  addUserForm.get('first_name')?.dirty) &&
                 addUserForm.get('first_name')?.hasError('pattern')
               "
               class="error"
             >
-               רק אותיות בעברית או באנגלית
-         </small>
-        </div>
+              רק אותיות בעברית או באנגלית (ללא רווחים)
+            </small>
+            <small
+              *ngIf="
+                (addUserForm.get('first_name')?.touched ||
+                  addUserForm.get('first_name')?.dirty) &&
+                addUserForm.get('first_name')?.hasError('mixedLanguage')
+              "
+              class="error"
+            >
+              לא ניתן לערבב עברית ואנגלית
+            </small>
+          </div>
         </div>
 
         <div class="form-group">
           <label>שם משפחה</label>
-          <input type="text" formControlName="last_name" />
+          <input
+            type="text"
+            formControlName="last_name"
+            (keypress)="preventSpaces($event)"
+          />
           <div class="validation-wrapper">
-          <small
-            *ngIf="
-              (addUserForm.get('last_name')?.touched || addUserForm.get('last_name')?.dirty) &&
-              addUserForm.get('last_name')?.hasError('required')
-            "
-            class="error"
-          >
-            חובה להזין שם משפחה
-          </small>
-          <small
-            *ngIf="
-              (addUserForm.get('last_name')?.touched || addUserForm.get('last_name')?.dirty) &&
-              addUserForm.get('last_name')?.hasError('minlength')
-            "
-            class="error"
-          >
-             לפחות 2 אותיות
-          </small>
-          <small
-            *ngIf="
-              (addUserForm.get('last_name')?.touched || addUserForm.get('last_name')?.dirty) &&
-              addUserForm.get('last_name')?.hasError('pattern')
-            "
-            class="error"
-          >
-             רק אותיות בעברית או באנגלית
-          </small>
-        </div>
+            <small
+              *ngIf="
+                (addUserForm.get('last_name')?.touched ||
+                  addUserForm.get('last_name')?.dirty) &&
+                addUserForm.get('last_name')?.hasError('required')
+              "
+              class="error"
+            >
+              חובה להזין שם משפחה
+            </small>
+            <small
+              *ngIf="
+                (addUserForm.get('last_name')?.touched ||
+                  addUserForm.get('last_name')?.dirty) &&
+                addUserForm.get('last_name')?.hasError('minlength')
+              "
+              class="error"
+            >
+              לפחות 2 אותיות
+            </small>
+            <small
+              *ngIf="
+                (addUserForm.get('last_name')?.touched ||
+                  addUserForm.get('last_name')?.dirty) &&
+                addUserForm.get('last_name')?.hasError('pattern')
+              "
+              class="error"
+            >
+              רק אותיות בעברית או באנגלית (ללא רווחים)
+            </small>
+            <small
+              *ngIf="
+                (addUserForm.get('last_name')?.touched ||
+                  addUserForm.get('last_name')?.dirty) &&
+                addUserForm.get('last_name')?.hasError('mixedLanguage')
+              "
+              class="error"
+            >
+              לא ניתן לערבב עברית ואנגלית
+            </small>
+          </div>
         </div>
 
         <div class="form-group">
           <label>שם משתמש</label>
-          <input type="text" formControlName="username" />
-          <small
-            *ngIf="
-              (addUserForm.get('username')?.touched || addUserForm.get('username')?.dirty) &&
-              addUserForm.get('username')?.hasError('required')
-            "
-            class="error"
-          >
-            חובה להזין שם משתמש
-          </small>
-          <small
-            *ngIf="
-              (addUserForm.get('username')?.touched || addUserForm.get('username')?.dirty) &&
-              addUserForm.get('username')?.hasError('minlength')
-            "
-            class="error"
-          >
-             לפחות 3 תווים
-          </small>
+          <input
+            type="text"
+            formControlName="username"
+            (keypress)="preventSpaces($event)"
+          />
+          <div class="validation-wrapper">
+            <small
+              *ngIf="
+                (addUserForm.get('username')?.touched ||
+                  addUserForm.get('username')?.dirty) &&
+                addUserForm.get('username')?.hasError('required')
+              "
+              class="error"
+            >
+              חובה להזין שם משתמש
+            </small>
+            <small
+              *ngIf="
+                (addUserForm.get('username')?.touched ||
+                  addUserForm.get('username')?.dirty) &&
+                addUserForm.get('username')?.hasError('minlength')
+              "
+              class="error"
+            >
+              לפחות 3 תווים
+            </small>
+            <small
+              *ngIf="
+                (addUserForm.get('username')?.touched ||
+                  addUserForm.get('username')?.dirty) &&
+                addUserForm.get('username')?.hasError('pattern')
+              "
+              class="error"
+            >
+              רק אותיות בעברית או באנגלית (ללא רווחים)
+            </small>
+            <small
+              *ngIf="
+                (addUserForm.get('username')?.touched ||
+                  addUserForm.get('username')?.dirty) &&
+                addUserForm.get('username')?.hasError('mixedLanguage')
+              "
+              class="error"
+            >
+              לא ניתן לערבב עברית ואנגלית
+            </small>
+            <small
+              *ngIf="
+                (addUserForm.get('username')?.touched ||
+                  addUserForm.get('username')?.dirty) &&
+                addUserForm.get('username')?.hasError('minLetters')
+              "
+              class="error"
+            >
+              חייב להכיל לפחות 2 אותיות
+            </small>
+          </div>
         </div>
       </div>
 
       <div class="form-section">
         <div class="form-group">
           <label>אימייל</label>
-          <input type="email" formControlName="email" />
-          <small
-            *ngIf="
-              (addUserForm.get('email')?.touched || addUserForm.get('email')?.dirty) &&
-              addUserForm.get('email')?.hasError('required')
-            "
-            class="error"
-          >
-            חובה להזין אימייל
-          </small>
-          <small
-            *ngIf="
-              (addUserForm.get('email')?.touched || addUserForm.get('email')?.dirty) &&
-              addUserForm.get('email')?.hasError('email')
-            "
-            class="error"
-          >
-            אימייל לא תקין
-          </small>
+          <input
+            type="email"
+            formControlName="email"
+            (keypress)="preventSpaces($event)"
+          />
+          <div class="validation-wrapper">
+            <small
+              *ngIf="
+                (addUserForm.get('email')?.touched ||
+                  addUserForm.get('email')?.dirty) &&
+                addUserForm.get('email')?.hasError('required')
+              "
+              class="error"
+            >
+              חובה להזין אימייל
+            </small>
+            <small
+              *ngIf="
+                (addUserForm.get('email')?.touched ||
+                  addUserForm.get('email')?.dirty) &&
+                addUserForm.get('email')?.hasError('invalidEmail')
+              "
+              class="error"
+            >
+              אימייל לא תקין
+            </small>
+          </div>
         </div>
 
         <div class="form-group">
           <label>טלפון</label>
-          <input type="text" formControlName="phone" />
-          <small
-            *ngIf="
-              (addUserForm.get('phone')?.touched || addUserForm.get('phone')?.dirty) &&
-              addUserForm.get('phone')?.hasError('required')
-            "
-            class="error"
-          >
-            חובה להזין מספר טלפון
-          </small>
-          <small
-            *ngIf="
-              (addUserForm.get('phone')?.touched || addUserForm.get('phone')?.dirty) &&
-              addUserForm.get('phone')?.hasError('pattern')
-            "
-            class="error"
-          >
-            הטלפון חייב להכיל 10 ספרות ולהתחיל ב-05
+          <input
+            type="tel"
+            formControlName="phone"
+            (keypress)="preventSpaces($event)"
+            autocomplete="none"
+          />
+          <small *ngIf="getPhoneErrors()" class="error">
+            {{ getPhoneErrors() }}
           </small>
         </div>
       </div>
@@ -162,13 +234,13 @@
             "
             class="error"
           >
-             חובה לבחור תפקיד
+            חובה לבחור תפקיד
           </small>
         </div>
 
         <div class="form-group" *ngIf="shouldShowDepartment()">
-          <label
-            >מחלקה {{ isDepartmentRequired() ? "*" : "(אופציונלי)" }}</label
+          <label style="margin-top: 14px"
+            >מחלקה {{ isDepartmentRequired() ? "" : "(אופציונלי)" }}</label
           >
           <select formControlName="department_id">
             <option value="" [disabled]="isDepartmentRequired()">
@@ -199,50 +271,17 @@
               [type]="showPassword ? 'text' : 'password'"
               formControlName="password"
               class="password-input"
+              autocomplete="new-password"
+              (keypress)="preventSpaces($event)"
             />
             <mat-icon class="show-password" (click)="togglePassword()">
               {{ showPassword ? "visibility" : "visibility_off" }}
             </mat-icon>
           </div>
-          <div class="validation-wrapper">
-          <small
-            *ngIf="
-              (addUserForm.get('password')?.touched || addUserForm.get('password')?.dirty) &&
-              addUserForm.get('password')?.hasError('required')
-            "
-            class="error"
-          >
-            חובה להזין סיסמה
-          </small>
-          <small
-            *ngIf="
-              (addUserForm.get('password')?.touched || addUserForm.get('password')?.dirty) &&
-              addUserForm.get('password')?.hasError('minlength')
-            "
-            class="error"
-          >
-            הסיסמה חייבת להיות באורך של לפחות 8 תווים
-          </small>
-          <small
-            *ngIf="
-              (addUserForm.get('password')?.touched || addUserForm.get('password')?.dirty) &&
-              addUserForm.get('password')?.hasError('uppercase')
-            "
-            class="error"
-          >
-             לפחות אות גדולה אחת
-          </small>
-          <small
-            *ngIf="
-              (addUserForm.get('password')?.touched || addUserForm.get('password')?.dirty) &&
-              addUserForm.get('password')?.hasError('digit')
-            "
-            class="error"
-          >
-             לפחות מספר אחד
+          <small *ngIf="getPasswordErrors()" class="error">
+            {{ getPasswordErrors() }}
           </small>
         </div>
-      </div>
       </div>
 
       <div class="form-section">
@@ -267,16 +306,29 @@
         </h4>
 
         <div class="form-group" *ngIf="checkIfHasGovernmentlicense()">
-          <label for="license_expiry_date">תוקף רישיון</label>
+          <label style="margin-top: 20px" for="license_expiry_date"
+            >תוקף רישיון</label
+          >
           <input
             type="date"
             id="license_expiry_date"
             formControlName="license_expiry_date"
           />
+          <small
+            *ngIf="
+              addUserForm.get('license_expiry_date')?.touched &&
+              addUserForm.get('license_expiry_date')?.hasError('dateRange')
+            "
+            class="error"
+          >
+            התאריך חייב להיות בעתיד
+          </small>
         </div>
 
         <div class="form-group" *ngIf="checkIfHasGovernmentlicense()">
-          <label>העלה תמונת/קובץ רישיון (אופציונלי)</label>
+          <label style="margin-top: 20px"
+            >העלה תמונת/קובץ רישיון (אופציונלי)</label
+          >
           <div class="custom-file-upload">
             <input
               type="file"
@@ -295,7 +347,7 @@
               <button type="button" class="choose-file-btn">בחר קובץ</button>
             </div>
           </div>
-          <small class="info">ניתן להעלות קובץ רישיון מאוחר יותר</small>
+          <small class="info">ניתן לשנות את קובץ הרישיון</small>
         </div>
       </div>
 

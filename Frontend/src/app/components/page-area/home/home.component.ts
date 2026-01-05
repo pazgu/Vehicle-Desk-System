@@ -88,8 +88,10 @@ import {
 import { RebookData } from '../../../services/myrides.service';
 import { Supervisor } from '../../../models/user.model';
 
-interface Employee { id: string; full_name: string; }
-
+interface Employee {
+  id: string;
+  full_name: string;
+}
 
 @Component({
   selector: 'app-new-ride',
@@ -148,10 +150,10 @@ export class NewRideComponent implements OnInit {
   ];
   supervisors: Supervisor[] = [];
   selectedSupervisor: string | null = null;
-  departmentId=''
+  departmentId = '';
   fuelTypeTranslations: { [key: string]: string } = {};
-  isVIP=false
-  isSupervisor=false
+  isVIP = false;
+  isSupervisor = false;
   constructor(
     private fb: FormBuilder,
     private router: Router,
@@ -165,51 +167,55 @@ export class NewRideComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private acknowledgmentService: AcknowledgmentService,
     private rideUserChecksService: RideUserChecksService,
-    private dialog: MatDialog,
-
+    private dialog: MatDialog
   ) {}
 
-   ngOnInit(): void {
-    this,this.checkVipStatus();
-  this.currentUserId = getUserIdFromToken(localStorage.getItem('access_token'));
-  this.departmentId=localStorage.getItem('department_id') || ""
-  
-  const role = localStorage.getItem('role');
-  this.isSupervisor = role === 'supervisor';
-  
-  this.initializeComponent();
-    if (this.currentUserId){
-      this.rideUserChecksService.checkUserBlock(this.currentUserId).subscribe((result) => {
-        this.currentUserBlocked = result.isBlocked;
-        this.currentUserBlockExpirationDate = result.blockExpirationDate;
-        if (this.currentUserBlocked) {
-          this.disableDueToBlock = true;
-          this.disableRequest = true;
-          this.disableDueToDepartment = true;
-          this.showBlockedUserMessage();
+  ngOnInit(): void {
+    this, this.checkVipStatus();
+    this.currentUserId = getUserIdFromToken(
+      localStorage.getItem('access_token')
+    );
+    this.departmentId = localStorage.getItem('department_id') || '';
 
-        }});
+    const role = localStorage.getItem('role');
+    this.isSupervisor = role === 'supervisor';
+
+    this.initializeComponent();
+    if (this.currentUserId) {
+      this.rideUserChecksService
+        .checkUserBlock(this.currentUserId)
+        .subscribe((result) => {
+          this.currentUserBlocked = result.isBlocked;
+          this.currentUserBlockExpirationDate = result.blockExpirationDate;
+          if (this.currentUserBlocked) {
+            this.disableDueToBlock = true;
+            this.disableRequest = true;
+            this.disableDueToDepartment = true;
+            this.showBlockedUserMessage();
+          }
+        });
     }
 
     this.myRidesService.getSupervisors(this.departmentId).subscribe({
-      next: (data) =>{
-        (this.supervisors = data)
-
-      } ,
+      next: (data) => {
+        this.supervisors = data;
+      },
       error: (err) => console.error('Failed to load supervisors:', err),
     });
 
-   this.myRidesService.checkPendingRebook().subscribe({
-  next: (res) => {
-    if (res.has_pending && !rebookData) {
-      this.toastService.show('יש נסיעות ממתינות לשחזור, יש להשלים את החידוש לפני הזמנת נסיעה חדשה', 'error');
-      this.router.navigate(['/all-rides']);
-    }
-  },
-  error: (err) => console.error(err)
-});
-  const rebookData = this.myRidesService.getRebookDatafromService();
-
+    this.myRidesService.checkPendingRebook().subscribe({
+      next: (res) => {
+        if (res.has_pending && !rebookData) {
+          this.toastService.show(
+            'יש נסיעות ממתינות לשחזור, יש להשלים את החידוש לפני הזמנת נסיעה חדשה',
+            'error'
+          );
+          this.router.navigate(['/all-rides']);
+        }
+      },
+      error: (err) => console.error(err),
+    });
+    const rebookData = this.myRidesService.getRebookDatafromService();
 
     if (rebookData) {
       this.applyRebookData(rebookData);
@@ -227,9 +233,9 @@ export class NewRideComponent implements OnInit {
         this.toastService.show('שגיאה: מזהה משתמש נוכחי לא נמצא.', 'error');
         this.disableRequest = true;
       }
-    } 
-  
-   this.vehicleService.getFuelTypeTranslations().subscribe({
+    }
+
+    this.vehicleService.getFuelTypeTranslations().subscribe({
       next: (translations) => {
         this.fuelTypeTranslations = translations;
       },
@@ -238,13 +244,13 @@ export class NewRideComponent implements OnInit {
         this.fuelTypeTranslations = {
           electric: 'חשמלי',
           hybrid: 'היברידי',
-          gasoline: 'בנזין'
+          gasoline: 'בנזין',
         };
-      }
+      },
     });
   }
 
-   getFuelTypeLabel(fuelType: string): string {
+  getFuelTypeLabel(fuelType: string): string {
     return this.fuelTypeTranslations[fuelType] || fuelType;
   }
 
@@ -271,7 +277,7 @@ export class NewRideComponent implements OnInit {
       },
       error: (err) => {
         console.error('Failed to check VIP status', err);
-        this.isVIP = false; 
+        this.isVIP = false;
       },
     });
   }
@@ -320,13 +326,13 @@ export class NewRideComponent implements OnInit {
       });
     }
 
-  const start = new Date(data.start_datetime);
-  const end = new Date(data.end_datetime);
-  const pad = (num: number) => num.toString().padStart(2, '0');
-  this.rideForm.patchValue({
-    start_location: data.start_location,
-    stop: data.stop,
-    destination: data.destination,
+    const start = new Date(data.start_datetime);
+    const end = new Date(data.end_datetime);
+    const pad = (num: number) => num.toString().padStart(2, '0');
+    this.rideForm.patchValue({
+      start_location: data.start_location,
+      stop: data.stop,
+      destination: data.destination,
 
       ride_type: data.ride_type,
       estimated_distance_km: data.estimated_distance,
@@ -342,10 +348,10 @@ export class NewRideComponent implements OnInit {
       end_hour: pad(end.getHours()),
       end_minute: pad(end.getMinutes()),
 
-    start_time: `${pad(start.getHours())}:${pad(start.getMinutes())}`,
-    end_time: `${pad(end.getHours())}:${pad(end.getMinutes())}`,
-    approving_supervisor: data.approving_supervisor ?? null
-  });
+      start_time: `${pad(start.getHours())}:${pad(start.getMinutes())}`,
+      end_time: `${pad(end.getHours())}:${pad(end.getMinutes())}`,
+      approving_supervisor: data.approving_supervisor ?? null,
+    });
 
     this.rideForm.clearValidators();
     this.rideForm.updateValueAndValidity({ emitEvent: false });
@@ -792,42 +798,43 @@ export class NewRideComponent implements OnInit {
       },
     });
   }
- private updateAvailableCars(): void {
-  const selectedType = this.rideForm.get('vehicle_type')?.value;
-  const carControl = this.rideForm.get('car');
+  private updateAvailableCars(): void {
+    const selectedType = this.rideForm.get('vehicle_type')?.value;
+    const carControl = this.rideForm.get('car');
 
-  let filtered = filterAvailableCars(this.allCars, selectedType);
-  filtered = filtered.filter((car) => car.status === 'available');
+    let filtered = filterAvailableCars(this.allCars, selectedType);
+    filtered = filtered.filter((car) => car.status === 'available');
 
-  this.availableCars = filtered;
+    this.availableCars = filtered;
 
-  syncCarControlWithAvailableCars(
-    carControl,
-    this.availableCars,
-    (id: string) => this.isPendingVehicle(id)
-  );
+    syncCarControlWithAvailableCars(
+      carControl,
+      this.availableCars,
+      (id: string) => this.isPendingVehicle(id)
+    );
 
-  if (this.availableCars.length === 0) {
-    this.selectedCarId = '';
-    carControl?.setValue(null, { emitEvent: false });
-    return;
+    if (this.availableCars.length === 0) {
+      this.selectedCarId = '';
+      carControl?.setValue(null, { emitEvent: false });
+      return;
+    }
+
+    if (
+      carControl?.value &&
+      this.availableCars.some((c) => c.id === carControl.value)
+    ) {
+      this.selectedCarId = carControl.value;
+      return;
+    }
+
+    const firstCarId = this.availableCars[0].id;
+    this.selectedCarId = firstCarId;
+    carControl?.setValue(firstCarId, { emitEvent: false });
+    carControl?.markAsDirty();
+    carControl?.markAsTouched();
+
+    this.loadFuelType(firstCarId);
   }
-
-  if (carControl?.value && this.availableCars.some(c => c.id === carControl.value)) {
-    this.selectedCarId = carControl.value;
-    return;
-  }
-
-  const firstCarId = this.availableCars[0].id;
-  this.selectedCarId = firstCarId;
-  carControl?.setValue(firstCarId, { emitEvent: false });
-  carControl?.markAsDirty();
-  carControl?.markAsTouched();
-
-  this.loadFuelType(firstCarId);
-}
-
-
 
   private setDefaultStartAndDestination(): void {
     this.cityService.getCity('תל אביב').subscribe((city) => {
@@ -875,10 +882,7 @@ export class NewRideComponent implements OnInit {
           endDateTime
         );
       } else if (!isPrefilled) {
-        this.toastService.show(
-          'אנא הזן תאריך ותחנה לפני סינון רכבים',
-          'error'
-        );
+        this.toastService.show('אנא הזן תאריך ותחנה לפני סינון רכבים', 'error');
         this.availableCars = [];
         this.rideForm.get('car')?.setValue(null);
       }
@@ -893,10 +897,7 @@ export class NewRideComponent implements OnInit {
           endDateTime
         );
       } else if (!isPrefilled) {
-        this.toastService.show(
-          'אנא הזן תאריך ותחנה לפני סינון רכבים',
-          'error'
-        );
+        this.toastService.show('אנא הזן תאריך ותחנה לפני סינון רכבים', 'error');
         this.availableCars = [];
         this.rideForm.get('car')?.setValue(null);
       }
@@ -1202,52 +1203,52 @@ export class NewRideComponent implements OnInit {
         ? `${rideDate}T${endTime}`
         : `${nightEndDate}T${endTime}`;
 
-    const approvingSupervisor = this.rideForm.get('approving_supervisor')?.value;
+    const approvingSupervisor = this.rideForm.get(
+      'approving_supervisor'
+    )?.value;
 
-    const formData: RideFormPayload ={
+    const formData: RideFormPayload = {
       ...buildRideFormPayload({
-      form: this.rideForm,
-      riderId: rider_id,
-      requesterId: requester_id,
-      start_datetime,
-      end_datetime,
-      vehicleId,
-      isExtendedRequest: this.isExtendedRequest,
-      estimatedDistanceWithBuffer: this.estimated_distance_with_buffer,
-    }),
-    approving_supervisor: approvingSupervisor || null, 
+        form: this.rideForm,
+        riderId: rider_id,
+        requesterId: requester_id,
+        start_datetime,
+        end_datetime,
+        vehicleId,
+        isExtendedRequest: this.isExtendedRequest,
+        estimatedDistanceWithBuffer: this.estimated_distance_with_buffer,
+      }),
+      approving_supervisor: approvingSupervisor || null,
+    };
+    const role = localStorage.getItem('role');
+    if (this.isRebookMode) {
+      const rebookD = this.myRidesService.getRebookDatafromService();
+      if (!rebookD) {
+        console.error('rebookD is undefined');
+        return;
+      }
 
-} 
-        const role = localStorage.getItem('role');
-          if (this.isRebookMode) {
-            const rebookD=this.myRidesService.getRebookDatafromService()
-            if (!rebookD) {
-  console.error("rebookD is undefined");
-  return;
-}
-
-
-  const payload: RebookRequest = {
-    old_ride_id: rebookD.id,
-    new_ride: {
-      start_datetime: formData.start_datetime,
-      end_datetime: formData.end_datetime,
-      start_location: formData.start_location,
-      destination: formData.destination,
-      ride_type: formData.ride_type,
-      stop: formData.stop,
-      extra_stops: formData.extra_stops?.map((s: any) => s.id) || [],
-      extended_ride_reason: formData.extended_ride_reason || undefined,
-      four_by_four_reason: formData.four_by_four_reason || undefined,
-      vehicle_id: formData.vehicle_id,
-      estimated_distance_km: formData.estimated_distance_km,
-      actual_distance_km:formData.actual_distance_km,
-      user_id: formData.user_id,
-      status: 'pending',
-      submitted_at: new Date().toISOString(),
-      approving_supervisor:formData.approving_supervisor || null
-    }
-  };
+      const payload: RebookRequest = {
+        old_ride_id: rebookD.id,
+        new_ride: {
+          start_datetime: formData.start_datetime,
+          end_datetime: formData.end_datetime,
+          start_location: formData.start_location,
+          destination: formData.destination,
+          ride_type: formData.ride_type,
+          stop: formData.stop,
+          extra_stops: formData.extra_stops?.map((s: any) => s.id) || [],
+          extended_ride_reason: formData.extended_ride_reason || undefined,
+          four_by_four_reason: formData.four_by_four_reason || undefined,
+          vehicle_id: formData.vehicle_id,
+          estimated_distance_km: formData.estimated_distance_km,
+          actual_distance_km: formData.actual_distance_km,
+          user_id: formData.user_id,
+          status: 'pending',
+          submitted_at: new Date().toISOString(),
+          approving_supervisor: formData.approving_supervisor || null,
+        },
+      };
 
       this.myRidesService.rebookReservation(payload).subscribe({
         next: (res) => {
@@ -1337,30 +1338,28 @@ export class NewRideComponent implements OnInit {
     this.showStep1Error = false;
   }
 
-
   selectedCarId: string = '';
   isDropdownOpen: boolean = false;
 
   selectCar(carId: string) {
-  if (this.isPendingVehicle(carId)) {
-    return;
+    if (this.isPendingVehicle(carId)) {
+      return;
+    }
+
+    this.selectedCarId = carId;
+    this.isDropdownOpen = false;
+
+    const carControl = this.rideForm.get('car');
+    carControl?.setValue(carId);
+    carControl?.markAsDirty();
+    carControl?.markAsTouched();
+
+    this.loadFuelType(carId);
   }
 
-  this.selectedCarId = carId;
-  this.isDropdownOpen = false;
-
-  const carControl = this.rideForm.get('car');
-  carControl?.setValue(carId);
-  carControl?.markAsDirty();
-  carControl?.markAsTouched();
-
-  this.loadFuelType(carId);
-}
-
-
- getSelectedCar(): any | undefined {
-  return this.availableCars.find(car => car.id === this.selectedCarId);
-}
+  getSelectedCar(): any | undefined {
+    return this.availableCars.find((car) => car.id === this.selectedCarId);
+  }
   toggleDropdown() {
     this.isDropdownOpen = !this.isDropdownOpen;
   }
@@ -1368,7 +1367,4 @@ export class NewRideComponent implements OnInit {
   closeDropdown() {
     this.isDropdownOpen = false;
   }
-
-
-
 }

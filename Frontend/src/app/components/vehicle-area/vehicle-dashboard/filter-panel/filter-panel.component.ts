@@ -32,6 +32,7 @@ export class FilterPanelComponent implements OnInit, OnChanges {
 
   statusFilter: string = '';
   typeFilter: string = '';
+  departmentFilter: string = '';
   showFilters: boolean = false;
   showSort: boolean = false;
   sortByMostUsed: boolean = false;
@@ -59,6 +60,13 @@ export class FilterPanelComponent implements OnInit, OnChanges {
     }
   }
 
+  get departmentList(): string[] {
+    const departments = Array.from(this.departmentMap.values())
+      .filter((dept) => dept.toLowerCase() !== 'unassigned')
+      .sort((a, b) => a.localeCompare(b, 'he'));
+    return departments;
+  }
+
   fetchVehicleTypes() {
     this.vehicleService.getVehicleTypes().subscribe({
       next: (types) => {
@@ -84,19 +92,24 @@ export class FilterPanelComponent implements OnInit, OnChanges {
     this.updateQueryParams.emit();
   }
 
-toggleFilters() {
-  this.showFilters = !this.showFilters;
-  if (this.showFilters) {
-    this.showSort = false; 
+  onDepartmentFilterChange() {
+    this.applyFilters();
+    this.updateQueryParams.emit();
   }
-}
 
- toggleSort() {
-  this.showSort = !this.showSort;
-  if (this.showSort) {
-    this.showFilters = false; 
+  toggleFilters() {
+    this.showFilters = !this.showFilters;
+    if (this.showFilters) {
+      this.showSort = false;
+    }
   }
-}
+
+  toggleSort() {
+    this.showSort = !this.showSort;
+    if (this.showSort) {
+      this.showFilters = false;
+    }
+  }
 
   onInactiveChange() {
     if (this.showInactive) {
@@ -110,20 +123,26 @@ toggleFilters() {
 
   onSortByMostUsedChange() {
     if (this.sortByMostUsed) {
+      this.sortByMostUsed = false;
+      this.sortByMostUsedAllTime = false;
+      this.applyFilters();
+    } else {
+      this.sortByMostUsed = true;
       this.sortByMostUsedAllTime = false;
       this.loadVehicleUsageData();
-    } else {
-      this.applyFilters();
     }
     this.updateQueryParams.emit();
   }
 
   onSortByMostUsedAllTimeChange() {
     if (this.sortByMostUsedAllTime) {
+      this.sortByMostUsedAllTime = false;
+      this.sortByMostUsed = false;
+      this.applyFilters();
+    } else {
+      this.sortByMostUsedAllTime = true;
       this.sortByMostUsed = false;
       this.loadVehicleUsageDataAllTime();
-    } else {
-      this.applyFilters();
     }
     this.updateQueryParams.emit();
   }
@@ -222,6 +241,17 @@ toggleFilters() {
     if (this.typeFilter) {
       filtered = filtered.filter((vehicle) => vehicle.type === this.typeFilter);
     }
+    if (this.departmentFilter) {
+      if (this.departmentFilter === 'לא משוייך למחלקה') {
+        filtered = filtered.filter(
+          (vehicle) => vehicle.department === 'לא משוייך למחלקה'
+        );
+      } else {
+        filtered = filtered.filter(
+          (vehicle) => vehicle.department === this.departmentFilter
+        );
+      }
+    }
 
     if (this.showInactive) {
       const oneWeekAgo = new Date();
@@ -263,6 +293,10 @@ toggleFilters() {
     return this.typeFilter;
   }
 
+  getDepartmentFilter(): string {
+    return this.departmentFilter;
+  }
+
   getShowInactive(): boolean {
     return this.showInactive;
   }
@@ -280,10 +314,12 @@ toggleFilters() {
     type: string,
     inactive: boolean,
     sortByMostUsed: boolean = false,
-    sortByMostUsedAllTime: boolean = false
+    sortByMostUsedAllTime: boolean = false,
+    department: string = ''
   ): void {
     this.statusFilter = status;
     this.typeFilter = type;
+    this.departmentFilter = department;
     this.showInactive = inactive;
     this.sortByMostUsed = sortByMostUsed;
     this.sortByMostUsedAllTime = sortByMostUsedAllTime;

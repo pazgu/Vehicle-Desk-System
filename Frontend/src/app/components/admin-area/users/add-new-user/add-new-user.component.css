@@ -273,7 +273,6 @@ input:checked + .slider::after {
 
 .custom-file-upload {
   position: relative;
-  margin-top: 0.5rem;
 }
 
 .custom-file-upload input[type="file"] {
@@ -493,25 +492,39 @@ input:checked + .slider::after {
 }
 
 .validation-wrapper {
-    display: flex; 
-    flex-wrap: wrap; 
-    margin-top: 5px; 
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 5px;
 }
 .validation-wrapper .error {
-    display: inline; 
-    
+  display: inline;
 
-    white-space: nowrap; 
+  white-space: nowrap;
 
-
-    margin: 0; 
-    padding: 0;
+  margin: 0;
+  padding: 0;
 }
 .validation-wrapper .error:after {
-    content: " | ";
-    padding-left: 0.25rem; 
-    color: inherit;
+  content: " | ";
+  padding-left: 0.25rem;
+  color: inherit;
 }
 .validation-wrapper .error:last-child:after {
-    content: none; 
+  content: none;
+}
+
+.form-group input.ng-invalid.ng-touched,
+.form-group input.ng-invalid.ng-dirty,
+.form-group select.ng-invalid.ng-touched,
+.form-group select.ng-invalid.ng-dirty {
+  border-color: #d02f2f;
+  background-color: #fef2f2;
+}
+
+.form-group input.ng-valid.ng-touched,
+.form-group input.ng-valid.ng-dirty,
+.form-group select.ng-valid.ng-touched,
+.form-group select.ng-valid.ng-dirty {
+  border-color: #10b981;
+  background-color: #f0fdf4;
 }

@@ -6,7 +6,7 @@ import { ToastService } from '../../../../services/toast.service';
 import { UserService } from '../../../../services/user_service';
 import { MatIconModule } from '@angular/material/icon';
 import { Router } from '@angular/router';
-
+import * as validator from 'validator';
 @Component({
   selector: 'app-add-new-user',
   standalone: true,
@@ -47,20 +47,31 @@ export class AddNewUserComponent implements OnInit {
         '',
         [
           Validators.required,
-          Validators.pattern(/^[A-Za-zא-ת]+$/), // pattern FIRST (priority)
-          Validators.minLength(2), // then minlength
+          Validators.pattern(/^[A-Za-zא-ת]+$/),
+          Validators.minLength(2),
+          this.noMixedLanguageValidator(),
         ],
       ],
       last_name: [
         '',
         [
           Validators.required,
-          Validators.pattern(/^[A-Za-zא-ת]+$/), // pattern FIRST
+          Validators.pattern(/^[A-Za-zא-ת]+$/),
           Validators.minLength(2),
+          this.noMixedLanguageValidator(),
         ],
       ],
-      username: ['', [Validators.required, Validators.minLength(3)]],
-      email: ['', [Validators.required, Validators.email]],
+      username: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(3),
+          Validators.pattern(/^[A-Za-zא-ת0-9]+$/), 
+          this.noMixedLanguageValidator(),
+          this.minLettersValidator(2),
+        ],
+      ],
+      email: ['', [Validators.required, this.emailValidator()]],
       phone: ['', [Validators.required, Validators.pattern(/^05\d{8}$/)]],
       role: ['', Validators.required],
       has_government_license: [false],
@@ -71,8 +82,7 @@ export class AddNewUserComponent implements OnInit {
         [
           Validators.required,
           Validators.minLength(8),
-          this.uppercaseValidator(),
-          this.digitValidator(),
+          Validators.pattern(/^(?=.*[A-Z])(?=.*\d)\S*$/),
         ],
       ],
     });
@@ -85,6 +95,136 @@ export class AddNewUserComponent implements OnInit {
       this.updateDepartmentValidation(role);
       this.fetchDepartments(role);
     });
+  }
+
+  noMixedLanguageValidator() {
+    return (control: any) => {
+      if (!control.value) return null;
+
+      const hasHebrew = /[א-ת]/.test(control.value);
+      const hasEnglish = /[A-Za-z]/.test(control.value);
+
+      if (hasHebrew && hasEnglish) {
+        return { mixedLanguage: true };
+      }
+
+      return null;
+    };
+  }
+
+  getPasswordErrors(): string | null {
+    const passwordControl = this.addUserForm.get('password');
+    if (!passwordControl) {
+      return null;
+    }
+
+    if (!passwordControl.value && !passwordControl.touched) {
+      return null;
+    }
+
+    const errors: string[] = [];
+
+    if (passwordControl.errors?.['required'] && passwordControl.touched) {
+      errors.push('חובה להזין סיסמה');
+    }
+
+    if (passwordControl.value && passwordControl.errors?.['minlength']) {
+      errors.push('לפחות 8 תווים');
+    }
+
+    if (passwordControl.value && passwordControl.errors?.['pattern']) {
+      const value = passwordControl.value || '';
+      const hasUpperCase = /[A-Z]/.test(value);
+      const hasNumber = /\d/.test(value);
+
+      if (!hasUpperCase && !hasNumber) {
+        errors.push('חובה לכלול אות גדולה ומספר');
+      } else if (!hasUpperCase) {
+        errors.push('חובה לכלול אות גדולה');
+      } else if (!hasNumber) {
+        errors.push('חובה לכלול מספר');
+      }
+    }
+
+    if (passwordControl.value && passwordControl.errors?.['foreignLanguage']) {
+      errors.push('הסיסמה מכילה תווים לא חוקיים');
+    }
+
+    return errors.length > 0 ? errors.join(' | ') : null;
+  }
+
+  getPhoneErrors(): string | null {
+    const phoneControl = this.addUserForm.get('phone');
+    if (!phoneControl) {
+      return null;
+    }
+
+    if (!phoneControl.value && !phoneControl.touched) {
+      return null;
+    }
+
+    const errors: string[] = [];
+    const value = phoneControl.value || '';
+
+    if (phoneControl.errors?.['required'] && phoneControl.touched) {
+      errors.push('חובה להזין מספר טלפון');
+    }
+
+    if (value.length > 0) {
+      const startsWithCorrect = value.startsWith('05');
+      const hasCorrectLength = value.length === 10;
+      const onlyDigits = /^\d+$/.test(value);
+
+      if (!startsWithCorrect && !hasCorrectLength) {
+        return 'מספר טלפון חייב להכיל 10 ספרות ולהתחיל ב-05';
+      }
+
+      if (!startsWithCorrect) {
+        errors.push('מספר טלפון חייב להתחיל ב-05');
+      }
+
+      if (!hasCorrectLength) {
+        errors.push('מספר טלפון חייב להכיל 10 ספרות');
+      }
+
+      if (!onlyDigits) {
+        errors.push('מספר טלפון חייב להכיל ספרות בלבד');
+      }
+    }
+
+    return errors.length > 0 ? errors.join(' | ') : null;
+  }
+
+  preventSpaces(event: KeyboardEvent): void {
+    if (event.key === ' ') {
+      event.preventDefault();
+    }
+  }
+
+  emailValidator() {
+    return (control: any) => {
+      if (!control.value) return null;
+
+      if (validator.isEmail(control.value)) {
+        return null;
+      }
+
+      return { invalidEmail: true };
+    };
+  }
+
+  minLettersValidator(minLetters: number) {
+    return (control: any) => {
+      if (!control.value) return null;
+
+      const letterCount = (control.value.match(/[A-Za-zא-ת]/g) || []).length;
+
+      if (letterCount < minLetters) {
+        return { minLetters: true };
+      }
+
+      return null;
+    };
   }
 
   updateDepartmentValidation(role: string): void {
@@ -113,21 +253,21 @@ export class AddNewUserComponent implements OnInit {
       return;
     }
 
-  const formValues = this.addUserForm.value;
+    const formValues = this.addUserForm.value;
 
-const isRaan = formValues.role?.toLowerCase() === 'raan';
+    const isRaan = formValues.role?.toLowerCase() === 'raan';
 
-const processedValues = {
-  ...formValues,
-  role: isRaan ? 'supervisor' : formValues.role,
-  isRaan: isRaan,
-};
+    const processedValues = {
+      ...formValues,
+      role: isRaan ? 'supervisor' : formValues.role,
+      isRaan: isRaan,
+    };
 
-const formData = new FormData();
+    const formData = new FormData();
 
-for (const key in processedValues) {
-  const value = processedValues[key];
-  if (value !== null && value !== undefined && value !== '') {
+    for (const key in processedValues) {
+      const value = processedValues[key];
+      if (value !== null && value !== undefined && value !== '') {
         formData.append(
           key,
           typeof value === 'boolean' ? String(value) : value
@@ -135,9 +275,9 @@ for (const key in processedValues) {
       }
     }
 
-if (this.checkIfHasGovernmentlicense() && this.selectedFile) {
-  formData.append('license_file', this.selectedFile);
-}
+    if (this.checkIfHasGovernmentlicense() && this.selectedFile) {
+      formData.append('license_file', this.selectedFile);
+    }
 
     this.userService.addNewUser(formData).subscribe({
       next: () => {
@@ -187,11 +327,11 @@ if (this.checkIfHasGovernmentlicense() && this.selectedFile) {
             }
           }
 
-    this.toast.show('שגיאה בהוספת משתמש', 'error');
-  } else {
-    this.toast.show('שגיאה כללית בהוספת משתמש', 'error');
-  }
-},
+          this.toast.show('שגיאה בהוספת משתמש', 'error');
+        } else {
+          this.toast.show('שגיאה כללית בהוספת משתמש', 'error');
+        }
+      },
     });
   }
 
@@ -291,18 +431,15 @@ if (this.checkIfHasGovernmentlicense() && this.selectedFile) {
     };
   }
 
-  // helper: current password value (safe when form is not yet created)
   getPasswordValue(): string {
     return this.addUserForm?.get('password')?.value || '';
   }
 
-  // returns true if password contains at least one ASCII uppercase letter A-Z
   passwordHasUppercase(): boolean {
     const pw = this.getPasswordValue();
     return /[A-Z]/.test(pw);
   }
 
-  // returns true if password contains at least one digit
   passwordHasDigit(): boolean {
     const pw = this.getPasswordValue();
     return /\d/.test(pw);
@@ -311,16 +448,16 @@ if (this.checkIfHasGovernmentlicense() && this.selectedFile) {
   uppercaseValidator() {
     return (control: any) => {
       if (!control.value) return null;
-      if (/[A-Z]/.test(control.value)) return null; 
-      return { uppercase: true }; 
+      if (/[A-Z]/.test(control.value)) return null;
+      return { uppercase: true };
     };
   }
 
   digitValidator() {
     return (control: any) => {
-      if (!control.value) return null; 
-      if (/\d/.test(control.value)) return null; 
-      return { digit: true }; 
+      if (!control.value) return null;
+      if (/\d/.test(control.value)) return null;
+      return { digit: true };
     };
   }
 }

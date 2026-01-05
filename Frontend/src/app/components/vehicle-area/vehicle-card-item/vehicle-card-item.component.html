@@ -104,6 +104,10 @@
             <strong>סיבת הקפאה:</strong>
             {{ translateFreezeReason(vehicle.freeze_reason) }}
           </p>
+          <p *ngIf="vehicle.status === 'frozen' && vehicle.freeze_details">
+            <strong>פרטי הקפאה:</strong>
+            {{ vehicle.freeze_details }}
+          </p>
 
           <p
             *ngIf="!isEditMode"
@@ -124,9 +128,10 @@
               [(ngModel)]="vehicle.mileage"
               [min]="0"
               class="edit-input"
+              required
+              placeholder="הזן קילומטראז'"
             />
           </div>
-
           <p *ngIf="vehicle.mileage_last_updated">
             <strong>עודכן לאחרונה:</strong>
             {{ vehicle.mileage_last_updated | date : "dd/MM/yyyy" }}
@@ -135,8 +140,6 @@
           <p>
             <strong>מספר נסיעות לחודש זה:</strong> {{ currentVehicleRideCount }}
           </p>
-        
-
 
           <p>
             <strong>תוקף חוזה השכרה:</strong>
@@ -202,6 +205,7 @@
                     [(ngModel)]="freezeDetails"
                     rows="2"
                     class="personal-textarea"
+                    placeholder="הכנס פרטים נוספים על סיבת ההקפאה..."
                   ></textarea>
                 </div>
 

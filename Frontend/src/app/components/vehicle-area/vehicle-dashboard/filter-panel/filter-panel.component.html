@@ -28,6 +28,17 @@
             {{ type.original }}
           </option>
         </select>
+        <select
+          class="filter-select"
+          [(ngModel)]="departmentFilter"
+          (change)="onDepartmentFilterChange()"
+        >
+          <option value="">כל המחלקות</option>
+          <option value="לא משוייך למחלקה">לא משוייך למחלקה</option>
+          <option *ngFor="let dept of departmentList" [value]="dept">
+            {{ dept }}
+          </option>
+        </select>
       </div>
 
       <div class="filters-checkboxes">
@@ -57,8 +68,9 @@
           *ngIf="userRole === 'admin' || userRole === 'manager'"
         >
           <input
-            type="checkbox"
-            [(ngModel)]="sortByMostUsed"
+            type="radio"
+            name="sortOption"
+            [checked]="sortByMostUsed"
             (change)="onSortByMostUsedChange()"
           />
           <span>מיין רכבים לפי השימוש הכי גבוה בחודש זה</span>
@@ -69,8 +81,9 @@
           *ngIf="userRole === 'admin' || userRole === 'manager'"
         >
           <input
-            type="checkbox"
-            [(ngModel)]="sortByMostUsedAllTime"
+            type="radio"
+            name="sortOption"
+            [checked]="sortByMostUsedAllTime"
             (change)="onSortByMostUsedAllTimeChange()"
           />
           <span>מיין רכבים לפי השימוש הכי גבוה בכל הזמנים</span>

@@ -1,4 +1,10 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import { GuidelinesService } from '../../../services/guidelines.service';
 import { Observable } from 'rxjs';
 import { GuidelinesDoc } from '../../../models/guidelines.model';
@@ -15,6 +21,7 @@ export class GuidelinesModalComponent {
   @Input() rideId!: string;
   @Input() userId!: string;
   @Input() show = false;
+  @Input() initialChecked = false; // new input
   @Output() confirmed = new EventEmitter<{
     rideId: string;
     userId: string;
@@ -30,8 +37,13 @@ export class GuidelinesModalComponent {
   ngOnInit() {
     this.doc$ = this.guidelines.doc$;
     this.guidelines.get().subscribe();
+    this.isChecked = false;
   }
-
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['show'] && this.show) {
+      this.isChecked = this.initialChecked;
+    }
+  }
   onConfirm() {
     if (!this.isChecked) return;
 
