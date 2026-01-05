@@ -29,6 +29,9 @@ export class NoShowsComponent {
 
   totalNoShows: number = 0;
   uniqueNoShowUsers: number = 0;
+
+  baseTotalNoShows: number = 0;
+  baseUniqueNoShowUsers: number = 0;
   selectedMonth = (new Date().getMonth() + 1).toString();
   selectedYear = new Date().getFullYear().toString();
 
@@ -45,18 +48,22 @@ export class NoShowsComponent {
   ) {}
 
   ngOnInit() {
-    this.loadNoShowStatistics();
-    this.route.queryParams.subscribe((params) => {
-      this.noShowSortOption = params['noShowSort'] || 'countAsc';
-      this.selectedSortOption = params['selectedSort'] || 'countAsc';
-      if (params['month']) {
-        this.selectedMonth = String(+params['month']); 
-      }
-      if (params['year']) {
-        this.selectedYear = String(+params['year']); 
-      }
-    });
-  }
+  this.loadNoShowStatistics(); 
+
+  this.route.queryParams.subscribe((params) => {
+    this.noShowSortOption = params['noShowSort'] || 'countAsc';
+    this.selectedSortOption = params['selectedSort'] || 'countAsc';
+
+    if (params['month']) this.selectedMonth = String(+params['month']);
+    if (params['year']) this.selectedYear = String(+params['year']);
+
+    if (this.allNoShowUsers.length > 0) {
+      this.applyNoShowFilter(false); 
+    }
+  });
+}
+
+
   updateQueryParams(params: any) {
     this.router.navigate([], {
       relativeTo: this.route,
@@ -70,29 +77,32 @@ export class NoShowsComponent {
       year: this.selectedYear,
     });
   }
-  applyNoShowFilter() {
-    let filtered = this.allNoShowUsers;
+  applyNoShowFilter(shouldUpdateQueryParams: boolean = true) {
+  let filtered = this.allNoShowUsers;
 
-    if (this.filterOnePlus) {
-      filtered = filtered.filter(
-        (u) => (u.no_show_count ?? 0) >= 1 && (u.no_show_count ?? 0) <= 2
-      );
-    }
-
-    if (this.filterCritical) {
-      filtered = filtered.filter((u) => (u.no_show_count ?? 0) >= 3);
-    }
-    if (
-      !['countAsc', 'countDesc', 'nameAsc', 'nameDesc'].includes(
-        this.noShowSortOption
-      )
-    ) {
-      this.noShowSortOption = 'countAsc';
-    }
-    this.updateQueryParams({ noShowSort: this.noShowSortOption });
-
-    this.filteredNoShowUsers = this.sortUsers(filtered);
+  if (this.filterOnePlus) {
+    filtered = filtered.filter(
+      (u) => (u.no_show_count ?? 0) >= 1 && (u.no_show_count ?? 0) <= 2
+    );
   }
+
+  if (this.filterCritical) {
+    filtered = filtered.filter((u) => (u.no_show_count ?? 0) >= 3);
+  }
+
+  if (!['countAsc', 'countDesc', 'nameAsc', 'nameDesc'].includes(this.noShowSortOption)) {
+    this.noShowSortOption = 'countAsc';
+  }
+
+  if (shouldUpdateQueryParams) {
+    this.updateQueryParams({ noShowSort: this.noShowSortOption });
+  }
+
+  this.filteredNoShowUsers = this.sortUsers([...filtered]);
+
+  this.updateSummaryCards();
+}
+
   onFilterOnePlusChange() {
     if (this.filterOnePlus) {
       this.filterCritical = false;
@@ -155,6 +165,32 @@ export class NoShowsComponent {
     });  
   }
 
+  private updateSummaryCards(): void {
+  const isAnyFilterActive = this.filterOnePlus || this.filterCritical;
+
+  if (!isAnyFilterActive) {
+  if ((this.baseTotalNoShows ?? 0) === 0 && this.allNoShowUsers.length > 0) {
+    this.totalNoShows = this.allNoShowUsers.reduce(
+      (sum, u) => sum + (u.no_show_count ?? 0),
+      0
+    );
+    this.uniqueNoShowUsers = this.allNoShowUsers.length;
+  } else {
+    this.totalNoShows = this.baseTotalNoShows;
+    this.uniqueNoShowUsers = this.baseUniqueNoShowUsers;
+  }
+  return;
+}
+
+
+  this.uniqueNoShowUsers = this.filteredNoShowUsers.length;
+
+  this.totalNoShows = this.filteredNoShowUsers.reduce((sum, u) => {
+    return sum + (u.no_show_count ?? 0);
+  }, 0);
+}
+
+
 
   public loadNoShowStatistics(): void {
     const formattedFromDate = this.noShowFromDate || undefined;
@@ -164,22 +200,25 @@ export class NoShowsComponent {
       .getTopNoShowUsers(formattedFromDate, formattedToDate)
       .subscribe({
         next: (noShowData) => {
-          this.totalNoShows = noShowData.total_no_show_events;
-          this.uniqueNoShowUsers = noShowData.unique_no_show_users;
-          this.topNoShowUsers = noShowData.top_no_show_users;
-          const mappedUsers = noShowData.top_no_show_users.map((user) => ({
-            ...user,
-            email: user.email || 'unknown@example.com',
-            role: user.role || 'לא ידוע',
-            employee_id: user.user_id,
-            no_show_count: user.count,
-          }));
+  const mappedUsers = noShowData.top_no_show_users.map((user) => ({
+    ...user,
+    email: user.email || 'unknown@example.com',
+    role: user.role || 'לא ידוע',
+    employee_id: user.user_id,
+    no_show_count: user.count,
+  }));
 
-          this.topNoShowUsers = mappedUsers;
+  this.allNoShowUsers = mappedUsers;
 
-          this.allNoShowUsers = mappedUsers;
-          this.applyNoShowFilter();
-        },
+  this.baseTotalNoShows = noShowData.total_no_show_events ?? 0;
+  this.baseUniqueNoShowUsers = noShowData.unique_no_show_users ?? 0;
+
+  this.totalNoShows = this.baseTotalNoShows;
+  this.uniqueNoShowUsers = this.baseUniqueNoShowUsers;
+
+  this.applyNoShowFilter();
+},
+
         error: (err) => {
           console.error('Failed to load no-show statistics:', err);
           this.toastService.show('אירעה שגיאה בטעינת נתוני אי-הגעה.', 'error');
