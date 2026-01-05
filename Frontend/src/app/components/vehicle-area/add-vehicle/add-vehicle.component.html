@@ -7,7 +7,32 @@
 
     <form (ngSubmit)="submitForm()" [formGroup]="vehicleForm" novalidate>
       <label>סוג רכב (קטן, גדול...)</label>
-      <input formControlName="type" type="text" />
+      <div class="custom-dropdown-wrapper">
+        <input 
+          formControlName="type" 
+          type="text" 
+          (input)="onVehicleTypeInput($event)"
+          (focus)="onVehicleTypeFocus()"
+          (blur)="closeDropdown()"
+          placeholder="בחר או הקלד סוג רכב חדש"
+          autocomplete="off"
+        />
+        <div class="info-message" *ngIf="newTypeMessage">
+          {{ newTypeMessage }}
+        </div>
+        <div class="dropdown-list" *ngIf="isDropdownOpen && filteredVehicleTypes.length > 0">
+          <div 
+            class="dropdown-item" 
+            *ngFor="let type of filteredVehicleTypes"
+            (click)="selectVehicleType(type)"
+          >
+            {{ type }}
+          </div>
+        </div>
+        <div class="dropdown-list empty" *ngIf="isDropdownOpen && filteredVehicleTypes.length === 0">
+          <div class="dropdown-item no-results">לא נמצאו תוצאות</div>
+        </div>
+      </div>
       <div
         class="error"
         *ngIf="
@@ -75,22 +100,22 @@
         סוג דלק נדרש
       </div>
 
-     <label>תוקף חוזה השכרה</label>
-<input formControlName="lease_expiry" type="date" />
-<div
-  class="error"
-  *ngIf="
-    vehicleForm.get('lease_expiry')?.touched &&
-    vehicleForm.get('lease_expiry')?.invalid
-  "
->
-  <ng-container *ngIf="vehicleForm.get('lease_expiry')?.hasError('required')">
-    תאריך תוקף חוזה נדרש
-  </ng-container>
-  <ng-container *ngIf="vehicleForm.get('lease_expiry')?.hasError('pastDate')">
-    לא ניתן לבחור תאריך בעבר. תאריך התוקף חייב להיות היום או בעתיד
-  </ng-container>
-</div>
+      <label>תוקף חוזה השכרה</label>
+      <input formControlName="lease_expiry" type="date" />
+      <div
+        class="error"
+        *ngIf="
+          vehicleForm.get('lease_expiry')?.touched &&
+          vehicleForm.get('lease_expiry')?.invalid
+        "
+      >
+        <ng-container *ngIf="vehicleForm.get('lease_expiry')?.hasError('required')">
+          תאריך תוקף חוזה נדרש
+        </ng-container>
+        <ng-container *ngIf="vehicleForm.get('lease_expiry')?.hasError('pastDate')">
+          לא ניתן לבחור תאריך בעבר. תאריך התוקף חייב להיות היום או בעתיד
+        </ng-container>
+      </div>
 
       <label>כמה הרכב עבר ב-ק"מ</label>
       <input formControlName="mileage" type="number" />
@@ -162,7 +187,7 @@
         class="vehicle-image"
       />
 
-      <button type="submit" [disabled]="vehicleForm.invalid || !imageVerified">
+      <button type="button" (click)="submitForm()">
         שלח
       </button>
     </form>

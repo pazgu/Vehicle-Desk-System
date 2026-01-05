@@ -124,10 +124,15 @@ export class VehicleService {
   updateVehicleStatus(
     id: string,
     new_status: string,
-    freeze_reason?: string
+    freeze_reason?: string,
+    freeze_details?: string
   ): Observable<any> {
     const url = `${this.apiUrl}/vehicles-status/${id}`;
-    const body = { new_status, freeze_reason };
+    const body: any = { new_status, freeze_reason };
+    if (freeze_details !== undefined && freeze_details !== null && freeze_details.trim() !== '') {
+      body.freeze_details = freeze_details;
+    } else {
+    }
     return this.http.patch<any>(url, body);
   }
 
