@@ -224,6 +224,7 @@ async def start_ride(db: Session, ride_id: UUID):
         vehicle_id=vehicle.id,
         new_status=VehicleStatus.in_use,
         freeze_reason=None,
+        freeze_details=None,
         db=db,
         changed_by=ride.user_id
     )

@@ -37,6 +37,8 @@ import {
 import { InsertLogComponent } from './audit-log-details/insert-log/insert-log.component';
 import { UpdateLogComponent } from './audit-log-details/update-log/update-log.component';
 import { DeleteDataDisplayComponent } from './audit-log-details/delete-log/delete-log.component';
+import { buildAuditLegendCssVars } from './audit-logs-utils/status-colors';
+
 (pdfMake as any).vfs = pdfFonts.vfs;
 (pdfMake as any).fonts = {
   Roboto: {
@@ -77,6 +79,8 @@ export class AuditLogsComponent implements OnInit {
 
   showExceededQuotaOnly: boolean = false;
   filtersCollapsed = true;
+  auditLegendCssVars = buildAuditLegendCssVars();
+
 
   cityMap: { [id: string]: string } = {};
   departments: { id: string; name: string }[] = [];

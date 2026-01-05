@@ -38,6 +38,8 @@ export class OrderCardComponent implements OnInit {
   cityMap: { [id: string]: string } = {};
   users: { id: string; user_name: string }[] = [];
   vehicles: { id: string; vehicle_model: string; plate_number: string }[] = [];
+  isUpdatingStatus = false;
+
 
   constructor(
     private route: ActivatedRoute,
@@ -131,29 +133,43 @@ export class OrderCardComponent implements OnInit {
   }
 
   updateStatus(status: string): void {
-    if (!this.trip) return;
-    this.loading = true;
+  if (!this.trip) return;
 
-    this.orderService
-      .updateOrderStatus(this.departmentId!, this.rideId, status)
-      .pipe(
-        finalize(() => {
-          this.loading = false;
-        })
-      )
-      .subscribe({
-        next: (response) => {
-          this.toastService.show(`סטטוס עודכן בהצלחה`, 'success');
-          setTimeout(() => {
-            this.loadOrder(this.departmentId!, this.rideId);
-          }, 500);
-          this.router.navigate(['/supervisor-dashboard']);
-        },
-        error: (error) => {
-          this.toastService.show('שגיאה בעדכון הסטטוס', 'error');
-        },
-      });
-  }
+  const next = status.toLowerCase().trim();
+
+  if (this.hasTripPassed() || this.isFinalStatus()) return;
+
+  if (next === 'approved' && !this.canApprove()) return;
+  if (next === 'rejected' && !this.canReject()) return;
+
+  if (this.isUpdatingStatus) return; 
+
+  this.isUpdatingStatus = true;
+  this.loading = true;
+
+  this.orderService
+    .updateOrderStatus(this.departmentId!, this.rideId, next)
+    .pipe(
+      finalize(() => {
+        this.loading = false;
+        this.isUpdatingStatus = false;
+      })
+    )
+    .subscribe({
+      next: () => {
+        this.trip = { ...this.trip, status: next };
+
+        this.toastService.show('סטטוס עודכן בהצלחה', 'success');
+
+        setTimeout(() => this.loadOrder(this.departmentId!, this.rideId), 300);
+
+      },
+      error: () => {
+        this.toastService.show('שגיאה בעדכון הסטטוס', 'error');
+      },
+    });
+}
+
 
   goBack(): void {
     this.location.back();
@@ -249,6 +265,33 @@ export class OrderCardComponent implements OnInit {
       }
     );
   }
+
+  private normalizeStatus(status: string | null | undefined): string {
+  return (status || '').toLowerCase().trim();
+}
+
+canApprove(): boolean {
+  const s = this.normalizeStatus(this.trip?.status);
+  return s === 'pending' || s === 'rejected';
+}
+
+canReject(): boolean {
+  const s = this.normalizeStatus(this.trip?.status);
+  return s === 'pending' || s === 'approved';
+}
+
+isFinalStatus(): boolean {
+  const s = this.normalizeStatus(this.trip?.status);
+  return (
+    s === 'in_progress' ||
+    s === 'completed' ||
+    s === 'cancelled' ||
+    s === 'cancelled_due_to_no_show' ||
+    s === 'cancelled_vehicle_unavailable' ||
+    s === 'reserved'
+  );
+}
+
 
   getVehicleById(
     vehicleId: string

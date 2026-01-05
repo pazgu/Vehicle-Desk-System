@@ -265,3 +265,10 @@ body {
  border-left: 4px solid #9babc0 !important; 
   border-right: 4px solid #9babc0 !important; 
 }
+
+.notif-disabled {
+  cursor: default !important;
+  opacity: 0.6;
+  pointer-events: none; 
+}
+
