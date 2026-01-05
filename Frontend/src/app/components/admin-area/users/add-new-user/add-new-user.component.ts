@@ -112,12 +112,11 @@ export class AddNewUserComponent implements OnInit {
   }
 
   getPasswordErrors(): string | null {
-    const passwordControl = this.addUserForm.get('password'); // Changed from registerForm
+    const passwordControl = this.addUserForm.get('password'); 
     if (!passwordControl) {
       return null;
     }
 
-    // Don't show errors if field is empty and untouched
     if (!passwordControl.value && !passwordControl.touched) {
       return null;
     }
@@ -154,12 +153,11 @@ export class AddNewUserComponent implements OnInit {
   }
 
   getPhoneErrors(): string | null {
-    const phoneControl = this.addUserForm.get('phone'); // Changed from registerForm
+    const phoneControl = this.addUserForm.get('phone'); 
     if (!phoneControl) {
       return null;
     }
 
-    // Don't show errors if field is empty and untouched
     if (!phoneControl.value && !phoneControl.touched) {
       return null;
     }
@@ -418,18 +416,15 @@ export class AddNewUserComponent implements OnInit {
     };
   }
 
-  // helper: current password value (safe when form is not yet created)
   getPasswordValue(): string {
     return this.addUserForm?.get('password')?.value || '';
   }
 
-  // returns true if password contains at least one ASCII uppercase letter A-Z
   passwordHasUppercase(): boolean {
     const pw = this.getPasswordValue();
     return /[A-Z]/.test(pw);
   }
 
-  // returns true if password contains at least one digit
   passwordHasDigit(): boolean {
     const pw = this.getPasswordValue();
     return /\d/.test(pw);
