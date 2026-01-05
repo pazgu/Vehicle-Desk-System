@@ -66,8 +66,9 @@ export class AddNewUserComponent implements OnInit {
         [
           Validators.required,
           Validators.minLength(3),
-          Validators.pattern(/^[A-Za-zא-ת]+$/),
+          Validators.pattern(/^[A-Za-zא-ת0-9]+$/), 
           this.noMixedLanguageValidator(),
+          this.minLettersValidator(2),
         ],
       ],
       email: ['', [Validators.required, this.emailValidator()]],
@@ -112,7 +113,7 @@ export class AddNewUserComponent implements OnInit {
   }
 
   getPasswordErrors(): string | null {
-    const passwordControl = this.addUserForm.get('password'); 
+    const passwordControl = this.addUserForm.get('password');
     if (!passwordControl) {
       return null;
     }
@@ -153,7 +154,7 @@ export class AddNewUserComponent implements OnInit {
   }
 
   getPhoneErrors(): string | null {
-    const phoneControl = this.addUserForm.get('phone'); 
+    const phoneControl = this.addUserForm.get('phone');
     if (!phoneControl) {
       return null;
     }
@@ -209,6 +210,20 @@ export class AddNewUserComponent implements OnInit {
       }
 
       return { invalidEmail: true };
+    };
+  }
+
+  minLettersValidator(minLetters: number) {
+    return (control: any) => {
+      if (!control.value) return null;
+
+      const letterCount = (control.value.match(/[A-Za-zא-ת]/g) || []).length;
+
+      if (letterCount < minLetters) {
+        return { minLetters: true };
+      }
+
+      return null;
     };
   }
 

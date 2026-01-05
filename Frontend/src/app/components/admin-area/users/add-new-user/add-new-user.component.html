@@ -5,10 +5,16 @@
 
   <div class="form-container">
     <form [formGroup]="addUserForm" (ngSubmit)="submit()">
+      <input type="text" name="prevent_autofill" style="display: none" />
+      <input type="password" name="password_fake" style="display: none" />
       <div class="form-section">
         <div class="form-group">
           <label>שם פרטי</label>
-          <input type="text" formControlName="first_name" />
+          <input
+            type="text"
+            formControlName="first_name"
+            (keypress)="preventSpaces($event)"
+          />
           <div class="validation-wrapper">
             <small
               *ngIf="
@@ -55,7 +61,11 @@
 
         <div class="form-group">
           <label>שם משפחה</label>
-          <input type="text" formControlName="last_name" />
+          <input
+            type="text"
+            formControlName="last_name"
+            (keypress)="preventSpaces($event)"
+          />
           <div class="validation-wrapper">
             <small
               *ngIf="
@@ -102,7 +112,11 @@
 
         <div class="form-group">
           <label>שם משתמש</label>
-          <input type="text" formControlName="username" />
+          <input
+            type="text"
+            formControlName="username"
+            (keypress)="preventSpaces($event)"
+          />
           <div class="validation-wrapper">
             <small
               *ngIf="
@@ -144,6 +158,16 @@
             >
               לא ניתן לערבב עברית ואנגלית
             </small>
+            <small
+              *ngIf="
+                (addUserForm.get('username')?.touched ||
+                  addUserForm.get('username')?.dirty) &&
+                addUserForm.get('username')?.hasError('minLetters')
+              "
+              class="error"
+            >
+              חייב להכיל לפחות 2 אותיות
+            </small>
           </div>
         </div>
       </div>
@@ -151,7 +175,11 @@
       <div class="form-section">
         <div class="form-group">
           <label>אימייל</label>
-          <input type="email" formControlName="email" />
+          <input
+            type="email"
+            formControlName="email"
+            (keypress)="preventSpaces($event)"
+          />
           <div class="validation-wrapper">
             <small
               *ngIf="
@@ -176,17 +204,18 @@
           </div>
         </div>
 
-          <div class="form-group">
-            <label>טלפון</label>
-            <input
-              type="tel"
-              formControlName="phone"
-              (keypress)="preventSpaces($event)"
-            />
-            <small *ngIf="getPhoneErrors()" class="error">
-              {{ getPhoneErrors() }}
-            </small>
-          </div>
+        <div class="form-group">
+          <label>טלפון</label>
+          <input
+            type="tel"
+            formControlName="phone"
+            (keypress)="preventSpaces($event)"
+            autocomplete="none"
+          />
+          <small *ngIf="getPhoneErrors()" class="error">
+            {{ getPhoneErrors() }}
+          </small>
+        </div>
       </div>
 
       <div class="form-section">
@@ -242,6 +271,7 @@
               [type]="showPassword ? 'text' : 'password'"
               formControlName="password"
               class="password-input"
+              autocomplete="new-password"
               (keypress)="preventSpaces($event)"
             />
             <mat-icon class="show-password" (click)="togglePassword()">
