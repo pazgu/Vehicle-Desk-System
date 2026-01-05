@@ -177,91 +177,67 @@ export async function exportToCSV(filteredLogs: any[]) {
   saveAs(blob, `audit_logs_colored_${timestamp}.csv`);
 }
 
+
+const STATUS_LEGEND: Record<string, string> = {
+  approved: 'Approved / Completed',
+  success: 'Success Operation',
+  frozen: 'Frozen',
+  active: 'Active (In Progress / In Use)',
+  pending: 'Pending',
+  rejected: 'Rejected',
+  emergency: 'Emergency Event',
+  deleted: 'Deleted',
+  cancelled_no_show: 'Cancelled - No Show',
+  monthly_limit: 'Monthly Limit Exceeded',
+
+  cancelled_vehicle_unavailable: 'Ride Cancelled - Vehicle Unavailable',
+};
+
+function getStatusMeaning(log: any) {
+  const status = getEnglishStatusLabel(log); 
+  return STATUS_LEGEND[status] || status || 'Unknown';
+}
+
 export async function exportToExcel(filteredLogs: any[]) {
   const timestamp = new Date().toLocaleString('en-GB').replace(/[/:]/g, '-');
 
   const legendRows = [
-    ['Color', 'Meaning'],
-    [' ', 'Approved / Completed'],
-    [' ', 'Success Operation'],
-    [' ', 'Frozen'],
-    [' ', 'Active (In Progress / In Use)'],
-    [' ', 'Pending'],
-    [' ', 'Rejected'],
-    [' ', 'Emergency Event'],
-    [' ', 'Deleted'],
-    [' ', 'Cancelled - No Show'],
-    [' ', 'Monthly Limit Exceeded'],
+    ['# Legend (Status Meaning)'],
+    ['Status Code', 'Meaning'],
+    ...Object.entries(STATUS_LEGEND).map(([code, meaning]) => [code, meaning]),
+    [''], 
   ];
 
-  const legendColors = [
-    '',
-    '#60cd79',
-    '#dcf1e1',
-    '#e2f0f8',
-    '#ffe5b4',
-    '#fbf3da',
-    '#dc5b5b',
-    '#feaf66',
-    '#f8e2e2',
-    '#e0d6e8',
-    '#cdb69b',
+  const headers = [
+    'Action',
+    'Action Meaning', 
+    'Full Name',
+    'Entity Type',
+    'Status',
+    'Date Created',
   ];
 
-  const data = [
-    ['Action', 'Full Name', 'Entity Type', 'Status', 'Date Created'],
-    ...filteredLogs.map((log) => [
-      log.action,
-      log.full_name || '—',
-      log.entity_type || '—',
-      getEnglishStatusLabel(log),
-      new Date(log.created_at).toLocaleString('en-GB'),
-    ]),
-  ];
+  const dataRows = filteredLogs.map((log) => [
+    log.action,
+    getStatusMeaning(log), 
+    log.full_name || '—',
+    log.entity_type || '—',
+    getEnglishStatusLabel(log),
+    new Date(log.created_at).toLocaleString('en-GB'),
+  ]);
 
-  const bgColors = filteredLogs.map((log) => {
-    const color = getRowBackgroundColor(log);
-    return [color, color, color, color, color];
-  });
+  const fullSheet: any[][] = [...legendRows, headers, ...dataRows];
 
-  const fullSheet: any[][] = [...legendRows, [''], ...data];
+  const ws = XLSX.utils.aoa_to_sheet(fullSheet);
 
-  const wsData: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet(fullSheet);
-
-  const legendLength = legendRows.length;
-  fullSheet.forEach((row, rowIndex) => {
-    row.forEach((cell, colIndex) => {
-      const cellRef = XLSX.utils.encode_cell({ r: rowIndex, c: colIndex });
-
-      if (!wsData[cellRef]) return;
-
-      if (rowIndex === legendLength) {
-        wsData[cellRef].s = {
-          font: { bold: true },
-          fill: { fgColor: { rgb: 'E0E0E0' } },
-        };
-        return;
-      }
-
-      if (rowIndex > 0 && rowIndex < legendLength && colIndex === 0) {
-        wsData[cellRef].s = {
-          fill: { fgColor: { rgb: legendColors[rowIndex].replace('#', '') } },
-        };
-        return;
-      }
-
-      if (rowIndex > legendLength) {
-        const colorIndex = rowIndex - legendLength - 1;
-        const bgColor = bgColors[colorIndex]?.[colIndex] || '#FFFFFF';
-        wsData[cellRef].s = {
-          fill: { fgColor: { rgb: bgColor.replace('#', '') } },
-        };
-      }
-    });
+  const headerRowIndex = legendRows.length;
+  headers.forEach((_, colIndex) => {
+    const cellRef = XLSX.utils.encode_cell({ r: headerRowIndex, c: colIndex });
+    if (ws[cellRef]) ws[cellRef].s = { font: { bold: true } };
   });
 
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, wsData, 'Audit Logs');
+  XLSX.utils.book_append_sheet(wb, ws, 'Audit Logs');
   const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
   saveAs(
     new Blob([wbout], { type: 'application/octet-stream' }),
