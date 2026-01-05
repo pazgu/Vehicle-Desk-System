@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MyRidesService } from '../../../services/myrides.service';
 import { UserService } from '../../../services/user_service';
-import * as XLSX from 'xlsx';
+import * as XLSX from 'xlsx-js-style';
 
 interface UserOrder {
   username: string;
@@ -142,23 +142,77 @@ export class UserOrdersExportComponent implements OnInit {
   }
 
   exportToExcel() {
-    if (!this.userOrders || this.userOrders.length === 0) return;
+  if (!this.userOrders || this.userOrders.length === 0) return;
 
-    this.isExporting = true;
+  this.isExporting = true;
 
-    try {
-      const worksheet = XLSX.utils.json_to_sheet(this.userOrders);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'User Orders');
+  try {
+    const exportRows = this.userOrders.map((u) => ({
+      'שם משתמש': u.username,
+      'אימייל': u.email,
+      'כמות הזמנות שבוצעו': u.completedOrders,
+    }));
 
-      const fileName = `הזמנות משתמשים-${this.selectedYear}-${
-        this.viewMode === 'monthly' ? this.selectedMonth : 'Full'
-      }.xlsx`;
-      XLSX.writeFile(workbook, fileName);
-    } catch (error) {
-      console.error('Error exporting to Excel:', error);
-    } finally {
-      this.isExporting = false;
+    const worksheet = XLSX.utils.json_to_sheet(exportRows);
+
+    const keys = Object.keys(exportRows[0] ?? {});
+    (worksheet as any)['!cols'] = keys.map((key) => {
+      const headerLen = String(key).length;
+
+      const maxCellLen = exportRows.reduce((max, row) => {
+        const val = (row as any)[key];
+        const str = val === null || val === undefined ? '' : String(val);
+        return Math.max(max, str.length);
+      }, 0);
+
+      const wch = Math.min(Math.max(headerLen, maxCellLen) + 3, 90);
+      return { wch };
+    });
+
+    const ref = worksheet['!ref'];
+    if (ref) {
+      const range = XLSX.utils.decode_range(ref);
+
+      for (let r = range.s.r; r <= range.e.r; r++) {
+        for (let c = range.s.c; c <= range.e.c; c++) {
+          const addr = XLSX.utils.encode_cell({ r, c });
+          const cell = worksheet[addr];
+          if (!cell) continue;
+
+          cell.s = cell.s || {};
+          cell.s.alignment = {
+            horizontal: 'center',
+            vertical: 'center',
+            wrapText: true,
+          };
+
+          if (r === 0) {
+            cell.s.font = { bold: true };
+          }
+        }
+      }
+
+      (worksheet as any)['!rows'] = Array.from(
+        { length: range.e.r + 1 },
+        (_, i) => ({ hpt: i === 0 ? 26 : 22 })
+      );
     }
+
+    (worksheet as any)['!freeze'] = { xSplit: 0, ySplit: 1 };
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'הזמנות משתמשים');
+
+    const fileName = `הזמנות משתמשים-${this.selectedYear}-${
+      this.viewMode === 'monthly' ? this.selectedMonth : 'Full'
+    }.xlsx`;
+
+    XLSX.writeFile(workbook, fileName);
+  } catch (error) {
+    console.error('Error exporting to Excel:', error);
+  } finally {
+    this.isExporting = false;
   }
+}
+
 }
