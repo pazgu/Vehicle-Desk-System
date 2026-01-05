@@ -49,6 +49,7 @@ export class AddNewUserComponent implements OnInit {
           Validators.required,
           Validators.pattern(/^[A-Za-zא-ת]+$/),
           Validators.minLength(2),
+          this.noMixedLanguageValidator(),
         ],
       ],
       last_name: [
@@ -57,6 +58,7 @@ export class AddNewUserComponent implements OnInit {
           Validators.required,
           Validators.pattern(/^[A-Za-zא-ת]+$/),
           Validators.minLength(2),
+          this.noMixedLanguageValidator(),
         ],
       ],
       username: [
@@ -65,6 +67,7 @@ export class AddNewUserComponent implements OnInit {
           Validators.required,
           Validators.minLength(3),
           Validators.pattern(/^[A-Za-zא-ת]+$/),
+          this.noMixedLanguageValidator(),
         ],
       ],
       email: [
@@ -100,6 +103,21 @@ export class AddNewUserComponent implements OnInit {
       this.updateDepartmentValidation(role);
       this.fetchDepartments(role);
     });
+  }
+
+  noMixedLanguageValidator() {
+    return (control: any) => {
+      if (!control.value) return null;
+
+      const hasHebrew = /[א-ת]/.test(control.value);
+      const hasEnglish = /[A-Za-z]/.test(control.value);
+
+      if (hasHebrew && hasEnglish) {
+        return { mixedLanguage: true };
+      }
+
+      return null;
+    };
   }
 
   updateDepartmentValidation(role: string): void {

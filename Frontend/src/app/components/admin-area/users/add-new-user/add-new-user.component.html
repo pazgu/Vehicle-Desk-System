@@ -40,6 +40,16 @@
             >
               רק אותיות בעברית או באנגלית (ללא רווחים)
             </small>
+            <small
+              *ngIf="
+                (addUserForm.get('first_name')?.touched ||
+                  addUserForm.get('first_name')?.dirty) &&
+                addUserForm.get('first_name')?.hasError('mixedLanguage')
+              "
+              class="error"
+            >
+              לא ניתן לערבב עברית ואנגלית
+            </small>
           </div>
         </div>
 
@@ -77,6 +87,16 @@
             >
               רק אותיות בעברית או באנגלית (ללא רווחים)
             </small>
+            <small
+              *ngIf="
+                (addUserForm.get('last_name')?.touched ||
+                  addUserForm.get('last_name')?.dirty) &&
+                addUserForm.get('last_name')?.hasError('mixedLanguage')
+              "
+              class="error"
+            >
+              לא ניתן לערבב עברית ואנגלית
+            </small>
           </div>
         </div>
 
@@ -113,6 +133,16 @@
               class="error"
             >
               רק אותיות בעברית או באנגלית (ללא רווחים)
+            </small>
+            <small
+              *ngIf="
+                (addUserForm.get('username')?.touched ||
+                  addUserForm.get('username')?.dirty) &&
+                addUserForm.get('username')?.hasError('mixedLanguage')
+              "
+              class="error"
+            >
+              לא ניתן לערבב עברית ואנגלית
             </small>
           </div>
         </div>
