@@ -273,7 +273,6 @@ input:checked + .slider::after {
 
 .custom-file-upload {
   position: relative;
-  margin-top: 0.5rem;
 }
 
 .custom-file-upload input[type="file"] {
