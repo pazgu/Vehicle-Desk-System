@@ -447,14 +447,6 @@ body {
   color: #6b7280;
 }
 
-.no-data-message {
-  font-family: "Alef", sans-serif;
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #4a5568;
-  text-align: center;
-  margin: 20px;
-}
 
 .export-warning {
   color: #b71c1c;

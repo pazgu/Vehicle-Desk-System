@@ -72,6 +72,13 @@ export class AuthService {
     localStorage.removeItem('department_id');
     localStorage.removeItem('user_id');
     localStorage.removeItem('user_orders');
+    Object.keys(localStorage).forEach(key => {
+    if (key.startsWith("feedback_submitted_")) {
+      localStorage.removeItem(key);
+    }
+  });
+  localStorage.removeItem('last_submitted_ride');
+
 
     this.fullNameSubject.next('משתמש');
     this.roleSubject.next('');

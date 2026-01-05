@@ -63,6 +63,7 @@ class RideTimelineSchema(BaseModel):
 class VehicleStatusUpdate(BaseModel):
     new_status: VehicleStatus
     freeze_reason: Optional[FreezeReason] = None
+    freeze_details: Optional[str] = None
 
 class FreezeVehicleRequest(BaseModel):
     vehicle_id: UUID

@@ -165,7 +165,8 @@ async def edit_user_by_id_route(
     license_expiry_date: Optional[str] = Form(None),
     is_blocked: Optional[bool] = Form(False),
     block_expires_at: Optional[str] = Form(None),
-    block_reason: Optional[str] = Form(None)
+    block_reason: Optional[str] = Form(None),
+    isRaan: Optional[str] = Form(None)
 ):
     user_id_from_token = payload.get("user_id") or payload.get("sub")
     user_role_from_token = payload.get("role")
@@ -187,6 +188,7 @@ async def edit_user_by_id_route(
         department_id = str(vip_dep.id)  
 
     has_gov_license = has_government_license.lower() == "true"
+    is_raan_bool = isRaan.lower() == 'true' if isRaan else False
 
     if not has_gov_license and user.has_government_license:
         user.license_file_url = None
@@ -250,6 +252,7 @@ async def edit_user_by_id_route(
                 detail=f"Invalid role provided: {role}. Must be one of: {', '.join([r.value for r in UserRole])}"
             )
         user.role = new_role
+        user.isRaan = is_raan_bool
 
         if new_role == UserRole.admin or new_role == UserRole.inspector:
             user.department_id = None
@@ -349,10 +352,12 @@ def get_no_show_events_count_per_user(db: Session = Depends(get_db)):
 
 
 @router.get("/no-show-events/recent")
-def get_recent_no_show_events_per_user(
-    per_user_limit: int = Query(1, ge=1, le=3),
+def get_recent_no_show_events_for_single_user(
+    user_id: str = Query(...),
+    per_user_limit: int = Query(3, ge=1, le=5),
     db: Session = Depends(get_db)
 ):
+
     row_number = func.row_number().over(
         partition_by=NoShowEvent.user_id,
         order_by=NoShowEvent.occurred_at.desc()
@@ -365,7 +370,9 @@ def get_recent_no_show_events_per_user(
             NoShowEvent.ride_id,
             NoShowEvent.occurred_at,
             row_number
-        ).subquery()
+        )
+        .filter(NoShowEvent.user_id == user_id) 
+        .subquery()
     )
 
     results = (

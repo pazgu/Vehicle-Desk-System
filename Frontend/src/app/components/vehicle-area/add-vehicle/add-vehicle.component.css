@@ -88,6 +88,16 @@
   margin-bottom: 12px;
 }
 
+.info-message {
+  color: #1976d2;
+  font-size: 0.875rem;
+  margin-top: 6px;
+  margin-bottom: 6px;
+  font-style: italic;
+  position: relative;
+  z-index: 500;
+}
+
 form {
   direction: rtl;
 }
@@ -132,7 +142,99 @@ select:hover {
   border-color: #b71c1c;
 }
 
-button[type="submit"] {
+/* Custom Dropdown Styles */
+.custom-dropdown-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.dropdown-list {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  background: white;
+  border: 2px solid #942222;
+  border-radius: 8px;
+  margin-top: 4px;
+  max-height: 300px;
+  overflow-y: auto;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  animation: dropdownSlide 0.2s ease-out;
+}
+
+.dropdown-list.empty {
+  max-height: 60px;
+}
+
+@keyframes dropdownSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-item {
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 1rem;
+  color: #333;
+  text-align: right;
+}
+
+.dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.dropdown-item:hover {
+  background: linear-gradient(90deg, rgba(148, 34, 34, 0.08), rgba(148, 34, 34, 0.12));
+  color: #942222;
+  font-weight: 500;
+  transform: translateX(-4px);
+}
+
+.dropdown-item.no-results {
+  color: #999;
+  cursor: default;
+  text-align: center;
+  font-style: italic;
+}
+
+.dropdown-item.no-results:hover {
+  background: transparent;
+  transform: none;
+  color: #999;
+  font-weight: normal;
+}
+
+/* Scrollbar Styling for Dropdown */
+.dropdown-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dropdown-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 0 8px 8px 0;
+}
+
+.dropdown-list::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.dropdown-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+button[type="submit"],
+button[type="button"] {
   margin-top: 1.5rem;
   background: linear-gradient(135deg, #b71c1c, #942222);
   color: white;
@@ -147,7 +249,8 @@ button[type="submit"] {
   overflow: hidden;
 }
 
-button[type="submit"]::before {
+button[type="submit"]::before,
+button[type="button"]::before {
   content: "";
   position: absolute;
   top: 0;
@@ -163,13 +266,15 @@ button[type="submit"]::before {
   transition: left 0.5s ease;
 }
 
-button[type="submit"]:hover {
+button[type="submit"]:hover,
+button[type="button"]:hover {
   background: linear-gradient(135deg, #942222, #d32f2f);
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(148, 34, 34, 0.3);
 }
 
-button[type="submit"]:hover::before {
+button[type="submit"]:hover::before,
+button[type="button"]:hover::before {
   left: 100%;
 }
 

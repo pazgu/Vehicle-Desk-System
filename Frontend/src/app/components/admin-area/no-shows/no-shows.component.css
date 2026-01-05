@@ -13,6 +13,15 @@
   text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
 }
 
+.no-data-message {
+  font-family: "Alef", sans-serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #4a5568;
+  text-align: center;
+  margin: 20px;
+}
+
 .sort-container select {
   padding: 0.75rem 1.2rem;
   border-radius: 12px;

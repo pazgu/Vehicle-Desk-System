@@ -110,20 +110,26 @@ toggleFilters() {
 
   onSortByMostUsedChange() {
     if (this.sortByMostUsed) {
+      this.sortByMostUsed = false;
+      this.sortByMostUsedAllTime = false;
+      this.applyFilters();
+    } else {
+      this.sortByMostUsed = true;
       this.sortByMostUsedAllTime = false;
       this.loadVehicleUsageData();
-    } else {
-      this.applyFilters();
     }
     this.updateQueryParams.emit();
   }
 
   onSortByMostUsedAllTimeChange() {
     if (this.sortByMostUsedAllTime) {
+      this.sortByMostUsedAllTime = false;
+      this.sortByMostUsed = false;
+      this.applyFilters();
+    } else {
+      this.sortByMostUsedAllTime = true;
       this.sortByMostUsed = false;
       this.loadVehicleUsageDataAllTime();
-    } else {
-      this.applyFilters();
     }
     this.updateQueryParams.emit();
   }

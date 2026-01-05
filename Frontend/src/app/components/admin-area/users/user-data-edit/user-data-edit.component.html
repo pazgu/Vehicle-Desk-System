@@ -45,10 +45,9 @@
             <label for="role">תפקיד</label>
             <select id="role" formControlName="role" class="form-control">
               <option value="" disabled>בחר תפקיד</option>
-              <option *ngFor="let role of roles" [value]="role">
-                {{ role }}
+              <option *ngFor="let role of roles" [value]="role.key">
+                {{ role.label }}
               </option>
-              <option value="supervisor">רע"ן</option>
             </select>
           </div>
 
@@ -72,14 +71,16 @@
                 >(אופציונלי)</span
               >
             </label>
-            <select
-              id="department"
+           <select
+              id="department_id"
               formControlName="department_id"
               class="form-control"
-            >
-              <option value="">בחר מחלקה</option>
-              <option *ngFor="let dept of departments" [value]="dept.id">
-                {{ dept.name }}
+              >
+                <option [ngValue]="null" [selected]="!f['department_id'].value">
+                 בחר מחלקה
+                </option>
+                 <option *ngFor="let dept of departments" [ngValue]="dept.id">
+                  {{ dept.name }}
               </option>
             </select>
             <small

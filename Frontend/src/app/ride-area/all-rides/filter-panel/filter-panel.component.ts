@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
+import { MyRidesService } from '../../../services/myrides.service';
 @Component({
   selector: 'app-ride-filter-panel',
   standalone: true,
@@ -26,10 +26,11 @@ export class FilterPanelComponent implements OnChanges {
   @Input() showFilters: boolean = false;
   @Input() minDate: string = '';
   @Input() maxDate: string = '';
-
   @Output() filteredOrdersChanged = new EventEmitter<any[]>();
+    dateError: boolean = false;
 
   private filteredOrders: any[] = [];
+  constructor(private myrideservice: MyRidesService) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (
@@ -41,12 +42,23 @@ export class FilterPanelComponent implements OnChanges {
       changes['endDate']
     ) {
       this.applyFiltersAndSort();
+      this.checkVipStatus();
     }
   }
+  isVIP: boolean = false;
 
   onRideViewModeChange(mode: 'all' | 'future' | 'past'): void {
     this.rideViewMode = mode;
     this.applyFiltersAndSort();
+  }
+    validateDatesEndStart(): void {
+    if (this.startDate && this.endDate) {
+      const start = new Date(this.startDate);
+      const end = new Date(this.endDate);
+      this.dateError = start > end;
+    } else {
+      this.dateError = false;
+    }
   }
 
   onSortChange(): void {
@@ -83,6 +95,16 @@ export class FilterPanelComponent implements OnChanges {
     min.setHours(0, 0, 0, 0);
     max.setHours(0, 0, 0, 0);
     return date >= min && date <= max;
+  }
+  checkVipStatus(): void {
+    this.myrideservice.isVip().subscribe({
+      next: (res) => {
+        this.isVIP = res.is_vip;
+      },
+      error: (err) => {
+        this.isVIP = false;
+      },
+    });
   }
 
   private translateStatusToEnglish(hebrewStatus: string): string {

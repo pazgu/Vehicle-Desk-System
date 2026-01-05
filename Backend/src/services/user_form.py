@@ -252,7 +252,7 @@ async def process_completion_form(db: Session, user: User, form_data: Completion
         cancelled_result = None
 
         if vehicle_becomes_frozen:
-            cancelled_result =  cancel_future_rides_for_vehicle(vehicle.id, db,user.employee_id)
+            cancelled_result =  cancel_future_rides_for_vehicle(vehicle.id, db,user.employee_id,ride.id)
         if cancelled_result is None:
             cancelled_result = {"cancelled": [], "users": []}
 

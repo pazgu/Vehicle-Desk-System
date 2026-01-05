@@ -103,27 +103,31 @@ export function getEnglishStatusLabel(log: any): string {
   ) {
     return 'Frozen';
   }
+if (log.entity_type === 'Ride') {
+  const status = log.change_data?.new?.status || log.change_data?.status;
+  switch (status?.toLowerCase()) {
+    case 'pending':
+      return 'Pending';
+    case 'approved':
+      return 'Approved';
+    case 'completed':
+      return 'Completed';
+    case 'rejected':
+      return 'Rejected';
+    case 'in_progress':
+      return 'In Progress';
+    case 'cancelled_due_to_no_show':
+    case 'cancelled-due-to-no-show':
+      return 'Cancelled - No Show';
 
-  if (log.entity_type === 'Ride') {
-    const status = log.change_data?.new?.status || log.change_data?.status;
-    switch (status?.toLowerCase()) {
-      case 'pending':
-        return 'Pending';
-      case 'approved':
-        return 'Approved';
-      case 'completed':
-        return 'Completed';
-      case 'rejected':
-        return 'Rejected';
-      case 'in_progress':
-        return 'In Progress';
-      case 'cancelled_due_to_no_show':
-      case 'cancelled-due-to-no-show':
-        return 'Cancelled - No Show';
-      default:
-        return status || 'Unknown';
-    }
+    case 'cancelled_vehicle_unavailable':
+      return 'Cancelled - Vehicle Unavailable';
+
+    default:
+      return status || 'Unknown';
   }
+}
+
 
   if (log.entity_type === 'Vehicle') {
     const status = log.change_data?.new?.status || log.change_data?.status;

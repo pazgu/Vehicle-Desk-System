@@ -6,8 +6,15 @@
   height: 200px !important;
   margin: 0 auto;
   padding: 0;
+}  
+.no-data-message {
+  font-family: "Alef", sans-serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #4a5568;
+  text-align: center;
+  margin: 20px;
 }
-
 .p-chart canvas {
   max-width: 100% !important;
   max-height: 200px !important;

@@ -43,12 +43,17 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 def get_vehicle_km_driven_on_date(db: Session, vehicle_id: int, day: date) -> float:
+    start = datetime.combine(day, datetime.min.time())
+    end = datetime.combine(day, datetime.max.time())
+
     rides = db.query(Ride).filter(
         Ride.vehicle_id == vehicle_id,
-        cast(Ride.start_datetime, Date) == day
+        Ride.start_datetime >= start,
+        Ride.start_datetime <= end
     ).all()
-
+    print("rides:",rides)
     return sum(r.actual_distance_km or 0 for r in rides)
+
 
 
 def get_vehicles_with_optional_status(
@@ -325,7 +330,15 @@ def get_most_used_vehicles_all_time(db: Session) -> Dict[str, int]:
     return {str(stat.vehicle_id): stat.total_rides for stat in stats}
 
 
-def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_reason: str, db: Session, changed_by: UUID, notes: Optional[str] = None):
+def update_vehicle_status(
+    vehicle_id: UUID, 
+    new_status: VehicleStatus, 
+    freeze_reason: str, 
+    freeze_details: Optional[str],  
+    db: Session, 
+    changed_by: UUID, 
+    notes: Optional[str] = None
+):
     FREEZE_REASON_TRANSLATIONS = {
     "accident": "תאונה",
     "maintenance": "תחזוקה",
@@ -341,15 +354,19 @@ def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_re
         old_status = vehicle.status
         if new_status == VehicleStatus.frozen:
             if not freeze_reason:
-                raise HTTPException(status_code=400, detail="freeze_reason is required when setting status to 'frozen'")
+                raise HTTPException(
+                    status_code=400, 
+                    detail="freeze_reason is required when setting status to 'frozen'"
+                )
             vehicle.freeze_reason = freeze_reason
+            vehicle.freeze_details = freeze_details
         elif vehicle.status == VehicleStatus.frozen and new_status != VehicleStatus.frozen:
             vehicle.freeze_reason = None
+            vehicle.freeze_details = None
 
         vehicle.status = new_status
         db.commit()
         db.refresh(vehicle)
-
         # Try to find a supervisor from the same department (if any)
         # --- Email Recipient Determination Logic ---
         # recipient_emails_set: set[str] = set() # Use a set to handle duplicates automatically
@@ -438,10 +455,19 @@ def update_vehicle_status(vehicle_id: UUID, new_status: VehicleStatus, freeze_re
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"An internal server error occurred: {str(e)}")
+        raise HTTPException(
+            status_code=500, 
+            detail=f"An internal server error occurred: {str(e)}"
+        )
     
     db.execute(text("SET session.audit.user_id = DEFAULT"))
-    return {"vehicle_id": vehicle.id, "new_status": vehicle.status, "freeze_reason": vehicle.freeze_reason}
+    result = {
+        "vehicle_id": vehicle.id, 
+        "new_status": vehicle.status, 
+        "freeze_reason": vehicle.freeze_reason,
+        "freeze_details": vehicle.freeze_details
+    }
+    return result
 
 def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID, user_department_id: Optional[UUID] = None) -> List[VehicleOut]:
     ride = db.query(Ride).filter(Ride.id == ride_id).first()
@@ -523,6 +549,7 @@ def get_vehicle_by_id(vehicle_id: str, db: Session):
         "fuel_type": vehicle.fuel_type,
         "status": vehicle.status,
         "freeze_reason": vehicle.freeze_reason,
+        "freeze_details": vehicle.freeze_details,
         "last_used_at": vehicle.last_used_at,
         "mileage": vehicle.mileage,
         "vehicle_model": vehicle.vehicle_model,

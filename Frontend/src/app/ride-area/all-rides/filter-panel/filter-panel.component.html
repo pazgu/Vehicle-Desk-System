@@ -46,7 +46,7 @@
       <span class="status-indicator approved"></span>
       <span>אושר</span>
     </div>
-    <div class="status-item">
+    <div *ngIf="!isVIP" class="status-item">
       <span class="status-indicator pending"></span>
       <span>ממתין לאישור</span>
     </div>
@@ -54,7 +54,7 @@
       <span class="status-indicator in_progress"></span>
       <span>בנסיעה</span>
     </div>
-    <div class="status-item">
+    <div *ngIf="!isVIP"  class="status-item">
       <span class="status-indicator rejected"></span>
       <span>נדחה</span>
     </div>
@@ -103,7 +103,7 @@
         [(ngModel)]="startDate"
         [min]="minDate"
         [max]="maxDate"
-        (change)="validateDate('start'); onDateChange()"
+        (change)="validateDate('start'); onDateChange(); validateDatesEndStart()"
       />
     </div>
 
@@ -116,8 +116,12 @@
         [(ngModel)]="endDate"
         [min]="minDate"
         [max]="maxDate"
-        (change)="validateDate('end'); onDateChange()"
+        (change)="validateDate('end'); onDateChange(); validateDatesEndStart()"
       />
     </div>
+      <div *ngIf="dateError" style="color: red; margin-top: 5px">
+          תאריך ההתחלה לא יכול להיות אחרי תאריך הסיום
+        </div>
+
   </div>
 </div>
