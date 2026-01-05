@@ -13,6 +13,11 @@ import { ToastService } from '../../../services/toast.service';
 export class ProtectedRouteGuard implements CanActivate {
   constructor(private router: Router, private toastService: ToastService) {}
 
+  private redirectByRole(role: string) {
+    this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
+    this.router.navigate(['/not-found']);
+  }
+
   canActivate(
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
@@ -28,14 +33,7 @@ export class ProtectedRouteGuard implements CanActivate {
     }
 
     if (url.includes('order-card') && role !== 'supervisor') {
-      this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
-      if (role === 'employee') {
-        this.router.navigate(['/home']);
-      } else if (role === 'admin') {
-        this.router.navigate(['/admin/critical-issues']);
-      } else if (role === 'inspector') {
-        this.router.navigate(['/inspector/inspection']);
-      }
+      if (role) this.redirectByRole(role);
       return false;
     }
 
@@ -56,14 +54,7 @@ export class ProtectedRouteGuard implements CanActivate {
       adminOnlyRoutes.some((route) => url.includes(route)) &&
       role !== 'admin'
     ) {
-      this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
-      if (role === 'employee') {
-        this.router.navigate(['/home']);
-      } else if (role === 'supervisor') {
-        this.router.navigate(['/supervisor-dashboard']);
-      } else if (role === 'inspector') {
-        this.router.navigate(['/inspector/inspection']);
-      }
+      if (role) this.redirectByRole(role);
       return false;
     }
 
@@ -72,15 +63,7 @@ export class ProtectedRouteGuard implements CanActivate {
       role != 'employee' &&
       role != 'supervisor'
     ) {
-      this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
-      if (role == 'admin') {
-        this.router.navigate(['/admin/critical-issues']);
-        return false;
-      }
-      if (role == 'inspector') {
-        this.router.navigate(['/inspector/inspection']);
-        return false;
-      }
+      if (role) this.redirectByRole(role);
       return false;
     }
 
@@ -89,15 +72,7 @@ export class ProtectedRouteGuard implements CanActivate {
       role != 'employee' &&
       role != 'supervisor'
     ) {
-      this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
-      if (role == 'admin') {
-        this.router.navigate(['/admin/critical-issues']);
-        return false;
-      }
-      if (role == 'inspector') {
-        this.router.navigate(['/inspector/inspection']);
-        return false;
-      }
+      if (role) this.redirectByRole(role);
       return false;
     }
 
@@ -106,12 +81,7 @@ export class ProtectedRouteGuard implements CanActivate {
       role !== 'employee' &&
       role !== 'supervisor'
     ) {
-      this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
-      if (role === 'admin') {
-        this.router.navigate(['/admin/critical-issues']);
-      } else if (role === 'inspector') {
-        this.router.navigate(['/inspector/inspection']);
-      }
+      if (role) this.redirectByRole(role);
       return false;
     }
 
@@ -120,33 +90,13 @@ export class ProtectedRouteGuard implements CanActivate {
     }
 
     if (url.includes('supervisor-dashboard') && role != 'supervisor') {
-      this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
-      if (role == 'admin') {
-        this.router.navigate(['/admin/critical-issues']);
-        return false;
-      }
-      if (role == 'inspector') {
-        this.router.navigate(['/inspector/inspection']);
-        return false;
-      }
-      if (role == 'employee') {
-        this.router.navigate(['/home']);
-        return false;
-      }
+      if (role) this.redirectByRole(role);
       return false;
     }
 
     if (url.startsWith('/ride/edit')) {
       if (role != 'employee' && role != 'supervisor') {
-        this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
-        if (role == 'admin') {
-          this.router.navigate(['/admin/critical-issues']);
-          return false;
-        }
-        if (role == 'inspector') {
-          this.router.navigate(['/inspector/inspection']);
-          return false;
-        }
+        if (role) this.redirectByRole(role);
       }
       return true;
     }
@@ -160,14 +110,7 @@ export class ProtectedRouteGuard implements CanActivate {
       inspectorOnlyRoutes.some((r) => url.startsWith(r)) &&
       role !== 'inspector'
     ) {
-      this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
-      if (role === 'employee') {
-        this.router.navigate(['/home']);
-      } else if (role === 'supervisor') {
-        this.router.navigate(['/supervisor-dashboard']);
-      } else if (role === 'admin') {
-        this.router.navigate(['/admin/critical-issues']);
-      }
+      if (role) this.redirectByRole(role);
       return false;
     }
 
