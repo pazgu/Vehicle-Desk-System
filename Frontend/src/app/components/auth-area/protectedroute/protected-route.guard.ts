@@ -27,63 +27,42 @@ export class ProtectedRouteGuard implements CanActivate {
       return false;
     }
 
-    if (url.includes('order-card') && role != 'supervisor') {
-      this.router.navigate(['/home']);
-      return false;
-    }
-    if (url.includes('user-card') && role != 'admin') {
-      this.toastService.show('העמוד מיועד למנהלים בלבד', 'error');
-
-      this.router.navigate(['/home']);
-      if (role == 'employee') {
+    if (url.includes('order-card') && role !== 'supervisor') {
+      this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
+      if (role === 'employee') {
         this.router.navigate(['/home']);
-        return false;
-      }
-      if (role == 'supervisor') {
-        this.router.navigate(['/supervisor-dashboard']);
-        return false;
-      }
-      if (role == 'inspector') {
+      } else if (role === 'admin') {
+        this.router.navigate(['/admin/critical-issues']);
+      } else if (role === 'inspector') {
         this.router.navigate(['/inspector/inspection']);
-        return false;
       }
       return false;
     }
 
-    if (url.includes('vehicle-details') && role != 'admin') {
-      this.toastService.show('העמוד מיועד למנהלים בלבד', 'error');
+    const adminOnlyRoutes = [
+      'user-card',
+      'vehicle-details',
+      'archived-vehicles',
+      '/vehicle-dashboard',
+      '/audit-logs',
+      '/admin/critical-issues',
+      '/user-data',
+      '/department-data',
+      '/admin/add-new-user',
+      '/admin/analytics',
+    ];
 
-      this.router.navigate(['/home']);
-      if (role == 'employee') {
+    if (
+      adminOnlyRoutes.some((route) => url.includes(route)) &&
+      role !== 'admin'
+    ) {
+      this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
+      if (role === 'employee') {
         this.router.navigate(['/home']);
-        return false;
-      }
-      if (role == 'supervisor') {
+      } else if (role === 'supervisor') {
         this.router.navigate(['/supervisor-dashboard']);
-        return false;
-      }
-      if (role == 'inspector') {
+      } else if (role === 'inspector') {
         this.router.navigate(['/inspector/inspection']);
-        return false;
-      }
-      return false;
-    }
-
-    if (url.includes('archived-vehicles') && role != 'admin') {
-      this.toastService.show('העמוד מיועד למנהלים בלבד', 'error');
-
-      this.router.navigate(['/home']);
-      if (role == 'employee') {
-        this.router.navigate(['/home']);
-        return false;
-      }
-      if (role == 'supervisor') {
-        this.router.navigate(['/supervisor-dashboard']);
-        return false;
-      }
-      if (role == 'inspector') {
-        this.router.navigate(['/inspector/inspection']);
-        return false;
       }
       return false;
     }
@@ -93,6 +72,7 @@ export class ProtectedRouteGuard implements CanActivate {
       role != 'employee' &&
       role != 'supervisor'
     ) {
+      this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
       if (role == 'admin') {
         this.router.navigate(['/admin/critical-issues']);
         return false;
@@ -101,49 +81,38 @@ export class ProtectedRouteGuard implements CanActivate {
         this.router.navigate(['/inspector/inspection']);
         return false;
       }
-
-      return false;
-    }
-
-    if (url.includes('ride-completion-form') && role != 'employee'&& role != 'supervisor') {
-      if (role == 'admin') {
-        this.router.navigate(['/admin/critical-issues']);
-        return false;
-      }
-      if (role == 'inspector') {
-        this.router.navigate(['/inspector/inspection']);
-        return false;
-      }
-
       return false;
     }
 
     if (
-      (url.includes('/vehicle-dashboard') ||
-        url.includes('/audit-logs') ||
-        url.includes('/critical-issues') ||
-        url.includes('/user-data') ||
-        url.includes('/department-data') ||
-        url.includes('/add-new-user') ||
-        url.includes('admin/analytics')) &&
-      role !== 'admin'
+      url.includes('ride-completion-form') &&
+      role != 'employee' &&
+      role != 'supervisor'
     ) {
-      this.router.navigate(['/home']);
-      return false;
-    }
-
-    if (url.includes('/home') || url.includes('/all-rides')) {
-      if (role === 'admin') {
-        this.toastService.show('עמוד זה אינו רלוונטי לאדמין', 'error');
+      this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
+      if (role == 'admin') {
         this.router.navigate(['/admin/critical-issues']);
         return false;
       }
       if (role == 'inspector') {
-        this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
         this.router.navigate(['/inspector/inspection']);
         return false;
       }
-      return true;
+      return false;
+    }
+
+    if (
+      (url.includes('/home') || url.includes('/all-rides')) &&
+      role !== 'employee' &&
+      role !== 'supervisor'
+    ) {
+      this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
+      if (role === 'admin') {
+        this.router.navigate(['/admin/critical-issues']);
+      } else if (role === 'inspector') {
+        this.router.navigate(['/inspector/inspection']);
+      }
+      return false;
     }
 
     if (url.includes('/notifications')) {
@@ -152,8 +121,8 @@ export class ProtectedRouteGuard implements CanActivate {
 
     if (url.includes('supervisor-dashboard') && role != 'supervisor') {
       this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
-      if (role == 'supervisor') {
-        this.router.navigate(['/supervisor-dashboard']);
+      if (role == 'admin') {
+        this.router.navigate(['/admin/critical-issues']);
         return false;
       }
       if (role == 'inspector') {
@@ -165,22 +134,6 @@ export class ProtectedRouteGuard implements CanActivate {
         return false;
       }
       return false;
-    }
-
-    if (url.includes('/inspector/inspection') && role != 'inspector') {
-      this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
-      if (role == 'employee') {
-        this.router.navigate(['/home']);
-        return false;
-      }
-      if (role == 'supervisor') {
-        this.router.navigate(['/supervisor-dashboard']);
-        return false;
-      }
-      if (role == 'admin') {
-        this.router.navigate(['/admin/critical-issues']);
-        return false;
-      }
     }
 
     if (url.startsWith('/ride/edit')) {
@@ -198,11 +151,23 @@ export class ProtectedRouteGuard implements CanActivate {
       return true;
     }
 
+    const inspectorOnlyRoutes = [
+      '/inspector/inspection',
+      '/inspector/vehicles',
+    ];
+
     if (
-      role != 'inspector' &&
-      (url.startsWith('/inspector/inspection') ||
-        url.startsWith('/inspector/vehicles'))
+      inspectorOnlyRoutes.some((r) => url.startsWith(r)) &&
+      role !== 'inspector'
     ) {
+      this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
+      if (role === 'employee') {
+        this.router.navigate(['/home']);
+      } else if (role === 'supervisor') {
+        this.router.navigate(['/supervisor-dashboard']);
+      } else if (role === 'admin') {
+        this.router.navigate(['/admin/critical-issues']);
+      }
       return false;
     }
 
