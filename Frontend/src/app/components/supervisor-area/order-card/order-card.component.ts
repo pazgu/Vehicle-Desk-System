@@ -147,7 +147,6 @@ export class OrderCardComponent implements OnInit {
           setTimeout(() => {
             this.loadOrder(this.departmentId!, this.rideId);
           }, 500);
-          this.router.navigate(['/supervisor-dashboard']);
         },
         error: (error) => {
           this.toastService.show('שגיאה בעדכון הסטטוס', 'error');

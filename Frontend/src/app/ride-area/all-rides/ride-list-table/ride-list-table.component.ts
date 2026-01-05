@@ -214,7 +214,9 @@ isPaidOrder(order: any): boolean {
   canChangeStatus(order: any): boolean {
     const userRole = localStorage.getItem('role');
     if (userRole !== 'supervisor') return false;
-
+    if(this.canRebook(order)){
+      return false
+    }
     const [day, month, year] = order.date.split('.');
     const formattedDate = `${year}-${month}-${day}`;
 
