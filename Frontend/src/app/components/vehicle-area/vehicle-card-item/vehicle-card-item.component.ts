@@ -115,6 +115,14 @@ export class VehicleCardItemComponent implements OnInit {
     this.isEditMode = false;
   }
   saveChanges(): void {
+    if (this.vehicle.mileage === null || this.vehicle.mileage === undefined || this.vehicle.mileage === '') {
+      this.toastService.show('יש להזין קילומטראז\'', 'error');
+      return;
+    }
+    if (this.vehicle.mileage < 0) {
+      this.toastService.show('קילומטראז\' לא יכול להיות שלילי', 'error');
+      return;
+    }
     const dialogData: ConfirmDialogData = {
       title: 'שמירת שינויים',
       message: 'האם אתה בטוח שברצונך לשמור את השינויים?',
