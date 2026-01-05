@@ -333,18 +333,12 @@ def get_most_used_vehicles_all_time(db: Session) -> Dict[str, int]:
 def update_vehicle_status(
     vehicle_id: UUID, 
     new_status: VehicleStatus, 
-    freeze_reason: str, 
+    freeze_reason: Optional[str],
     freeze_details: Optional[str],  
     db: Session, 
     changed_by: UUID, 
     notes: Optional[str] = None
 ):
-    FREEZE_REASON_TRANSLATIONS = {
-    "accident": "תאונה",
-    "maintenance": "תחזוקה",
-    "personal": "אישי "
-}
-
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(changed_by)})
     vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
     if not vehicle:
@@ -357,6 +351,11 @@ def update_vehicle_status(
                 raise HTTPException(
                     status_code=400, 
                     detail="freeze_reason is required when setting status to 'frozen'"
+                )
+            if freeze_reason == "personal" and not freeze_details:
+                raise HTTPException(
+                    status_code=400,
+                    detail="freeze_details is required when freeze_reason is 'personal'"
                 )
             vehicle.freeze_reason = freeze_reason
             vehicle.freeze_details = freeze_details
@@ -459,15 +458,14 @@ def update_vehicle_status(
             status_code=500, 
             detail=f"An internal server error occurred: {str(e)}"
         )
-    
-    db.execute(text("SET session.audit.user_id = DEFAULT"))
-    result = {
+    finally:
+        db.execute(text("SET session.audit.user_id = DEFAULT"))
+    return {
         "vehicle_id": vehicle.id, 
         "new_status": vehicle.status, 
         "freeze_reason": vehicle.freeze_reason,
         "freeze_details": vehicle.freeze_details
     }
-    return result
 
 def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID, user_department_id: Optional[UUID] = None) -> List[VehicleOut]:
     ride = db.query(Ride).filter(Ride.id == ride_id).first()
