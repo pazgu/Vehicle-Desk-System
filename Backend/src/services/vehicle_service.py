@@ -110,17 +110,31 @@ def get_available_vehicles_new_ride(
     if start_time and end_time:
         end_time_with_buffer = end_time + timedelta(hours=2)
 
-        overlapping_rides = db.query(Ride.vehicle_id).filter(
-            or_(
-                and_(Ride.start_datetime <= start_time, Ride.end_datetime > start_time),
-                and_(Ride.start_datetime < end_time_with_buffer, Ride.end_datetime >= end_time_with_buffer),
-                and_(Ride.start_datetime >= start_time, Ride.end_datetime <= end_time_with_buffer)
-            )
-        ).subquery()
+        overlapping_rides = (
+    db.query(Ride.vehicle_id)
+    .filter(
+        Ride.status.in_([
+            RideStatus.pending,
+            RideStatus.approved,
+            RideStatus.in_progress
+        ]),
+        or_(
+            and_(Ride.start_datetime <= start_time,
+                 Ride.end_datetime > start_time),
+
+            and_(Ride.start_datetime < end_time_with_buffer,
+                 Ride.end_datetime >= end_time_with_buffer),
+
+            and_(Ride.start_datetime >= start_time,
+                 Ride.end_datetime <= end_time_with_buffer)
+        )
+    )
+    .subquery()
+)
 
         query = query.filter(~Vehicle.id.in_(overlapping_rides))
-
-    return query.all()
+    cars=query.all()
+    return cars
 
 def get_vehicles_for_ride_edit(
     db: Session,
