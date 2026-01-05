@@ -285,21 +285,11 @@
               *ngIf="
                 (addUserForm.get('password')?.touched ||
                   addUserForm.get('password')?.dirty) &&
-                addUserForm.get('password')?.hasError('uppercase')
+                addUserForm.get('password')?.hasError('pattern')
               "
               class="error"
             >
-              לפחות אות גדולה אחת
-            </small>
-            <small
-              *ngIf="
-                (addUserForm.get('password')?.touched ||
-                  addUserForm.get('password')?.dirty) &&
-                addUserForm.get('password')?.hasError('digit')
-              "
-              class="error"
-            >
-              לפחות מספר אחד
+              הסיסמה חייבת להכיל לפחות אות גדולה, וספרה (ללא רווחים)
             </small>
           </div>
         </div>

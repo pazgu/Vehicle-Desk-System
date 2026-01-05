@@ -7,7 +7,7 @@ import { UserService } from '../../../../services/user_service';
 import { MatIconModule } from '@angular/material/icon';
 import { Router } from '@angular/router';
 import * as validator from 'validator';
-
+import zxcvbn from 'zxcvbn';
 @Component({
   selector: 'app-add-new-user',
   standalone: true,
@@ -71,13 +71,7 @@ export class AddNewUserComponent implements OnInit {
           this.noMixedLanguageValidator(),
         ],
       ],
-      email: [
-        '',
-        [
-          Validators.required,
-          this.emailValidator(),
-        ],
-      ],
+      email: ['', [Validators.required, this.emailValidator()]],
       phone: ['', [Validators.required, Validators.pattern(/^05\d{8}$/)]],
       role: ['', Validators.required],
       has_government_license: [false],
@@ -88,8 +82,7 @@ export class AddNewUserComponent implements OnInit {
         [
           Validators.required,
           Validators.minLength(8),
-          this.uppercaseValidator(),
-          this.digitValidator(),
+          Validators.pattern(/^(?=.*[A-Z])(?=.*\d)\S*$/), 
         ],
       ],
     });
