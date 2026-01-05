@@ -591,53 +591,16 @@
   border-radius: 50%;
 }
 
-.status-indicator.approved {
-  background-color: #60cd79;
-  border: #329c4b 1.6px solid;
-}
-
-.status-indicator.success {
-  background-color: #dcf1e1;
-  border: #27ae60 1.6px solid;
-}
-
-.status-indicator.pending {
-  background-color: #fdf0c8;
-  border: #c1a553 1.6px solid;
-}
-
-.status-indicator.active {
-  background-color: #fbdda5;
-  border: #b18b46 1.6px solid;
-}
-
-.status-indicator.delete {
-  background-color: #f1b5b5;
-  border: #c16a73 1.6px solid;
-}
-
-.status-indicator.emergency {
-  background-color: #fabd84;
-  border: #cc813c 1.6px solid;
-}
-
-.status-indicator.frozen {
-  background-color: #e2f0f8;
-  border: #2aacc0 1.6px solid;
-}
-
-.status-indicator.rejected {
-  background: #dc5b5b;
-  border: 1.5px solid #903d34;
-}
-.status-indicator.cancelled-due-to-no-show {
-  background-color: #e0d6e8;
-  border: #a398b3 1.6px solid;
-}
-.status-indicator.exceeded-monthly-trip-quota {
-  background-color: #cdb69b;
-  border: #9b876b 1.6px solid;
-}
+.status-indicator.approved { background-color: var(--legend-approved);border: #329c4b 1.6px solid;}
+.status-indicator.success { background-color: var(--legend-success); }
+.status-indicator.pending { background-color: var(--legend-pending); }
+.status-indicator.active { background-color: var(--legend-active); }
+.status-indicator.delete { background-color: var(--legend-delete); }
+.status-indicator.emergency { background-color: var(--legend-emergency); }
+.status-indicator.frozen { background-color: var(--legend-frozen); }
+.status-indicator.rejected { background-color: var(--legend-rejected); }
+.status-indicator.cancelled-due-to-no-show { background-color: var(--legend-cancelled-no-show); }
+.status-indicator.exceeded-monthly-trip-quota { background-color: var(--legend-exceeded-quota); }
 
 .export-button {
   background-color: #f5f5f5;
