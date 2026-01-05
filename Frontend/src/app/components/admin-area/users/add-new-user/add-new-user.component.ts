@@ -7,7 +7,6 @@ import { UserService } from '../../../../services/user_service';
 import { MatIconModule } from '@angular/material/icon';
 import { Router } from '@angular/router';
 import * as validator from 'validator';
-import zxcvbn from 'zxcvbn';
 @Component({
   selector: 'app-add-new-user',
   standalone: true,
@@ -82,7 +81,7 @@ export class AddNewUserComponent implements OnInit {
         [
           Validators.required,
           Validators.minLength(8),
-          Validators.pattern(/^(?=.*[A-Z])(?=.*\d)\S*$/), 
+          Validators.pattern(/^(?=.*[A-Z])(?=.*\d)\S*$/),
         ],
       ],
     });
@@ -110,6 +109,97 @@ export class AddNewUserComponent implements OnInit {
 
       return null;
     };
+  }
+
+  getPasswordErrors(): string | null {
+    const passwordControl = this.addUserForm.get('password'); // Changed from registerForm
+    if (!passwordControl) {
+      return null;
+    }
+
+    // Don't show errors if field is empty and untouched
+    if (!passwordControl.value && !passwordControl.touched) {
+      return null;
+    }
+
+    const errors: string[] = [];
+
+    if (passwordControl.errors?.['required'] && passwordControl.touched) {
+      errors.push('חובה להזין סיסמה');
+    }
+
+    if (passwordControl.value && passwordControl.errors?.['minlength']) {
+      errors.push('לפחות 8 תווים');
+    }
+
+    if (passwordControl.value && passwordControl.errors?.['pattern']) {
+      const value = passwordControl.value || '';
+      const hasUpperCase = /[A-Z]/.test(value);
+      const hasNumber = /\d/.test(value);
+
+      if (!hasUpperCase && !hasNumber) {
+        errors.push('חובה לכלול אות גדולה ומספר');
+      } else if (!hasUpperCase) {
+        errors.push('חובה לכלול אות גדולה');
+      } else if (!hasNumber) {
+        errors.push('חובה לכלול מספר');
+      }
+    }
+
+    if (passwordControl.value && passwordControl.errors?.['foreignLanguage']) {
+      errors.push('הסיסמה מכילה תווים לא חוקיים');
+    }
+
+    return errors.length > 0 ? errors.join(' | ') : null;
+  }
+
+  getPhoneErrors(): string | null {
+    const phoneControl = this.addUserForm.get('phone'); // Changed from registerForm
+    if (!phoneControl) {
+      return null;
+    }
+
+    // Don't show errors if field is empty and untouched
+    if (!phoneControl.value && !phoneControl.touched) {
+      return null;
+    }
+
+    const errors: string[] = [];
+    const value = phoneControl.value || '';
+
+    if (phoneControl.errors?.['required'] && phoneControl.touched) {
+      errors.push('חובה להזין מספר טלפון');
+    }
+
+    if (value.length > 0) {
+      const startsWithCorrect = value.startsWith('05');
+      const hasCorrectLength = value.length === 10;
+      const onlyDigits = /^\d+$/.test(value);
+
+      if (!startsWithCorrect && !hasCorrectLength) {
+        return 'מספר טלפון חייב להכיל 10 ספרות ולהתחיל ב-05';
+      }
+
+      if (!startsWithCorrect) {
+        errors.push('מספר טלפון חייב להתחיל ב-05');
+      }
+
+      if (!hasCorrectLength) {
+        errors.push('מספר טלפון חייב להכיל 10 ספרות');
+      }
+
+      if (!onlyDigits) {
+        errors.push('מספר טלפון חייב להכיל ספרות בלבד');
+      }
+    }
+
+    return errors.length > 0 ? errors.join(' | ') : null;
+  }
+
+  preventSpaces(event: KeyboardEvent): void {
+    if (event.key === ' ') {
+      event.preventDefault();
+    }
   }
 
   emailValidator() {

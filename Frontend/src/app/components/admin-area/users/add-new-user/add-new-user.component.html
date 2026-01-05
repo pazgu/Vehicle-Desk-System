@@ -176,30 +176,17 @@
           </div>
         </div>
 
-        <div class="form-group">
-          <label>טלפון</label>
-          <input type="text" formControlName="phone" />
-          <small
-            *ngIf="
-              (addUserForm.get('phone')?.touched ||
-                addUserForm.get('phone')?.dirty) &&
-              addUserForm.get('phone')?.hasError('required')
-            "
-            class="error"
-          >
-            חובה להזין מספר טלפון
-          </small>
-          <small
-            *ngIf="
-              (addUserForm.get('phone')?.touched ||
-                addUserForm.get('phone')?.dirty) &&
-              addUserForm.get('phone')?.hasError('pattern')
-            "
-            class="error"
-          >
-            הטלפון חייב להכיל 10 ספרות ולהתחיל ב-05
-          </small>
-        </div>
+          <div class="form-group">
+            <label>טלפון</label>
+            <input
+              type="tel"
+              formControlName="phone"
+              (keypress)="preventSpaces($event)"
+            />
+            <small *ngIf="getPhoneErrors()" class="error">
+              {{ getPhoneErrors() }}
+            </small>
+          </div>
       </div>
 
       <div class="form-section">
@@ -223,8 +210,8 @@
         </div>
 
         <div class="form-group" *ngIf="shouldShowDepartment()">
-          <label
-            >מחלקה {{ isDepartmentRequired() ? "*" : "(אופציונלי)" }}</label
+          <label style="margin-top: 14px"
+            >מחלקה {{ isDepartmentRequired() ? "" : "(אופציונלי)" }}</label
           >
           <select formControlName="department_id">
             <option value="" [disabled]="isDepartmentRequired()">
@@ -255,43 +242,15 @@
               [type]="showPassword ? 'text' : 'password'"
               formControlName="password"
               class="password-input"
+              (keypress)="preventSpaces($event)"
             />
             <mat-icon class="show-password" (click)="togglePassword()">
               {{ showPassword ? "visibility" : "visibility_off" }}
             </mat-icon>
           </div>
-          <div class="validation-wrapper">
-            <small
-              *ngIf="
-                (addUserForm.get('password')?.touched ||
-                  addUserForm.get('password')?.dirty) &&
-                addUserForm.get('password')?.hasError('required')
-              "
-              class="error"
-            >
-              חובה להזין סיסמה
-            </small>
-            <small
-              *ngIf="
-                (addUserForm.get('password')?.touched ||
-                  addUserForm.get('password')?.dirty) &&
-                addUserForm.get('password')?.hasError('minlength')
-              "
-              class="error"
-            >
-              הסיסמה חייבת להיות באורך של לפחות 8 תווים
-            </small>
-            <small
-              *ngIf="
-                (addUserForm.get('password')?.touched ||
-                  addUserForm.get('password')?.dirty) &&
-                addUserForm.get('password')?.hasError('pattern')
-              "
-              class="error"
-            >
-              הסיסמה חייבת להכיל לפחות אות גדולה, וספרה (ללא רווחים)
-            </small>
-          </div>
+          <small *ngIf="getPasswordErrors()" class="error">
+            {{ getPasswordErrors() }}
+          </small>
         </div>
       </div>
 
@@ -317,7 +276,9 @@
         </h4>
 
         <div class="form-group" *ngIf="checkIfHasGovernmentlicense()">
-          <label style="margin-top: 20px;" for="license_expiry_date">תוקף רישיון</label>
+          <label style="margin-top: 20px" for="license_expiry_date"
+            >תוקף רישיון</label
+          >
           <input
             type="date"
             id="license_expiry_date"
@@ -330,12 +291,14 @@
             "
             class="error"
           >
-            התאריך חייב להיות בעתיד 
+            התאריך חייב להיות בעתיד
           </small>
         </div>
 
         <div class="form-group" *ngIf="checkIfHasGovernmentlicense()">
-          <label style="margin-top: 20px;">העלה תמונת/קובץ רישיון (אופציונלי)</label>
+          <label style="margin-top: 20px"
+            >העלה תמונת/קובץ רישיון (אופציונלי)</label
+          >
           <div class="custom-file-upload">
             <input
               type="file"
