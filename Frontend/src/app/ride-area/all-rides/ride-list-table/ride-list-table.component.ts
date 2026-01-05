@@ -31,11 +31,13 @@ export class RideListTableComponent implements OnChanges {
   @Output() rebookRide = new EventEmitter<any>();
 
   constructor(private router: Router, private myrideservice: MyRidesService) {}
+paidOrderIds = new Set<string>();
 
   currentPage = 1;
   pagedOrders: any[] = [];
   role = localStorage.getItem('role');
   ngOnChanges(changes: SimpleChanges): void {
+    this.computePaidOrders();
     if (changes['filteredOrders'] || changes['ordersPerPage']) {
       this.currentPage = 1;
       this.updatePagedOrders();
@@ -130,29 +132,44 @@ export class RideListTableComponent implements OnChanges {
     return order.status === 'completed';
   }
 
-  isPaidOrder(order: any): boolean {
-    const maxFreeRides = 6;
-    const beginningOfMonth = new Date();
-    beginningOfMonth.setDate(1);
-    beginningOfMonth.setHours(0, 0, 0, 0);
-    const orderDate = this.parseDate(order.date);
+  private parseSubmittedAt(value: string): Date {
+  return new Date(value); 
+}
 
-    if (
-      orderDate.getMonth() === beginningOfMonth.getMonth() &&
-      orderDate.getFullYear() === beginningOfMonth.getFullYear()
-    ) {
-      const priorOrdersThisMonth = this.allOrders.filter((o: any) => {
-        const oDate = this.parseDate(o.date);
-        return (
-          oDate.getMonth() === beginningOfMonth.getMonth() &&
-          oDate.getFullYear() === beginningOfMonth.getFullYear() &&
-          oDate < orderDate
-        );
-      }).length;
-      return priorOrdersThisMonth >= maxFreeRides;
-    }
-    return false;
-  }
+
+computePaidOrders(): void {
+  this.paidOrderIds.clear();
+
+  const FREE_RIDES = 6;
+  const now = new Date();
+
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+  const monthlyOrders = this.allOrders
+    .map(o => ({
+      ...o,
+      submittedDate: this.parseSubmittedAt(o.submitted_at),
+    }))
+    .filter(o =>
+      o.submittedDate >= startOfMonth &&
+      o.submittedDate <= endOfMonth
+    )
+    .sort(
+      (a, b) =>
+        a.submittedDate.getTime() - b.submittedDate.getTime()
+    );
+
+  monthlyOrders
+    .slice(FREE_RIDES)
+    .forEach(o => this.paidOrderIds.add(o.ride_id ?? o.id));
+
+  console.log('Paid rides this month:', [...this.paidOrderIds]);
+}
+
+isPaidOrder(order: any): boolean {
+  return this.paidOrderIds.has(order.ride_id ?? order.id);
+}
 
   checkIfOverOneDay(order: any): boolean {
     const orderStartDate = new Date(order.start_datetime);
@@ -197,7 +214,9 @@ export class RideListTableComponent implements OnChanges {
   canChangeStatus(order: any): boolean {
     const userRole = localStorage.getItem('role');
     if (userRole !== 'supervisor') return false;
-
+    if(this.canRebook(order)){
+      return false
+    }
     const [day, month, year] = order.date.split('.');
     const formattedDate = `${year}-${month}-${day}`;
 

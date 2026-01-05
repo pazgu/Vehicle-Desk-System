@@ -62,7 +62,7 @@ from src.schemas.department_schema import DepartmentOut
 
 # Models
 from ..models.ride_model import Ride, PendingRideSchema
-from ..models.user_model import User
+from ..models.user_model import User, UserRole
 from ..models.vehicle_model import Vehicle
 from ..models.city_model import City
 from src.models import ride_model, vehicle_model
@@ -355,7 +355,6 @@ async def get_rebook_data(
         "target_type": "self",  
         "approving_supervisor":ride.approving_supervisor or None    
     }
-    print("rebook data:",rebook_data)
 
     return rebook_data
 
@@ -401,7 +400,11 @@ async def rebook_ride(
         db=db,
         changed_by=str(user.employee_id)
     )
-    updated_ride.status=RideStatus.pending
+    if(user.role==UserRole.supervisor):
+        updated_ride.status=RideStatus.approved
+    else:
+        updated_ride.status=RideStatus.pending
+
     db.execute(text('SET session "session.audit.user_id" = :user_id'), {"user_id": str(user.employee_id)})
 
     db.commit()
