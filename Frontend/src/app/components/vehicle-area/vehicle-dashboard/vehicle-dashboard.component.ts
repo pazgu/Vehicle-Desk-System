@@ -133,6 +133,7 @@ export class VehicleDashboardComponent implements OnInit {
         'type',
         'toHebrew'
       );
+      const departmentFilter = params['department'] || '';
       const showInactive = params['showInactive'] === 'true';
       const sortByMostUsed = params['sortByMostUsed'] === 'true';
 
@@ -141,7 +142,9 @@ export class VehicleDashboardComponent implements OnInit {
           statusFilter,
           typeFilter,
           showInactive,
-          sortByMostUsed
+          sortByMostUsed,
+          false,
+          departmentFilter
         );
       }
     });
@@ -154,6 +157,7 @@ export class VehicleDashboardComponent implements OnInit {
 
     const statusFilter = this.filterPanel.getStatusFilter();
     const typeFilter = this.filterPanel.getTypeFilter();
+    const departmentFilter = this.filterPanel.getDepartmentFilter();
     const showInactive = this.filterPanel.getShowInactive();
     const sortByMostUsed = this.filterPanel.getSortByMostUsed();
 
@@ -165,6 +169,7 @@ export class VehicleDashboardComponent implements OnInit {
       );
     if (typeFilter)
       queryParams['type'] = this.translate(typeFilter, 'type', 'toEnglish');
+    if (departmentFilter) queryParams['department'] = departmentFilter;
     if (showInactive) queryParams['showInactive'] = 'true';
     if (sortByMostUsed) queryParams['sortByMostUsed'] = 'true';
 
