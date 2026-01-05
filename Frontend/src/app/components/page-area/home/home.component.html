@@ -16,7 +16,7 @@
     <div class="modal">
       <div class="header-row">
         <h2 class="page-title">הזמנה חדשה</h2>
-        <div *ngIf="step === 2" class="step-header">
+        <div *ngIf="step === 2 && !isRebookMode" class="step-header">
           <button type="button" class="back-btn" (click)="goBackToStep1()">
             ← חזור
           </button>

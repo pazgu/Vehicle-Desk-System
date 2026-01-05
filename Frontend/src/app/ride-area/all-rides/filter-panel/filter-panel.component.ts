@@ -27,6 +27,7 @@ export class FilterPanelComponent implements OnChanges {
   @Input() minDate: string = '';
   @Input() maxDate: string = '';
   @Output() filteredOrdersChanged = new EventEmitter<any[]>();
+    dateError: boolean = false;
 
   private filteredOrders: any[] = [];
   constructor(private myrideservice: MyRidesService) {}
@@ -49,6 +50,15 @@ export class FilterPanelComponent implements OnChanges {
   onRideViewModeChange(mode: 'all' | 'future' | 'past'): void {
     this.rideViewMode = mode;
     this.applyFiltersAndSort();
+  }
+    validateDatesEndStart(): void {
+    if (this.startDate && this.endDate) {
+      const start = new Date(this.startDate);
+      const end = new Date(this.endDate);
+      this.dateError = start > end;
+    } else {
+      this.dateError = false;
+    }
   }
 
   onSortChange(): void {
