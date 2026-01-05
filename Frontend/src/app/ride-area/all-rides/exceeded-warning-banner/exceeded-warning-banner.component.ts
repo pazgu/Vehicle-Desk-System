@@ -20,11 +20,14 @@ export class ExceededWarningBannerComponent implements OnInit, OnChanges {
   @Output() bannerClicked = new EventEmitter<void>();
 
   warningVisible = false;
-  exceeded = false;
+
+freeQuotaTotal = 6;
+  freeQuotaUsed = 0;
+
 
   ngOnInit(): void {
-    this.checkExceeded();
-    if (this.exceeded) {
+this.calculateQuota();
+    if (this.freeQuotaExceeded) {
       const today = new Date().toISOString().split('T')[0];
       const lastShownDate = localStorage.getItem('exceededWarningDate');
       if (lastShownDate !== today) {
@@ -35,7 +38,7 @@ export class ExceededWarningBannerComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(): void {
-    this.checkExceeded();
+    this.calculateQuota();
   }
 
   hideWarning(event?: Event): void {
@@ -54,23 +57,46 @@ export class ExceededWarningBannerComponent implements OnInit, OnChanges {
     this.bannerClicked.emit();
   }
 
-  private checkExceeded(): void {
-    const maxRides = 6;
-    const beginningOfMonth = new Date();
-    beginningOfMonth.setDate(1);
-    beginningOfMonth.setHours(0, 0, 0, 0);
-    const endOfMonth = new Date();
-    endOfMonth.setMonth(endOfMonth.getMonth() + 1);
-    endOfMonth.setDate(0);
-    endOfMonth.setHours(23, 59, 59, 999);
-
-    const recentOrders = this.allOrders.filter((order: any) => {
-      const orderDate = this.parseDate(order.date);
-      return orderDate >= beginningOfMonth && orderDate <= endOfMonth;
-    });
-
-    this.exceeded = recentOrders.length >= maxRides;
+   get freeQuotaExceeded(): boolean {
+    return this.calculateQuota() >= this.freeQuotaTotal;
   }
+
+ private calculateQuota(): number {
+  const now = new Date();
+
+  const startOfMonth = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    1,
+    0, 0, 0, 0
+  );
+  const endOfMonth = new Date(
+    now.getFullYear(),
+    now.getMonth() + 1,
+    0,
+    23, 59, 59, 999
+  );
+ 
+  const used = this.allOrders.filter((o: any) => {
+    if (!o?.date || !o?.status) return false;
+
+    const d = this.parseDate(o.date);
+    d.setHours(12, 0, 0, 0);
+
+    const isEligible =
+      o.status === 'completed' ||
+      (o.status === 'approved' && d >= now) ||
+      (o.status === 'pending' && d >= now);
+
+    if (!isEligible) return false;
+
+    return d >= startOfMonth && d <= endOfMonth;
+  }).length;
+
+  this.freeQuotaUsed = Math.min(used, this.freeQuotaTotal);
+
+  return used; 
+}
 
   private parseDate(d: string): Date {
     const [day, month, year] = d.split('.').map(Number);

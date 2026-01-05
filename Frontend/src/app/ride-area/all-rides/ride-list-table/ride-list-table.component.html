@@ -137,11 +137,12 @@
       </div>
     </div>
     <div *ngIf="role === 'supervisor'" class="cell actions-cell">
+     
       <div class="modify-buttons">
         <button
           class="status"
           (click)="ChangeStatus(order.ride_id)"
-          [disabled]="!canChangeStatus(order)"
+          [disabled]="!canChangeStatus(order) "
           [style.opacity]="canChangeStatus(order) ? '1' : '0.5'"
           [style.cursor]="canChangeStatus(order) ? 'pointer' : 'not-allowed'"
         >

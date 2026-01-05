@@ -128,9 +128,10 @@
               [(ngModel)]="vehicle.mileage"
               [min]="0"
               class="edit-input"
+              required
+              placeholder="הזן קילומטראז'"
             />
           </div>
-
           <p *ngIf="vehicle.mileage_last_updated">
             <strong>עודכן לאחרונה:</strong>
             {{ vehicle.mileage_last_updated | date : "dd/MM/yyyy" }}
