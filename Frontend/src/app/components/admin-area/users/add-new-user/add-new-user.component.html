@@ -317,16 +317,25 @@
         </h4>
 
         <div class="form-group" *ngIf="checkIfHasGovernmentlicense()">
-          <label for="license_expiry_date">תוקף רישיון</label>
+          <label style="margin-top: 20px;" for="license_expiry_date">תוקף רישיון</label>
           <input
             type="date"
             id="license_expiry_date"
             formControlName="license_expiry_date"
           />
+          <small
+            *ngIf="
+              addUserForm.get('license_expiry_date')?.touched &&
+              addUserForm.get('license_expiry_date')?.hasError('dateRange')
+            "
+            class="error"
+          >
+            התאריך חייב להיות בעתיד 
+          </small>
         </div>
 
         <div class="form-group" *ngIf="checkIfHasGovernmentlicense()">
-          <label>העלה תמונת/קובץ רישיון (אופציונלי)</label>
+          <label style="margin-top: 20px;">העלה תמונת/קובץ רישיון (אופציונלי)</label>
           <div class="custom-file-upload">
             <input
               type="file"
@@ -345,7 +354,7 @@
               <button type="button" class="choose-file-btn">בחר קובץ</button>
             </div>
           </div>
-          <small class="info">ניתן להעלות קובץ רישיון מאוחר יותר</small>
+          <small class="info">ניתן לשנות את קובץ הרישיון</small>
         </div>
       </div>
 
