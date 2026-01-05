@@ -545,15 +545,24 @@ async def delete_order(order_id: UUID, db: Session = Depends(get_db),current_use
         ride = db.query(Ride).filter(Ride.id == order_id).first()
         if not ride:
             raise HTTPException(status_code=404, detail="Order not found")
-        supervisor_id=get_supervisor_id(ride.user_id,db)
-        title='ביטול נסיעה'
+        supervisor_id = get_supervisor_id(ride.user_id, db)
+        title = "ביטול נסיעה"
+
         user = db.query(User).filter(User.employee_id == ride.user_id).first()
-        message=f"המשתמש {user.first_name} {user.last_name} ביטל את הנסיעה שלו"
-        create_system_notification(
-            user_id=supervisor_id,
-            title=title,
-            message=message,
-        )
+        actor_name = f"{user.first_name} {user.last_name}" if user else "משתמש"
+
+        if supervisor_id and str(supervisor_id) == str(ride.user_id):
+            message = "ביטלת את הנסיעה שלך"
+        else:
+            message = f"המשתמש {actor_name} ביטל את הנסיעה שלו"
+
+        if supervisor_id:
+            create_system_notification(
+                user_id=supervisor_id,
+                title=title,
+                message=message,
+            )
+
         db.delete(ride)
         db.commit()
         update_user_pending_rebook_status(db, current_user.employee_id)
