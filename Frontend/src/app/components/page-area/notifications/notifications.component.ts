@@ -235,13 +235,13 @@ export class NotificationsComponent implements OnInit {
       lower.includes('vehicle unavailable due to technical issues') ||
       lower.includes('בוטלה עקב תקלה ברכב')
     ) {
-      return 'ההזמנה שלך בוטלה כי הרכב הוקפא בעקבות תקלה. אנא הזמן/י נסיעה חדשה עם רכב אחר.';
+      return 'הנסיעה שלך בוטלה כי הרכב הוקפא בעקבות תקלה. אנא הזמן/י נסיעה חדשה עם רכב אחר.';
     } else if (lower.includes('נשלחה בהצלחה')) {
-      return 'ההזמנה שלך נשלחה בהצלחה. תקבל/י התראה לאחר הבדיקה והאישור.';
+      return 'הנסיעה שלך נשלחה בהצלחה. תקבל/י התראה לאחר הבדיקה והאישור.';
     } else if (lower.includes('אושרה')) {
-      return 'ההזמנה שלך אושרה.';
+      return 'הנסיעה שלך אושרה.';
     } else if (lower.includes('נדחתה')) {
-      return 'ההזמנה שלך נדחתה.';
+      return 'הנסיעה שלך נדחתה.';
     } else {
       return message;
     }
@@ -312,27 +312,26 @@ export class NotificationsComponent implements OnInit {
       data: { rideId: notif.order_id },
     });
 
-    dialogRef.afterClosed().subscribe(() => {
-      this.notifications = [...this.notifications];
-      this.cdr.detectChanges();
-    });
-   
-    
-    return;
-  }
+      dialogRef.afterClosed().subscribe(() => {
+        this.notifications = [...this.notifications];
+        this.cdr.detectChanges();
+      });
 
-  if (this.isVehicleFreezeCancellation(notif)) {
-    this.router.navigate(['/all-rides'], {
-      queryParams: { mode: 'future', highlight: notif.order_id },
-    });
-  } else if (role === 'admin' && notif.message.includes('בעיה חמורה')) {
-    this.router.navigate(['/admin/critical-issues'], {
-      queryParams: { highlight: '1' },
-    });
-  } else if (notif.vehicle_id) { 
-    this.goToVehicle(notif.vehicle_id);
+      return;
+    }
+
+    if (this.isVehicleFreezeCancellation(notif)) {
+      this.router.navigate(['/all-rides'], {
+        queryParams: { mode: 'future', highlight: notif.order_id },
+      });
+    } else if (role === 'admin' && notif.message.includes('בעיה חמורה')) {
+      this.router.navigate(['/admin/critical-issues'], {
+        queryParams: { highlight: '1' },
+      });
+    } else if (notif.vehicle_id) {
+      this.goToVehicle(notif.vehicle_id);
+    }
   }
-}
   getLeaseAlerts(title: string): string {
     return title == 'Vehicle Lease Expiry' ? 'lease-alert' : '';
   }

@@ -107,3 +107,6 @@ button:hover {
   cursor: pointer;
   color: #555;
 }
+input[type="password"]::-ms-reveal {
+  display: none;
+}
