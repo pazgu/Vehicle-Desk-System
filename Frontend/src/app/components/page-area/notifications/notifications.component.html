@@ -1,37 +1,22 @@
 <div class="wrapper">
-  <img
-    src="/assets/images/falling_envelop.png"
-    *ngIf="pagedNotifications.length > 0"
-    class="icon-img"
-  />
+  <img src="/assets/images/falling_envelop.png" *ngIf="pagedNotifications.length > 0" class="icon-img" />
   <div class="notification-page">
     <h2 class="title">הודעות</h2>
     <div *ngIf="pagedNotifications.length === 0" class="no-message">
       לא נמצאו הודעות עבורך
     </div>
-    <div
-      class="notification"
-      *ngFor="let note of pagedNotifications"
-      (click)="handleNotificationClick(note)"
-        [ngClass]="[
+    <div class="notification" *ngFor="let note of pagedNotifications" (click)="handleNotificationClick(note, $event)"
+      [class.notif-disabled]="!isClickable(note)" [ngClass]="[
     isVehicleFreezeCancellation(note) ? 'vehicle-freeze-banner' : 'neutral',
     note.seen ? 'seen-note' : 'unseen-note'
-  ]"
-    >
+  ]">
       <div class="content">
-        <span
-          *ngIf="note.is_extended_request"
-          title="שים לב-נסיעה ארוכה!"
-        ></span>
-        <img
-          [src]="
+        <span *ngIf="note.is_extended_request" title="שים לב-נסיעה ארוכה!"></span>
+        <img [src]="
             note.seen
               ? './assets/images/opened.png'
               : './assets/images/unopened.png'
-          "
-          alt="Notification Icon"
-          class="message-icon"
-        />
+          " alt="Notification Icon" class="message-icon" />
         <span class="text">{{ translateMessage(note.message) }}</span>
         <div class="time">{{ note.timeAgo }}</div>
       </div>
@@ -40,11 +25,7 @@
     <div class="pagination-controls">
       <button (click)="prevPage()" [disabled]="currentPage === 1">
         <span class="icon">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-          >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
             <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z" />
           </svg>
         </span>
@@ -53,11 +34,7 @@
       <span>עמוד {{ currentPage }} מתוך {{ totalPages }}</span>
       <button (click)="nextPage()" [disabled]="currentPage === totalPages">
         <span class="icon">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-          >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
             <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
           </svg>
         </span>

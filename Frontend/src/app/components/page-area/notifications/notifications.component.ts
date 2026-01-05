@@ -65,6 +65,7 @@ export class NotificationsComponent implements OnInit {
               locale: he,
             }),
           }));
+           this.syncUnreadCount(); 
         },
         error: (err) => {
           console.error('Failed to fetch notifications:', err);
@@ -82,6 +83,8 @@ export class NotificationsComponent implements OnInit {
           };
 
           this.notifications = [notifWithTimeAgo, ...this.notifications];
+          this.syncUnreadCount(); 
+
           this.cdr.detectChanges();
 
           if (this.router.url != '/notifications') {
@@ -113,6 +116,8 @@ export class NotificationsComponent implements OnInit {
             };
 
             this.notifications = [notifWithTimeAgo, ...this.notifications];
+            this.syncUnreadCount(); 
+
             this.cdr.detectChanges();
 
             if (this.router.url !== '/notifications') {
@@ -137,6 +142,7 @@ export class NotificationsComponent implements OnInit {
               locale: he,
             }),
           }));
+           this.syncUnreadCount(); 
         },
         error: (err) => {
           console.error('Failed to fetch notifications:', err);
@@ -154,6 +160,8 @@ export class NotificationsComponent implements OnInit {
         };
 
         this.notifications = [notifWithTimeAgo, ...this.notifications];
+        this.syncUnreadCount(); 
+
         this.cdr.detectChanges();
 
         if (this.router.url != '/notifications') {
@@ -271,27 +279,38 @@ export class NotificationsComponent implements OnInit {
     }
   }
 
-  handleNotificationClick(notif: MyNotification): void {
-    const role = localStorage.getItem('role');
+  private syncUnreadCount(): void {
+  const unread = this.notifications.filter(n => !n.seen).length;
+  this.notificationService.unreadCount$.next(unread);
+}
+
+
+ handleNotificationClick(notif: MyNotification, event?: MouseEvent): void {
+  if (!this.isClickable(notif)) {
+    event?.stopPropagation();
+    event?.preventDefault();
+    return; 
+  }
+  const role = localStorage.getItem('role');
+
 
     if (!notif.seen) {
-      this.notificationService.markNotificationAsSeen(notif.id).subscribe({
-        next: () => {
-          setTimeout(() => {
-            notif.seen = true;
-            this.notifications = [...this.notifications];
-            this.cdr.detectChanges();
-          });
-        },
-        error: (err) =>
-          console.error('Failed to mark notification as seen:', err),
-      });
-    }
-    if (notif.order_id) {
-      const dialogRef = this.dialog.open(RideDetailsComponent, {
-        width: '500px',
-        data: { rideId: notif.order_id },
-      });
+  this.notificationService.markNotificationAsSeen(notif.id).subscribe({
+    next: () => {
+      notif.seen = true;
+      this.notifications = [...this.notifications];
+      this.syncUnreadCount();
+      this.cdr.detectChanges();
+    },
+    error: (err) => console.error('Failed to mark notification as seen:', err),
+  });
+}
+
+  if (notif.order_id) {
+    const dialogRef = this.dialog.open(RideDetailsComponent, {
+      width: '500px',
+      data: { rideId: notif.order_id },
+    });
 
       dialogRef.afterClosed().subscribe(() => {
         this.notifications = [...this.notifications];
@@ -335,4 +354,39 @@ export class NotificationsComponent implements OnInit {
       msg.includes('בוטלה עקב תקלה ברכב')
     );
   }
+
+  private getRole(): string {
+  return localStorage.getItem('role') || '';
+}
+
+isAdminOnlyNotification(notif: MyNotification): boolean {
+  const role = this.getRole();
+  if (role === 'admin') return false;
+
+  const type = (notif as any).notification_type?.toLowerCase?.() || '';
+  const msg = (notif.message || '').toLowerCase();
+
+  if (
+    type.includes('critical') ||
+    type.includes('odometer') ||
+    type.includes('lease') ||
+    type.includes('inactive') ||
+    type.includes('vehicle') 
+  ) return true;
+
+  if (msg.includes('לא הוחזר בזמן')) return true;
+
+  if (!!notif.vehicle_id && !notif.order_id && !this.isVehicleFreezeCancellation(notif)) {
+    return true;
+  }
+
+  return false;
+}
+
+isClickable(notif: MyNotification): boolean {
+  if (this.isAdminOnlyNotification(notif)) return false;
+  return true;
+}
+
+
 }
