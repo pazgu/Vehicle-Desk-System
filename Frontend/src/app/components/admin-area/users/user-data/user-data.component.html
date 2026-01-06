@@ -34,7 +34,7 @@
         >
           <option value="">כל התפקידים</option>
           <option *ngFor="let role of availableRoles" [value]="role">
-            {{ role }}
+            {{ roleLabels[role] || role }}
           </option>
         </select>
       </div>
@@ -87,7 +87,7 @@
             class="column-role"
             [ngClass]="{ 'blocked-text': user.is_blocked }"
           >
-            {{ user.role }}
+            {{ getDisplayRole(user) }}
           </td>
           <td
             class="column-department"
