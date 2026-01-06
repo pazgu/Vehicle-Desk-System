@@ -169,16 +169,19 @@ export class MyRidesService {
   }
 
   rebookReservation(payload: any) {
-    return this.http.post(`${this.apiBase}/reservations/rebook`, payload);
-  }
-
-isVip(): Observable<{ is_vip: boolean }> {
-  return this.http.get<{ is_vip: boolean }>(`${this.apiBase}/is-vip`);
+  const headers = this.getAuthHeaders();
+  return this.http.post(`${this.apiBase}/reservations/rebook`, payload, { headers });
 }
 
- getSupervisors(departmentId: string): Observable<Supervisor[]> {
-    return this.http.get<Supervisor[]>(`http://localhost:8000/api/departments/${departmentId}/supervisors`);
-  }
+isVip(): Observable<{ is_vip: boolean }> {
+  const headers = this.getAuthHeaders();
+  return this.http.get<{ is_vip: boolean }>(`${this.apiBase}/is-vip`, { headers });
+}
+
+getSupervisors(departmentId: string): Observable<Supervisor[]> {
+  const headers = this.getAuthHeaders();
+  return this.http.get<Supervisor[]>(`${this.apiBase}/departments/${departmentId}/supervisors`, { headers });
+}
 
 
 }

@@ -315,7 +315,7 @@ export class NewRideComponent implements OnInit {
 
   private applyRebookData(data: RebookData): void {
     this.isRebookMode = true;
-    this.rebookOriginalRideId = data.user_id;
+    this.rebookOriginalRideId = data.id;
 
     const extraStopsArray = this.rideForm.get('extraStops') as FormArray;
     extraStopsArray.clear();
@@ -328,6 +328,33 @@ export class NewRideComponent implements OnInit {
 
     const start = new Date(data.start_datetime);
     const end = new Date(data.end_datetime);
+
+    const now = new Date();
+
+// if start time already passed -> push it to now and keep duration
+if (start.getTime() < now.getTime()) {
+  const durationMs = end.getTime() - start.getTime();
+
+  const roundedNow = new Date(now);
+  const minutes = roundedNow.getMinutes();
+  const roundedMinutes = Math.ceil(minutes / 15) * 15;
+  roundedNow.setMinutes(roundedMinutes % 60);
+  if (roundedMinutes >= 60) roundedNow.setHours(roundedNow.getHours() + 1);
+  roundedNow.setSeconds(0, 0);
+
+  start.setTime(roundedNow.getTime());
+
+  if (durationMs > 0) {
+    end.setTime(roundedNow.getTime() + durationMs);
+  }
+
+ this.toastService.show(
+  'שעת ההתחלה שבחרת כבר עברה, שינינו אותה לשעה הנוכחית. בדוק שהשעה החדשה מתאימה לך.',
+  'error'
+);
+
+}
+
     const pad = (num: number) => num.toString().padStart(2, '0');
     this.rideForm.patchValue({
       start_location: data.start_location,
@@ -342,14 +369,16 @@ export class NewRideComponent implements OnInit {
 
       car: null,
 
-      ride_date: start.toISOString().split('T')[0],
-      start_hour: pad(start.getHours()),
-      start_minute: pad(start.getMinutes()),
-      end_hour: pad(end.getHours()),
-      end_minute: pad(end.getMinutes()),
+            ride_date: start.toISOString().split('T')[0],
 
-      start_time: `${pad(start.getHours())}:${pad(start.getMinutes())}`,
-      end_time: `${pad(end.getHours())}:${pad(end.getMinutes())}`,
+      start_hour: '',
+      start_minute: '',
+      end_hour: '',
+      end_minute: '',
+
+      start_time: null,
+      end_time: null,
+
       approving_supervisor: data.approving_supervisor ?? null,
     });
 
