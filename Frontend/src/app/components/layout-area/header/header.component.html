@@ -266,9 +266,6 @@
         <div *ngIf="(role$ | async) === 'admin'" class="dropdown">
           <button class="dropbtn">נתונים ועריכה |</button>
           <div class="dropdown-content">
-            <a [routerLink]="['/admin/add-new-user']" class="nav-link"
-              >הוסף משתמש חדש</a
-            >
             <a [routerLink]="['/user-data']" class="nav-link" href="#">
               נתוני עובדים
             </a>
