@@ -41,6 +41,11 @@ paidOrderIds = new Set<string>();
     if (changes['filteredOrders'] || changes['ordersPerPage']) {
       this.currentPage = 1;
       this.updatePagedOrders();
+      console.log(
+  'orders statuses:',
+  this.filteredOrders.map(o => ({ id: o.ride_id ?? o.id, status: o.status }))
+);
+
     }
   }
 
@@ -302,14 +307,14 @@ isPaidOrder(order: any): boolean {
   }
 
   canRebook(order: any): boolean {
-    if (!order?.status) return false;
+  if (!order?.status) return false;
 
-    const status = order.status.toLowerCase();
-    if (status === 'cancelled_vehicle_unavailable') {
-      return true;
-    }
-    return false;
+  const status = order.status.toLowerCase();
+  if (status === 'cancelled_vehicle_unavailable') {
+    return true;
   }
+  return false;
+}
 
   onRebook(order: any, event: Event): void {
     event.stopPropagation();

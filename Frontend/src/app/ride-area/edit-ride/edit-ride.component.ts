@@ -827,8 +827,25 @@ export class EditRideComponent implements OnInit {
         return;
       }
       this.toastService.show('יש להשלים את כל השדות החובה', 'error');
+      
       return;
     }
+
+  const startTime = this.rideForm.get('start_time')?.value;
+  const endTime = this.rideForm.get('end_time')?.value;
+
+  if (!startTime || !endTime) {
+    this.rideForm.get('start_time')?.setErrors({ required: true });
+    this.rideForm.get('start_time')?.markAsTouched();
+
+    this.rideForm.get('end_time')?.setErrors({ required: true });
+    this.rideForm.get('end_time')?.markAsTouched();
+
+    this.toastService.show('יש לבחור שעת התחלה ושעת סיום', 'error');
+    return;
+  }
+
+    
 
     const carControl = this.rideForm.get('car');
     const vehicleType = this.rideForm.get('vehicle_type')?.value;
@@ -840,8 +857,7 @@ export class EditRideComponent implements OnInit {
       return;
     }
 
-    const startTime = this.rideForm.get('start_time')?.value;
-    const endTime = this.rideForm.get('end_time')?.value;
+
     const startDate = this.rideForm.get('ride_date')?.value;
     const endDate = this.rideForm.get('ride_date_night_end')?.value;
 
