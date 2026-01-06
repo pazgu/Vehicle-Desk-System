@@ -245,12 +245,12 @@ export class RegisterComponent implements OnInit {
 
     const errors: string[] = [];
 
-    if (usernameControl.errors?.['minlength']) {
-      errors.push('לפחות 3 תווים');
+    if (usernameControl.errors?.['pattern']) {
+      return 'רק אותיות בעברית, אנגלית או מספרים';
     }
 
-    if (usernameControl.errors?.['pattern']) {
-      errors.push('רק אותיות בעברית, אנגלית או מספרים');
+    if (usernameControl.errors?.['minlength']) {
+      errors.push('לפחות 3 תווים');
     }
 
     if (usernameControl.errors?.['mixedLanguage']) {
@@ -258,7 +258,7 @@ export class RegisterComponent implements OnInit {
     }
 
     if (usernameControl.errors?.['minLetters']) {
-      errors.push(' לפחות 2 אותיות');
+      errors.push('לפחות 2 אותיות');
     }
 
     return errors.length > 0 ? errors.join(' | ') : null;
