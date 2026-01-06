@@ -81,6 +81,7 @@ export class EditRideComponent implements OnInit {
     const endTime = formGroup.get('end_time')?.value;
     const startDate = formGroup.get('ride_date')?.value;
     const endDate = formGroup.get('ride_date_night_end')?.value;
+    const ridePeriod = formGroup.get('ride_period')?.value;
     if (!startTime || !endTime || !startDate) {
       return null;
     }
@@ -89,14 +90,20 @@ export class EditRideComponent implements OnInit {
     const [endHour, endMin] = endTime.split(':').map(Number);
     const startMinutes = startHour * 60 + startMin;
     const endMinutes = endHour * 60 + endMin;
-    if (endDate && startDate !== endDate) {
+    if (ridePeriod === 'night' || (endDate && startDate !== endDate)) {
       return null;
     }
-    if (endMinutes < startMinutes) {
-      return null;
+    if (endMinutes <= startMinutes) {
+      return { 
+        invalidTimeRange: true,
+        message: 'שעת הסיום חייבת להיות אחרי שעת ההתחלה'
+      };
     }
     if (endMinutes - startMinutes < 15) {
-      return { invalidTimeRange: true };
+      return { 
+        invalidTimeRange: true,
+        message: 'שעת הסיום חייבת להיות לפחות 15 דקות אחרי שעת ההתחלה'
+      };
     }
 
     return null;
@@ -115,44 +122,34 @@ export class EditRideComponent implements OnInit {
     const endDate = this.rideForm.get('ride_date_night_end')?.value;
     const startTime = this.rideForm.get('start_time')?.value;
     const endTime = this.rideForm.get('end_time')?.value;
+    const ridePeriod = this.rideForm.get('ride_period')?.value;
 
     if (startDate && startTime) {
-      if (endDate && startDate !== endDate) {
-        this.isDayRide = false;
-        this.rideTypeNote = 'נסיעה ליותר מיום - נבחר תאריך סיום שונה';
+      if (ridePeriod === 'night') {
+        if (endDate && startDate !== endDate) {
+          this.isDayRide = false;
+          this.rideTypeNote = 'נסיעה ליותר מיום - נבחר תאריך סיום שונה';
+        } else if (!endDate) {
+          this.isDayRide = false;
+          this.rideTypeNote = 'נסיעה ליותר מיום - יש לבחור תאריך סיום';
+        } else {
+          this.isDayRide = false;
+          this.rideTypeNote = 'נסיעה ליותר מיום';
+        }
         return;
       }
 
-      if (endTime) {
-        const [startHour, startMin] = startTime.split(':').map(Number);
-        const [endHour, endMin] = endTime.split(':').map(Number);
-
-        const startMinutes = startHour * 60 + startMin;
-        const endMinutes = endHour * 60 + endMin;
-
-        if (endMinutes < startMinutes) {
-          this.isDayRide = false;
-          this.rideTypeNote = 'נסיעה יותר מיום - הנסיעה חוצה חצות';
-          if (!endDate) {
-            const nextDay = new Date(startDate);
-            nextDay.setDate(nextDay.getDate() + 1);
-            this.rideForm
-              .get('ride_date_night_end')
-              ?.setValue(nextDay.toISOString().split('T')[0], {
-                emitEvent: false,
-              });
-          }
-          return;
+      if (ridePeriod === 'morning') {
+        this.isDayRide = true;
+        this.rideTypeNote = 'נסיעה יומית - התחלה וסיום באותו היום';
+        if (endDate) {
+          this.rideForm.get('ride_date_night_end')?.setValue('', { emitEvent: false });
         }
+        return;
       }
 
       this.isDayRide = true;
       this.rideTypeNote = 'נסיעה יומית - התחלה וסיום באותו היום';
-      if (endDate && startDate === endDate) {
-        this.rideForm
-          .get('ride_date_night_end')
-          ?.setValue('', { emitEvent: false });
-      }
     }
   }
   private ensureOriginalEndTimeAvailable(): void {
@@ -200,6 +197,53 @@ export class EditRideComponent implements OnInit {
       this.filteredEndTimes = [...this.timeOptions];
     }
     this.ensureOriginalEndTimeAvailable();
+  }
+
+  private inspectorClosureValidator = (formGroup: FormGroup) => {
+    const startTime = formGroup.get('start_time')?.value;
+    const endTime = formGroup.get('end_time')?.value; 
+    if (!startTime || !endTime) {
+      return null;
+    }
+    const [startHour, startMinute] = startTime.split(':').map(Number);
+    const [endHour, endMinute] = endTime.split(':').map(Number);
+    const startMinutes = startHour * 60 + startMinute;
+    const endMinutes = endHour * 60 + endMinute;
+    const closureStart = 11 * 60 + 15;
+    const closureEnd = 12 * 60 + 15;
+    const startInClosure = startMinutes >= closureStart && startMinutes <= closureEnd;
+    const endInClosure = endMinutes >= closureStart && endMinutes <= closureEnd;
+    if (startInClosure || endInClosure) {
+      return { 
+        inspectorClosureTime: { 
+          message: 'לא ניתן להזמין נסיעות בשעות 11:15-12:15 (מנהל רכבים לא זמין)' 
+        } 
+      };
+    }
+    return null;
+  };
+
+  private onPeriodChange(value: string): void {
+    const nightEndControl = this.rideForm.get('ride_date_night_end');
+    const rideDateControl = this.rideForm.get('ride_date');
+    if (value === 'night') {
+      nightEndControl?.setValidators([Validators.required]);
+      rideDateControl?.clearValidators();
+      rideDateControl?.setValidators([Validators.required]);
+      if (!nightEndControl?.value && rideDateControl?.value) {
+        const nextDay = new Date(rideDateControl.value);
+        nextDay.setDate(nextDay.getDate() + 1);
+        nightEndControl?.setValue(nextDay.toISOString().split('T')[0]);
+      }
+    } else {
+      nightEndControl?.clearValidators();
+      nightEndControl?.setValue('');
+      rideDateControl?.setValidators([Validators.required]);
+    }
+    rideDateControl?.updateValueAndValidity();
+    nightEndControl?.updateValueAndValidity();
+    this.updateRideTypeNote();
+    this.filterAvailableVehicles();
   }
 
   calculateMinDate(daysAhead: number): string {
@@ -326,6 +370,9 @@ export class EditRideComponent implements OnInit {
           carControl.setValue(null, { emitEvent: false });
         }
       }, 0);
+      this.rideForm.get('ride_period')?.valueChanges.subscribe((value) => {
+      this.onPeriodChange(value);
+    });
     });
     this.loadRide();
   }
@@ -346,6 +393,11 @@ export class EditRideComponent implements OnInit {
       extraStops: this.fb.array([]),
       extended_ride_reason: [''],
       four_by_four_reason: [''],
+    }, { 
+      validators: [
+        this.endTimeValidator,
+        this.inspectorClosureValidator
+      ] 
     });
   }
 
@@ -465,7 +517,7 @@ export class EditRideComponent implements OnInit {
         this.updateMinEndDate();
 
         this.rideForm.patchValue({
-          ride_period: 'morning',
+          ride_period: isOvernightRide ? 'night' : 'morning',
           ride_date: startDateStr,
           ride_date_night_end: nightEndDate,
           start_time: this.originalStartTime,
@@ -763,6 +815,17 @@ export class EditRideComponent implements OnInit {
   submit(): void {
     if (this.rideForm.invalid) {
       this.rideForm.markAllAsTouched();
+      const timeError = this.rideForm.errors?.['message'];
+      const inspectorError = this.rideForm.errors?.['inspectorClosureTime']?.['message'];
+      if (timeError && this.rideForm.errors?.['invalidTimeRange']) {
+        const fullMessage = `${timeError}. אם הנסיעה חוצה לילה, נא לבחור "נסיעה ליותר מיום"`;
+        this.toastService.showPersistent(fullMessage, 'error');
+        return;
+      }
+      if (inspectorError) {
+        this.toastService.show(inspectorError, 'error');
+        return;
+      }
       this.toastService.show('יש להשלים את כל השדות החובה', 'error');
       return;
     }
@@ -822,11 +885,14 @@ export class EditRideComponent implements OnInit {
       }
     }
 
+    const ridePeriod = this.rideForm.get('ride_period')?.value;
     const rideDate = this.rideForm.get('ride_date')?.value;
     const nightEndDate = this.rideForm.get('ride_date_night_end')?.value;
 
     const start_datetime = `${rideDate}T${startTime}`;
-    const end_datetime = `${nightEndDate || rideDate}T${endTime}`;
+    const end_datetime = ridePeriod === 'night' 
+      ? `${nightEndDate}T${endTime}` 
+      : `${rideDate}T${endTime}`;
 
     const startUUID = this.getCityId(
       this.rideForm.get('start_location')?.value
