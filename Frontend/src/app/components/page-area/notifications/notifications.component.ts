@@ -363,18 +363,12 @@ isAdminOnlyNotification(notif: MyNotification): boolean {
   const role = this.getRole();
   if (role === 'admin') return false;
 
+  if (role === 'supervisor' && notif.order_id) return false;
+
   const type = (notif as any).notification_type?.toLowerCase?.() || '';
-  const msg = (notif.message || '').toLowerCase();
 
-  if (
-    type.includes('critical') ||
-    type.includes('odometer') ||
-    type.includes('lease') ||
-    type.includes('inactive') ||
-    type.includes('vehicle') 
-  ) return true;
-
-  if (msg.includes('לא הוחזר בזמן')) return true;
+  const adminOnlyTypes = ['critical', 'odometer', 'lease', 'inactive'];
+  if (adminOnlyTypes.some(t => type.includes(t))) return true;
 
   if (!!notif.vehicle_id && !notif.order_id && !this.isVehicleFreezeCancellation(notif)) {
     return true;

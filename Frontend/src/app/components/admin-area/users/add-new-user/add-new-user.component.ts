@@ -7,6 +7,8 @@ import { UserService } from '../../../../services/user_service';
 import { MatIconModule } from '@angular/material/icon';
 import { Router } from '@angular/router';
 import * as validator from 'validator';
+import { ROLES } from '../../../../constants/roles';
+
 @Component({
   selector: 'app-add-new-user',
   standalone: true,
@@ -16,13 +18,7 @@ import * as validator from 'validator';
 })
 export class AddNewUserComponent implements OnInit {
   addUserForm!: FormGroup;
-  roles = [
-    { key: 'admin', label: 'מנהל' },
-    { key: 'employee', label: 'עובד' },
-    { key: 'supervisor', label: 'מפקח' },
-    { key: 'inspector', label: 'בודק רכבים' },
-    { key: 'raan', label: 'רע"ן' },
-  ];
+  roles = ROLES;
   showPassword = false;
 
   departments: { id: string; name: string }[] = [];
