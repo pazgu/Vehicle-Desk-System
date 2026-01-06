@@ -105,15 +105,17 @@
       <div class="media-dropdown">
         <button class="navbar-toggle" onclick="toggleMenu()">☰</button>
         <div class="dropdown-content-mobile">
-          <li *ngIf="(role$ | async) === 'admin'">
-            <a [routerLink]="['/admin/add-new-user']" class="nav-link"
-              >הוסף משתמש חדש</a
-            >
-          </li>
-          <li *ngIf="isLoggedIn && !isAuthPage">
-            <a [routerLink]="['/notifications']" class="nav-link">התראות</a>
-          </li>
           <ul>
+            <li *ngIf="isLoggedIn && !isAuthPage">
+              <a [routerLink]="['/notifications']" class="nav-link">התראות</a>
+            </li>
+          </ul>
+          <ul>
+            <li *ngIf="(role$ | async) === 'admin'">
+              <a [routerLink]="['/admin/add-new-user']" class="nav-link"
+                >הוסף משתמש חדש</a
+              >
+            </li>
             <li>
               <a
                 *ngIf="(role$ | async) === 'admin'"
