@@ -12,7 +12,6 @@ def get_latest_requirement(db: Session) -> Optional[RideRequirement]:
 def create_requirement(db: Session, data: RideRequirementUpdate) -> RideRequirement:
     """Create a new ride requirements record."""
     new_req = RideRequirement(
-        title=data.title,
         items=data.items,
         updated_by=data.updated_by,
         updated_at=datetime.utcnow(),
@@ -29,7 +28,6 @@ def update_requirement(db: Session, data: RideRequirementUpdate) -> RideRequirem
     if not existing:
         raise ValueError("No existing requirement to update.")
 
-    existing.title = data.title
     existing.items = data.items
     existing.updated_by = data.updated_by
     existing.updated_at = datetime.utcnow()
@@ -38,18 +36,10 @@ def update_requirement(db: Session, data: RideRequirementUpdate) -> RideRequirem
     db.refresh(existing)
     return existing
 
-
-    """
-    Partial update (for PATCH)
-    Only updates fields provided in `data`.
-    Example: data = {"items": [...]} or {"title": "new title"}
-    """
     existing = get_latest_requirement(db)
     if not existing:
         raise ValueError("No existing requirement to update.")
 
-    if "title" in data:
-        existing.title = data["title"]
     if "items" in data:
         existing.items = data["items"]
 
