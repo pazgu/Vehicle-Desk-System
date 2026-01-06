@@ -94,8 +94,8 @@ export class AddVehicleComponent implements OnInit {
     this.filteredVehicleTypes = this.vehicleTypes.filter((type) =>
       type.toLowerCase().includes(inputValue.toLowerCase())
     );
-    this.isDropdownOpen = inputValue.length > 0 || this.vehicleTypes.length > 0;
     const trimmedType = inputValue.trim();
+    this.isDropdownOpen = this.filteredVehicleTypes.length > 0;
     if (trimmedType && !this.vehicleTypes.includes(trimmedType)) {
       this.newTypeMessage = `סוג רכב "${trimmedType}" יתווסף בעת שמירת הרכב`;
     } else {
