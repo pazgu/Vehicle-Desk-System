@@ -34,14 +34,14 @@
             </div>
           </div>
           <ul class="user-dropdown">
-          <ng-container *ngIf="!isLoggedIn">
-            <li *ngIf="!currentRoute.includes('/login')">
-              <a routerLink="/login">התחברות</a>
-            </li>
-            <li *ngIf="!currentRoute.includes('/register')">
-              <a routerLink="/register">יצירת משתמש חדש</a>
-            </li>
-          </ng-container>
+            <ng-container *ngIf="!isLoggedIn">
+              <li *ngIf="!currentRoute.includes('/login')">
+                <a routerLink="/login">התחברות</a>
+              </li>
+              <li *ngIf="!currentRoute.includes('/register')">
+                <a routerLink="/register">יצירת משתמש חדש</a>
+              </li>
+            </ng-container>
             <ng-container *ngIf="isLoggedIn">
               <li><a (click)="onLogout()">התנתקות</a></li>
             </ng-container>
@@ -105,13 +105,15 @@
       <div class="media-dropdown">
         <button class="navbar-toggle" onclick="toggleMenu()">☰</button>
         <div class="dropdown-content-mobile">
+          <li *ngIf="(role$ | async) === 'admin'">
+            <a [routerLink]="['/admin/add-new-user']" class="nav-link"
+              >הוסף משתמש חדש</a
+            >
+          </li>
+          <li *ngIf="isLoggedIn && !isAuthPage">
+            <a [routerLink]="['/notifications']" class="nav-link">התראות</a>
+          </li>
           <ul>
-            <li *ngIf="isLoggedIn && !isAuthPage">
-              <a [routerLink]="['/notifications']" class="nav-link" href="#"
-                >התראות</a
-              >
-            </li>
-
             <li>
               <a
                 *ngIf="(role$ | async) === 'admin'"
@@ -264,6 +266,9 @@
         <div *ngIf="(role$ | async) === 'admin'" class="dropdown">
           <button class="dropbtn">נתונים ועריכה |</button>
           <div class="dropdown-content">
+            <a [routerLink]="['/admin/add-new-user']" class="nav-link"
+              >הוסף משתמש חדש</a
+            >
             <a [routerLink]="['/user-data']" class="nav-link" href="#">
               נתוני עובדים
             </a>
