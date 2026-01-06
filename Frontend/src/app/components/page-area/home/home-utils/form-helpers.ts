@@ -80,8 +80,9 @@ export function buildRideForm(
       end_hour: ['', Validators.required],
       end_minute: ['', Validators.required],
 
-      start_time: ['', Validators.required],
-      end_time: ['', Validators.required],
+      start_time: [''],
+      end_time: [''],
+
 
       estimated_distance_km: [null, Validators.required],
       ride_type: ['', Validators.required],
