@@ -192,11 +192,11 @@ export class RegisterComponent implements OnInit {
       const hasNumber = /\d/.test(value);
 
       if (!hasUpperCase && !hasNumber) {
-        errors.push('חובה לכלול אות גדולה ומספר');
+        errors.push('חובה לכלול אות גדולה וספרה');
       } else if (!hasUpperCase) {
         errors.push('חובה לכלול אות גדולה');
       } else if (!hasNumber) {
-        errors.push('חובה לכלול מספר');
+        errors.push('חובה לכלול ספרה');
       }
     }
 
