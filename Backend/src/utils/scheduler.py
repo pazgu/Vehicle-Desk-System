@@ -428,7 +428,7 @@ async def check_and_notify_overdue_rides():
         ).join(
             User, Ride.user_id == User.employee_id
         ).filter(
-            (Ride.status == RideStatus.in_progress or Ride.status == RideStatus.cancelled_due_to_no_show) ,
+            Ride.status == RideStatus.in_progress,
             Ride.end_datetime <= datetime.now() - timedelta(hours=2)
         ).all()
         for ride, vehicle, user in overdue_rides:
@@ -449,7 +449,8 @@ async def check_and_notify_overdue_rides():
                     user_id=user.employee_id,
                     title="Vehicle Overdue",
                     message=f"הרכב {vehicle.plate_number} לא הוחזר בזמן.",
-                    vehicle_id=vehicle.id
+                    vehicle_id=vehicle.id,
+                    order_id=ride.id
                 )
 
                 # html_user = load_email_template("vehicle_overdue_user.html", {
@@ -473,6 +474,7 @@ async def check_and_notify_overdue_rides():
                     "notification_type": user_notif.notification_type.value,
                     "sent_at": user_notif.sent_at.isoformat(),
                     "vehicle_id": str(vehicle.id),
+                    "order_id": str(ride.id),
                     "plate_number": vehicle.plate_number,
                     "seen": False
                 }, room=str(user.employee_id))
@@ -490,7 +492,8 @@ async def check_and_notify_overdue_rides():
                         user_id=admin.employee_id,
                         title="Overdue Vehicle Alert",
                         message=f"הרכב {vehicle.plate_number} לא הוחזר בזמן ע\"י {user.first_name} {user.last_name}.",
-                        vehicle_id=vehicle.id
+                        vehicle_id=vehicle.id,
+                        order_id=ride.id
                     )
 
                     # html_admin = load_email_template("vehicle_overdue_admin.html", {
@@ -515,6 +518,7 @@ async def check_and_notify_overdue_rides():
                         "notification_type": admin_notif.notification_type.value,
                         "sent_at": admin_notif.sent_at.isoformat(),
                         "vehicle_id": str(vehicle.id),
+                        "order_id": str(ride.id),
                         "plate_number": vehicle.plate_number,
                         "seen": False
                     }, room=str(admin.employee_id))
