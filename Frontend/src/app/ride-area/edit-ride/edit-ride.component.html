@@ -20,6 +20,13 @@
       <div class="form-content">
         <div class="row">
           <div class="input-group">
+            <label>מספר ימי נסיעה</label>
+            <select formControlName="ride_period" class="styled-select">
+              <option value="morning">נסיעה יומית</option>
+              <option value="night">נסיעה ליותר מיום</option>
+            </select>
+          </div>
+          <div class="input-group">
             <label>סוג נסיעה</label>
             <select formControlName="ride_type" class="styled-select">
               <option value="">בחר סוג נסיעה</option>
@@ -30,7 +37,18 @@
               {{ getFieldError("ride_type") }}
             </small>
           </div>
-
+        </div>
+        <div class="row" *ngIf="rideForm.get('ride_period')?.value === 'morning'">
+          <div class="input-group">
+            <label>תאריך הנסיעה</label>
+            <input type="date" formControlName="ride_date" [min]="minDate" />
+            <small class="error-text" *ngIf="getFieldError('ride_date')">
+              {{ getFieldError("ride_date") }}
+            </small>
+          </div>
+          <div class="input-group"></div>
+        </div>
+        <div class="row" *ngIf="rideForm.get('ride_period')?.value === 'night'">
           <div class="input-group">
             <label>תאריך התחלה</label>
             <input type="date" formControlName="ride_date" [min]="minDate" />
@@ -38,19 +56,18 @@
               {{ getFieldError("ride_date") }}
             </small>
           </div>
-        </div>
-
-        <div class="row" *ngIf="!isDayRide">
           <div class="input-group">
-            <label>תאריך סיום (נסיעה ליותר מיום)</label>
+            <label>תאריך סיום</label>
             <input
               type="date"
               formControlName="ride_date_night_end"
               [min]="rideForm.get('ride_date')?.value"
             />
+            <small class="error-text" *ngIf="getFieldError('ride_date_night_end')">
+              חובה למלא תאריך סיום לנסיעה ליותר מיום
+            </small>
             <small class="info-text">הנסיעה מסתיימת ביום אחר</small>
           </div>
-          <div class="input-group"></div>
         </div>
 
         <div class="row">
@@ -78,11 +95,33 @@
             <small class="error-text" *ngIf="getFieldError('end_time')">
               {{ getFieldError("end_time") }}
             </small>
-            <small class="error-text" *ngIf="hasTimeRangeError() && isDayRide">
-              שעת הסיום חייבת להיות לפחות 15 דקות אחרי שעת ההתחלה
+            <small class="error-text" *ngIf="rideForm.errors?.['invalidTimeRange'] && isDayRide">
+              {{ rideForm.errors?.['invalidTimeRange']?.['message'] }}
             </small>
             <small class="info-text" *ngIf="!isDayRide">
               לנסיעות יותר מיום ניתן לבחור כל שעה
+            </small>
+          </div>
+        </div>
+        <div class="time-fields-container">
+          <div class="info-text-container" *ngIf="!rideForm.errors?.['futureDateTime'] && !rideForm.errors?.['inspectorClosureTime']">
+            <small class="info-text">
+              * לא ניתן להזמין נסיעות בשעות 11:15-12:15 (מנהל רכבים לא זמין)
+            </small>
+          </div>
+
+          <div class="error-messages-container">
+            <small
+              *ngIf="rideForm.errors?.['futureDateTime']"
+              class="error-text"
+            >
+              {{ rideForm.errors?.['futureDateTime']?.['message'] }}
+            </small>
+            <small
+              *ngIf="rideForm.errors?.['inspectorClosureTime']"
+              class="error-text"
+            >
+              {{ rideForm.errors?.['inspectorClosureTime']?.['message'] }}
             </small>
           </div>
         </div>

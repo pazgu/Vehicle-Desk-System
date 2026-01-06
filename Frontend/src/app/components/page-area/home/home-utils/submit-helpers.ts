@@ -253,7 +253,10 @@ export function runPreSubmitChecks(
     endTime &&
     startTime >= endTime
   ) {
-    toastService.show('שעת הסיום חייבת להיות אחרי שעת ההתחלה', 'error');
+    toastService.showPersistent(
+      'שעת הסיום חייבת להיות אחרי שעת ההתחלה. אם הנסיעה חוצה לילה, נא לבחור "נסיעה ליותר מיום"',
+      'error'
+    );
     return { blocked: true, showInspectorWarning: false };
   }
 
