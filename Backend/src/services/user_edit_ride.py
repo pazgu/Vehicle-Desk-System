@@ -67,6 +67,35 @@ async def patch_order_in_db(
 
     for key, value in data.items():
         setattr(order, key, value)
+        
+    def _status_value(s):
+        return s.value if hasattr(s, "value") else str(s)
+
+    new_status = _status_value(order.status)
+    old_status = _status_value(original_status)
+
+    if "status" in data and new_status == "completed" and old_status != "completed":
+        if order.vehicle_id:
+            vehicle = db.query(Vehicle).filter(Vehicle.id == order.vehicle_id).first()
+
+            if vehicle:
+                distance_to_add = (
+                    float(getattr(order, "actual_distance_km", 0) or 0)
+                    or float(getattr(order, "estimated_distance_km", 0) or 0)
+                )
+
+                if distance_to_add < 0:
+                    distance_to_add = 0
+
+                vehicle.mileage = int(vehicle.mileage + distance_to_add)
+                vehicle.mileage_last_updated = datetime.utcnow()
+
+                vehicle.last_used_at = datetime.utcnow()
+                vehicle.last_user_id = order.user_id
+
+                if not getattr(order, "completion_date", None):
+                    order.completion_date = datetime.utcnow()
+
 
     # VIP auto-approve
     if is_vip and order.status != RideStatus.approved:
@@ -101,6 +130,13 @@ async def patch_order_in_db(
             )
 
     db.commit()
+    
+    if "status" in data and new_status == "completed" and old_status != "completed":
+        await sio.emit("vehicle_mileage_updated", {
+            "vehicle_id": str(order.vehicle_id),
+            "new_mileage": vehicle.mileage if vehicle else None
+        })
+
     db.refresh(order)
 
 
