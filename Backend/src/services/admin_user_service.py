@@ -14,6 +14,7 @@ from ..utils.auth import hash_password
 
 
 
+
 def create_user_by_admin(user_data: UserCreate, changed_by, db: Session):
     existing_user = db.query(User).filter(
         (User.email == user_data.email) | 
@@ -24,7 +25,7 @@ def create_user_by_admin(user_data: UserCreate, changed_by, db: Session):
     if existing_user:
         raise HTTPException(status_code=400, detail="Email, username, or phone already in use.")
 
-    # Create new user with only the fields that exist in your User model
+    # Create new user
     new_user = User(
         first_name=user_data.first_name,
         last_name=user_data.last_name,
@@ -37,7 +38,7 @@ def create_user_by_admin(user_data: UserCreate, changed_by, db: Session):
         password=hash_password(user_data.password),
         has_government_license=user_data.has_government_license,
         license_file_url=user_data.license_file_url,
-        license_expiry_date= user_data.license_expiry_date,
+        license_expiry_date=user_data.license_expiry_date,
         isRaan=user_data.isRaan
     )
 
@@ -47,7 +48,6 @@ def create_user_by_admin(user_data: UserCreate, changed_by, db: Session):
         db.commit()
         db.refresh(new_user)
 
-
         # Return the created user data
         created_user = {
             "first_name": new_user.first_name,
@@ -55,9 +55,9 @@ def create_user_by_admin(user_data: UserCreate, changed_by, db: Session):
             "username": new_user.username,
             "email": new_user.email,
             "phone": new_user.phone,
-            "employee_id": new_user.employee_id,
+            "employee_id": str(new_user.employee_id),
             "role": new_user.role,
-            "department_id": new_user.department_id,
+            "department_id": str(new_user.department_id) if new_user.department_id else None,
             "has_government_license": new_user.has_government_license,
             "license_file_url": new_user.license_file_url,
             "isRaan": new_user.isRaan
@@ -68,7 +68,6 @@ def create_user_by_admin(user_data: UserCreate, changed_by, db: Session):
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to create user: {str(e)}")
-
 
 def get_users_service(
     db: Session,
