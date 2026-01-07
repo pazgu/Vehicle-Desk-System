@@ -528,3 +528,9 @@ input:checked + .slider::after {
   border-color: #10b981;
   background-color: #f0fdf4;
 }
+
+.form-group select.ng-invalid.ng-touched,
+.form-group select.ng-invalid.ng-dirty {
+  border-color: #d02f2f;
+  background-color: #fef2f2;
+}
