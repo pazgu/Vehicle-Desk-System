@@ -89,11 +89,11 @@
           <label for="editName">שם מחלקה</label>
           <input id="editName" formControlName="name" type="text" />
         </div>
-        <div class="form-group">
+<div class="form-group">
           <label for="editSupervisor">מנהל מחלקה</label>
           <select id="editSupervisor" formControlName="supervisor_id">
             <option value="" formControlName="supervisor_id">בחר מנהל</option>
-            <option *ngFor="let user of users" [value]="user.employee_id">
+            <option *ngFor="let user of editSupervisors" [value]="user.employee_id">
               {{ user.first_name }} {{ user.last_name }}
             </option>
           </select>
