@@ -13,7 +13,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from dotenv import load_dotenv
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Session, joinedload
-
+from pytz import timezone as pytz_timezone
 # Utils
 from ..utils.database import SessionLocal
 from ..utils.socket_manager import sio
@@ -33,7 +33,7 @@ from ..models.city_model import City
 from ..models.department_model import Department
 from ..models.monthly_vehicle_usage_model import MonthlyVehicleUsage
 from ..models.no_show_events import NoShowEvent
-from ..models.notification_model import Notification
+from ..models.notification_model import Notification, NotificationType
 from ..models.ride_model import Ride, RideStatus
 from ..models.user_model import User, UserRole
 from ..models.vehicle_model import Vehicle,VehicleStatus,FreezeReason
@@ -92,22 +92,33 @@ async def start_ride_with_new_session(ride_id: str):
 async def send_notif_to_inspector():
     db = SessionLocal()
     try:
-       inspectors=db.query(User).filter(User.role == "inspector").all()
-       for inspector in inspectors:
-            notif = create_system_notification(
-                            user_id=inspector.employee_id,
-                            title="Inspector daily check",
-                            message=f"יש לבצע את הבדיקה היומית של הרכבים"
-                        )
+        inspectors = db.query(User).filter(User.role == "inspector").all()
+        
+        for inspector in inspectors:
+            notif = Notification(
+                user_id=inspector.employee_id,
+                notification_type=NotificationType.system,
+                title="Inspector daily check",
+                message="יש לבצע את הבדיקה היומית של הרכבים",
+                sent_at=datetime.now(timezone.utc)
+            )
+            db.add(notif)
+            db.commit()
+            db.refresh(notif)
+
             await sio.emit("new_notification", {
-                    "id": str(notif.id),
-                    "user_id": str(notif.user_id),
-                    "title": notif.title,
-                    "message": notif.message,
-                    "notification_type": notif.notification_type.value,
-                    "sent_at": notif.sent_at.isoformat(),
-                    "seen": False
-        })
+                "id": str(notif.id),
+                "user_id": str(notif.user_id),
+                "title": notif.title,
+                "message": notif.message,
+                "notification_type": notif.notification_type.value,
+                "sent_at": notif.sent_at.isoformat(),
+                "seen": False
+            }, room=str(inspector.employee_id))
+            
+    except Exception as e:
+        print(f"Error in send_notif_to_inspector: {e}")
+        db.rollback()
     finally:
         db.close()
 
@@ -1198,19 +1209,8 @@ scheduler.add_job(periodic_check_unstarted_rides, 'interval', minutes=1)
 
 scheduler.start()
 
-
-
 def start_scheduler():
-    scheduler.add_job(notify_admins_daily, 'cron', hour=6, minute=0)
-    scheduler.start()
-
-
-
-        
-def start_scheduler():
-    scheduler = BackgroundScheduler(timezone=pytz.timezone("Asia/Jerusalem"))
-    scheduler.add_job(notify_admins_daily, 'cron', hour=6, minute=0)
-    scheduler.start()
+    pass    
 
 async def check_expired_government_licenses():
     db: Session = SessionLocal()

@@ -1,48 +1,55 @@
-<div class="wrap" [formGroup]="form">
-  <div class="head">
-    <h2>עריכת הנחיות נסיעה</h2>
-    <div class="title-row">
-      <label>כותרת</label>
-      <input type="text" formControlName="title" />
-    </div>
-  </div>
-
-   <div class="validation-message" *ngIf="!canSave().valid">
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="2"/>
-      <path d="M10 6v5M10 13v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-    </svg>
-    <span>{{ canSave().message }}</span>
-  </div>
-
-  <div class="list" formArrayName="items">
-    <div
-      class="item"
-      *ngFor="
-        let ctrl of items.controls;
-        let i = index;
-        trackBy: trackByControl
-      "
-    >
-      <textarea
-        [formControlName]="i"
-        rows="2"
-        placeholder="כתוב/י הנחיה..."
-      ></textarea>
-      <button type="button" class="danger" (click)="removeItem(i)">מחק</button>
+<div class="page-wrapper">
+  <div class="wrap" [formGroup]="form">
+    <div class="head">
+      <h2>עריכת הנחיות נסיעה</h2>
     </div>
 
-    <button type="button" class="add" (click)="addItem()"> הוסף הנחיה + </button>
-  </div>
+    <div class="validation-message" *ngIf="!canSave().valid">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="2" />
+        <path
+          d="M10 6v5M10 13v1"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
+      </svg>
+      <span>{{ canSave().message }}</span>
+    </div>
 
-  <div class="actions">
-<button
-  type="button"
-  class="primary"
-  (click)="save()"
-  [disabled]="!canSave().valid"
->
-  שמור
-</button>
+    <div class="list" formArrayName="items">
+      <div
+        class="item"
+        *ngFor="
+          let ctrl of items.controls;
+          let i = index;
+          trackBy: trackByControl
+        "
+      >
+        <textarea
+          [formControlName]="i"
+          rows="2"
+          placeholder="כתוב/י הנחיה..."
+        ></textarea>
+        <button type="button" class="danger" (click)="removeItem(i)">
+          מחק
+        </button>
+      </div>
+
+      <button type="button" class="add" (click)="addItem()">
+        הוסף הנחיה +
+      </button>
+    </div>
+
+    <div class="actions">
+      <button
+        type="button"
+        class="primary"
+        (click)="save()"
+        [disabled]="!canSave().valid"
+      >
+        שמור
+      </button>
+    </div>
   </div>
 </div>

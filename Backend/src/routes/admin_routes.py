@@ -1420,12 +1420,10 @@ def update_requirements(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user)
 ):
-    """Update the existing requirements (edit title/items)."""
     existing = get_latest_requirement(db)
     if not existing:
         raise HTTPException(status_code=404, detail="No requirements found to update.")
 
-    existing.title = data.title
     existing.items = data.items
     existing.updated_by = current_user.employee_id
     existing.updated_at = datetime.utcnow()
