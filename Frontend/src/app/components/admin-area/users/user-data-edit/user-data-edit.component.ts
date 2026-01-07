@@ -56,7 +56,6 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.setMinDateTime();
     this.initForm();
-    this.loadUserData();
     this.setupFormSubscriptions();
     this.setupSocketSubscriptions();
     this.setupRoleBasedValidation();
@@ -208,6 +207,7 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
         if (!hasRaan) {
           this.roles.push({ key: 'raan', label: 'רע"ן' });
         }
+        this.loadUserData();
       },
       error: (err) => {
         this.toastService.show('שגיאה בטעינת תפקידים', 'error');
@@ -218,6 +218,7 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
           { key: 'inspector', label: 'בודק רכבים' },
           { key: 'raan', label: 'רע"ן' },
         ];
+        this.loadUserData();
       },
     });
   }
