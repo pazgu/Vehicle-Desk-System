@@ -97,18 +97,33 @@ label {
   position: relative;
   display: inline-block;
   direction: rtl;
+  padding: 0;
+  margin: 0;
+}
+
+.user-menu-container::after {
+  content: "";
+  position: absolute;
+  top: -5px;
+  bottom: -5px;
+  left: -5px;
+  right: -5px;
 }
 
 .user-icon {
   width: 32px !important;
   height: 32px !important;
   display: block;
-  margin-left: 5px;
-  margin-top: 5px;
+  margin: 0;
+  vertical-align: middle;
 }
 
 .user-icon-container {
   cursor: pointer;
+  padding: 5px;
+  margin: 0;
+  display: block;
+  position: relative;
 }
 
 .user-icon-logged-in {
@@ -199,7 +214,8 @@ ul {
 .user-dropdown {
   display: none;
   position: absolute;
-  top: 40px;
+  top: 100%;
+  margin-top: 5px;
   right: auto;
   left: -130px;
   background-color: white;
@@ -476,9 +492,9 @@ a[routerLink="/notifications"] {
 .user-dropdown::before {
   content: "";
   position: absolute;
-  top: -10px;
+  top: -5px;
   left: 0;
   right: 0;
-  height: 10px;
+  height: 5px;
   background: transparent;
 }
