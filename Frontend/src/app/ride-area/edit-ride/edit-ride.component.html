@@ -185,7 +185,10 @@
                     [alt]="getSelectedCar().vehicle_model"
                     class="car-thumbnail"
                   />
-                  <span>{{ getSelectedCar().vehicle_model }}</span>
+                  <div class="car-info">
+                    <span class="car-model">{{ getSelectedCar().vehicle_model }}</span>
+                    <span class="car-fuel-type">{{ getFuelTypeLabel(getSelectedCar().fuel_type) }}</span>
+                  </div>
                 </div>
                 <ng-template #placeholder>
                   <span class="placeholder">בחר רכב</span>
@@ -210,12 +213,14 @@
                     [alt]="car.vehicle_model"
                     class="car-thumbnail"
                   />
-                  <span>{{ car.vehicle_model }}</span>
+                  <div class="car-info">
+                    <span class="car-model">{{ car.vehicle_model }}</span>
+                    <span class="car-fuel-type">{{ getFuelTypeLabel(car.fuel_type) }}</span>
+                  </div>
                   <span *ngIf="isCarDisabled(car)" class="disabled-text"> - לא זמין</span>
                 </div>
               </div>
             </div>
-
             <div class="dropdown-backdrop" *ngIf="isDropdownOpen" (click)="closeDropdown()"></div>
             
             <div

@@ -48,6 +48,7 @@ export class EditRideComponent implements OnInit {
   originalVehicleType: string | undefined = undefined;
   selectedCarId: string = '';
   isDropdownOpen: boolean = false;
+  fuelTypeTranslations: { [key: string]: string } = {};
 
   allCars: {
     id: string;
@@ -416,6 +417,19 @@ export class EditRideComponent implements OnInit {
     });
     this.rideForm.get('ride_period')?.valueChanges.subscribe((value) => {
       this.onPeriodChange(value);
+    });
+    this.vehicleService.getFuelTypeTranslations().subscribe({
+      next: (translations) => {
+        this.fuelTypeTranslations = translations;
+      },
+      error: (err) => {
+        console.error('Failed to load fuel type translations:', err);
+        this.fuelTypeTranslations = {
+          electric: 'חשמלי',
+          hybrid: 'היברידי',
+          gasoline: 'בנזין',
+        };
+      },
     });
     this.loadRide();
   }
@@ -846,6 +860,9 @@ export class EditRideComponent implements OnInit {
         this.isLoadingDistance = false;
       },
     });
+  }
+  getFuelTypeLabel(fuelType: string): string {
+    return this.fuelTypeTranslations[fuelType] || fuelType;
   }
 
   submit(): void {
