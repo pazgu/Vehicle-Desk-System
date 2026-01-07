@@ -58,6 +58,36 @@ export class VehicleDashboardComponent implements OnInit {
         }
       }
     });
+
+    this.socketService.vehicleMileageUpdated$.subscribe((data) => {
+    if (!data || !data.vehicle_id) return;
+
+    const vehicleId = data.vehicle_id;
+    const newMileage = data.new_mileage;
+
+    this.vehicles = this.vehicles.map((v: any) =>
+      v.id === vehicleId
+        ? {
+            ...v,
+            mileage: newMileage,
+            mileage_last_updated:
+              data.mileage_last_updated || v.mileage_last_updated,
+          }
+        : v
+    );
+
+    this.filteredVehicles = this.filteredVehicles.map((v: any) =>
+      v.id === vehicleId
+        ? {
+            ...v,
+            mileage: newMileage,
+            mileage_last_updated:
+              data.mileage_last_updated || v.mileage_last_updated,
+          }
+        : v
+    );
+  });
+    
   }
 
   async fetchAndMapDepartments(): Promise<void> {
