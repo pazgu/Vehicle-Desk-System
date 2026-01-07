@@ -416,7 +416,7 @@ async def add_user_as_admin(
     phone: str = Form(None),
     role: str = Form(...),
     department_id: Optional[str] = Form(None),
-    supervised_department_id: Optional[str] = Form(None),  # New parameter
+    supervised_department_id: Optional[str] = Form(None), 
     password: str = Form(...),
     has_government_license: bool = Form(...),
     license_file: UploadFile = File(None),
