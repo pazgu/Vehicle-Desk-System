@@ -327,7 +327,7 @@ export class AddNewUserComponent implements OnInit {
 
             if (
               lowerDetails.includes('already has a supervisor') ||
-              lowerDetails.includes('כבר יש מנהל מחלקה')
+              lowerDetails.includes('למחלקה כבר יש מנהל מחלקה')
             ) {
               this.toast.show(details, 'error');
               return;
