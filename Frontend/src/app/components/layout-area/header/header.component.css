@@ -107,6 +107,14 @@ label {
   margin-top: 5px;
 }
 
+.user-icon-container {
+  cursor: pointer;
+}
+
+.user-icon-logged-in {
+  cursor: pointer;
+}
+
 .bell-icon {
   width: 30px !important;
   height: 30px !important;
@@ -287,6 +295,7 @@ a[routerLink="/notifications"] {
   font-size: 16px;
   border: none;
   background: none;
+  cursor: pointer;
 }
 
 .dropdown {
@@ -314,11 +323,12 @@ a[routerLink="/notifications"] {
   padding: 12px 16px;
   text-decoration: none;
   display: block;
-  background-color: #fceee1; 
+  background-color: #fceee1;
+  border-bottom: 1px solid #eee;
 }
 
 .dropdown-content a:hover {
-  background-color: #fff9f6; 
+  background-color: #fff9f6;
   color: #942222;
 }
 
@@ -437,11 +447,20 @@ a[routerLink="/notifications"] {
   border-top-right-radius: 12px;
 }
 
+.dropdown-content-mobile ul:first-child {
+  border-bottom: 1px solid #4224242d;
+  padding-bottom: 0px;
+}
+
 .dropdown-content a:last-child,
 .user-dropdown li:last-child a,
 .dropdown-content-mobile li:last-child a {
   border-bottom-left-radius: 12px;
   border-bottom-right-radius: 12px;
+}
+
+.dropdown-content a:last-child {
+  border-bottom: none;
 }
 
 .dropdown-content::before {
