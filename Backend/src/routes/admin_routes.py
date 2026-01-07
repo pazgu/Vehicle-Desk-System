@@ -1256,75 +1256,86 @@ async def upload_mileage_excel(
     role_check(["admin"], token)
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id_from_token)})
 
-
-    if not file.filename.endswith(".xlsx"):
-        raise HTTPException(status_code=400, detail="File must be .xlsx format")
-
     try:
-        df = pd.read_excel(file.file)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Failed to read Excel file: {e}")
-
-    required_columns = {"Vehicle ID", "Vehicle Name", "Mileage"}
-    if not required_columns.issubset(set(df.columns)):
-        raise HTTPException(
-            status_code=400,
-            detail=f"Excel is missing one of the required columns: {required_columns}"
-        )
-
-    success = []
-    errors = []
-
-    for index, row in df.iterrows():
-        row_number = index + 2 
+        if not file.filename.lower().endswith(".xlsx"):
+            raise HTTPException(status_code=400, detail="יש להעלות קובץ אקסל בפורמט ‎.xlsx בלבד")
 
         try:
-            vehicle_id = UUID(str(row["Vehicle ID"]))
-            mileage = row["Mileage"]
-            name = row.get("Vehicle Name", "Unknown")
-        except Exception:
-            errors.append({
-                "row": row_number,
-                "error": "Invalid UUID or data format",
-                "name": row.get("Vehicle Name", "Unknown")
-            })
-            continue
+            df = pd.read_excel(file.file)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"לא ניתן לקרוא את קובץ האקסל: {e}")
 
-        if not isinstance(mileage, (int, float)) or mileage < 0:
-            errors.append({
+        df.columns = [str(c).strip() for c in df.columns]
+        df = df.loc[:, ~df.columns.str.contains("^Unnamed")]
+
+        required_columns = {"Vehicle ID", "Vehicle Name", "Mileage"}
+        missing_columns = required_columns - set(df.columns)
+
+        if missing_columns:
+            raise HTTPException(
+                status_code=400,
+                detail=f"חסרות עמודות חובה בקובץ האקסל: {', '.join(sorted(missing_columns))}. "
+            )
+
+        success = []
+        errors = []
+
+        for index, row in df.iterrows():
+            row_number = index + 2
+
+            name = str(row.get("Vehicle Name", "")).strip() or "Unknown"
+
+            raw_vehicle_id = row.get("Vehicle ID", None)
+            if raw_vehicle_id is None or (isinstance(raw_vehicle_id, float) and pd.isna(raw_vehicle_id)):
+                errors.append({"row": row_number, "error": "חסר Vehicle ID בשורה", "name": name})
+                continue
+
+            raw_vehicle_id_str = str(raw_vehicle_id).strip()
+            try:
+                vehicle_id = UUID(raw_vehicle_id_str)
+            except Exception:
+                errors.append({"row": row_number, "error": f"Vehicle ID לא תקין: {raw_vehicle_id_str}", "name": name})
+                continue
+
+            raw_mileage = row.get("Mileage", None)
+            if raw_mileage is None or (isinstance(raw_mileage, float) and pd.isna(raw_mileage)):
+                errors.append({"row": row_number, "vehicle_id": str(vehicle_id), "error": "חסר ערך Mileage בשורה", "name": name})
+                continue
+
+            try:
+                mileage_float = float(raw_mileage)
+            except Exception:
+                errors.append({"row": row_number, "vehicle_id": str(vehicle_id), "error": f"ערך Mileage לא מספרי: {raw_mileage}", "name": name})
+                continue
+
+            if mileage_float < 0:
+                errors.append({"row": row_number, "vehicle_id": str(vehicle_id), "error": f"ערך Mileage לא יכול להיות שלילי: {mileage_float}", "name": name})
+                continue
+
+            mileage_int = int(mileage_float)
+
+            vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
+            if not vehicle:
+                errors.append({"row": row_number, "vehicle_id": str(vehicle_id), "error": "Vehicle not found", "name": name})
+                continue
+
+            vehicle.mileage = mileage_int
+            vehicle.mileage_last_updated = datetime.utcnow()
+
+            success.append({
                 "row": row_number,
                 "vehicle_id": str(vehicle_id),
-                "error": f"Invalid mileage: {mileage}"
+                "name": name,
+                "new_mileage": mileage_int
             })
-            continue
 
-        vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
-        if not vehicle:
-            errors.append({
-                "row": row_number,
-                "vehicle_id": str(vehicle_id),
-                "error": "Vehicle not found",
-                "name": name
-            })
-            continue
+        db.commit()
 
-        vehicle.mileage = int(mileage)
-        vehicle.mileage_last_updated = datetime.utcnow()
+        return {"updated": success, "errors": errors}
 
-        success.append({
-            "row": row_number,
-            "vehicle_id": str(vehicle_id),
-            "name": name,
-            "new_mileage": int(mileage)
-        })
+    finally:
+        db.execute(text("SET session.audit.user_id = DEFAULT"))
 
-    db.commit()
-    db.execute(text("SET session.audit.user_id = DEFAULT"))
-
-    return {
-        "updated": success,
-        "errors": errors
-    }
 
     
 @router.patch("/vehicles/{vehicle_id}/mileage")
