@@ -796,6 +796,10 @@ export class EditRideComponent implements OnInit {
       return;
     }
 
+    const mainStopIsTelAviv = stopId ? this.isTelAvivById(stopId) : false;
+    const extraStopIsTelAviv = extraStopIds.some((id) => this.isTelAvivById(id));
+    const hasTelAvivAsStop = mainStopIsTelAviv || extraStopIsTelAviv;
+
     if (startId === stopId && extraStopIds.length === 0) {
       this.fetchedDistance = 30;
       this.estimated_distance_with_buffer = +(30 * 1.1).toFixed(2);
@@ -803,7 +807,7 @@ export class EditRideComponent implements OnInit {
       return;
     }
 
-    this.fetchEstimatedDistance(startId, allStops);
+    this.fetchEstimatedDistance(startId, allStops, hasTelAvivAsStop);
   }
 
   private resetDistanceValues(): void {
@@ -814,12 +818,23 @@ export class EditRideComponent implements OnInit {
       ?.setValue(null, { emitEvent: false });
   }
 
-  private fetchEstimatedDistance(from: string, toArray: string[]): void {
+  private isTelAvivById(stopId: string): boolean {
+    if (!stopId || !this.cities || this.cities.length === 0) return false;
+    const city = this.cities.find(c => c.id === stopId);
+    return city?.name?.trim() === 'תל אביב';
+  }
+
+  private fetchEstimatedDistance(from: string, toArray: string[], hasTelAvivAsStop: boolean = false): void {
     if (!from || !toArray || toArray.length === 0) return;
     this.isLoadingDistance = true;
     this.rideService.getRouteDistance(from, toArray).subscribe({
       next: (response) => {
-        const realDistance = response.distance_km;
+        let realDistance = response.distance_km;
+
+        if (hasTelAvivAsStop) {
+          realDistance += 30;
+        }
+        
         this.fetchedDistance = realDistance;
         this.estimated_distance_with_buffer = +(realDistance * 1.1).toFixed(2);
         this.rideForm
