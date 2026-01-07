@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl  } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -198,6 +198,23 @@ export class EditRideComponent implements OnInit {
     }
     this.ensureOriginalEndTimeAvailable();
   }
+  private extraStopsValidator = (control: AbstractControl) => {
+    const formArray = control as FormArray;
+    const stopIds = formArray.controls
+      .map((ctrl) => ctrl.get('stop')?.value)
+      .filter((id) => !!id);
+    const hasDuplicates = stopIds.length !== new Set(stopIds).size;
+    
+    if (hasDuplicates) {
+      return { duplicateExtraStops: true };
+    }
+    const mainStop = this.rideForm?.get('stop')?.value;
+    if (mainStop && stopIds.includes(mainStop)) {
+      return { consecutiveDuplicateStops: true };
+    }
+
+    return null;
+  };
 
   private inspectorClosureValidator = (formGroup: FormGroup) => {
     const startTime = formGroup.get('start_time')?.value;
@@ -390,7 +407,7 @@ export class EditRideComponent implements OnInit {
       start_location: ['', Validators.required],
       stop: ['', Validators.required],
       destination: ['', Validators.required],
-      extraStops: this.fb.array([]),
+      extraStops: this.fb.array([], this.extraStopsValidator),
       extended_ride_reason: [''],
       four_by_four_reason: [''],
     }, { 
@@ -779,7 +796,18 @@ export class EditRideComponent implements OnInit {
       return;
     }
 
-    this.fetchEstimatedDistance(startId, allStops);
+    const mainStopIsTelAviv = stopId ? this.isTelAvivById(stopId) : false;
+    const extraStopIsTelAviv = extraStopIds.some((id) => this.isTelAvivById(id));
+    const hasTelAvivAsStop = mainStopIsTelAviv || extraStopIsTelAviv;
+
+    if (startId === stopId && extraStopIds.length === 0) {
+      this.fetchedDistance = 30;
+      this.estimated_distance_with_buffer = +(30 * 1.1).toFixed(2);
+      this.rideForm.get('estimated_distance_km')?.setValue(30, { emitEvent: false });
+      return;
+    }
+
+    this.fetchEstimatedDistance(startId, allStops, hasTelAvivAsStop);
   }
 
   private resetDistanceValues(): void {
@@ -790,12 +818,23 @@ export class EditRideComponent implements OnInit {
       ?.setValue(null, { emitEvent: false });
   }
 
-  private fetchEstimatedDistance(from: string, toArray: string[]): void {
+  private isTelAvivById(stopId: string): boolean {
+    if (!stopId || !this.cities || this.cities.length === 0) return false;
+    const city = this.cities.find(c => c.id === stopId);
+    return city?.name?.trim() === 'תל אביב';
+  }
+
+  private fetchEstimatedDistance(from: string, toArray: string[], hasTelAvivAsStop: boolean = false): void {
     if (!from || !toArray || toArray.length === 0) return;
     this.isLoadingDistance = true;
     this.rideService.getRouteDistance(from, toArray).subscribe({
       next: (response) => {
-        const realDistance = response.distance_km;
+        let realDistance = response.distance_km;
+
+        if (hasTelAvivAsStop) {
+          realDistance += 20;
+        }
+        
         this.fetchedDistance = realDistance;
         this.estimated_distance_with_buffer = +(realDistance * 1.1).toFixed(2);
         this.rideForm
@@ -813,6 +852,11 @@ export class EditRideComponent implements OnInit {
   }
 
   submit(): void {
+    if (this.extraStops.errors?.['duplicateExtraStops'] || 
+    this.extraStops.errors?.['consecutiveDuplicateStops']) {
+      this.toastService.show('תחנות עוקבות לא יכולות להיות זהות', 'error');
+      return;
+    }
     if (this.rideForm.invalid) {
       this.rideForm.markAllAsTouched();
       const timeError = this.rideForm.errors?.['message'];

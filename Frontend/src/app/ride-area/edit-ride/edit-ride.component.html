@@ -363,6 +363,7 @@
             [disabled]="extraStops.length >= 2"
             [class.disabled-button]="extraStops.length >= 2"
             class="addBtn"
+            *ngIf="!extraStops.errors?.['consecutiveDuplicateStops'] && !extraStops.errors?.['duplicateExtraStops']"
           >
             <i
               [class.pi-plus]="extraStops.length < 2"
@@ -377,16 +378,10 @@
           </button>
 
           <small
-            *ngIf="extraStops.errors?.['sameStopAsDestination']"
+            *ngIf="extraStops.errors?.['consecutiveDuplicateStops'] || extraStops.errors?.['duplicateExtraStops']"
             class="error-text"
           >
-            תחנה נוספת לא יכולה להיות זהה לתחנה העיקרית
-          </small>
-          <small
-            *ngIf="extraStops.errors?.['duplicateExtraStops']"
-            class="error-text"
-          >
-            תחנות נוספות לא יכולות להיות כפולות
+            תחנות עוקבות לא יכולות להיות זהות.
           </small>
         </div>
       </div>

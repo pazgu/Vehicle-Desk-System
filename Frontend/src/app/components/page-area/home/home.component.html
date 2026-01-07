@@ -373,7 +373,7 @@
                 [disabled]="extraStops.length >= 2"
                 [class.disabled-button]="extraStops.length >= 2"
                 class="addBtn"
-                *ngIf="extraStops"
+                *ngIf="extraStops && !extraStops.errors?.['consecutiveDuplicateStops'] && !extraStops.errors?.['duplicateExtraStops']"
                 pButton
               >
                 <i
@@ -387,14 +387,9 @@
                     : "הוסף עוד תחנה (אופציונלי)"
                 }}
               </button>
+
               <small
-                *ngIf="extraStops.errors?.['consecutiveDuplicateStops']"
-                class="error-text"
-              >
-                תחנות עוקבות לא יכולות להיות זהות.
-              </small>
-              <small
-                *ngIf="extraStops.errors?.['duplicateExtraStops']"
+                *ngIf="extraStops.errors?.['consecutiveDuplicateStops'] || extraStops.errors?.['duplicateExtraStops']"
                 class="error-text"
               >
                 תחנות עוקבות לא יכולות להיות זהות.
