@@ -182,6 +182,8 @@ async def edit_user_by_id_route(
         raise HTTPException(status_code=403, detail="Not authorized to edit this user's data.")
 
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id_from_token)})
+    old_role = user.role
+    old_is_raan = user.isRaan
 
     if department_id == "vip":
         vip_dep = get_or_create_vip_department(db, user_id_from_token)
@@ -251,6 +253,9 @@ async def edit_user_by_id_route(
                 status_code=400,
                 detail=f"Invalid role provided: {role}. Must be one of: {', '.join([r.value for r in UserRole])}"
             )
+        was_regular_supervisor = (old_role == UserRole.supervisor and not old_is_raan)
+        is_now_regular_supervisor = (new_role == UserRole.supervisor and not is_raan_bool)
+       
         user.role = new_role
         user.isRaan = is_raan_bool
 
@@ -279,15 +284,21 @@ async def edit_user_by_id_route(
                     status_code=400,
                     detail="Invalid department ID format. Must be a valid UUID."
                 )
+        if was_regular_supervisor and not is_now_regular_supervisor:
+            department = db.query(Department).filter(
+                Department.supervisor_id == user.employee_id
+            ).first()
+            if department:
+                department.supervisor_id = None
+                db.add(department)
+   
     try:
         db.commit()
-    except Exception:
+    except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail="Failed to update user due to a database error.")
+        raise HTTPException(status_code=500, detail=f"Failed to update user: {str(e)}")
 
     db.refresh(user)
-
-    
     await sio.emit('user_block_status_updated', {
         "id": str(user.employee_id),
         "is_blocked": user.is_blocked,
@@ -1373,7 +1384,10 @@ def manual_mileage_edit(
     }
 @router.get("/all/supervisors", response_model=List[UserResponse])
 def get_supervisors(db: Session = Depends(get_db)):
-    supervisors = db.query(User).filter(User.role == UserRole.supervisor).all()
+    supervisors = db.query(User).filter(
+        User.role == UserRole.supervisor,
+        User.isRaan == False 
+    ).all()
     return supervisors
 
 @router.post("/departments", response_model=DepartmentOut, status_code=201)
