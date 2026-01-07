@@ -1,9 +1,8 @@
-/* Full CSS - Complete Styles */
 
 :host {
   display: block;
   min-height: 100vh;
-  background-image: url("/assets/images/vehicle-dashboard-bg.png");
+  background-color: #fff9f6;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -433,17 +432,12 @@
   max-width: 500px;
   width: 90%;
   padding: 2rem;
-  background: linear-gradient(
-    135deg,
-    rgba(243, 227, 227, 0.98) 0%,
-    rgba(246, 242, 242, 0.95) 100%
-  );
-  border: 1px solid rgba(125, 29, 29, 0.6);
+  background: #fffdfb;
   border-radius: 16px;
   backdrop-filter: blur(10px);
   box-shadow: 
-    0 20px 50px rgba(0, 0, 0, 0.15),
-    0 8px 32px rgba(0, 0, 0, 0.08);
+    0 20px 50px rgba(184, 59, 59, 0.15),
+    0 8px 32px rgba(225, 57, 57, 0.08);
   transform: scale(0.9) translateY(-20px);
   opacity: 0;
   animation: modalSlideIn 0.4s ease-out forwards;
@@ -542,29 +536,28 @@
 .modal-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
+  gap: 10px;
   margin-top: 0.5rem;
 }
 
 .modal-actions button {
-  padding: 0.75rem 1.5rem;
+  padding: 0.5rem 1rem;
   border: none;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-size: 1rem;
+  font-size: 0.9rem;
 }
 
 .save-button-modal {
-  background: #942222;
+  background: #943838;
   color: white !important;
 }
 
 .save-button-modal:hover:not(:disabled) {
-  transform: translateY(-2px);
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.35);
+  background: #a84040;
+  box-shadow: 0 8px 20px rgba(246, 59, 59, 0.35);
 }
 
 .save-button-modal:disabled {
@@ -587,7 +580,6 @@
   background: rgba(249, 250, 251, 1);
   border-color: rgba(156, 163, 175, 0.8);
   color: #374151;
-  transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 }
 
