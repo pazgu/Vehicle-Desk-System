@@ -5,7 +5,6 @@ from datetime import datetime
 
 
 class RideRequirementBase(BaseModel):
-    title: str
     items: List[str]
 
 
@@ -14,7 +13,6 @@ class RideRequirementCreate(RideRequirementBase):
 
 
 class RideRequirementUpdate(BaseModel):
-    title: str                
     items: List[str]         
     updated_by: Optional[UUID] = None  
 
