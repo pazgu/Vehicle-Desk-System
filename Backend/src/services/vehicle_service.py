@@ -161,8 +161,8 @@ def get_vehicles_for_ride_edit(
                 original_vehicle = db.query(Vehicle).filter(
                     Vehicle.id == original_vehicle_id
                 ).first()
-        except Exception as e:
-            print(f"Error fetching original vehicle: {e}")
+        except Exception:
+            print(f"Error fetching original vehicle")
     now = datetime.utcnow()
     query = (
         db.query(Vehicle)
@@ -254,7 +254,11 @@ def get_vehicles_for_ride_edit(
             vehicles.insert(0, original_vehicle)
     if not vehicles:
         return []
-    electric, hybrid, fuel, electric_low = [], [], [], []
+    electric = []
+    electric_low = []
+    hybrid = []
+    fuel = []
+    
     for v in vehicles:
         try:
             if v.fuel_type == "electric":
@@ -273,14 +277,19 @@ def get_vehicles_for_ride_edit(
             print(f"Error processing vehicle {v.id}: {e}")
             continue
     if distance_km <= 200 and electric:
-        return electric
+        prioritized_vehicles = electric
     elif hybrid:
-        return hybrid
+        prioritized_vehicles = hybrid
     elif fuel:
-        return fuel
+        prioritized_vehicles = fuel
     else:
-        return electric_low
-
+        prioritized_vehicles = electric_low
+    for v in prioritized_vehicles:
+        v.is_recommended = True
+    other_vehicles = [v for v in vehicles if v not in prioritized_vehicles]
+    for v in other_vehicles:
+        v.is_recommended = False
+    return prioritized_vehicles + other_vehicles
 def get_vip_vehicles_for_ride(
     db: Session,
     start_time: Optional[datetime] = None,

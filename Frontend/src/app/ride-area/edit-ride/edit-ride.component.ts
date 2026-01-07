@@ -48,6 +48,7 @@ export class EditRideComponent implements OnInit {
   originalVehicleType: string | undefined = undefined;
   selectedCarId: string = '';
   isDropdownOpen: boolean = false;
+  fuelTypeTranslations: { [key: string]: string } = {};
 
   allCars: {
     id: string;
@@ -60,6 +61,7 @@ export class EditRideComponent implements OnInit {
     mileage: number;
     image_url: string;
     vehicle_model: string;
+    is_recommended?: boolean;
   }[] = [];
 
   availableCars: typeof this.allCars = [];
@@ -239,6 +241,34 @@ export class EditRideComponent implements OnInit {
     }
     return null;
   };
+  private refreshVehiclesIfReady(): void {
+    const distance = this.rideForm.get('estimated_distance_km')?.value;
+    const rideDate = this.rideForm.get('ride_date')?.value;
+    const vehicleType = this.rideForm.get('vehicle_type')?.value;
+    const rideDateNight = this.rideForm.get('ride_date_night_end')?.value;
+    const period = this.rideForm.get('ride_period')?.value;
+    const startTime = this.rideForm.get('start_time')?.value;
+    const endTime = this.rideForm.get('end_time')?.value;
+    if (!distance || !rideDate || !vehicleType || !startTime || !endTime) {
+      return;
+    }
+    if (period === 'night' && !rideDateNight) {
+      return;
+    }
+    const startDateTime = `${rideDate}T${startTime}:00`;
+    const endDateTime = period === 'night' 
+      ? `${rideDateNight}T${endTime}:00`
+      : `${rideDate}T${endTime}:00`;
+    this.loadVehiclesForEditRide(
+      distance,
+      rideDate,
+      vehicleType,
+      startDateTime,
+      endDateTime,
+      this.originalVehicleId,
+      this.rideId
+    );
+  }
 
   private onPeriodChange(value: string): void {
     const nightEndControl = this.rideForm.get('ride_date_night_end');
@@ -260,7 +290,7 @@ export class EditRideComponent implements OnInit {
     rideDateControl?.updateValueAndValidity();
     nightEndControl?.updateValueAndValidity();
     this.updateRideTypeNote();
-    this.filterAvailableVehicles();
+    this.refreshVehiclesIfReady();
   }
 
   calculateMinDate(daysAhead: number): string {
@@ -289,25 +319,18 @@ export class EditRideComponent implements OnInit {
     this.buildForm();
     this.fetchVehicleTypes();
 
-    this.rideForm.get('start_time')?.valueChanges.subscribe((startTime) => {
-      if (!startTime) {
-        this.filteredEndTimes = [...this.timeOptions];
-        return;
-      }
-      this.updateRideTypeNote();
-      this.updateFilteredEndTimes(startTime);
-    });
+    this.rideForm.get('ride_date')?.valueChanges
+      .pipe(debounceTime(800), distinctUntilChanged())
+      .subscribe(() => {
+        this.updateMinEndDate();
+        this.updateRideTypeNote();
+        this.updateExtendedRideReasonValidation();
+        this.refreshVehiclesIfReady();
+      });
 
-    this.rideForm.get('ride_date')?.valueChanges.subscribe(() => {
-      this.updateMinEndDate();
-      this.updateRideTypeNote();
-      this.filterAvailableVehicles();
-      this.updateExtendedRideReasonValidation();
-    });
-
-    this.rideForm
-      .get('ride_date_night_end')
-      ?.valueChanges.subscribe((endDate) => {
+    this.rideForm.get('ride_date_night_end')?.valueChanges
+      .pipe(debounceTime(800), distinctUntilChanged())
+      .subscribe((endDate) => {
         if (endDate) {
           const startDate = this.rideForm.get('ride_date')?.value;
           if (startDate && endDate === startDate) {
@@ -324,13 +347,35 @@ export class EditRideComponent implements OnInit {
         this.updateRideTypeNote();
         this.updateFilteredEndTimes();
         this.updateExtendedRideReasonValidation();
+        this.refreshVehiclesIfReady();
       });
 
-    this.rideForm.get('end_time')?.valueChanges.subscribe((endTime) => {
-      this.updateRideTypeNote();
-      this.filterAvailableVehicles();
-      this.updateFilteredEndTimes();
-    });
+    this.rideForm.get('start_time')?.valueChanges
+      .pipe(debounceTime(500), distinctUntilChanged())
+      .subscribe((startTime) => {
+        if (!startTime) {
+          this.filteredEndTimes = [...this.timeOptions];
+          return;
+        }
+        this.updateRideTypeNote();
+        this.updateFilteredEndTimes(startTime);
+        this.refreshVehiclesIfReady();
+      });
+    this.rideForm.get('end_time')?.valueChanges
+      .pipe(debounceTime(500), distinctUntilChanged())
+      .subscribe((endTime) => {
+        this.updateRideTypeNote();
+        this.updateFilteredEndTimes();
+        this.refreshVehiclesIfReady();
+      });
+    this.rideForm.get('estimated_distance_km')?.valueChanges
+      .pipe(debounceTime(800), distinctUntilChanged())
+      .subscribe((value) => {
+        if (value) {
+          this.estimated_distance_with_buffer = +(value * 1.1).toFixed(2);
+        }
+        this.refreshVehiclesIfReady();
+      });
 
     this.setupDistanceCalculationSubscriptions();
 
@@ -348,10 +393,10 @@ export class EditRideComponent implements OnInit {
         fourByFourControl?.setValue('');
       }
       fourByFourControl?.updateValueAndValidity();
+      this.refreshVehiclesIfReady();
       const carControl = this.rideForm.get('car');
       const currentCarValue = carControl?.value;
 
-      this.filterAvailableVehicles();
       setTimeout(() => {
         if (!carControl) return;
 
@@ -387,9 +432,22 @@ export class EditRideComponent implements OnInit {
           carControl.setValue(null, { emitEvent: false });
         }
       }, 0);
-      this.rideForm.get('ride_period')?.valueChanges.subscribe((value) => {
+    });
+    this.rideForm.get('ride_period')?.valueChanges.subscribe((value) => {
       this.onPeriodChange(value);
     });
+    this.vehicleService.getFuelTypeTranslations().subscribe({
+      next: (translations) => {
+        this.fuelTypeTranslations = translations;
+      },
+      error: (err) => {
+        console.error('Failed to load fuel type translations:', err);
+        this.fuelTypeTranslations = {
+          electric: 'חשמלי',
+          hybrid: 'היברידי',
+          gasoline: 'בנזין',
+        };
+      },
     });
     this.loadRide();
   }
@@ -432,8 +490,13 @@ export class EditRideComponent implements OnInit {
     if (selectedDate && startTime && endTime) {
       const distance = this.rideForm.get('estimated_distance_km')?.value;
       if (distance) {
+        const ridePeriod = this.rideForm.get('ride_period')?.value;
+        const nightEndDate = this.rideForm.get('ride_date_night_end')?.value;
+        
         const startDateTime = `${selectedDate}T${startTime}:00`;
-        const endDateTime = `${selectedDate}T${endTime}:00`;
+        const endDateTime = ridePeriod === 'night' && nightEndDate
+          ? `${nightEndDate}T${endTime}:00`
+          : `${selectedDate}T${endTime}:00`;
         this.loadVehiclesForEditRide(
           distance,
           selectedDate,
@@ -639,7 +702,15 @@ export class EditRideComponent implements OnInit {
               return;
             }
 
-            const pickFirstAvailable = () => {
+            const pickFirstRecommended = () => {
+              const firstRecommended = this.availableCars.find(
+                (car) => car.is_recommended && !this.isCarDisabled(car)
+              );
+              if (firstRecommended) {
+                this.selectedCarId = firstRecommended.id;
+                carControl.setValue(firstRecommended.id, { emitEvent: false });
+                return;
+              }
               const firstAvailable = this.availableCars.find(
                 (car) => !this.isCarDisabled(car)
               );
@@ -661,10 +732,10 @@ export class EditRideComponent implements OnInit {
                 this.selectedCarId = selectedVehicle.id;
                 carControl.setValue(selectedVehicle.id, { emitEvent: false });
               } else {
-                pickFirstAvailable();
+                pickFirstRecommended();
               }
             } else {
-              pickFirstAvailable();
+              pickFirstRecommended();
             }
 
             this.isLoadingExistingRide = false;
@@ -763,13 +834,6 @@ export class EditRideComponent implements OnInit {
       .subscribe(() => {
         this.calculateRouteDistance();
       });
-    this.rideForm
-      .get('estimated_distance_km')
-      ?.valueChanges.subscribe((value) => {
-        if (value) {
-          this.estimated_distance_with_buffer = +(value * 1.1).toFixed(2);
-        }
-      });
   }
 
   private calculateRouteDistance(): void {
@@ -839,7 +903,7 @@ export class EditRideComponent implements OnInit {
         this.estimated_distance_with_buffer = +(realDistance * 1.1).toFixed(2);
         this.rideForm
           .get('estimated_distance_km')
-          ?.setValue(realDistance, { emitEvent: false });
+          ?.setValue(realDistance);
         this.isLoadingDistance = false;
       },
       error: (err) => {
@@ -849,6 +913,9 @@ export class EditRideComponent implements OnInit {
         this.isLoadingDistance = false;
       },
     });
+  }
+  getFuelTypeLabel(fuelType: string): string {
+    return this.fuelTypeTranslations[fuelType] || fuelType;
   }
 
   submit(): void {
@@ -1067,11 +1134,27 @@ export class EditRideComponent implements OnInit {
 
     return endMinutes <= startMinutes || endMinutes - startMinutes < 15;
   }
+  isRecommendedVehicle(vehicleId: string): boolean {
+    const vehicle = this.availableCars.find(v => v.id === vehicleId);
+    return vehicle?.is_recommended ?? false;
+  }
   selectCar(carId: string) {
-    if (!this.isCarDisabled(this.allCars.find((c) => c.id === carId)!)) {
-      this.selectedCarId = carId;
-      this.rideForm.get('car')?.setValue(carId);
-      this.isDropdownOpen = false;
+    const car = this.allCars.find((c) => c.id === carId);
+    
+    if (!car || this.isCarDisabled(car)) {
+      return;
+    }
+    this.selectedCarId = carId;
+    this.rideForm.get('car')?.setValue(carId);
+    this.isDropdownOpen = false;
+    if (!car.is_recommended) {
+      const recommendedCar = this.availableCars.find(c => c.is_recommended && !this.isCarDisabled(c));
+      if (recommendedCar) {
+        this.toastService.show(
+          `שים לב: בחרת רכב שאינו מומלץ. הרכב המומלץ למרחק זה הוא ${recommendedCar.vehicle_model}`,
+          'info',
+        );
+      }
     }
   }
   getSelectedCar(): any | undefined {

@@ -969,3 +969,54 @@ option:hover {
   background-color: #e8f5e9;
   color: #2e7d32;
 }
+.car-model-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.recommended-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  color: white;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
+}
+.select-options .option.recommended {
+  background: linear-gradient(to right, rgba(76, 175, 80, 0.05) 0%, transparent 100%);
+  border-right: 3px solid #4CAF50;
+}
+
+.select-options .option.recommended:hover:not(.disabled) {
+  background: linear-gradient(to right, rgba(76, 175, 80, 0.1) 0%, transparent 100%);
+}
+
+.select-options .option.recommended.selected {
+  background: linear-gradient(to right, rgba(76, 175, 80, 0.15) 0%, transparent 100%);
+}
+
+@keyframes badge-pulse {
+  0%, 100% {
+    box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
+  }
+  50% {
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4);
+  }
+}
+
+.recommended-badge {
+  animation: badge-pulse 2s ease-in-out infinite;
+}
+.selected-car .car-model-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.selected-car .recommended-badge {
+  font-size: 0.7rem;
+  padding: 1px 6px;
+}

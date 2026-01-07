@@ -453,7 +453,10 @@
           class="car-thumbnail"
         />
         <div class="car-info">
-          <span class="car-model">{{ getSelectedCar().vehicle_model }}</span>
+          <div class="car-model-wrapper">
+            <span class="car-model">{{ getSelectedCar().vehicle_model }}</span>
+            <span class="recommended-badge" *ngIf="getSelectedCar().is_recommended">מומלץ</span>
+          </div>
           <span class="car-fuel-type">{{ getFuelTypeLabel(getSelectedCar().fuel_type) }}</span>
         </div>
       </div>
@@ -473,6 +476,7 @@
         class="option"
         [class.disabled]="isPendingVehicle(car.id)"
         [class.selected]="car.id === selectedCarId"
+        [class.recommended]="car.is_recommended"
         (click)="selectCar(car.id)"
         [title]="isPendingVehicle(car.id) ? 'רכב זה ממתין לעיבוד לתאריך/תקופה שנבחרו' : ''"
       >
@@ -482,7 +486,10 @@
           class="car-thumbnail"
         />
         <div class="car-info">
-          <span class="car-model">{{ car.vehicle_model }}</span>
+          <div class="car-model-wrapper">
+            <span class="car-model">{{ car.vehicle_model }}</span>
+            <span class="recommended-badge" *ngIf="car.is_recommended">מומלץ</span>
+          </div>
           <span class="car-fuel-type">{{ getFuelTypeLabel(car.fuel_type) }}</span>
         </div>
       </div>

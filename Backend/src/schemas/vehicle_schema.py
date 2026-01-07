@@ -21,6 +21,7 @@ class VehicleOut(BaseModel):
     lease_expiry: Optional[datetime] = None  
     department_id: Optional[UUID] = None
     max_daily_distance_km: Optional[float] = None
+    is_recommended: bool = False
 
 
     class Config:
