@@ -832,7 +832,7 @@ export class EditRideComponent implements OnInit {
         let realDistance = response.distance_km;
 
         if (hasTelAvivAsStop) {
-          realDistance += 30;
+          realDistance += 20;
         }
         
         this.fetchedDistance = realDistance;

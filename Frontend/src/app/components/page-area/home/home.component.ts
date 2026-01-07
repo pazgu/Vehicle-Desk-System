@@ -842,7 +842,7 @@ if (start.getTime() < now.getTime()) {
         let realDistance = response.distance_km;
 
         if (hasTelAviv) {
-          realDistance += 30;
+          realDistance += 20;
         }
 
         this.fetchedDistance = realDistance;
