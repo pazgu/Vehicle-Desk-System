@@ -6,6 +6,7 @@ import {
   ValidationErrors,
   ValidatorFn,
   Validators,
+  AbstractControl
 } from '@angular/forms';
 
 import {
@@ -51,6 +52,32 @@ function createSameStopAndDestinationValidator(form: FormGroup): ValidatorFn {
     return null;
   };
 }
+
+function createExtraStopsValidator(form: FormGroup): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const formArray = control as FormArray;
+
+    if (!formArray || formArray.length === 0) {
+      return null;
+    }
+
+    const stopIds = formArray.controls
+      .map(ctrl => ctrl.value)
+      .filter(Boolean);
+
+    if (stopIds.length !== new Set(stopIds).size) {
+      return { duplicateExtraStops: true };
+    }
+
+    const mainStop = form.get('stop')?.value;
+    if (mainStop && stopIds.includes(mainStop)) {
+      return { consecutiveDuplicateStops: true };
+    }
+
+    return null;
+  };
+}
+
 
 export function buildRideForm(
   fb: FormBuilder,
@@ -103,8 +130,10 @@ export function buildRideForm(
   );
 
   const extraStopsArray = form.get('extraStops') as FormArray;
-  extraStopsArray.setValidators(createSameStopAndDestinationValidator(form));
-
+  extraStopsArray.setValidators([
+    createSameStopAndDestinationValidator(form),
+    createExtraStopsValidator(form),
+  ]);
   return form;
 }
 

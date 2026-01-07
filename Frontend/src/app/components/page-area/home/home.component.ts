@@ -654,13 +654,20 @@ if (start.getTime() < now.getTime()) {
     const startId = extractCityId(startRaw);
     const stopId = extractCityId(stopRaw);
 
-    if (shouldResetDistance(startId, stopId)) {
+    if (!startId || !stopId) {
       this.resetDistanceValues();
       return;
     }
 
-    const routeStops = buildRouteStops(extraStops, stopId!);
-    this.fetchEstimatedDistance(startId!, routeStops);
+    if (startId === stopId) {
+      this.fetchedDistance = 30;
+      this.estimated_distance_with_buffer = +(30 * 1.1).toFixed(2);
+      this.rideForm.get('estimated_distance_km')?.setValue(30, { emitEvent: false });
+      return;
+    }
+
+    const routeStops = buildRouteStops(extraStops, stopId);
+    this.fetchEstimatedDistance(startId, routeStops);
   }
 
   private resetDistanceValues(): void {
@@ -899,9 +906,10 @@ if (start.getTime() < now.getTime()) {
     const period = this.rideForm.get('ride_period')?.value;
     const startDateTime = buildDateTime(rideDate, startHour, startMinute);
     const endDateTime = buildDateTime(rideDate, endHour, endMinute);
+    const hasDistance = distance !== null && distance !== undefined && distance !== '';
 
     if (period !== 'morning') {
-      if (distance && rideDateNight && vehicleType) {
+      if (hasDistance && rideDateNight && vehicleType) {
         const isoDate = toIsoDate(rideDate);
         this.loadVehicles(
           distance,
@@ -916,7 +924,7 @@ if (start.getTime() < now.getTime()) {
         this.rideForm.get('car')?.setValue(null);
       }
     } else {
-      if (distance && rideDate && vehicleType) {
+      if (hasDistance && rideDate && vehicleType) {
         const isoDate = toIsoDate(rideDate);
         this.loadVehicles(
           distance,

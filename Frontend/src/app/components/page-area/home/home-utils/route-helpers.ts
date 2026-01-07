@@ -30,7 +30,6 @@ export function shouldResetDistance(
   stopId: string | null
 ): boolean {
   if (!startId || !stopId) return true;
-  if (startId === stopId) return true;
   return false;
 }
 
