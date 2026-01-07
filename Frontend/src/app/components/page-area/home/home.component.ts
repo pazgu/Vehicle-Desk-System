@@ -87,6 +87,7 @@ import {
 } from '../../page-area/confirm-dialog/confirm-dialog.component';
 import { RebookData } from '../../../services/myrides.service';
 import { Supervisor } from '../../../models/user.model';
+import {debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 interface Employee {
   id: string;
@@ -374,6 +375,30 @@ export class NewRideComponent implements OnInit {
       lower.includes('הרכב מוקפא')
     );
   }
+  private refreshVehiclesIfReady(): void {
+    const distance = this.rideForm.get('estimated_distance_km')?.value;
+    const rideDate = this.rideForm.get('ride_date')?.value;
+    const vehicleType = this.rideForm.get('vehicle_type')?.value;
+    const rideDateNight = this.rideForm.get('ride_date_night_end')?.value;
+    const period = this.rideForm.get('ride_period')?.value; 
+    const startHour = this.rideForm.get('start_hour')?.value;
+    const startMinute = this.rideForm.get('start_minute')?.value;
+    const endHour = this.rideForm.get('end_hour')?.value;
+    const endMinute = this.rideForm.get('end_minute')?.value;
+    if (!distance || !rideDate || !vehicleType || 
+        !startHour || !startMinute || !endHour || !endMinute) {
+      return;
+    }
+    if (period === 'night' && !rideDateNight) {
+      return;
+    }
+    const startDateTime = buildDateTime(rideDate, startHour, startMinute);
+    const endDateTime = period === 'night' 
+      ? buildDateTime(rideDateNight, endHour, endMinute)
+      : buildDateTime(rideDate, endHour, endMinute);
+    const isoDate = toIsoDate(rideDate);
+    this.loadVehicles(distance, isoDate, vehicleType, startDateTime, endDateTime);
+  }
 
   private openVehicleFrozenDialog(): void {
     const dialogData: ConfirmDialogData = {
@@ -581,8 +606,38 @@ export class NewRideComponent implements OnInit {
       this.updateAvailableCars();
       this.updateExtendedRideReasonValidation();
     });
-    this.rideForm.get('ride_date_night_end')?.valueChanges.subscribe(() => {
-      this.updateExtendedRideReasonValidation();
+    this.rideForm.get('ride_date')?.valueChanges
+      .pipe(
+        debounceTime(800),
+        distinctUntilChanged()
+      )
+      .subscribe(() => {
+        this.refreshVehiclesIfReady();
+      });
+    this.rideForm.get('ride_date_night_end')?.valueChanges
+      .pipe(debounceTime(800), distinctUntilChanged())
+      .subscribe(() => {
+        this.refreshVehiclesIfReady();
+      });
+    this.rideForm.get('start_hour')?.valueChanges
+      .pipe(debounceTime(500), distinctUntilChanged())
+      .subscribe(() => {
+        this.refreshVehiclesIfReady();
+      });
+    this.rideForm.get('start_minute')?.valueChanges
+      .pipe(debounceTime(500), distinctUntilChanged())
+      .subscribe(() => {
+        this.refreshVehiclesIfReady();
+      });
+    this.rideForm.get('end_hour')?.valueChanges
+      .pipe(debounceTime(500), distinctUntilChanged())
+      .subscribe(() => {
+        this.refreshVehiclesIfReady();
+      });
+    this.rideForm.get('end_minute')?.valueChanges
+      .pipe(debounceTime(500), distinctUntilChanged())
+      .subscribe(() => {
+        this.refreshVehiclesIfReady();
     });
     this.setupDistanceCalculationSubscriptions();
     this.rideForm.get('vehicle_type')?.valueChanges.subscribe((value) => {
@@ -611,10 +666,21 @@ export class NewRideComponent implements OnInit {
       this.calculateRouteDistance();
     });
 
-    this.rideForm
-      .get('estimated_distance_km')
-      ?.valueChanges.subscribe((value) => {
-        this.estimated_distance_with_buffer = applyDistanceBuffer(value);
+    this.rideForm.get('estimated_distance_km')?.valueChanges
+      .pipe(debounceTime(800), distinctUntilChanged())
+      .subscribe((distance) => {
+        const rideDate = this.rideForm.get('ride_date')?.value;
+        const vehicleType = this.rideForm.get('vehicle_type')?.value;
+        const startHour = this.rideForm.get('start_hour')?.value;
+        const startMinute = this.rideForm.get('start_minute')?.value;
+        const endHour = this.rideForm.get('end_hour')?.value;
+        const endMinute = this.rideForm.get('end_minute')?.value;
+        if (distance && rideDate && vehicleType && startHour && startMinute && endHour && endMinute) {
+          this.refreshVehiclesIfReady();
+        } 
+        else if (distance && this.allCars.length > 0 && this.availableCars.length > 0) {
+          this.updateAvailableCars();
+        }
       });
   }
   private calculateRouteDistance(): void {
@@ -787,7 +853,7 @@ export class NewRideComponent implements OnInit {
         this.estimated_distance_with_buffer = +(realDistance * 1.1).toFixed(2);
         this.rideForm
           .get('estimated_distance_km')
-          ?.setValue(realDistance, { emitEvent: false });
+          ?.setValue(realDistance);
         this.isLoadingDistance = false;
       },
       error: (err) => {
@@ -807,33 +873,34 @@ export class NewRideComponent implements OnInit {
 
     this.availableCars = filtered;
 
-    syncCarControlWithAvailableCars(
-      carControl,
-      this.availableCars,
-      (id: string) => this.isPendingVehicle(id)
-    );
-
     if (this.availableCars.length === 0) {
       this.selectedCarId = '';
       carControl?.setValue(null, { emitEvent: false });
       return;
     }
 
-    if (
-      carControl?.value &&
-      this.availableCars.some((c) => c.id === carControl.value)
-    ) {
-      this.selectedCarId = carControl.value;
-      return;
-    }
-
     const firstCarId = this.availableCars[0].id;
-    this.selectedCarId = firstCarId;
-    carControl?.setValue(firstCarId, { emitEvent: false });
-    carControl?.markAsDirty();
-    carControl?.markAsTouched();
-
-    this.loadFuelType(firstCarId);
+    if (!this.isPendingVehicle(firstCarId)) {
+      this.selectedCarId = firstCarId;
+      carControl?.setValue(firstCarId, { emitEvent: false });
+      carControl?.markAsDirty();
+      carControl?.markAsTouched();
+      this.loadFuelType(firstCarId);
+    } else {
+      const firstAvailable = this.availableCars.find(
+        (car) => !this.isPendingVehicle(car.id)
+      );
+      if (firstAvailable) {
+        this.selectedCarId = firstAvailable.id;
+        carControl?.setValue(firstAvailable.id, { emitEvent: false });
+        carControl?.markAsDirty();
+        carControl?.markAsTouched();
+        this.loadFuelType(firstAvailable.id);
+      } else {
+        this.selectedCarId = '';
+        carControl?.setValue(null, { emitEvent: false });
+      }
+    }
   }
 
   private setDefaultStartAndDestination(): void {
