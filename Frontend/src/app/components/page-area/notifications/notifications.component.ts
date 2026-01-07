@@ -1,9 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  AdminNotificationResponse,
-  NotificationService,
-} from '../../../services/notification';
+import { NotificationService } from '../../../services/notification';
 import { formatDistanceToNow } from 'date-fns';
 import { MyNotification } from '../../../models/notification';
 import { he } from 'date-fns/locale';
@@ -12,10 +9,7 @@ import { SocketService } from '../../../services/socket.service';
 import { ToastService } from '../../../services/toast.service';
 import { ChangeDetectorRef } from '@angular/core';
 import { Location } from '@angular/common';
-import { Dialog } from '@angular/cdk/dialog';
 import { RideDetailsComponent } from '../../../ride-area/ride-details/ride-details.component';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { Inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 
 @Component({
