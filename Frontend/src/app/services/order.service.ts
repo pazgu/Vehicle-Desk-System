@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { RideDashboardItem } from '../models/ride-dashboard-item/ride-dashboard-item.module';
 import { OrderCardItem } from '../models/order-card-item.module';
-import { RideLocationItem } from '../models/ride.model';
+
 @Injectable({
   providedIn: 'root',
 })
@@ -12,9 +12,21 @@ export class OrderService {
   private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
+
+  private getAuthHeaders(): HttpHeaders {
+    const token = localStorage.getItem('access_token');
+    return new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    });
+  }
+
   getDepartmentOrders(departmentId: string): Observable<RideDashboardItem[]> {
     const url = `${this.apiUrl}/orders/${departmentId}`;
-    return this.http.get<RideDashboardItem[]>(url);
+    return this.http.get<RideDashboardItem[]>(url, {
+      headers: this.getAuthHeaders(),
+    });
   }
 
   getDepartmentSpecificOrder(
@@ -22,7 +34,9 @@ export class OrderService {
     orderId: string
   ): Observable<OrderCardItem> {
     const url = `${this.apiUrl}/orders/${departmentId}/${orderId}`;
-    return this.http.get<OrderCardItem>(url);
+    return this.http.get<OrderCardItem>(url, {
+      headers: this.getAuthHeaders(),
+    });
   }
 
   updateOrderStatus(
@@ -31,7 +45,6 @@ export class OrderService {
     status: string
   ): Observable<any> {
     const url = `${this.apiUrl}/orders/${departmentId}/${orderId}/update/${status}`;
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.patch(url, null, { headers });
+    return this.http.patch(url, null, { headers: this.getAuthHeaders() });
   }
 }

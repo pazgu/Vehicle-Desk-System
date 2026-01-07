@@ -16,6 +16,7 @@ import { SocketService } from '../../../../services/socket.service';
 import { Subscription } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
 import { Location } from '@angular/common';
+import { ROLES, ROLE_LABELS } from '../../../../constants/roles';
 
 @Component({
   selector: 'app-user-data',
@@ -29,13 +30,8 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
   userId: string | null = null;
   user: any = null;
   departments: Array<{ id: string; name: string }> = [];
-  roles = [
-    { key: 'admin', label: 'אדמין' },
-    { key: 'employee', label: 'עובד' },
-    { key: 'supervisor', label: 'מנהל מחלקה' },
-    { key: 'inspector', label: 'בודק רכבים' },
-    { key: 'raan', label: 'רע"ן' },
-  ];
+  roles = ROLES;
+  roleLabels = ROLE_LABELS;
   selectedFile: File | null = null;
   selectedFileName = '';
   hasExistingLicenseFile = false;
@@ -206,7 +202,7 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
       next: (rolesData) => {
         this.roles = rolesData.map(role => ({
           key: role,
-          label: this.getRoleLabel(role)
+          label: ROLE_LABELS[role] || role
         }));
         const hasRaan = this.roles.some(r => r.key === 'raan');
         if (!hasRaan) {
@@ -226,16 +222,6 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
     });
   }
 
-  private getRoleLabel(role: string): string {
-    const roleLabels: { [key: string]: string } = {
-      'admin': 'אדמין',
-      'employee': 'עובד',
-      'supervisor': 'מנהל מחלקה',
-      'inspector': 'בודק רכבים',
-      'raan': 'רע"ן',
-    };
-    return roleLabels[role] || role;
-  }
 
   setupRoleBasedValidation(): void {
     const roleSub = this.userForm
