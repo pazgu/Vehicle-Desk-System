@@ -30,14 +30,12 @@ export class AdminGuidelinesComponent implements OnInit {
 
   ngOnInit(): void {
     this.form = this.fb.group({
-      title: ['', Validators.required],
       items: this.fb.array([]),
     });
 
     this.guidelinesService.getLatest().subscribe({
       next: (doc) => {
         if (!doc) return;
-        this.form.patchValue({ title: doc.title });
         this.items.clear();
 
         doc.items.forEach((text: string) => this.addItem(text));
@@ -76,12 +74,8 @@ export class AdminGuidelinesComponent implements OnInit {
   }
 
   canSave(): { valid: boolean; message: string } {
-    const titleValue = this.form.get('title')?.value?.trim();
     const itemsArray = this.items.value;
 
-    if (!titleValue) {
-      return { valid: false, message: 'יש להזין כותרת לפני השמירה' };
-    }
 
     if (itemsArray.length === 0) {
       return { valid: false, message: 'יש להוסיף לפחות הנחיה אחת לפני השמירה' };
@@ -113,7 +107,6 @@ export class AdminGuidelinesComponent implements OnInit {
     }
 
     const payload = {
-      title: this.form.value.title.trim(),
       items: this.items.value.map((item: string) => item.trim()),
     };
 

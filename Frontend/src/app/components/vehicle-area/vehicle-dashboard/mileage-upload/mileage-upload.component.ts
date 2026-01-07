@@ -31,7 +31,23 @@ export class MileageUploadComponent {
   }
 
   uploadMileageReport() {
-    if (!this.selectedFile) return;
+    if (!this.selectedFile) {
+  this.uploadError = 'יש לבחור קובץ לפני העלאה';
+  return;
+}
+
+const fileName = this.selectedFile.name.toLowerCase();
+if (!fileName.endsWith('.xlsx')) {
+  this.uploadError = 'יש להעלות קובץ אקסל בפורמט ‎.xlsx בלבד';
+  return;
+}
+
+const maxMB = 5;
+if (this.selectedFile.size > maxMB * 1024 * 1024) {
+  this.uploadError = `הקובץ גדול מדי. הגודל המקסימלי הוא ${maxMB}MB`;
+  return;
+}
+
 
     this.isLoading = true;
     this.uploadError = null;
@@ -40,12 +56,20 @@ export class MileageUploadComponent {
 
     this.vehicleService.uploadMileageReport(this.selectedFile).subscribe({
       next: (response: any) => {
-        this.uploadSuccess = true;
-        this.uploadSummary = {
-          vehiclesUpdated: response.vehicles_updated || 0,
-          warnings: response.warnings || [],
-        };
-      },
+  this.uploadSuccess = true;
+
+  const updatedCount = Array.isArray(response.updated) ? response.updated.length : 0;
+  const errorsCount = Array.isArray(response.errors) ? response.errors.length : 0;
+
+  this.uploadSummary = {
+    vehiclesUpdated: updatedCount,
+    warnings:
+      errorsCount > 0
+        ? response.errors.map((e: any) => `שורה ${e.row}: ${e.error}`)
+        : [],
+  };
+},
+
       error: (err) => {
         this.uploadError = err.error?.detail || 'אירעה שגיאה בלתי צפויה';
       },
