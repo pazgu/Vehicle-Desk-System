@@ -35,6 +35,8 @@ export class SocketService {
     null
   );
 
+  public vehicleMileageUpdated$ = new BehaviorSubject<any>(null);
+
   constructor(private notificationService: NotificationService) {
     this.connectToSocket();
   }
@@ -151,6 +153,10 @@ export class SocketService {
     this.socket.on('new_vehicle_created', (data: any) => {
       this.newVehicle$.next(data);
     });
+    this.socket.on('vehicle_mileage_updated', (data: any) => {
+  this.vehicleMileageUpdated$.next(data);
+});
+
   }
 
   public sendMessage(eventName: string, data: any): void {

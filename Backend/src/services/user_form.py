@@ -221,6 +221,7 @@ async def process_completion_form(db: Session, user: User, form_data: Completion
 
         vehicle.last_used_at = ride.end_datetime
         vehicle.last_user_id = ride.user_id
+        vehicle.mileage = vehicle.mileage + (ride.actual_distance_km or ride.estimated_distance_km)
 
         is_emergency = form_data.emergency_event == 'true'
         vehicle_becomes_frozen = False
