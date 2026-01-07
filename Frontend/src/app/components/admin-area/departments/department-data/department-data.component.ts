@@ -113,7 +113,7 @@ export class DepartmentDataComponent implements OnInit {
     this.hoveredDepartmentId = departmentId;
   }
 
-  openEditModal(department: any) {
+openEditModal(department: any) {
     if (this.isUnassignedDepartment(department)) {
       this.toastService.show('לא ניתן לערוך את מחלקת "Unassigned"', 'error');
       return;
@@ -124,6 +124,22 @@ export class DepartmentDataComponent implements OnInit {
     }
     
     this.editedDepartmentId = department.id;
+    
+    if (department.supervisor_id) {
+      this.userService.getUserById(department.supervisor_id).subscribe({
+        next: (currentSupervisor) => {
+          const supervisorExists = this.editSupervisors.some(
+            (s) => s.employee_id === currentSupervisor.employee_id
+          );
+          if (!supervisorExists) {
+            this.editSupervisors = [currentSupervisor, ...this.users];
+          } else {
+            this.editSupervisors = [...this.users];
+          }
+        },
+      });
+    }
+    
     this.editDepartmentForm.patchValue({
       department_id: department.id,
       name: department.name,
