@@ -31,6 +31,10 @@ export class VehicleUsageComponent {
   currentMonthlyPage = 1;
   currentAllTimePage = 1;
   itemsPerPage = 4;
+  exportKilometers: number[] = [];
+exportRideCounts: number[] = [];
+exportLabels: string[] = [];
+
 
   months = [
     { value: '1', label: 'ינואר' },
@@ -156,6 +160,11 @@ export class VehicleUsageComponent {
             Number.isFinite(v.total_rides) ? v.total_rides : 0
           );
 
+          this.exportLabels = labels;
+          this.exportRideCounts = counts;
+          this.exportKilometers = kilometers;
+
+
           const backgroundColors = counts.map((count: number) => {
             if (count > 10) return '#FF5252';
             if (count >= 5) return '#FFC107';
@@ -242,6 +251,11 @@ export class VehicleUsageComponent {
             Number.isFinite(v.total_rides) ? v.total_rides : 0
           );
           const kilometers = data.stats.map((v) => v.total_km);
+
+          this.exportLabels = labels;
+this.exportRideCounts = counts;
+this.exportKilometers = kilometers;
+
 
           const backgroundColors = counts.map((count) => {
             if (count > 10) return '#FF5252';

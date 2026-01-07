@@ -182,6 +182,8 @@ async def edit_user_by_id_route(
         raise HTTPException(status_code=403, detail="Not authorized to edit this user's data.")
 
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id_from_token)})
+    old_role = user.role
+    old_is_raan = user.isRaan
 
     if department_id == "vip":
         vip_dep = get_or_create_vip_department(db, user_id_from_token)
@@ -251,6 +253,9 @@ async def edit_user_by_id_route(
                 status_code=400,
                 detail=f"Invalid role provided: {role}. Must be one of: {', '.join([r.value for r in UserRole])}"
             )
+        was_regular_supervisor = (old_role == UserRole.supervisor and not old_is_raan)
+        is_now_regular_supervisor = (new_role == UserRole.supervisor and not is_raan_bool)
+       
         user.role = new_role
         user.isRaan = is_raan_bool
 
@@ -279,15 +284,21 @@ async def edit_user_by_id_route(
                     status_code=400,
                     detail="Invalid department ID format. Must be a valid UUID."
                 )
+        if was_regular_supervisor and not is_now_regular_supervisor:
+            department = db.query(Department).filter(
+                Department.supervisor_id == user.employee_id
+            ).first()
+            if department:
+                department.supervisor_id = None
+                db.add(department)
+   
     try:
         db.commit()
-    except Exception:
+    except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail="Failed to update user due to a database error.")
+        raise HTTPException(status_code=500, detail=f"Failed to update user: {str(e)}")
 
     db.refresh(user)
-
-    
     await sio.emit('user_block_status_updated', {
         "id": str(user.employee_id),
         "is_blocked": user.is_blocked,
@@ -405,9 +416,9 @@ def get_recent_no_show_events_for_single_user(
         "events": events
     }
 
+
 @router.post("/add-user", status_code=status.HTTP_201_CREATED)
 async def add_user_as_admin(
-
     request: Request,
     first_name: str = Form(...),
     last_name: str = Form(...),
@@ -416,6 +427,7 @@ async def add_user_as_admin(
     phone: str = Form(None),
     role: str = Form(...),
     department_id: Optional[str] = Form(None),
+    supervised_department_id: Optional[str] = Form(None), 
     password: str = Form(...),
     has_government_license: bool = Form(...),
     license_file: UploadFile = File(None),
@@ -436,9 +448,10 @@ async def add_user_as_admin(
             f.write(contents)
         license_file_url = f"/uploads/{license_file.filename}"
 
+    # Handle VIP department
     if department_id and department_id.lower() == "vip":
         dep = get_or_create_vip_department(db, changed_by)
-        department_id=dep.id
+        department_id = dep.id
 
     user_data = UserCreate(
         first_name=first_name,
@@ -451,16 +464,42 @@ async def add_user_as_admin(
         password=password,
         has_government_license=has_government_license,
         license_file_url=license_file_url,
-        license_expiry_date= license_expiry_date,
+        license_expiry_date=license_expiry_date,
         isRaan=isRaan
     )
 
-   
+    # Create the user
     result = create_user_by_admin(user_data, changed_by, db)
 
-    
+    # If the user is a supervisor, update the department's supervisor_id
+    if role == "supervisor" and supervised_department_id:
+        try:
+            department = db.query(Department).filter(
+                Department.id == supervised_department_id
+            ).first()
+            
+            if not department:
+                raise HTTPException(
+                    status_code=404, 
+                    detail=f"Department with id {supervised_department_id} not found"
+                )
+            
+            # Update the department's supervisor
+            department.supervisor_id = result['employee_id']
+            db.commit()
+            
+        except Exception as e:
+            db.rollback()
+            # Delete the created user if department update fails
+            db.query(User).filter(User.employee_id == result['employee_id']).delete()
+            db.commit()
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Failed to assign supervisor to department: {str(e)}"
+            )
     
     return result
+
 
 @router.get("/{ride_id}/available-vehicles", response_model=List[VehicleOut])
 def available_vehicles_for_ride(
@@ -1256,75 +1295,86 @@ async def upload_mileage_excel(
     role_check(["admin"], token)
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id_from_token)})
 
-
-    if not file.filename.endswith(".xlsx"):
-        raise HTTPException(status_code=400, detail="File must be .xlsx format")
-
     try:
-        df = pd.read_excel(file.file)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Failed to read Excel file: {e}")
-
-    required_columns = {"Vehicle ID", "Vehicle Name", "Mileage"}
-    if not required_columns.issubset(set(df.columns)):
-        raise HTTPException(
-            status_code=400,
-            detail=f"Excel is missing one of the required columns: {required_columns}"
-        )
-
-    success = []
-    errors = []
-
-    for index, row in df.iterrows():
-        row_number = index + 2 
+        if not file.filename.lower().endswith(".xlsx"):
+            raise HTTPException(status_code=400, detail="יש להעלות קובץ אקסל בפורמט ‎.xlsx בלבד")
 
         try:
-            vehicle_id = UUID(str(row["Vehicle ID"]))
-            mileage = row["Mileage"]
-            name = row.get("Vehicle Name", "Unknown")
-        except Exception:
-            errors.append({
-                "row": row_number,
-                "error": "Invalid UUID or data format",
-                "name": row.get("Vehicle Name", "Unknown")
-            })
-            continue
+            df = pd.read_excel(file.file)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"לא ניתן לקרוא את קובץ האקסל: {e}")
 
-        if not isinstance(mileage, (int, float)) or mileage < 0:
-            errors.append({
+        df.columns = [str(c).strip() for c in df.columns]
+        df = df.loc[:, ~df.columns.str.contains("^Unnamed")]
+
+        required_columns = {"Vehicle ID", "Vehicle Name", "Mileage"}
+        missing_columns = required_columns - set(df.columns)
+
+        if missing_columns:
+            raise HTTPException(
+                status_code=400,
+                detail=f"חסרות עמודות חובה בקובץ האקסל: {', '.join(sorted(missing_columns))}. "
+            )
+
+        success = []
+        errors = []
+
+        for index, row in df.iterrows():
+            row_number = index + 2
+
+            name = str(row.get("Vehicle Name", "")).strip() or "Unknown"
+
+            raw_vehicle_id = row.get("Vehicle ID", None)
+            if raw_vehicle_id is None or (isinstance(raw_vehicle_id, float) and pd.isna(raw_vehicle_id)):
+                errors.append({"row": row_number, "error": "חסר Vehicle ID בשורה", "name": name})
+                continue
+
+            raw_vehicle_id_str = str(raw_vehicle_id).strip()
+            try:
+                vehicle_id = UUID(raw_vehicle_id_str)
+            except Exception:
+                errors.append({"row": row_number, "error": f"Vehicle ID לא תקין: {raw_vehicle_id_str}", "name": name})
+                continue
+
+            raw_mileage = row.get("Mileage", None)
+            if raw_mileage is None or (isinstance(raw_mileage, float) and pd.isna(raw_mileage)):
+                errors.append({"row": row_number, "vehicle_id": str(vehicle_id), "error": "חסר ערך Mileage בשורה", "name": name})
+                continue
+
+            try:
+                mileage_float = float(raw_mileage)
+            except Exception:
+                errors.append({"row": row_number, "vehicle_id": str(vehicle_id), "error": f"ערך Mileage לא מספרי: {raw_mileage}", "name": name})
+                continue
+
+            if mileage_float < 0:
+                errors.append({"row": row_number, "vehicle_id": str(vehicle_id), "error": f"ערך Mileage לא יכול להיות שלילי: {mileage_float}", "name": name})
+                continue
+
+            mileage_int = int(mileage_float)
+
+            vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
+            if not vehicle:
+                errors.append({"row": row_number, "vehicle_id": str(vehicle_id), "error": "Vehicle not found", "name": name})
+                continue
+
+            vehicle.mileage = mileage_int
+            vehicle.mileage_last_updated = datetime.utcnow()
+
+            success.append({
                 "row": row_number,
                 "vehicle_id": str(vehicle_id),
-                "error": f"Invalid mileage: {mileage}"
+                "name": name,
+                "new_mileage": mileage_int
             })
-            continue
 
-        vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
-        if not vehicle:
-            errors.append({
-                "row": row_number,
-                "vehicle_id": str(vehicle_id),
-                "error": "Vehicle not found",
-                "name": name
-            })
-            continue
+        db.commit()
 
-        vehicle.mileage = int(mileage)
-        vehicle.mileage_last_updated = datetime.utcnow()
+        return {"updated": success, "errors": errors}
 
-        success.append({
-            "row": row_number,
-            "vehicle_id": str(vehicle_id),
-            "name": name,
-            "new_mileage": int(mileage)
-        })
+    finally:
+        db.execute(text("SET session.audit.user_id = DEFAULT"))
 
-    db.commit()
-    db.execute(text("SET session.audit.user_id = DEFAULT"))
-
-    return {
-        "updated": success,
-        "errors": errors
-    }
 
     
 @router.patch("/vehicles/{vehicle_id}/mileage")
@@ -1362,7 +1412,10 @@ def manual_mileage_edit(
     }
 @router.get("/all/supervisors", response_model=List[UserResponse])
 def get_supervisors(db: Session = Depends(get_db)):
-    supervisors = db.query(User).filter(User.role == UserRole.supervisor).all()
+    supervisors = db.query(User).filter(
+        User.role == UserRole.supervisor,
+        User.isRaan == False 
+    ).all()
     return supervisors
 
 @router.post("/departments", response_model=DepartmentOut, status_code=201)
@@ -1409,12 +1462,10 @@ def update_requirements(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user)
 ):
-    """Update the existing requirements (edit title/items)."""
     existing = get_latest_requirement(db)
     if not existing:
         raise HTTPException(status_code=404, detail="No requirements found to update.")
 
-    existing.title = data.title
     existing.items = data.items
     existing.updated_by = current_user.employee_id
     existing.updated_at = datetime.utcnow()

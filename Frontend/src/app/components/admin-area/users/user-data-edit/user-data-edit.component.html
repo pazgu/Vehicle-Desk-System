@@ -75,12 +75,12 @@
               id="department_id"
               formControlName="department_id"
               class="form-control"
-              >
-                <option [ngValue]="null" [selected]="!f['department_id'].value">
-                 בחר מחלקה
-                </option>
-                 <option *ngFor="let dept of departments" [ngValue]="dept.id">
-                  {{ dept.name }}
+            >
+              <option [ngValue]="null">
+                בחר מחלקה
+              </option>
+              <option *ngFor="let dept of departments" [ngValue]="dept.id">
+                {{ dept.name }}
               </option>
             </select>
             <small

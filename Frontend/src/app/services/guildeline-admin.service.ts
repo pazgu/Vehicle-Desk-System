@@ -5,7 +5,6 @@ import { environment } from '../../environments/environment';
 
 export interface AdminGuidelinesDoc {
   id: string;
-  title: string;
   items: string[];
   updated_at: string;
   updated_by?: string;
@@ -21,7 +20,6 @@ export class GuidelinesServiceAdmin {
   }
 
   update(payload: {
-    title: string;
     items: string[];
   }): Observable<AdminGuidelinesDoc> {
     let url = environment.updateRequirementsUrl;

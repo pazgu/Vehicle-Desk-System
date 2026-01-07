@@ -18,6 +18,7 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { UserCardComponent } from '../user-card/user-card.component';
+import { ROLES, ROLE_LABELS } from '../../../../constants/roles';
 
 @Component({
   selector: 'app-user-data',
@@ -34,6 +35,8 @@ export class UserDataComponent implements OnInit {
   filtersCollapsed = false;
   searchTerm = '';
   selectedRole: string = '';
+  roles = ROLES;
+  roleLabels = ROLE_LABELS;
   availableRoles: string[] = [];
   license_expiry_date?: Date;
   licenceExpiredMap: { [userId: string]: boolean } = {};
@@ -113,7 +116,7 @@ export class UserDataComponent implements OnInit {
         this.departmentNames = deptIdToName;
         this.checkLicence(this.users);
         this.availableRoles = Array.from(
-          new Set(users.map((u) => u.role))
+          new Set(users.map((u) => u.isRaan ? 'raan' : u.role))
         ).filter(Boolean);
 
         this.setupSocketListeners();
@@ -406,13 +409,17 @@ export class UserDataComponent implements OnInit {
 
   filterLogs(): void {
     const term = this.searchTerm.toLowerCase().trim();
-    this.filteredLogs = this.users.filter(
-      (user) =>
-        (user.first_name?.toLowerCase().includes(term) ||
-          user.last_name?.toLowerCase().includes(term) ||
-          user.email?.toLowerCase().includes(term)) &&
-        (this.selectedRole === '' || user.role === this.selectedRole)
-    );
+    this.filteredLogs = this.users.filter((user) => {
+      const nameMatch =
+        user.first_name?.toLowerCase().includes(term) ||
+        user.last_name?.toLowerCase().includes(term) ||
+        user.email?.toLowerCase().includes(term);
+
+      const userRole = user.isRaan ? 'raan' : user.role;
+      const roleMatch = this.selectedRole === '' || userRole === this.selectedRole;
+
+      return nameMatch && roleMatch;
+    });
     this.currentPage = 1;
   }
 
@@ -479,5 +486,10 @@ export class UserDataComponent implements OnInit {
     setTimeout(() => {
       toast.remove();
     }, 3000);
+  }
+
+  getDisplayRole(user: User): string {
+    const roleKey = user.isRaan ? 'raan' : user.role;
+    return this.roleLabels[roleKey] || user.role;
   }
 }

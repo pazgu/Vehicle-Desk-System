@@ -97,14 +97,37 @@ label {
   position: relative;
   display: inline-block;
   direction: rtl;
+  padding: 0;
+  margin: 0;
+}
+
+.user-menu-container::after {
+  content: "";
+  position: absolute;
+  top: -5px;
+  bottom: -5px;
+  left: -5px;
+  right: -5px;
 }
 
 .user-icon {
   width: 32px !important;
   height: 32px !important;
   display: block;
-  margin-left: 5px;
-  margin-top: 5px;
+  margin: 0;
+  vertical-align: middle;
+}
+
+.user-icon-container {
+  cursor: pointer;
+  padding: 5px;
+  margin: 0;
+  display: block;
+  position: relative;
+}
+
+.user-icon-logged-in {
+  cursor: pointer;
 }
 
 .bell-icon {
@@ -145,6 +168,10 @@ ul {
   background-color: rgb(252, 238, 225);
 }
 
+.media-dropdown li:last-child {
+  border-bottom: none;
+}
+
 .media-dropdown li a {
   display: block;
   padding: 12px 16px;
@@ -154,7 +181,7 @@ ul {
 }
 
 .media-dropdown li a:hover {
-  background-color: rgb(252, 238, 225);
+  background-color: rgb(235, 225, 213);
   color: #942222;
 }
 
@@ -175,20 +202,34 @@ ul {
   cursor: pointer;
 }
 
+.user-dropdown li:last-child a {
+  background-color: #fceee1;
+}
+
+.user-dropdown li:last-child a:hover {
+  background-color: #ebe1d5;
+  color: #942222;
+}
+
 .user-dropdown {
   display: none;
   position: absolute;
-  top: 33px;
-  right: 0;
+  top: 100%;
+  margin-top: 5px;
+  right: auto;
+  left: -130px;
   background-color: white;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  border-radius: 5px;
+  border-radius: 15px;
   z-index: 1000;
   list-style: none;
   padding: 0;
   margin: 0;
   width: 180px;
   text-align: right;
+  max-height: 70vh;
+  overflow-y: auto;
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .user-dropdown li {
@@ -212,10 +253,8 @@ ul {
   color: #942222;
 }
 
-.user-menu-container:hover .user-dropdown {
-  display: block;
-}
-.user-menu-container:hover .user-dropdown {
+.user-menu-container:hover .user-dropdown,
+.user-dropdown:hover {
   display: block;
 }
 
@@ -272,6 +311,7 @@ a[routerLink="/notifications"] {
   font-size: 16px;
   border: none;
   background: none;
+  cursor: pointer;
 }
 
 .dropdown {
@@ -283,21 +323,31 @@ a[routerLink="/notifications"] {
   display: none;
   position: absolute;
   background-color: #f1f1f1;
-  min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  min-width: 120px;
   z-index: 1;
+  max-height: 70vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  top: 100%;
+  right: -14px;
+  border-radius: 12px;
+  box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.15);
 }
 
 .dropdown-content a {
-  color: black;
+  color: #333;
   padding: 12px 16px;
   text-decoration: none;
   display: block;
+  background-color: #fceee1;
+  border-bottom: 1px solid #eee;
 }
 
 .dropdown-content a:hover {
-  background-color: #ddd;
+  background-color: #fff9f6;
+  color: #942222;
 }
+
 .dropdown:hover .dropdown-content {
   display: block;
 }
@@ -321,6 +371,15 @@ a[routerLink="/notifications"] {
     order: 1;
     display: flex;
     align-items: center;
+  }
+  .dropdown-content-mobile {
+    display: none;
+    background-color: rgb(255, 245, 228);
+    max-height: 65vh;
+    overflow-y: auto;
+    width: 220px;
+    box-shadow: -2px 5px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 20px;
   }
 
   .nav-left .user-menu-container {
@@ -375,4 +434,67 @@ a[routerLink="/notifications"] {
     margin-right: 90%;
     margin-top: -1%;
   }
+
+  .media-dropdown:hover .dropdown-content-mobile {
+    display: block;
+    margin-left: 0;
+    position: fixed;
+    left: 10px;
+    top: 45px;
+  }
+}
+.dropdown-content::-webkit-scrollbar,
+.user-dropdown::-webkit-scrollbar,
+.dropdown-content-mobile::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dropdown-content::-webkit-scrollbar-thumb,
+.user-dropdown::-webkit-scrollbar-thumb,
+.dropdown-content-mobile::-webkit-scrollbar-thumb {
+  background-color: #942222;
+  border-radius: 10px;
+}
+
+.dropdown-content a:first-child,
+.user-dropdown li:first-child a,
+.dropdown-content-mobile li:first-child a {
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.dropdown-content-mobile ul:first-child {
+  border-bottom: 1px solid #4224242d;
+  padding-bottom: 0px;
+}
+
+.dropdown-content a:last-child,
+.user-dropdown li:last-child a,
+.dropdown-content-mobile li:last-child a {
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+.dropdown-content a:last-child {
+  border-bottom: none;
+}
+
+.dropdown-content::before {
+  content: "";
+  position: absolute;
+  top: -20px;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background: transparent;
+}
+
+.user-dropdown::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: transparent;
 }

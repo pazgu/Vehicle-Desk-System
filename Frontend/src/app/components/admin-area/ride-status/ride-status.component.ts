@@ -3,6 +3,7 @@ import { ChartModule } from 'primeng/chart';
 import { SocketService } from '../../../services/socket.service';
 import { RideService } from '../../../services/ride.service';
 import { CommonModule } from '@angular/common';
+import { RIDE_STATUS_COLORS } from '../audit-logs/audit-logs-utils/status-colors'; 
 
 @Component({
   selector: 'ride-status',
@@ -20,11 +21,14 @@ export class RideStatusComponent {
     private socketService: SocketService,
     private rideService: RideService
   ) {}
+
   ngOnInit() {
     this.loadRideChart();
+
     this.socketService.rideStatusUpdated$.subscribe(() => {
       this.loadRideChart();
     });
+
     this.socketService.deleteRequests$.subscribe(() => {
       this.loadRideChart();
     });
@@ -36,9 +40,11 @@ export class RideStatusComponent {
       this.rideChartData.labels[0] === 'אין נתונים'
     );
   }
+
   onRideStatusFilterChange() {
     this.loadRideChart();
   }
+
   getRideStatusHebrew(status: string): string {
     const statusMap: { [key: string]: string } = {
       pending: 'ממתין לאישור',
@@ -52,67 +58,61 @@ export class RideStatusComponent {
     return statusMap[status] || status;
   }
 
-  public updateRideChart(data: { status: string; count: number }[]) {
-    const labels = data.map((d) => {
-      const hebrewLabel = this.getRideStatusHebrew(d.status);
-      return hebrewLabel;
-    });
-    const values = data.map((d) => d.count);
-    const total = values.reduce((sum, val) => sum + val, 0);
-    const updatedLabels = labels.map((label, i) => {
-      const count = values[i];
-      const percent = ((count / total) * 100).toFixed(1);
-      return `${label} – ${count} נסיעות (${percent}%)`;
-    });
+public updateRideChart(data: { status: string; count: number }[]) {
+  const labelsBase = data.map((d) => {
+    const key = d.status as keyof typeof RIDE_STATUS_COLORS;
+    return RIDE_STATUS_COLORS[key]?.labelHe ?? this.getRideStatusHebrew(d.status);
+  });
 
-    const newrideChartData = {
-      labels: updatedLabels,
-      datasets: [
-        {
-          data: [...values],
-          backgroundColor: [
-            '#FF6384CC',
-            '#36A2EBCC',
-            '#FFCE56CC',
-            '#4BC0C0CC',
-            '#9966FFCC',
-            '#FF9F40CC',
-            '#E74C3CCC',
-          ],
-          hoverBackgroundColor: [
-            '#FF6384CC',
-            '#36A2EBCC',
-            '#FFCE56CC',
-            '#4BC0C0CC',
-            '#9966FFCC',
-            '#FF9F40CC',
-            '#E74C3CCC',
-          ],
-        },
-      ],
-    };
+  const colors = data.map((d) => {
+    const key = d.status as keyof typeof RIDE_STATUS_COLORS;
+    return RIDE_STATUS_COLORS[key]?.color ?? '#E0E0E0';
+  });
 
-    this.rideChartData = { ...newrideChartData };
+  const values = data.map((d) => d.count);
+  const total = values.reduce((sum, val) => sum + val, 0);
 
-    this.rideChartOptions = {
-      plugins: {
-        legend: {
-          position: 'right',
-          labels: {
-            color: '#495057',
-            font: {
-              size: 14,
-              family: 'Arial, sans-serif',
-            },
-            usePointStyle: true,
+  const updatedLabels = labelsBase.map((label, i) => {
+    const count = values[i];
+    const percent = total > 0 ? ((count / total) * 100).toFixed(1) : '0.0';
+    return `${label} – ${count} נסיעות (${percent}%)`;
+  });
+
+  this.rideChartData = {
+    labels: updatedLabels,
+    datasets: [
+      {
+        data: [...values],
+        backgroundColor: colors,
+        hoverBackgroundColor: colors,
+        borderColor: '#FFFFFF',
+        borderWidth: 2,
+      },
+    ],
+  };
+
+  this.rideChartOptions = {
+    plugins: {
+      legend: {
+        position: 'right',
+        labels: {
+          color: '#495057',
+          font: {
+            size: 14,
+            family: 'Arial, sans-serif',
           },
+          usePointStyle: true,
         },
       },
-      responsive: true,
-      maintainAspectRatio: false,
-      locale: 'he-IL',
-    };
-  }
+    },
+    responsive: true,
+    maintainAspectRatio: false,
+    locale: 'he-IL',
+  };
+}
+
+
+
 
   private loadRideChart() {
     this.rideService.getRideStatusSummary(this.selectedRideStatus).subscribe({

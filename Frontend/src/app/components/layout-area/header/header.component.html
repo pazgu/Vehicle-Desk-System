@@ -34,14 +34,14 @@
             </div>
           </div>
           <ul class="user-dropdown">
-          <ng-container *ngIf="!isLoggedIn">
-            <li *ngIf="!currentRoute.includes('/login')">
-              <a routerLink="/login">התחברות</a>
-            </li>
-            <li *ngIf="!currentRoute.includes('/register')">
-              <a routerLink="/register">יצירת משתמש חדש</a>
-            </li>
-          </ng-container>
+            <ng-container *ngIf="!isLoggedIn">
+              <li *ngIf="!currentRoute.includes('/login')">
+                <a routerLink="/login">התחברות</a>
+              </li>
+              <li *ngIf="!currentRoute.includes('/register')">
+                <a routerLink="/register">יצירת משתמש חדש</a>
+              </li>
+            </ng-container>
             <ng-container *ngIf="isLoggedIn">
               <li><a (click)="onLogout()">התנתקות</a></li>
             </ng-container>
@@ -107,11 +107,15 @@
         <div class="dropdown-content-mobile">
           <ul>
             <li *ngIf="isLoggedIn && !isAuthPage">
-              <a [routerLink]="['/notifications']" class="nav-link" href="#"
-                >התראות</a
+              <a [routerLink]="['/notifications']" class="nav-link">התראות</a>
+            </li>
+          </ul>
+          <ul>
+            <li *ngIf="(role$ | async) === 'admin'">
+              <a [routerLink]="['/admin/add-new-user']" class="nav-link"
+                >הוסף משתמש חדש</a
               >
             </li>
-
             <li>
               <a
                 *ngIf="(role$ | async) === 'admin'"

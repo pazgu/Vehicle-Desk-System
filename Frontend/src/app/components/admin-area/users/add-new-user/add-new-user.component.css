@@ -3,7 +3,7 @@
   padding: 0;
   display: block;
   min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+  background-color: #fffaf6;
   font-family: "Alef", sans-serif;
 }
 
@@ -273,7 +273,6 @@ input:checked + .slider::after {
 
 .custom-file-upload {
   position: relative;
-  margin-top: 0.5rem;
 }
 
 .custom-file-upload input[type="file"] {
@@ -528,4 +527,10 @@ input:checked + .slider::after {
 .form-group select.ng-valid.ng-dirty {
   border-color: #10b981;
   background-color: #f0fdf4;
+}
+
+.form-group select.ng-invalid.ng-touched,
+.form-group select.ng-invalid.ng-dirty {
+  border-color: #d02f2f;
+  background-color: #fef2f2;
 }

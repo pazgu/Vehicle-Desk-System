@@ -7,6 +7,9 @@ from sqlalchemy.types import String
 from datetime import datetime, timezone, date, timedelta
 from typing import Optional, List, Dict, Union
 from uuid import UUID
+from sqlalchemy import or_
+
+
 
 from ..helpers.user_helpers import cancel_future_rides_for_vehicle
 
@@ -38,6 +41,7 @@ from ..models.ride_model import Ride, RideStatus
 from ..models.user_model import User
 from ..models.vehicle_inspection_model import VehicleInspection
 from ..models.vehicle_model import Vehicle, VehicleStatus
+
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -110,17 +114,32 @@ def get_available_vehicles_new_ride(
     if start_time and end_time:
         end_time_with_buffer = end_time + timedelta(hours=2)
 
-        overlapping_rides = db.query(Ride.vehicle_id).filter(
-            or_(
-                and_(Ride.start_datetime <= start_time, Ride.end_datetime > start_time),
-                and_(Ride.start_datetime < end_time_with_buffer, Ride.end_datetime >= end_time_with_buffer),
-                and_(Ride.start_datetime >= start_time, Ride.end_datetime <= end_time_with_buffer)
-            )
-        ).subquery()
+        overlapping_rides = (
+    db.query(Ride.vehicle_id)
+    .filter(
+        Ride.status.in_([
+            RideStatus.pending,
+            RideStatus.approved,
+            RideStatus.in_progress
+        ]),
+        or_(
+            and_(Ride.start_datetime <= start_time,
+                 Ride.end_datetime > start_time),
+
+            and_(Ride.start_datetime < end_time_with_buffer,
+                 Ride.end_datetime >= end_time_with_buffer),
+
+            and_(Ride.start_datetime >= start_time,
+                 Ride.end_datetime <= end_time_with_buffer)
+        )
+    )
+    .subquery()
+)
 
         query = query.filter(~Vehicle.id.in_(overlapping_rides))
+    cars=query.all()
+    return cars
 
-    return query.all()
 def get_vehicles_for_ride_edit(
     db: Session,
     distance_km: float,
@@ -372,8 +391,34 @@ def update_vehicle_status(
             vehicle.freeze_details = None
 
         vehicle.status = new_status
+
+        if new_status == VehicleStatus.frozen:
+            now_utc = datetime.now(timezone.utc)
+
+            affected_rides = (
+                db.query(Ride)
+                .filter(
+                    Ride.vehicle_id == vehicle.id,
+                    Ride.start_datetime > now_utc,
+                    Ride.status.in_([
+                        RideStatus.pending,
+                        RideStatus.approved,
+                        RideStatus.reserved,
+                        RideStatus.in_progress,
+                    ])
+                )
+                .all()
+            )
+
+            for ride in affected_rides:
+                ride.status = RideStatus.cancelled_vehicle_unavailable
+                ride.emergency_event = (
+                    f"הנסיעה בוטלה: הרכב הוקפא ({freeze_reason})"
+                )
+
         db.commit()
         db.refresh(vehicle)
+
         # Try to find a supervisor from the same department (if any)
         # --- Email Recipient Determination Logic ---
         # recipient_emails_set: set[str] = set() # Use a set to handle duplicates automatically
@@ -406,7 +451,6 @@ def update_vehicle_status(
         # else:
         #     log_messages.append(f"Vehicle {vehicle.plate_number} has no department ID.")
 
-
         # # If no department-specific supervisor was found OR vehicle has no department,
         # # THEN notify ALL general supervisors.
         # if not supervisor_found_for_vehicle_department:
@@ -422,8 +466,6 @@ def update_vehicle_status(
 
         # # Convert the set to a list for iteration
         # recipient_emails = list(recipient_emails_set)
-
-
 
         # context = {
         #     "PLATE_NUMBER": vehicle.plate_number,
@@ -454,8 +496,8 @@ def update_vehicle_status(
         #         for email_address in recipient_emails:
         #             send_email(email_address, subject, html_content)
 
-            # except Exception as e:
-            #     print(f"Error during email sending process: {e}")
+        #     except Exception as e:
+        #         print(f"Error during email sending process: {e}")
 
     except SQLAlchemyError as e:
         db.rollback()
@@ -468,12 +510,14 @@ def update_vehicle_status(
         )
     finally:
         db.execute(text("SET session.audit.user_id = DEFAULT"))
+
     return {
         "vehicle_id": vehicle.id, 
         "new_status": vehicle.status, 
         "freeze_reason": vehicle.freeze_reason,
         "freeze_details": vehicle.freeze_details
     }
+
 
 def get_available_vehicles_for_ride_by_id(db: Session, ride_id: UUID, user_department_id: Optional[UUID] = None) -> List[VehicleOut]:
     ride = db.query(Ride).filter(Ride.id == ride_id).first()

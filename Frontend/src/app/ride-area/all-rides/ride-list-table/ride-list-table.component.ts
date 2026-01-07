@@ -31,16 +31,22 @@ export class RideListTableComponent implements OnChanges {
   @Output() rebookRide = new EventEmitter<any>();
 
   constructor(private router: Router, private myrideservice: MyRidesService) {}
+paidOrderIds = new Set<string>();
 
   currentPage = 1;
   pagedOrders: any[] = [];
   role = localStorage.getItem('role');
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['filteredOrders'] || changes['ordersPerPage']) {
-      this.currentPage = 1;
-      this.updatePagedOrders();
-    }
+ ngOnChanges(changes: SimpleChanges): void {
+  if (changes['allOrders']) {
+    this.computePaidOrders();
   }
+
+  if (changes['filteredOrders'] || changes['ordersPerPage']) {
+    this.currentPage = 1;
+    this.updatePagedOrders();
+  }
+}
+
 
   get totalPages(): number {
     return this.filteredOrders.length > 0
@@ -130,29 +136,58 @@ export class RideListTableComponent implements OnChanges {
     return order.status === 'completed';
   }
 
-  isPaidOrder(order: any): boolean {
-    const maxFreeRides = 6;
-    const beginningOfMonth = new Date();
-    beginningOfMonth.setDate(1);
-    beginningOfMonth.setHours(0, 0, 0, 0);
-    const orderDate = this.parseDate(order.date);
+  private parseSubmittedAt(value: string): Date {
+  return new Date(value); 
+}
 
-    if (
-      orderDate.getMonth() === beginningOfMonth.getMonth() &&
-      orderDate.getFullYear() === beginningOfMonth.getFullYear()
-    ) {
-      const priorOrdersThisMonth = this.allOrders.filter((o: any) => {
-        const oDate = this.parseDate(o.date);
-        return (
-          oDate.getMonth() === beginningOfMonth.getMonth() &&
-          oDate.getFullYear() === beginningOfMonth.getFullYear() &&
-          oDate < orderDate
-        );
-      }).length;
-      return priorOrdersThisMonth >= maxFreeRides;
-    }
-    return false;
-  }
+
+computePaidOrders(): void {
+  this.paidOrderIds.clear();
+
+  const FREE_RIDES = 6;
+  const now = new Date();
+
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+  const toRideDateTime = (o: any): Date => {
+    // prefer real datetimes if you have them
+    if (o?.start_datetime) return new Date(o.start_datetime);
+
+    // fallback to dd.mm.yyyy + HH:mm (your UI format)
+    const [day, month, year] = (o?.date ?? '').split('.').map(Number);
+    const [hh, mm] = (o?.time ?? '12:00').split(':').map(Number);
+    return new Date(year, (month ?? 1) - 1, day ?? 1, hh ?? 12, mm ?? 0, 0, 0);
+  };
+
+  const eligibleMonthly = (this.allOrders ?? [])
+    .map(o => ({ ...o, rideDt: toRideDateTime(o) }))
+    .filter(o => !isNaN(o.rideDt.getTime()))
+    .filter(o => o.rideDt >= startOfMonth && o.rideDt <= endOfMonth)
+    .filter(o => {
+      const status = String(o.status ?? '').toLowerCase();
+
+      const isEligible =
+        status === 'completed' ||
+        (status === 'approved' && o.rideDt >= now) ||
+        (status === 'pending' && o.rideDt >= now);
+
+      return isEligible;
+    })
+    .sort((a, b) => a.rideDt.getTime() - b.rideDt.getTime());
+
+  eligibleMonthly
+    .slice(FREE_RIDES)
+    .forEach(o => this.paidOrderIds.add(String(o.ride_id ?? o.id)));
+
+  console.log('Eligible monthly rides:', eligibleMonthly.map(x => ({ id: x.ride_id ?? x.id, dt: x.rideDt, status: x.status })));
+  console.log('Paid rides this month:', [...this.paidOrderIds]);
+}
+
+
+isPaidOrder(order: any): boolean {
+  return this.paidOrderIds.has(order.ride_id ?? order.id);
+}
 
   checkIfOverOneDay(order: any): boolean {
     const orderStartDate = new Date(order.start_datetime);
@@ -197,7 +232,9 @@ export class RideListTableComponent implements OnChanges {
   canChangeStatus(order: any): boolean {
     const userRole = localStorage.getItem('role');
     if (userRole !== 'supervisor') return false;
-
+    if(this.canRebook(order)){
+      return false
+    }
     const [day, month, year] = order.date.split('.');
     const formattedDate = `${year}-${month}-${day}`;
 
@@ -283,14 +320,14 @@ export class RideListTableComponent implements OnChanges {
   }
 
   canRebook(order: any): boolean {
-    if (!order?.status) return false;
+  if (!order?.status) return false;
 
-    const status = order.status.toLowerCase();
-    if (status === 'cancelled_vehicle_unavailable') {
-      return true;
-    }
-    return false;
+  const status = order.status.toLowerCase();
+  if (status === 'cancelled_vehicle_unavailable') {
+    return true;
   }
+  return false;
+}
 
   onRebook(order: any, event: Event): void {
     event.stopPropagation();

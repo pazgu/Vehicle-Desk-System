@@ -35,9 +35,11 @@
     "rxjs": "~7.8.0",
     "socket.io-client": "^4.8.1",
     "tslib": "^2.3.0",
+    "validator": "^13.15.26",
     "xlsx": "^0.18.5",
     "xlsx-js-style": "^1.2.0",
-    "zone.js": "~0.15.0"
+    "zone.js": "~0.15.0",
+    "zxcvbn": "^4.4.2"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^19.2.10",
@@ -49,6 +51,8 @@
     "@types/lodash": "^4.17.18",
     "@types/papaparse": "^5.3.16",
     "@types/pdfmake": "^0.2.11",
+    "@types/validator": "^13.15.10",
+    "@types/zxcvbn": "^4.4.5",
     "jasmine-core": "~5.6.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",

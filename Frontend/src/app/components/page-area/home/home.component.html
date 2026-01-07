@@ -92,7 +92,7 @@
           <div class="form-content">
             <div class="form-row">
               <div class="form-field-group">
-                <label>מספר ימי נסיעה (יום / יומיים)</label>
+                <label>משך הנסיעה (יום / יותר מיום)</label>
                 <select formControlName="ride_period" class="styled-select">
                   <option value="morning">נסיעה יומית</option>
                   <option value="night">נסיעה ליותר מיום</option>
@@ -373,7 +373,7 @@
                 [disabled]="extraStops.length >= 2"
                 [class.disabled-button]="extraStops.length >= 2"
                 class="addBtn"
-                *ngIf="extraStops"
+                *ngIf="extraStops && !extraStops.errors?.['consecutiveDuplicateStops'] && !extraStops.errors?.['duplicateExtraStops']"
                 pButton
               >
                 <i
@@ -387,14 +387,9 @@
                     : "הוסף עוד תחנה (אופציונלי)"
                 }}
               </button>
+
               <small
-                *ngIf="extraStops.errors?.['consecutiveDuplicateStops']"
-                class="error-text"
-              >
-                תחנות עוקבות לא יכולות להיות זהות.
-              </small>
-              <small
-                *ngIf="extraStops.errors?.['duplicateExtraStops']"
+                *ngIf="extraStops.errors?.['consecutiveDuplicateStops'] || extraStops.errors?.['duplicateExtraStops']"
                 class="error-text"
               >
                 תחנות עוקבות לא יכולות להיות זהות.
@@ -503,7 +498,6 @@
 
   <div class="dropdown-backdrop" *ngIf="isDropdownOpen" (click)="closeDropdown()"></div>
 
-  <!-- Rest of your existing validation messages -->
   <div
     class="car-validation-message"
     *ngIf="
@@ -563,7 +557,7 @@
             </div>
           </div>
           <br>
-           <div  *ngIf="!isVIP" class="form-field-group">
+          <div *ngIf="!isVIP && !isSupervisor" class="form-field-group">
                  <label> מאשר הבקשה</label>
               <select formControlName="approving_supervisor" class="styled-select">
                 <option value="" disabled>בחר משתמש</option>

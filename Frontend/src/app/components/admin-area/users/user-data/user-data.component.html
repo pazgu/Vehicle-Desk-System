@@ -1,3 +1,4 @@
+<div class="page-wrapper">
 <div class="user-data-container" dir="rtl">
   <div class="page-header">
     <h1>פרטי משתמשים</h1>
@@ -34,7 +35,7 @@
         >
           <option value="">כל התפקידים</option>
           <option *ngFor="let role of availableRoles" [value]="role">
-            {{ role }}
+            {{ roleLabels[role] || role }}
           </option>
         </select>
       </div>
@@ -87,7 +88,7 @@
             class="column-role"
             [ngClass]="{ 'blocked-text': user.is_blocked }"
           >
-            {{ user.role }}
+            {{ getDisplayRole(user) }}
           </td>
           <td
             class="column-department"
@@ -296,6 +297,7 @@
       </div>
     </div>
   </div>
+</div>
 </div>
 
 <router-outlet></router-outlet>

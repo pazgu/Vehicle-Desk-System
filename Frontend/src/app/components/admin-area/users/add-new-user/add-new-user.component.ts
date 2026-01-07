@@ -6,6 +6,8 @@ import { ToastService } from '../../../../services/toast.service';
 import { UserService } from '../../../../services/user_service';
 import { MatIconModule } from '@angular/material/icon';
 import { Router } from '@angular/router';
+import * as validator from 'validator';
+import { ROLES } from '../../../../constants/roles';
 
 @Component({
   selector: 'app-add-new-user',
@@ -16,16 +18,11 @@ import { Router } from '@angular/router';
 })
 export class AddNewUserComponent implements OnInit {
   addUserForm!: FormGroup;
-  roles = [
-    { key: 'admin', label: 'מנהל' },
-    { key: 'employee', label: 'עובד' },
-    { key: 'supervisor', label: 'מפקח' },
-    { key: 'inspector', label: 'בודק רכבים' },
-    { key: 'raan', label: 'רע"ן' },
-  ];
+  roles = ROLES;
   showPassword = false;
 
-  departments: { id: string; name: string }[] = [];
+  departments: { id: string; name: string; supervisor_id?: string }[] = [];
+  availableDepartmentsForSupervisor: { id: string; name: string }[] = [];
   selectedFile: File | null = null;
   selectedFileName: string = '';
 
@@ -66,41 +63,31 @@ export class AddNewUserComponent implements OnInit {
         [
           Validators.required,
           Validators.minLength(3),
-          Validators.pattern(/^[A-Za-zא-ת]+$/),
+          Validators.pattern(/^[A-Za-zא-ת0-9]+$/),
           this.noMixedLanguageValidator(),
+          this.minLettersValidator(2),
         ],
       ],
-      email: [
-        '',
-        [
-          Validators.required,
-          Validators.pattern(
-            /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
-          ),
-        ],
-      ],
+      email: ['', [Validators.required, this.emailValidator()]],
       phone: ['', [Validators.required, Validators.pattern(/^05\d{8}$/)]],
       role: ['', Validators.required],
       has_government_license: [false],
       department_id: [''],
+      supervised_department_id: [''],
       license_expiry_date: ['', [this.dateRangeValidator(today, maxDateStr)]],
       password: [
         '',
         [
           Validators.required,
           Validators.minLength(8),
-          this.uppercaseValidator(),
-          this.digitValidator(),
+          Validators.pattern(/^(?=.*[A-Z])(?=.*\d)\S*$/),
         ],
       ],
     });
 
     this.addUserForm.get('role')?.valueChanges.subscribe((role) => {
       this.updateDepartmentValidation(role);
-    });
-
-    this.addUserForm.get('role')?.valueChanges.subscribe((role) => {
-      this.updateDepartmentValidation(role);
+      this.updateSupervisedDepartmentValidation(role);
       this.fetchDepartments(role);
     });
   }
@@ -114,6 +101,121 @@ export class AddNewUserComponent implements OnInit {
 
       if (hasHebrew && hasEnglish) {
         return { mixedLanguage: true };
+      }
+
+      return null;
+    };
+  }
+
+  getPasswordErrors(): string | null {
+    const passwordControl = this.addUserForm.get('password');
+    if (!passwordControl) {
+      return null;
+    }
+
+    if (!passwordControl.value && !passwordControl.touched) {
+      return null;
+    }
+
+    const errors: string[] = [];
+
+    if (passwordControl.errors?.['required'] && passwordControl.touched) {
+      errors.push('חובה להזין סיסמה');
+    }
+
+    if (passwordControl.value && passwordControl.errors?.['minlength']) {
+      errors.push('לפחות 8 תווים');
+    }
+
+    if (passwordControl.value && passwordControl.errors?.['pattern']) {
+      const value = passwordControl.value || '';
+      const hasUpperCase = /[A-Z]/.test(value);
+      const hasNumber = /\d/.test(value);
+
+      if (!hasUpperCase && !hasNumber) {
+        errors.push('חובה לכלול אות גדולה ומספר');
+      } else if (!hasUpperCase) {
+        errors.push('חובה לכלול אות גדולה');
+      } else if (!hasNumber) {
+        errors.push('חובה לכלול מספר');
+      }
+    }
+
+    if (passwordControl.value && passwordControl.errors?.['foreignLanguage']) {
+      errors.push('הסיסמה מכילה תווים לא חוקיים');
+    }
+
+    return errors.length > 0 ? errors.join(' | ') : null;
+  }
+
+  getPhoneErrors(): string | null {
+    const phoneControl = this.addUserForm.get('phone');
+    if (!phoneControl) {
+      return null;
+    }
+
+    if (!phoneControl.value && !phoneControl.touched) {
+      return null;
+    }
+
+    const errors: string[] = [];
+    const value = phoneControl.value || '';
+
+    if (phoneControl.errors?.['required'] && phoneControl.touched) {
+      errors.push('חובה להזין מספר טלפון');
+    }
+
+    if (value.length > 0) {
+      const startsWithCorrect = value.startsWith('05');
+      const hasCorrectLength = value.length === 10;
+      const onlyDigits = /^\d+$/.test(value);
+
+      if (!startsWithCorrect && !hasCorrectLength) {
+        return 'מספר טלפון חייב להכיל 10 ספרות ולהתחיל ב-05';
+      }
+
+      if (!startsWithCorrect) {
+        errors.push('מספר טלפון חייב להתחיל ב-05');
+      }
+
+      if (!hasCorrectLength) {
+        errors.push('מספר טלפון חייב להכיל 10 ספרות');
+      }
+
+      if (!onlyDigits) {
+        errors.push('מספר טלפון חייב להכיל ספרות בלבד');
+      }
+    }
+
+    return errors.length > 0 ? errors.join(' | ') : null;
+  }
+
+  preventSpaces(event: KeyboardEvent): void {
+    if (event.key === ' ') {
+      event.preventDefault();
+    }
+  }
+
+  emailValidator() {
+    return (control: any) => {
+      if (!control.value) return null;
+
+      if (validator.isEmail(control.value)) {
+        return null;
+      }
+
+      return { invalidEmail: true };
+    };
+  }
+
+  minLettersValidator(minLetters: number) {
+    return (control: any) => {
+      if (!control.value) return null;
+
+      const letterCount = (control.value.match(/[A-Za-zא-ת]/g) || []).length;
+
+      if (letterCount < minLetters) {
+        return { minLetters: true };
       }
 
       return null;
@@ -135,6 +237,35 @@ export class AddNewUserComponent implements OnInit {
     departmentControl?.updateValueAndValidity();
   }
 
+  updateSupervisedDepartmentValidation(role: string): void {
+    const supervisedDepartmentControl = this.addUserForm.get(
+      'supervised_department_id'
+    );
+
+    if (role === 'supervisor') {
+      supervisedDepartmentControl?.setValidators([
+        Validators.required,
+        this.departmentOccupiedValidator(),
+      ]);
+    } else {
+      supervisedDepartmentControl?.clearValidators();
+      supervisedDepartmentControl?.setValue('');
+    }
+    supervisedDepartmentControl?.updateValueAndValidity();
+  }
+
+  departmentOccupiedValidator() {
+    return (control: any) => {
+      const depId = control.value;
+      if (!depId) return null;
+      const dep = this.departments.find((d) => d.id === depId);
+      if (dep && dep.supervisor_id) {
+        return { departmentOccupied: true };
+      }
+      return null;
+    };
+  }
+
   togglePassword(): void {
     this.showPassword = !this.showPassword;
   }
@@ -143,6 +274,11 @@ export class AddNewUserComponent implements OnInit {
     if (this.addUserForm.invalid) {
       this.addUserForm.markAllAsTouched();
       this.toast.show('אנא מלא את כל השדות הנדרשים', 'error');
+      return;
+    }
+
+    if (this.isSelectedDepartmentOccupied()) {
+      this.toast.show(this.getOccupiedDepartmentError()!, 'error');
       return;
     }
 
@@ -188,6 +324,14 @@ export class AddNewUserComponent implements OnInit {
 
           if (typeof details === 'string') {
             const lowerDetails = details.toLowerCase();
+
+            if (
+              lowerDetails.includes('already has a supervisor') ||
+              lowerDetails.includes('למחלקה כבר יש מנהל מחלקה')
+            ) {
+              this.toast.show(details, 'error');
+              return;
+            }
 
             if (
               lowerDetails.includes('already in use') ||
@@ -249,6 +393,7 @@ export class AddNewUserComponent implements OnInit {
       phone: 'טלפון',
       role: 'תפקיד',
       department_id: 'מחלקה',
+      supervised_department_id: 'מחלקה בניהול',
       password: 'סיסמה',
       has_government_license: 'בעל רישיון',
       license_file_url: 'רישיון',
@@ -285,6 +430,33 @@ export class AddNewUserComponent implements OnInit {
     });
   }
 
+  isSelectedDepartmentOccupied(): boolean {
+    const selectedDeptId = this.addUserForm.get(
+      'supervised_department_id'
+    )?.value;
+    const role = this.addUserForm.get('role')?.value;
+
+    if (role !== 'supervisor' || !selectedDeptId) {
+      return false;
+    }
+
+    const selectedDept = this.departments.find((d) => d.id === selectedDeptId);
+    return selectedDept?.supervisor_id ? true : false;
+  }
+
+  getOccupiedDepartmentError(): string | null {
+    if (!this.isSelectedDepartmentOccupied()) {
+      return null;
+    }
+
+    const selectedDeptId = this.addUserForm.get(
+      'supervised_department_id'
+    )?.value;
+    const selectedDept = this.departments.find((d) => d.id === selectedDeptId);
+
+    return `למחלקה "${selectedDept?.name}" כבר יש מחלקה מוקצה`;
+  }
+
   checkIfHasGovernmentlicense(): boolean {
     return this.addUserForm.get('has_government_license')?.value === true;
   }
@@ -293,9 +465,15 @@ export class AddNewUserComponent implements OnInit {
     const role = this.addUserForm.get('role')?.value;
     return role === 'employee' || role === 'raan';
   }
+
   shouldShowDepartment(): boolean {
     const role = this.addUserForm.get('role')?.value;
-    return role === 'employee' || role === 'supervisor' || role === 'raan';
+    return role === 'employee' || role === 'raan';
+  }
+
+  shouldShowSupervisedDepartment(): boolean {
+    const role = this.addUserForm.get('role')?.value;
+    return role === 'supervisor';
   }
 
   hasGovlicenseButNoFile(): boolean {
@@ -324,18 +502,15 @@ export class AddNewUserComponent implements OnInit {
     };
   }
 
-  // helper: current password value (safe when form is not yet created)
   getPasswordValue(): string {
     return this.addUserForm?.get('password')?.value || '';
   }
 
-  // returns true if password contains at least one ASCII uppercase letter A-Z
   passwordHasUppercase(): boolean {
     const pw = this.getPasswordValue();
     return /[A-Z]/.test(pw);
   }
 
-  // returns true if password contains at least one digit
   passwordHasDigit(): boolean {
     const pw = this.getPasswordValue();
     return /\d/.test(pw);

@@ -23,53 +23,50 @@ export class QuotaIndicatorComponent implements OnInit, OnChanges {
   }
 
   get freeQuotaExceeded(): boolean {
-    return this.freeQuotaUsed >= this.freeQuotaTotal;
+    return this.calculateQuota() >= this.freeQuotaTotal;
   }
 
   get quotaSegments(): number[] {
     return Array.from({ length: this.freeQuotaTotal }, (_, i) => i);
   }
 
-  private calculateQuota(): void {
-    const now = new Date();
+ private calculateQuota(): number {
+  const now = new Date();
 
-    const startOfMonth = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      1,
-      0,
-      0,
-      0,
-      0
-    );
-    const endOfMonth = new Date(
-      now.getFullYear(),
-      now.getMonth() + 1,
-      0,
-      23,
-      59,
-      59,
-      999
-    );
+  const startOfMonth = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    1,
+    0, 0, 0, 0
+  );
+  const endOfMonth = new Date(
+    now.getFullYear(),
+    now.getMonth() + 1,
+    0,
+    23, 59, 59, 999
+  );
 
-    const used = this.allOrders.filter((o: any) => {
-      if (!o?.date || !o?.status) return false;
+  const used = this.allOrders.filter((o: any) => {
+    if (!o?.date || !o?.status) return false;
 
-      const d = this.parseDate(o.date);
-      d.setHours(12, 0, 0, 0);
+    const d = this.parseDate(o.date);
+    d.setHours(12, 0, 0, 0);
 
-      const isEligible =
-        o.status === 'completed' ||
-        o.status === 'approved' ||
-        (o.status === 'pending' && d >= now);
+    const isEligible =
+      o.status === 'completed' ||
+      (o.status === 'approved' && d >= now) ||
+      (o.status === 'pending' && d >= now);
 
-      if (!isEligible) return false;
+    if (!isEligible) return false;
 
-      return d >= startOfMonth && d <= endOfMonth;
-    }).length;
+    return d >= startOfMonth && d <= endOfMonth;
+  }).length;
 
-    this.freeQuotaUsed = Math.min(used, this.freeQuotaTotal);
-  }
+  this.freeQuotaUsed = Math.min(used, this.freeQuotaTotal);
+
+  return used; 
+}
+
 
   private parseDate(d: string): Date {
     const [day, month, year] = d.split('.').map(Number);

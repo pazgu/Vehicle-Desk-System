@@ -57,6 +57,8 @@ import {
   shouldResetDistance,
   applyDistanceBuffer,
   clearDistanceOnForm,
+  isTelAviv,
+  isTelAvivById
 } from './home-utils/route-helpers';
 import { RideUserChecksService } from '../../../services/ride-user-checks.service';
 import {
@@ -316,7 +318,7 @@ export class NewRideComponent implements OnInit {
 
   private applyRebookData(data: RebookData): void {
     this.isRebookMode = true;
-    this.rebookOriginalRideId = data.user_id;
+    this.rebookOriginalRideId = data.id;
 
     const extraStopsArray = this.rideForm.get('extraStops') as FormArray;
     extraStopsArray.clear();
@@ -329,6 +331,33 @@ export class NewRideComponent implements OnInit {
 
     const start = new Date(data.start_datetime);
     const end = new Date(data.end_datetime);
+
+    const now = new Date();
+
+// if start time already passed -> push it to now and keep duration
+if (start.getTime() < now.getTime()) {
+  const durationMs = end.getTime() - start.getTime();
+
+  const roundedNow = new Date(now);
+  const minutes = roundedNow.getMinutes();
+  const roundedMinutes = Math.ceil(minutes / 15) * 15;
+  roundedNow.setMinutes(roundedMinutes % 60);
+  if (roundedMinutes >= 60) roundedNow.setHours(roundedNow.getHours() + 1);
+  roundedNow.setSeconds(0, 0);
+
+  start.setTime(roundedNow.getTime());
+
+  if (durationMs > 0) {
+    end.setTime(roundedNow.getTime() + durationMs);
+  }
+
+ this.toastService.show(
+  'שעת ההתחלה שבחרת כבר עברה, שינינו אותה לשעה הנוכחית. בדוק שהשעה החדשה מתאימה לך.',
+  'error'
+);
+
+}
+
     const pad = (num: number) => num.toString().padStart(2, '0');
     this.rideForm.patchValue({
       start_location: data.start_location,
@@ -343,14 +372,16 @@ export class NewRideComponent implements OnInit {
 
       car: null,
 
-      ride_date: start.toISOString().split('T')[0],
-      start_hour: pad(start.getHours()),
-      start_minute: pad(start.getMinutes()),
-      end_hour: pad(end.getHours()),
-      end_minute: pad(end.getMinutes()),
+            ride_date: start.toISOString().split('T')[0],
 
-      start_time: `${pad(start.getHours())}:${pad(start.getMinutes())}`,
-      end_time: `${pad(end.getHours())}:${pad(end.getMinutes())}`,
+      start_hour: '',
+      start_minute: '',
+      end_hour: '',
+      end_minute: '',
+
+      start_time: null,
+      end_time: null,
+
       approving_supervisor: data.approving_supervisor ?? null,
     });
 
@@ -683,6 +714,7 @@ export class NewRideComponent implements OnInit {
         }
       });
   }
+
   private calculateRouteDistance(): void {
     const startRaw = this.rideForm.get('start_location')?.value;
     const stopRaw = this.rideForm.get('stop')?.value;
@@ -691,13 +723,33 @@ export class NewRideComponent implements OnInit {
     const startId = extractCityId(startRaw);
     const stopId = extractCityId(stopRaw);
 
-    if (shouldResetDistance(startId, stopId)) {
+    if (!startId || !stopId) {
       this.resetDistanceValues();
       return;
     }
 
-    const routeStops = buildRouteStops(extraStops, stopId!);
-    this.fetchEstimatedDistance(startId!, routeStops);
+    const mainStopIsTelAviv = isTelAviv(stopRaw) || isTelAvivById(stopId, this.cities);
+    const extraStopIsTelAviv = extraStops.some((s: string) => s && isTelAvivById(s, this.cities));
+    
+    const hasTelAvivAsStop = mainStopIsTelAviv || extraStopIsTelAviv;
+
+    console.log('Debug Tel Aviv check:', {
+      mainStopIsTelAviv,
+      extraStopIsTelAviv,
+      hasTelAvivAsStop,
+      extraStops
+    });
+
+    if (startId === stopId && extraStops.length === 0) {
+      const total = 20;
+      this.fetchedDistance = total;
+      this.estimated_distance_with_buffer = +(total * 1.1).toFixed(2);
+      this.rideForm.get('estimated_distance_km')?.setValue(total, { emitEvent: false });
+      return;
+    }
+
+    const routeStops = buildRouteStops(extraStops, stopId);
+    this.fetchEstimatedDistance(startId, routeStops, hasTelAvivAsStop);
   }
 
   private resetDistanceValues(): void {
@@ -843,12 +895,22 @@ export class NewRideComponent implements OnInit {
       error: (err) => console.error('Failed to load fuel type', err),
     });
   }
-  private fetchEstimatedDistance(from: string, toArray: string[]): void {
+
+  private fetchEstimatedDistance(
+    from: string,
+    toArray: string[],
+    hasTelAviv: boolean
+  ): void {
     if (!from || !toArray || toArray.length === 0) return;
     this.isLoadingDistance = true;
     this.rideService.getRouteDistance(from, toArray).subscribe({
       next: (response) => {
-        const realDistance = response.distance_km;
+        let realDistance = response.distance_km;
+
+        if (hasTelAviv) {
+          realDistance += 20;
+        }
+
         this.fetchedDistance = realDistance;
         this.estimated_distance_with_buffer = +(realDistance * 1.1).toFixed(2);
         this.rideForm
@@ -864,6 +926,7 @@ export class NewRideComponent implements OnInit {
       },
     });
   }
+
   private updateAvailableCars(): void {
     const selectedType = this.rideForm.get('vehicle_type')?.value;
     const carControl = this.rideForm.get('car');
@@ -939,9 +1002,10 @@ export class NewRideComponent implements OnInit {
     const period = this.rideForm.get('ride_period')?.value;
     const startDateTime = buildDateTime(rideDate, startHour, startMinute);
     const endDateTime = buildDateTime(rideDate, endHour, endMinute);
+    const hasDistance = distance !== null && distance !== undefined && distance !== '';
 
     if (period !== 'morning') {
-      if (distance && rideDateNight && vehicleType) {
+      if (hasDistance && rideDateNight && vehicleType) {
         const isoDate = toIsoDate(rideDate);
         this.loadVehicles(
           distance,
@@ -956,7 +1020,7 @@ export class NewRideComponent implements OnInit {
         this.rideForm.get('car')?.setValue(null);
       }
     } else {
-      if (distance && rideDate && vehicleType) {
+      if (hasDistance && rideDate && vehicleType) {
         const isoDate = toIsoDate(rideDate);
         this.loadVehicles(
           distance,

@@ -235,38 +235,52 @@ export class AdminAnalyticsComponent implements OnInit {
         }
       }
     } else if (isTopUsedTab) {
-      const labels = chartData.labels;
-      const data = chartData.datasets[0].data;
+  const labels = this.vehicleUsageComponent.exportLabels?.length
+    ? this.vehicleUsageComponent.exportLabels
+    : chartData.labels;
 
-      body.push([
-        { text: 'Vehicle', style: 'tableHeader' },
-        { text: 'Ride Count', style: 'tableHeader' },
-        { text: 'Usage Level', style: 'tableHeader' },
-      ]);
+  const counts = this.vehicleUsageComponent.exportRideCounts?.length
+    ? this.vehicleUsageComponent.exportRideCounts
+    : chartData.datasets[0].data;
 
-      for (let i = 0; i < labels.length; i++) {
-        const count = data[i];
-        let usageLabel = '';
-        let bgColor = '';
+  const kilometers = this.vehicleUsageComponent.exportKilometers?.length
+    ? this.vehicleUsageComponent.exportKilometers
+    : [];
 
-        if (count > 10) {
-          usageLabel = 'High Usage';
-          bgColor = '#FFCDD2';
-        } else if (count >= 5) {
-          usageLabel = 'Medium';
-          bgColor = '#FFF9C4';
-        } else {
-          usageLabel = 'Good';
-          bgColor = '#BBDEFB';
-        }
+  body.push([
+    { text: 'Vehicle', style: 'tableHeader' },
+    { text: 'Ride Count', style: 'tableHeader' },
+    { text: 'Total KM', style: 'tableHeader' },
+    { text: 'Usage Level', style: 'tableHeader' },
+  ]);
 
-        body.push([
-          { text: labels[i], fillColor: bgColor },
-          { text: count.toString(), fillColor: bgColor },
-          { text: usageLabel, fillColor: bgColor },
-        ]);
-      }
+  for (let i = 0; i < labels.length; i++) {
+    const count = Number(counts[i] ?? 0);
+    const km = Number(kilometers[i] ?? 0);
+
+    let usageLabel = '';
+    let bgColor = '';
+
+    if (count > 10) {
+      usageLabel = 'High Usage';
+      bgColor = '#FFCDD2';
+    } else if (count >= 5) {
+      usageLabel = 'Medium';
+      bgColor = '#FFF9C4';
     } else {
+      usageLabel = 'Good';
+      bgColor = '#BBDEFB';
+    }
+
+    body.push([
+      { text: labels[i], fillColor: bgColor },
+      { text: count.toString(), fillColor: bgColor },
+      { text: km.toString(), fillColor: bgColor },
+      { text: usageLabel, fillColor: bgColor },
+    ]);
+  }
+}
+else {
       const statusKeys = chartData.labels.map((label: string) => {
         const match = label.split('–')[0].trim();
         return match;
@@ -321,7 +335,7 @@ export class AdminAnalyticsComponent implements OnInit {
     }
 
     const docDefinition: any = {
-      pageOrientation: isNoShowTab ? 'landscape' : 'portrait',
+      pageOrientation: (isNoShowTab || isTopUsedTab) ? 'landscape' : 'portrait',
       pageSize: 'A4',
       content: [
         { text: englishTitle, style: 'header' },
@@ -344,7 +358,8 @@ export class AdminAnalyticsComponent implements OnInit {
             widths: isNoShowTab
               ? ['auto', '*', 'auto', 'auto', 'auto', 'auto']
               : isTopUsedTab
-              ? ['*', '*', '*']
+? ['*', 'auto', 'auto', '*']
+
               : isPurposeTab
               ? ['*', '*', '*', '*']
               : ['*', '*'],
@@ -471,293 +486,218 @@ export class AdminAnalyticsComponent implements OnInit {
     }
   }
 
-  public exportExcel(): void {
-    const isVehicleTab = this.activeTabIndex === 0;
-    const isRideTab = this.activeTabIndex === 1;
-    const isTopUsedTab = this.activeTabIndex === 2;
-    const isNoShowTab = this.activeTabIndex === 4;
-    const isRideStartTimeTab = this.activeTabIndex === 5;
-    const isPurposeTab = this.activeTabIndex === 6;
+ public exportExcel(): void {
+  const isVehicleTab = this.activeTabIndex === 0;
+  const isRideTab = this.activeTabIndex === 1;
+  const isTopUsedTab = this.activeTabIndex === 2;
+  const isNoShowTab = this.activeTabIndex === 4;
+  const isRideStartTimeTab = this.activeTabIndex === 5;
+  const isPurposeTab = this.activeTabIndex === 6;
 
-    let chartData: any;
-    let title: string;
+  let chartData: any;
+  let title: string;
 
-    if (isNoShowTab) {
-      title = 'טבלת אי-הגעות';
-    } else if (isRideStartTimeTab) {
-      title = 'זמני התחלת נסיעות';
-      chartData = this.rideStartTimeChartData;
-    } else if (isPurposeTab) {
-      title = 'מטרת נסיעה';
-      chartData = this.purposeChartData;
-    } else {
-      chartData = isVehicleTab
-        ? this.vehicleStatusComponent.vehicleChartData
-        : isRideTab
-        ? this.rideStatusComponent.rideChartData
-        : this.vehicleUsageComponent.topUsedVehiclesData;
+  if (isNoShowTab) {
+    title = 'טבלת אי-הגעות';
+  } else if (isRideStartTimeTab) {
+    title = 'זמני התחלת נסיעות';
+    chartData = this.rideStartTimeChartData;
+  } else if (isPurposeTab) {
+    title = 'מטרת נסיעה';
+    chartData = this.purposeChartData;
+  } else {
+    chartData = isVehicleTab
+      ? this.vehicleStatusComponent.vehicleChartData
+      : isRideTab
+      ? this.rideStatusComponent.rideChartData
+      : this.vehicleUsageComponent.topUsedVehiclesData;
 
-      title = isVehicleTab
-        ? this.vehicleStatusComponent.selectedVehicleType !== ''
-          ? `סטטוס רכבים (${this.vehicleStatusComponent.selectedVehicleType})`
-          : 'סטטוס רכבים (כל הסוגים)'
-        : isRideTab
-        ? 'סטטוס נסיעות'
-        : 'רכבים בשימוש גבוה';
-    }
-
-    const timestamp = new Date().toISOString().substring(0, 10);
-    let data: any[] = [];
-
-    if (isPurposeTab) {
-      if (!this.purposeStats || !this.purposeStats.months) {
-        return;
-      }
-
-      data = this.purposeStats.months.map((month) => ({
-        חודש: month.month_label,
-        מנהלי: `${month.administrative_count} (${month.administrative_percentage}%)`,
-        מבצעי: `${month.operational_count} (${month.operational_percentage}%)`,
-        'סה"כ': month.total_rides,
-      }));
-    }
-
-    if (isNoShowTab) {
-      if (this.noShowsComponent.filteredNoShowUsers.length === 0) {
-        this.showExportWarningTemporarily();
-        return;
-      }
-
-      data = this.noShowsComponent.filteredNoShowUsers.map((user) => {
-        const count = user.no_show_count ?? 0;
-        let status = '';
-        if (count >= 3) status = 'Critical';
-        else if (count >= 1) status = 'Warning';
-        else status = 'Good';
-
-        return {
-          'User Name': user.name || 'Unknown',
-          Email: user.email || 'unknown@example.com',
-          'Employee ID': user.employee_id || user.user_id || 'N/A',
-          Role: user.role || 'לא ידוע',
-          'No-Show Count': count,
-          Status: status,
-        };
-      });
-    } else if (isTopUsedTab) {
-      const labels = chartData.labels;
-      const counts = chartData.datasets[0].data;
-
-      data = labels.map((label: string, i: number) => {
-        const count = counts[i];
-        let usageLevel = '';
-
-        if (count > 10) usageLevel = 'High Usage';
-        else if (count >= 5) usageLevel = 'Medium';
-        else usageLevel = 'Good';
-
-        return {
-          Vehicle: label,
-          'Ride Count': count,
-          'Usage Level': usageLevel,
-        };
-      });
-    } else if (isRideStartTimeTab) {
-      if (!this.rideStartTimeChartData) {
-        return;
-      }
-
-      const labels = this.rideStartTimeChartData.labels || [];
-      const counts = this.rideStartTimeChartData.datasets?.[0]?.data || [];
-
-      data = labels.map((label: string, i: number) => ({
-        שעה: label,
-        'מספר נסיעות': counts[i] ?? 0,
-      }));
-    } else {
-      data = chartData.labels.map((label: string, i: number) => ({
-        'Formatted Status': label,
-        Count: chartData.datasets[0].data[i],
-      }));
-    }
-
-    const worksheet = XLSX.utils.json_to_sheet(data);
-
-const needsExtraSpace = isPurposeTab || this.activeTabIndex === 3;
-
-this.autoFitColumns(worksheet, data, {
-  minWch: 14,
-  maxWch: needsExtraSpace ? 110 : 80,
-});
-
-this.applySheetWrapAndCenter(worksheet);
-this.freezeHeaderRow(worksheet);
-this.setRowHeights(worksheet, 28, needsExtraSpace ? 28 : 22);
-
-
-    const range = XLSX.utils.decode_range(worksheet['!ref']!);
-
-    if (isNoShowTab) {
-      for (let row = 1; row <= range.e.r; row++) {
-        const count = Number(worksheet[`F${row + 1}`]?.v);
-        let fillColor = 'FFFFFFFF';
-
-        if (count >= 3) fillColor = 'FFFFCDD2';
-        else if (count >= 1) fillColor = 'FFFFFFCC';
-        else fillColor = 'FFBBDEFB';
-
-        ['A', 'B', 'C', 'D', 'E', 'F', 'G'].forEach((col) => {
-          const cell = worksheet[`${col}${row + 1}`];
-          if (cell) {
-            cell.s = {
-              fill: {
-                patternType: 'solid',
-                fgColor: { rgb: fillColor },
-              },
-            };
-          }
-        });
-      }
-    } else if (isTopUsedTab) {
-      for (let row = 1; row <= range.e.r; row++) {
-        const rideCount = Number(worksheet[`B${row + 1}`]?.v);
-        let fillColor =
-          rideCount > 10
-            ? 'FFFFCDD2'
-            : rideCount >= 5
-            ? 'FFFFFFCC'
-            : 'FFBBDEFB';
-
-        ['A', 'B', 'C'].forEach((col) => {
-          const cell = worksheet[`${col}${row + 1}`];
-          if (cell) {
-            cell.s = {
-              fill: {
-                patternType: 'solid',
-                fgColor: { rgb: fillColor },
-              },
-            };
-          }
-        });
-      }
-    } else if (!isRideStartTimeTab) {
-      for (let row = 1; row <= range.e.r; row++) {
-        const label = worksheet[`A${row + 1}`]?.v as string;
-        let fillColor = 'FFFFFFFF';
-
-        if (label.includes('זמין')) fillColor = 'FFC8E6C9';
-        else if (label.includes('מוקפא')) fillColor = 'FFFFCDD2';
-        else if (label.includes('בשימוש')) fillColor = 'FFFFE0B2';
-        if (label.includes('ממתין לאישור')) fillColor = 'FFFFF9C4';
-        else if (label.includes('אושר')) fillColor = 'FFC8E6C9';
-        else if (label.includes('הושלם')) fillColor = 'FFBBDEFB';
-        else if (label.includes('בוטל')) fillColor = 'FFF8BBD0';
-        else if (label.includes('נדחה')) fillColor = 'FFFFCDD2';
-        else if (label.includes('בנסיעה')) fillColor = 'FFD1C4E9';
-
-        ['A', 'B'].forEach((col) => {
-          const cell = worksheet[`${col}${row + 1}`];
-          if (cell) {
-            cell.s = {
-              fill: {
-                patternType: 'solid',
-                fgColor: { rgb: fillColor },
-              },
-            };
-          }
-        });
-      }
-
-      if (isNoShowTab) {
-        for (let row = 1; row <= range.e.r; row++) {
-          const count = Number(worksheet[`F${row + 1}`]?.v);
-          let fillColor = 'FFFFFFFF';
-
-          if (count >= 3) fillColor = 'FFFFCDD2';
-          else if (count >= 1) fillColor = 'FFFFFFCC';
-          else fillColor = 'FFBBDEFB';
-
-          ['A', 'B', 'C', 'D', 'E', 'F', 'G'].forEach((col) => {
-            const cell = worksheet[`${col}${row + 1}`];
-            if (cell) {
-              cell.s = {
-                fill: {
-                  patternType: 'solid',
-                  fgColor: { rgb: fillColor },
-                },
-              };
-            }
-          });
-        }
-      } else if (isTopUsedTab) {
-        for (let row = 1; row <= range.e.r; row++) {
-          const rideCount = Number(worksheet[`B${row + 1}`]?.v);
-          let fillColor =
-            rideCount > 10
-              ? 'FFFFCDD2'
-              : rideCount >= 5
-              ? 'FFFFFFCC'
-              : 'FFBBDEFB';
-
-          ['A', 'B', 'C'].forEach((col) => {
-            const cell = worksheet[`${col}${row + 1}`];
-            if (cell) {
-              cell.s = {
-                fill: {
-                  patternType: 'solid',
-                  fgColor: { rgb: fillColor },
-                },
-              };
-            }
-          });
-        }
-      } else if (!isRideStartTimeTab) {
-        for (let row = 1; row <= range.e.r; row++) {
-          const label = worksheet[`A${row + 1}`]?.v as string;
-          let fillColor = 'FFFFFFFF';
-
-          if (label.includes('זמין')) fillColor = 'FFC8E6C9';
-          else if (label.includes('מוקפא')) fillColor = 'FFFFCDD2';
-          else if (label.includes('בשימוש')) fillColor = 'FFFFE0B2';
-          if (label.includes('ממתין לאישור')) fillColor = 'FFFFF9C4';
-          else if (label.includes('אושר')) fillColor = 'FFC8E6C9';
-          else if (label.includes('הושלם')) fillColor = 'FFBBDEFB';
-          else if (label.includes('בוטל')) fillColor = 'FFF8BBD0';
-          else if (label.includes('נדחה')) fillColor = 'FFFFCDD2';
-          else if (label.includes('בנסיעה')) fillColor = 'FFD1C4E9';
-
-          ['A', 'B'].forEach((col) => {
-            const cell = worksheet[`${col}${row + 1}`];
-            if (cell) {
-              cell.s = {
-                fill: {
-                  patternType: 'solid',
-                  fgColor: { rgb: fillColor },
-                },
-              };
-            }
-          });
-        }
-      }
-
-      const fileBaseName = this.getHebrewFileBaseName();
-    }
-
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Analytics');
-
-    const excelBuffer: any = XLSX.write(workbook, {
-      bookType: 'xlsx',
-      type: 'array',
-      cellStyles: true,
-    });
-
-    const blob = new Blob([excelBuffer], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8',
-    });
-
-    saveAs(blob, `${title}__${timestamp}.xlsx`);
+    title = isVehicleTab
+      ? this.vehicleStatusComponent.selectedVehicleType !== ''
+        ? `סטטוס רכבים (${this.vehicleStatusComponent.selectedVehicleType})`
+        : 'סטטוס רכבים (כל הסוגים)'
+      : isRideTab
+      ? 'סטטוס נסיעות'
+      : 'רכבים בשימוש גבוה';
   }
+
+  const timestamp = new Date().toISOString().substring(0, 10);
+  let data: any[] = [];
+
+  if (isPurposeTab) {
+    if (!this.purposeStats || !this.purposeStats.months) {
+      return;
+    }
+
+    data = this.purposeStats.months.map((month) => ({
+      חודש: month.month_label,
+      מנהלי: `${month.administrative_count} (${month.administrative_percentage}%)`,
+      מבצעי: `${month.operational_count} (${month.operational_percentage}%)`,
+      'סה"כ': month.total_rides,
+    }));
+  }
+
+  if (isNoShowTab) {
+    if (this.noShowsComponent.filteredNoShowUsers.length === 0) {
+      this.showExportWarningTemporarily();
+      return;
+    }
+
+    data = this.noShowsComponent.filteredNoShowUsers.map((user) => {
+      const count = user.no_show_count ?? 0;
+      let status = '';
+      if (count >= 3) status = 'Critical';
+      else if (count >= 1) status = 'Warning';
+      else status = 'Good';
+
+      return {
+        'User Name': user.name || 'Unknown',
+        Email: user.email || 'unknown@example.com',
+        'Employee ID': user.employee_id || user.user_id || 'N/A',
+        Role: user.role || 'לא ידוע',
+        'No-Show Count': count,
+        Status: status,
+      };
+    });
+  } else if (isTopUsedTab) {
+    const labels = this.vehicleUsageComponent.exportLabels?.length
+      ? this.vehicleUsageComponent.exportLabels
+      : chartData.labels;
+
+    const counts = this.vehicleUsageComponent.exportRideCounts?.length
+      ? this.vehicleUsageComponent.exportRideCounts
+      : chartData.datasets[0].data;
+
+    const kilometers = this.vehicleUsageComponent.exportKilometers?.length
+      ? this.vehicleUsageComponent.exportKilometers
+      : [];
+
+    data = labels.map((label: string, i: number) => {
+      const count = Number(counts[i] ?? 0);
+      const km = Number(kilometers[i] ?? 0);
+
+      let usageLevel = '';
+      if (count > 10) usageLevel = 'High Usage';
+      else if (count >= 5) usageLevel = 'Medium';
+      else usageLevel = 'Good';
+
+      return {
+        Vehicle: label,
+        'Ride Count': count,
+        'Total KM': km,
+        'Usage Level': usageLevel,
+      };
+    });
+  } else if (isRideStartTimeTab) {
+    if (!this.rideStartTimeChartData) {
+      return;
+    }
+
+    const labels = this.rideStartTimeChartData.labels || [];
+    const counts = this.rideStartTimeChartData.datasets?.[0]?.data || [];
+
+    data = labels.map((label: string, i: number) => ({
+      שעה: label,
+      'מספר נסיעות': counts[i] ?? 0,
+    }));
+  } else {
+    data = chartData.labels.map((label: string, i: number) => ({
+      'Formatted Status': label,
+      Count: chartData.datasets[0].data[i],
+    }));
+  }
+
+  const worksheet = XLSX.utils.json_to_sheet(data);
+
+  const needsExtraSpace = isPurposeTab || this.activeTabIndex === 3;
+
+  this.autoFitColumns(worksheet, data, {
+    minWch: 14,
+    maxWch: needsExtraSpace ? 110 : 80,
+  });
+
+  this.applySheetWrapAndCenter(worksheet);
+  this.freezeHeaderRow(worksheet);
+  this.setRowHeights(worksheet, 28, needsExtraSpace ? 28 : 22);
+
+  const range = XLSX.utils.decode_range(worksheet['!ref']!);
+
+  if (isNoShowTab) {
+    for (let row = 1; row <= range.e.r; row++) {
+      const count = Number(worksheet[`F${row + 1}`]?.v);
+      let fillColor = 'FFFFFFFF';
+
+      if (count >= 3) fillColor = 'FFFFCDD2';
+      else if (count >= 1) fillColor = 'FFFFFFCC';
+      else fillColor = 'FFBBDEFB';
+
+      ['A', 'B', 'C', 'D', 'E', 'F', 'G'].forEach((col) => {
+        const cell = worksheet[`${col}${row + 1}`];
+        if (cell) {
+          cell.s = {
+            fill: { patternType: 'solid', fgColor: { rgb: fillColor } },
+          };
+        }
+      });
+    }
+  } else if (isTopUsedTab) {
+    for (let row = 1; row <= range.e.r; row++) {
+      const rideCount = Number(worksheet[`B${row + 1}`]?.v);
+      const fillColor =
+        rideCount > 10 ? 'FFFFCDD2' : rideCount >= 5 ? 'FFFFFFCC' : 'FFBBDEFB';
+
+      ['A', 'B', 'C', 'D'].forEach((col) => {
+        const cell = worksheet[`${col}${row + 1}`];
+        if (cell) {
+          cell.s = {
+            fill: { patternType: 'solid', fgColor: { rgb: fillColor } },
+          };
+        }
+      });
+    }
+  } else if (!isRideStartTimeTab) {
+    for (let row = 1; row <= range.e.r; row++) {
+      const label = worksheet[`A${row + 1}`]?.v as string;
+      let fillColor = 'FFFFFFFF';
+
+      if (label?.includes('זמין')) fillColor = 'FFC8E6C9';
+      else if (label?.includes('מוקפא')) fillColor = 'FFFFCDD2';
+      else if (label?.includes('בשימוש')) fillColor = 'FFFFE0B2';
+
+      if (label?.includes('ממתין לאישור')) fillColor = 'FFFFF9C4';
+      else if (label?.includes('אושר')) fillColor = 'FFC8E6C9';
+      else if (label?.includes('הושלם')) fillColor = 'FFBBDEFB';
+      else if (label?.includes('בוטל')) fillColor = 'FFF8BBD0';
+      else if (label?.includes('נדחה')) fillColor = 'FFFFCDD2';
+      else if (label?.includes('בנסיעה')) fillColor = 'FFD1C4E9';
+
+      ['A', 'B'].forEach((col) => {
+        const cell = worksheet[`${col}${row + 1}`];
+        if (cell) {
+          cell.s = {
+            fill: { patternType: 'solid', fgColor: { rgb: fillColor } },
+          };
+        }
+      });
+    }
+  }
+
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Analytics');
+
+  const excelBuffer: any = XLSX.write(workbook, {
+    bookType: 'xlsx',
+    type: 'array',
+    cellStyles: true,
+  });
+
+  const blob = new Blob([excelBuffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8',
+  });
+
+  saveAs(blob, `${title}__${timestamp}.xlsx`);
+}
+
 
   public exportCSV(): void {
     const isVehicleTab = this.activeTabIndex === 0;
@@ -827,24 +767,36 @@ this.setRowHeights(worksheet, 28, needsExtraSpace ? 28 : 22);
         };
       });
     } else if (isTopUsedTab) {
-      const labels = chartData.labels;
-      const counts = chartData.datasets[0].data;
+  const labels = this.vehicleUsageComponent.exportLabels?.length
+    ? this.vehicleUsageComponent.exportLabels
+    : chartData.labels;
 
-      data = labels.map((label: string, i: number) => {
-        const count = counts[i];
-        let usageLevel = '';
+  const counts = this.vehicleUsageComponent.exportRideCounts?.length
+    ? this.vehicleUsageComponent.exportRideCounts
+    : chartData.datasets[0].data;
 
-        if (count > 10) usageLevel = 'שימוש גבוה';
-        else if (count >= 5) usageLevel = 'בינוני';
-        else usageLevel = 'טוב';
+  const kilometers = this.vehicleUsageComponent.exportKilometers?.length
+    ? this.vehicleUsageComponent.exportKilometers
+    : [];
 
-        return {
-          רכב: label,
-          'כמות נסיעות': count,
-          'רמת שימוש': usageLevel,
-        };
-      });
-    } else if (isRideStartTimeTab) {
+  data = labels.map((label: string, i: number) => {
+    const count = Number(counts[i] ?? 0);
+    const km = Number(kilometers[i] ?? 0);
+
+    let usageLevel = '';
+    if (count > 10) usageLevel = 'שימוש גבוה';
+    else if (count >= 5) usageLevel = 'בינוני';
+    else usageLevel = 'טוב';
+
+    return {
+      רכב: label,
+      'כמות נסיעות': count,
+      'סה"כ ק"מ': km,
+      'רמת שימוש': usageLevel,
+    };
+  });
+}
+ else if (isRideStartTimeTab) {
       if (!this.rideStartTimeChartData) {
         return;
       }

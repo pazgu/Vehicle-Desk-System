@@ -1,3 +1,9 @@
+.page-wrapper {
+  background-color: #fffaf6;
+  min-height: 100vh;
+  padding: 20px;
+}
+
 .wrap {
   max-width: 800px;
   margin: 24px auto;
