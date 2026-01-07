@@ -57,6 +57,8 @@ import {
   shouldResetDistance,
   applyDistanceBuffer,
   clearDistanceOnForm,
+  isTelAviv,
+  isTelAvivById
 } from './home-utils/route-helpers';
 import { RideUserChecksService } from '../../../services/ride-user-checks.service';
 import {
@@ -646,6 +648,7 @@ if (start.getTime() < now.getTime()) {
         this.estimated_distance_with_buffer = applyDistanceBuffer(value);
       });
   }
+
   private calculateRouteDistance(): void {
     const startRaw = this.rideForm.get('start_location')?.value;
     const stopRaw = this.rideForm.get('stop')?.value;
@@ -659,15 +662,28 @@ if (start.getTime() < now.getTime()) {
       return;
     }
 
-    if (startId === stopId) {
-      this.fetchedDistance = 30;
-      this.estimated_distance_with_buffer = +(30 * 1.1).toFixed(2);
-      this.rideForm.get('estimated_distance_km')?.setValue(30, { emitEvent: false });
+    const mainStopIsTelAviv = isTelAviv(stopRaw) || isTelAvivById(stopId, this.cities);
+    const extraStopIsTelAviv = extraStops.some((s: string) => s && isTelAvivById(s, this.cities));
+    
+    const hasTelAvivAsStop = mainStopIsTelAviv || extraStopIsTelAviv;
+
+    console.log('Debug Tel Aviv check:', {
+      mainStopIsTelAviv,
+      extraStopIsTelAviv,
+      hasTelAvivAsStop,
+      extraStops
+    });
+
+    if (startId === stopId && extraStops.length === 0) {
+      const total = 20;
+      this.fetchedDistance = total;
+      this.estimated_distance_with_buffer = +(total * 1.1).toFixed(2);
+      this.rideForm.get('estimated_distance_km')?.setValue(total, { emitEvent: false });
       return;
     }
 
     const routeStops = buildRouteStops(extraStops, stopId);
-    this.fetchEstimatedDistance(startId, routeStops);
+    this.fetchEstimatedDistance(startId, routeStops, hasTelAvivAsStop);
   }
 
   private resetDistanceValues(): void {
@@ -813,12 +829,22 @@ if (start.getTime() < now.getTime()) {
       error: (err) => console.error('Failed to load fuel type', err),
     });
   }
-  private fetchEstimatedDistance(from: string, toArray: string[]): void {
+
+  private fetchEstimatedDistance(
+    from: string,
+    toArray: string[],
+    hasTelAviv: boolean
+  ): void {
     if (!from || !toArray || toArray.length === 0) return;
     this.isLoadingDistance = true;
     this.rideService.getRouteDistance(from, toArray).subscribe({
       next: (response) => {
-        const realDistance = response.distance_km;
+        let realDistance = response.distance_km;
+
+        if (hasTelAviv) {
+          realDistance += 30;
+        }
+
         this.fetchedDistance = realDistance;
         this.estimated_distance_with_buffer = +(realDistance * 1.1).toFixed(2);
         this.rideForm
@@ -834,6 +860,7 @@ if (start.getTime() < now.getTime()) {
       },
     });
   }
+
   private updateAvailableCars(): void {
     const selectedType = this.rideForm.get('vehicle_type')?.value;
     const carControl = this.rideForm.get('car');

@@ -14,6 +14,23 @@ export function extractCityId(raw: any): string | null {
   return null;
 }
 
+export function isTelAviv(raw: any): boolean {
+  if (!raw) return false;
+
+  if (typeof raw === 'object') {
+    const name = raw.name || raw.city_name || raw.label;
+    return typeof name === 'string' && name.trim() === 'תל אביב';
+  }
+
+  return false;
+}
+
+export function isTelAvivById(stopId: string, cities: { id: string; name: string }[]): boolean {
+  if (!stopId || !cities || cities.length === 0) return false;
+  const city = cities.find(c => c.id === stopId);
+  return city?.name?.trim() === 'תל אביב';
+}
+
 export function buildRouteStops(
   extraStops: string[],
   finalStopId: string
