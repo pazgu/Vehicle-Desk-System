@@ -660,9 +660,9 @@ if (start.getTime() < now.getTime()) {
     }
 
     if (startId === stopId) {
-      this.fetchedDistance = 30;
-      this.estimated_distance_with_buffer = +(30 * 1.1).toFixed(2);
-      this.rideForm.get('estimated_distance_km')?.setValue(30, { emitEvent: false });
+      this.fetchedDistance = 20;
+      this.estimated_distance_with_buffer = +(20 * 1.1).toFixed(2);
+      this.rideForm.get('estimated_distance_km')?.setValue(20, { emitEvent: false });
       return;
     }
 
