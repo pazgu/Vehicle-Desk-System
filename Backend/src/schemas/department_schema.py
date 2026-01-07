@@ -4,7 +4,7 @@ from typing import Optional
 
 class DepartmentCreate(BaseModel):
     name: str
-    supervisor_id: UUID
+    supervisor_id: Optional[UUID] = None  
 
 class DepartmentUpdate(BaseModel):
     name: Optional[str] = None
