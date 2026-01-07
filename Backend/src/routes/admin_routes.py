@@ -416,9 +416,9 @@ def get_recent_no_show_events_for_single_user(
         "events": events
     }
 
+
 @router.post("/add-user", status_code=status.HTTP_201_CREATED)
 async def add_user_as_admin(
-
     request: Request,
     first_name: str = Form(...),
     last_name: str = Form(...),
@@ -427,6 +427,7 @@ async def add_user_as_admin(
     phone: str = Form(None),
     role: str = Form(...),
     department_id: Optional[str] = Form(None),
+    supervised_department_id: Optional[str] = Form(None), 
     password: str = Form(...),
     has_government_license: bool = Form(...),
     license_file: UploadFile = File(None),
@@ -447,9 +448,10 @@ async def add_user_as_admin(
             f.write(contents)
         license_file_url = f"/uploads/{license_file.filename}"
 
+    # Handle VIP department
     if department_id and department_id.lower() == "vip":
         dep = get_or_create_vip_department(db, changed_by)
-        department_id=dep.id
+        department_id = dep.id
 
     user_data = UserCreate(
         first_name=first_name,
@@ -462,16 +464,42 @@ async def add_user_as_admin(
         password=password,
         has_government_license=has_government_license,
         license_file_url=license_file_url,
-        license_expiry_date= license_expiry_date,
+        license_expiry_date=license_expiry_date,
         isRaan=isRaan
     )
 
-   
+    # Create the user
     result = create_user_by_admin(user_data, changed_by, db)
 
-    
+    # If the user is a supervisor, update the department's supervisor_id
+    if role == "supervisor" and supervised_department_id:
+        try:
+            department = db.query(Department).filter(
+                Department.id == supervised_department_id
+            ).first()
+            
+            if not department:
+                raise HTTPException(
+                    status_code=404, 
+                    detail=f"Department with id {supervised_department_id} not found"
+                )
+            
+            # Update the department's supervisor
+            department.supervisor_id = result['employee_id']
+            db.commit()
+            
+        except Exception as e:
+            db.rollback()
+            # Delete the created user if department update fails
+            db.query(User).filter(User.employee_id == result['employee_id']).delete()
+            db.commit()
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Failed to assign supervisor to department: {str(e)}"
+            )
     
     return result
+
 
 @router.get("/{ride_id}/available-vehicles", response_model=List[VehicleOut])
 def available_vehicles_for_ride(

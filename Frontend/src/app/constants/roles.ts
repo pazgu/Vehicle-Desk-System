@@ -1,5 +1,5 @@
 export const ROLE_LABELS: { [key: string]: string } = {
-  'admin': 'מנהל אתר',
+  'admin': 'מנהל',
   'employee': 'עובד',
   'supervisor': 'מנהל מחלקה',
   'inspector': 'בודק רכבים',
@@ -7,7 +7,7 @@ export const ROLE_LABELS: { [key: string]: string } = {
 };
 
 export const ROLES = [
-  { key: 'admin', label: 'מנהל אתר' },
+  { key: 'admin', label: 'מנהל' },
   { key: 'employee', label: 'עובד' },
   { key: 'supervisor', label: 'מנהל מחלקה' },
   { key: 'inspector', label: 'בודק רכבים' },
