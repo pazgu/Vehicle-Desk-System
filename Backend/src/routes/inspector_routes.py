@@ -7,6 +7,8 @@ from src.utils.auth import get_current_user, role_check
 from src.schemas.check_vehicle_schema import VehicleInspectionSchema
 from src.services.inspector_service import create_inspection
 from src.models.user_model import User
+from src.models.notification_model import Notification, NotificationType
+from datetime import datetime, timezone
 
 router = APIRouter()
 
