@@ -36,18 +36,17 @@ paidOrderIds = new Set<string>();
   currentPage = 1;
   pagedOrders: any[] = [];
   role = localStorage.getItem('role');
-  ngOnChanges(changes: SimpleChanges): void {
+ ngOnChanges(changes: SimpleChanges): void {
+  if (changes['allOrders']) {
     this.computePaidOrders();
-    if (changes['filteredOrders'] || changes['ordersPerPage']) {
-      this.currentPage = 1;
-      this.updatePagedOrders();
-      console.log(
-  'orders statuses:',
-  this.filteredOrders.map(o => ({ id: o.ride_id ?? o.id, status: o.status }))
-);
-
-    }
   }
+
+  if (changes['filteredOrders'] || changes['ordersPerPage']) {
+    this.currentPage = 1;
+    this.updatePagedOrders();
+  }
+}
+
 
   get totalPages(): number {
     return this.filteredOrders.length > 0
@@ -148,29 +147,43 @@ computePaidOrders(): void {
   const FREE_RIDES = 6;
   const now = new Date();
 
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
   const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
 
-  const monthlyOrders = this.allOrders
-    .map(o => ({
-      ...o,
-      submittedDate: this.parseSubmittedAt(o.submitted_at),
-    }))
-    .filter(o =>
-      o.submittedDate >= startOfMonth &&
-      o.submittedDate <= endOfMonth
-    )
-    .sort(
-      (a, b) =>
-        a.submittedDate.getTime() - b.submittedDate.getTime()
-    );
+  const toRideDateTime = (o: any): Date => {
+    // prefer real datetimes if you have them
+    if (o?.start_datetime) return new Date(o.start_datetime);
 
-  monthlyOrders
+    // fallback to dd.mm.yyyy + HH:mm (your UI format)
+    const [day, month, year] = (o?.date ?? '').split('.').map(Number);
+    const [hh, mm] = (o?.time ?? '12:00').split(':').map(Number);
+    return new Date(year, (month ?? 1) - 1, day ?? 1, hh ?? 12, mm ?? 0, 0, 0);
+  };
+
+  const eligibleMonthly = (this.allOrders ?? [])
+    .map(o => ({ ...o, rideDt: toRideDateTime(o) }))
+    .filter(o => !isNaN(o.rideDt.getTime()))
+    .filter(o => o.rideDt >= startOfMonth && o.rideDt <= endOfMonth)
+    .filter(o => {
+      const status = String(o.status ?? '').toLowerCase();
+
+      const isEligible =
+        status === 'completed' ||
+        (status === 'approved' && o.rideDt >= now) ||
+        (status === 'pending' && o.rideDt >= now);
+
+      return isEligible;
+    })
+    .sort((a, b) => a.rideDt.getTime() - b.rideDt.getTime());
+
+  eligibleMonthly
     .slice(FREE_RIDES)
-    .forEach(o => this.paidOrderIds.add(o.ride_id ?? o.id));
+    .forEach(o => this.paidOrderIds.add(String(o.ride_id ?? o.id)));
 
+  console.log('Eligible monthly rides:', eligibleMonthly.map(x => ({ id: x.ride_id ?? x.id, dt: x.rideDt, status: x.status })));
   console.log('Paid rides this month:', [...this.paidOrderIds]);
 }
+
 
 isPaidOrder(order: any): boolean {
   return this.paidOrderIds.has(order.ride_id ?? order.id);
