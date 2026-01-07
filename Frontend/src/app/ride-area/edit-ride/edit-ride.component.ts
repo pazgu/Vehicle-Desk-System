@@ -61,6 +61,7 @@ export class EditRideComponent implements OnInit {
     mileage: number;
     image_url: string;
     vehicle_model: string;
+    is_recommended?: boolean;
   }[] = [];
 
   availableCars: typeof this.allCars = [];
@@ -472,8 +473,13 @@ export class EditRideComponent implements OnInit {
     if (selectedDate && startTime && endTime) {
       const distance = this.rideForm.get('estimated_distance_km')?.value;
       if (distance) {
+        const ridePeriod = this.rideForm.get('ride_period')?.value;
+        const nightEndDate = this.rideForm.get('ride_date_night_end')?.value;
+        
         const startDateTime = `${selectedDate}T${startTime}:00`;
-        const endDateTime = `${selectedDate}T${endTime}:00`;
+        const endDateTime = ridePeriod === 'night' && nightEndDate
+          ? `${nightEndDate}T${endTime}:00`
+          : `${selectedDate}T${endTime}:00`;
         this.loadVehiclesForEditRide(
           distance,
           selectedDate,
@@ -679,7 +685,15 @@ export class EditRideComponent implements OnInit {
               return;
             }
 
-            const pickFirstAvailable = () => {
+            const pickFirstRecommended = () => {
+              const firstRecommended = this.availableCars.find(
+                (car) => car.is_recommended && !this.isCarDisabled(car)
+              );
+              if (firstRecommended) {
+                this.selectedCarId = firstRecommended.id;
+                carControl.setValue(firstRecommended.id, { emitEvent: false });
+                return;
+              }
               const firstAvailable = this.availableCars.find(
                 (car) => !this.isCarDisabled(car)
               );
@@ -701,10 +715,10 @@ export class EditRideComponent implements OnInit {
                 this.selectedCarId = selectedVehicle.id;
                 carControl.setValue(selectedVehicle.id, { emitEvent: false });
               } else {
-                pickFirstAvailable();
+                pickFirstRecommended();
               }
             } else {
-              pickFirstAvailable();
+              pickFirstRecommended();
             }
 
             this.isLoadingExistingRide = false;
@@ -1060,11 +1074,27 @@ export class EditRideComponent implements OnInit {
 
     return endMinutes <= startMinutes || endMinutes - startMinutes < 15;
   }
+  isRecommendedVehicle(vehicleId: string): boolean {
+    const vehicle = this.availableCars.find(v => v.id === vehicleId);
+    return vehicle?.is_recommended ?? false;
+  }
   selectCar(carId: string) {
-    if (!this.isCarDisabled(this.allCars.find((c) => c.id === carId)!)) {
-      this.selectedCarId = carId;
-      this.rideForm.get('car')?.setValue(carId);
-      this.isDropdownOpen = false;
+    const car = this.allCars.find((c) => c.id === carId);
+    
+    if (!car || this.isCarDisabled(car)) {
+      return;
+    }
+    this.selectedCarId = carId;
+    this.rideForm.get('car')?.setValue(carId);
+    this.isDropdownOpen = false;
+    if (!car.is_recommended) {
+      const recommendedCar = this.availableCars.find(c => c.is_recommended && !this.isCarDisabled(c));
+      if (recommendedCar) {
+        this.toastService.show(
+          `שים לב: בחרת רכב שאינו מומלץ. הרכב המומלץ למרחק זה הוא ${recommendedCar.vehicle_model}`,
+          'info',
+        );
+      }
     }
   }
   getSelectedCar(): any | undefined {

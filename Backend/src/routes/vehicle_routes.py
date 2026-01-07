@@ -1,7 +1,6 @@
 from datetime import date, time, datetime, timedelta, timezone
 from typing import List, Optional, Dict
 from uuid import UUID
-
 from fastapi import APIRouter, Depends, HTTPException, Request, status, Query
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
@@ -63,8 +62,10 @@ def get_all_vehicles_route(
 
     if not vehicles:
         return []
-
-    electric, hybrid, fuel = [], [], []
+    electric = []
+    electric_low = []
+    hybrid = []
+    fuel = []
 
     for v in vehicles:
         if v.fuel_type == "electric":
@@ -72,27 +73,30 @@ def get_all_vehicles_route(
             if distance_km + float(km_today) <= 200:
                 electric.append(v)
             else:
-                if "electric_low" not in locals():
-                    electric_low = []
                 electric_low.append(v)
-
         elif v.fuel_type == "hybrid":
             hybrid.append(v)
         elif v.fuel_type =="gasoline":
             fuel.append(v)
 
-    if "electric_low" not in locals():
-        electric_low = []
     if distance_km <= 200 and electric:
-        prioritized = electric
+        prioritized_group = "electric"
+        prioritized_vehicles = electric
     elif hybrid:
-        prioritized = hybrid
+        prioritized_group = "hybrid"
+        prioritized_vehicles = hybrid
     elif fuel:
-        prioritized = fuel
+        prioritized_group = "gasoline"
+        prioritized_vehicles = fuel
     else:
-        prioritized = electric_low
-
-    return prioritized
+        prioritized_group = "electric_low"
+        prioritized_vehicles = electric_low
+    for v in prioritized_vehicles:
+        v.is_recommended = True
+    other_vehicles = [v for v in vehicles if v not in prioritized_vehicles]
+    for v in other_vehicles:
+        v.is_recommended = False
+    return prioritized_vehicles + other_vehicles
 
 
 @router.get("/vehicles-for-ride-edit", response_model=List[VehicleOut])
@@ -117,16 +121,43 @@ def get_vehicles_for_ride_edit_route(
             exclude_ride_id=exclude_ride_id,
             user_department_id=current_user.department_id
         )
+        if vehicles:
+            electric = []
+            electric_low = []
+            hybrid = []
+            fuel = []
+            
+            for v in vehicles:
+                if v.fuel_type == "electric":
+                    km_today = get_vehicle_km_driven_on_date(db, v.id, ride_date or date.today())
+                    if distance_km + float(km_today) <= 200:
+                        electric.append(v)
+                    else:
+                        electric_low.append(v)
+                elif v.fuel_type == "hybrid":
+                    hybrid.append(v)
+                elif v.fuel_type == "gasoline":
+                    fuel.append(v)
+            if distance_km <= 200 and electric:
+                prioritized = electric
+            elif hybrid:
+                prioritized = hybrid
+            elif fuel:
+                prioritized = fuel
+            else:
+                prioritized = electric_low
+            for v in vehicles:
+                v.is_recommended = v in prioritized
+        
         return vehicles   
     except Exception as e:
         import traceback
-        print(f" Error in get_vehicles_for_ride_edit_route: {e}")
+        print(f"Error in get_vehicles_for_ride_edit_route: {e}")
         print(traceback.format_exc())
         raise HTTPException(
             status_code=500, 
             detail=f"Internal server error: {str(e)}"
         )
-    
 @router.get("/vip-vehicles-new-ride", response_model=List[VehicleOut])
 def get_vip_vehicles_route(
     distance_km: float = Query(...),

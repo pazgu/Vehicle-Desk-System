@@ -879,13 +879,15 @@ export class NewRideComponent implements OnInit {
       return;
     }
 
-    const firstCarId = this.availableCars[0].id;
-    if (!this.isPendingVehicle(firstCarId)) {
-      this.selectedCarId = firstCarId;
-      carControl?.setValue(firstCarId, { emitEvent: false });
+    const firstRecommended = this.availableCars.find(
+      (car) => car.is_recommended && !this.isPendingVehicle(car.id)
+    );
+    if (firstRecommended) {
+      this.selectedCarId = firstRecommended.id;
+      carControl?.setValue(firstRecommended.id, { emitEvent: false });
       carControl?.markAsDirty();
       carControl?.markAsTouched();
-      this.loadFuelType(firstCarId);
+      this.loadFuelType(firstRecommended.id);
     } else {
       const firstAvailable = this.availableCars.find(
         (car) => !this.isPendingVehicle(car.id)
@@ -1407,6 +1409,10 @@ export class NewRideComponent implements OnInit {
 
   selectedCarId: string = '';
   isDropdownOpen: boolean = false;
+  isRecommendedVehicle(vehicleId: string): boolean {
+    const vehicle = this.availableCars.find(v => v.id === vehicleId);
+    return vehicle?.is_recommended ?? false;
+  }
 
   selectCar(carId: string) {
     if (this.isPendingVehicle(carId)) {
@@ -1422,6 +1428,16 @@ export class NewRideComponent implements OnInit {
     carControl?.markAsTouched();
 
     this.loadFuelType(carId);
+    const selectedCar = this.availableCars.find(c => c.id === carId);
+    if (selectedCar && !selectedCar.is_recommended) {
+      const recommendedCar = this.availableCars.find(c => c.is_recommended);
+      if (recommendedCar) {
+        this.toastService.show(
+          `שים לב: בחרת רכב שאינו מומלץ. הרכב המומלץ למרחק זה הוא ${recommendedCar.vehicle_model}`,
+          'info',
+        );
+      }
+    }
   }
 
   getSelectedCar(): any | undefined {

@@ -24,6 +24,7 @@ export interface Vehicle {
   mileage: number;
   image_url: string;
   vehicle_model: string;
+  is_recommended?: boolean;
 }
 
 export function normalizeVehiclesResponse(raw: any[]): Vehicle[] {
@@ -34,6 +35,7 @@ export function normalizeVehiclesResponse(raw: any[]): Vehicle[] {
     image_url: v?.image_url || 'assets/default-car.png',
     vehicle_model: v?.vehicle_model || 'רכב ללא דגם',
     freeze_reason: v?.freeze_reason ?? null,
+    is_recommended: v?.is_recommended ?? false,
   }));
 }
 
