@@ -3,15 +3,19 @@ import { io, Socket } from 'socket.io-client';
 import { BehaviorSubject, ReplaySubject, Subject } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { NotificationService } from './notification';
+import { AuthService } from './auth.service';
+import { take } from 'rxjs/operators';
+
 @Injectable({
   providedIn: 'root',
 })
 export class SocketService {
-  private socket!: Socket;
+  private socket: Socket | null = null;
+  private isConnected = false;
+  
   usersLicense$ = new Subject<any>();
   usersDepartment$ = new Subject<any>();
-  private readonly SOCKET_URL = environment.socketUrl;
-
+  
   public notifications$ = new BehaviorSubject<any>(null);
   public rideRequests$ = new BehaviorSubject<any>(null);
   public deleteRequests$ = new BehaviorSubject<any>(null);
@@ -37,12 +41,34 @@ export class SocketService {
 
   public vehicleMileageUpdated$ = new BehaviorSubject<any>(null);
 
-  constructor(private notificationService: NotificationService) {
-    this.connectToSocket();
+  private readonly SOCKET_URL = environment.socketUrl;
+
+  constructor(
+    private notificationService: NotificationService,
+    private authService: AuthService
+  ) {
+    this.authService.isLoggedIn$.subscribe(isLoggedIn => {
+      if (isLoggedIn) {
+        this.reconnectSocket();
+      } else {
+        this.disconnectSocket();
+      }
+    });
+
+    this.checkInitialConnection();
+  }
+
+  private checkInitialConnection(): void {
+    this.authService.isLoggedIn$.pipe(take(1)).subscribe(isLoggedIn => {
+      if (isLoggedIn && localStorage.getItem('access_token')) {
+        this.connectToSocket();
+      }
+    });
   }
 
   private connectToSocket(): void {
     const token = localStorage.getItem('access_token');
+    if (!token || this.isConnected) return;
 
     this.socket = io(this.SOCKET_URL, {
       transports: ['websocket'],
@@ -52,18 +78,39 @@ export class SocketService {
     });
 
     this.socket.on('connect', () => {
+      this.isConnected = true;
+      
       const userId = localStorage.getItem('employee_id');
       if (userId) {
-        this.socket.emit('join', { user_id: userId });
-      } else {
-        console.warn('No user_id found in localStorage. Room join skipped.');
+        this.socket?.emit('join', { user_id: userId });
       }
+    });
+
+    this.socket.on('disconnect', () => {
+      this.isConnected = false;
     });
 
     this.listenToEvents();
   }
 
+  private reconnectSocket(): void {
+    this.disconnectSocket();
+    setTimeout(() => {
+      this.connectToSocket();
+    }, 100);
+  }
+
+  private disconnectSocket(): void {
+    if (this.socket) {
+      this.socket.disconnect();
+      this.socket = null;
+      this.isConnected = false;
+    }
+  }
+
   private listenToEvents(): void {
+    if (!this.socket) return;
+
     this.socket.on('order_updated', (data: any) => {
       this.orderUpdated$.next(data);
     });
@@ -154,12 +201,16 @@ export class SocketService {
       this.newVehicle$.next(data);
     });
     this.socket.on('vehicle_mileage_updated', (data: any) => {
-  this.vehicleMileageUpdated$.next(data);
-});
+      this.vehicleMileageUpdated$.next(data);
+    });
 
   }
 
   public sendMessage(eventName: string, data: any): void {
-    this.socket.emit(eventName, data);
+    if (this.socket && this.isConnected) {
+      this.socket.emit(eventName, data);
+    } else {
+      console.warn('Socket not connected, cannot send message:', eventName);
+    }
   }
 }

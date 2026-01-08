@@ -39,6 +39,10 @@ export class HeaderComponent implements OnInit {
 
     this.authService.isLoggedIn$.subscribe((value) => {
       this.isLoggedIn = value;
+      if (value) {
+        // Refresh notification count when logged in
+        this.notificationService.refreshUnreadCount();
+      }
     });
 
     const pendingRideId = localStorage.getItem('pending_feedback_ride');
