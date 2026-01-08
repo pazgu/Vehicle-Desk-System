@@ -1,4 +1,10 @@
 <div class="ride-filter-buttons">
+    <button
+    [ngClass]="{ active: rideViewMode === 'all' }"
+    (click)="onRideViewModeChange('all')"
+  >
+    הצג הכל
+  </button>
   <button
     [ngClass]="{ active: rideViewMode === 'future' }"
     (click)="onRideViewModeChange('future')"
@@ -10,12 +16,6 @@
     (click)="onRideViewModeChange('past')"
   >
     הצג נסיעות קודמות
-  </button>
-  <button
-    [ngClass]="{ active: rideViewMode === 'all' }"
-    (click)="onRideViewModeChange('all')"
-  >
-    הצג הכל
   </button>
 </div>
 
