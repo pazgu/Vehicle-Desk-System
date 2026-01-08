@@ -309,7 +309,7 @@ export class DepartmentDataComponent implements OnInit {
               errorMessage = 'הנתונים שהוזנו אינם תקינים';
             }
           } else if (err.status === 404) {
-            errorMessage = 'המפקח שנבחר לא נמצא במערכת';
+            errorMessage = 'המנהל שנבחר לא נמצא במערכת';
           } else if (err.error?.message) {
             errorMessage = err.error.message;
           } else if (err.error?.error) {
