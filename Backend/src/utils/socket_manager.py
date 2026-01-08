@@ -13,7 +13,7 @@ async def connect(sid, environ, auth=None):
     if not token:
         return False
 
-    user_info = token_check_socket(token)  # This should return user info
+    user_info = token_check_socket(token)
     if not user_info:
         return False
 

@@ -50,7 +50,6 @@ export class NotificationService {
       {}
     ).pipe(
       tap(() => {
-        // Decrease unread count
         const current = this.unreadCount$.getValue();
         if (current > 0) {
           this.unreadCount$.next(current - 1);
@@ -65,7 +64,6 @@ export class NotificationService {
       {}
     ).pipe(
       tap(() => {
-        // Reset unread count
         this.unreadCount$.next(0);
       })
     );
