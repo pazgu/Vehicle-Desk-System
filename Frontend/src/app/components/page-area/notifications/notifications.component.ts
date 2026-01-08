@@ -38,7 +38,7 @@ export class NotificationsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    const userId = localStorage.getItem('employee_id');
+    const userId = localStorage.getItem('user_id');
     // this.notificationService.markAllNotificationsAsSeen().subscribe({
     //   next: () => {
     //     this.notificationService.unreadCount$.next(0);
@@ -196,8 +196,11 @@ export class NotificationsComponent implements OnInit {
   }
 
   goToVehicle(vehicleId: string): void {
-    this.router.navigate([`/vehicle-details/${vehicleId}`]);
-  }
+  this.router.navigate([`/vehicle-details/${vehicleId}`], {
+    queryParams: { from: 'notifications' },
+  });
+}
+
 
   get pagedNotifications() {
     const start = (this.currentPage - 1) * this.notificationsPerPage;
