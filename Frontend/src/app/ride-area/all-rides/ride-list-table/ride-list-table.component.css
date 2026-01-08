@@ -20,7 +20,7 @@
 
 .cell {
   flex: 1;
-  width: 10px;
+  min-width: 80px;
   text-align: center;
   display: flex;
   align-items: center;
@@ -38,9 +38,9 @@
 }
 
 .actions-cell {
-  width: auto;
-  min-width: 100px;
-  flex: 0 0 auto;
+  width: 180px;
+  min-width: 180px;
+  flex: 0 0 180px;
 }
 
 .past-order {
@@ -132,7 +132,7 @@
 }
 
 .status-cancelled_due_to_no_show {
-  background-color: #e8e6e9;
+  background-color: #ffedeb;
 }
 
 button:disabled {
@@ -283,6 +283,7 @@ button:disabled {
   background-color: #c1c1c1;
   border-color: #353535;
 }
+
 .switch {
   width: 20px;
   height: 20px;
@@ -379,6 +380,7 @@ button:disabled {
   transform: none;
   box-shadow: none;
 }
+
 .rebook-icon {
   width: 20px;
   height: 20px;
@@ -389,21 +391,25 @@ button:disabled {
 .status-cancelled_vehicle_unavailable {
   position: relative;
   background-color: #a4938589;
-  opacity: 0.8;
-  font-style: italic;
+  opacity: 0.95;
   color: rgb(54, 41, 41);
 }
 
 .status-cancelled_vehicle_unavailable::after {
-  content: "(הרכב אינו זמין)";
+  content: "הרכב אינו זמין";
   position: absolute;
   top: 50%;
   left: 53%;
   transform: translate(-50%, -50%);
-  font-style: italic;
-  font-weight: bold;
-  color: white;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #666665;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 6px 18px;
+  border-radius: 6px;
   white-space: nowrap;
   pointer-events: none;
   z-index: 1;
+  box-shadow: 0 2px 8px rgba(139, 90, 43, 0.2);
+  border: 1px solid rgba(193, 125, 74, 0.3);
 }

@@ -41,88 +41,39 @@ export async function exportToPDF(filteredLogs: any[]) {
   });
 
   const docDefinition: TDocumentDefinitions = {
-    content: [
-      { text: `Audit Logs Report`, style: 'header', alignment: 'center' },
-      {
-        text: `Created: ${timestamp}`,
-        style: 'subheader',
-        alignment: 'center',
-      },
-      {
-        text: `Color Legend:`,
-        style: 'legendHeader',
-        alignment: 'left',
-        margin: [0, 20, 0, 10],
-      } as any,
-      {
-        table: {
-          headerRows: 0,
-          widths: ['auto', '*'],
-          body: [
-            [
-              { text: '', fillColor: '#60cd79', margin: [0, 2] } as any,
-              { text: 'Approved / Completed', fontSize: 10 } as any,
-            ],
-            [
-              { text: '', fillColor: '#dcf1e1', margin: [0, 2] } as any,
-              { text: 'Success Operation', fontSize: 10 } as any,
-            ],
-            [
-              { text: '', fillColor: '#e2f0f8', margin: [0, 2] } as any,
-              { text: 'Frozen', fontSize: 10 } as any,
-            ],
-            [
-              { text: '', fillColor: '#ffe5b4', margin: [0, 2] } as any,
-              { text: 'Active (In Progress/In Use)', fontSize: 10 } as any,
-            ],
-            [
-              { text: '', fillColor: '#fbf3da', margin: [0, 2] } as any,
-              { text: 'Pending', fontSize: 10 } as any,
-            ],
-            [
-              { text: '', fillColor: '#dc5b5b', margin: [0, 2] } as any,
-              { text: 'Rejected', fontSize: 10 } as any,
-            ],
-            [
-              { text: '', fillColor: '#feaf66', margin: [0, 2] } as any,
-              { text: 'Emergency Event', fontSize: 10 } as any,
-            ],
-            [
-              { text: '', fillColor: '#f8e2e2', margin: [0, 2] } as any,
-              { text: 'Deleted', fontSize: 10 } as any,
-            ],
-            [
-              { text: '', fillColor: '#e0d6e8', margin: [0, 2] } as any,
-              { text: 'Cancelled - No Show', fontSize: 10 } as any,
-            ],
-            [
-              { text: '', fillColor: '#cdb69b', margin: [0, 2] } as any,
-              { text: 'Monthly Limit Exceeded', fontSize: 10 } as any,
-            ],
-          ],
-        },
-        layout: 'noBorders',
-        margin: [0, 0, 0, 20],
-      } as any,
-      {
-        table: {
-          headerRows: 1,
-          widths: ['auto', '*', '*', '*', 'auto'],
-          body: body,
-        },
-        layout: {
-          fillColor: (rowIndex: number) => (rowIndex === 0 ? '#f2f2f2' : null),
-        },
-      } as any,
-    ],
-    defaultStyle: { font: 'Roboto', fontSize: 11 },
-    styles: {
-      header: { fontSize: 18, bold: true, margin: [0, 0, 0, 10] },
-      subheader: { fontSize: 12, margin: [0, 0, 0, 20] },
-      legendHeader: { fontSize: 14, bold: true, color: '#942222' },
-      tableHeader: { fontSize: 12, bold: true, alignment: 'center' },
-    },
-  };
+  pageSize: 'A4',
+  pageOrientation: 'landscape',
+  pageMargins: [20, 20, 20, 20],
+
+  content: [
+    { text: `Audit Logs Report`, style: 'header', alignment: 'center' },
+    { text: `Created: ${timestamp}`, style: 'subheader', alignment: 'center' },
+
+    {
+  table: {
+    headerRows: 1,
+    widths: [90, 140, 110, 120, 120],
+    body: body,
+  },
+  layout: {
+    fillColor: (rowIndex: number) => (rowIndex === 0 ? '#f2f2f2' : null),
+  },
+  fontSize: 10,
+
+  margin: [60, 0, 60, 0],
+} as any,
+
+  ],
+
+  defaultStyle: { font: 'Roboto', fontSize: 10 },
+  styles: {
+    header: { fontSize: 18, bold: true, margin: [0, 0, 0, 10] },
+    subheader: { fontSize: 12, margin: [0, 0, 0, 20] },
+    legendHeader: { fontSize: 14, bold: true, color: '#942222' },
+    tableHeader: { fontSize: 11, bold: true, alignment: 'center' },
+  },
+};
+
 
   pdfMake.createPdf(docDefinition).download(`audit_logs_${safeTimestamp}.pdf`);
 }
