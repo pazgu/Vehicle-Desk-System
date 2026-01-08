@@ -174,10 +174,6 @@
   border: #a5a5a9 1.6px solid;
 }
 
-.status-indicators-inline .status-indicator.cancelled_unavilable {
-  background-color: #d4c9c0;
-  border: #a48770c4 1.6px solid;
-}
 
 .status-indicators-inline .status-indicator.completed {
   background-color: #cce4f4;
@@ -403,10 +399,6 @@
 
 .row-rejected {
   background-color: #f7e2e4;
-}
-
-.row-cancelled-unavailable {
-  background-color: #dac9bbbc;
 }
 
 .row-completed {
