@@ -113,7 +113,7 @@ export class DepartmentDataComponent implements OnInit {
     this.hoveredDepartmentId = departmentId;
   }
 
-openEditModal(department: any) {
+  openEditModal(department: any) {
     if (this.isUnassignedDepartment(department)) {
       this.toastService.show('לא ניתן לערוך את מחלקת "Unassigned"', 'error');
       return;
@@ -153,6 +153,7 @@ openEditModal(department: any) {
     this.editDepartmentForm.reset();
     this.editedDepartmentId = null;
   }
+
   updateDepartment() {
     const departmentIdToUpdate = this.editedDepartmentId;
 
@@ -172,11 +173,38 @@ openEditModal(department: any) {
           },
           error: (err) => {
             this.isSubmitting = false;
+            
+            let errorMessage = 'שגיאה בעדכון מחלקה';
+            
             if (err.status === 409) {
-              this.toastService.show('שם מחלקה כבר קיים', 'error');
-            } else {
-              this.toastService.show('שגיאה בעדכון מחלקה', 'error');
+              errorMessage = 'שם מחלקה כבר קיים במערכת';
+            } else if (err.status === 400) {
+              const errorText = JSON.stringify(err.error).toLowerCase();
+              
+              if (errorText.includes('supervisor') || errorText.includes('role')) {
+                errorMessage = 'ניתן לשייך רק משתמש בתפקיד מנהל למחלקה';
+              } else if (errorText.includes('name')) {
+                errorMessage = 'שם המחלקה אינו תקין';
+              } else if (err.error?.message) {
+                errorMessage = err.error.message;
+              } else if (err.error?.error) {
+                errorMessage = err.error.error;
+              } else if (err.error?.detail) {
+                errorMessage = err.error.detail;
+              } else if (typeof err.error === 'string') {
+                errorMessage = err.error;
+              } else {
+                errorMessage = 'הנתונים שהוזנו אינם תקינים';
+              }
+            } else if (err.status === 404) {
+              errorMessage = 'המחלקה או המפקח לא נמצאו במערכת';
+            } else if (err.error?.message) {
+              errorMessage = err.error.message;
+            } else if (err.error?.error) {
+              errorMessage = err.error.error;
             }
+            
+            this.toastService.show(errorMessage, 'error');
           },
         });
     }
@@ -217,7 +245,19 @@ openEditModal(department: any) {
         },
         error: (err) => {
           this.isSubmitting = false;
-          this.toastService.show('שגיאה במחיקת מחלקה', 'error');
+          let errorMessage = 'שגיאה במחיקת מחלקה';
+          
+          if (err.status === 404) {
+            errorMessage = 'המחלקה לא נמצאה במערכת';
+          } else if (err.status === 403) {
+            errorMessage = 'אין הרשאה למחוק מחלקה זו';
+          } else if (err.error?.message) {
+            errorMessage = err.error.message;
+          } else if (err.error?.error) {
+            errorMessage = err.error.error;
+          }
+          
+          this.toastService.show(errorMessage, 'error');
           this.closeDeleteModal();
         },
       });
@@ -229,6 +269,7 @@ openEditModal(department: any) {
       this.newDepartmentForm.reset();
     }
   }
+
   submitNewDepartment() {
     if (this.newDepartmentForm.valid) {
       const { name, supervisor_id } = this.newDepartmentForm.value;
@@ -244,11 +285,38 @@ openEditModal(department: any) {
         },
         error: (err) => {
           this.isSubmitting = false;
+          
+          let errorMessage = 'שגיאה ביצירת מחלקה';
+          
           if (err.status === 409) {
-            this.toastService.show('שם מחלקה כבר קיים', 'error');
-          } else {
-            this.toastService.show('שגיאה ביצירת מחלקה', 'error');
+            errorMessage = 'שם מחלקה כבר קיים במערכת';
+          } else if (err.status === 400) {
+            const errorText = JSON.stringify(err.error).toLowerCase();
+            
+            if (errorText.includes('supervisor') || errorText.includes('role')) {
+              errorMessage = 'ניתן לשייך רק משתמש בתפקיד מפקח למחלקה';
+            } else if (errorText.includes('name')) {
+              errorMessage = 'שם המחלקה אינו תקין';
+            } else if (err.error?.message) {
+              errorMessage = err.error.message;
+            } else if (err.error?.error) {
+              errorMessage = err.error.error;
+            } else if (err.error?.detail) {
+              errorMessage = err.error.detail;
+            } else if (typeof err.error === 'string') {
+              errorMessage = err.error;
+            } else {
+              errorMessage = 'הנתונים שהוזנו אינם תקינים';
+            }
+          } else if (err.status === 404) {
+            errorMessage = 'המנהל שנבחר לא נמצא במערכת';
+          } else if (err.error?.message) {
+            errorMessage = err.error.message;
+          } else if (err.error?.error) {
+            errorMessage = err.error.error;
           }
+          
+          this.toastService.show(errorMessage, 'error');
         },
       });
     }
