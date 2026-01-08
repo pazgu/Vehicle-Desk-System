@@ -146,7 +146,7 @@
 
 .status-indicators-inline .status-indicator.cancelled_due_to_no_show {
   background-color: #ffedeb;
-  border: #fccec9 1.6px solid;
+  border: #ecd0cd 1.6px solid;
 }
 
 .status-indicators-inline .status-indicator.cancelled_vehicle_unavailable{
