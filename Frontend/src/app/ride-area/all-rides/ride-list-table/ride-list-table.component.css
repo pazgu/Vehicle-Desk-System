@@ -391,7 +391,6 @@ button:disabled {
 .status-cancelled_vehicle_unavailable {
   position: relative;
   background-color: #a4938589;
-  border-right: 4px solid #c17d4a;
   opacity: 0.95;
   color: rgb(54, 41, 41);
 }
