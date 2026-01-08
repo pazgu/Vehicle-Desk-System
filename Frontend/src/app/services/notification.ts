@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { MyNotification } from '../models/notification';
 import { environment } from '../../environments/environment';
 
@@ -17,8 +18,19 @@ export interface AdminNotificationResponse {
 })
 export class NotificationService {
   private apiBase = environment.apiUrl;
-  constructor(private http: HttpClient) {}
   public unreadCount$ = new BehaviorSubject<number>(0);
+    constructor(private http: HttpClient) {
+    this.loadUnreadCount();
+  }
+    private loadUnreadCount(): void {
+    const user_id = localStorage.getItem('employee_id');
+    if (user_id) {
+      this.getNotifications().subscribe(notifications => {
+        const unreadCount = notifications.filter(n => !n.seen).length;
+        this.unreadCount$.next(unreadCount);
+      });
+    }
+  }
   getNotifications(): Observable<MyNotification[]> {
     const user_id = localStorage.getItem('employee_id') || '';
     return this.http.get<MyNotification[]>(
@@ -36,10 +48,28 @@ export class NotificationService {
     return this.http.patch(
       `${this.apiBase}/notifications/${notificationId}/mark-seen`,
       {}
+    ).pipe(
+      tap(() => {
+        const current = this.unreadCount$.getValue();
+        if (current > 0) {
+          this.unreadCount$.next(current - 1);
+        }
+      })
     );
   }
 
   markAllNotificationsAsSeen(): Observable<any> {
-    return this.http.patch(`${this.apiBase}/notifications/mark-all-seen`, {});
+    return this.http.patch(
+      `${this.apiBase}/notifications/mark-all-seen`, 
+      {}
+    ).pipe(
+      tap(() => {
+        this.unreadCount$.next(0);
+      })
+    );
+  }
+
+    refreshUnreadCount(): void {
+    this.loadUnreadCount();
   }
 }
