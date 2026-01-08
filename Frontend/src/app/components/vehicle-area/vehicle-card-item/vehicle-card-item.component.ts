@@ -219,9 +219,18 @@ export class VehicleCardItemComponent implements OnInit {
     }
   }
 
-  private navigateToDashboard(): void {
+ private cameFromNotifications(): boolean {
+  return this.route.snapshot.queryParamMap.get('from') === 'notifications';
+}
+private navigateToDashboard(): void {
+  if (this.cameFromNotifications()) {
+    this.navigateRouter.navigate(['/notifications']);
+    return;
+  }
+
   this.navigateRouter.navigate(['/vehicle-dashboard']);
 }
+
 
   loadVehicleUsageData(): void {
     this.vehicleService.getTopUsedVehicles().subscribe({
