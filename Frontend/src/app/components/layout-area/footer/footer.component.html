@@ -1,0 +1,16 @@
+<footer class="footer" role="contentinfo" dir="rtl">
+  <div class="footer-container">
+    <div class="footer-content">
+      <img 
+        src="/assets/keremlogo.png"
+        alt="לוגו הכרם" 
+        class="footer-logo"
+        (error)="onImageError($event)"
+      />
+      
+      <span class="footer-text">
+        © כל הזכויות שמורות {{ currentYear }}
+      </span>
+    </div>
+  </div>
+</footer>

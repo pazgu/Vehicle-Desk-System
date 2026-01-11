@@ -50,3 +50,19 @@
 .modal-overlay:hover {
   background-color: #b93333;
 }
+.layout-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  padding-bottom: 0; /* Remove bottom padding so footer sits flush */
+}
+app-footer {
+  display: block;
+  background-color: transparent;
+  margin: 0;
+  padding: 0;
+}
