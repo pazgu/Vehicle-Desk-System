@@ -48,8 +48,7 @@
             !order.hasStarted && order.status.toLowerCase() === 'rejected',
           'pi-list-check':
             !order.hasStarted && order.status.toLowerCase() === 'completed',
-          'pi-forward':
-             order.status.toLowerCase() === 'in_progress'
+          'pi-forward': order.status.toLowerCase() === 'in_progress'
         }"
         [title]="getStatusTooltip(order.status)"
         style="font-size: 1.3rem"
@@ -63,13 +62,12 @@
         class="started-gif-icon"
       />
 
-     
-
       <img
         *ngIf="order.status.toLowerCase() === 'cancelled_due_to_no_show'"
         src="assets/images/cancelled_no_show.png"
         alt="Cancelled due to No Show"
         class="cancelled-no-show-icon"
+        [title]="getStatusTooltip(order.status)"
       />
 
       <img
@@ -77,6 +75,7 @@
         src="assets/images/rebook-icon.png"
         alt="Vehicle Unavailable - Rebook Available"
         class="rebook-icon"
+        [title]="getStatusTooltip(order.status)"
         title="יש לבחור רכב אחר "
       />
 
@@ -137,12 +136,11 @@
       </div>
     </div>
     <div *ngIf="role === 'supervisor'" class="cell actions-cell">
-     
       <div class="modify-buttons">
         <button
           class="status"
           (click)="ChangeStatus(order.ride_id)"
-          [disabled]="!canChangeStatus(order) "
+          [disabled]="!canChangeStatus(order)"
           [style.opacity]="canChangeStatus(order) ? '1' : '0.5'"
           [style.cursor]="canChangeStatus(order) ? 'pointer' : 'not-allowed'"
         >

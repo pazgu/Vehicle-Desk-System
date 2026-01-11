@@ -71,11 +71,15 @@ export class DepartmentDataComponent implements OnInit {
     this.userService.getAllUsers().subscribe({
       next: (usersData) => {
         const allSupervisors = usersData.filter(
-          (user) => user.role === 'supervisor' && !user.isRaan
+          (user) => user.role === 'supervisor' && !user.isRaan && !user.is_blocked
         );
+        
         const assignedSupervisorIds = new Set(
-          this.departments.map((dep) => dep.supervisor_id)
+          this.departments
+            .filter(dep => dep.supervisor_id) 
+            .map((dep) => dep.supervisor_id)
         );
+        
         this.users = allSupervisors.filter(
           (supervisor) => !assignedSupervisorIds.has(supervisor.employee_id)
         );
@@ -125,33 +129,60 @@ export class DepartmentDataComponent implements OnInit {
     
     this.editedDepartmentId = department.id;
     
+    this.editSupervisors = [];
+    
     if (department.supervisor_id) {
       this.userService.getUserById(department.supervisor_id).subscribe({
         next: (currentSupervisor) => {
-          const supervisorExists = this.editSupervisors.some(
-            (s) => s.employee_id === currentSupervisor.employee_id
-          );
-          if (!supervisorExists) {
-            this.editSupervisors = [currentSupervisor, ...this.users];
+          const isValidSupervisor = currentSupervisor.role === 'supervisor' && 
+                                    !currentSupervisor.isRaan && 
+                                    !currentSupervisor.is_blocked;
+          
+          if (isValidSupervisor) {
+            const supervisorExists = this.users.some(
+              (s) => s.employee_id === currentSupervisor.employee_id
+            );
+            if (!supervisorExists) {
+              this.editSupervisors = [currentSupervisor, ...this.users];
+            } else {
+              this.editSupervisors = [...this.users];
+            }
           } else {
             this.editSupervisors = [...this.users];
+            this.toastService.show('המפקח הנוכחי אינו תקין, נא לבחור מפקח חדש', 'warning');
           }
+          
+          this.editDepartmentForm.patchValue({
+            department_id: department.id,
+            name: department.name,
+            supervisor_id: isValidSupervisor ? department.supervisor_id : '',
+          });
+        },
+        error: () => {
+          this.editSupervisors = [...this.users];
+          this.editDepartmentForm.patchValue({
+            department_id: department.id,
+            name: department.name,
+            supervisor_id: '',
+          });
         },
       });
+    } else {
+      this.editSupervisors = [...this.users];
+      this.editDepartmentForm.patchValue({
+        department_id: department.id,
+        name: department.name,
+        supervisor_id: '',
+      });
     }
-    
-    this.editDepartmentForm.patchValue({
-      department_id: department.id,
-      name: department.name,
-      supervisor_id: department.supervisor_id,
-    });
-    this.isEditModalOpen = true;
-  }
-
+  
+  this.isEditModalOpen = true;
+}
   closeEditModal() {
     this.isEditModalOpen = false;
     this.editDepartmentForm.reset();
     this.editedDepartmentId = null;
+    this.editSupervisors = []; 
   }
 
   updateDepartment() {
@@ -263,13 +294,14 @@ export class DepartmentDataComponent implements OnInit {
       });
   }
 
-  toggleNewDepartmentMode() {
-    this.isNewDepartmentMode = !this.isNewDepartmentMode;
-    if (!this.isNewDepartmentMode) {
-      this.newDepartmentForm.reset();
+    toggleNewDepartmentMode() {
+      this.isNewDepartmentMode = !this.isNewDepartmentMode;
+      if (!this.isNewDepartmentMode) {
+        this.newDepartmentForm.reset();
+      } else {
+        this.loadUsers();
+      }
     }
-  }
-
   submitNewDepartment() {
     if (this.newDepartmentForm.valid) {
       const { name, supervisor_id } = this.newDepartmentForm.value;
