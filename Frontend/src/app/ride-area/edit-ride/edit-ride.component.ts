@@ -402,10 +402,7 @@ export class EditRideComponent implements OnInit {
 
         if (currentCarValue) {
           const isStillValid = this.availableCars.some(
-            (car) =>
-              car.id === currentCarValue &&
-              car.status === 'available' &&
-              !car.freeze_reason
+            (car) => car.id === currentCarValue && !this.isCarDisabled(car)
           );
 
           if (isStillValid) {
@@ -416,16 +413,24 @@ export class EditRideComponent implements OnInit {
         }
 
         if (this.availableCars.length > 0) {
-          const firstAvailable = this.availableCars.find(
-            (car) => car.status === 'available' && !car.freeze_reason
+          const firstRecommended = this.availableCars.find(
+            (car) => car.is_recommended && !this.isCarDisabled(car)
           );
-
-          if (firstAvailable) {
-            this.selectedCarId = firstAvailable.id;
-            carControl.setValue(firstAvailable.id, { emitEvent: false });
+          if (firstRecommended) {
+            this.selectedCarId = firstRecommended.id;
+            carControl.setValue(firstRecommended.id, { emitEvent: false });
           } else {
-            this.selectedCarId = '';
-            carControl.setValue(null, { emitEvent: false });
+            const firstAvailable = this.availableCars.find(
+              (car) => !this.isCarDisabled(car)
+            );
+
+            if (firstAvailable) {
+              this.selectedCarId = firstAvailable.id;
+              carControl.setValue(firstAvailable.id, { emitEvent: false });
+            } else {
+              this.selectedCarId = '';
+              carControl.setValue(null, { emitEvent: false });
+            }
           }
         } else {
           this.selectedCarId = '';
@@ -474,47 +479,6 @@ export class EditRideComponent implements OnInit {
         this.inspectorClosureValidator
       ] 
     });
-  }
-
-  private filterAvailableVehicles(): void {
-    const vehicleType = this.rideForm.get('vehicle_type')?.value;
-    const selectedDate = this.rideForm.get('ride_date')?.value;
-    const startTime = this.rideForm.get('start_time')?.value;
-    const endTime = this.rideForm.get('end_time')?.value;
-
-    if (!vehicleType) {
-      this.availableCars = [];
-      return;
-    }
-
-    if (selectedDate && startTime && endTime) {
-      const distance = this.rideForm.get('estimated_distance_km')?.value;
-      if (distance) {
-        const ridePeriod = this.rideForm.get('ride_period')?.value;
-        const nightEndDate = this.rideForm.get('ride_date_night_end')?.value;
-        
-        const startDateTime = `${selectedDate}T${startTime}:00`;
-        const endDateTime = ridePeriod === 'night' && nightEndDate
-          ? `${nightEndDate}T${endTime}:00`
-          : `${selectedDate}T${endTime}:00`;
-        this.loadVehiclesForEditRide(
-          distance,
-          selectedDate,
-          vehicleType,
-          startDateTime,
-          endDateTime,
-          this.originalVehicleId,
-          this.rideId
-        );
-        return;
-      }
-    }
-    this.availableCars = this.allCars.filter(
-      (car) =>
-        car.type === vehicleType &&
-        car.status === 'available' &&
-        !car.freeze_reason
-    );
   }
   private updateExtendedRideReasonValidation(): void {
     const extendedReasonControl = this.rideForm.get('extended_ride_reason');
