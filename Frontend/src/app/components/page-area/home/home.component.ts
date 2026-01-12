@@ -930,12 +930,13 @@ if (start.getTime() < now.getTime()) {
   private updateAvailableCars(): void {
     const selectedType = this.rideForm.get('vehicle_type')?.value;
     const carControl = this.rideForm.get('car');
-
-    let filtered = filterAvailableCars(this.allCars, selectedType);
-    filtered = filtered.filter((car) => car.status === 'available');
-
-    this.availableCars = filtered;
-
+    if (!selectedType) {
+      this.availableCars = [];
+      this.selectedCarId = '';
+      carControl?.setValue(null, { emitEvent: false });
+      return;
+    }
+    this.availableCars = this.allCars.filter((car) => car.type === selectedType);
     if (this.availableCars.length === 0) {
       this.selectedCarId = '';
       carControl?.setValue(null, { emitEvent: false });
