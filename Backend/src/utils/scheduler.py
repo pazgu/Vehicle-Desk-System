@@ -1001,7 +1001,7 @@ async def notify_ride_cancelled_due_to_no_show(ride_id: uuid.UUID):
         if admin_users:
             for admin_user in admin_users:
                 admin_email = admin_user.email
-                supervisor_name = get_user_name(db, admin_user.employee_id) or "מפקח יקר" 
+                supervisor_name = get_user_name(db, admin_user.employee_id) or "מנהל מחלקה יקר" 
 
                 # if admin_email: # Check if the admin user actually has an email
                 #     try:
@@ -1025,7 +1025,7 @@ async def notify_ride_cancelled_due_to_no_show(ride_id: uuid.UUID):
         #         supervisor = db.query(User).filter(User.employee_id == supervisor_id).first()
         #         if supervisor and supervisor.email:
         #             supervisor_email = supervisor.email
-        #             supervisor_name = get_user_name(db, supervisor_id) or "מפקח יקר"
+        #             supervisor_name = get_user_name(db, supervisor_id) or "מנהל מחלקה יקר"
 
         #             html_content_supervisor = load_email_template("ride_cancelled_no_show_admin.html", {
         #                 "SUPERVISOR_NAME": supervisor_name,
@@ -1083,7 +1083,7 @@ async def check_and_notify_admin_about_no_shows():
 
                     # for admin in admins:
                     #     admin_email = admin.email
-                    #     supervisor_name = get_user_name(db, admin.employee_id) or "מפקח יקר"
+                    #     supervisor_name = get_user_name(db, admin.employee_id) or "מנהל מחלקה יקר"
                     #     if admin_email:
                     #         try:
                     #             html_content_admin = load_email_template("users_passed_3_no_show.html", {
