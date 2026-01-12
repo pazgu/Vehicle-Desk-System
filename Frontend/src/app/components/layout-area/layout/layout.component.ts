@@ -9,6 +9,7 @@ import { AuthService } from '../../../services/auth.service';
 import { takeUntil } from 'rxjs/operators';
 import { LoadingSpinnerComponent } from '../../loading-spinner/loading-spinner/loading-spinner.component';
 import { LayoutService } from '../../../services/layout.service';
+import { FooterComponent } from '../footer/footer.component';
 
 @Component({
   selector: 'app-layout',
@@ -18,6 +19,7 @@ import { LayoutService } from '../../../services/layout.service';
     RouterModule,
     CommonModule,
     LoadingSpinnerComponent,
+    FooterComponent,
   ],
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.css',
