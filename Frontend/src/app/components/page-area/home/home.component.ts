@@ -197,6 +197,23 @@ export class NewRideComponent implements OnInit {
             this.showBlockedUserMessage();
           }
         });
+
+        this.rideUserChecksService
+    .checkUserDepartment(this.currentUserId)
+    .subscribe((result) => {
+      if(result.disableDueToDepartment === true) {
+         this.toastService.showPersistent(
+            'לא ניתן לשלוח בקשה: אינך משויך למחלקה. יש ליצור קשר עם המנהל להשמה במחלקה.',
+            'error'
+          );
+          this.disableRequest = true;
+          this.disableDueToDepartment = true;
+      }
+      else{
+        this.disableDueToDepartment = false;
+        this.disableRequest = false;
+      }
+    });
     }
 
     this.myRidesService.getSupervisors(this.departmentId).subscribe({
