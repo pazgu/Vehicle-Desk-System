@@ -829,9 +829,11 @@ export class EditRideComponent implements OnInit {
     const hasTelAvivAsStop = mainStopIsTelAviv || extraStopIsTelAviv;
 
     if (startId === stopId && extraStopIds.length === 0) {
-      this.fetchedDistance = 30;
-      this.estimated_distance_with_buffer = +(30 * 1.1).toFixed(2);
-      this.rideForm.get('estimated_distance_km')?.setValue(30, { emitEvent: false });
+      const oneWayDistance = 20;
+      const roundTripDistance = oneWayDistance * 2; 
+      this.fetchedDistance = roundTripDistance;
+      this.estimated_distance_with_buffer = +(roundTripDistance * 1.1).toFixed(2);
+      this.rideForm.get('estimated_distance_km')?.setValue(roundTripDistance, { emitEvent: false });
       return;
     }
 
