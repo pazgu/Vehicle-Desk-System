@@ -758,10 +758,11 @@ if (start.getTime() < now.getTime()) {
     });
 
     if (startId === stopId && extraStops.length === 0) {
-      const total = 20;
-      this.fetchedDistance = total;
-      this.estimated_distance_with_buffer = +(total * 1.1).toFixed(2);
-      this.rideForm.get('estimated_distance_km')?.setValue(total, { emitEvent: false });
+      const oneWayDistance = 20;
+      const roundTripDistance = oneWayDistance * 2;
+      this.fetchedDistance = roundTripDistance;
+      this.estimated_distance_with_buffer = +(roundTripDistance * 1.1).toFixed(2);
+      this.rideForm.get('estimated_distance_km')?.setValue(roundTripDistance, { emitEvent: false });
       return;
     }
 
