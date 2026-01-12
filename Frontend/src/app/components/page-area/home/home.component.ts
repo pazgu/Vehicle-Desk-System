@@ -208,10 +208,8 @@ export class NewRideComponent implements OnInit {
           );
           this.disableRequest = true;
           this.disableDueToDepartment = true;
-          console.log('User disabled due to department check', result);
       }
       else{
-        console.log('User passed department check', result);
         this.disableDueToDepartment = false;
         this.disableRequest = false;
       }
