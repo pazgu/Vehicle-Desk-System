@@ -102,11 +102,11 @@
               <i [class]="insp.clean ? 'pi pi-check' : 'pi pi-times'"></i>
             </td>
             <td
-              [class.status-positive]="!insp.fuel_checked"
-              [class.status-negative]="insp.fuel_checked"
+              [class.status-positive]="insp.fuel_checked"
+              [class.status-negative]="!insp.fuel_checked"
             >
               <i
-                [class]="!insp.fuel_checked ? 'pi pi-check' : 'pi pi-times'"
+                [class]="insp.fuel_checked ? 'pi pi-check' : 'pi pi-times'"
               ></i>
             </td>
             <td
