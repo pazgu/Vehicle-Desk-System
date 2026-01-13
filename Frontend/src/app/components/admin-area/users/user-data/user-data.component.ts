@@ -10,7 +10,7 @@ import { ToastService } from '../../../../services/toast.service';
 import { SocketService } from '../../../../services/socket.service';
 import { MatDialog } from '@angular/material/dialog';
 import { ChangeDetectorRef } from '@angular/core';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subject, takeUntil } from 'rxjs';
 import {
   FormBuilder,
   FormGroup,
@@ -43,6 +43,7 @@ export class UserDataComponent implements OnInit {
   licenceExpiredMap: { [userId: string]: boolean } = {};
   departmentNames: { [key: string]: string } = {};
   supervisorToDeptName: { [key: string]: string } = {};
+  private destroy$ = new Subject<void>();
 
   isBlockUserModalOpen: boolean = false;
   isUnblockConfirmationModalOpen: boolean = false;
@@ -81,6 +82,10 @@ export class UserDataComponent implements OnInit {
     this.loadUsersAndDepartments();
   }
 
+    ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
   noWhitespaceValidator(control: any) {
     const isWhitespace = (control.value || '').trim().length === 0;
     const isValid = !isWhitespace;
@@ -139,17 +144,21 @@ export class UserDataComponent implements OnInit {
     return this.authService.getCurrentUserId();
   }
 
-  private setupSocketListeners(): void {
-    this.socketservice.deleteUserRequests$.subscribe((deletedUser) => {
+private setupSocketListeners(): void {
+  this.socketservice.deleteUserRequests$
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((deletedUser) => {
       if (deletedUser) {
-        this.users = this.users.filter((u) => u.employee_id !== deletedUser.id);
+        this.users = this.users.filter(u => u.employee_id !== deletedUser.id);
         this.filterLogs();
       }
     });
 
-    this.socketservice.usersBlockStatus$.subscribe((update) => {
+  this.socketservice.usersBlockStatus$
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((update) => {
       const id = String(update.id);
-      const idx = this.users.findIndex((u) => String(u.employee_id) === id);
+      const idx = this.users.findIndex(u => String(u.employee_id) === id);
       if (idx === -1) return;
 
       const updatedUser = {
@@ -164,9 +173,7 @@ export class UserDataComponent implements OnInit {
         ...this.users.slice(idx + 1),
       ];
 
-      const fIdx = this.filteredLogs.findIndex(
-        (u) => String(u.employee_id) === id
-      );
+      const fIdx = this.filteredLogs.findIndex(u => String(u.employee_id) === id);
       if (fIdx !== -1) {
         this.filteredLogs = [
           ...this.filteredLogs.slice(0, fIdx),
@@ -186,8 +193,10 @@ export class UserDataComponent implements OnInit {
       this.cdr.detectChanges();
     });
 
-    this.socketservice.usersLicense$.subscribe((update) => {
-      const idx = this.users.findIndex((u) => u.employee_id === update.id);
+  this.socketservice.usersLicense$
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((update) => {
+      const idx = this.users.findIndex(u => u.employee_id === update.id);
       if (idx === -1) return;
 
       const updatedUser = { ...this.users[idx], ...update };
@@ -202,7 +211,8 @@ export class UserDataComponent implements OnInit {
 
       this.cdr.detectChanges();
     });
-  }
+}
+
 
   getDepartmentName(user: any): string {
     if (

@@ -9,6 +9,7 @@ import { ToastService } from '../../../services/toast.service';
 import { VehicleService } from '../../../services/vehicle.service';
 import { SocketService } from '../../../services/socket.service';
 import { ChartModule } from 'primeng/chart';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'vehicle-status',
@@ -23,6 +24,7 @@ export class VehicleStatusComponent {
   frozenVehicles = <VehicleOutItem[]>[];
   vehicleChartInitialized = false;
   vehicleTypes: string[] = [];
+  private destroy$ = new Subject<void>();
 
   constructor(
     private toastService: ToastService,
@@ -33,14 +35,25 @@ export class VehicleStatusComponent {
     this.loadVehicleChart();
     this.loadFrozenVehicles();
     this.loadVehicleTypes();
-    this.socketService.vehicleStatusUpdated$.subscribe(() => {
-      this.loadVehicleChart();
-      this.loadFrozenVehicles();
-    });
-    this.socketService.deleteRequests$.subscribe(() => {
-      this.loadVehicleChart();
-      this.loadFrozenVehicles();
-    });
+   this.socketService.vehicleStatusUpdated$
+  .pipe(takeUntil(this.destroy$))
+  .subscribe(() => {
+    this.loadVehicleChart();
+    this.loadFrozenVehicles();
+  });
+
+this.socketService.deleteRequests$
+  .pipe(takeUntil(this.destroy$))
+  .subscribe(() => {
+    this.loadVehicleChart();
+    this.loadFrozenVehicles();
+  });
+
+  }
+
+    ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   getHebrewLabel(status: string): string {
