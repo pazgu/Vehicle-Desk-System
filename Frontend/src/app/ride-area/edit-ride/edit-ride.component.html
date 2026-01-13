@@ -325,12 +325,17 @@
 
         <div class="form-field-group">
           <label>תחנה עיקרית</label>
-          <select formControlName="stop" class="styled-select" required>
-            <option value="">בחר תחנה</option>
-            <option *ngFor="let city of cities" [value]="city.id">
-              {{ city.name }}
-            </option>
-          </select>
+          <ng-select
+            [items]="cities"
+            bindLabel="name"
+            bindValue="id"
+            formControlName="stop"
+            placeholder="בחר תחנה"
+            [searchable]="true"
+            [clearable]="false"
+            class="styled-select"
+          >
+          </ng-select>
           <small class="error-text" *ngIf="getFieldError('stop')">
             {{ getFieldError("stop") }}
           </small>
@@ -354,12 +359,17 @@
             </button>
             <div class="form-field-group">
               <label>תחנה נוספת {{ i + 1 }}</label>
-              <select formControlName="stop" class="styled-select">
-                <option value="">בחר עיר</option>
-                <option *ngFor="let city of cities" [value]="city.id">
-                  {{ city.name }}
-                </option>
-              </select>
+              <ng-select
+                [items]="cities"
+                bindLabel="name"
+                bindValue="id"
+                formControlName="stop"
+                placeholder="בחר עיר"
+                [searchable]="true"
+                [clearable]="false"
+                class="styled-select"
+              >
+              </ng-select>
               <small
                 *ngIf="control.get('stop')?.touched && control.get('stop')?.errors?.['required']"
                 class="error-text"
