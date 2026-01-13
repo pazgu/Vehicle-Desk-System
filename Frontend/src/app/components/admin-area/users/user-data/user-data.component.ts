@@ -443,7 +443,7 @@ export class UserDataComponent implements OnInit {
       height: 'auto',
       data: {
         title: 'מחיקת משתמש',
-        message: '?האם אתה בטוח שברצונך למחוק את המשתמש',
+        message: 'האם את/ה בטוח שברצונך למחוק את המשתמש?',
         confirmText: 'מחק משתמש',
         cancelText: 'חזור',
         noRestoreText: 'שימ/י לב שלא ניתן לשחזר את המשתמש',

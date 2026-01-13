@@ -279,7 +279,7 @@ export class DepartmentDataComponent implements OnInit {
 
     this.departmentToDelete = department;
     this.isDeleteModalOpen = true;
-    this.deleteModalMessage = `האם אתה בטוח שברצונך למחוק את המחלקה "${department.name}"? כל המשתמשים שהיו משויכים למחלקה יועברו למחלקת "Unassigned".`;
+    this.deleteModalMessage = `האם את/ה בטוח שברצונך למחוק את המחלקה "${department.name}"? כל המשתמשים שהיו משויכים למחלקה יועברו למחלקת "Unassigned".`;
   }
 
   closeDeleteModal() {

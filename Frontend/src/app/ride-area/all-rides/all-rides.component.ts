@@ -231,10 +231,11 @@ export class AllRidesComponent implements OnInit {
       this.toastService.show('שגיאה בזיהוי הנסיעה', 'error');
       return;
     }
+  
 
     const dialogData: ConfirmDialogData = {
       title: 'ביטול הזמנה',
-      message: `?האם אתה בטוח שברצונך לבטל את הנסיעה\n\nתאריך: ${order.date}\nשעה: ${order.time}\nסוג: ${order.type}`,
+      message: `  האם את/ה בטוח שברצונך לבטל את הנסיעה?\n\nתאריך: ${order.date}\nשעה: ${order.time}\nסוג: ${order.type}`,
       confirmText: 'בטל הזמנה',
       cancelText: 'חזור',
       noRestoreText: isRebookContext ? '' : 'שימ/י לב שלא ניתן לשחזר את הנסיעה',
