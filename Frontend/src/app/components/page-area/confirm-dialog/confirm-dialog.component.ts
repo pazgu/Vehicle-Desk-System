@@ -25,13 +25,12 @@ export interface ConfirmDialogData {
   noRestoreText?: string;
   isDestructive?: boolean;
 
-  // NEW ✅
-  mode?: ConfirmDialogMode; // default: 'confirm'
-  initialDuration?: number; // default: 14
-  initialReason?: string; // default: ''
-  durationLabel?: string; // default: 'משך חסימה (ימים):'
-  reasonLabel?: string; // default: 'סיבת החסימה:'
-  reasonPlaceholder?: string; // default: placeholder text
+  mode?: ConfirmDialogMode; 
+  initialDuration?: number; 
+  initialReason?: string; 
+  durationLabel?: string; 
+  reasonLabel?: string; 
+  reasonPlaceholder?: string; 
 }
 
 export type ConfirmDialogResult =
@@ -67,7 +66,9 @@ export class ConfirmDialogComponent implements OnInit {
       this.blockForm = this.fb.group({
         duration: [
           this.data.initialDuration ?? 14,
-          [Validators.required, Validators.min(1)],
+          [
+            Validators.required, Validators.min(1), Validators.pattern(/^\d+$/)
+          ],
         ],
         reason: [
           this.data.initialReason ?? '',
@@ -91,13 +92,11 @@ export class ConfirmDialogComponent implements OnInit {
   }
 
   confirm(): void {
-    // ✅ Normal confirm mode (DELETE / UNBLOCK etc.)
     if (this.mode === 'confirm') {
       this.dialogRef.close(true);
       return;
     }
 
-    // ✅ Block mode
     if (!this.blockForm || this.blockForm.invalid) {
       this.blockForm?.markAllAsTouched();
       return;
