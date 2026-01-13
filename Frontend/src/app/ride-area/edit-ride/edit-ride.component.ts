@@ -10,6 +10,7 @@ import { SocketService } from '../../services/socket.service';
 import { Subscription } from 'rxjs';
 import { CityService } from '../../services/city.service';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 interface City {
   id: string;
@@ -19,7 +20,7 @@ interface City {
 @Component({
   selector: 'app-edit-ride',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, NgSelectModule],
   templateUrl: './edit-ride.component.html',
   styleUrl: './edit-ride.component.css',
 })
@@ -312,12 +313,13 @@ export class EditRideComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.fetchCities();
     this.generateTimeOptions();
     this.rideId = this.route.snapshot.paramMap.get('id') || '';
     this.minDate = this.calculateMinDate(2);
     this.buildForm();
     this.fetchVehicleTypes();
+    this.fetchCities();
+    this.setupFormSubscriptions();
 
     this.rideForm.get('ride_date')?.valueChanges
       .pipe(debounceTime(800), distinctUntilChanged())
@@ -570,6 +572,7 @@ export class EditRideComponent implements OnInit {
           ride_type: ride.ride_type || 'operational',
           vehicle_type: ride.vehicle_type,
           start_location: ride.start_location ?? 'מיקום התחלה לא ידוע',
+          stop: ride.stop,
           destination: ride.destination ?? 'יעד לא ידוע',
           extended_ride_reason: ride.extended_ride_reason || '',
           four_by_four_reason: ride.four_by_four_reason || '',
@@ -740,6 +743,7 @@ export class EditRideComponent implements OnInit {
           id: city.id,
           name: city.name,
         }));
+        this.loadRide();
       },
       error: (err) => {
         console.error('Failed to fetch cities', err);
@@ -784,6 +788,17 @@ export class EditRideComponent implements OnInit {
 
   removeExtraStop(index: number): void {
     this.extraStops.removeAt(index);
+  }
+
+  private setupFormSubscriptions(): void {
+  this.rideForm.get('ride_date')?.valueChanges
+    .pipe(debounceTime(800), distinctUntilChanged())
+    .subscribe(() => {
+      this.updateMinEndDate();
+      this.updateRideTypeNote();
+      this.updateExtendedRideReasonValidation();
+      this.refreshVehiclesIfReady();
+    });
   }
 
   private setupDistanceCalculationSubscriptions(): void {
