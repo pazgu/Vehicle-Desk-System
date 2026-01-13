@@ -159,6 +159,8 @@ export class OrderCardComponent implements OnInit {
       next: () => {
         this.trip = { ...this.trip, status: next };
 
+        this.location.back();
+
         this.toastService.show('סטטוס עודכן בהצלחה', 'success');
 
         setTimeout(() => this.loadOrder(this.departmentId!, this.rideId), 300);
