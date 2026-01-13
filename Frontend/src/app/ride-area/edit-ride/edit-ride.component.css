@@ -111,8 +111,106 @@ input[type="date"],
 input[type="time"],
 input[type="number"],
 input[type="text"],
-select.styled-select {
+.styled-select {
+  padding: 10px;
+  border-radius: 5px;
+  background-color: #ffffff;
+  border: 1px solid #6e6e6e;
+}
+
+::ng-deep .styled-select.ng-select .ng-select-container {
+  padding: 10px !important;
+  background-color: #ffffff !important;
+  border-radius: 6px;
+  font-family: "Assistant", sans-serif !important;
+  font-size: 16px !important;
+  width: 100% !important;
+  min-height: 40px !important;
+  height: 40px !important;
+  box-shadow: none !important;
+  outline: none !important;
+  display: flex;
+  align-items: center;
+  border: 1px solid #6e6e6e;
+}
+
+::ng-deep .styled-select.ng-select .ng-placeholder {
+  color: #666;
+  font-family: "Assistant", sans-serif;
   font-size: 16px;
+}
+
+::ng-deep .styled-select.ng-select .ng-single-filter-input {
+  font-family: "Assistant", sans-serif;
+  font-size: 16px;
+  color: #333;
+}
+
+::ng-deep .styled-select.ng-select .ng-value {
+  font-family: "Assistant", sans-serif;
+  font-size: 16px;
+  color: #333;
+}
+
+::ng-deep .styled-select.ng-select .ng-arrow-wrapper {
+  padding-left: 10px;
+}
+
+::ng-deep .styled-select.ng-select .ng-dropdown-panel {
+  border: 1px solid #cecece;
+  background-color: #eceff1;
+  font-family: "Assistant", sans-serif;
+  box-shadow: none;
+  margin: 0;
+  padding: 0;
+}
+
+::ng-deep .styled-select.ng-select .ng-dropdown-panel-items {
+  background-color: transparent;
+  margin: 0;
+  padding: 0;
+}
+
+
+::ng-deep .styled-select.ng-select .ng-option {
+  padding: 10px;
+  font-size: 16px;
+  color: #333;
+  border: 1px solid #cecece;
+  background-color: #eceff1;
+}
+
+::ng-deep .styled-select.ng-select .ng-option:hover {
+  background-color: #767676;
+  color: #ffffff;
+}
+
+::ng-deep .styled-select.ng-select .ng-option.ng-option-disabled {
+  border: 1px solid #cecece;
+  background-color: #eceff1;
+  color: #666;
+  text-align: center;
+  font-style: italic;
+  padding: 15px;
+}
+
+::ng-deep .styled-select.ng-select {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+::ng-deep .styled-select.ng-select.ng-select-focused .ng-select-container {
+  border: 1px solid #cecece;
+  background-color: #eceff1;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+::ng-deep .styled-select.ng-select .ng-select-container:focus,
+::ng-deep .styled-select.ng-select .ng-select-container:focus-within {
+  border: 1px solid #d3b1b1 !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
 
 .input-group select {
