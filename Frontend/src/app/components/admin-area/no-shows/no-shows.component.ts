@@ -9,6 +9,7 @@ import { StatisticsService } from '../../../services/statistics.service';
 import { ToastService } from '../../../services/toast.service';
 import { UserCardComponent } from '../users/user-card/user-card.component';
 import { MatDialog } from '@angular/material/dialog';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'no-shows',
@@ -36,6 +37,7 @@ export class NoShowsComponent {
   baseUniqueNoShowUsers: number = 0;
   selectedMonth = (new Date().getMonth() + 1).toString();
   selectedYear = new Date().getFullYear().toString();
+  private destroy$ = new Subject<void>();
 
   noShowFromDate?: string;
   noShowToDate?: string;
@@ -53,7 +55,9 @@ export class NoShowsComponent {
   this.selectedNoShowFilter = 'all';
   this.loadNoShowStatistics(); 
 
-  this.route.queryParams.subscribe((params) => {
+  this.route.queryParams
+  .pipe(takeUntil(this.destroy$))
+  .subscribe(params => {
     this.noShowSortOption = params['noShowSort'] || 'countAsc';
     this.selectedSortOption = params['selectedSort'] || 'countAsc';
 
@@ -64,8 +68,13 @@ export class NoShowsComponent {
       this.applyNoShowFilter(); 
     }
   });
+
 }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
   updateQueryParams(params: any) {
     this.router.navigate([], {
