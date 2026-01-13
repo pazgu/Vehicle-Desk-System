@@ -204,6 +204,7 @@
             id="blockDuration"
             formControlName="blockDuration"
             min="1"
+            step="1"
             class="form-control"
           />
           <div
@@ -213,7 +214,15 @@
             "
             class="text-danger"
           >
-            חובה להזין מספר ימים חיובי.
+            <span *ngIf="blockUserForm.get('blockDuration')?.errors?.['required']">
+              חובה להזין מספר ימים.
+            </span>
+            <span *ngIf="blockUserForm.get('blockDuration')?.errors?.['min']">
+              מספר הימים חייב להיות לפחות 1.
+            </span>
+            <span *ngIf="blockUserForm.get('blockDuration')?.errors?.['pattern']">
+              יש להזין מספר שלם בלבד.
+            </span>
           </div>
         </div>
         <div class="form-group">
@@ -250,7 +259,7 @@
           <button
             type="submit"
             class="btn btn-primary"
-            [disabled]="blockUserForm.invalid || isSubmitting"
+            [disabled]="isSubmitting"
           >
             {{ isSubmitting ? "מבצע חסימה..." : "כן" }}
           </button>

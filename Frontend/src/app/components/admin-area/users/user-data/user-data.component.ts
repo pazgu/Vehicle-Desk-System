@@ -63,7 +63,11 @@ export class UserDataComponent implements OnInit {
 
   ngOnInit(): void {
     this.blockUserForm = this.fb.group({
-      blockDuration: [14, [Validators.required, Validators.min(1)]],
+      blockDuration: ['', [
+        Validators.required,
+        Validators.min(1),
+        Validators.pattern(/^\d+$/) 
+      ]],
       blockReason: [
         '',
         [
