@@ -21,7 +21,7 @@ export class NoShowsComponent {
 
  
 
-  selectedNoShowFilter: 'onePlus' | 'critical' | null = null;
+  selectedNoShowFilter: 'all' | 'onePlus' | 'critical' = 'all';
 
   allNoShowUsers: TopNoShowUser[] = [];
   filteredNoShowUsers: TopNoShowUser[] = [];
@@ -50,6 +50,7 @@ export class NoShowsComponent {
   ) {}
 
   ngOnInit() {
+  this.selectedNoShowFilter = 'all';
   this.loadNoShowStatistics(); 
 
   this.route.queryParams.subscribe((params) => {
@@ -60,7 +61,7 @@ export class NoShowsComponent {
     if (params['year']) this.selectedYear = String(+params['year']);
 
     if (this.allNoShowUsers.length > 0) {
-      this.applyNoShowFilter(false); 
+      this.applyNoShowFilter(); 
     }
   });
 }
@@ -79,24 +80,25 @@ export class NoShowsComponent {
       year: this.selectedYear,
     });
   }
-  applyNoShowFilter(shouldUpdateQueryParams: boolean = true) {
-  let filtered = this.allNoShowUsers;
 
-  if (this.selectedNoShowFilter === 'onePlus') {
-    filtered = filtered.filter(
-      u => (u.no_show_count ?? 0) >= 1 && (u.no_show_count ?? 0) <= 2
-    );
+  applyNoShowFilter() {
+    let filtered = [...this.allNoShowUsers];
+
+    if (this.selectedNoShowFilter === 'onePlus') {
+      filtered = filtered.filter(
+        u => (u.no_show_count ?? 0) >= 1 && (u.no_show_count ?? 0) <= 2
+      );
+    }
+
+    if (this.selectedNoShowFilter === 'critical') {
+      filtered = filtered.filter(
+        u => (u.no_show_count ?? 0) >= 3
+      );
+    }
+
+    this.filteredNoShowUsers = this.sortUsers(filtered);
+    this.updateSummaryCards();
   }
-
-  if (this.selectedNoShowFilter === 'critical') {
-    filtered = filtered.filter(
-      u => (u.no_show_count ?? 0) >= 3
-    );
-  }
-
-  this.filteredNoShowUsers = this.sortUsers([...filtered]);
-  this.updateSummaryCards();
-}
 
 
  
@@ -120,7 +122,7 @@ export class NoShowsComponent {
       this.goToUserDetails(user.user_id);
     }
   }
-  onFilterChange(type: 'onePlus' | 'critical' | null) {
+  onFilterChange(type: 'onePlus' | 'critical' | 'all') {
   this.selectedNoShowFilter = type;
   this.applyNoShowFilter();
 }
