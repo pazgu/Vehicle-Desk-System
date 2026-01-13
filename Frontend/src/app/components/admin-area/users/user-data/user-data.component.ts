@@ -321,6 +321,7 @@ private setupSocketListeners(): void {
             'success'
           );
           this.closeBlockUserModal();
+          this.loadUsersAndDepartments();
         },
         error: (err) => {
           this.isSubmitting = false;
@@ -441,6 +442,7 @@ private setupSocketListeners(): void {
           this.isSubmitting = false;
           this.toastservice.show('חסימת המשתמש שוחררה בהצלחה ', 'success');
           this.closeUnblockConfirmationModal();
+          this.loadUsersAndDepartments();
         },
         error: (err) => {
           this.isSubmitting = false;

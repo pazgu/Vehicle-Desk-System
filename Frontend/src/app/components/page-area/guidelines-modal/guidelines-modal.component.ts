@@ -21,7 +21,7 @@ export class GuidelinesModalComponent {
   @Input() rideId!: string;
   @Input() userId!: string;
   @Input() show = false;
-  @Input() initialChecked = false; // new input
+  @Input() initialChecked = false;
   @Output() confirmed = new EventEmitter<{
     rideId: string;
     userId: string;
