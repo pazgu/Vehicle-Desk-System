@@ -21,14 +21,20 @@ export class MileageUploadComponent {
   constructor(private vehicleService: VehicleService) {}
 
   onFileSelected(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      this.selectedFile = input.files[0];
-      this.uploadError = null;
-      this.uploadSuccess = false;
-      this.uploadSummary = null;
-    }
+  this.resetUploadState();
+
+  const input = event.target as HTMLInputElement;
+  if (input.files && input.files.length > 0) {
+    this.selectedFile = input.files[0];
   }
+}
+onChooseFileClick(fileInput: HTMLInputElement): void {
+  this.resetUploadState();
+  this.selectedFile = null;
+
+  fileInput.value = '';
+}
+
 
   uploadMileageReport() {
     if (!this.selectedFile) {
@@ -79,4 +85,12 @@ if (this.selectedFile.size > maxMB * 1024 * 1024) {
       },
     });
   }
+
+  private resetUploadState(): void {
+  this.uploadError = null;
+  this.uploadSuccess = false;
+  this.uploadSummary = null;
+  this.isLoading = false;
+}
+
 }
