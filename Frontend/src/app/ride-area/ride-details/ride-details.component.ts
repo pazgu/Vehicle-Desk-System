@@ -62,6 +62,13 @@ export class RideDetailsComponent implements OnInit {
     });
   }
 
+  getDistanceWithBuffer(): number {
+    const distance = this.ride?.estimated_distance || this.ride?.distance_km || this.ride?.distance || 0;
+    
+    if (!distance) return 0;
+    return +(distance * 1.1).toFixed(2);
+  }
+
   canStartRide(): boolean {
     if (!this.ride) return false;
     const now = new Date();

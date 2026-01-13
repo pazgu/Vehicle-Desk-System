@@ -135,28 +135,54 @@ export class DepartmentDataComponent implements OnInit {
       this.userService.getUserById(department.supervisor_id).subscribe({
         next: (currentSupervisor) => {
           const isValidSupervisor = currentSupervisor.role === 'supervisor' && 
-                                    !currentSupervisor.isRaan && 
-                                    !currentSupervisor.is_blocked;
+                                    !currentSupervisor.isRaan;
           
           if (isValidSupervisor) {
             const supervisorExists = this.users.some(
               (s) => s.employee_id === currentSupervisor.employee_id
             );
             if (!supervisorExists) {
-              this.editSupervisors = [currentSupervisor, ...this.users];
+              const supervisorToAdd = {
+                ...currentSupervisor,
+                disabled: currentSupervisor.is_blocked
+              };
+              this.editSupervisors = [supervisorToAdd, ...this.users];
             } else {
               this.editSupervisors = [...this.users];
             }
+            
+            if (currentSupervisor.is_blocked) {
+              const blockExpiresAt = currentSupervisor.block_expires_at 
+                ? new Date(currentSupervisor.block_expires_at)
+                : null;
+              
+              let warningMessage = 'מנהל המחלקה הנוכחי חסום';
+              
+              if (blockExpiresAt) {
+                const day = blockExpiresAt.getDate().toString().padStart(2, '0');
+                const month = (blockExpiresAt.getMonth() + 1).toString().padStart(2, '0');
+                const year = blockExpiresAt.getFullYear();
+                
+                const formattedDate = `${day}/${month}/${year}`;
+                warningMessage += ` עד ליום ${formattedDate}`;
+              }
+              
+              this.toastService.show(warningMessage, 'warning');
+            }
+            
+            this.editDepartmentForm.patchValue({
+              department_id: department.id,
+              name: department.name,
+              supervisor_id: department.supervisor_id,
+            });
           } else {
             this.editSupervisors = [...this.users];
-            this.toastService.show('המפקח הנוכחי אינו תקין, נא לבחור מפקח חדש', 'warning');
+            this.editDepartmentForm.patchValue({
+              department_id: department.id,
+              name: department.name,
+              supervisor_id: '',
+            });
           }
-          
-          this.editDepartmentForm.patchValue({
-            department_id: department.id,
-            name: department.name,
-            supervisor_id: isValidSupervisor ? department.supervisor_id : '',
-          });
         },
         error: () => {
           this.editSupervisors = [...this.users];
@@ -228,7 +254,7 @@ export class DepartmentDataComponent implements OnInit {
                 errorMessage = 'הנתונים שהוזנו אינם תקינים';
               }
             } else if (err.status === 404) {
-              errorMessage = 'המחלקה או המפקח לא נמצאו במערכת';
+              errorMessage = 'המחלקה או מנהל המחלקה לא נמצאו במערכת';
             } else if (err.error?.message) {
               errorMessage = err.error.message;
             } else if (err.error?.error) {
@@ -326,7 +352,7 @@ export class DepartmentDataComponent implements OnInit {
             const errorText = JSON.stringify(err.error).toLowerCase();
             
             if (errorText.includes('supervisor') || errorText.includes('role')) {
-              errorMessage = 'ניתן לשייך רק משתמש בתפקיד מפקח למחלקה';
+              errorMessage = 'ניתן לשייך רק משתמש בתפקיד מנהל מחלקה';
             } else if (errorText.includes('name')) {
               errorMessage = 'שם המחלקה אינו תקין';
             } else if (err.error?.message) {
