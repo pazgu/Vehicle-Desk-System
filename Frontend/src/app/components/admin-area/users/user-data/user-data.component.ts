@@ -19,6 +19,7 @@ import {
 } from '@angular/forms';
 import { UserCardComponent } from '../user-card/user-card.component';
 import { ROLES, ROLE_LABELS } from '../../../../constants/roles';
+import { AuthService } from '../../../../services/auth.service';
 
 @Component({
   selector: 'app-user-data',
@@ -56,7 +57,8 @@ export class UserDataComponent implements OnInit {
     private socketservice: SocketService,
     private dialog: MatDialog,
     private cdr: ChangeDetectorRef,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -98,7 +100,11 @@ export class UserDataComponent implements OnInit {
           return map;
         }, {} as { [key: string]: string });
 
-        this.users = users.map((user) => {
+        const currentUserId = this.getCurrentUserId();
+
+        const filteredUsers = users.filter(user => user.employee_id !== currentUserId);
+
+        this.users = filteredUsers.map((user) => {
           let deptName = '—';
           if (
             user.role === 'supervisor' &&
@@ -116,13 +122,17 @@ export class UserDataComponent implements OnInit {
         this.departmentNames = deptIdToName;
         this.checkLicence(this.users);
         this.availableRoles = Array.from(
-          new Set(users.map((u) => u.isRaan ? 'raan' : u.role))
+          new Set(filteredUsers.map((u) => u.isRaan ? 'raan' : u.role))
         ).filter(Boolean);
 
         this.setupSocketListeners();
       },
       error: (err) => console.error('Failed to fetch data', err),
     });
+  }
+
+  private getCurrentUserId(): string {
+    return this.authService.getCurrentUserId();
   }
 
   private setupSocketListeners(): void {
@@ -429,7 +439,7 @@ export class UserDataComponent implements OnInit {
       height: 'auto',
       data: {
         title: 'מחיקת משתמש',
-        message: '?האם אתה בטוח שברצונך למחוק את המשתמש',
+        message: 'האם את/ה בטוח שברצונך למחוק את המשתמש?',
         confirmText: 'מחק משתמש',
         cancelText: 'חזור',
         noRestoreText: 'שימ/י לב שלא ניתן לשחזר את המשתמש',

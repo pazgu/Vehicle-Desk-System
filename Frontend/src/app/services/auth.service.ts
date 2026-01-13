@@ -114,4 +114,8 @@ export class AuthService {
   isAuthenticated(): boolean {
     return !!localStorage.getItem('access_token');
   }
+
+  getCurrentUserId(): string {
+  return localStorage.getItem('employee_id') || '';
+}
 }
