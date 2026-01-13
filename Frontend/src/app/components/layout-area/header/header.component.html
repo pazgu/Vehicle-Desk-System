@@ -91,6 +91,15 @@
               ? '/all-rides'
               : null
           "
+          [routerLink]="
+            (role$ | async) === 'inspector'
+              ? '/inspector/inspection'
+              : null
+          "
+          [routerLink]="
+            (role$ | async) === 'admin' 
+            ? '/admin/critical-issues' : null
+          "
           [class.disabled]="
             (role$ | async) !== 'employee' || (role$ | async) === 'supervisor'
           "
