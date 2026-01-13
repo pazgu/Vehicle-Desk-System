@@ -19,8 +19,10 @@ import { MatDialog } from '@angular/material/dialog';
 export class NoShowsComponent {
   topNoShowUsers: TopNoShowUser[] = [];
 
-  filterOnePlus: boolean = false;
-  filterCritical: boolean = false;
+ 
+
+  selectedNoShowFilter: 'onePlus' | 'critical' | null = null;
+
   allNoShowUsers: TopNoShowUser[] = [];
   filteredNoShowUsers: TopNoShowUser[] = [];
 
@@ -80,42 +82,24 @@ export class NoShowsComponent {
   applyNoShowFilter(shouldUpdateQueryParams: boolean = true) {
   let filtered = this.allNoShowUsers;
 
-  if (this.filterOnePlus) {
+  if (this.selectedNoShowFilter === 'onePlus') {
     filtered = filtered.filter(
-      (u) => (u.no_show_count ?? 0) >= 1 && (u.no_show_count ?? 0) <= 2
+      u => (u.no_show_count ?? 0) >= 1 && (u.no_show_count ?? 0) <= 2
     );
   }
 
-  if (this.filterCritical) {
-    filtered = filtered.filter((u) => (u.no_show_count ?? 0) >= 3);
-  }
-
-  if (!['countAsc', 'countDesc', 'nameAsc', 'nameDesc'].includes(this.noShowSortOption)) {
-    this.noShowSortOption = 'countAsc';
-  }
-
-  if (shouldUpdateQueryParams) {
-    this.updateQueryParams({ noShowSort: this.noShowSortOption });
+  if (this.selectedNoShowFilter === 'critical') {
+    filtered = filtered.filter(
+      u => (u.no_show_count ?? 0) >= 3
+    );
   }
 
   this.filteredNoShowUsers = this.sortUsers([...filtered]);
-
   this.updateSummaryCards();
 }
 
-  onFilterOnePlusChange() {
-    if (this.filterOnePlus) {
-      this.filterCritical = false;
-    }
-    this.applyNoShowFilter();
-  }
 
-  onFilterCriticalChange() {
-    if (this.filterCritical) {
-      this.filterOnePlus = false; 
-    }
-    this.applyNoShowFilter();
-  }
+ 
   sortUsers(users: any[]) {
     switch (this.noShowSortOption) {
       case 'countAsc':
@@ -136,15 +120,14 @@ export class NoShowsComponent {
       this.goToUserDetails(user.user_id);
     }
   }
-  onFilterChange(type: 'onePlus' | 'critical') {
-    if (type === 'onePlus' && this.filterOnePlus) {
-      this.filterCritical = false;
-    }
-    if (type === 'critical' && this.filterCritical) {
-      this.filterOnePlus = false;
-    }
-    this.applyNoShowFilter();
-  }
+  onFilterChange(type: 'onePlus' | 'critical' | null) {
+  this.selectedNoShowFilter = type;
+  this.applyNoShowFilter();
+}
+
+
+
+    
   get isEmptyNoShowData(): boolean {
     return this.filteredNoShowUsers.length === 0;
   }
@@ -166,28 +149,19 @@ export class NoShowsComponent {
   }
 
   private updateSummaryCards(): void {
-  const isAnyFilterActive = this.filterOnePlus || this.filterCritical;
+  const isAnyFilterActive = this.selectedNoShowFilter !== null;
 
   if (!isAnyFilterActive) {
-  if ((this.baseTotalNoShows ?? 0) === 0 && this.allNoShowUsers.length > 0) {
-    this.totalNoShows = this.allNoShowUsers.reduce(
-      (sum, u) => sum + (u.no_show_count ?? 0),
-      0
-    );
-    this.uniqueNoShowUsers = this.allNoShowUsers.length;
-  } else {
     this.totalNoShows = this.baseTotalNoShows;
     this.uniqueNoShowUsers = this.baseUniqueNoShowUsers;
+    return;
   }
-  return;
-}
-
 
   this.uniqueNoShowUsers = this.filteredNoShowUsers.length;
-
-  this.totalNoShows = this.filteredNoShowUsers.reduce((sum, u) => {
-    return sum + (u.no_show_count ?? 0);
-  }, 0);
+  this.totalNoShows = this.filteredNoShowUsers.reduce(
+    (sum, u) => sum + (u.no_show_count ?? 0),
+    0
+  );
 }
 
 
