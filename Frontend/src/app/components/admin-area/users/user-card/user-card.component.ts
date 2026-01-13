@@ -9,6 +9,7 @@ import { forkJoin } from 'rxjs';
 import { User } from '../../../../models/user.model';
 import { UserService, NoShowResponse } from '../../../../services/user_service';
 import { environment } from '../../../../../environments/environment';
+import { ROLE_LABELS } from '../../../../constants/roles';
 
 interface Department {
   id: string;
@@ -29,6 +30,7 @@ export class UserCardComponent implements OnInit {
   departmentName: string = '';
   departments: Department[] = [];
   loading: boolean = true;
+  roleLabels = ROLE_LABELS;
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: { userId: string },
@@ -68,6 +70,12 @@ export class UserCardComponent implements OnInit {
         this.loading = false;
       },
     });
+  }
+
+  getDisplayRole(): string {
+    if (!this.user) return '';
+    const roleKey = this.user.isRaan ? 'raan' : this.user.role.toLowerCase();
+    return this.roleLabels[roleKey] || this.user.role;
   }
 
   openLicenseInNewTab(): void {
