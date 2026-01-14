@@ -68,12 +68,20 @@ def get_current_user(request: Request) -> User:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
 
-def token_check_socket(token: str) -> bool:
+
+
+def token_check_socket(token: str) -> dict | None:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        return True
+        user_id = payload.get("sub")
+        if user_id is None:
+            return None
+        
+        return {
+            "user_id": user_id,
+        }
     except PyJWTError:
-        return False
+        return None
 
 def role_check(allowed_roles: list, token: str):
     try:
