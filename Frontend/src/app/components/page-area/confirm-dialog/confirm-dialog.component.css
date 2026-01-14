@@ -147,15 +147,16 @@
 }
 
 .primary-button {
-  background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+  background: linear-gradient(135deg, #973838dc, #942222) !important;
   color: white !important;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 12px rgba(173, 49, 49, 0.3);
 }
 
 .primary-button:hover {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
-  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+  background: linear-gradient(135deg, #942222, #7f1d1d) !important;
+  box-shadow: 0 8px 20px rgba(173, 49, 49, 0.4);
 }
+
 
 .modal-actions button:not(.delete-confirm-button):not(.primary-button) {
   background: rgba(243, 244, 246, 0.8);
