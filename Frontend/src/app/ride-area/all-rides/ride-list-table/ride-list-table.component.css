@@ -391,25 +391,31 @@ button:disabled {
 .status-cancelled_vehicle_unavailable {
   position: relative;
   background-color: #a4938589;
-  opacity: 0.95;
-  color: rgb(54, 41, 41);
+  opacity: 0.98;
 }
 
 .status-cancelled_vehicle_unavailable::after {
-  content: "הרכב אינו זמין";
-  position: absolute;
-  top: 50%;
-  left: 53%;
-  transform: translate(-50%, -50%);
-  font-weight: 700;
-  font-size: 0.95rem;
-  color: #666665;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 6px 18px;
-  border-radius: 6px;
+  display: none !important;
+  content: none !important;
+}
+
+.vehicle-type-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vehicle-unavailable-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.vehicle-unavailable-label {
+  font-size: 1rem;
+  color: #1f1f1c;
+  font-weight: 500;
+  text-align: center;
   white-space: nowrap;
-  pointer-events: none;
-  z-index: 1;
-  box-shadow: 0 2px 8px rgba(139, 90, 43, 0.2);
-  border: 1px solid rgba(193, 125, 74, 0.3);
 }
