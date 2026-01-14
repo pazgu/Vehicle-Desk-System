@@ -322,3 +322,19 @@
     font-size: 0.85rem;
   }
 }
+.filters-actions {
+  display: flex;
+  justify-content: flex-start; 
+  margin-top: 12px;
+}
+
+.app-clear-filters-btn {
+  width: fit-content;
+  min-width: auto;
+  padding: 0.55rem 1rem;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+

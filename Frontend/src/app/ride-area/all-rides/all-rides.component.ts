@@ -23,6 +23,7 @@ import {
 import { RideDetailsComponent } from './../ride-details/ride-details.component';
 import { Subject, takeUntil } from 'rxjs';
 
+
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -167,6 +168,17 @@ export class AllRidesComponent implements OnInit {
 
     this.router.navigate(['/ride/edit', order.ride_id]);
   }
+
+clearFilters(): void {
+  this.router.navigate([], {
+    relativeTo: this.route,
+    queryParams: {
+      mode: 'all',
+      sort: 'recent',
+    },
+    replaceUrl: true,
+  });
+}
 
   deleteOrder(order: any): void {
     const rawStatus = order.status || '';

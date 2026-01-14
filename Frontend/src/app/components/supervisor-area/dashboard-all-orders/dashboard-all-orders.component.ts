@@ -59,14 +59,16 @@ export class DashboardAllOrdersComponent implements OnInit {
     } else {
       console.error('Department ID not found in localStorage.');
     }
-  this.route.queryParams
+ this.route.queryParams
   .pipe(takeUntil(this.destroy$))
   .subscribe((params) => {
-    if (params['sortBy']) this.sortBy = params['sortBy'];
-    if (params['status']) this.statusFilter = params['status'];
-    if (params['startDate']) this.startDate = params['startDate'];
-    if (params['endDate']) this.endDate = params['endDate'];
+    this.sortBy = params['sortBy'] || 'submitted_at';
+    this.statusFilter = params['status'] || '';
+    this.startDate = params['startDate'] || '';
+    this.endDate = params['endDate'] || '';
+    this.validateDates();
   });
+
 
 this.socketService.rideRequests$
   .pipe(takeUntil(this.destroy$))
@@ -182,6 +184,17 @@ this.socketService.rideStatusUpdated$
   onFilterChange(): void {
     this.currentPage = 1;
   }
+
+clearFilters(): void {
+  this.router.navigate([], {
+    relativeTo: this.route,
+    queryParams: {
+      sortBy: 'submitted_at',
+    },
+    replaceUrl: true,
+  });
+}
+
 
   isPastOrder(order: any): boolean {
     const today = new Date();
