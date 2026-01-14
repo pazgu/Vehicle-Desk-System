@@ -28,6 +28,8 @@ export class FilterPanelComponent implements OnChanges {
   @Input() maxDate: string = '';
   @Output() filteredOrdersChanged = new EventEmitter<any[]>();
     dateError: boolean = false;
+  @Output() clearFiltersClicked = new EventEmitter<void>();
+
 
   private filteredOrders: any[] = [];
   constructor(private myrideservice: MyRidesService) {}
@@ -64,6 +66,18 @@ export class FilterPanelComponent implements OnChanges {
   onSortChange(): void {
     this.applyFiltersAndSort();
   }
+
+onClearFiltersClick(): void {
+  this.rideViewMode = 'all';
+  this.sortBy = 'recent';
+  this.statusFilter = '';
+  this.startDate = '';
+  this.endDate = '';
+  this.dateError = false;
+  this.applyFiltersAndSort();
+  this.clearFiltersClicked.emit();
+}
+
 
   toggleFiltersVisibility(): void {
     this.showFilters = !this.showFilters;

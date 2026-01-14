@@ -260,6 +260,8 @@ private setupSocketListeners(): void {
     },
   });
 
+  
+
   dialogRef.afterClosed().subscribe((confirmed) => {
     if (!confirmed) return;
 
@@ -284,6 +286,12 @@ private setupSocketListeners(): void {
       },
     });
   });
+}
+clearFilters(): void {
+  this.searchTerm = '';
+  this.selectedRole = '';
+  this.filterLogs();     
+  this.currentPage = 1;  
 }
 
 

@@ -1,4 +1,5 @@
 <div class="overlay">
+  <!-- Main Form Modal -->
   <div class="modal">
     <div class="headers">
       <h2>עריכת נסיעה</h2>
@@ -231,22 +232,22 @@
             <div class="dropdown-backdrop" *ngIf="isDropdownOpen" (click)="closeDropdown()"></div>
             
             <div
-  class="no-vehicles-banner"
-  *ngIf="
-    rideForm.get('vehicle_type')?.value &&
-    availableCars.length === 0
-  "
->
-  <i class="pi pi-exclamation-triangle icon"></i>
-  <div class="text-wrapper">
-    <div class="title">
-      אין רכבים זמינים מסוג זה בשעות שנבחרו
-    </div>
-    <div class="subtitle">
-      נא לבחור סוג רכב אחר או לעדכן את זמני הנסיעה
-    </div>
-  </div>
-</div>
+              class="no-vehicles-banner"
+              *ngIf="
+                rideForm.get('vehicle_type')?.value &&
+                availableCars.length === 0
+              "
+            >
+              <i class="pi pi-exclamation-triangle icon"></i>
+              <div class="text-wrapper">
+                <div class="title">
+                  אין רכבים זמינים מסוג זה בשעות שנבחרו
+                </div>
+                <div class="subtitle">
+                  נא לבחור סוג רכב אחר או לעדכן את זמני הנסיעה
+                </div>
+              </div>
+            </div>
 
             <small
               class="error-text"
@@ -296,19 +297,6 @@
           >
             חובה למלא סיבה לשימוש ברכב {{ rideForm.get("vehicle_type")?.value }}
           </small>
-        </div>
-        <div class="row">
-          <div class="input-group">
-            <label>מרחק (ק"מ)</label>
-
-            <small
-              *ngIf="rideForm.get('estimated_distance_km')?.value"
-              class="distance-info"
-            >
-              המרחק לאחר תוספת סטייה: {{ estimated_distance_with_buffer }} ק"מ
-            </small>
-          </div>
-          <div class="input-group"></div>
         </div>
 
         <div class="row">
@@ -409,5 +397,57 @@
       </div>
       <button class="submit-btn" type="submit">עדכן</button>
     </form>
+  </div>
+
+  <!-- Trip Display Sidebar (Outside the modal, on the right) -->
+  <div class="full-trip-display">
+    <h4>מסלול הנסיעה שלך:</h4>
+    <hr />
+    <a>תל אביב</a>
+    <p>↓</p>
+    <a>{{ getSelectedStopName() }}</a>
+    <ng-container *ngFor="let extra of getExtraStopNames()">
+      <p>↓</p>
+      <a>{{ extra }}</a>
+    </ng-container>
+    <p>↓</p>
+    <a>תל אביב</a>
+
+    <div class="input-group">
+      <label id="distance-title">מרחק (ק"מ)</label>
+
+      <small
+        *ngIf="rideForm.get('estimated_distance_km')?.value"
+        class="distance-info"
+      >
+        המרחק לאחר תוספת סטייה: {{ estimated_distance_with_buffer }} ק"מ
+      </small>
+    </div>
+  </div>
+
+  <!-- Trip Display Sidebar (on the right side) -->
+  <div class="full-trip-display">
+    <h4>מסלול הנסיעה שלך:</h4>
+    <hr />
+    <a>תל אביב</a>
+    <p>↓</p>
+    <a>{{ getSelectedStopName() }}</a>
+    <ng-container *ngFor="let extra of getExtraStopNames()">
+      <p>↓</p>
+      <a>{{ extra }}</a>
+    </ng-container>
+    <p>↓</p>
+    <a>תל אביב</a>
+
+    <div class="input-group">
+      <label id="distance-title">מרחק (ק"מ)</label>
+
+      <small
+        *ngIf="rideForm.get('estimated_distance_km')?.value"
+        class="distance-info"
+      >
+        המרחק לאחר תוספת סטייה: {{ estimated_distance_with_buffer }} ק"מ
+      </small>
+    </div>
   </div>
 </div>

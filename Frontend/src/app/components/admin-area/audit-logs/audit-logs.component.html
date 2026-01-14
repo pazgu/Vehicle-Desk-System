@@ -48,9 +48,10 @@
             <option value="30days">30 ימים אחרונים</option>
             <option value="custom">טווח מותאם אישית</option>
           </select>
-          <button class="export-button" (click)="resetFilters()">
-            הסר סינון
-          </button>
+          <button class="app-clear-filters-btn" (click)="resetFilters()">
+  הסר סינון
+</button>
+
         </div>
         <div *ngIf="selectedRange === 'custom'" class="custom-range-fields">
           <input
