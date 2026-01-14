@@ -106,6 +106,15 @@
           />
         </div>
 
+  <button
+    type="button"
+    class="app-clear-filters-btn"
+    (click)="clearFilters(); $event.stopPropagation()"
+  >
+    הסר סינון
+  </button>
+
+
         <div *ngIf="dateError" style="color: red; margin-top: 5px">
           תאריך ההתחלה לא יכול להיות אחרי תאריך הסיום
         </div>
@@ -173,7 +182,7 @@
           <br />
           נסה לשנות את הפילטרים או לבחור טווח תאריכים אחר.
         </p>
-        <button class="reset-filters-btn" (click)="resetFilters()">
+        <button class="reset-filters-btn" (click)="clearFilters()">
           <i class="pi pi-refresh"></i>
           אפס סינונים
         </button>
