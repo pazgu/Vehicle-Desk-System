@@ -234,39 +234,29 @@ export class AddNewUserComponent implements OnInit {
   updateDepartmentValidation(role: string): void {
     const departmentControl = this.addUserForm.get('department_id');
 
-    if (role === 'employee') {
+    if (role === 'employee' || role === 'raan') {
       departmentControl?.setValidators([Validators.required]);
-    } else if (role === 'supervisor' || role === 'raan') {
-      departmentControl?.clearValidators();
     } else {
       departmentControl?.clearValidators();
-      departmentControl?.setValue('');
+      if (role !== 'supervisor') {
+        departmentControl?.setValue('');
+      }
     }
 
     departmentControl?.updateValueAndValidity();
   }
 
   updateSupervisedDepartmentValidation(role: string): void {
-    const supervisedDepartmentControl = this.addUserForm.get(
-      'supervised_department_id'
-    );
-
-    if (role === 'supervisor') {
-      supervisedDepartmentControl?.setValidators([
-        Validators.required,
-        this.departmentOccupiedValidator(),
-      ]);
-    } else {
-      supervisedDepartmentControl?.clearValidators();
-      supervisedDepartmentControl?.setValue('');
-    }
+    const supervisedDepartmentControl = this.addUserForm.get('supervised_department_id');
+    supervisedDepartmentControl?.clearValidators();
+    supervisedDepartmentControl?.setValue('');
     supervisedDepartmentControl?.updateValueAndValidity();
   }
 
   departmentOccupiedValidator() {
     return (control: any) => {
       const depId = control.value;
-      if (!depId) return null;
+      if (!depId || depId === '') return null;
       const dep = this.departments.find((d) => d.id === depId);
       if (dep && dep.supervisor_id) {
         return { departmentOccupied: true };
@@ -445,7 +435,7 @@ export class AddNewUserComponent implements OnInit {
     )?.value;
     const role = this.addUserForm.get('role')?.value;
 
-    if (role !== 'supervisor' || !selectedDeptId) {
+    if (role !== 'supervisor' || !selectedDeptId || selectedDeptId === '') {
       return false;
     }
 
@@ -481,8 +471,7 @@ export class AddNewUserComponent implements OnInit {
   }
 
   shouldShowSupervisedDepartment(): boolean {
-    const role = this.addUserForm.get('role')?.value;
-    return role === 'supervisor';
+    return false;
   }
 
   hasGovlicenseButNoFile(): boolean {
@@ -540,4 +529,9 @@ export class AddNewUserComponent implements OnInit {
       return { digit: true };
     };
   }
+  shouldShowSupervisorMessage(): boolean {
+  const role = this.addUserForm.get('role')?.value;
+  return role === 'supervisor';
+}
+
 }

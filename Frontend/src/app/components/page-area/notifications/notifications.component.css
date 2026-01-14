@@ -1,7 +1,7 @@
 :host {
   display: block;
   min-height: 85vh;
-  background-color: white;
+  background-color: #fffaf6;
   contain: layout paint;
 }
 
@@ -16,13 +16,13 @@
 }
 
 .wrapper {
-  background-image: url("/assets/images/notifications-bg.png");
+  /* background-image: url("/assets/images/falling_envelop.png"); */
   min-height: 70vh;
   max-height: 92vh;
   margin-left: 5vh;
   overflow-y: visible;
   padding: 10px 5px;
-  background: transparent;
+ 
 }
 .title {
   font-size: 2rem;
@@ -119,6 +119,7 @@
   width: 300px;
   height: 445px;
   opacity: 0.8;
+
 }
 
 .message-icon {
@@ -271,4 +272,3 @@ body {
   opacity: 0.6;
   pointer-events: none; 
 }
-

@@ -40,57 +40,69 @@
           </div>
         </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label for="role">תפקיד</label>
-            <select id="role" formControlName="role" class="form-control">
-              <option value="" disabled>בחר תפקיד</option>
-              <option *ngFor="let role of roles" [value]="role.key">
-                {{ role.label }}
-              </option>
-            </select>
-          </div>
+<div class="form-row">
+  <div class="form-group">
+    <label for="role">תפקיד</label>
+    <select id="role" formControlName="role" class="form-control">
+      <option value="" disabled>בחר תפקיד</option>
+      <option *ngFor="let role of roles" [value]="role.key">
+        {{ role.label }}
+      </option>
+    </select>
+  </div>
+<div class="form-group" *ngIf="isSupervisorWithDepartment()">
+  <label for="department">מחלקה </label>
+  <input
+    type="text"
+    id="department_display"
+    [value]="getCurrentDepartmentName()"
+    class="form-control"
+    readonly
+  />
+  <div class="supervisor-department-message">
+    <p> לשינוי שיבוץ מחלקה, אנא עבור לדף נתוני מחלקות</p>
+  </div>
+</div>
 
-          <div
-            class="form-group"
-            *ngIf="
-              userForm.get('role')?.value !== 'admin' &&
-              userForm.get('role')?.value !== 'inspector'
-            "
-          >
-            <label for="department">
-              מחלקה
-              <span
-                *ngIf="userForm.get('role')?.value === 'employee'"
-                class="required-asterisk"
-                >*</span
-              >
-              <span
-                *ngIf="userForm.get('role')?.value === 'supervisor'"
-                class="optional-label"
-                >(אופציונלי)</span
-              >
-            </label>
-           <select
-              id="department_id"
-              formControlName="department_id"
-              class="form-control"
-            >
-              <option [ngValue]="null">
-                בחר מחלקה
-              </option>
-              <option *ngFor="let dept of departments" [ngValue]="dept.id">
-                {{ dept.name }}
-              </option>
-            </select>
-            <small
-              *ngIf="f['department_id'].touched && f['department_id'].errors?.['required']"
-              class="error-message"
-            >
-              יש לבחור מחלקה
-            </small>
-          </div>
-        </div>
+  <div class="form-group" *ngIf="shouldShowSupervisorMessage()">
+    <div class="supervisor-message">
+      <p> כדי לשבץ מנהל מחלקה, אנא שבץ מדף נתוני מחלקות</p>
+    </div>
+  </div>
+
+  <div
+    class="form-group"
+    *ngIf="
+      userForm.get('role')?.value === 'employee' ||
+      userForm.get('role')?.value === 'raan'
+    "
+  >
+    <label for="department">
+      מחלקה
+      <span
+        *ngIf="userForm.get('role')?.value === 'employee'"
+        class="required-asterisk"
+        >*</span
+      >
+    </label>
+    <select
+      id="department_id"
+      formControlName="department_id"
+      class="form-control"
+    >
+      <option [ngValue]="null">בחר מחלקה</option>
+      <option *ngFor="let dept of departments" [ngValue]="dept.id">
+        {{ dept.name }}
+      </option>
+    </select>
+    <small
+      *ngIf="f['department_id'].touched && f['department_id'].errors?.['required']"
+      class="error-message"
+    >
+      חובה לבחור מחלקה
+    </small>
+  </div>
+</div>
         <div class="form-row">
           <div class="form-group">
             <label for="phone">מספר טלפון</label>

@@ -91,13 +91,18 @@
 
     <div class="cell">{{ order.date }}</div>
     <div class="cell">{{ order.time }}</div>
-    <div class="cell">
-      {{ order.type }}
-      <span
-        *ngIf="isPaidOrder(order)"
-        style="color: #00410d; font-weight: bold; margin-right: 8px"
-        >$</span
-      >
+    <div class="cell vehicle-type-cell">
+      <div *ngIf="!canRebook(order)">
+        {{ order.type }}
+        <span
+          *ngIf="isPaidOrder(order)"
+          style="color: #00410d; font-weight: bold; margin-right: 8px"
+          >$</span
+        >
+      </div>
+      <div *ngIf="canRebook(order)" class="vehicle-unavailable-wrapper">
+        <div class="vehicle-unavailable-label">הרכב אינו זמין</div>
+      </div>
     </div>
     <div class="cell">{{ order.distance }}</div>
 
