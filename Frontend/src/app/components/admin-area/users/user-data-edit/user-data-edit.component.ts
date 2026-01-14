@@ -40,6 +40,7 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
   private subs: Subscription[] = [];
   isSubmitting = false;
   minDateTime: string = '';
+  isInitialLoad = true;
 
   constructor(
     private fb: FormBuilder,
@@ -233,27 +234,32 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
       });
 
     if (roleSub) this.subs.push(roleSub);
-  }
-
-  updateDepartmentValidation(role: string): void {
-    const departmentControl = this.userForm.get('department_id');
-
-    if (role === 'employee') {
-      departmentControl?.setValidators([Validators.required]);
-    } else if (role === 'supervisor' || role === 'raan') {
-      departmentControl?.clearValidators();
-    } else {
-      departmentControl?.clearValidators();
-      departmentControl?.setValue('');
     }
 
-    departmentControl?.updateValueAndValidity();
+updateDepartmentValidation(role: string): void {
+  const departmentControl = this.userForm.get('department_id');
+
+  if (role === 'employee' || role === 'raan') {
+    departmentControl?.setValidators([Validators.required]);
+    
+    if (!this.isInitialLoad) {
+      departmentControl?.setValue(null, { emitEvent: false });
+    }
+  } else if (role === 'supervisor') {
+    departmentControl?.clearValidators();
+    departmentControl?.setValue(null, { emitEvent: false });
+  } else {
+    departmentControl?.clearValidators();
+    departmentControl?.setValue(null, { emitEvent: false });
   }
 
+  departmentControl?.updateValueAndValidity();
+}
   loadUserData(): void {
     this.userId = this.route.snapshot.paramMap.get('user_id');
 
     if (this.userId) {
+      this.userForm.reset();
       this.userService.getUserById(this.userId).subscribe({
         next: (user) => {
           this.user = user;
@@ -283,6 +289,7 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
               ? new Date(user.block_expires_at).toISOString().substring(0, 16)
               : '',
           });
+          this.isInitialLoad = false;
           if (user.is_blocked) {
             this.userForm
               .get('block_reason')
@@ -406,10 +413,18 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
       formData.append('username', formValues.username);
       formData.append('email', formValues.email);
       formData.append('role', roleToSend);
-      formData.append('isRaan', String(isRaan)); 
-      if (formValues.department_id) {
-        formData.append('department_id', formValues.department_id);
+      formData.append('isRaan', String(isRaan));
+
+      if (formValues.role === 'employee' || formValues.role === 'raan') {
+        if (formValues.department_id) {
+          formData.append('department_id', formValues.department_id);
+        }
+      } else if (formValues.role === 'supervisor') {
+        formData.append('department_id', '');
+      } else {
+        formData.append('department_id', '');
       }
+
       formData.append('phone', formValues.phone);
 
       const hasLicenseControl = this.userForm.get('has_government_license');
@@ -493,4 +508,29 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
     const fullUrl = environment.socketUrl + this.user.license_file_url;
     window.open(fullUrl, '_blank');
   }
+shouldShowSupervisorMessage(): boolean {
+  const role = this.userForm.get('role')?.value;
+  const departmentId = this.userForm.get('department_id')?.value;
+  return role === 'supervisor' && (departmentId === null || departmentId === '');
+}
+
+shouldShowDepartmentField(): boolean {
+  const role = this.userForm.get('role')?.value;
+  return role === 'employee' || role === 'raan';
+}
+
+isSupervisorWithDepartment(): boolean {
+  const role = this.userForm.get('role')?.value;
+  const departmentId = this.userForm.get('department_id')?.value;
+  return role === 'supervisor' && departmentId !== null && departmentId !== '';
+}
+
+getCurrentDepartmentName(): string {
+  const departmentId = this.userForm.get('department_id')?.value;
+  if (!departmentId) return '';
+  
+  const department = this.departments.find(d => d.id === departmentId);
+  return department ? department.name : '';
+}
+
 }

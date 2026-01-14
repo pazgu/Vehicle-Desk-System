@@ -238,28 +238,35 @@
           </small>
         </div>
 
-        <div class="form-group" *ngIf="shouldShowSupervisedDepartment()">
-          <label style="margin-top: 14px">מחלקה (אופציונלי)</label>
-          <select formControlName="supervised_department_id">
-            <option value="">ללא מחלקה</option>
+        <div class="form-group" *ngIf="shouldShowDepartment()">
+          <label style="margin-top: 14px"
+            >מחלקה {{ isDepartmentRequired() ? "" : "(אופציונלי)" }}</label
+          >
+          <select formControlName="department_id">
+            <option value="" [disabled]="isDepartmentRequired()">
+              {{ isDepartmentRequired() ? "בחר מחלקה" : "ללא מחלקה" }}
+            </option>
             <option *ngFor="let d of departments" [value]="d.id">
               {{ d.name }}
-              <span *ngIf="d.supervisor_id"> (תפוס)</span>
             </option>
           </select>
-
           <small
             *ngIf="
-              addUserForm
-                .get('supervised_department_id')
-                ?.hasError('departmentOccupied')
+              addUserForm.get('department_id')?.touched &&
+              addUserForm.get('department_id')?.invalid &&
+              isDepartmentRequired()
             "
             class="error"
-            style="display: block; margin-top: 5px"
           >
-            {{ getOccupiedDepartmentError() }}
+           חובה לבחור מחלקה
           </small>
         </div>
+
+      <div class="form-group" *ngIf="shouldShowSupervisorMessage()">
+        <div class="supervisor-message">
+          <p>כדי לשבץ מנהל מחלקה, אנא שבץ מדף נתוני מחלקות</p>
+        </div>
+      </div>
       </div>
 
       <div class="form-section">

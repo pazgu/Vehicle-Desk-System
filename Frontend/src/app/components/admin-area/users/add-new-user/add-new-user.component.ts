@@ -234,31 +234,22 @@ export class AddNewUserComponent implements OnInit {
   updateDepartmentValidation(role: string): void {
     const departmentControl = this.addUserForm.get('department_id');
 
-    if (role === 'employee') {
+    if (role === 'employee' || role === 'raan') {
       departmentControl?.setValidators([Validators.required]);
-    } else if (role === 'supervisor' || role === 'raan') {
-      departmentControl?.clearValidators();
     } else {
       departmentControl?.clearValidators();
-      departmentControl?.setValue('');
+      if (role !== 'supervisor') {
+        departmentControl?.setValue('');
+      }
     }
 
     departmentControl?.updateValueAndValidity();
   }
 
   updateSupervisedDepartmentValidation(role: string): void {
-    const supervisedDepartmentControl = this.addUserForm.get(
-      'supervised_department_id'
-    );
-
-    if (role === 'supervisor') {
-      supervisedDepartmentControl?.setValidators([
-        this.departmentOccupiedValidator(),
-      ]);
-    } else {
-      supervisedDepartmentControl?.clearValidators();
-      supervisedDepartmentControl?.setValue('');
-    }
+    const supervisedDepartmentControl = this.addUserForm.get('supervised_department_id');
+    supervisedDepartmentControl?.clearValidators();
+    supervisedDepartmentControl?.setValue('');
     supervisedDepartmentControl?.updateValueAndValidity();
   }
 
@@ -480,8 +471,7 @@ export class AddNewUserComponent implements OnInit {
   }
 
   shouldShowSupervisedDepartment(): boolean {
-    const role = this.addUserForm.get('role')?.value;
-    return role === 'supervisor';
+    return false;
   }
 
   hasGovlicenseButNoFile(): boolean {
@@ -539,4 +529,9 @@ export class AddNewUserComponent implements OnInit {
       return { digit: true };
     };
   }
+  shouldShowSupervisorMessage(): boolean {
+  const role = this.addUserForm.get('role')?.value;
+  return role === 'supervisor';
+}
+
 }
