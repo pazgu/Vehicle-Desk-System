@@ -258,42 +258,15 @@
             "
             class="error"
           >
-            שדה חובה
+           חובה לבחור מחלקה
           </small>
         </div>
 
-        <div class="form-group" *ngIf="shouldShowSupervisedDepartment()">
-          <label style="margin-top: 14px">מחלקה</label>
-          <select formControlName="supervised_department_id">
-            <option value="" disabled selected>בחר מחלקה</option>
-            <option *ngFor="let d of departments" [value]="d.id">
-              {{ d.name }}
-              <span *ngIf="d.supervisor_id"> (תפוס)</span>
-            </option>
-          </select>
-
-          <small
-            *ngIf="
-              addUserForm.get('supervised_department_id')?.touched &&
-              addUserForm.get('supervised_department_id')?.hasError('required')
-            "
-            class="error"
-          >
-            חובה לבחור מחלקה
-          </small>
-
-          <small
-            *ngIf="
-              addUserForm
-                .get('supervised_department_id')
-                ?.hasError('departmentOccupied')
-            "
-            class="error"
-            style="display: block; margin-top: 5px"
-          >
-            {{ getOccupiedDepartmentError() }}
-          </small>
+      <div class="form-group" *ngIf="shouldShowSupervisorMessage()">
+        <div class="supervisor-message">
+          <p>כדי לשבץ מנהל מחלקה, אנא שבץ מדף נתוני מחלקות</p>
         </div>
+      </div>
       </div>
 
       <div class="form-section">
