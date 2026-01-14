@@ -12,7 +12,7 @@ export const RIDE_STATUS_COLORS: Record<RideStatusKey, { labelHe: string; color:
   approved: { labelHe: 'אושר', color: '#60cd79' },
   rejected: { labelHe: 'נדחה', color: '#dc5b5b' },
   in_progress: { labelHe: 'בנסיעה', color: '#fbdda5' },
-  completed: { labelHe: 'בוצע', color: '#60cd79' },
+  completed: { labelHe: 'בוצע', color: '#dcf1e1' },
   cancelled_due_to_no_show: { labelHe: 'בוטלה עקב אי-הגעה', color: '#e0d6e8' },
   cancelled_vehicle_unavailable: { labelHe: 'בוטל-רכב לא זמין', color: '#e0d6e8' },
 };

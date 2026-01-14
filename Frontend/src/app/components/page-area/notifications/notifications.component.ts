@@ -11,6 +11,7 @@ import { ChangeDetectorRef } from '@angular/core';
 import { Location } from '@angular/common';
 import { RideDetailsComponent } from '../../../ride-area/ride-details/ride-details.component';
 import { MatDialog } from '@angular/material/dialog';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-notifications',
@@ -23,6 +24,7 @@ export class NotificationsComponent implements OnInit {
   notifications: (MyNotification & { timeAgo: string })[] = [];
   currentPage = 1;
   notificationsPerPage = 3;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private notificationService: NotificationService,
@@ -66,66 +68,66 @@ export class NotificationsComponent implements OnInit {
         },
       });
 
-      this.socketService.vehicleExpiry$.subscribe((newNotif) => {
-        if (newNotif) {
-          const notifWithTimeAgo = {
-            ...newNotif,
-            timeAgo: formatDistanceToNow(new Date(newNotif.sent_at), {
-              addSuffix: true,
-              locale: he,
-            }),
-          };
+  this.socketService.vehicleExpiry$
+  .pipe(takeUntil(this.destroy$))
+  .subscribe((newNotif) => {
+    if (!newNotif) return;
 
-          this.notifications = [notifWithTimeAgo, ...this.notifications];
-          this.syncUnreadCount(); 
+    const notifWithTimeAgo = {
+      ...newNotif,
+      timeAgo: formatDistanceToNow(new Date(newNotif.sent_at), {
+        addSuffix: true,
+        locale: he,
+      }),
+    };
 
-          this.cdr.detectChanges();
+    this.notifications = [notifWithTimeAgo, ...this.notifications];
+    this.syncUnreadCount();
+    this.cdr.detectChanges();
 
-          if (this.router.url != '/notifications') {
-            if (
-              newNotif.message.includes('בעיה חמורה') ||
-              newNotif.notification_type === 'critical'
-            ) {
-              const audio = new Audio('assets/sounds/notif.mp3');
-              audio.play();
-            }
+    if (this.router.url !== '/notifications') {
+      if (
+        newNotif.message.includes('בעיה חמורה') ||
+        newNotif.notification_type === 'critical'
+      ) {
+        const audio = new Audio('assets/sounds/notif.mp3');
+        audio.play();
+      }
+    }
+  });
+
+this.socketService.odometerNotif$
+  .pipe(takeUntil(this.destroy$))
+  .subscribe(
+    (payload: { updated_notifications: MyNotification[] } | null) => {
+      if (!payload?.updated_notifications) return;
+
+      payload.updated_notifications.forEach((newNotif) => {
+        const notifWithTimeAgo = {
+          ...newNotif,
+          timeAgo: formatDistanceToNow(new Date(newNotif.sent_at), {
+            addSuffix: true,
+            locale: he,
+          }),
+        };
+
+        this.notifications = [notifWithTimeAgo, ...this.notifications];
+        this.syncUnreadCount();
+        this.cdr.detectChanges();
+
+        if (this.router.url !== '/notifications') {
+          if (
+            newNotif.message.includes('בעיה חמורה') ||
+            newNotif.notification_type === 'critical'
+          ) {
+            const audio = new Audio('assets/sounds/notif.mp3');
+            audio.play();
           }
         }
       });
-      this.socketService.odometerNotif$.subscribe(
-        (payload: { updated_notifications: MyNotification[] } | null) => {
-          if (!payload || !payload.updated_notifications) {
-            return;
-          }
+    }
+  );
 
-          const notifs = payload.updated_notifications;
-
-          notifs.forEach((newNotif) => {
-            const notifWithTimeAgo = {
-              ...newNotif,
-              timeAgo: formatDistanceToNow(new Date(newNotif.sent_at), {
-                addSuffix: true,
-                locale: he,
-              }),
-            };
-
-            this.notifications = [notifWithTimeAgo, ...this.notifications];
-            this.syncUnreadCount(); 
-
-            this.cdr.detectChanges();
-
-            if (this.router.url !== '/notifications') {
-              if (
-                newNotif.message.includes('בעיה חמורה') ||
-                newNotif.notification_type === 'critical'
-              ) {
-                const audio = new Audio('assets/sounds/notif.mp3');
-                audio.play();
-              }
-            }
-          });
-        }
-      );
     } else {
       this.notificationService.getNotifications().subscribe({
         next: (data) => {
@@ -143,46 +145,53 @@ export class NotificationsComponent implements OnInit {
         },
       });
     }
-    this.socketService.notifications$.subscribe((newNotif) => {
-      if (newNotif && newNotif.user_id == userId) {
-        const notifWithTimeAgo = {
-          ...newNotif,
-          timeAgo: formatDistanceToNow(new Date(newNotif.sent_at), {
-            addSuffix: true,
-            locale: he,
-          }),
-        };
+    this.socketService.notifications$
+  .pipe(takeUntil(this.destroy$))
+  .subscribe((newNotif) => {
+    if (newNotif && newNotif.user_id == userId) {
+      const notifWithTimeAgo = {
+        ...newNotif,
+        timeAgo: formatDistanceToNow(new Date(newNotif.sent_at), {
+          addSuffix: true,
+          locale: he,
+        }),
+      };
 
-        this.notifications = [notifWithTimeAgo, ...this.notifications];
-        this.syncUnreadCount(); 
+      this.notifications = [notifWithTimeAgo, ...this.notifications];
+      this.syncUnreadCount();
+      this.cdr.detectChanges();
 
-        this.cdr.detectChanges();
+      if (this.router.url !== '/notifications') {
+        if (this.isVehicleFreezeCancellation(newNotif)) {
+          this.toastService.show(
+            'הנסיעה שלך בוטלה כי הרכב יצא משימוש (תקלת מוסך / תאונה). אנא הזמן/י נסיעה חדשה.',
+            'error'
+          );
+          return;
+        }
 
-        if (this.router.url != '/notifications') {
-          if (this.isVehicleFreezeCancellation(newNotif)) {
-            this.toastService.show(
-              'הנסיעה שלך בוטלה כי הרכב יצא משימוש (תקלת מוסך / תאונה). אנא הזמן/י נסיעה חדשה.',
-              'error'
-            );
-            return;
-          }
+        if (
+          newNotif.message?.includes('בעיה חמורה') ||
+          newNotif.notification_type === 'critical'
+        ) {
+          const audio = new Audio('assets/sounds/notif.mp3');
+          audio.play();
+        }
 
-          if (
-            newNotif.message?.includes('בעיה חמורה') ||
-            newNotif.notification_type === 'critical'
-          ) {
-            const audio = new Audio('assets/sounds/notif.mp3');
-            audio.play();
-          }
-
-          if (newNotif.message?.includes('נדחתה')) {
-            this.toastService.show(newNotif.message, 'error');
-          } else {
-            this.toastService.show(newNotif.message || '', 'success');
-          }
+        if (newNotif.message?.includes('נדחתה')) {
+          this.toastService.show(newNotif.message, 'error');
+        } else {
+          this.toastService.show(newNotif.message || '', 'success');
         }
       }
-    });
+    }
+  });
+
+  }
+
+    ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   goToOrder(orderId: string): void {
