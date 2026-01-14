@@ -50,6 +50,8 @@ export class EditRideComponent implements OnInit {
   selectedCarId: string = '';
   isDropdownOpen: boolean = false;
   fuelTypeTranslations: { [key: string]: string } = {};
+  private hasUserChangedInputs: boolean = false;
+  private initialLoadComplete: boolean = false;
 
   allCars: {
     id: string;
@@ -324,6 +326,9 @@ export class EditRideComponent implements OnInit {
     this.rideForm.get('ride_date')?.valueChanges
       .pipe(debounceTime(800), distinctUntilChanged())
       .subscribe(() => {
+        if (this.initialLoadComplete) {
+          this.hasUserChangedInputs = true;
+        }
         this.updateMinEndDate();
         this.updateRideTypeNote();
         this.updateExtendedRideReasonValidation();
@@ -333,6 +338,9 @@ export class EditRideComponent implements OnInit {
     this.rideForm.get('ride_date_night_end')?.valueChanges
       .pipe(debounceTime(800), distinctUntilChanged())
       .subscribe((endDate) => {
+        if (this.initialLoadComplete) {
+          this.hasUserChangedInputs = true;
+        }
         if (endDate) {
           const startDate = this.rideForm.get('ride_date')?.value;
           if (startDate && endDate === startDate) {
@@ -355,6 +363,9 @@ export class EditRideComponent implements OnInit {
     this.rideForm.get('start_time')?.valueChanges
       .pipe(debounceTime(500), distinctUntilChanged())
       .subscribe((startTime) => {
+        if (this.initialLoadComplete) {
+          this.hasUserChangedInputs = true;
+        }
         if (!startTime) {
           this.filteredEndTimes = [...this.timeOptions];
           return;
@@ -366,6 +377,9 @@ export class EditRideComponent implements OnInit {
     this.rideForm.get('end_time')?.valueChanges
       .pipe(debounceTime(500), distinctUntilChanged())
       .subscribe((endTime) => {
+        if (this.initialLoadComplete) {
+          this.hasUserChangedInputs = true;
+        }
         this.updateRideTypeNote();
         this.updateFilteredEndTimes();
         this.refreshVehiclesIfReady();
@@ -382,6 +396,9 @@ export class EditRideComponent implements OnInit {
     this.setupDistanceCalculationSubscriptions();
 
     this.rideForm.get('vehicle_type')?.valueChanges.subscribe((value) => {
+      if (this.initialLoadComplete) {
+        this.hasUserChangedInputs = true;
+      }
       const fourByFourControl = this.rideForm.get('four_by_four_reason');
       if (
         value &&
@@ -690,19 +707,42 @@ export class EditRideComponent implements OnInit {
               }
             };
 
-            if (originalVehicleId) {
+            if (this.isLoadingExistingRide && originalVehicleId) {
               const selectedVehicle = this.allCars.find(
                 (car) => car.id === originalVehicleId
               );
 
-              if (selectedVehicle && !this.isCarDisabled(selectedVehicle)) {
+              if (selectedVehicle) {
                 this.selectedCarId = selectedVehicle.id;
                 carControl.setValue(selectedVehicle.id, { emitEvent: false });
+                setTimeout(() => {
+                  this.initialLoadComplete = true;
+                }, 500);
+              } else {
+                pickFirstRecommended();
+                setTimeout(() => {
+                  this.initialLoadComplete = true;
+                }, 500);
+              }
+            } 
+            else if (this.hasUserChangedInputs) {
+              pickFirstRecommended();
+            }
+            else {
+              const currentCarValue = carControl.value;
+              if (currentCarValue) {
+                const isStillValid = this.availableCars.some(
+                  (car) => car.id === currentCarValue && !this.isCarDisabled(car)
+                );
+                if (isStillValid) {
+                  this.selectedCarId = currentCarValue;
+                  carControl.setValue(currentCarValue, { emitEvent: false });
+                } else {
+                  pickFirstRecommended();
+                }
               } else {
                 pickFirstRecommended();
               }
-            } else {
-              pickFirstRecommended();
             }
 
             this.isLoadingExistingRide = false;
@@ -806,11 +846,17 @@ export class EditRideComponent implements OnInit {
       .get('stop')
       ?.valueChanges.pipe(debounceTime(300), distinctUntilChanged())
       .subscribe(() => {
+        if (this.initialLoadComplete) {
+          this.hasUserChangedInputs = true;
+        }
         this.calculateRouteDistance();
       });
     this.extraStops.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged())
       .subscribe(() => {
+        if (this.initialLoadComplete) {
+          this.hasUserChangedInputs = true;
+        }
         this.calculateRouteDistance();
       });
   }
