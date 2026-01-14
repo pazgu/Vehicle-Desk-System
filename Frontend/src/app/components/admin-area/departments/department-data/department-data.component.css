@@ -558,16 +558,15 @@
   }
 }
 
-/* ✅ EDIT MODAL CARD FIX */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(17, 24, 39, 0.55); /* dark overlay */
+  background: rgba(17, 24, 39, 0.55); 
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  z-index: 9999; /* MUST be above :host::before */
+  z-index: 9999; 
 }
 
 .modal-content {
@@ -582,7 +581,6 @@
   backdrop-filter: blur(10px);
 }
 
-/* Header row */
 .modal-header {
   display: flex;
   align-items: center;
@@ -614,7 +612,7 @@
 .close-modal-button {
   position: absolute;
   top: 0.2rem;
-  left: 0.2rem; /* RTL friendly */
+  left: 0.2rem; 
   border: none;
   background: transparent;
   padding: 0;
@@ -629,7 +627,6 @@
 }
 
 
-/* Make inputs match your red theme a bit */
 .modal-content .form-group input,
 .modal-content .form-group select {
   border: 2px solid rgba(220, 38, 38, 0.12);
@@ -642,7 +639,6 @@
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
 }
 
-/* Buttons row spacing */
 .modal-actions {
   display: flex;
   justify-content: flex-end;
