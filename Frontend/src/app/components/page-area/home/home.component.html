@@ -398,18 +398,25 @@
 
             <div class="form-row">
               <div class="form-field-group">
-                <label>סוג רכב</label>
-                <select
-                  formControlName="vehicle_type"
-                  class="styled-select"
-                  (change)="onRideTypeChange()"
-                >
+              <label>סוג רכב</label>
+              <select
+                formControlName="vehicle_type"
+                class="styled-select"
+                [disabled]="isRebookMode && !hasValidTimesForRebook()"
+                (click)="onVehicleTypeClick($event)"
+                (change)="onRideTypeChange()"
+              >
                   <option value="" disabled selected>בחר סוג</option>
                   <option *ngFor="let type of vehicleTypes" [value]="type">
                     {{ type }}
                   </option>
                 </select>
-
+                <small 
+                *ngIf="isRebookMode && !hasValidTimesForRebook()"
+                class="info-text rebook-time-warning"
+              >
+                 יש למלא שעות התחלה וסיום לפני בחירת סוג רכב
+              </small>
                 <small
                   *ngIf="f.vehicle_type.touched && f.vehicle_type.errors?.['required']"
                   class="error-text"
@@ -439,12 +446,16 @@
 <div class="form-field-group">
   <label *ngIf="!shouldShowCarError()">בחר רכב זמין</label>
   
-  <div class="custom-select">
+ <div 
+    class="custom-select"
+    [class.disabled-select]="isRebookMode && !hasValidTimesForRebook()"
+  >
     <div 
-         *ngIf="availableCars.length > 0"
+      *ngIf="availableCars.length > 0"
       class="select-header" 
       (click)="toggleDropdown()"
       [class.open]="isDropdownOpen"
+      [class.disabled]="isRebookMode && !hasValidTimesForRebook()"
     >
       <div class="selected-car" *ngIf="getSelectedCar(); else placeholder">
         <img 
@@ -452,6 +463,7 @@
           [alt]="getSelectedCar().vehicle_model"
           class="car-thumbnail"
         />
+
         <div class="car-info">
           <div class="car-model-wrapper">
             <span class="car-model">{{ getSelectedCar().vehicle_model }}</span>
@@ -470,7 +482,7 @@
       </div>
     </div>
 
-    <div class="select-options" *ngIf="isDropdownOpen">
+    <div class="select-options" *ngIf="isDropdownOpen && (!isRebookMode || hasValidTimesForRebook())">
       <div 
         *ngFor="let car of availableCars"
         class="option"
@@ -480,7 +492,7 @@
         (click)="selectCar(car.id)"
         [title]="isPendingVehicle(car.id) ? 'רכב זה ממתין לעיבוד לתאריך/תקופה שנבחרו' : ''"
       >
-        <img 
+         <img 
           [src]="car.image_url" 
           [alt]="car.vehicle_model"
           class="car-thumbnail"
@@ -503,14 +515,14 @@
     *ngIf="
       availableCars.length === 0 &&
       isRebookMode &&
-      hasTouchedVehicleType()
+      hasTouchedVehicleType() &&
+      hasValidTimesForRebook()
     "
   >
     <ng-container>
       אין רכבים זמינים מסוג זה בשעות שנבחרו. נא לבחור סוג רכב אחר.
     </ng-container>
   </div>
-
   <div
     *ngIf="
       rideForm?.get('vehicle_type') &&
@@ -522,7 +534,7 @@
     "
     class="car-validation-message"
   >
-    <ng-container
+   <ng-container
       *ngIf="
         availableCars.length === 0 &&
         !shouldShowCarError() &&
@@ -530,7 +542,7 @@
       "
     >
       אין רכבים זמינים מסוג זה בשעות שנבחרו,
-    </ng-container>
+      </ng-container>
     <ng-container
       *ngIf="
         availableCars.length === 0 &&
@@ -538,9 +550,8 @@
         !isRebookMode
       "
     >
-      אין רכבים זמינים מסוג זה בשעות שנבחרו. נא לבחור סוג רכב אחר.
+     אין רכבים זמינים מסוג זה בשעות שנבחרו. נא לבחור סוג רכב אחר.
     </ng-container>
-
     <ng-container
       *ngIf="availableCars.length > 0 && shouldShowCarError()"
     >
@@ -551,9 +562,7 @@
       }}
     </ng-container>
   </div>
-</div>
-              
-             
+  </div>
             </div>
           </div>
           <br>
