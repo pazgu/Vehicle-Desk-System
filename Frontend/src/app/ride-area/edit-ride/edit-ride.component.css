@@ -679,3 +679,42 @@ form .removeBtn:hover {
   font-size: 0.7rem;
   padding: 1px 6px;
 }
+
+
+
+.full-trip-display {
+  display: flex;
+  position: absolute;
+  flex-direction: column;
+  align-items: flex-start;
+  direction: rtl;
+  margin-top: 60px;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  left: 1020px;
+  background-color: #964d4d1f;
+  width: 250px;
+}
+
+.full-trip-display a,
+.full-trip-display p {
+  margin: 0.25rem 0;
+  font-size: 1.1rem;
+}
+
+.full-trip-display h4 {
+  color: #942222;
+  margin-bottom: 0.5rem;
+}
+
+.full-trip-display hr {
+  width: 100%;
+  border: 1px solid #ccc;
+  margin: 0.5rem 0;
+}
+
+#distance-title {
+  padding-top: 20px;
+  font-weight: bold;
+}

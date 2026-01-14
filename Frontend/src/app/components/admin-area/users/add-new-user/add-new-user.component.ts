@@ -253,7 +253,6 @@ export class AddNewUserComponent implements OnInit {
 
     if (role === 'supervisor') {
       supervisedDepartmentControl?.setValidators([
-        Validators.required,
         this.departmentOccupiedValidator(),
       ]);
     } else {
@@ -266,7 +265,7 @@ export class AddNewUserComponent implements OnInit {
   departmentOccupiedValidator() {
     return (control: any) => {
       const depId = control.value;
-      if (!depId) return null;
+      if (!depId || depId === '') return null;
       const dep = this.departments.find((d) => d.id === depId);
       if (dep && dep.supervisor_id) {
         return { departmentOccupied: true };
@@ -445,7 +444,7 @@ export class AddNewUserComponent implements OnInit {
     )?.value;
     const role = this.addUserForm.get('role')?.value;
 
-    if (role !== 'supervisor' || !selectedDeptId) {
+    if (role !== 'supervisor' || !selectedDeptId || selectedDeptId === '') {
       return false;
     }
 
