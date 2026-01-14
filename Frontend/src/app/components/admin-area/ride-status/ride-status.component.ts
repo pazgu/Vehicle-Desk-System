@@ -4,6 +4,7 @@ import { SocketService } from '../../../services/socket.service';
 import { RideService } from '../../../services/ride.service';
 import { CommonModule } from '@angular/common';
 import { RIDE_STATUS_COLORS } from '../audit-logs/audit-logs-utils/status-colors'; 
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'ride-status',
@@ -16,6 +17,7 @@ export class RideStatusComponent {
   rideChartOptions: any;
   selectedRideStatus: string = '';
   rideChartInitialized = false;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private socketService: SocketService,
@@ -25,13 +27,23 @@ export class RideStatusComponent {
   ngOnInit() {
     this.loadRideChart();
 
-    this.socketService.rideStatusUpdated$.subscribe(() => {
-      this.loadRideChart();
-    });
+   this.socketService.rideStatusUpdated$
+  .pipe(takeUntil(this.destroy$))
+  .subscribe(() => {
+    this.loadRideChart();
+  });
 
-    this.socketService.deleteRequests$.subscribe(() => {
-      this.loadRideChart();
-    });
+this.socketService.deleteRequests$
+  .pipe(takeUntil(this.destroy$))
+  .subscribe(() => {
+    this.loadRideChart();
+  });
+
+  }
+
+    ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   get isNoData(): boolean {

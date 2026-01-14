@@ -4,9 +4,20 @@
         <input
           type="radio"
           name="noShowFilter"
+          value="all"
+          [(ngModel)]="selectedNoShowFilter"
+          (change)="applyNoShowFilter()"
+        />
+        הצג את כל המשתמשים
+      </label>
+
+      <label>
+        <input
+          type="radio"
+          name="noShowFilter"
           value="onePlus"
           [(ngModel)]="selectedNoShowFilter"
-          (ngModelChange)="applyNoShowFilter()"
+          (change)="applyNoShowFilter()"
         />
 
         הצג משתמשים עם 1-2 אי-הגעות
@@ -18,7 +29,7 @@
           name="noShowFilter"
           value="critical"
           [(ngModel)]="selectedNoShowFilter"
-          (change)="onFilterChange('critical')"
+          (change)="applyNoShowFilter()"
         />
         הצג משתמשים עם 3+ אי-הגעות (קריטי)
       </label>

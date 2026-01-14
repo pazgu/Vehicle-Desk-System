@@ -12,6 +12,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { SocketService } from '../../../services/socket.service';
 import { ToastService } from '../../../services/toast.service';
 import { Location } from '@angular/common';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard-all-orders',
@@ -38,6 +39,7 @@ export class DashboardAllOrdersComponent implements OnInit {
   showFilters: boolean = false;
   showOldOrders: boolean = false;
   sortBy: string = 'submitted_at';
+  private destroy$ = new Subject<void>();
 
   dateError: boolean = false;
 
@@ -57,82 +59,94 @@ export class DashboardAllOrdersComponent implements OnInit {
     } else {
       console.error('Department ID not found in localStorage.');
     }
-    this.route.queryParams.subscribe((params) => {
-      if (params['sortBy']) this.sortBy = params['sortBy'];
-      if (params['status']) this.statusFilter = params['status'];
-      if (params['startDate']) this.startDate = params['startDate'];
-      if (params['endDate']) this.endDate = params['endDate'];
-    });
+  this.route.queryParams
+  .pipe(takeUntil(this.destroy$))
+  .subscribe((params) => {
+    if (params['sortBy']) this.sortBy = params['sortBy'];
+    if (params['status']) this.statusFilter = params['status'];
+    if (params['startDate']) this.startDate = params['startDate'];
+    if (params['endDate']) this.endDate = params['endDate'];
+  });
 
-    this.socketService.rideRequests$.subscribe((newRide) => {
-      const role = localStorage.getItem('role');
-      if (newRide) {
-        if (newRide.role === 'supervisor') {
-          if (newRide.department_id == departmentId && role != 'admin') {
-            this.orders = [newRide, ...this.orders];
-            if (role === 'supervisor') {
-              this.toastService.show('התקבלה בקשה חדשה', 'success');
-            }
-          }
+this.socketService.rideRequests$
+  .pipe(takeUntil(this.destroy$))
+  .subscribe((newRide) => {
+    const role = localStorage.getItem('role');
+    if (newRide?.role === 'supervisor') {
+      if (newRide.department_id == departmentId && role != 'admin') {
+        this.orders = [newRide, ...this.orders];
+        if (role === 'supervisor') {
+          this.toastService.show('התקבלה בקשה חדשה', 'success');
         }
       }
-    });
-    this.socketService.orderUpdated$.subscribe((updatedRide) => {
-      const index = this.orders.findIndex((o) => o.ride_id === updatedRide.id);
-      if (index !== -1) {
-        const updatedOrder: RideDashboardItem = {
-          ride_id: updatedRide.id,
-          employee_name: updatedRide.employee_name,
-          requested_vehicle_model: updatedRide.requested_vehicle_model || '',
-          date_and_time: updatedRide.start_datetime,
-          end_datetime: updatedRide.end_datetime || updatedRide.end_time,
-          distance: updatedRide.estimated_distance_km,
-          status: updatedRide.status.toLowerCase(),
-          destination: updatedRide.destination || '',
-          submitted_at: updatedRide.submitted_at || new Date().toISOString(),
-        };
+    }
+  });
 
-        this.orders = [
-          ...this.orders.slice(0, index),
-          updatedOrder,
-          ...this.orders.slice(index + 1),
-        ];
-      }
-    });
+this.socketService.orderUpdated$
+  .pipe(takeUntil(this.destroy$))
+  .subscribe((updatedRide) => {
+    const index = this.orders.findIndex(
+      (o) => o.ride_id === updatedRide.id
+    );
 
-    this.socketService.deleteRequests$.subscribe((deletedRide) => {
-      const index = this.orders.findIndex(
-        (o) => o.ride_id === deletedRide.order_id
-      );
+    if (index !== -1) {
+      const updatedOrder: RideDashboardItem = {
+        ride_id: updatedRide.id,
+        employee_name: updatedRide.employee_name,
+        requested_vehicle_model: updatedRide.requested_vehicle_model || '',
+        date_and_time: updatedRide.start_datetime,
+        end_datetime: updatedRide.end_datetime || updatedRide.end_time,
+        distance: updatedRide.estimated_distance_km,
+        status: updatedRide.status.toLowerCase(),
+        destination: updatedRide.destination || '',
+        submitted_at: updatedRide.submitted_at || new Date().toISOString(),
+      };
 
-      if (index !== -1) {
-        this.orders = [
-          ...this.orders.slice(0, index),
-          ...this.orders.slice(index + 1),
-        ];
-      }
-    });
-    this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
-      if (!updatedStatus) return;
-      if (updatedStatus) {
-        const index = this.orders.findIndex(
-          (o) => o.ride_id === updatedStatus.ride_id
-        );
-        if (index !== -1) {
-          const newStatus = updatedStatus.new_status;
+      this.orders = [
+        ...this.orders.slice(0, index),
+        updatedOrder,
+        ...this.orders.slice(index + 1),
+      ];
+    }
+  });
 
-          const updatedOrders = [...this.orders];
-          updatedOrders[index] = {
-            ...updatedOrders[index],
-            status: newStatus,
-          };
+this.socketService.deleteRequests$
+  .pipe(takeUntil(this.destroy$))
+  .subscribe((deletedRide) => {
+    const index = this.orders.findIndex(
+      (o) => o.ride_id === deletedRide.order_id
+    );
 
-          this.orders = updatedOrders;
-          this.orders = [...this.orders];
-        }
-      }
-    });
+    if (index !== -1) {
+      this.orders = [
+        ...this.orders.slice(0, index),
+        ...this.orders.slice(index + 1),
+      ];
+    }
+  });
+
+this.socketService.rideStatusUpdated$
+  .pipe(takeUntil(this.destroy$))
+  .subscribe((updatedStatus) => {
+    if (!updatedStatus) return;
+
+    const index = this.orders.findIndex(
+      (o) => o.ride_id === updatedStatus.ride_id
+    );
+
+    if (index !== -1) {
+      const updatedOrders = [...this.orders];
+      updatedOrders[index] = {
+        ...updatedOrders[index],
+        status: updatedStatus.new_status,
+      };
+      this.orders = [...updatedOrders];
+    }
+  });
+
   }
+
+  
 
   getStartDate(dateTime: string): string {
     if (!dateTime) return '';
@@ -161,6 +175,8 @@ export class DashboardAllOrdersComponent implements OnInit {
 
   ngOnDestroy(): void {
     document.body.style.overflow = '';
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   onFilterChange(): void {

@@ -38,6 +38,7 @@ import { InsertLogComponent } from './audit-log-details/insert-log/insert-log.co
 import { UpdateLogComponent } from './audit-log-details/update-log/update-log.component';
 import { DeleteDataDisplayComponent } from './audit-log-details/delete-log/delete-log.component';
 import { buildAuditLegendCssVars } from './audit-logs-utils/status-colors';
+import { Subject, takeUntil } from 'rxjs';
 
 (pdfMake as any).vfs = pdfFonts.vfs;
 (pdfMake as any).fonts = {
@@ -91,6 +92,7 @@ export class AuditLogsComponent implements OnInit {
     user_name: string;
   }[] = [];
   vehicles: { id: string; vehicle_model: string; plate_number: string }[] = [];
+  private destroy$ = new Subject<void>();
 
   loading = true;
   highlighted = false;
@@ -220,13 +222,21 @@ export class AuditLogsComponent implements OnInit {
       },
     });
 
-    this.route.queryParams.subscribe((params) => {
-      this.highlighted = params['highlight'] === '1';
-    });
+   this.route.queryParams
+  .pipe(takeUntil(this.destroy$))
+  .subscribe(params => {
+    this.highlighted = params['highlight'] === '1';
+  });
+
 
     this.fetchDepartments();
     this.fetchUsers();
     this.fetchVehicles();
+  }
+
+    ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   resetFilters() {

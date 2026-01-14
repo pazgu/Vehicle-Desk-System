@@ -12,6 +12,7 @@ import {
 import { FuelType } from '../../../models/vehicle-dashboard-item/vehicle-out-item.module';
 import { Router, RouterModule } from '@angular/router';
 import { ToastService } from '../../../services/toast.service';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-add-vehicle',
@@ -29,6 +30,7 @@ export class AddVehicleComponent implements OnInit {
   isDropdownOpen = false;
   filteredVehicleTypes: string[] = [];
   newTypeMessage: string = '';
+  private destroy$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
@@ -65,15 +67,26 @@ export class AddVehicleComponent implements OnInit {
     this.fetchDepartments();
     this.fetchVehicleTypes();
 
-    this.vehicleForm.get('image_url')?.valueChanges.subscribe(() => {
-      this.imagePreview = null;
-      this.imageVerified = false;
-      const ctrl = this.vehicleForm.get('image_url');
-      if (ctrl?.hasError('urlLoadFailed')) {
-        const { urlLoadFailed, ...rest } = ctrl.errors || {};
-        ctrl.setErrors(Object.keys(rest).length ? rest : null);
-      }
-    });
+   this.vehicleForm
+  .get('image_url')
+  ?.valueChanges
+  .pipe(takeUntil(this.destroy$))
+  .subscribe(() => {
+    this.imagePreview = null;
+    this.imageVerified = false;
+
+    const ctrl = this.vehicleForm.get('image_url');
+    if (ctrl?.hasError('urlLoadFailed')) {
+      const { urlLoadFailed, ...rest } = ctrl.errors || {};
+      ctrl.setErrors(Object.keys(rest).length ? rest : null);
+    }
+  });
+
+  }
+
+    ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
   fetchVehicleTypes(): void {
     this.vehicleService.getVehicleTypes().subscribe({

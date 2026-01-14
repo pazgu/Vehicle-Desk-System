@@ -58,7 +58,10 @@
 
 .main-content {
   flex: 1;
-  padding-bottom: 0; /* Remove bottom padding so footer sits flush */
+  padding-bottom: 0;
+  margin-bottom: 0;
+  background-color: #fffaf6; /* Match footer background */
+  border: none;
 }
 app-footer {
   display: block;
