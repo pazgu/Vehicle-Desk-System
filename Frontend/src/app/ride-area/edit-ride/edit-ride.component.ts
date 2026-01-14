@@ -202,6 +202,37 @@ export class EditRideComponent implements OnInit {
     }
     this.ensureOriginalEndTimeAvailable();
   }
+
+  // Add these TWO methods to your EditRideComponent class:
+
+getSelectedStopName(): string {
+  const stopId = this.rideForm.get('stop')?.value;
+  if (!stopId) return 'תחנה לא נבחרה';
+  
+  const city = this.cities.find(c => c.id === stopId);
+  return city?.name || 'תחנה לא ידועה';
+}
+
+getExtraStopNames(): string[] {
+  // Use your existing extraStops getter
+  if (!this.extraStops || this.extraStops.length === 0) {
+    return [];
+  }
+
+  const stopNames: string[] = [];
+  this.extraStops.controls.forEach((control) => {
+    const stopId = control.get('stop')?.value;
+    if (stopId) {
+      const city = this.cities.find(c => c.id === stopId);
+      if (city) {
+        stopNames.push(city.name);
+      }
+    }
+  });
+
+  return stopNames;
+}
+
   private extraStopsValidator = (control: AbstractControl) => {
     const formArray = control as FormArray;
     const stopIds = formArray.controls
