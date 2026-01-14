@@ -11,6 +11,9 @@ import { DepartmentService } from '../../../../services/department_service';
 import { ToastService } from '../../../../services/toast.service';
 import { UserService } from '../../../../services/user_service';
 import { NgPlaceholderTemplateDirective } from '@ng-select/ng-select';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmDialogComponent } from '../../../page-area/confirm-dialog/confirm-dialog.component';
+
 @Component({
   selector: 'app-department-data',
   standalone: true,
@@ -23,7 +26,9 @@ export class DepartmentDataComponent implements OnInit {
     private departmentService: DepartmentService,
     private fb: FormBuilder,
     private toastService: ToastService,
-    private userService: UserService
+    private userService: UserService,
+    private dialog: MatDialog
+
   ) {}
 
   departments: any[] = [];
@@ -37,10 +42,7 @@ export class DepartmentDataComponent implements OnInit {
   hoveredDepartmentId: string | null = null;
   isSubmitting: boolean = false;
 
-  isDeleteModalOpen: boolean = false;
-  departmentToDelete: any = null;
 
-  deleteModalMessage: string = '';
   ngOnInit() {
     this.loadDepartments();
     this.loadUsers();
@@ -135,28 +137,54 @@ export class DepartmentDataComponent implements OnInit {
       this.userService.getUserById(department.supervisor_id).subscribe({
         next: (currentSupervisor) => {
           const isValidSupervisor = currentSupervisor.role === 'supervisor' && 
-                                    !currentSupervisor.isRaan && 
-                                    !currentSupervisor.is_blocked;
+                                    !currentSupervisor.isRaan;
           
           if (isValidSupervisor) {
             const supervisorExists = this.users.some(
               (s) => s.employee_id === currentSupervisor.employee_id
             );
             if (!supervisorExists) {
-              this.editSupervisors = [currentSupervisor, ...this.users];
+              const supervisorToAdd = {
+                ...currentSupervisor,
+                disabled: currentSupervisor.is_blocked
+              };
+              this.editSupervisors = [supervisorToAdd, ...this.users];
             } else {
               this.editSupervisors = [...this.users];
             }
+            
+            if (currentSupervisor.is_blocked) {
+              const blockExpiresAt = currentSupervisor.block_expires_at 
+                ? new Date(currentSupervisor.block_expires_at)
+                : null;
+              
+              let warningMessage = 'מנהל המחלקה הנוכחי חסום';
+              
+              if (blockExpiresAt) {
+                const day = blockExpiresAt.getDate().toString().padStart(2, '0');
+                const month = (blockExpiresAt.getMonth() + 1).toString().padStart(2, '0');
+                const year = blockExpiresAt.getFullYear();
+                
+                const formattedDate = `${day}/${month}/${year}`;
+                warningMessage += ` עד ליום ${formattedDate}`;
+              }
+              
+              this.toastService.show(warningMessage, 'warning');
+            }
+            
+            this.editDepartmentForm.patchValue({
+              department_id: department.id,
+              name: department.name,
+              supervisor_id: department.supervisor_id,
+            });
           } else {
             this.editSupervisors = [...this.users];
-            this.toastService.show('המפקח הנוכחי אינו תקין, נא לבחור מפקח חדש', 'warning');
+            this.editDepartmentForm.patchValue({
+              department_id: department.id,
+              name: department.name,
+              supervisor_id: '',
+            });
           }
-          
-          this.editDepartmentForm.patchValue({
-            department_id: department.id,
-            name: department.name,
-            supervisor_id: isValidSupervisor ? department.supervisor_id : '',
-          });
         },
         error: () => {
           this.editSupervisors = [...this.users];
@@ -228,7 +256,7 @@ export class DepartmentDataComponent implements OnInit {
                 errorMessage = 'הנתונים שהוזנו אינם תקינים';
               }
             } else if (err.status === 404) {
-              errorMessage = 'המחלקה או המפקח לא נמצאו במערכת';
+              errorMessage = 'המחלקה או מנהל המחלקה לא נמצאו במערכת';
             } else if (err.error?.message) {
               errorMessage = err.error.message;
             } else if (err.error?.error) {
@@ -242,57 +270,67 @@ export class DepartmentDataComponent implements OnInit {
   }
 
   openDeleteModal(department: any) {
-    if (this.isUnassignedDepartment(department)) {
-      this.toastService.show('לא ניתן למחוק את מחלקת "Unassigned"', 'error');
-      return;
-    }
-    if (this.isVIPDepartment(department)) {
-      this.toastService.show('לא ניתן למחוק את מחלקת "VIP"', 'error');
-      return;
-    }
-
-    this.departmentToDelete = department;
-    this.isDeleteModalOpen = true;
-    this.deleteModalMessage = `האם אתה בטוח שברצונך למחוק את המחלקה "${department.name}"? כל המשתמשים שהיו משויכים למחלקה יועברו למחלקת "Unassigned".`;
+  if (this.isUnassignedDepartment(department)) {
+    this.toastService.show('לא ניתן למחוק את מחלקת "Unassigned"', 'error');
+    return;
+  }
+  if (this.isVIPDepartment(department)) {
+    this.toastService.show('לא ניתן למחוק את מחלקת "VIP"', 'error');
+    return;
   }
 
-  closeDeleteModal() {
-    this.isDeleteModalOpen = false;
-    this.departmentToDelete = null;
-  }
+  const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+    data: {
+      title: 'אישור מחיקה',
+      message: `האם את/ה בטוח שברצונך למחוק את המחלקה "${department.name}"? כל המשתמשים שהיו משויכים למחלקה יועברו למחלקת "Unassigned".`,
+      noRestoreText: 'פעולה זו אינה ניתנת לביטול',
+      confirmText: 'מחק',
+      cancelText: 'ביטול',
+      isDestructive: true,
+    },
+    disableClose: true,
+    autoFocus: false,
+    panelClass: 'confirm-dialog-panel', // optional if you want
+  });
 
-  confirmDelete() {
-    if (!this.departmentToDelete) return;
+  dialogRef.afterClosed().subscribe((confirmed: boolean) => {
+    if (!confirmed) return;
+    this.confirmDelete(department);
+  });
+}
 
-    this.isSubmitting = true;
-    this.departmentService
-      .deleteDepartment(this.departmentToDelete.id)
-      .subscribe({
-        next: () => {
-          this.isSubmitting = false;
-          this.closeDeleteModal();
-          this.loadDepartments();
-          this.toastService.show('מחלקה נמחקה בהצלחה', 'success');
-        },
-        error: (err) => {
-          this.isSubmitting = false;
-          let errorMessage = 'שגיאה במחיקת מחלקה';
-          
-          if (err.status === 404) {
-            errorMessage = 'המחלקה לא נמצאה במערכת';
-          } else if (err.status === 403) {
-            errorMessage = 'אין הרשאה למחוק מחלקה זו';
-          } else if (err.error?.message) {
-            errorMessage = err.error.message;
-          } else if (err.error?.error) {
-            errorMessage = err.error.error;
-          }
-          
-          this.toastService.show(errorMessage, 'error');
-          this.closeDeleteModal();
-        },
-      });
-  }
+
+
+  confirmDelete(department: any) {
+  if (!department) return;
+
+  this.isSubmitting = true;
+
+  this.departmentService.deleteDepartment(department.id).subscribe({
+    next: () => {
+      this.isSubmitting = false;
+      this.loadDepartments();
+      this.toastService.show('מחלקה נמחקה בהצלחה', 'success');
+    },
+    error: (err) => {
+      this.isSubmitting = false;
+      let errorMessage = 'שגיאה במחיקת מחלקה';
+
+      if (err.status === 404) {
+        errorMessage = 'המחלקה לא נמצאה במערכת';
+      } else if (err.status === 403) {
+        errorMessage = 'אין הרשאה למחוק מחלקה זו';
+      } else if (err.error?.message) {
+        errorMessage = err.error.message;
+      } else if (err.error?.error) {
+        errorMessage = err.error.error;
+      }
+
+      this.toastService.show(errorMessage, 'error');
+    },
+  });
+}
+
 
     toggleNewDepartmentMode() {
       this.isNewDepartmentMode = !this.isNewDepartmentMode;
@@ -326,7 +364,7 @@ export class DepartmentDataComponent implements OnInit {
             const errorText = JSON.stringify(err.error).toLowerCase();
             
             if (errorText.includes('supervisor') || errorText.includes('role')) {
-              errorMessage = 'ניתן לשייך רק משתמש בתפקיד מפקח למחלקה';
+              errorMessage = 'ניתן לשייך רק משתמש בתפקיד מנהל מחלקה';
             } else if (errorText.includes('name')) {
               errorMessage = 'שם המחלקה אינו תקין';
             } else if (err.error?.message) {

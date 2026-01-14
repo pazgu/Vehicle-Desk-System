@@ -89,7 +89,8 @@ import {
 } from '../../page-area/confirm-dialog/confirm-dialog.component';
 import { RebookData } from '../../../services/myrides.service';
 import { Supervisor } from '../../../models/user.model';
-import {debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import {debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 
 interface Employee {
   id: string;
@@ -146,6 +147,8 @@ export class NewRideComponent implements OnInit {
   currentUserBlocked: boolean = false;
   currentUserBlockExpirationDate: string | null = null;
   isRebookMode = false;
+  private destroy$ = new Subject<void>();
+
   rebookOriginalRideId: string | null = null;
   rideTypes = [
     { value: 'administrative', label: 'מנהלתית' },
@@ -197,6 +200,23 @@ export class NewRideComponent implements OnInit {
             this.showBlockedUserMessage();
           }
         });
+
+        this.rideUserChecksService
+    .checkUserDepartment(this.currentUserId)
+    .subscribe((result) => {
+      if(result.disableDueToDepartment === true) {
+         this.toastService.showPersistent(
+            'לא ניתן לשלוח בקשה: אינך משויך למחלקה. יש ליצור קשר עם המנהל להשמה במחלקה.',
+            'error'
+          );
+          this.disableRequest = true;
+          this.disableDueToDepartment = true;
+      }
+      else{
+        this.disableDueToDepartment = false;
+        this.disableRequest = false;
+      }
+    });
     }
 
     this.myRidesService.getSupervisors(this.departmentId).subscribe({
@@ -251,6 +271,11 @@ export class NewRideComponent implements OnInit {
         };
       },
     });
+  }
+
+    ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   getFuelTypeLabel(fuelType: string): string {
@@ -416,6 +441,7 @@ if (start.getTime() < now.getTime()) {
     const startMinute = this.rideForm.get('start_minute')?.value;
     const endHour = this.rideForm.get('end_hour')?.value;
     const endMinute = this.rideForm.get('end_minute')?.value;
+
     if (!distance || !rideDate || !vehicleType || 
         !startHour || !startMinute || !endHour || !endMinute) {
       return;
@@ -500,63 +526,72 @@ if (start.getTime() < now.getTime()) {
   private initializeForm(): void {
     this.rideForm = buildRideForm(this.fb, this.isRebookMode);
     this.setDefaultStartAndDestination();
-    this.socketService.usersLicense$.subscribe((update) => {
-      const { id, has_government_license, license_expiry_date } = update;
-      const selfUserId =
-        this.currentUserId ??
-        getUserIdFromToken(localStorage.getItem('access_token'));
-      const selectedUserId =
-        this.rideForm.get('target_type')?.value === 'self'
-          ? selfUserId
-          : this.rideForm.get('target_employee_id')?.value;
+   this.socketService.usersLicense$
+  .pipe(takeUntil(this.destroy$))
+  .subscribe((update) => {
+    const { id, has_government_license, license_expiry_date } = update;
+    const selfUserId =
+      this.currentUserId ??
+      getUserIdFromToken(localStorage.getItem('access_token'));
+    const selectedUserId =
+      this.rideForm.get('target_type')?.value === 'self'
+        ? selfUserId
+        : this.rideForm.get('target_employee_id')?.value;
 
-      if (id !== selectedUserId) return;
+    if (id !== selectedUserId) return;
 
-      const expiryDate = license_expiry_date
-        ? new Date(license_expiry_date)
-        : null;
-      const now = new Date();
+    const expiryDate = license_expiry_date
+      ? new Date(license_expiry_date)
+      : null;
+    const now = new Date();
 
-      const licenseValid =
-        has_government_license === true &&
-        expiryDate instanceof Date &&
-        !isNaN(expiryDate.getTime()) &&
-        expiryDate >= now;
+    const licenseValid =
+      has_government_license === true &&
+      expiryDate instanceof Date &&
+      !isNaN(expiryDate.getTime()) &&
+      expiryDate >= now;
 
-      if (licenseValid) {
-        this.disableRequest = false;
-      } else {
-        this.disableRequest = true;
-        console.warn('License is missing or expired via socket');
-        this.toastService.showPersistent(
-          'לא ניתן לשלוח בקשה: למשתמש שנבחר אין רישיון ממשלתי תקף. לעדכון פרטים יש ליצור קשר עם המנהל.',
-          'error'
-        );
-      }
-    });
-    this.socketService.usersBlockStatus$.subscribe((update) => {
-      const { id, is_blocked, block_expires_at } = update;
-      const selfUserId =
-        this.currentUserId ??
-        getUserIdFromToken(localStorage.getItem('access_token'));
-      const selectedUserId =
-        this.rideForm.get('target_type')?.value === 'self'
-          ? selfUserId
-          : this.rideForm.get('target_employee_id')?.value;
-      if (id !== selectedUserId) return;
-      this.disableDueToBlock = is_blocked;
-      this.blockExpirationDate = block_expires_at
-        ? block_expires_at.toISOString()
-        : null;
-      if (is_blocked) {
-        this.disableRequest = true;
-      } else {
-        this.disableDueToBlock = false;
-        this.blockExpirationDate = null;
-        this.toastService.clearAll();
-      }
-      this.cdr.detectChanges();
-    });
+    if (licenseValid) {
+      this.disableRequest = false;
+    } else {
+      this.disableRequest = true;
+      console.warn('License is missing or expired via socket');
+      this.toastService.showPersistent(
+        'לא ניתן לשלוח בקשה: למשתמש שנבחר אין רישיון ממשלתי תקף. לעדכון פרטים יש ליצור קשר עם המנהל.',
+        'error'
+      );
+    }
+  });
+
+this.socketService.usersBlockStatus$
+  .pipe(takeUntil(this.destroy$))
+  .subscribe((update) => {
+    const { id, is_blocked, block_expires_at } = update;
+    const selfUserId =
+      this.currentUserId ??
+      getUserIdFromToken(localStorage.getItem('access_token'));
+    const selectedUserId =
+      this.rideForm.get('target_type')?.value === 'self'
+        ? selfUserId
+        : this.rideForm.get('target_employee_id')?.value;
+    if (id !== selectedUserId) return;
+
+    this.disableDueToBlock = is_blocked;
+    this.blockExpirationDate = block_expires_at
+      ? block_expires_at.toISOString()
+      : null;
+
+    if (is_blocked) {
+      this.disableRequest = true;
+    } else {
+      this.disableDueToBlock = false;
+      this.blockExpirationDate = null;
+      this.toastService.clearAll();
+    }
+
+    this.cdr.detectChanges();
+  });
+
   }
   get startTime() {
     const h = this.rideForm.get('start_hour')?.value;
@@ -582,11 +617,13 @@ if (start.getTime() < now.getTime()) {
     }
     return false;
   }
-  private setupFormSubscriptions(): void {
-    this.rideForm.get('target_type')?.valueChanges.subscribe((type) => {
-      if (this.currentUserBlocked) {
-        return;
-      }
+ private setupFormSubscriptions(): void {
+
+  this.rideForm.get('target_type')?.valueChanges
+    .pipe(takeUntil(this.destroy$))
+    .subscribe(type => {
+      if (this.currentUserBlocked) return;
+
       this.showStep1Error = false;
       this.toastService.clearAll();
       this.disableRequest = false;
@@ -596,86 +633,86 @@ if (start.getTime() < now.getTime()) {
 
       if (type === 'other') {
         this.fetchDepartmentEmployees();
-        this.rideForm
-          .get('target_employee_id')
+        this.rideForm.get('target_employee_id')
           ?.setValue(null, { emitEvent: true });
       } else if (type === 'self') {
         if (this.currentUserId && !this.currentUserBlocked) {
           this.checkUserDepartment(this.currentUserId);
           this.checkGovernmentLicence(this.currentUserId);
         }
-        this.rideForm
-          .get('target_employee_id')
+        this.rideForm.get('target_employee_id')
           ?.setValue(null, { emitEvent: false });
       }
     });
-    this.rideForm
-      .get('target_employee_id')
-      ?.valueChanges.subscribe((employeeId) => {
-        if (this.currentUserBlocked) {
-          return;
-        }
-        const targetType = this.rideForm.get('target_type')?.value;
-        this.toastService.clearAll();
-        if (targetType === 'other' && employeeId) {
-          this.disableRequest = false;
-          this.disableDueToBlock = false;
-          this.disableDueToDepartment = false;
-          this.blockExpirationDate = null;
-          this.checkUserDepartment(employeeId);
-          this.checkGovernmentLicence(employeeId);
-          this.checkUserBlock(employeeId);
-        } else if (!employeeId) {
-          this.disableRequest = false;
-          this.disableDueToBlock = false;
-          this.disableDueToDepartment = false;
-          this.blockExpirationDate = null;
-        }
-      });
-    this.rideForm.get('ride_period')?.valueChanges.subscribe((value) => {
+
+  this.rideForm.get('target_employee_id')?.valueChanges
+    .pipe(takeUntil(this.destroy$))
+    .subscribe(employeeId => {
+      if (this.currentUserBlocked) return;
+
+      const targetType = this.rideForm.get('target_type')?.value;
+      this.toastService.clearAll();
+
+      if (targetType === 'other' && employeeId) {
+        this.disableRequest = false;
+        this.disableDueToBlock = false;
+        this.disableDueToDepartment = false;
+        this.blockExpirationDate = null;
+        this.checkUserDepartment(employeeId);
+        this.checkGovernmentLicence(employeeId);
+        this.checkUserBlock(employeeId);
+      } else if (!employeeId) {
+        this.disableRequest = false;
+        this.disableDueToBlock = false;
+        this.disableDueToDepartment = false;
+        this.blockExpirationDate = null;
+      }
+    });
+
+  this.rideForm.get('ride_period')?.valueChanges
+    .pipe(takeUntil(this.destroy$))
+    .subscribe(value => {
       this.onPeriodChange(value);
       this.updateAvailableCars();
       this.updateExtendedRideReasonValidation();
     });
-    this.rideForm.get('ride_date')?.valueChanges
+
+  this.rideForm.get('ride_date')?.valueChanges
+    .pipe(
+      debounceTime(800),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    )
+    .subscribe(() => this.refreshVehiclesIfReady());
+
+  this.rideForm.get('ride_date_night_end')?.valueChanges
+    .pipe(
+      debounceTime(800),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    )
+    .subscribe(() => this.refreshVehiclesIfReady());
+
+  ['start_hour', 'start_minute', 'end_hour', 'end_minute'].forEach(control => {
+    this.rideForm.get(control)?.valueChanges
       .pipe(
-        debounceTime(800),
-        distinctUntilChanged()
+        debounceTime(500),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
       )
-      .subscribe(() => {
-        this.refreshVehiclesIfReady();
-      });
-    this.rideForm.get('ride_date_night_end')?.valueChanges
-      .pipe(debounceTime(800), distinctUntilChanged())
-      .subscribe(() => {
-        this.refreshVehiclesIfReady();
-      });
-    this.rideForm.get('start_hour')?.valueChanges
-      .pipe(debounceTime(500), distinctUntilChanged())
-      .subscribe(() => {
-        this.refreshVehiclesIfReady();
-      });
-    this.rideForm.get('start_minute')?.valueChanges
-      .pipe(debounceTime(500), distinctUntilChanged())
-      .subscribe(() => {
-        this.refreshVehiclesIfReady();
-      });
-    this.rideForm.get('end_hour')?.valueChanges
-      .pipe(debounceTime(500), distinctUntilChanged())
-      .subscribe(() => {
-        this.refreshVehiclesIfReady();
-      });
-    this.rideForm.get('end_minute')?.valueChanges
-      .pipe(debounceTime(500), distinctUntilChanged())
-      .subscribe(() => {
-        this.refreshVehiclesIfReady();
-    });
-    this.setupDistanceCalculationSubscriptions();
-    this.rideForm.get('vehicle_type')?.valueChanges.subscribe((value) => {
+      .subscribe(() => this.refreshVehiclesIfReady());
+  });
+
+  this.rideForm.get('vehicle_type')?.valueChanges
+    .pipe(takeUntil(this.destroy$))
+    .subscribe(value => {
       this.updateAvailableCars();
       this.updateVehicleTypeValidation(value);
     });
-  }
+
+  this.setupDistanceCalculationSubscriptions();
+}
+
   private updateExtendedRideReasonValidation(): void {
     const extendedReasonControl = this.rideForm.get('extended_ride_reason');
 
@@ -687,33 +724,43 @@ if (start.getTime() < now.getTime()) {
     }
     extendedReasonControl?.updateValueAndValidity();
   }
-  private setupDistanceCalculationSubscriptions(): void {
-    this.rideForm.get('stop')?.valueChanges.subscribe(() => {
+ private setupDistanceCalculationSubscriptions(): void {
+
+  this.rideForm.get('stop')?.valueChanges
+    .pipe(takeUntil(this.destroy$))
+    .subscribe(() => {
       this.extraStops.updateValueAndValidity();
       this.calculateRouteDistance();
     });
 
-    this.extraStops.valueChanges.subscribe(() => {
+  this.extraStops.valueChanges
+    .pipe(takeUntil(this.destroy$))
+    .subscribe(() => {
       this.calculateRouteDistance();
     });
 
-    this.rideForm.get('estimated_distance_km')?.valueChanges
-      .pipe(debounceTime(800), distinctUntilChanged())
-      .subscribe((distance) => {
-        const rideDate = this.rideForm.get('ride_date')?.value;
-        const vehicleType = this.rideForm.get('vehicle_type')?.value;
-        const startHour = this.rideForm.get('start_hour')?.value;
-        const startMinute = this.rideForm.get('start_minute')?.value;
-        const endHour = this.rideForm.get('end_hour')?.value;
-        const endMinute = this.rideForm.get('end_minute')?.value;
-        if (distance && rideDate && vehicleType && startHour && startMinute && endHour && endMinute) {
-          this.refreshVehiclesIfReady();
-        } 
-        else if (distance && this.allCars.length > 0 && this.availableCars.length > 0) {
-          this.updateAvailableCars();
-        }
-      });
-  }
+  this.rideForm.get('estimated_distance_km')?.valueChanges
+    .pipe(
+      debounceTime(800),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    )
+    .subscribe(distance => {
+      const rideDate = this.rideForm.get('ride_date')?.value;
+      const vehicleType = this.rideForm.get('vehicle_type')?.value;
+      const startHour = this.rideForm.get('start_hour')?.value;
+      const startMinute = this.rideForm.get('start_minute')?.value;
+      const endHour = this.rideForm.get('end_hour')?.value;
+      const endMinute = this.rideForm.get('end_minute')?.value;
+
+      if (distance && rideDate && vehicleType && startHour && startMinute && endHour && endMinute) {
+        this.refreshVehiclesIfReady();
+      } else if (distance && this.allCars.length > 0 && this.availableCars.length > 0) {
+        this.updateAvailableCars();
+      }
+    });
+}
+
 
   private calculateRouteDistance(): void {
     const startRaw = this.rideForm.get('start_location')?.value;
@@ -741,10 +788,11 @@ if (start.getTime() < now.getTime()) {
     });
 
     if (startId === stopId && extraStops.length === 0) {
-      const total = 20;
-      this.fetchedDistance = total;
-      this.estimated_distance_with_buffer = +(total * 1.1).toFixed(2);
-      this.rideForm.get('estimated_distance_km')?.setValue(total, { emitEvent: false });
+      const oneWayDistance = 20;
+      const roundTripDistance = oneWayDistance * 2;
+      this.fetchedDistance = roundTripDistance;
+      this.estimated_distance_with_buffer = +(roundTripDistance * 1.1).toFixed(2);
+      this.rideForm.get('estimated_distance_km')?.setValue(roundTripDistance, { emitEvent: false });
       return;
     }
 
@@ -930,12 +978,13 @@ if (start.getTime() < now.getTime()) {
   private updateAvailableCars(): void {
     const selectedType = this.rideForm.get('vehicle_type')?.value;
     const carControl = this.rideForm.get('car');
-
-    let filtered = filterAvailableCars(this.allCars, selectedType);
-    filtered = filtered.filter((car) => car.status === 'available');
-
-    this.availableCars = filtered;
-
+    if (!selectedType) {
+      this.availableCars = [];
+      this.selectedCarId = '';
+      carControl?.setValue(null, { emitEvent: false });
+      return;
+    }
+    this.availableCars = this.allCars.filter((car) => car.type === selectedType);
     if (this.availableCars.length === 0) {
       this.selectedCarId = '';
       carControl?.setValue(null, { emitEvent: false });

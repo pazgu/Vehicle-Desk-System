@@ -10,7 +10,7 @@ import { ToastService } from '../../../../services/toast.service';
 import { SocketService } from '../../../../services/socket.service';
 import { MatDialog } from '@angular/material/dialog';
 import { ChangeDetectorRef } from '@angular/core';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subject, takeUntil } from 'rxjs';
 import {
   FormBuilder,
   FormGroup,
@@ -19,6 +19,7 @@ import {
 } from '@angular/forms';
 import { UserCardComponent } from '../user-card/user-card.component';
 import { ROLES, ROLE_LABELS } from '../../../../constants/roles';
+import { AuthService } from '../../../../services/auth.service';
 
 @Component({
   selector: 'app-user-data',
@@ -42,6 +43,7 @@ export class UserDataComponent implements OnInit {
   licenceExpiredMap: { [userId: string]: boolean } = {};
   departmentNames: { [key: string]: string } = {};
   supervisorToDeptName: { [key: string]: string } = {};
+  private destroy$ = new Subject<void>();
 
   isBlockUserModalOpen: boolean = false;
   isUnblockConfirmationModalOpen: boolean = false;
@@ -56,12 +58,17 @@ export class UserDataComponent implements OnInit {
     private socketservice: SocketService,
     private dialog: MatDialog,
     private cdr: ChangeDetectorRef,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
     this.blockUserForm = this.fb.group({
-      blockDuration: [14, [Validators.required, Validators.min(1)]],
+      blockDuration: ['', [
+        Validators.required,
+        Validators.min(1),
+        Validators.pattern(/^\d+$/) 
+      ]],
       blockReason: [
         '',
         [
@@ -75,6 +82,10 @@ export class UserDataComponent implements OnInit {
     this.loadUsersAndDepartments();
   }
 
+    ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
   noWhitespaceValidator(control: any) {
     const isWhitespace = (control.value || '').trim().length === 0;
     const isValid = !isWhitespace;
@@ -98,7 +109,11 @@ export class UserDataComponent implements OnInit {
           return map;
         }, {} as { [key: string]: string });
 
-        this.users = users.map((user) => {
+        const currentUserId = this.getCurrentUserId();
+
+        const filteredUsers = users.filter(user => user.employee_id !== currentUserId);
+
+        this.users = filteredUsers.map((user) => {
           let deptName = '—';
           if (
             user.role === 'supervisor' &&
@@ -116,7 +131,7 @@ export class UserDataComponent implements OnInit {
         this.departmentNames = deptIdToName;
         this.checkLicence(this.users);
         this.availableRoles = Array.from(
-          new Set(users.map((u) => u.isRaan ? 'raan' : u.role))
+          new Set(filteredUsers.map((u) => u.isRaan ? 'raan' : u.role))
         ).filter(Boolean);
 
         this.setupSocketListeners();
@@ -125,17 +140,25 @@ export class UserDataComponent implements OnInit {
     });
   }
 
-  private setupSocketListeners(): void {
-    this.socketservice.deleteUserRequests$.subscribe((deletedUser) => {
+  private getCurrentUserId(): string {
+    return this.authService.getCurrentUserId();
+  }
+
+private setupSocketListeners(): void {
+  this.socketservice.deleteUserRequests$
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((deletedUser) => {
       if (deletedUser) {
-        this.users = this.users.filter((u) => u.employee_id !== deletedUser.id);
+        this.users = this.users.filter(u => u.employee_id !== deletedUser.id);
         this.filterLogs();
       }
     });
 
-    this.socketservice.usersBlockStatus$.subscribe((update) => {
+  this.socketservice.usersBlockStatus$
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((update) => {
       const id = String(update.id);
-      const idx = this.users.findIndex((u) => String(u.employee_id) === id);
+      const idx = this.users.findIndex(u => String(u.employee_id) === id);
       if (idx === -1) return;
 
       const updatedUser = {
@@ -150,9 +173,7 @@ export class UserDataComponent implements OnInit {
         ...this.users.slice(idx + 1),
       ];
 
-      const fIdx = this.filteredLogs.findIndex(
-        (u) => String(u.employee_id) === id
-      );
+      const fIdx = this.filteredLogs.findIndex(u => String(u.employee_id) === id);
       if (fIdx !== -1) {
         this.filteredLogs = [
           ...this.filteredLogs.slice(0, fIdx),
@@ -172,8 +193,10 @@ export class UserDataComponent implements OnInit {
       this.cdr.detectChanges();
     });
 
-    this.socketservice.usersLicense$.subscribe((update) => {
-      const idx = this.users.findIndex((u) => u.employee_id === update.id);
+  this.socketservice.usersLicense$
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((update) => {
+      const idx = this.users.findIndex(u => u.employee_id === update.id);
       if (idx === -1) return;
 
       const updatedUser = { ...this.users[idx], ...update };
@@ -188,7 +211,8 @@ export class UserDataComponent implements OnInit {
 
       this.cdr.detectChanges();
     });
-  }
+}
+
 
   getDepartmentName(user: any): string {
     if (
@@ -217,11 +241,6 @@ export class UserDataComponent implements OnInit {
     return '';
   }
 
-  openBlockUserModal(user: User) {
-    this.selectedUserForBlock = user;
-    this.isBlockUserModalOpen = true;
-    this.blockUserForm.reset({ blockDuration: 14, blockReason: '' });
-  }
 
   closeBlockUserModal() {
     this.isBlockUserModalOpen = false;
@@ -230,9 +249,43 @@ export class UserDataComponent implements OnInit {
   }
 
   openUnblockConfirmationModal(user: User) {
-    this.selectedUserForBlock = user;
-    this.isUnblockConfirmationModalOpen = true;
-  }
+  const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+    data: {
+      title: 'שחרור חסימת משתמש',
+      message: `האם אתה בטוח שברצונך לשחרר את חסימת המשתמש ${user.first_name} ${user.last_name}?`,
+      confirmText: 'כן',
+      cancelText: 'לא',
+      isDestructive: false,
+      mode: 'confirm',
+    },
+  });
+
+  dialogRef.afterClosed().subscribe((confirmed) => {
+    if (!confirmed) return;
+
+    this.isSubmitting = true;
+
+    const formData = this.createFormDataForUserUpdate(
+      user,
+      false,
+      null,
+      null
+    );
+
+    this.userService.updateUser(user.employee_id, formData).subscribe({
+      next: () => {
+        this.isSubmitting = false;
+        this.toastservice.show('חסימת המשתמש שוחררה בהצלחה ', 'success');
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        this.toastservice.show('שגיאה בשחרור חסימת המשתמש ', 'error');
+        console.error('Error unblocking user:', err);
+      },
+    });
+  });
+}
+
 
   closeUnblockConfirmationModal() {
     this.isUnblockConfirmationModalOpen = false;
@@ -268,6 +321,7 @@ export class UserDataComponent implements OnInit {
             'success'
           );
           this.closeBlockUserModal();
+          this.loadUsersAndDepartments();
         },
         error: (err) => {
           this.isSubmitting = false;
@@ -293,6 +347,80 @@ export class UserDataComponent implements OnInit {
       });
   }
 
+  openBlockUserModal(user: User) {
+  const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+    data: {
+      title: 'חסימת משתמש',
+      message: `חסימת המשתמש: ${user.first_name} ${user.last_name}`,
+      confirmText: 'חסום',
+      cancelText: 'ביטול',
+      isDestructive: true,
+
+      mode: 'block',
+      initialDuration: 14,
+      initialReason: '',
+      durationLabel: 'משך חסימה (ימים):',
+      reasonLabel: 'סיבת החסימה:',
+      reasonPlaceholder: 'הזן את הסיבה לחסימת משתמש זה (חובה)',
+    },
+  });
+
+  dialogRef.afterClosed().subscribe((result) => {
+    if (!result || result === false) return;
+
+    // result is object in block mode ✅
+    if (typeof result === 'object' && result.confirmed) {
+      const blockDuration = result.duration;
+      const blockReason = result.reason;
+
+      this.isSubmitting = true;
+      const now = new Date();
+      const blockExpiresAt = new Date(now.setDate(now.getDate() + blockDuration));
+
+      const formData = this.createFormDataForUserUpdate(
+        user,
+        true,
+        blockExpiresAt.toISOString().slice(0, 16),
+        blockReason
+      );
+
+      this.userService.updateUser(user.employee_id, formData).subscribe({
+        next: () => {
+          this.isSubmitting = false;
+          this.toastservice.show(
+            `המשתמש נחסם בהצלחה למשך ${blockDuration} ימים. הסיבה נרשמה`,
+            'success'
+          );
+        },
+        error: (err) => {
+          this.isSubmitting = false;
+
+          let errorMessage = 'שגיאה בחסימת המשתמש ';
+          if (err.status === 400) {
+            errorMessage =
+              err.error?.detail ||
+              'נתונים שגויים - יש לבדוק את השדות ולנסות שוב ';
+          } else if (err.status === 403) {
+            errorMessage = 'אין לך הרשאה לחסום משתמש זה ';
+          } else if (err.status === 404) {
+            errorMessage = 'המשתמש לא נמצא במערכת ';
+          } else if (err.status === 500) {
+            errorMessage = 'שגיאה בשרת או במסד הנתונים - נסה שוב מאוחר יותר ';
+          } else if (err.status === 0 || !err.status) {
+            errorMessage = 'אין חיבור לשרת - בדוק את החיבור לאינטרנט ';
+          } else if (err.error?.detail) {
+            errorMessage = err.error.detail;
+          }
+
+          this.toastservice.show(errorMessage, 'error');
+          console.error('Error blocking user:', err);
+        },
+      });
+    }
+  });
+}
+
+
   confirmUnblockUser() {
     if (!this.selectedUserForBlock) {
       return;
@@ -314,6 +442,7 @@ export class UserDataComponent implements OnInit {
           this.isSubmitting = false;
           this.toastservice.show('חסימת המשתמש שוחררה בהצלחה ', 'success');
           this.closeUnblockConfirmationModal();
+          this.loadUsersAndDepartments();
         },
         error: (err) => {
           this.isSubmitting = false;
@@ -429,7 +558,7 @@ export class UserDataComponent implements OnInit {
       height: 'auto',
       data: {
         title: 'מחיקת משתמש',
-        message: '?האם אתה בטוח שברצונך למחוק את המשתמש',
+        message: 'האם את/ה בטוח שברצונך למחוק את המשתמש?',
         confirmText: 'מחק משתמש',
         cancelText: 'חזור',
         noRestoreText: 'שימ/י לב שלא ניתן לשחזר את המשתמש',

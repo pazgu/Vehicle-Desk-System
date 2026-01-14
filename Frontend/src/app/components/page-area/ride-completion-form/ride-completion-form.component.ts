@@ -19,6 +19,7 @@ import {
 } from '../../../models/vehicle-dashboard-item/vehicle-out-item.module';
 import { VehicleService } from '../../../services/vehicle.service';
 import { Router } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-ride-completion-form',
@@ -37,6 +38,7 @@ export class RideCompletionFormComponent implements OnInit {
   extra_stops_names: string[] = [];
 
   allStopsNames: string = '';
+  private destroy$ = new Subject<void>();
 
   showForm = true;
   @Input() rideId!: string;
@@ -92,16 +94,26 @@ export class RideCompletionFormComponent implements OnInit {
       is_vehicle_ready_for_next_ride: ['', Validators.required],
     });
 
-    this.form.get('emergency_event')?.valueChanges.subscribe((value) => {
-      const freezeDetails = this.form.get('freeze_details');
-      if (value === 'true') {
-        freezeDetails?.setValidators([Validators.required]);
-      } else {
-        freezeDetails?.clearValidators();
-        freezeDetails?.setValue('');
-      }
-      freezeDetails?.updateValueAndValidity();
-    });
+   this.form.get('emergency_event')?.valueChanges
+  .pipe(takeUntil(this.destroy$))
+  .subscribe((value) => {
+    const freezeDetails = this.form.get('freeze_details');
+
+    if (value === 'true') {
+      freezeDetails?.setValidators([Validators.required]);
+    } else {
+      freezeDetails?.clearValidators();
+      freezeDetails?.setValue('');
+    }
+
+    freezeDetails?.updateValueAndValidity();
+  });
+
+  }
+
+    ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadFuelType(vehicleId: string) {

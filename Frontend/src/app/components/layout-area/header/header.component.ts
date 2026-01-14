@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { ToastService } from '../../../services/toast.service';
-import { Observable, of } from 'rxjs';
+import { Observable, of, Subject, takeUntil } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { NotificationService } from '../../../services/notification';
 import { SocketService } from '../../../services/socket.service';
@@ -22,6 +22,7 @@ export class HeaderComponent implements OnInit {
   isLoggedIn = false;
   showFeedbackModal = false;
   rideIdToComplete: string | null = null;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private authService: AuthService,
@@ -37,12 +38,16 @@ export class HeaderComponent implements OnInit {
     this.role$ = this.authService.role$;
     this.unreadCount$ = this.notificationService.unreadCount$;
 
-    this.authService.isLoggedIn$.subscribe((value) => {
-      this.isLoggedIn = value;
-      if (value) {
-        this.notificationService.refreshUnreadCount();
-      }
-    });
+   this.authService.isLoggedIn$
+  .pipe(takeUntil(this.destroy$))
+  .subscribe(value => {
+    this.isLoggedIn = value;
+    if (value) {
+      this.notificationService.refreshUnreadCount();
+    }
+  });
+
+
 
     const pendingRideId = localStorage.getItem('pending_feedback_ride');
     if (pendingRideId) {
@@ -52,14 +57,24 @@ export class HeaderComponent implements OnInit {
       this.checkFeedbackNeeded();
     }
 
-    this.socketService.feedbackNeeded$.subscribe((data) => {
-      if (data?.ride_id && data?.showPage) {
-        localStorage.setItem('pending_feedback_ride', data.ride_id);
-        this.rideIdToComplete = data.ride_id;
-        this.showFeedbackModal = true;
-      }
-    });
+this.socketService.feedbackNeeded$
+  .pipe(takeUntil(this.destroy$))
+  .subscribe(data => {
+    if (data?.ride_id && data?.showPage) {
+      localStorage.setItem('pending_feedback_ride', data.ride_id);
+      this.rideIdToComplete = data.ride_id;
+      this.showFeedbackModal = true;
+    }
+  });
+
   }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+ 
+
 
   onLogout(): void {
     this.authService.logout();

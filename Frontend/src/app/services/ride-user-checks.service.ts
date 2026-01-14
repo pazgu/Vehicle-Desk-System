@@ -93,10 +93,6 @@ export class RideUserChecksService {
           isUnassignedUser || !departmentId || departmentId === null;
 
         if (isUnassigned) {
-          this.toastService.showPersistent(
-            'לא ניתן לשלוח בקשה: אינך משויך למחלקה. יש ליצור קשר עם המנהל להשמה במחלקה.',
-            'error'
-          );
           return {
             disableDueToDepartment: true,
             disableRequest: true,

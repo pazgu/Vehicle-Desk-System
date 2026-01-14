@@ -9,6 +9,7 @@ import { StatisticsService } from '../../../services/statistics.service';
 import { ToastService } from '../../../services/toast.service';
 import { UserCardComponent } from '../users/user-card/user-card.component';
 import { MatDialog } from '@angular/material/dialog';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'no-shows',
@@ -19,8 +20,10 @@ import { MatDialog } from '@angular/material/dialog';
 export class NoShowsComponent {
   topNoShowUsers: TopNoShowUser[] = [];
 
-  filterOnePlus: boolean = false;
-  filterCritical: boolean = false;
+ 
+
+  selectedNoShowFilter: 'all' | 'onePlus' | 'critical' = 'all';
+
   allNoShowUsers: TopNoShowUser[] = [];
   filteredNoShowUsers: TopNoShowUser[] = [];
 
@@ -34,6 +37,7 @@ export class NoShowsComponent {
   baseUniqueNoShowUsers: number = 0;
   selectedMonth = (new Date().getMonth() + 1).toString();
   selectedYear = new Date().getFullYear().toString();
+  private destroy$ = new Subject<void>();
 
   noShowFromDate?: string;
   noShowToDate?: string;
@@ -48,9 +52,12 @@ export class NoShowsComponent {
   ) {}
 
   ngOnInit() {
+  this.selectedNoShowFilter = 'all';
   this.loadNoShowStatistics(); 
 
-  this.route.queryParams.subscribe((params) => {
+  this.route.queryParams
+  .pipe(takeUntil(this.destroy$))
+  .subscribe(params => {
     this.noShowSortOption = params['noShowSort'] || 'countAsc';
     this.selectedSortOption = params['selectedSort'] || 'countAsc';
 
@@ -58,11 +65,16 @@ export class NoShowsComponent {
     if (params['year']) this.selectedYear = String(+params['year']);
 
     if (this.allNoShowUsers.length > 0) {
-      this.applyNoShowFilter(false); 
+      this.applyNoShowFilter(); 
     }
   });
+
 }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
   updateQueryParams(params: any) {
     this.router.navigate([], {
@@ -77,45 +89,28 @@ export class NoShowsComponent {
       year: this.selectedYear,
     });
   }
-  applyNoShowFilter(shouldUpdateQueryParams: boolean = true) {
-  let filtered = this.allNoShowUsers;
 
-  if (this.filterOnePlus) {
-    filtered = filtered.filter(
-      (u) => (u.no_show_count ?? 0) >= 1 && (u.no_show_count ?? 0) <= 2
-    );
-  }
+  applyNoShowFilter() {
+    let filtered = [...this.allNoShowUsers];
 
-  if (this.filterCritical) {
-    filtered = filtered.filter((u) => (u.no_show_count ?? 0) >= 3);
-  }
-
-  if (!['countAsc', 'countDesc', 'nameAsc', 'nameDesc'].includes(this.noShowSortOption)) {
-    this.noShowSortOption = 'countAsc';
-  }
-
-  if (shouldUpdateQueryParams) {
-    this.updateQueryParams({ noShowSort: this.noShowSortOption });
-  }
-
-  this.filteredNoShowUsers = this.sortUsers([...filtered]);
-
-  this.updateSummaryCards();
-}
-
-  onFilterOnePlusChange() {
-    if (this.filterOnePlus) {
-      this.filterCritical = false;
+    if (this.selectedNoShowFilter === 'onePlus') {
+      filtered = filtered.filter(
+        u => (u.no_show_count ?? 0) >= 1 && (u.no_show_count ?? 0) <= 2
+      );
     }
-    this.applyNoShowFilter();
+
+    if (this.selectedNoShowFilter === 'critical') {
+      filtered = filtered.filter(
+        u => (u.no_show_count ?? 0) >= 3
+      );
+    }
+
+    this.filteredNoShowUsers = this.sortUsers(filtered);
+    this.updateSummaryCards();
   }
 
-  onFilterCriticalChange() {
-    if (this.filterCritical) {
-      this.filterOnePlus = false; 
-    }
-    this.applyNoShowFilter();
-  }
+
+ 
   sortUsers(users: any[]) {
     switch (this.noShowSortOption) {
       case 'countAsc':
@@ -136,15 +131,14 @@ export class NoShowsComponent {
       this.goToUserDetails(user.user_id);
     }
   }
-  onFilterChange(type: 'onePlus' | 'critical') {
-    if (type === 'onePlus' && this.filterOnePlus) {
-      this.filterCritical = false;
-    }
-    if (type === 'critical' && this.filterCritical) {
-      this.filterOnePlus = false;
-    }
-    this.applyNoShowFilter();
-  }
+  onFilterChange(type: 'onePlus' | 'critical' | 'all') {
+  this.selectedNoShowFilter = type;
+  this.applyNoShowFilter();
+}
+
+
+
+    
   get isEmptyNoShowData(): boolean {
     return this.filteredNoShowUsers.length === 0;
   }
@@ -166,28 +160,19 @@ export class NoShowsComponent {
   }
 
   private updateSummaryCards(): void {
-  const isAnyFilterActive = this.filterOnePlus || this.filterCritical;
+  const isAnyFilterActive = this.selectedNoShowFilter !== null;
 
   if (!isAnyFilterActive) {
-  if ((this.baseTotalNoShows ?? 0) === 0 && this.allNoShowUsers.length > 0) {
-    this.totalNoShows = this.allNoShowUsers.reduce(
-      (sum, u) => sum + (u.no_show_count ?? 0),
-      0
-    );
-    this.uniqueNoShowUsers = this.allNoShowUsers.length;
-  } else {
     this.totalNoShows = this.baseTotalNoShows;
     this.uniqueNoShowUsers = this.baseUniqueNoShowUsers;
+    return;
   }
-  return;
-}
-
 
   this.uniqueNoShowUsers = this.filteredNoShowUsers.length;
-
-  this.totalNoShows = this.filteredNoShowUsers.reduce((sum, u) => {
-    return sum + (u.no_show_count ?? 0);
-  }, 0);
+  this.totalNoShows = this.filteredNoShowUsers.reduce(
+    (sum, u) => sum + (u.no_show_count ?? 0),
+    0
+  );
 }
 
 

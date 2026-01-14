@@ -21,6 +21,7 @@ import {
   HttpHeaders,
 } from '@angular/common/http';
 import { RideDetailsComponent } from './../ride-details/ride-details.component';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -65,44 +66,53 @@ export class AllRidesComponent implements OnInit {
     .toISOString()
     .split('T')[0];
   private apiBase = 'http://127.0.0.1:8000/api';
+  private destroy$ = new Subject<void>();
 
   get ordersPerPage(): number {
     return this.showFilters ? 3 : 4;
   }
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe((params) => {
-      this.rideViewMode =
-        (params['mode'] as 'all' | 'future' | 'past') || 'all';
-      this.sortBy = params['sort'] || 'recent';
-      this.statusFilter = params['status'] || '';
-      this.startDate = params['start_date'] || '';
-      this.endDate = params['end_date'] || '';
-      this.showFilters = params['filters'] === 'true';
-      this.showOldOrders = params['old_orders'] === 'true';
-      this.rideService.clearRebookData();
-      if (this.showOldOrders && !this.startDate && !this.endDate) {
-        const oneMonthAgo = new Date();
-        oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-        this.startDate = this.formatDateForInput(oneMonthAgo);
-      }
+   this.route.queryParams
+  .pipe(takeUntil(this.destroy$))
+  .subscribe((params) => {
+    this.rideViewMode =
+      (params['mode'] as 'all' | 'future' | 'past') || 'all';
+    this.sortBy = params['sort'] || 'recent';
+    this.statusFilter = params['status'] || '';
+    this.startDate = params['start_date'] || '';
+    this.endDate = params['end_date'] || '';
+    this.showFilters = params['filters'] === 'true';
+    this.showOldOrders = params['old_orders'] === 'true';
 
-      const idToHighlight = params['highlight'] || null;
-      if (idToHighlight) {
+    this.rideService.clearRebookData();
+
+    if (this.showOldOrders && !this.startDate && !this.endDate) {
+      const oneMonthAgo = new Date();
+      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+      this.startDate = this.formatDateForInput(oneMonthAgo);
+    }
+
+    const idToHighlight = params['highlight'] || null;
+    if (idToHighlight) {
+      setTimeout(() => {
+        this.highlightedOrderId = idToHighlight;
         setTimeout(() => {
-          this.highlightedOrderId = idToHighlight;
-          setTimeout(() => {
-            this.highlightedOrderId = null;
-          }, 10000);
-        }, 500);
-      }
+          this.highlightedOrderId = null;
+        }, 10000);
+      }, 500);
+    }
 
-      this.fetchRides();
-    });
+    this.fetchRides();
+  });
+
 
     this.setupSocketSubscriptions();
   }
-
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
   editOrder(order: any): void {
     const userRole = localStorage.getItem('role');
     const isSupervisor = userRole === 'supervisor';
@@ -231,10 +241,11 @@ export class AllRidesComponent implements OnInit {
       this.toastService.show('שגיאה בזיהוי הנסיעה', 'error');
       return;
     }
+  
 
     const dialogData: ConfirmDialogData = {
       title: 'ביטול הזמנה',
-      message: `?האם אתה בטוח שברצונך לבטל את הנסיעה\n\nתאריך: ${order.date}\nשעה: ${order.time}\nסוג: ${order.type}`,
+      message: `  האם את/ה בטוח שברצונך לבטל את הנסיעה?\n\nתאריך: ${order.date}\nשעה: ${order.time}\nסוג: ${order.type}`,
       confirmText: 'בטל הזמנה',
       cancelText: 'חזור',
       noRestoreText: isRebookContext ? '' : 'שימ/י לב שלא ניתן לשחזר את הנסיעה',
@@ -253,7 +264,9 @@ export class AllRidesComponent implements OnInit {
       this.rideService.deleteOrder(order.ride_id).subscribe({
         next: () => {
           this.toastService.show('הנסיעה בוטלה בהצלחה ', 'success');
-          this.socketService.deleteRequests$.subscribe(() => {});
+          this.socketService.deleteRequests$
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(() => {});
           this.fetchRides();
           const index = this.orders.findIndex(
             (o) => o.ride_id === order.ride_id
@@ -273,29 +286,40 @@ export class AllRidesComponent implements OnInit {
     });
   }
 
-  private setupSocketSubscriptions(): void {
-    this.socketService.rideRequests$.subscribe((newRide) => {
+private setupSocketSubscriptions(): void {
+  this.socketService.rideRequests$
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((newRide) => {
       if (newRide) this.fetchRides();
     });
 
-    this.socketService.rideSupposedToStart$.subscribe(() => {
+  this.socketService.rideSupposedToStart$
+    .pipe(takeUntil(this.destroy$))
+    .subscribe(() => {
       this.fetchRides();
     });
 
-    this.socketService.orderUpdated$.subscribe((updatedRide) => {
+  this.socketService.orderUpdated$
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((updatedRide) => {
       if (!updatedRide) return;
       this.handleOrderUpdate(updatedRide);
     });
 
-    this.socketService.rideStatusUpdated$.subscribe((updatedStatus) => {
+  this.socketService.rideStatusUpdated$
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((updatedStatus) => {
       if (!updatedStatus) return;
       this.handleStatusUpdate(updatedStatus);
     });
 
-    this.socketService.deleteRequests$.subscribe((deletedRide) => {
+  this.socketService.deleteRequests$
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((deletedRide) => {
       if (deletedRide) this.handleDeletedRide(deletedRide);
     });
-  }
+}
+
 
   private handleOrderUpdate(updatedRide: any): void {
     const index = this.orders.findIndex((o) => o.ride_id === updatedRide.id);

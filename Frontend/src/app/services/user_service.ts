@@ -118,7 +118,7 @@ export class UserService {
                 id: dept.id,
                 name: dept.name,
                 supervisor_id: dept.supervisor_id,
-                supervisorName: 'אין מפקח מוגדר',
+                supervisorName: 'אין מנהל מחלקה מוגדר',
               });
             }
 

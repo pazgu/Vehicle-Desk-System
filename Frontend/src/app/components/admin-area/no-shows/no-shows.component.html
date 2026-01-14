@@ -1,23 +1,40 @@
 <div>
-  <div class="filter-controls">
     <div style="display: flex; flex-direction: column; gap: 5px">
       <label>
         <input
-          type="checkbox"
-          [(ngModel)]="filterOnePlus"
-          (change)="onFilterChange('onePlus')"
+          type="radio"
+          name="noShowFilter"
+          value="all"
+          [(ngModel)]="selectedNoShowFilter"
+          (change)="applyNoShowFilter()"
         />
-        הצג משתמשים עם 1-2 אי-הגעות
+        הצג את כל המשתמשים
       </label>
+
       <label>
         <input
-          type="checkbox"
-          [(ngModel)]="filterCritical"
-          (change)="onFilterChange('critical')"
+          type="radio"
+          name="noShowFilter"
+          value="onePlus"
+          [(ngModel)]="selectedNoShowFilter"
+          (change)="applyNoShowFilter()"
+        />
+
+        הצג משתמשים עם 1-2 אי-הגעות
+      </label>
+
+      <label>
+        <input
+          type="radio"
+          name="noShowFilter"
+          value="critical"
+          [(ngModel)]="selectedNoShowFilter"
+          (change)="applyNoShowFilter()"
         />
         הצג משתמשים עם 3+ אי-הגעות (קריטי)
       </label>
     </div>
+
     <div class="sort-container">
       <label>מיין לפי: </label>
       <select [(ngModel)]="noShowSortOption" (change)="applyNoShowFilter()">
@@ -74,5 +91,5 @@
       </tbody>
     </table>
   </div>
-</div>
+
 
