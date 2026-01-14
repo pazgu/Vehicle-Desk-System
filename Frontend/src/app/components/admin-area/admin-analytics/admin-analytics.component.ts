@@ -19,6 +19,7 @@ import { RideStartTimeStatsResponse } from '../../../models/ride-start-time-stat
 import { ChartModule } from 'primeng/chart';
 import { PurposeOfTravelStatsResponse } from '../../../models/purpose-of-travel-stats.model';
 import { ToastService } from '../../../services/toast.service';
+import { Subject, takeUntil } from 'rxjs';
 pdfMake.vfs = pdfFonts.vfs;
 
 @Component({
@@ -52,6 +53,7 @@ export class AdminAnalyticsComponent implements OnInit {
   @ViewChild(RideStatusComponent) rideStatusComponent!: RideStatusComponent;
   @ViewChild(VehicleStatusComponent)
   vehicleStatusComponent!: VehicleStatusComponent;
+  private destroy$ = new Subject<void>();
 
   selectedSortOption = 'countDesc';
   private _activeTabIndex = 0;
@@ -98,17 +100,27 @@ export class AdminAnalyticsComponent implements OnInit {
   );
 
   ngOnInit() {
-    this.route.queryParams.subscribe(params => {
-      const tabParam = params['tab'];
-      if (tabParam !== undefined) {
-        const tabIndex = parseInt(tabParam, 10);
-        if (!isNaN(tabIndex) && tabIndex >= 0 && tabIndex <= 6) {
-          this._activeTabIndex = tabIndex;
-        }
+   this.route.queryParams
+  .pipe(takeUntil(this.destroy$))
+  .subscribe(params => {
+    const tabParam = params['tab'];
+
+    if (tabParam !== undefined) {
+      const tabIndex = parseInt(tabParam, 10);
+      if (!isNaN(tabIndex) && tabIndex >= 0 && tabIndex <= 6) {
+        this._activeTabIndex = tabIndex;
       }
-      this.loadDefaultRideStartTimeStats();
-      this.loadDefaultPurposeStats();
-    });
+    }
+
+    this.loadDefaultRideStartTimeStats();
+    this.loadDefaultPurposeStats();
+  });
+
+  }
+
+    ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   ngAfterViewInit() {

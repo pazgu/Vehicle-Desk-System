@@ -8,12 +8,13 @@ import { DividerModule } from 'primeng/divider';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { OrderService } from '../../../services/order.service';
 import { OrderCardItem } from '../../../models/order-card-item.module';
-import { finalize } from 'rxjs/operators';
+import { finalize, takeUntil } from 'rxjs/operators';
 import { CityService } from '../../../services/city.service';
 import { ToastService } from '../../../services/toast.service';
 import { HttpClient } from '@angular/common/http';
 import { VehicleService } from '../../../services/vehicle.service';
 import { Location } from '@angular/common';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'app-order-card',
@@ -39,6 +40,7 @@ export class OrderCardComponent implements OnInit {
   users: { id: string; user_name: string }[] = [];
   vehicles: { id: string; vehicle_model: string; plate_number: string }[] = [];
   isUpdatingStatus = false;
+  private destroy$ = new Subject<void>();
 
 
   constructor(
@@ -65,16 +67,19 @@ export class OrderCardComponent implements OnInit {
     }
     this.rideId = this.route.snapshot.paramMap.get('ride_id')!;
 
-    this.route.params.subscribe((params) => {
-      const orderIdParam = params['orderId'] || this.rideId;
+   this.route.params
+  .pipe(takeUntil(this.destroy$))
+  .subscribe((params) => {
+    const orderIdParam = params['orderId'] || this.rideId;
 
-      if (orderIdParam) {
-        this.rideId = orderIdParam;
-        this.loadOrder(this.departmentId!, this.rideId);
-      } else {
-        this.toastService.show('Missing orderId', 'error');
-      }
-    });
+    if (orderIdParam) {
+      this.rideId = orderIdParam;
+      this.loadOrder(this.departmentId!, this.rideId);
+    } else {
+      this.toastService.show('Missing orderId', 'error');
+    }
+  });
+
     this.cityService.getCities().subscribe({
       next: (cities) => {
         this.cityMap = cities.reduce((map: { [id: string]: string }, city) => {
@@ -92,6 +97,8 @@ export class OrderCardComponent implements OnInit {
 
   ngOnDestroy(): void {
     document.body.style.overflow = '';
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   getCityName(id: string): string {
@@ -158,6 +165,8 @@ export class OrderCardComponent implements OnInit {
     .subscribe({
       next: () => {
         this.trip = { ...this.trip, status: next };
+
+        this.location.back();
 
         this.toastService.show('סטטוס עודכן בהצלחה', 'success');
 

@@ -111,34 +111,3 @@
       </form>
     </div>
   </div>
-
-  <div *ngIf="isDeleteModalOpen" class="modal-overlay">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>אישור מחיקה</h3>
-        <button
-          type="button"
-          class="close-modal-button"
-          (click)="closeDeleteModal()"
-        >
-          ×
-        </button>
-      </div>
-      <div class="delete-confirmation">
-        <p>{{ deleteModalMessage }}</p>
-        <p class="warning-text">פעולה זו אינה ניתנת לביטול</p>
-      </div>
-      <div class="modal-actions">
-        <button
-          type="button"
-          (click)="confirmDelete()"
-          [disabled]="isSubmitting"
-          class="delete-confirm-button"
-        >
-          {{ isSubmitting ? "מוחק..." : "מחק" }}
-        </button>
-        <button type="button" (click)="closeDeleteModal()">ביטול</button>
-      </div>
-    </div>
-  </div>
-</div>

@@ -7,9 +7,10 @@ import { RideService } from '../../services/ride.service';
 import { ToastService } from '../../services/toast.service';
 import { VehicleService } from '../../services/vehicle.service';
 import { SocketService } from '../../services/socket.service';
-import { Subscription } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 import { CityService } from '../../services/city.service';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 interface City {
   id: string;
@@ -19,7 +20,7 @@ interface City {
 @Component({
   selector: 'app-edit-ride',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, NgSelectModule],
   templateUrl: './edit-ride.component.html',
   styleUrl: './edit-ride.component.css',
 })
@@ -49,6 +50,7 @@ export class EditRideComponent implements OnInit {
   selectedCarId: string = '';
   isDropdownOpen: boolean = false;
   fuelTypeTranslations: { [key: string]: string } = {};
+  private destroy$ = new Subject<void>();
 
   allCars: {
     id: string;
@@ -312,15 +314,16 @@ export class EditRideComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.fetchCities();
     this.generateTimeOptions();
     this.rideId = this.route.snapshot.paramMap.get('id') || '';
     this.minDate = this.calculateMinDate(2);
     this.buildForm();
     this.fetchVehicleTypes();
+    this.fetchCities();
+    this.setupFormSubscriptions();
 
     this.rideForm.get('ride_date')?.valueChanges
-      .pipe(debounceTime(800), distinctUntilChanged())
+      .pipe(debounceTime(800), distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe(() => {
         this.updateMinEndDate();
         this.updateRideTypeNote();
@@ -329,7 +332,7 @@ export class EditRideComponent implements OnInit {
       });
 
     this.rideForm.get('ride_date_night_end')?.valueChanges
-      .pipe(debounceTime(800), distinctUntilChanged())
+      .pipe(debounceTime(800), distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe((endDate) => {
         if (endDate) {
           const startDate = this.rideForm.get('ride_date')?.value;
@@ -351,7 +354,7 @@ export class EditRideComponent implements OnInit {
       });
 
     this.rideForm.get('start_time')?.valueChanges
-      .pipe(debounceTime(500), distinctUntilChanged())
+      .pipe(debounceTime(500), distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe((startTime) => {
         if (!startTime) {
           this.filteredEndTimes = [...this.timeOptions];
@@ -362,14 +365,14 @@ export class EditRideComponent implements OnInit {
         this.refreshVehiclesIfReady();
       });
     this.rideForm.get('end_time')?.valueChanges
-      .pipe(debounceTime(500), distinctUntilChanged())
+      .pipe(debounceTime(500), distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe((endTime) => {
         this.updateRideTypeNote();
         this.updateFilteredEndTimes();
         this.refreshVehiclesIfReady();
       });
     this.rideForm.get('estimated_distance_km')?.valueChanges
-      .pipe(debounceTime(800), distinctUntilChanged())
+      .pipe(debounceTime(800), distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe((value) => {
         if (value) {
           this.estimated_distance_with_buffer = +(value * 1.1).toFixed(2);
@@ -379,7 +382,7 @@ export class EditRideComponent implements OnInit {
 
     this.setupDistanceCalculationSubscriptions();
 
-    this.rideForm.get('vehicle_type')?.valueChanges.subscribe((value) => {
+    this.rideForm.get('vehicle_type')?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((value) => {
       const fourByFourControl = this.rideForm.get('four_by_four_reason');
       if (
         value &&
@@ -438,7 +441,7 @@ export class EditRideComponent implements OnInit {
         }
       }, 0);
     });
-    this.rideForm.get('ride_period')?.valueChanges.subscribe((value) => {
+    this.rideForm.get('ride_period')?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((value) => {
       this.onPeriodChange(value);
     });
     this.vehicleService.getFuelTypeTranslations().subscribe({
@@ -455,6 +458,11 @@ export class EditRideComponent implements OnInit {
       },
     });
     this.loadRide();
+  }
+
+    ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
   buildForm(): void {
     this.rideForm = this.fb.group({
@@ -570,6 +578,7 @@ export class EditRideComponent implements OnInit {
           ride_type: ride.ride_type || 'operational',
           vehicle_type: ride.vehicle_type,
           start_location: ride.start_location ?? 'מיקום התחלה לא ידוע',
+          stop: ride.stop,
           destination: ride.destination ?? 'יעד לא ידוע',
           extended_ride_reason: ride.extended_ride_reason || '',
           four_by_four_reason: ride.four_by_four_reason || '',
@@ -740,6 +749,7 @@ export class EditRideComponent implements OnInit {
           id: city.id,
           name: city.name,
         }));
+        this.loadRide();
       },
       error: (err) => {
         console.error('Failed to fetch cities', err);
@@ -786,15 +796,26 @@ export class EditRideComponent implements OnInit {
     this.extraStops.removeAt(index);
   }
 
+  private setupFormSubscriptions(): void {
+  this.rideForm.get('ride_date')?.valueChanges
+    .pipe(debounceTime(800), distinctUntilChanged(), takeUntil(this.destroy$))
+    .subscribe(() => {
+      this.updateMinEndDate();
+      this.updateRideTypeNote();
+      this.updateExtendedRideReasonValidation();
+      this.refreshVehiclesIfReady();
+    });
+  }
+
   private setupDistanceCalculationSubscriptions(): void {
     this.rideForm
       .get('stop')
-      ?.valueChanges.pipe(debounceTime(300), distinctUntilChanged())
+      ?.valueChanges.pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe(() => {
         this.calculateRouteDistance();
       });
     this.extraStops.valueChanges
-      .pipe(debounceTime(300), distinctUntilChanged())
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe(() => {
         this.calculateRouteDistance();
       });

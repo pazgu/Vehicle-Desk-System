@@ -9,7 +9,7 @@ import { ToastService } from '../../../services/toast.service';
 import { FilterPanelComponent } from './filter-panel/filter-panel.component';
 import { MileageUploadComponent } from './mileage-upload/mileage-upload.component';
 import { VehicleCardComponent } from './vehicle-card/vehicle-card.component';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Subject, takeUntil } from 'rxjs';
 @Component({
   selector: 'app-vehicle-dashboard',
   standalone: true,
@@ -31,6 +31,7 @@ export class VehicleDashboardComponent implements OnInit {
   showMileageUpload: boolean = false;
   userRole: string | null = null;
   departmentMap: Map<string, string> = new Map();
+  private destroy$ = new Subject<void>();
 
   constructor(
     private vehicleService: VehicleService,
@@ -46,20 +47,25 @@ export class VehicleDashboardComponent implements OnInit {
       this.loadVehicles();
     });
 
-    this.socketService.newVehicle$.subscribe((vehicleData) => {
-      if (vehicleData && vehicleData.id) {
-        const alreadyExists = this.vehicles.some(
-          (v) => v.id === vehicleData.id
-        );
-        if (!alreadyExists) {
-          const vehicleWithDepartmentName =
-            this.mapVehicleDepartment(vehicleData);
-          this.vehicles.unshift(vehicleWithDepartmentName);
-        }
-      }
-    });
+  this.socketService.newVehicle$
+  .pipe(takeUntil(this.destroy$))
+  .subscribe((vehicleData) => {
+    if (vehicleData && vehicleData.id) {
+      const alreadyExists = this.vehicles.some(
+        (v) => v.id === vehicleData.id
+      );
 
-    this.socketService.vehicleMileageUpdated$.subscribe((data) => {
+      if (!alreadyExists) {
+        const vehicleWithDepartmentName =
+          this.mapVehicleDepartment(vehicleData);
+        this.vehicles.unshift(vehicleWithDepartmentName);
+      }
+    }
+  });
+
+this.socketService.vehicleMileageUpdated$
+  .pipe(takeUntil(this.destroy$))
+  .subscribe((data) => {
     if (!data || !data.vehicle_id) return;
 
     const vehicleId = data.vehicle_id;
@@ -87,9 +93,13 @@ export class VehicleDashboardComponent implements OnInit {
         : v
     );
   });
+
     
   }
-
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
   async fetchAndMapDepartments(): Promise<void> {
     try {
       const departments = await firstValueFrom(
@@ -152,32 +162,37 @@ export class VehicleDashboardComponent implements OnInit {
   }
 
   loadQueryParams(): void {
-    this.route.queryParams.subscribe((params) => {
-      const statusFilter = this.translate(
-        params['status'] || '',
-        'status',
-        'toHebrew'
-      );
-      const typeFilter = this.translate(
-        params['type'] || '',
-        'type',
-        'toHebrew'
-      );
-      const departmentFilter = params['department'] || '';
-      const showInactive = params['showInactive'] === 'true';
-      const sortByMostUsed = params['sortByMostUsed'] === 'true';
+   this.route.queryParams
+  .pipe(takeUntil(this.destroy$))
+  .subscribe((params) => {
+    const statusFilter = this.translate(
+      params['status'] || '',
+      'status',
+      'toHebrew'
+    );
 
-      if (this.filterPanel) {
-        this.filterPanel.setFiltersFromParams(
-          statusFilter,
-          typeFilter,
-          showInactive,
-          sortByMostUsed,
-          false,
-          departmentFilter
-        );
-      }
-    });
+    const typeFilter = this.translate(
+      params['type'] || '',
+      'type',
+      'toHebrew'
+    );
+
+    const departmentFilter = params['department'] || '';
+    const showInactive = params['showInactive'] === 'true';
+    const sortByMostUsed = params['sortByMostUsed'] === 'true';
+
+    if (this.filterPanel) {
+      this.filterPanel.setFiltersFromParams(
+        statusFilter,
+        typeFilter,
+        showInactive,
+        sortByMostUsed,
+        false,
+        departmentFilter
+      );
+    }
+  });
+
   }
 
   updateQueryParams(): void {

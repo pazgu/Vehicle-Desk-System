@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { Router } from '@angular/router';
 import * as validator from 'validator';
 import { ROLES } from '../../../../constants/roles';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-add-new-user',
@@ -25,7 +26,7 @@ export class AddNewUserComponent implements OnInit {
   availableDepartmentsForSupervisor: { id: string; name: string }[] = [];
   selectedFile: File | null = null;
   selectedFileName: string = '';
-
+  private destroy$ = new Subject<void>();
   constructor(
     private fb: FormBuilder,
     private userService: UserService,
@@ -85,11 +86,19 @@ export class AddNewUserComponent implements OnInit {
       ],
     });
 
-    this.addUserForm.get('role')?.valueChanges.subscribe((role) => {
-      this.updateDepartmentValidation(role);
-      this.updateSupervisedDepartmentValidation(role);
-      this.fetchDepartments(role);
-    });
+   this.addUserForm.get('role')?.valueChanges
+  .pipe(takeUntil(this.destroy$))
+  .subscribe(role => {
+    this.updateDepartmentValidation(role);
+    this.updateSupervisedDepartmentValidation(role);
+    this.fetchDepartments(role);
+  });
+
+  }
+
+    ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   noMixedLanguageValidator() {
