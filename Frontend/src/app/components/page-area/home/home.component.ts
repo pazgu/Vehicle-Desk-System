@@ -309,6 +309,40 @@ export class NewRideComponent implements OnInit {
       },
     });
   }
+  hasValidTimesForRebook(): boolean {
+  if (!this.isRebookMode) return true;
+  
+  const startHour = this.rideForm.get('start_hour')?.value;
+  const startMinute = this.rideForm.get('start_minute')?.value;
+  const endHour = this.rideForm.get('end_hour')?.value;
+  const endMinute = this.rideForm.get('end_minute')?.value;
+  
+  return !!(startHour && startMinute !== null && startMinute !== '' && 
+            endHour && endMinute !== null && endMinute !== '');
+}
+showTimeRequiredToast(): void {
+  this.toastService.show(
+    'יש להזין שעות התחלה וסיום לפני בחירת סוג רכב ורכב',
+    'warning'
+  );
+}
+onVehicleTypeClick(event: Event): void {
+  if (this.isRebookMode && !this.hasValidTimesForRebook()) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.showTimeRequiredToast();
+  }
+}
+toggleDropdown() {
+  if (this.isRebookMode && !this.hasValidTimesForRebook()) {
+    this.showTimeRequiredToast();
+    return;
+  }
+  this.isDropdownOpen = !this.isDropdownOpen;
+}
+
+
+
   canChooseVehicle(): boolean {
     const distance = this.rideForm.get('estimated_distance_km')?.value;
     const rideDate = this.rideForm.get('ride_date')?.value;
@@ -1528,37 +1562,40 @@ this.socketService.usersBlockStatus$
   }
 
   selectCar(carId: string) {
-    if (this.isPendingVehicle(carId)) {
-      return;
-    }
+  if (this.isRebookMode && !this.hasValidTimesForRebook()) {
+    this.showTimeRequiredToast();
+    return;
+  }
 
-    this.selectedCarId = carId;
-    this.isDropdownOpen = false;
+  if (this.isPendingVehicle(carId)) {
+    return;
+  }
 
-    const carControl = this.rideForm.get('car');
-    carControl?.setValue(carId);
-    carControl?.markAsDirty();
-    carControl?.markAsTouched();
+  this.selectedCarId = carId;
+  this.isDropdownOpen = false;
 
-    this.loadFuelType(carId);
-    const selectedCar = this.availableCars.find(c => c.id === carId);
-    if (selectedCar && !selectedCar.is_recommended) {
-      const recommendedCar = this.availableCars.find(c => c.is_recommended);
-      if (recommendedCar) {
-        this.toastService.show(
-          `שים לב: בחרת רכב שאינו מומלץ. הרכב המומלץ למרחק זה הוא ${recommendedCar.vehicle_model}`,
-          'info',
-        );
-      }
+  const carControl = this.rideForm.get('car');
+  carControl?.setValue(carId);
+  carControl?.markAsDirty();
+  carControl?.markAsTouched();
+
+  this.loadFuelType(carId);
+  const selectedCar = this.availableCars.find(c => c.id === carId);
+  if (selectedCar && !selectedCar.is_recommended) {
+    const recommendedCar = this.availableCars.find(c => c.is_recommended);
+    if (recommendedCar) {
+      this.toastService.show(
+        `שים לב: בחרת רכב שאינו מומלץ. הרכב המומלץ למרחק זה הוא ${recommendedCar.vehicle_model}`,
+        'info',
+      );
     }
   }
+}
 
   getSelectedCar(): any | undefined {
     return this.availableCars.find((car) => car.id === this.selectedCarId);
   }
-  toggleDropdown() {
-    this.isDropdownOpen = !this.isDropdownOpen;
-  }
+ 
 
   closeDropdown() {
     this.isDropdownOpen = false;
