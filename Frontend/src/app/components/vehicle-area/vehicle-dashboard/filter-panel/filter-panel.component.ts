@@ -121,6 +121,21 @@ export class FilterPanelComponent implements OnInit, OnChanges {
     this.updateQueryParams.emit();
   }
 
+ clearFilters(): void {
+  this.showFilters = true;
+
+  this.showSort = false;
+  this.statusFilter = '';
+  this.typeFilter = '';
+  this.departmentFilter = '';
+  this.showInactive = false;
+  this.sortByMostUsed = false;
+  this.sortByMostUsedAllTime = false;
+  this.inactiveVehicles = [];
+  this.applyFilters();
+  this.updateQueryParams.emit();
+}
+
   onSortByMostUsedChange() {
     if (this.sortByMostUsed) {
       this.sortByMostUsed = false;
