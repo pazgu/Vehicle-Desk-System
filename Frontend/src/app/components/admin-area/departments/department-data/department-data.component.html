@@ -82,32 +82,50 @@
   </div>
 
   <div *ngIf="isEditModalOpen" class="modal-overlay">
-    <div class="modal-content">
+  <div class="modal-content" dir="rtl">
+    <div class="modal-header">
+      <button
+        type="button"
+        class="close-modal-button"
+        (click)="closeEditModal()"
+        aria-label="סגור"
+      >
+        ×
+      </button>
       <h3>ערוך מחלקה</h3>
-      <form [formGroup]="editDepartmentForm" (ngSubmit)="updateDepartment()">
-        <div class="form-group">
-          <label for="editName">שם מחלקה</label>
-          <input id="editName" formControlName="name" type="text" />
-        </div>
-<div class="form-group">
-          <label for="editSupervisor">מנהל מחלקה</label>
-          <select id="editSupervisor" formControlName="supervisor_id">
-            <option value="" formControlName="supervisor_id">בחר מנהל</option>
-            <option *ngFor="let user of editSupervisors" [value]="user.employee_id">
-              {{ user.first_name }} {{ user.last_name }}
-            </option>
-          </select>
-        </div>
-        <div class="modal-actions">
-          <button
-            type="submit"
-            [disabled]="editDepartmentForm.invalid || isSubmitting"
-            class="save-button-modal"
-          >
-            {{ isSubmitting ? "שומר..." : "שמור" }}
-          </button>
-          <button type="button" (click)="closeEditModal()">ביטול</button>
-        </div>
-      </form>
     </div>
+
+    <form [formGroup]="editDepartmentForm" (ngSubmit)="updateDepartment()">
+      <div class="form-group">
+        <label for="editName">שם מחלקה</label>
+        <input id="editName" formControlName="name" type="text" />
+      </div>
+
+      <div class="form-group">
+        <label for="editSupervisor">מנהל מחלקה</label>
+        <select id="editSupervisor" formControlName="supervisor_id">
+          <option value="">בחר מנהל</option>
+          <option
+            *ngFor="let user of editSupervisors"
+            [value]="user.employee_id"
+            [disabled]="user.disabled"
+          >
+            {{ user.first_name }} {{ user.last_name }}
+          </option>
+        </select>
+      </div>
+
+      <div class="modal-actions">
+        <button
+          type="submit"
+          [disabled]="editDepartmentForm.invalid || isSubmitting"
+          class="save-button-modal"
+        >
+          {{ isSubmitting ? "שומר..." : "שמור" }}
+        </button>
+
+        <button type="button" (click)="closeEditModal()">ביטול</button>
+      </div>
+    </form>
   </div>
+</div>
