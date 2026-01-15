@@ -330,62 +330,82 @@ private setupSocketSubscriptions(): void {
     .subscribe((deletedRide) => {
       if (deletedRide) this.handleDeletedRide(deletedRide);
     });
+
+  this.socketService.reservationCanceledDueToVehicleFreeze$
+  .pipe(takeUntil(this.destroy$))
+  .subscribe((data) => {
+    if (!data) return;
+    const currentUserId = localStorage.getItem('employee_id');
+    if (!currentUserId) return;
+    const affectedUsers = (data.affected_users || []).map((u: any) => String(u));
+
+    if (affectedUsers.includes(String(currentUserId))) {
+      this.fetchRides();
+    }
+  });
+}
+
+  private handleOrderUpdate(updatedRide: any): void {
+  if (!updatedRide?.id) return;
+
+  const index = this.orders.findIndex((o) => o.ride_id === updatedRide.id);
+  if (index === -1) return;
+
+  const newStatus = (updatedRide.status || this.orders[index].status)
+    .toString()
+    .toLowerCase();
+
+  const updatedOrder = {
+    ...this.orders[index],
+    status: newStatus,
+    start_datetime: updatedRide.start_datetime ?? this.orders[index].start_datetime,
+    end_datetime: updatedRide.end_datetime ?? this.orders[index].end_datetime,
+    submitted_at: updatedRide.submitted_at ?? this.orders[index].submitted_at,
+    distance: updatedRide.estimated_distance_km ?? this.orders[index].distance,
+  };
+
+  this.orders = [
+    ...this.orders.slice(0, index),
+    updatedOrder,
+    ...this.orders.slice(index + 1),
+  ];
+  this.fetchRides();
 }
 
 
-  private handleOrderUpdate(updatedRide: any): void {
-    const index = this.orders.findIndex((o) => o.ride_id === updatedRide.id);
-    if (index !== -1) {
-      const newDate = formatDate(
-        updatedRide.start_datetime,
-        'dd.MM.yyyy',
-        'en-US'
-      );
-      const newTime = formatDate(updatedRide.start_datetime, 'HH:mm', 'en-US');
-      const newRecent = updatedRide.submitted_at
-        ? formatDate(updatedRide.submitted_at, 'dd.MM.yyyy', 'en-US')
-        : newDate;
-      const updatedOrder = {
-        ...this.orders[index],
-        recent: newRecent,
-        date: newDate,
-        time: newTime,
-        status: updatedRide.status.toLowerCase(),
-        distance: updatedRide.estimated_distance_km,
-        start_datetime: updatedRide.start_datetime,
-        end_datetime: updatedRide.end_datetime,
-        submitted_at: updatedRide.submitted_at,
-      };
-      this.orders = [
-        ...this.orders.slice(0, index),
-        updatedOrder,
-        ...this.orders.slice(index + 1),
-      ];
-    }
-  }
 
   private handleStatusUpdate(updatedStatus: any): void {
-    const index = this.orders.findIndex(
-      (o) => o.ride_id === updatedStatus.ride_id
-    );
-    if (index !== -1) {
-      this.orders[index] = {
-        ...this.orders[index],
-        status: updatedStatus.new_status,
-      };
-      this.orders = [...this.orders];
-    }
+  const rideId = updatedStatus?.ride_id;
+  const newStatus = updatedStatus?.new_status;
+
+  if (!rideId || !newStatus) return;
+
+  const index = this.orders.findIndex((o) => o.ride_id === rideId);
+  if (index !== -1) {
+    this.orders[index] = {
+      ...this.orders[index],
+      status: newStatus.toString().toLowerCase(),
+    };
+    this.orders = [...this.orders];
   }
 
+  this.fetchRides();
+}
+
+
   private handleDeletedRide(deletedRide: any): void {
-    const index = this.orders.findIndex((o) => o.ride_id === deletedRide.id);
-    if (index !== -1) {
-      this.orders = [
-        ...this.orders.slice(0, index),
-        ...this.orders.slice(index + 1),
-      ];
-    }
+  const deletedId = deletedRide?.order_id || deletedRide?.id;
+  if (!deletedId) return;
+
+  const index = this.orders.findIndex((o) => o.ride_id === deletedId);
+  if (index !== -1) {
+    this.orders = [
+      ...this.orders.slice(0, index),
+      ...this.orders.slice(index + 1),
+    ];
   }
+}
+
 
   goBack(): void {
     this.location.back();
@@ -521,7 +541,7 @@ private setupSocketSubscriptions(): void {
             ride_id: order.ride_id,
             date: formatDate(order.start_datetime, 'dd.MM.yyyy', 'en-US'),
             time: formatDate(order.start_datetime, 'HH:mm', 'en-US'),
-            type: order.vehicle,
+            type: this.getRideTypeHebrew(order.ride_type),
             distance: order.estimated_distance,
             status: order.status.toLowerCase(),
             start_datetime: order.start_datetime,
@@ -564,6 +584,18 @@ private setupSocketSubscriptions(): void {
       },
     });
   }
+
+  private readonly rideTypeHebrewMap: Record<string, string> = {
+  administrative: 'נסיעה מנהלתית',
+  operational: 'נסיעה מבצעית',
+};
+
+private getRideTypeHebrew(type: any): string {
+  if (!type) return 'לא צוין';
+  const key = type.toString().toLowerCase().trim();
+  return this.rideTypeHebrewMap[key] ?? 'לא צוין';
+}
+
 
   private parseDate(d: string): Date {
     const [day, month, year] = d.split('.').map(Number);
