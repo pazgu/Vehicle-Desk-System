@@ -213,4 +213,9 @@ export class SocketService {
       console.warn('Socket not connected, cannot send message:', eventName);
     }
   }
+
+  public onReservationCanceledDueToVehicleFreeze() {
+  return this.reservationCanceledDueToVehicleFreeze$.asObservable();
+}
+
 }
