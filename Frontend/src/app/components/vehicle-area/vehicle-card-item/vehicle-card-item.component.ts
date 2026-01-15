@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { VehicleService } from '../../../services/vehicle.service';
 import { CommonModule } from '@angular/common';
@@ -10,16 +10,16 @@ import {
   ConfirmDialogData,
 } from '../../page-area/confirm-dialog/confirm-dialog.component';
 import { MatIconModule } from '@angular/material/icon';
-import { Observable } from 'rxjs';
 import { Location } from '@angular/common';
 import { ToastService } from '../../../services/toast.service';
+import { VehicleUsageStatsComponent } from '../vehicle-dashboard/vehicle-usage-stats/vehicle-usage-stats.component';
 
 @Component({
   selector: 'app-vehicle-card-item',
   templateUrl: './vehicle-card-item.component.html',
   styleUrls: ['./vehicle-card-item.component.css'],
   standalone: true,
-  imports: [CommonModule, CardModule, FormsModule, MatIconModule],
+  imports: [CommonModule, CardModule, FormsModule, MatIconModule, VehicleUsageStatsComponent],
 })
 export class VehicleCardItemComponent implements OnInit {
   vehicle: any;
@@ -28,13 +28,6 @@ export class VehicleCardItemComponent implements OnInit {
   isFreezeReasonFieldVisible: boolean = false;
   freezeReason: string = '';
   freezeDetails: string = '';
-  topUsedVehiclesMap: Record<string, number> = {};
-  vehicleUsageData: {
-    plate_number: string;
-    vehicle_model: string;
-    ride_count: number;
-  }[] = [];
-  currentVehicleRideCount: number = 0;
   departmentName: string = '';
   departments: any[] = [];
   currentDate = new Date();
@@ -48,6 +41,9 @@ export class VehicleCardItemComponent implements OnInit {
     '8-Seater',
   ];
   fuelTypes = ['electric', 'hybrid', 'gasoline'];
+
+  @ViewChild(VehicleUsageStatsComponent) usageStats?: VehicleUsageStatsComponent;
+  
   constructor(
     private navigateRouter: Router,
     private route: ActivatedRoute,
@@ -59,7 +55,6 @@ export class VehicleCardItemComponent implements OnInit {
 
   ngOnInit(): void {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    this.loadVehicleUsageData();
     this.loadDepartments();
 
     const id = this.route.snapshot.paramMap.get('id');
@@ -88,11 +83,14 @@ export class VehicleCardItemComponent implements OnInit {
         } else {
           this.departmentName = 'לא משוייך למחלקה';
         }
-
-        this.getAllRidesForCurrentVehicle(vehicleData.id);
       });
     }
   }
+
+  getVehicleRideCount(plateNumber: string): number {
+    return this.usageStats?.getVehicleUsageCount(plateNumber) || 0;
+  }
+
   loadDepartments(): void {
     this.vehicleService.getAllDepartments().subscribe({
       next: (departments) => {
@@ -232,20 +230,6 @@ private navigateToDashboard(): void {
 }
 
 
-  loadVehicleUsageData(): void {
-    this.vehicleService.getTopUsedVehicles().subscribe({
-      next: (data) => {
-        this.vehicleUsageData = data;
-        this.topUsedVehiclesMap = {};
-        data.forEach((vehicle) => {
-          this.topUsedVehiclesMap[vehicle.plate_number] = vehicle.ride_count;
-        });
-      },
-      error: (err) => {
-        console.error(' Error fetching vehicle usage data:', err);
-      },
-    });
-  }
   confirmDeleteVehicle(vehicle: any) {
     if (vehicle.status === 'in-use') return;
 
@@ -383,7 +367,7 @@ private navigateToDashboard(): void {
   }
 
   getUsageLevel(plateNumber: string): 'high' | 'medium' | 'good' | 'hide' {
-    const count = this.getVehicleUsageCount(plateNumber);
+    const count = this.usageStats?.getVehicleUsageCount(plateNumber) ?? 0;
     if (count > 10) return 'high';
     if (count >= 5) return 'medium';
     if (count == 0) return 'hide';
@@ -391,36 +375,11 @@ private navigateToDashboard(): void {
   }
 
   getUsageBarWidth(plateNumber: string): number {
-    const count = this.getVehicleUsageCount(plateNumber);
+    const count = this.usageStats?.getVehicleUsageCount(plateNumber) ?? 0;
     const maxRides = 15;
     return Math.min((count / maxRides) * 100, 100);
   }
 
-  getVehicleUsageCount(plateNumber: string): number {
-    return this.topUsedVehiclesMap[plateNumber] || 0;
-  }
-
-  getAllRidesForCurrentVehicle(vehicleId: string): void {
-    this.vehicleService.getAllOrders().subscribe({
-      next: (rides) => {
-        const count = rides.filter((ride) => {
-          if (ride.vehicle_id !== vehicleId) return false;
-          if (!ride.date_and_time) return false;
-          const rideDate = new Date(ride.date_and_time);
-          const currentDate = new Date();
-          return (
-            rideDate.getMonth() === currentDate.getMonth() &&
-            rideDate.getFullYear() === currentDate.getFullYear()
-          );
-        }).length;
-        this.currentVehicleRideCount = count;
-      },
-      error: (err) => {
-        console.error('Error fetching rides:', err);
-        this.currentVehicleRideCount = 0;
-      },
-    });
-  }
 
   navigateToTimeline(): void {
     if (this.vehicle?.id) {
