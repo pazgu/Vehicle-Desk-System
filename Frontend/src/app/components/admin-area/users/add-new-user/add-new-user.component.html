@@ -30,21 +30,22 @@
               *ngIf="
                 (addUserForm.get('first_name')?.touched ||
                   addUserForm.get('first_name')?.dirty) &&
-                addUserForm.get('first_name')?.hasError('minlength')
-              "
-              class="error"
-            >
-              לפחות 2 אותיות
-            </small>
-            <small
-              *ngIf="
-                (addUserForm.get('first_name')?.touched ||
-                  addUserForm.get('first_name')?.dirty) &&
                 addUserForm.get('first_name')?.hasError('pattern')
               "
               class="error"
             >
               רק אותיות בעברית או באנגלית (ללא רווחים)
+            </small>
+            <small
+              *ngIf="
+                (addUserForm.get('first_name')?.touched ||
+                  addUserForm.get('first_name')?.dirty) &&
+                addUserForm.get('first_name')?.hasError('minlength') &&
+                !addUserForm.get('first_name')?.hasError('pattern')
+              "
+              class="error"
+            >
+              לפחות 2 אותיות
             </small>
             <small
               *ngIf="
@@ -81,21 +82,22 @@
               *ngIf="
                 (addUserForm.get('last_name')?.touched ||
                   addUserForm.get('last_name')?.dirty) &&
-                addUserForm.get('last_name')?.hasError('minlength')
-              "
-              class="error"
-            >
-              לפחות 2 אותיות
-            </small>
-            <small
-              *ngIf="
-                (addUserForm.get('last_name')?.touched ||
-                  addUserForm.get('last_name')?.dirty) &&
                 addUserForm.get('last_name')?.hasError('pattern')
               "
               class="error"
             >
               רק אותיות בעברית או באנגלית (ללא רווחים)
+            </small>
+            <small
+              *ngIf="
+                (addUserForm.get('last_name')?.touched ||
+                  addUserForm.get('last_name')?.dirty) &&
+                addUserForm.get('last_name')?.hasError('minlength') &&
+                !addUserForm.get('last_name')?.hasError('pattern')
+              "
+              class="error"
+            >
+              לפחות 2 אותיות
             </small>
             <small
               *ngIf="
@@ -132,21 +134,22 @@
               *ngIf="
                 (addUserForm.get('username')?.touched ||
                   addUserForm.get('username')?.dirty) &&
-                addUserForm.get('username')?.hasError('minlength')
-              "
-              class="error"
-            >
-              לפחות 3 תווים
-            </small>
-            <small
-              *ngIf="
-                (addUserForm.get('username')?.touched ||
-                  addUserForm.get('username')?.dirty) &&
                 addUserForm.get('username')?.hasError('pattern')
               "
               class="error"
             >
               רק אותיות בעברית או באנגלית (ללא רווחים)
+            </small>
+            <small
+              *ngIf="
+                (addUserForm.get('username')?.touched ||
+                  addUserForm.get('username')?.dirty) &&
+                addUserForm.get('username')?.hasError('minlength') &&
+                !addUserForm.get('username')?.hasError('pattern')
+              "
+              class="error"
+            >
+              לפחות 3 תווים
             </small>
             <small
               *ngIf="
@@ -162,7 +165,8 @@
               *ngIf="
                 (addUserForm.get('username')?.touched ||
                   addUserForm.get('username')?.dirty) &&
-                addUserForm.get('username')?.hasError('minLetters')
+                addUserForm.get('username')?.hasError('minLetters') &&
+                !addUserForm.get('username')?.hasError('pattern')
               "
               class="error"
             >
