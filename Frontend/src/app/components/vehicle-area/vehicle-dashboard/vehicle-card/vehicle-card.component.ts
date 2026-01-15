@@ -3,71 +3,26 @@ import {
   Input,
   Output,
   EventEmitter,
-  OnInit,
-  OnDestroy,
+  ViewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
-import { VehicleService } from '../../../../services/vehicle.service';
-import { Subject, takeUntil } from 'rxjs';
+import { VehicleUsageStatsComponent } from '../vehicle-usage-stats/vehicle-usage-stats.component';
 
 @Component({
   selector: 'app-vehicle-card',
   standalone: true,
-  imports: [CommonModule, CardModule],
+  imports: [CommonModule, CardModule, VehicleUsageStatsComponent],
   templateUrl: './vehicle-card.component.html',
   styleUrl: './vehicle-card.component.css',
 })
-export class VehicleCardComponent implements OnInit, OnDestroy {
+export class VehicleCardComponent {
   @Input() vehicle!: any;
   @Input() showingMostUsed: boolean = false;
   @Output() cardClick = new EventEmitter<string>();
 
-  // Current month ride count - replaces VehicleUsageStatsComponent
-  currentVehicleRideCount: number = 0;
-  private destroy$ = new Subject<void>();
-
-  constructor(private vehicleService: VehicleService) {}
-
-  ngOnInit(): void {
-    if (this.vehicle?.id) {
-      this.getAllRidesForCurrentVehicle(this.vehicle.id);
-    }
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  /**
-   * EXACT SAME LOGIC as VehicleCardItemComponent.getAllRidesForCurrentVehicle()
-   * Gets current month ride count for this vehicle
-   */
-  getAllRidesForCurrentVehicle(vehicleId: string): void {
-    this.vehicleService
-      .getAllOrders()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (rides) => {
-          const count = rides.filter((ride) => {
-            if (ride.vehicle_id !== vehicleId) return false;
-            if (!ride.date_and_time) return false;
-            const rideDate = new Date(ride.date_and_time);
-            const currentDate = new Date();
-            return (
-              rideDate.getMonth() === currentDate.getMonth() &&
-              rideDate.getFullYear() === currentDate.getFullYear()
-            );
-          }).length;
-          this.currentVehicleRideCount = count;
-        },
-        error: (err) => {
-          console.error('Error fetching rides:', err);
-          this.currentVehicleRideCount = 0;
-        },
-      });
-  }
+  @ViewChild(VehicleUsageStatsComponent)
+  usageStats!: VehicleUsageStatsComponent;
 
   getCardClass(): string {
     const statusClass = this.vehicle?.status
@@ -97,11 +52,11 @@ export class VehicleCardComponent implements OnInit, OnDestroy {
   }
 
   getVehicleUsageCount(plateNumber: string): number {
-    return this.currentVehicleRideCount;
+    return this.usageStats?.getVehicleUsageCount(plateNumber) ?? 0;
   }
 
   getUsageLevel(plateNumber: string): 'high' | 'medium' | 'good' | 'hide' {
-    const count = this.currentVehicleRideCount;
+    const count = this.getVehicleUsageCount(plateNumber);
     if (count > 10) return 'high';
     if (count >= 5) return 'medium';
     if (count == 0) return 'hide';
