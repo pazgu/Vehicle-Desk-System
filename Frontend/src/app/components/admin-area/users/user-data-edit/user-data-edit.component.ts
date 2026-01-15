@@ -17,6 +17,7 @@ import { Subscription } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
 import { Location } from '@angular/common';
 import { ROLES, ROLE_LABELS } from '../../../../constants/roles';
+import * as validator from 'validator';
 
 @Component({
   selector: 'app-user-data',
@@ -66,7 +67,6 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
   goBack(): void {
     this.location.back();
   }
-  
   ngOnDestroy(): void {
     this.subs.forEach((sub) => sub.unsubscribe());
   }
@@ -151,10 +151,35 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
 
   initForm(): void {
     this.userForm = this.fb.group({
-      first_name: ['', Validators.required],
-      last_name: ['', Validators.required],
-      username: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
+      first_name: [
+        '',
+        [
+          Validators.required,
+          Validators.pattern(/^[A-Za-zא-ת]+$/),
+          Validators.minLength(2),
+          this.noMixedLanguageValidator(),
+        ],
+      ],
+      last_name: [
+        '',
+        [
+          Validators.required,
+          Validators.pattern(/^[A-Za-zא-ת]+$/),
+          Validators.minLength(2),
+          this.noMixedLanguageValidator(),
+        ],
+      ],
+      username: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(3),
+          Validators.pattern(/^[A-Za-zא-ת0-9]+$/),
+          this.noMixedLanguageValidator(),
+          this.minLettersValidator(2),
+        ],
+      ],
+      email: ['', [Validators.required, this.emailValidator()]],
       role: ['', Validators.required],
       department_id: [null],
       has_government_license: [false],
@@ -188,7 +213,6 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
             ? [...dbDepartments]
             : [...dbDepartments, { id: 'vip', name: 'VIP' }];
         }
-        
       },
       error: (err) => {
         this.toastService.show('שגיאה בטעינת מחלקות', 'error');
@@ -200,11 +224,11 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
   loadRoles(): void {
     this.userService.getRoles().subscribe({
       next: (rolesData) => {
-        this.roles = rolesData.map(role => ({
+        this.roles = rolesData.map((role) => ({
           key: role,
-          label: ROLE_LABELS[role] || role
+          label: ROLE_LABELS[role] || role,
         }));
-        const hasRaan = this.roles.some(r => r.key === 'raan');
+        const hasRaan = this.roles.some((r) => r.key === 'raan');
         if (!hasRaan) {
           this.roles.push({ key: 'raan', label: 'רע"ן' });
         }
@@ -224,7 +248,6 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
     });
   }
 
-
   setupRoleBasedValidation(): void {
     const roleSub = this.userForm
       .get('role')
@@ -234,27 +257,27 @@ export class UserDataEditComponent implements OnInit, OnDestroy {
       });
 
     if (roleSub) this.subs.push(roleSub);
-    }
-
-updateDepartmentValidation(role: string): void {
-  const departmentControl = this.userForm.get('department_id');
-
-  if (role === 'employee' || role === 'raan') {
-    departmentControl?.setValidators([Validators.required]);
-    
-    if (!this.isInitialLoad) {
-      departmentControl?.setValue(null, { emitEvent: false });
-    }
-  } else if (role === 'supervisor') {
-    departmentControl?.clearValidators();
-    departmentControl?.setValue(null, { emitEvent: false });
-  } else {
-    departmentControl?.clearValidators();
-    departmentControl?.setValue(null, { emitEvent: false });
   }
 
-  departmentControl?.updateValueAndValidity();
-}
+  updateDepartmentValidation(role: string): void {
+    const departmentControl = this.userForm.get('department_id');
+
+    if (role === 'employee' || role === 'raan') {
+      departmentControl?.setValidators([Validators.required]);
+
+      if (!this.isInitialLoad) {
+        departmentControl?.setValue(null, { emitEvent: false });
+      }
+    } else if (role === 'supervisor') {
+      departmentControl?.clearValidators();
+      departmentControl?.setValue(null, { emitEvent: false });
+    } else {
+      departmentControl?.clearValidators();
+      departmentControl?.setValue(null, { emitEvent: false });
+    }
+
+    departmentControl?.updateValueAndValidity();
+  }
   loadUserData(): void {
     this.userId = this.route.snapshot.paramMap.get('user_id');
 
@@ -267,7 +290,7 @@ updateDepartmentValidation(role: string): void {
           this.hasExistingExpiryDate = !!user.license_expiry_date;
           this.showFileRemovedMessage = false;
           const displayRole = user.isRaan ? 'raan' : user.role;
-          
+
           this.fetchDepartments(displayRole);
           this.userForm.patchValue({
             first_name: user.first_name,
@@ -475,25 +498,86 @@ updateDepartmentValidation(role: string): void {
             this.router.navigate(['/user-data']);
           }, 500);
         },
-        error: (err: HttpErrorResponse) => {
-          this.isSubmitting = false;
+error: (err: HttpErrorResponse) => {
+  this.isSubmitting = false;
 
-          let errorMessage = 'שגיאה בעדכון המשתמש';
-          if (err.error) {
-            if (err.error.detail) {
-              if (Array.isArray(err.error.detail)) {
-                errorMessage = err.error.detail
-                  .map((e: any) => e.msg || e)
-                  .join(', ');
-              } else {
-                errorMessage = err.error.detail;
-              }
-            } else if (typeof err.error === 'string') {
-              errorMessage = err.error;
-            }
-          }
-          this.toastService.show(errorMessage, 'error');
-        },
+  if (err.status === 0) {
+    this.toastService.show('השרת אינו זמין כרגע. נסה שוב מאוחר יותר', 'error');
+    return;
+  }
+
+  if (err.status === 400 || err.status === 422 || err.status === 409) {
+    const details = err.error?.detail;
+    if (typeof details === 'string') {
+      const lowerDetails = details.toLowerCase();
+      if (
+        lowerDetails.includes('already in use') ||
+        lowerDetails.includes('already exists') ||
+        lowerDetails.includes('duplicate key') ||
+        lowerDetails.includes('unique constraint') ||
+        lowerDetails.includes('uniqueviolation') ||
+        lowerDetails.includes('exist') ||
+        lowerDetails.includes('קיים') ||
+        lowerDetails.includes('phone') ||
+        lowerDetails.includes('email') ||
+        lowerDetails.includes('username')
+      ) {
+        this.toastService.show(
+          'שם המשתמש, מייל או מספר טלפון כבר קיימים במערכת',
+          'error'
+        );
+        return;
+      }
+    }
+
+    if (Array.isArray(details)) {
+      const existsError = details.find(
+        (d) =>
+          typeof d.msg === 'string' &&
+          (d.msg.toLowerCase().includes('already exists') ||
+            d.msg.toLowerCase().includes('already in use') ||
+            d.msg.toLowerCase().includes('duplicate') ||
+            d.msg.toLowerCase().includes('exist'))
+      );
+      
+      if (existsError) {
+        this.toastService.show(
+          'שם המשתמש, מייל או מספר טלפון כבר קיימים במערכת',
+          'error'
+        );
+        return;
+      }
+    }
+
+    if (details) {
+      const errorMsg = typeof details === 'string' 
+        ? details 
+        : Array.isArray(details) 
+          ? details.map((e: any) => e.msg || e).join(', ')
+          : 'שגיאה בעדכון המשתמש';
+      this.toastService.show(errorMsg, 'error');
+      return;
+    }
+  }
+
+  const errorString = JSON.stringify(err.error || {}).toLowerCase();
+  
+  if (
+    errorString.includes('uniqueviolation') || 
+    errorString.includes('duplicate') ||
+    errorString.includes('unique constraint') ||
+    errorString.includes('phone') ||
+    errorString.includes('email') ||
+    errorString.includes('username')
+  ) {
+    this.toastService.show(
+      'שם המשתמש, מייל או מספר טלפון כבר קיימים במערכת',
+      'error'
+    );
+    return;
+  }
+  this.toastService.show('שגיאה בעדכון המשתמש', 'error');
+},
       });
     } else {
       Object.keys(this.userForm.controls).forEach((key) => {
@@ -508,29 +592,142 @@ updateDepartmentValidation(role: string): void {
     const fullUrl = environment.socketUrl + this.user.license_file_url;
     window.open(fullUrl, '_blank');
   }
-shouldShowSupervisorMessage(): boolean {
-  const role = this.userForm.get('role')?.value;
-  const departmentId = this.userForm.get('department_id')?.value;
-  return role === 'supervisor' && (departmentId === null || departmentId === '');
-}
+  shouldShowSupervisorMessage(): boolean {
+    const role = this.userForm.get('role')?.value;
+    const departmentId = this.userForm.get('department_id')?.value;
+    return (
+      role === 'supervisor' && (departmentId === null || departmentId === '')
+    );
+  }
 
-shouldShowDepartmentField(): boolean {
-  const role = this.userForm.get('role')?.value;
-  return role === 'employee' || role === 'raan';
-}
+  shouldShowDepartmentField(): boolean {
+    const role = this.userForm.get('role')?.value;
+    return role === 'employee' || role === 'raan';
+  }
 
-isSupervisorWithDepartment(): boolean {
-  const role = this.userForm.get('role')?.value;
-  const departmentId = this.userForm.get('department_id')?.value;
-  return role === 'supervisor' && departmentId !== null && departmentId !== '';
-}
+  isSupervisorWithDepartment(): boolean {
+    const role = this.userForm.get('role')?.value;
+    const departmentId = this.userForm.get('department_id')?.value;
+    return (
+      role === 'supervisor' && departmentId !== null && departmentId !== ''
+    );
+  }
 
-getCurrentDepartmentName(): string {
-  const departmentId = this.userForm.get('department_id')?.value;
-  if (!departmentId) return '';
-  
-  const department = this.departments.find(d => d.id === departmentId);
-  return department ? department.name : '';
-}
+  getCurrentDepartmentName(): string {
+    const departmentId = this.userForm.get('department_id')?.value;
+    if (!departmentId) return '';
 
+    const department = this.departments.find((d) => d.id === departmentId);
+    return department ? department.name : '';
+  }
+
+  noMixedLanguageValidator() {
+    return (control: any) => {
+      if (!control.value) return null;
+
+      const hasHebrew = /[א-ת]/.test(control.value);
+      const hasEnglish = /[A-Za-z]/.test(control.value);
+
+      if (hasHebrew && hasEnglish) {
+        return { mixedLanguage: true };
+      }
+
+      return null;
+    };
+  }
+
+  minLettersValidator(minLetters: number) {
+    return (control: any) => {
+      if (!control.value) return null;
+
+      const letterCount = (control.value.match(/[A-Za-zא-ת]/g) || []).length;
+
+      if (letterCount < minLetters) {
+        return { minLetters: true };
+      }
+
+      return null;
+    };
+  }
+
+  preventSpaces(event: KeyboardEvent): void {
+    if (event.key === ' ') {
+      event.preventDefault();
+    }
+  }
+
+  emailValidator() {
+    return (control: any) => {
+      if (!control.value) return null;
+
+      if (validator.isEmail(control.value)) {
+        return null;
+      }
+
+      return { invalidEmail: true };
+    };
+  }
+  getUsernameErrors(): string | null {
+    const control = this.userForm.get('username');
+    if (!control) return null;
+
+    const errors: string[] = [];
+
+    if (control.hasError('required')) {
+      errors.push('חובה להזין שם משתמש');
+    }
+    if (control.hasError('pattern')) {
+      errors.push('רק אותיות בעברית או באנגלית ומספרים (ללא רווחים)');
+    }
+    if (control.hasError('mixedLanguage') && !control.hasError('pattern')) {
+      errors.push('לא ניתן לערבב עברית ואנגלית');
+    }
+    if (
+      control.hasError('minlength') &&
+      !control.hasError('pattern') &&
+      !control.hasError('mixedLanguage')
+    ) {
+      errors.push('לפחות 3 תווים');
+    }
+    if (control.hasError('minLetters') && !control.hasError('pattern')) {
+      errors.push('חייב להכיל לפחות 2 אותיות');
+    }
+
+    return errors.length > 0 ? errors.join(' | ') : null;
+  }
+  getPhoneErrors(): string | null {
+    const control = this.userForm.get('phone');
+    if (!control) return null;
+
+    const errors: string[] = [];
+    const value = control.value || '';
+
+    if (control.hasError('required')) {
+      errors.push('חובה להזין מספר טלפון');
+    }
+
+    if (value.length > 0 && !control.hasError('required')) {
+      const startsWithCorrect = value.startsWith('05');
+      const hasCorrectLength = value.length === 10;
+      const onlyDigits = /^\d+$/.test(value);
+
+      if (!startsWithCorrect && !hasCorrectLength) {
+        return 'מספר טלפון חייב להכיל 10 ספרות ולהתחיל ב-05';
+      }
+
+      if (!startsWithCorrect) {
+        errors.push('מספר טלפון חייב להתחיל ב-05');
+      }
+
+      if (!hasCorrectLength) {
+        errors.push('מספר טלפון חייב להכיל 10 ספרות');
+      }
+
+      if (!onlyDigits) {
+        errors.push('מספר טלפון חייב להכיל ספרות בלבד');
+      }
+    }
+
+    return errors.length > 0 ? errors.join(' | ') : null;
+  }
 }
