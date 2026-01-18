@@ -745,6 +745,41 @@ this.socketService.usersBlockStatus$
     });
 
   this.setupDistanceCalculationSubscriptions();
+  if (this.isRebookMode) {
+    ['start_hour', 'start_minute'].forEach(control => {
+      this.rideForm.get(control)?.valueChanges
+        .pipe(
+          debounceTime(500),
+          distinctUntilChanged(),
+          takeUntil(this.destroy$)
+        )
+        .subscribe(() => {
+          const startHour = this.rideForm.get('start_hour')?.value;
+          const startMinute = this.rideForm.get('start_minute')?.value;
+          const rideDate = this.rideForm.get('ride_date')?.value;
+
+          if (startHour && startMinute && rideDate) {
+            const now = new Date();
+            const startDateTime = new Date(rideDate);
+            startDateTime.setHours(parseInt(startHour, 10));
+            startDateTime.setMinutes(parseInt(startMinute, 10));
+            startDateTime.setSeconds(0, 0);
+
+            if (startDateTime.getTime() <= now.getTime()) {
+              this.rideForm.get('start_hour')?.setErrors({ pastTime: true });
+            } else {
+              const errors = this.rideForm.get('start_hour')?.errors;
+              if (errors && errors['pastTime']) {
+                delete errors['pastTime'];
+                this.rideForm.get('start_hour')?.setErrors(
+                  Object.keys(errors).length > 0 ? errors : null
+                );
+              }
+            }
+          }
+        });
+    });
+  }
 }
 
   private updateExtendedRideReasonValidation(): void {
@@ -1158,6 +1193,34 @@ this.socketService.usersBlockStatus$
   private isCurrentUserContext(): boolean {
     return this.rideForm.get('target_type')?.value === 'self';
   }
+  private validateRebookTimes(): boolean {
+  const startHour = this.rideForm.get('start_hour')?.value;
+  const startMinute = this.rideForm.get('start_minute')?.value;
+  const endHour = this.rideForm.get('end_hour')?.value;
+  const endMinute = this.rideForm.get('end_minute')?.value;
+  const rideDate = this.rideForm.get('ride_date')?.value;
+
+  if (!startHour || !startMinute || !endHour || !endMinute || !rideDate) {
+    return false;
+  }
+
+  const now = new Date();
+  const startDateTime = new Date(rideDate);
+  startDateTime.setHours(parseInt(startHour, 10));
+  startDateTime.setMinutes(parseInt(startMinute, 10));
+  startDateTime.setSeconds(0, 0);
+
+  if (startDateTime.getTime() <= now.getTime()) {
+    this.toastService.show(
+      'שעת ההתחלה שנבחרה כבר עברה. אנא בחר/י שעה עתידית.',
+      'error'
+    );
+    return false;
+  }
+
+  return true;
+}
+
   checkUserBlock(userId: string): void {
     if (!userId) {
       this.disableDueToBlock = false;
@@ -1352,6 +1415,9 @@ this.socketService.usersBlockStatus$
       this.showBlockedUserMessage();
       return;
     }
+    if (this.isRebookMode && !this.validateRebookTimes()) {
+    return;
+  }
     const targetType = this.rideForm.get('target_type')?.value;
     const targetEmployeeId = this.rideForm.get('target_employee_id')?.value;
     const preCheckResult = runPreSubmitChecks({
