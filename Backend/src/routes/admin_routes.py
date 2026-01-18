@@ -145,9 +145,6 @@ def fetch_user_by_id(user_id: UUID, db: Session = Depends(get_db)):
 
 
 
-
-
-
 @router.patch("/user-data-edit/{user_id}", response_model=UserResponse)
 async def edit_user_by_id_route(
     user_id: UUID,
@@ -181,6 +178,35 @@ async def edit_user_by_id_route(
     if str(user_id) != user_id_from_token and user_role_from_token != UserRole.admin.value:
         raise HTTPException(status_code=403, detail="Not authorized to edit this user's data.")
 
+    existing_username = db.query(User).filter(
+        User.username == username,
+        User.employee_id != user_id
+    ).first()
+    if existing_username:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Username '{username}' is already in use by another user."
+        )
+
+    existing_email = db.query(User).filter(
+        User.email == email,
+        User.employee_id != user_id
+    ).first()
+    if existing_email:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Email '{email}' is already in use by another user."
+        )
+
+    existing_phone = db.query(User).filter(
+        User.phone == phone,
+        User.employee_id != user_id
+    ).first()
+    if existing_phone:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Phone number '{phone}' is already in use by another user."
+        )
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id_from_token)})
     old_role = user.role
     old_is_raan = user.isRaan
