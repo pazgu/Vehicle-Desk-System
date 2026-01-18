@@ -209,13 +209,18 @@
                 </div>
               </div>
             </div>
-
             <div class="time-fields-container">
  <div class="info-text-container" *ngIf="!rideForm.errors?.['futureDateTime']">
   <small class="info-text">
     * לא ניתן להזמין נסיעות בשעות 11:15-12:15 (מנהל רכבים לא זמין)
   </small>
 </div>
+<small
+     *ngIf="isRebookMode && rideForm.get('start_hour')?.errors?.['pastTime']"
+     class="error-text"
+   >
+     שעת ההתחלה לא יכולה להיות בעבר
+   </small>
 
               <div class="error-messages-container">
                 <small
