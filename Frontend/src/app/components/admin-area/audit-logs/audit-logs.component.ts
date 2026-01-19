@@ -136,13 +136,9 @@ export class AuditLogsComponent implements OnInit {
   }
 
   fetchDepartments(): void {
-    console.log('🔵 Starting fetchDepartments...'); // DEBUG
     
     this.auditLogService.getDepartments().subscribe({
       next: (data) => {
-        console.log('🟢 Departments raw data:', data); // DEBUG
-        console.log('🟢 Is array?', Array.isArray(data)); // DEBUG
-        console.log('🟢 Type:', typeof data); // DEBUG
         
         if (!Array.isArray(data)) {
           console.error('❌ Data is not an array!', data);
@@ -155,10 +151,8 @@ export class AuditLogsComponent implements OnInit {
           name: dep.name,
         }));
         
-        console.log('🟢 Processed departments:', this.departments); // DEBUG
       },
       error: (err: any) => {
-        console.error('🔴 Department fetch error:', err); // DEBUG
         this.toastService.show('שגיאה בטעינת רשימת מחלקות', 'error');
         this.departments = [];
       },

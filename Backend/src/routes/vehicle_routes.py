@@ -227,7 +227,6 @@ async def patch_vehicle_status(
     if not user_id:
         return {"error": "User ID not found in token"}, 401
     
-    # This ALREADY cancels all future rides if status is frozen
     res = update_vehicle_status(
         vehicle_id,
         status_update.new_status,

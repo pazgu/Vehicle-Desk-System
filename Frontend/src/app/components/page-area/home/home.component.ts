@@ -849,12 +849,6 @@ this.socketService.usersBlockStatus$
     
     const hasTelAvivAsStop = mainStopIsTelAviv || extraStopIsTelAviv;
 
-    console.log('Debug Tel Aviv check:', {
-      mainStopIsTelAviv,
-      extraStopIsTelAviv,
-      hasTelAvivAsStop,
-      extraStops
-    });
 
     if (startId === stopId && extraStops.length === 0) {
       const oneWayDistance = 20;

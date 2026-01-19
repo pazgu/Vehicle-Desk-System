@@ -410,7 +410,6 @@ def update_vehicle_status(
                 .all()
             )
 
-            # Build better cancellation message
             freeze_reason_map = {
                 "accident": "תאונה",
                 "maintenance": "תחזוקה",
@@ -427,10 +426,9 @@ def update_vehicle_status(
             for ride in affected_rides:
                 ride.status = RideStatus.cancelled_vehicle_unavailable
                 ride.emergency_event = cancellation_reason
-                ride.vehicle_id = None  # THIS IS THE CRITICAL LINE YOU WERE MISSING!
+                ride.vehicle_id = None
                 affected_users.add(ride.user_id)
 
-            # Update has_pending_rebook for all affected users
             for user_id in affected_users:
                 user = db.query(User).filter(User.employee_id == user_id).first()
                 if user:
