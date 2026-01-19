@@ -8,7 +8,7 @@ import { environment } from '../../environments/environment';
 })
 export class AuditLogsService {
   private apiUrl = environment.allAuditLogsUrl;
-  private departmentsUrl = environment.latestRequirementURL;
+  private departmentsUrl = environment.departmentsUrl;
   private usersUrl = environment.usersUrl;
 
   constructor(private http: HttpClient) {}

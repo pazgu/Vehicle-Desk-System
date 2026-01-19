@@ -14,8 +14,9 @@
           <ng-container
             *ngIf="
               row.label === 'בדיקת רישיון עברה' ||
-                row.label === 'אירוע חירום' ||
-                row.label === 'רישיון ממשלתי';
+                row.label === 'רישיון ממשלתי' ||
+                row.label === 'חריגה מהמכסה החודשית' ||
+                row.label === 'נסיעה מחדש ממתינה';
               else oldValueContent
             "
           >
@@ -66,8 +67,9 @@
           <ng-container
             *ngIf="
               row.label === 'בדיקת רישיון עברה' ||
-                row.label === 'אירוע חירום' ||
-                row.label === 'רישיון ממשלתי';
+                row.label === 'רישיון ממשלתי' ||
+                row.label === 'חריגה מהמכסה החודשית' ||
+                row.label === 'נסיעה מחדש ממתינה';
               else newValueContent
             "
           >
