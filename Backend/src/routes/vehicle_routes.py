@@ -226,6 +226,7 @@ async def patch_vehicle_status(
     user_id = payload.get("user_id") or payload.get("sub")
     if not user_id:
         return {"error": "User ID not found in token"}, 401
+    
     res = update_vehicle_status(
         vehicle_id,
         status_update.new_status,
@@ -243,25 +244,14 @@ async def patch_vehicle_status(
         "freeze_details": res.get("freeze_details", "")
     })
 
-    cancelled_result = None
-    if new_status == "frozen":   
-        cancelled_result =  cancel_future_rides_for_vehicle(vehicle_id, db,user_id)
-    
-    if cancelled_result is None:
-        cancelled_result = {"cancelled": [], "users": []}
 
     await sio.emit('reservationCanceledDueToVehicleFreeze', {
         "vehicle_id": str(vehicle_id),
-        "cancelled_rides": cancelled_result["cancelled"],
-        "affected_users": [str(u) for u in cancelled_result["users"]],
         "status": new_status,
         "freeze_reason": res.get("freeze_reason", ""),
         "freeze_details": res.get("freeze_details", "")
     })
 
-    if cancelled_result:
-        res["cancelled_rides"] = cancelled_result["cancelled"]
-        res["affected_users"] = cancelled_result["users"]
 
     return res
 

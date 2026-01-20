@@ -16,8 +16,15 @@ def cancel_future_rides_for_vehicle(
     vehicle_id: str,
     db: Session,
     admin_id: str,
+    freeze_reason: str = None,
+    freeze_details: str = None,
     current_ride_id: str = None, 
 ):
+    """
+    Cancel future rides for a vehicle.
+    This should NOT be called when freezing vehicles - that's handled in update_vehicle_status.
+    Use this only for other scenarios like manual ride cancellation.
+    """
     db.execute(
         text("SET session.audit.user_id = :user_id"),
         {"user_id": str(admin_id) if admin_id else None}
@@ -41,15 +48,28 @@ def cancel_future_rides_for_vehicle(
 
     affected_users = set()
 
+    # Build descriptive message
+    freeze_reason_map = {
+        "accident": "תאונה",
+        "maintenance": "תחזוקה",
+        "personal": "אישי"
+    }
+    freeze_reason_text = freeze_reason_map.get(freeze_reason, freeze_reason) if freeze_reason else "לא זמין"
+    
+    cancellation_reason = f"הרכב הוקפא - {freeze_reason_text}"
+    if freeze_details:
+        cancellation_reason += f": {freeze_details}"
+
     for ride in rides:
         ride.status = RideStatus.cancelled_vehicle_unavailable
+        ride.emergency_event = cancellation_reason
         ride.vehicle_id = None
         db.flush()
 
         affected_users.add(ride.user_id)
 
         title = "נסיעה בוטלה"
-        message = "לצערנו הנסיעה שלך בוטלה בגלל שהרכב אינו זמין"
+        message = f"לצערנו הנסיעה שלך בוטלה. {cancellation_reason}"
 
         create_system_notification(
             user_id=ride.user_id,

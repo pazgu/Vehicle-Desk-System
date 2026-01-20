@@ -11,6 +11,7 @@ export const userFieldLabels: { [key: string]: string } = {
   license_expiry_date: 'תוקף רישיון',
   has_government_license: 'רישיון ממשלתי',
   exceeded_monthly_trip_quota: 'חריגה מהמכסה החודשית',
+  has_pending_rebook: 'נסיעה מחדש ממתינה',
 };
 
 export const vehicleFieldLabels: { [key: string]: string } = {
