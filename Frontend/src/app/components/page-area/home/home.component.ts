@@ -1660,4 +1660,10 @@ this.socketService.usersBlockStatus$
   closeDropdown() {
     this.isDropdownOpen = false;
   }
+  goBackToMyRides(): void {
+    if (this.isRebookMode) {
+      this.myRidesService.clearRebookData();
+      this.router.navigate(['/all-rides']);
+    }
+  }
 }

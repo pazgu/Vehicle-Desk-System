@@ -600,10 +600,7 @@ form .removeBtn:hover {
   line-height: 1;
 }
 
-.back-btn:hover {
-  transform: scale(1.03);
-  background-color: rgba(148, 34, 34, 0.1);
-}
+
 
 .page-title {
   color: #942222;
