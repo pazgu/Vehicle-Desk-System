@@ -4,14 +4,7 @@
       <i class="pi pi-times"></i>
     </button>
 
-    <div *ngIf="loading" class="loading-state">
-      <i
-        class="pi pi-spin pi-spinner"
-        style="font-size: 2rem; color: #942222"
-      ></i>
-      <p>טוען פרטי נסיעה...</p>
-    </div>
-
+  
     <div *ngIf="!loading && ride" class="ride-details-modal-container">
       <div class="modal-header">
         <h1>פרטי הנסיעה</h1>

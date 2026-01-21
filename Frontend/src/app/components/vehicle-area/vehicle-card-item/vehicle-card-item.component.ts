@@ -238,7 +238,7 @@ export class VehicleCardItemComponent implements OnInit {
         }
       });
     } else {
-      this.navigateToDashboard();
+      this.location.back();
     }
   }
 
