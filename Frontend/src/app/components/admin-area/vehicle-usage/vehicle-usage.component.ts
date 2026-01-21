@@ -413,6 +413,12 @@ this.exportKilometers = kilometers;
     return 'גבוה';
   }
 
+  isFilterActive(): boolean {
+  const currentMonth = (new Date().getMonth() + 1).toString();
+  const currentYear = new Date().getFullYear().toString();
+  
+  return this.selectedMonth !== currentMonth || this.selectedYear !== currentYear;
+}
   private setMonthlyDefaults(): void {
   this.selectedMonth = (new Date().getMonth() + 1).toString();
   this.selectedYear = new Date().getFullYear().toString();

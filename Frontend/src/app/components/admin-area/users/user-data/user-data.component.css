@@ -1244,3 +1244,8 @@ thead tr th:nth-child(2) {
   white-space: nowrap;
 }
 
+.app-clear-filters-btn:disabled {
+  opacity: 0;
+  cursor: not-allowed;
+  pointer-events: none;
+}
