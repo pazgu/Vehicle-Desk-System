@@ -24,12 +24,21 @@
   >
     סנן
   </button>
+
 </div>
 
 <div *ngIf="showChart">
   <button (click)="toggleUsageView()" class="toggle-view-button">
     {{ isMonthlyView ? "הצג לפי כל הזמנים" : "הצג לפי חודש" }}
   </button>
+
+  <button
+      *ngIf="isMonthlyView"
+      class="clear-filter-button"
+      (click)="clearMonthlyFilters()"
+    >
+      הסר סינון
+    </button>
   
   <div *ngIf="isMonthlyNoData && isMonthlyView" class="no-data-message">
     אין נתונים להצגה

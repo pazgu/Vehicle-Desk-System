@@ -79,6 +79,8 @@ exportLabels: string[] = [];
   toggleUsageView() {
     this.isMonthlyView = !this.isMonthlyView;
     if (this.isMonthlyView) {
+      this.setMonthlyDefaults();
+      this.currentMonthlyPage = 1;
       this.loadTopUsedVehiclesChart();
       this.reloadChart();
     } else {
@@ -410,4 +412,20 @@ this.exportKilometers = kilometers;
     if (trips >= 5 && trips <= 10) return 'בינוני';
     return 'גבוה';
   }
+
+  private setMonthlyDefaults(): void {
+  this.selectedMonth = (new Date().getMonth() + 1).toString();
+  this.selectedYear = new Date().getFullYear().toString();
+}
+
+public clearMonthlyFilters(): void {
+  this.setMonthlyDefaults();
+  this.currentMonthlyPage = 1;
+  this.loadTopUsedVehiclesChart();
+  this.updateQueryParams({
+    month: this.selectedMonth,
+    year: this.selectedYear,
+  });
+}
+
 }

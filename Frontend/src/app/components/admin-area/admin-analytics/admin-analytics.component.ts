@@ -534,90 +534,82 @@ else {
   }
 
   const timestamp = new Date().toISOString().substring(0, 10);
-  let data: any[] = [];
+ let data: any[] = [];
 
-  if (isPurposeTab) {
-    if (!this.purposeStats || !this.purposeStats.months) {
-      return;
-    }
+if (isPurposeTab) {
+  if (!this.purposeStats?.months?.length) return;
 
-    data = this.purposeStats.months.map((month) => ({
-      חודש: month.month_label,
-      מנהלי: `${month.administrative_count} (${month.administrative_percentage}%)`,
-      מבצעי: `${month.operational_count} (${month.operational_percentage}%)`,
-      'סה"כ': month.total_rides,
-    }));
+  data = this.purposeStats.months.map((month) => ({
+    חודש: month.month_label,
+    מנהלי: `${month.administrative_count} (${month.administrative_percentage}%)`,
+    מבצעי: `${month.operational_count} (${month.operational_percentage}%)`,
+    'סה"כ': month.total_rides,
+  }));
+
+} else if (isNoShowTab) {
+  if (this.noShowsComponent.filteredNoShowUsers.length === 0) {
+    this.showExportWarningTemporarily();
+    return;
   }
 
-  if (isNoShowTab) {
-    if (this.noShowsComponent.filteredNoShowUsers.length === 0) {
-      this.showExportWarningTemporarily();
-      return;
-    }
+  data = this.noShowsComponent.filteredNoShowUsers.map((user) => {
+    const count = user.no_show_count ?? 0;
+    const status = count >= 3 ? 'Critical' : count >= 1 ? 'Warning' : 'Good';
 
-    data = this.noShowsComponent.filteredNoShowUsers.map((user) => {
-      const count = user.no_show_count ?? 0;
-      let status = '';
-      if (count >= 3) status = 'Critical';
-      else if (count >= 1) status = 'Warning';
-      else status = 'Good';
+    return {
+      'User Name': user.name || 'Unknown',
+      Email: user.email || 'unknown@example.com',
+      'Employee ID': user.employee_id || user.user_id || 'N/A',
+      Role: user.role || 'לא ידוע',
+      'No-Show Count': count,
+      Status: status,
+    };
+  });
 
-      return {
-        'User Name': user.name || 'Unknown',
-        Email: user.email || 'unknown@example.com',
-        'Employee ID': user.employee_id || user.user_id || 'N/A',
-        Role: user.role || 'לא ידוע',
-        'No-Show Count': count,
-        Status: status,
-      };
-    });
-  } else if (isTopUsedTab) {
-    const labels = this.vehicleUsageComponent.exportLabels?.length
-      ? this.vehicleUsageComponent.exportLabels
-      : chartData.labels;
+} else if (isTopUsedTab) {
+  const labels = this.vehicleUsageComponent.exportLabels?.length
+    ? this.vehicleUsageComponent.exportLabels
+    : chartData.labels;
 
-    const counts = this.vehicleUsageComponent.exportRideCounts?.length
-      ? this.vehicleUsageComponent.exportRideCounts
-      : chartData.datasets[0].data;
+  const counts = this.vehicleUsageComponent.exportRideCounts?.length
+    ? this.vehicleUsageComponent.exportRideCounts
+    : chartData.datasets[0].data;
 
-    const kilometers = this.vehicleUsageComponent.exportKilometers?.length
-      ? this.vehicleUsageComponent.exportKilometers
-      : [];
+  const kilometers = this.vehicleUsageComponent.exportKilometers?.length
+    ? this.vehicleUsageComponent.exportKilometers
+    : [];
 
-    data = labels.map((label: string, i: number) => {
-      const count = Number(counts[i] ?? 0);
-      const km = Number(kilometers[i] ?? 0);
+  data = labels.map((label: string, i: number) => {
+    const count = Number(counts[i] ?? 0);
+    const km = Number(kilometers[i] ?? 0);
 
-      let usageLevel = '';
-      if (count > 10) usageLevel = 'High Usage';
-      else if (count >= 5) usageLevel = 'Medium';
-      else usageLevel = 'Good';
+    const usageLevel = count > 10 ? 'High Usage' : count >= 5 ? 'Medium' : 'Good';
 
-      return {
-        Vehicle: label,
-        'Ride Count': count,
-        'Total KM': km,
-        'Usage Level': usageLevel,
-      };
-    });
-  } else if (isRideStartTimeTab) {
-    if (!this.rideStartTimeChartData) {
-      return;
-    }
+    return {
+      Vehicle: label,
+      'Ride Count': count,
+      'Total KM': km,
+      'Usage Level': usageLevel,
+    };
+  });
 
-    const labels = this.rideStartTimeChartData.labels || [];
-    const counts = this.rideStartTimeChartData.datasets?.[0]?.data || [];
+} else if (isRideStartTimeTab) {
+  if (!this.rideStartTimeChartData) return;
 
-    data = labels.map((label: string, i: number) => ({
-      שעה: label,
-      'מספר נסיעות': counts[i] ?? 0,
-    }));
-  } else {
-    data = chartData.labels.map((label: string, i: number) => ({
-      'Formatted Status': label,
-      Count: chartData.datasets[0].data[i],
-    }));
-  }
+  const labels = this.rideStartTimeChartData.labels || [];
+  const counts = this.rideStartTimeChartData.datasets?.[0]?.data || [];
+
+  data = labels.map((label: string, i: number) => ({
+    שעה: label,
+    'מספר נסיעות': counts[i] ?? 0,
+  }));
+
+} else {
+  data = chartData.labels.map((label: string, i: number) => ({
+    'Formatted Status': label,
+    Count: chartData.datasets[0].data[i],
+  }));
+}
 
   const worksheet = XLSX.utils.json_to_sheet(data);
 

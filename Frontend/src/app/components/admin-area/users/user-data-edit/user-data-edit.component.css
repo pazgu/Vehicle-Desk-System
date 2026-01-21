@@ -228,3 +228,16 @@ label {
     width: 100%;
   }
 }
+.supervisor-message p {
+  margin: 0;
+  font-size: 14px;
+  margin-top: 28px; 
+}
+.supervisor-message .required-asterisk {
+  color: #d32f2f;
+  font-weight: bold;
+  margin-left: 4px;
+}
+.user-data-container .supervisor-message {
+  margin-right: 20px;
+}

@@ -1,9 +1,18 @@
 :host {
   display: block;
-  min-height: 85vh;
-  background-color: white;
-  contain: layout paint;
+  min-height: calc(100vh - 55px); 
+  background-color: #fffaf6;
+  padding-bottom: 90px; 
 }
+
+.wrapper {
+  min-height: calc(100vh - 55px - 90px);
+  max-height: none;        
+  overflow: visible;       
+  margin-left: 5vh;
+  padding: 10px 5px;
+}
+
 
 .notification-page {
   background: rgba(255, 255, 255, 0.502);
@@ -15,15 +24,6 @@
   backdrop-filter: blur(2px);
 }
 
-.wrapper {
-  background-image: url("/assets/images/notifications-bg.png");
-  min-height: 70vh;
-  max-height: 92vh;
-  margin-left: 5vh;
-  overflow-y: visible;
-  padding: 10px 5px;
-  background: transparent;
-}
 .title {
   font-size: 2rem;
   font-weight: 700;
@@ -119,6 +119,7 @@
   width: 300px;
   height: 445px;
   opacity: 0.8;
+
 }
 
 .message-icon {
@@ -221,23 +222,6 @@
   letter-spacing: -0.01em;
 }
 
-html,
-body {
-  height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-
-body {
-  margin: 0;
-  padding: 0;
-  font-family: "Alef", sans-serif;
-  background-size: 300px auto;
-  background-repeat: repeat;
-  background-position: top center;
-  background-attachment: fixed;
-}
-
 .back-btn-container {
   display: flex;
   justify-content: flex-end;
@@ -271,4 +255,3 @@ body {
   opacity: 0.6;
   pointer-events: none; 
 }
-

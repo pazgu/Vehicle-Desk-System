@@ -136,16 +136,24 @@ export class AuditLogsComponent implements OnInit {
   }
 
   fetchDepartments(): void {
+    
     this.auditLogService.getDepartments().subscribe({
       next: (data) => {
+        
+        if (!Array.isArray(data)) {
+          console.error('❌ Data is not an array!', data);
+          this.departments = [];
+          return;
+        }
+        
         this.departments = data.map((dep) => ({
-          ...dep,
+          id: dep.id,
           name: dep.name,
         }));
+        
       },
       error: (err: any) => {
         this.toastService.show('שגיאה בטעינת רשימת מחלקות', 'error');
-
         this.departments = [];
       },
     });

@@ -309,6 +309,40 @@ export class NewRideComponent implements OnInit {
       },
     });
   }
+  hasValidTimesForRebook(): boolean {
+  if (!this.isRebookMode) return true;
+  
+  const startHour = this.rideForm.get('start_hour')?.value;
+  const startMinute = this.rideForm.get('start_minute')?.value;
+  const endHour = this.rideForm.get('end_hour')?.value;
+  const endMinute = this.rideForm.get('end_minute')?.value;
+  
+  return !!(startHour && startMinute !== null && startMinute !== '' && 
+            endHour && endMinute !== null && endMinute !== '');
+}
+showTimeRequiredToast(): void {
+  this.toastService.show(
+    'יש להזין שעות התחלה וסיום לפני בחירת סוג רכב ורכב',
+    'warning'
+  );
+}
+onVehicleTypeClick(event: Event): void {
+  if (this.isRebookMode && !this.hasValidTimesForRebook()) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.showTimeRequiredToast();
+  }
+}
+toggleDropdown() {
+  if (this.isRebookMode && !this.hasValidTimesForRebook()) {
+    this.showTimeRequiredToast();
+    return;
+  }
+  this.isDropdownOpen = !this.isDropdownOpen;
+}
+
+
+
   canChooseVehicle(): boolean {
     const distance = this.rideForm.get('estimated_distance_km')?.value;
     const rideDate = this.rideForm.get('ride_date')?.value;
@@ -711,6 +745,41 @@ this.socketService.usersBlockStatus$
     });
 
   this.setupDistanceCalculationSubscriptions();
+  if (this.isRebookMode) {
+    ['start_hour', 'start_minute'].forEach(control => {
+      this.rideForm.get(control)?.valueChanges
+        .pipe(
+          debounceTime(500),
+          distinctUntilChanged(),
+          takeUntil(this.destroy$)
+        )
+        .subscribe(() => {
+          const startHour = this.rideForm.get('start_hour')?.value;
+          const startMinute = this.rideForm.get('start_minute')?.value;
+          const rideDate = this.rideForm.get('ride_date')?.value;
+
+          if (startHour && startMinute && rideDate) {
+            const now = new Date();
+            const startDateTime = new Date(rideDate);
+            startDateTime.setHours(parseInt(startHour, 10));
+            startDateTime.setMinutes(parseInt(startMinute, 10));
+            startDateTime.setSeconds(0, 0);
+
+            if (startDateTime.getTime() <= now.getTime()) {
+              this.rideForm.get('start_hour')?.setErrors({ pastTime: true });
+            } else {
+              const errors = this.rideForm.get('start_hour')?.errors;
+              if (errors && errors['pastTime']) {
+                delete errors['pastTime'];
+                this.rideForm.get('start_hour')?.setErrors(
+                  Object.keys(errors).length > 0 ? errors : null
+                );
+              }
+            }
+          }
+        });
+    });
+  }
 }
 
   private updateExtendedRideReasonValidation(): void {
@@ -780,12 +849,6 @@ this.socketService.usersBlockStatus$
     
     const hasTelAvivAsStop = mainStopIsTelAviv || extraStopIsTelAviv;
 
-    console.log('Debug Tel Aviv check:', {
-      mainStopIsTelAviv,
-      extraStopIsTelAviv,
-      hasTelAvivAsStop,
-      extraStops
-    });
 
     if (startId === stopId && extraStops.length === 0) {
       const oneWayDistance = 20;
@@ -985,11 +1048,24 @@ this.socketService.usersBlockStatus$
       return;
     }
     this.availableCars = this.allCars.filter((car) => car.type === selectedType);
+
+if (carControl?.errors?.['noAvailableCars'] && this.availableCars.length > 0) {
+  const errors = { ...(carControl.errors || {}) };
+  delete errors['noAvailableCars'];
+  carControl.setErrors(Object.keys(errors).length ? errors : null);
+}
+
     if (this.availableCars.length === 0) {
-      this.selectedCarId = '';
-      carControl?.setValue(null, { emitEvent: false });
-      return;
-    }
+  this.selectedCarId = '';
+  carControl?.setValue(null, { emitEvent: false });
+
+  carControl?.setErrors({ ...(carControl?.errors || {}), noAvailableCars: true });
+  carControl?.markAsTouched();
+  carControl?.markAsDirty();
+
+  return;
+}
+
 
     const firstRecommended = this.availableCars.find(
       (car) => car.is_recommended && !this.isPendingVehicle(car.id)
@@ -1027,16 +1103,18 @@ this.socketService.usersBlockStatus$
   }
 
   shouldShowCarError(): boolean {
-    const carControl = this.rideForm.get('car');
-    if (!carControl) return false;
-    const hasValidationErrors = carControl.invalid;
-    const hasPendingError = carControl.errors?.['pending'];
-    const hasRequiredError = carControl.errors?.['required'];
-    return (
-      (carControl.touched || carControl.dirty) &&
-      (hasValidationErrors || hasPendingError || hasRequiredError)
-    );
-  }
+  const carControl = this.rideForm.get('car');
+  if (!carControl) return false;
+
+  const hasNoCarsError = carControl.errors?.['noAvailableCars'];
+  const hasValidationErrors = carControl.invalid;
+
+  return (
+    (carControl.touched || carControl.dirty) &&
+    (hasValidationErrors || hasNoCarsError)
+  );
+}
+
   onRideTypeChange(): void {
     const isPrefilled = this.isRebookMode;
 
@@ -1124,6 +1202,34 @@ this.socketService.usersBlockStatus$
   private isCurrentUserContext(): boolean {
     return this.rideForm.get('target_type')?.value === 'self';
   }
+  private validateRebookTimes(): boolean {
+  const startHour = this.rideForm.get('start_hour')?.value;
+  const startMinute = this.rideForm.get('start_minute')?.value;
+  const endHour = this.rideForm.get('end_hour')?.value;
+  const endMinute = this.rideForm.get('end_minute')?.value;
+  const rideDate = this.rideForm.get('ride_date')?.value;
+
+  if (!startHour || !startMinute || !endHour || !endMinute || !rideDate) {
+    return false;
+  }
+
+  const now = new Date();
+  const startDateTime = new Date(rideDate);
+  startDateTime.setHours(parseInt(startHour, 10));
+  startDateTime.setMinutes(parseInt(startMinute, 10));
+  startDateTime.setSeconds(0, 0);
+
+  if (startDateTime.getTime() <= now.getTime()) {
+    this.toastService.show(
+      'שעת ההתחלה שנבחרה כבר עברה. אנא בחר/י שעה עתידית.',
+      'error'
+    );
+    return false;
+  }
+
+  return true;
+}
+
   checkUserBlock(userId: string): void {
     if (!userId) {
       this.disableDueToBlock = false;
@@ -1318,6 +1424,9 @@ this.socketService.usersBlockStatus$
       this.showBlockedUserMessage();
       return;
     }
+    if (this.isRebookMode && !this.validateRebookTimes()) {
+    return;
+  }
     const targetType = this.rideForm.get('target_type')?.value;
     const targetEmployeeId = this.rideForm.get('target_employee_id')?.value;
     const preCheckResult = runPreSubmitChecks({
@@ -1528,39 +1637,48 @@ this.socketService.usersBlockStatus$
   }
 
   selectCar(carId: string) {
-    if (this.isPendingVehicle(carId)) {
-      return;
-    }
+  if (this.isRebookMode && !this.hasValidTimesForRebook()) {
+    this.showTimeRequiredToast();
+    return;
+  }
 
-    this.selectedCarId = carId;
-    this.isDropdownOpen = false;
+  if (this.isPendingVehicle(carId)) {
+    return;
+  }
 
-    const carControl = this.rideForm.get('car');
-    carControl?.setValue(carId);
-    carControl?.markAsDirty();
-    carControl?.markAsTouched();
+  this.selectedCarId = carId;
+  this.isDropdownOpen = false;
 
-    this.loadFuelType(carId);
-    const selectedCar = this.availableCars.find(c => c.id === carId);
-    if (selectedCar && !selectedCar.is_recommended) {
-      const recommendedCar = this.availableCars.find(c => c.is_recommended);
-      if (recommendedCar) {
-        this.toastService.show(
-          `שים לב: בחרת רכב שאינו מומלץ. הרכב המומלץ למרחק זה הוא ${recommendedCar.vehicle_model}`,
-          'info',
-        );
-      }
+  const carControl = this.rideForm.get('car');
+  carControl?.setValue(carId);
+  carControl?.markAsDirty();
+  carControl?.markAsTouched();
+
+  this.loadFuelType(carId);
+  const selectedCar = this.availableCars.find(c => c.id === carId);
+  if (selectedCar && !selectedCar.is_recommended) {
+    const recommendedCar = this.availableCars.find(c => c.is_recommended);
+    if (recommendedCar) {
+      this.toastService.show(
+        `שים לב: בחרת רכב שאינו מומלץ. הרכב המומלץ למרחק זה הוא ${recommendedCar.vehicle_model}`,
+        'info',
+      );
     }
   }
+}
 
   getSelectedCar(): any | undefined {
     return this.availableCars.find((car) => car.id === this.selectedCarId);
   }
-  toggleDropdown() {
-    this.isDropdownOpen = !this.isDropdownOpen;
-  }
+ 
 
   closeDropdown() {
     this.isDropdownOpen = false;
+  }
+  goBackToMyRides(): void {
+    if (this.isRebookMode) {
+      this.myRidesService.clearRebookData();
+      this.router.navigate(['/all-rides']);
+    }
   }
 }

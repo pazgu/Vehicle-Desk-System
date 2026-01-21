@@ -241,11 +241,6 @@ private setupSocketListeners(): void {
     return '';
   }
 
-  openBlockUserModal(user: User) {
-    this.selectedUserForBlock = user;
-    this.isBlockUserModalOpen = true;
-    this.blockUserForm.reset({ blockDuration: 14, blockReason: '' });
-  }
 
   closeBlockUserModal() {
     this.isBlockUserModalOpen = false;
@@ -254,9 +249,51 @@ private setupSocketListeners(): void {
   }
 
   openUnblockConfirmationModal(user: User) {
-    this.selectedUserForBlock = user;
-    this.isUnblockConfirmationModalOpen = true;
-  }
+  const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+    data: {
+      title: 'שחרור חסימת משתמש',
+      message: `האם אתה בטוח שברצונך לשחרר את חסימת המשתמש ${user.first_name} ${user.last_name}?`,
+      confirmText: 'כן',
+      cancelText: 'לא',
+      isDestructive: false,
+      mode: 'confirm',
+    },
+  });
+
+  
+
+  dialogRef.afterClosed().subscribe((confirmed) => {
+    if (!confirmed) return;
+
+    this.isSubmitting = true;
+
+    const formData = this.createFormDataForUserUpdate(
+      user,
+      false,
+      null,
+      null
+    );
+
+    this.userService.updateUser(user.employee_id, formData).subscribe({
+      next: () => {
+        this.isSubmitting = false;
+        this.toastservice.show('חסימת המשתמש שוחררה בהצלחה ', 'success');
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        this.toastservice.show('שגיאה בשחרור חסימת המשתמש ', 'error');
+        console.error('Error unblocking user:', err);
+      },
+    });
+  });
+}
+clearFilters(): void {
+  this.searchTerm = '';
+  this.selectedRole = '';
+  this.filterLogs();     
+  this.currentPage = 1;  
+}
+
 
   closeUnblockConfirmationModal() {
     this.isUnblockConfirmationModalOpen = false;
@@ -292,6 +329,7 @@ private setupSocketListeners(): void {
             'success'
           );
           this.closeBlockUserModal();
+          this.loadUsersAndDepartments();
         },
         error: (err) => {
           this.isSubmitting = false;
@@ -317,6 +355,80 @@ private setupSocketListeners(): void {
       });
   }
 
+  openBlockUserModal(user: User) {
+  const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+    data: {
+      title: 'חסימת משתמש',
+      message: `חסימת המשתמש: ${user.first_name} ${user.last_name}`,
+      confirmText: 'חסום',
+      cancelText: 'ביטול',
+      isDestructive: true,
+
+      mode: 'block',
+      initialDuration: 14,
+      initialReason: '',
+      durationLabel: 'משך חסימה (ימים):',
+      reasonLabel: 'סיבת החסימה:',
+      reasonPlaceholder: 'הזן את הסיבה לחסימת משתמש זה (חובה)',
+    },
+  });
+
+  dialogRef.afterClosed().subscribe((result) => {
+    if (!result || result === false) return;
+
+    // result is object in block mode ✅
+    if (typeof result === 'object' && result.confirmed) {
+      const blockDuration = result.duration;
+      const blockReason = result.reason;
+
+      this.isSubmitting = true;
+      const now = new Date();
+      const blockExpiresAt = new Date(now.setDate(now.getDate() + blockDuration));
+
+      const formData = this.createFormDataForUserUpdate(
+        user,
+        true,
+        blockExpiresAt.toISOString().slice(0, 16),
+        blockReason
+      );
+
+      this.userService.updateUser(user.employee_id, formData).subscribe({
+        next: () => {
+          this.isSubmitting = false;
+          this.toastservice.show(
+            `המשתמש נחסם בהצלחה למשך ${blockDuration} ימים. הסיבה נרשמה`,
+            'success'
+          );
+        },
+        error: (err) => {
+          this.isSubmitting = false;
+
+          let errorMessage = 'שגיאה בחסימת המשתמש ';
+          if (err.status === 400) {
+            errorMessage =
+              err.error?.detail ||
+              'נתונים שגויים - יש לבדוק את השדות ולנסות שוב ';
+          } else if (err.status === 403) {
+            errorMessage = 'אין לך הרשאה לחסום משתמש זה ';
+          } else if (err.status === 404) {
+            errorMessage = 'המשתמש לא נמצא במערכת ';
+          } else if (err.status === 500) {
+            errorMessage = 'שגיאה בשרת או במסד הנתונים - נסה שוב מאוחר יותר ';
+          } else if (err.status === 0 || !err.status) {
+            errorMessage = 'אין חיבור לשרת - בדוק את החיבור לאינטרנט ';
+          } else if (err.error?.detail) {
+            errorMessage = err.error.detail;
+          }
+
+          this.toastservice.show(errorMessage, 'error');
+          console.error('Error blocking user:', err);
+        },
+      });
+    }
+  });
+}
+
+
   confirmUnblockUser() {
     if (!this.selectedUserForBlock) {
       return;
@@ -338,6 +450,7 @@ private setupSocketListeners(): void {
           this.isSubmitting = false;
           this.toastservice.show('חסימת המשתמש שוחררה בהצלחה ', 'success');
           this.closeUnblockConfirmationModal();
+          this.loadUsersAndDepartments();
         },
         error: (err) => {
           this.isSubmitting = false;

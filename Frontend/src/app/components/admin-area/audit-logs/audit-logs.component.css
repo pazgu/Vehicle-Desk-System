@@ -824,3 +824,9 @@ input[type="checkbox"] {
   color: white;
   transform: translateY(-2px);
 }
+.status-indicator.pending-rebook {
+  background-color: #d4c5f9;
+}
+.pending-rebook-row {
+  background-color: #d4c5f9 !important;
+}

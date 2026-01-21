@@ -1,3 +1,4 @@
+<app-vehicle-usage-stats></app-vehicle-usage-stats>
 <div class="vehicle-details-wrapper">
   <div class="vehicle-wrapper-header">
     <h1>פרטי רכב</h1>
@@ -28,16 +29,16 @@
     >
       <div class="vehicle-horizontal-content">
         <div class="right-side">
-          <div class="usage-line">
+          <div class="usage-line" *ngIf="vehicle?.plate_number">
             <div
               class="usage-indicator"
               [style.background-color]="getUsageBarColor(vehicle.plate_number)"
             ></div>
             <span
               class="usage-number"
-              *ngIf="getVehicleUsageCount(vehicle.plate_number) > 0"
+              *ngIf="getVehicleRideCount(vehicle.plate_number) > 0"
             >
-              {{ getVehicleUsageCount(vehicle.plate_number) }} נסיעות קיימות
+              {{ getVehicleRideCount(vehicle.plate_number) }} נסיעות קיימות
               לרכב זה
             </span>
           </div>
@@ -138,7 +139,7 @@
           </p>
 
           <p>
-            <strong>מספר נסיעות לחודש זה:</strong> {{ currentVehicleRideCount }}
+            <strong>מספר נסיעות לחודש זה:</strong> {{ getVehicleRideCount(vehicle.plate_number) }}
           </p>
 
           <p>

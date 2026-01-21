@@ -6,8 +6,9 @@ export function getRowBackgroundColor(log: any): string {
   if (
     log.action === 'UPDATE' &&
     log.entity_type === 'Ride' &&
-    (log.change_data?.new?.emergency_event === true ||
-      log.change_data?.new?.emergency_event === 'true')
+    log.change_data?.new?.emergency_event &&
+    log.change_data?.new?.emergency_event !== null &&
+    typeof log.change_data?.new?.emergency_event === 'string'
   ) {
     return '#feaf66';
   }
@@ -91,8 +92,9 @@ export function getEnglishStatusLabel(log: any): string {
   if (
     log.action === 'UPDATE' &&
     log.entity_type === 'Ride' &&
-    (log.change_data?.new?.emergency_event === true ||
-      log.change_data?.new?.emergency_event === 'true')
+    log.change_data?.new?.emergency_event &&
+    log.change_data?.new?.emergency_event !== null &&
+    typeof log.change_data?.new?.emergency_event === 'string'
   ) {
     return 'Emergency Event';
   }
@@ -204,6 +206,8 @@ export function translateRideStatus(status: string | null | undefined): string {
       return 'הושלם';
     case 'cancelled_due_to_no_show':
       return 'בוטלה עקב אי הגעה';
+    case 'cancelled_vehicle_unavailable':
+      return 'בוטלה - רכב לא זמין';
     default:
       return status;
   }
@@ -460,6 +464,11 @@ export function getUserAuditRows(
       label: 'חריגה מהמכסה החודשית',
       oldValue: oldData.exceeded_monthly_trip_quota,
       newValue: newData.exceeded_monthly_trip_quota,
+    },
+    {
+      label: 'נסיעה מחדש ממתינה',
+      oldValue: oldData.has_pending_rebook,
+      newValue: newData.has_pending_rebook,
     },
   ];
 }

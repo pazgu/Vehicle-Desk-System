@@ -48,9 +48,10 @@
             <option value="30days">30 ימים אחרונים</option>
             <option value="custom">טווח מותאם אישית</option>
           </select>
-          <button class="export-button" (click)="resetFilters()">
-            הסר סינון
-          </button>
+          <button class="app-clear-filters-btn" (click)="resetFilters()">
+  הסר סינון
+</button>
+
         </div>
         <div *ngIf="selectedRange === 'custom'" class="custom-range-fields">
           <input
@@ -112,7 +113,10 @@
             <span class="status-indicator cancelled-due-to-no-show"></span> בוטל
             עקב אי הגעה
           </div>
+          <div class="status-item">
+            <span class="status-indicator pending-rebook"></span> נסיעה מחדש ממתינה
         </div>
+      </div>
       </div>
 
       <div class="table-container" *ngIf="!selectedLog">
@@ -132,12 +136,10 @@
               [ngClass]="{
                   'delete-row': log.action === 'DELETE',
                   'emergency-row': log.action === 'UPDATE' && log.entity_type === 'Ride' &&
-                    (log.change_data?.new?.emergency_event === true || log.change_data?.new?.emergency_event === 'true'),
+                    log.change_data?.new?.emergency_event &&
+                    typeof log.change_data?.new?.emergency_event === 'string',
                   'frozen-vehicle-row': log.entity_type === 'Vehicle' && log.change_data?.new?.status === 'frozen',
-                  'pending-row': log.entity_type === 'Ride' && (
-                    (log.action === 'UPDATE' && log.change_data?.new?.status === 'pending') ||
-                    (log.action === 'INSERT' && log.change_data?.status === 'pending')
-                  ),
+                  'pending-rebook-row': log.entity_type === 'User' && log.change_data?.new?.has_pending_rebook === true,
                   'active-row':
                     (log.entity_type === 'Ride' && log.change_data?.new?.status === 'in_progress') ||
                     (log.entity_type === 'Vehicle' && log.change_data?.new?.status === 'in_use'),
@@ -263,6 +265,7 @@
           <app-update-log
             *ngIf="selectedLog.action === 'UPDATE'"
             [selectedLog]="selectedLog"
+            [cityMap]="cityMap"
             [departments]="departments"
             [users]="users"
             [vehicles]="vehicles"

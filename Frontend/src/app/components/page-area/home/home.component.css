@@ -299,9 +299,10 @@ form .removeBtn:hover {
   padding: 1rem;
   border: 1px solid #ccc;
   border-radius: 8px;
-  margin-right: 1090px;
+  margin-right: 1040px;
+  margin-left: 28px;
   background-color: #9422221f;
-  width: 300px;
+  width: 245px;
 }
 
 .full-trip-display a,
@@ -599,10 +600,7 @@ form .removeBtn:hover {
   line-height: 1;
 }
 
-.back-btn:hover {
-  transform: scale(1.03);
-  background-color: rgba(148, 34, 34, 0.1);
-}
+
 
 .page-title {
   color: #942222;
@@ -875,6 +873,42 @@ option:hover {
   justify-content: center;
   transition: transform 0.2s;
 }
+select:disabled {
+  background-color: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+  opacity: 0.6;
+  border-color: #ddd;
+}
+/* סגנון ל-custom select מושבת */
+.disabled-select {
+  opacity: 0.6;
+  pointer-events: none;
+}
+.disabled-select .select-header {
+  background-color: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+  border-color: #ddd;
+}
+.select-header.disabled {
+  background-color: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+  border-color: #ddd;
+}
+.select-header.disabled:hover {
+  border-color: #ddd;
+}
+
+.rebook-time-warning {
+  color: #888;
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+  
+}
+
+
 
 .select-options {
   position: absolute;

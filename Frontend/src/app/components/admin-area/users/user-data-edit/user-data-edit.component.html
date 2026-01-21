@@ -9,15 +9,42 @@
 
       <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="user-form">
         <div class="form-row">
-          <div class="form-group">
-            <label for="last_name">שם משפחה</label>
-            <input
-              type="text"
-              id="last_name"
-              formControlName="last_name"
-              class="form-control"
-            />
-          </div>
+        <div class="form-group">
+          <label for="last_name">שם משפחה</label>
+          <input
+            type="text"
+            id="last_name"
+            formControlName="last_name"
+            class="form-control"
+            (keypress)="preventSpaces($event)"
+          />
+          <div class="validation-wrapper">
+          <small
+            *ngIf="f['last_name'].hasError('required')"
+            class="error-message"
+          >
+            חובה להזין שם משפחה
+          </small>
+          <small
+            *ngIf="f['last_name'].hasError('pattern')"
+            class="error-message"
+          >
+            רק אותיות בעברית או באנגלית (ללא רווחים)
+          </small>
+          <small
+            *ngIf="f['last_name'].hasError('minlength') && !f['last_name'].hasError('pattern')"
+            class="error-message"
+          >
+            לפחות 2 אותיות
+          </small>
+          <small
+            *ngIf="f['last_name'].hasError('mixedLanguage')"
+            class="error-message"
+          >
+            לא ניתן לערבב עברית ואנגלית
+          </small>
+        </div>
+        </div>
 
           <div class="form-group">
             <label for="first_name">שם פרטי</label>
@@ -26,7 +53,34 @@
               id="first_name"
               formControlName="first_name"
               class="form-control"
+              (keypress)="preventSpaces($event)"
             />
+            <div class="validation-wrapper">
+            <small
+              *ngIf="f['first_name'].hasError('required')"
+              class="error-message"
+            >
+              חובה להזין שם פרטי
+            </small>
+            <small
+              *ngIf="f['first_name'].hasError('pattern')"
+              class="error-message"
+            >
+              רק אותיות בעברית או באנגלית (ללא רווחים)
+            </small>
+            <small
+              *ngIf="f['first_name'].hasError('minlength') && !f['first_name'].hasError('pattern')"
+              class="error-message"
+            >
+              לפחות 2 אותיות
+            </small>
+            <small
+              *ngIf="f['first_name'].hasError('mixedLanguage')"
+              class="error-message"
+            >
+              לא ניתן לערבב עברית ואנגלית
+            </small>
+          </div>
           </div>
 
           <div class="form-group">
@@ -36,77 +90,91 @@
               id="username"
               formControlName="username"
               class="form-control"
+              (keypress)="preventSpaces($event)"
             />
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="role">תפקיד</label>
-            <select id="role" formControlName="role" class="form-control">
-              <option value="" disabled>בחר תפקיד</option>
-              <option *ngFor="let role of roles" [value]="role.key">
-                {{ role.label }}
-              </option>
-            </select>
-          </div>
-
-          <div
-            class="form-group"
-            *ngIf="
-              userForm.get('role')?.value !== 'admin' &&
-              userForm.get('role')?.value !== 'inspector'
-            "
-          >
-            <label for="department">
-              מחלקה
-              <span
-                *ngIf="userForm.get('role')?.value === 'employee'"
-                class="required-asterisk"
-                >*</span
-              >
-              <span
-                *ngIf="userForm.get('role')?.value === 'supervisor'"
-                class="optional-label"
-                >(אופציונלי)</span
-              >
-            </label>
-           <select
-              id="department_id"
-              formControlName="department_id"
-              class="form-control"
-            >
-              <option [ngValue]="null">
-                בחר מחלקה
-              </option>
-              <option *ngFor="let dept of departments" [ngValue]="dept.id">
-                {{ dept.name }}
-              </option>
-            </select>
-            <small
-              *ngIf="f['department_id'].touched && f['department_id'].errors?.['required']"
-              class="error-message"
-            >
-              יש לבחור מחלקה
+            <small *ngIf="getUsernameErrors()" class="error-message">
+              {{ getUsernameErrors() }}
             </small>
           </div>
         </div>
+
+<div class="form-row">
+  <div class="form-group">
+    <label for="role">תפקיד</label>
+    <select id="role" formControlName="role" class="form-control">
+      <option value="" disabled>בחר תפקיד</option>
+      <option *ngFor="let role of roles" [value]="role.key">
+        {{ role.label }}
+      </option>
+    </select>
+  </div>
+<div class="form-group" *ngIf="isSupervisorWithDepartment()">
+  <label for="department">מחלקה </label>
+  <input
+    type="text"
+    id="department_display"
+    [value]="getCurrentDepartmentName()"
+    class="form-control"
+    readonly
+  />
+  <div class="supervisor-department-message">
+    <p> לשינוי שיבוץ מחלקה, אנא עבור לדף נתוני מחלקות</p>
+  </div>
+</div>
+
+  <div class="form-group" *ngIf="shouldShowSupervisorMessage()">
+    <div class="supervisor-message">
+      <p> כדי לשבץ מנהל מחלקה, אנא שבץ מדף נתוני מחלקות</p>
+    </div>
+  </div>
+
+  <div
+    class="form-group"
+    *ngIf="
+      userForm.get('role')?.value === 'employee' ||
+      userForm.get('role')?.value === 'raan'
+    "
+  >
+    <label for="department">
+      מחלקה
+      <span
+        *ngIf="userForm.get('role')?.value === 'employee'"
+        class="required-asterisk"
+        >*</span
+      >
+    </label>
+    <select
+      id="department_id"
+      formControlName="department_id"
+      class="form-control"
+    >
+      <option [ngValue]="null">בחר מחלקה</option>
+      <option *ngFor="let dept of departments" [ngValue]="dept.id">
+        {{ dept.name }}
+      </option>
+    </select>
+    <small
+      *ngIf="f['department_id'].touched && f['department_id'].errors?.['required']"
+      class="error-message"
+    >
+      חובה לבחור מחלקה
+    </small>
+  </div>
+</div>
         <div class="form-row">
-          <div class="form-group">
-            <label for="phone">מספר טלפון</label>
-            <input
-              type="tel"
-              id="phone"
-              formControlName="phone"
-              class="form-control"
-            />
-            <small
-              *ngIf="f['phone'].touched && f['phone'].invalid"
-              class="phone-error"
-            >
-              טלפון חייב להכיל 10 ספרות ולהתחיל ב-05
-            </small>
-          </div>
+      <div class="form-group">
+        <label for="phone">מספר טלפון</label>
+        <input
+          type="tel"
+          id="phone"
+          formControlName="phone"
+          class="form-control"
+          (keypress)="preventSpaces($event)"
+        />
+        <small *ngIf="getPhoneErrors()" class="error-message">
+          {{ getPhoneErrors() }}
+        </small>
+</div>
         </div>
 
         <div class="form-row">
@@ -121,18 +189,28 @@
           </div>
         </div>
 
-        <div class="form-row">
           <div class="form-group">
-            <label for="email">כתובת מייל </label>
-            <input
-              type="email"
-              id="email"
-              formControlName="email"
-              class="form-control"
-            />
-          </div>
+          <label for="email">כתובת מייל</label>
+          <input
+            type="email"
+            id="email"
+            formControlName="email"
+            class="form-control"
+            (keypress)="preventSpaces($event)"
+          />
+          <small
+            *ngIf="f['email'].hasError('required')"
+            class="error-message"
+          >
+            חובה להזין אימייל
+          </small>
+          <small
+            *ngIf="f['email'].hasError('invalidEmail')"
+            class="error-message"
+          >
+            אימייל לא תקין
+          </small>
         </div>
-
         <div class="form-row">
           <div class="form-group">
             <label>האם למשתמש יש רישיון ממשלתי?</label>

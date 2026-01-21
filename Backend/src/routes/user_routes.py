@@ -227,7 +227,13 @@ async def create_order(
                 detail="You must complete your rebook before creating a new ride."
             )
 
-        license_check_passed = bool(getattr(user, "has_government_license", False))
+        rider_id = ride_request.user_id if ride_request.user_id else user_id
+        rider = db.query(User).filter(User.employee_id == rider_id).first()
+        
+        if not rider:
+            raise HTTPException(status_code=404, detail="Rider not found")
+        
+        license_check_passed = bool(getattr(rider, "has_government_license", False))
 
         new_ride = await create_ride(
             db, user_id, ride_request, license_check_passed=license_check_passed

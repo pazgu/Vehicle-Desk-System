@@ -46,7 +46,7 @@ export class FilterPanelComponent implements OnInit, OnChanges {
 
   constructor(
     private vehicleService: VehicleService,
-    private http: HttpClient
+    private http: HttpClient,
   ) {}
 
   ngOnInit(): void {
@@ -118,6 +118,25 @@ export class FilterPanelComponent implements OnInit, OnChanges {
       this.inactiveVehicles = [];
       this.applyFilters();
     }
+    this.updateQueryParams.emit();
+  }
+
+  clearFilters(): void {
+    this.showFilters = false;
+    this.statusFilter = '';
+    this.typeFilter = '';
+    this.departmentFilter = '';
+    this.showInactive = false;
+    this.inactiveVehicles = [];
+    this.applyFilters();
+    this.updateQueryParams.emit();
+  }
+
+  clearSorting(): void {
+    this.showSort = false;
+    this.sortByMostUsed = false;
+    this.sortByMostUsedAllTime = false;
+    this.applyFilters();
     this.updateQueryParams.emit();
   }
 
@@ -226,7 +245,7 @@ export class FilterPanelComponent implements OnInit, OnChanges {
       switch (this.statusFilter) {
         case 'זמין':
           filtered = filtered.filter(
-            (vehicle) => vehicle.status === 'available'
+            (vehicle) => vehicle.status === 'available',
           );
           break;
         case 'בשימוש':
@@ -244,11 +263,11 @@ export class FilterPanelComponent implements OnInit, OnChanges {
     if (this.departmentFilter) {
       if (this.departmentFilter === 'לא משוייך למחלקה') {
         filtered = filtered.filter(
-          (vehicle) => vehicle.department === 'לא משוייך למחלקה'
+          (vehicle) => vehicle.department === 'לא משוייך למחלקה',
         );
       } else {
         filtered = filtered.filter(
-          (vehicle) => vehicle.department === this.departmentFilter
+          (vehicle) => vehicle.department === this.departmentFilter,
         );
       }
     }
@@ -315,7 +334,7 @@ export class FilterPanelComponent implements OnInit, OnChanges {
     inactive: boolean,
     sortByMostUsed: boolean = false,
     sortByMostUsedAllTime: boolean = false,
-    department: string = ''
+    department: string = '',
   ): void {
     this.statusFilter = status;
     this.typeFilter = type;
