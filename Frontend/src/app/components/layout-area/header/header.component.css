@@ -56,7 +56,8 @@ html {
 .nav-right .dropbtn {
   display: inline-flex;
   align-items: center;
-  padding: 0 2px; }
+  padding: 6px 10px;
+  background: none; }
 
 
 .nav-right .nav-icon::after {
@@ -349,7 +350,11 @@ a[routerLink="/notifications"] {
 }
 
 .dropdown-content {
+  opacity: 0;
   display: none;
+  display : flex;
+  justify-content: center;
+  align-items: center;
   position: absolute;
   background-color: #f1f1f1;
   min-width: 120px;
@@ -373,11 +378,11 @@ a[routerLink="/notifications"] {
 }
 
 .dropdown-content a:hover {
-  background-color: #fff9f6;
   color: #942222;
 }
 
 .dropdown:hover .dropdown-content {
+  opacity: 1;
   display: block;
 }
 
