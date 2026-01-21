@@ -115,7 +115,8 @@ export class AdminGuidelinesComponent implements OnInit {
         this.toastService.show('הנתונים נשמרו בהצלחה!', 'success');
         this.originalValue = this.form.getRawValue();
       },
-      error: () => {
+      error: (e) => {
+        console.error('Error updating guidelines:', e);
         this.toastService.show('שגיאה בשמירת נתונים', 'error');
       },
     });
