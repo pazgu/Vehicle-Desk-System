@@ -315,3 +315,9 @@
   transform: translateY(0);
   box-shadow: 0 2px 8px rgba(0, 51, 102, 0.12);
 }
+
+.clear-filter-button:disabled {
+  opacity: 0;
+  cursor: not-allowed;
+  pointer-events: none;
+}
