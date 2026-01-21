@@ -29,19 +29,7 @@
     >
       <div class="vehicle-horizontal-content">
         <div class="right-side">
-          <div class="usage-line" *ngIf="vehicle?.plate_number">
-            <div
-              class="usage-indicator"
-              [style.background-color]="getUsageBarColor(vehicle.plate_number)"
-            ></div>
-            <span
-              class="usage-number"
-              *ngIf="getVehicleRideCount(vehicle.plate_number) > 0"
-            >
-              {{ getVehicleRideCount(vehicle.plate_number) }} נסיעות קיימות
-              לרכב זה
-            </span>
-          </div>
+          <div class="usage-line" *ngIf="vehicle?.plate_number"></div>
           <div class="vehicle-image-container">
             <img
               *ngIf="vehicle.image_url"
@@ -92,7 +80,10 @@
             <label><strong>מחלקה:</strong></label>
             <select [(ngModel)]="vehicle.department_id" class="edit-select">
               <option value="">לא משוייך למחלקה</option>
-              <option *ngFor="let dept of filteredDepartments" [value]="dept.id">
+              <option
+                *ngFor="let dept of filteredDepartments"
+                [value]="dept.id"
+              >
                 {{ dept.name }}
               </option>
             </select>
@@ -135,18 +126,25 @@
           </div>
           <p *ngIf="vehicle.mileage_last_updated">
             <strong>עודכן לאחרונה:</strong>
-            {{ vehicle.mileage_last_updated | date : "dd/MM/yyyy" }}
+            {{ vehicle.mileage_last_updated | date: "dd/MM/yyyy" }}
           </p>
 
           <p>
-            <strong>מספר נסיעות לחודש זה:</strong> {{ getVehicleRideCount(vehicle.plate_number) }}
+            <strong>מספר נסיעות לחודש זה:</strong>
+            {{ getVehicleRideCount(vehicle.plate_number) }}
           </p>
 
+          <p>
+            <strong>מספר נסיעות קיימות לרכב זה:</strong>
+            {{ getAllTimeRideCount(vehicle.plate_number) }}
+          </p>
+
+          
           <p>
             <strong>תוקף חוזה השכרה:</strong>
             {{
               vehicle.lease_expiry
-                ? (vehicle.lease_expiry | date : "dd/MM/yyyy")
+                ? (vehicle.lease_expiry | date: "dd/MM/yyyy")
                 : "לא סופק"
             }}
           </p>
@@ -164,7 +162,10 @@
             <button
               class="unfreeze-button button-spacing"
               (click)="confirmUnfreeze()"
-              *ngIf="vehicle.status === 'frozen' && !isLeaseExpired(vehicle.lease_expiry)"
+              *ngIf="
+                vehicle.status === 'frozen' &&
+                !isLeaseExpired(vehicle.lease_expiry)
+              "
             >
               שחרור מהקפאה
             </button>
