@@ -42,6 +42,8 @@ export class VehicleCardItemComponent implements OnInit {
   ];
   fuelTypes = ['electric', 'hybrid', 'gasoline'];
 
+  allTimeRidesMap: Record<string, number> = {};
+
   @ViewChild(VehicleUsageStatsComponent) usageStats?: VehicleUsageStatsComponent;
   
   constructor(
@@ -56,6 +58,7 @@ export class VehicleCardItemComponent implements OnInit {
   ngOnInit(): void {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     this.loadDepartments();
+    this.loadAllTimeRides(); 
 
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
@@ -87,9 +90,28 @@ export class VehicleCardItemComponent implements OnInit {
     }
   }
 
+  loadAllTimeRides(): void {
+    this.vehicleService.getTopUsedVehicles().subscribe({
+      next: (data) => {
+        this.allTimeRidesMap = {};
+        data.forEach((vehicle) => {
+          this.allTimeRidesMap[vehicle.plate_number] = vehicle.ride_count;
+        });
+      },
+      error: (err) => {
+        console.error('Error fetching all-time vehicle usage:', err);
+      },
+    });
+  }
+
   getVehicleRideCount(plateNumber: string): number {
     return this.usageStats?.getVehicleUsageCount(plateNumber) || 0;
   }
+
+  getAllTimeRideCount(plateNumber: string): number {
+    return this.allTimeRidesMap[plateNumber] || 0;
+  }
+
 
   loadDepartments(): void {
     this.vehicleService.getAllDepartments().subscribe({
@@ -104,14 +126,17 @@ export class VehicleCardItemComponent implements OnInit {
       },
     });
   }
+  
   enterEditMode(): void {
     this.isEditMode = true;
     this.originalVehicle = JSON.parse(JSON.stringify(this.vehicle));
   }
+  
   cancelEdit(): void {
     this.vehicle = JSON.parse(JSON.stringify(this.originalVehicle));
     this.isEditMode = false;
   }
+  
   saveChanges(): void {
     if (this.vehicle.mileage === null || this.vehicle.mileage === undefined || this.vehicle.mileage === '') {
       this.toastService.show('יש להזין קילומטראז\'', 'error');
@@ -217,18 +242,17 @@ export class VehicleCardItemComponent implements OnInit {
     }
   }
 
- private cameFromNotifications(): boolean {
-  return this.route.snapshot.queryParamMap.get('from') === 'notifications';
-}
-private navigateToDashboard(): void {
-  if (this.cameFromNotifications()) {
-    this.navigateRouter.navigate(['/notifications']);
-    return;
+  private cameFromNotifications(): boolean {
+    return this.route.snapshot.queryParamMap.get('from') === 'notifications';
   }
-
-  this.navigateRouter.navigate(['/vehicle-dashboard']);
-}
-
+  
+  private navigateToDashboard(): void {
+    if (this.cameFromNotifications()) {
+      this.navigateRouter.navigate(['/notifications']);
+      return;
+    }
+    this.navigateRouter.navigate(['/vehicle-dashboard']);
+  }
 
   confirmDeleteVehicle(vehicle: any) {
     if (vehicle.status === 'in-use') return;
@@ -305,6 +329,7 @@ private navigateToDashboard(): void {
         return fuelType;
     }
   }
+  
   translateFreezeReason(freezeReason: string | null | undefined): string {
     if (!freezeReason) return '';
     switch (freezeReason.toLowerCase()) {
@@ -318,6 +343,7 @@ private navigateToDashboard(): void {
         return freezeReason;
     }
   }
+  
   updateVehicleStatus(newStatus: string, reason?: string, details?: string): void {
     if (!this.vehicle?.id) return;
 
@@ -380,7 +406,6 @@ private navigateToDashboard(): void {
     return Math.min((count / maxRides) * 100, 100);
   }
 
-
   navigateToTimeline(): void {
     if (this.vehicle?.id) {
       this.navigateRouter.navigate([
@@ -388,6 +413,7 @@ private navigateToDashboard(): void {
       ]);
     }
   }
+  
   confirmArchive(vehicle: any): void {
     const message = `שים/י לב: רכב ${vehicle.plate_number} עומד בתנאי ארכוב מסיבות אלו:
 - הרכב מוקפא
@@ -456,6 +482,7 @@ private navigateToDashboard(): void {
       event.target.value = this.freezeDetails;
     }
   }
+  
   confirmFreeze(): void {
     if (!this.freezeReason.trim()) {
       this.toastService.show('יש להזין סיבת הקפאה', 'error');
@@ -501,6 +528,7 @@ private navigateToDashboard(): void {
       this.updateVehicleStatus('frozen', this.freezeReason, this.freezeDetails);
     });
   }
+  
   isLeaseExpired(expiry: string): boolean {
     return new Date(expiry) < new Date();
   }
