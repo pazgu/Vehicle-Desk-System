@@ -266,51 +266,39 @@ canEdit(order: any): boolean {
 
     return start.getTime() > Date.now();
   }
-  canDelete(order: any, isRebookContext: boolean = false): boolean {
-    if (!order) return false;
+canDelete(order: any, isRebookContext: boolean = false): boolean {
+  if (!order) return false;
 
-    const status = (order.status ?? '').toString().toLowerCase().trim();
+  const status = (order.status ?? '').toString().toLowerCase().trim();
 
-    const userRole = localStorage.getItem('role');
-    const isSupervisor = userRole === 'supervisor';
-
-    if (status === 'cancelled_vehicle_unavailable') {
-      return true;
-    }
-
-    const [day, month, year] = order.date.split('.');
-    const rideDateTime = new Date(`${year}-${month}-${day}T${order.time}:00`);
-
-    if (isNaN(rideDateTime.getTime())) {
-      console.error('Invalid ride datetime:', order.date, order.time);
-      return false;
-    }
-
-    const now = new Date();
-    const isFuture = rideDateTime.getTime() > now.getTime();
-    const isPending = status === 'pending';
-
-    if (!isSupervisor) {
-      if (isRebookContext) {
-        return isPending && isFuture;
-      }
-      const timeDifferenceHours =
-        (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
-      return isPending && isFuture && timeDifferenceHours > 2;
-    }
-
-    const isDeletableStatus = ['pending', 'approved'].includes(status);
-    if (!isDeletableStatus || !isFuture) return false;
-
-    if (isRebookContext) {
-      return true;
-    }
-
-    const timeDifferenceHours =
-      (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
-
-    return timeDifferenceHours > 2;
+  // Rebook / vehicle unavailable → always deletable
+  if (status === 'cancelled_vehicle_unavailable') {
+    return true;
   }
+
+  const userRole = localStorage.getItem('role');
+  const isSupervisor = userRole === 'supervisor';
+
+  // Parse ride start time as Israel local time
+  const rideStart = this.parseDateIsrael(order.start_datetime);
+  const now = new Date();
+
+  const isFuture = rideStart >= now;
+
+  // Rebook context → keep existing behavior
+  if (isRebookContext) {
+    return isFuture;
+  }
+
+  // Normal delete rules
+  if (!isSupervisor) {
+    // User
+    return status === 'pending' && isFuture;
+  }
+
+  // Supervisor
+  return ['pending', 'approved'].includes(status) && isFuture;
+}
 
   onViewRide(order: any): void {
     this.viewRide.emit(order);
