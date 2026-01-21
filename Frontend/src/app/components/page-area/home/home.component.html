@@ -21,6 +21,11 @@
             ← חזור
           </button>
         </div>
+        <div *ngIf="isRebookMode" class="step-header">
+          <button type="button" class="back-btn" (click)="goBackToMyRides()">
+            ← חזור לנסיעות שלי
+          </button>
+        </div>
       </div>
       <hr />
 
