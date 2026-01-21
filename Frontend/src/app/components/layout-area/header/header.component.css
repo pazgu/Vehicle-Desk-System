@@ -87,7 +87,6 @@ html {
   gap: 8px;
 }
 
-/* separators only inside the links wrapper */
 .nav-right-links > .nav-link:not(:last-child)::after,
 .nav-right-links > .dropdown:not(:last-child) .dropbtn::after {
   content: " |";
@@ -95,7 +94,6 @@ html {
   opacity: 0.9;
 }
 
-/* bell icon never gets separator */
 .nav-right .nav-icon::after {
   content: none !important;
 }
