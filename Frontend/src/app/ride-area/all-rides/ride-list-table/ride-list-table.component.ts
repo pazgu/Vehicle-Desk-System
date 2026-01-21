@@ -179,8 +179,6 @@ computePaidOrders(): void {
     .slice(FREE_RIDES)
     .forEach(o => this.paidOrderIds.add(String(o.ride_id ?? o.id)));
 
-  console.log('Eligible monthly rides:', eligibleMonthly.map(x => ({ id: x.ride_id ?? x.id, dt: x.rideDt, status: x.status })));
-  console.log('Paid rides this month:', [...this.paidOrderIds]);
 }
 
 
@@ -215,16 +213,6 @@ canEdit(order: any): boolean {
 
   const isFuture = rideStart >= now;
 
-  console.log(
-    'Order start_datetime:',
-    order.start_datetime,
-    '| parsed (Israel):',
-    rideStart,
-    '| now:',
-    now,
-    '| isFuture:',
-    isFuture
-  );
 
   if (!isSupervisor) {
     return isPending && isFuture;
