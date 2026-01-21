@@ -9,6 +9,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MyRidesService } from '../../../services/myrides.service';
+import { DateTime } from 'luxon';
 
 @Component({
   selector: 'app-ride-list-table',
@@ -197,29 +198,46 @@ isPaidOrder(order: any): boolean {
     return startDay !== endDay;
   }
 
-  canEdit(order: any): boolean {
-    const userRole = localStorage.getItem('role');
-    const isSupervisor = userRole === 'supervisor';
-    const isPending = order.status.toLowerCase() === 'pending';
-    const isFuture = this.parseDate(order.date) >= new Date();
+  parseDateIsrael(dateStr: string): Date {
+  return DateTime
+    .fromISO(dateStr, { zone: 'Asia/Jerusalem' })
+    .toJSDate();
+}
 
-    if (!isSupervisor) {
-      return isPending && isFuture;
-    }
 
-    const isEditableStatus = ['pending', 'approved'].includes(
-      order.status.toLowerCase()
-    );
-    if (!isEditableStatus || !isFuture) return false;
+canEdit(order: any): boolean {
+  const userRole = localStorage.getItem('role');
+  const isSupervisor = userRole === 'supervisor';
 
-    const rideDateTime = new Date(
-      `${order.date.split('.').reverse().join('-')}T${order.time}:00`
-    );
-    const now = new Date();
-    const timeDifferenceHours =
-      (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
-    return timeDifferenceHours > 2;
+  const status = order.status.toLowerCase();
+  const isPending = status === 'pending';
+
+  const rideStart = this.parseDateIsrael(order.start_datetime);
+  const now = new Date();
+
+  const isFuture = rideStart >= now;
+
+  console.log(
+    'Order start_datetime:',
+    order.start_datetime,
+    '| parsed (Israel):',
+    rideStart,
+    '| now:',
+    now,
+    '| isFuture:',
+    isFuture
+  );
+
+  // Regular users (unchanged)
+  if (!isSupervisor) {
+    return isPending && isFuture;
   }
+
+  // Supervisor rules
+  const isEditableStatus = ['pending', 'approved'].includes(status);
+  return isEditableStatus && isFuture;
+}
+
 
   ChangeStatus(id: string) {
     const userRole = localStorage.getItem('role');
