@@ -415,7 +415,7 @@ export class VehicleCardItemComponent implements OnInit {
   }
   
   confirmArchive(vehicle: any): void {
-    const message = `שים/י לב: רכב ${vehicle.plate_number} עומד בתנאי ארכוב מסיבות אלו:
+    const message = `שימ/י לב: רכב ${vehicle.plate_number} עומד בתנאי ארכוב מסיבות אלו:
 - הרכב מוקפא
 - תוקף חוזה ההשכרה פג
 - יש עליו נסיעות

@@ -41,10 +41,14 @@
       </div>
     </div>
       <div class="filters-actions">
-        <button type="button" class="app-clear-filters-btn" (click)="clearFilters()">
-
-          הסר סינון
-        </button>
+      <button 
+        type="button" 
+        class="app-clear-filters-btn" 
+        (click)="clearFilters()"
+        [disabled]="!isFilterActive()"
+      >
+        הסר סינון
+      </button>
     </div>
   </div>
 
