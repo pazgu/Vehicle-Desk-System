@@ -46,14 +46,25 @@ html {
   margin: 0 20px;
 }
 
-.nav-center a {
-  color: white;
-  text-decoration: none;
-  margin: 0 10px;
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 14px; 
 }
 
-.nav-left,
-.nav-right {
+.nav-right .nav-link,
+.nav-right .dropbtn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 2px; }
+
+
+.nav-right .nav-icon::after {
+  content: none !important;
+}
+
+
+.nav-left {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -69,6 +80,26 @@ html {
   transform: translateX(-50%);
   z-index: 0;
 }
+
+.nav-right-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* separators only inside the links wrapper */
+.nav-right-links > .nav-link:not(:last-child)::after,
+.nav-right-links > .dropdown:not(:last-child) .dropbtn::after {
+  content: " |";
+  margin-inline-start: 14px;
+  opacity: 0.9;
+}
+
+/* bell icon never gets separator */
+.nav-right .nav-icon::after {
+  content: none !important;
+}
+
 
 .logo {
   height: 56px;
@@ -134,14 +165,14 @@ label {
   width: 30px !important;
   height: 30px !important;
   display: block;
-  margin-right: 5px;
+  margin-right: 0; 
 }
 
 .car-icon {
   width: 35px !important;
   height: 35px !important;
   display: block;
-  margin-right: 10px;
+  margin-right: 0; 
 }
 
 .media-dropdown {
