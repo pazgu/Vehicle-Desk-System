@@ -9,6 +9,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MyRidesService } from '../../../services/myrides.service';
+import { DateTime } from 'luxon';
 
 @Component({
   selector: 'app-ride-list-table',
@@ -197,29 +198,46 @@ isPaidOrder(order: any): boolean {
     return startDay !== endDay;
   }
 
-  canEdit(order: any): boolean {
-    const userRole = localStorage.getItem('role');
-    const isSupervisor = userRole === 'supervisor';
-    const isPending = order.status.toLowerCase() === 'pending';
-    const isFuture = this.parseDate(order.date) >= new Date();
+  parseDateIsrael(dateStr: string): Date {
+  return DateTime
+    .fromISO(dateStr, { zone: 'Asia/Jerusalem' })
+    .toJSDate();
+}
 
-    if (!isSupervisor) {
-      return isPending && isFuture;
-    }
 
-    const isEditableStatus = ['pending', 'approved'].includes(
-      order.status.toLowerCase()
-    );
-    if (!isEditableStatus || !isFuture) return false;
+canEdit(order: any): boolean {
+  const userRole = localStorage.getItem('role');
+  const isSupervisor = userRole === 'supervisor';
 
-    const rideDateTime = new Date(
-      `${order.date.split('.').reverse().join('-')}T${order.time}:00`
-    );
-    const now = new Date();
-    const timeDifferenceHours =
-      (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
-    return timeDifferenceHours > 2;
+  const status = order.status.toLowerCase();
+  const isPending = status === 'pending';
+
+  const rideStart = this.parseDateIsrael(order.start_datetime);
+  const now = new Date();
+
+  const isFuture = rideStart >= now;
+
+  console.log(
+    'Order start_datetime:',
+    order.start_datetime,
+    '| parsed (Israel):',
+    rideStart,
+    '| now:',
+    now,
+    '| isFuture:',
+    isFuture
+  );
+
+  // Regular users (unchanged)
+  if (!isSupervisor) {
+    return isPending && isFuture;
   }
+
+  // Supervisor rules
+  const isEditableStatus = ['pending', 'approved'].includes(status);
+  return isEditableStatus && isFuture;
+}
+
 
   ChangeStatus(id: string) {
     const userRole = localStorage.getItem('role');
@@ -248,51 +266,39 @@ isPaidOrder(order: any): boolean {
 
     return start.getTime() > Date.now();
   }
-  canDelete(order: any, isRebookContext: boolean = false): boolean {
-    if (!order) return false;
+canDelete(order: any, isRebookContext: boolean = false): boolean {
+  if (!order) return false;
 
-    const status = (order.status ?? '').toString().toLowerCase().trim();
+  const status = (order.status ?? '').toString().toLowerCase().trim();
 
-    const userRole = localStorage.getItem('role');
-    const isSupervisor = userRole === 'supervisor';
-
-    if (status === 'cancelled_vehicle_unavailable') {
-      return true;
-    }
-
-    const [day, month, year] = order.date.split('.');
-    const rideDateTime = new Date(`${year}-${month}-${day}T${order.time}:00`);
-
-    if (isNaN(rideDateTime.getTime())) {
-      console.error('Invalid ride datetime:', order.date, order.time);
-      return false;
-    }
-
-    const now = new Date();
-    const isFuture = rideDateTime.getTime() > now.getTime();
-    const isPending = status === 'pending';
-
-    if (!isSupervisor) {
-      if (isRebookContext) {
-        return isPending && isFuture;
-      }
-      const timeDifferenceHours =
-        (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
-      return isPending && isFuture && timeDifferenceHours > 2;
-    }
-
-    const isDeletableStatus = ['pending', 'approved'].includes(status);
-    if (!isDeletableStatus || !isFuture) return false;
-
-    if (isRebookContext) {
-      return true;
-    }
-
-    const timeDifferenceHours =
-      (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
-
-    return timeDifferenceHours > 2;
+  // Rebook / vehicle unavailable → always deletable
+  if (status === 'cancelled_vehicle_unavailable') {
+    return true;
   }
+
+  const userRole = localStorage.getItem('role');
+  const isSupervisor = userRole === 'supervisor';
+
+  // Parse ride start time as Israel local time
+  const rideStart = this.parseDateIsrael(order.start_datetime);
+  const now = new Date();
+
+  const isFuture = rideStart >= now;
+
+  // Rebook context → keep existing behavior
+  if (isRebookContext) {
+    return isFuture;
+  }
+
+  // Normal delete rules
+  if (!isSupervisor) {
+    // User
+    return status === 'pending' && isFuture;
+  }
+
+  // Supervisor
+  return ['pending', 'approved'].includes(status) && isFuture;
+}
 
   onViewRide(order: any): void {
     this.viewRide.emit(order);
