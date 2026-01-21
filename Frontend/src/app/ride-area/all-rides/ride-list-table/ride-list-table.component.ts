@@ -152,10 +152,8 @@ computePaidOrders(): void {
   const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
 
   const toRideDateTime = (o: any): Date => {
-    // prefer real datetimes if you have them
     if (o?.start_datetime) return new Date(o.start_datetime);
 
-    // fallback to dd.mm.yyyy + HH:mm (your UI format)
     const [day, month, year] = (o?.date ?? '').split('.').map(Number);
     const [hh, mm] = (o?.time ?? '12:00').split(':').map(Number);
     return new Date(year, (month ?? 1) - 1, day ?? 1, hh ?? 12, mm ?? 0, 0, 0);
@@ -228,12 +226,10 @@ canEdit(order: any): boolean {
     isFuture
   );
 
-  // Regular users (unchanged)
   if (!isSupervisor) {
     return isPending && isFuture;
   }
 
-  // Supervisor rules
   const isEditableStatus = ['pending', 'approved'].includes(status);
   return isEditableStatus && isFuture;
 }
@@ -271,7 +267,6 @@ canDelete(order: any, isRebookContext: boolean = false): boolean {
 
   const status = (order.status ?? '').toString().toLowerCase().trim();
 
-  // Rebook / vehicle unavailable → always deletable
   if (status === 'cancelled_vehicle_unavailable') {
     return true;
   }
@@ -279,24 +274,19 @@ canDelete(order: any, isRebookContext: boolean = false): boolean {
   const userRole = localStorage.getItem('role');
   const isSupervisor = userRole === 'supervisor';
 
-  // Parse ride start time as Israel local time
   const rideStart = this.parseDateIsrael(order.start_datetime);
   const now = new Date();
 
   const isFuture = rideStart >= now;
 
-  // Rebook context → keep existing behavior
   if (isRebookContext) {
     return isFuture;
   }
 
-  // Normal delete rules
   if (!isSupervisor) {
-    // User
     return status === 'pending' && isFuture;
   }
 
-  // Supervisor
   return ['pending', 'approved'].includes(status) && isFuture;
 }
 
