@@ -217,6 +217,8 @@ async def create_supervisor_ride(db: Session, user_id: UUID, ride: RideCreate):
             detail="A reason must be provided when requesting an off-road vehicle."
         )
 
+    license_check_passed = bool(getattr(rider, "has_government_license", False))
+
     new_ride = Ride(
         id=uuid4(),
         user_id=rider_id,
@@ -232,9 +234,9 @@ async def create_supervisor_ride(db: Session, user_id: UUID, ride: RideCreate):
         actual_distance_km=ride.actual_distance_km,
         four_by_four_reason=ride.four_by_four_reason,
         status=RideStatus.approved,
-        license_check_passed=False,
+        license_check_passed=license_check_passed,
         submitted_at=datetime.now(timezone.utc),
-        extra_stops = ride.extra_stops or None
+        extra_stops=ride.extra_stops or None
     )
 
     vehicle.mileage += ride.estimated_distance_km

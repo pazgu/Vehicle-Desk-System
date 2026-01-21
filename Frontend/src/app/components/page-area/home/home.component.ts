@@ -1048,11 +1048,24 @@ this.socketService.usersBlockStatus$
       return;
     }
     this.availableCars = this.allCars.filter((car) => car.type === selectedType);
+
+if (carControl?.errors?.['noAvailableCars'] && this.availableCars.length > 0) {
+  const errors = { ...(carControl.errors || {}) };
+  delete errors['noAvailableCars'];
+  carControl.setErrors(Object.keys(errors).length ? errors : null);
+}
+
     if (this.availableCars.length === 0) {
-      this.selectedCarId = '';
-      carControl?.setValue(null, { emitEvent: false });
-      return;
-    }
+  this.selectedCarId = '';
+  carControl?.setValue(null, { emitEvent: false });
+
+  carControl?.setErrors({ ...(carControl?.errors || {}), noAvailableCars: true });
+  carControl?.markAsTouched();
+  carControl?.markAsDirty();
+
+  return;
+}
+
 
     const firstRecommended = this.availableCars.find(
       (car) => car.is_recommended && !this.isPendingVehicle(car.id)
@@ -1090,16 +1103,18 @@ this.socketService.usersBlockStatus$
   }
 
   shouldShowCarError(): boolean {
-    const carControl = this.rideForm.get('car');
-    if (!carControl) return false;
-    const hasValidationErrors = carControl.invalid;
-    const hasPendingError = carControl.errors?.['pending'];
-    const hasRequiredError = carControl.errors?.['required'];
-    return (
-      (carControl.touched || carControl.dirty) &&
-      (hasValidationErrors || hasPendingError || hasRequiredError)
-    );
-  }
+  const carControl = this.rideForm.get('car');
+  if (!carControl) return false;
+
+  const hasNoCarsError = carControl.errors?.['noAvailableCars'];
+  const hasValidationErrors = carControl.invalid;
+
+  return (
+    (carControl.touched || carControl.dirty) &&
+    (hasValidationErrors || hasNoCarsError)
+  );
+}
+
   onRideTypeChange(): void {
     const isPrefilled = this.isRebookMode;
 
@@ -1659,5 +1674,11 @@ this.socketService.usersBlockStatus$
 
   closeDropdown() {
     this.isDropdownOpen = false;
+  }
+  goBackToMyRides(): void {
+    if (this.isRebookMode) {
+      this.myRidesService.clearRebookData();
+      this.router.navigate(['/all-rides']);
+    }
   }
 }
