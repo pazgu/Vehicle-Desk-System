@@ -56,10 +56,13 @@ html {
 .nav-right .dropbtn {
   display: inline-flex;
   align-items: center;
-  padding: 6px 10px;
+  padding: 0px 2px;
   background: none; }
 
-
+.nav-link-2{
+    padding: 6px 10px;
+    background: none;
+}
 .nav-right .nav-icon::after {
   content: none !important;
 }
