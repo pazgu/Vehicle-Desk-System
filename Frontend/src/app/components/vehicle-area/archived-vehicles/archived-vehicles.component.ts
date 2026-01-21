@@ -30,6 +30,8 @@ export class ArchivedVehiclesComponent implements OnInit {
     ride_count: number;
   }[] = [];
 
+  monthlyRidesMap: Record<string, number> = {};
+
   userRole: string | null = null;
   departmentMap: Map<string, string> = new Map();
 
@@ -45,7 +47,7 @@ export class ArchivedVehiclesComponent implements OnInit {
     this.fetchAndMapDepartments().then(() => {
       this.loadArchivedVehicles();
       this.fetchVehicleTypes();
-      this.loadVehicleUsageData();
+      this.loadMonthlyRidesData(); 
     });
   }
 
@@ -89,17 +91,17 @@ export class ArchivedVehiclesComponent implements OnInit {
     );
   }
 
-  loadVehicleUsageData(): void {
-    this.vehicleService.getTopUsedVehicles().subscribe({
+
+  loadMonthlyRidesData(): void {
+    this.vehicleService.getCurrentMonthVehicleUsage().subscribe({
       next: (data) => {
-        this.vehicleUsageData = data;
-        this.topUsedVehiclesMap = {};
+        this.monthlyRidesMap = {};
         data.forEach((vehicle) => {
-          this.topUsedVehiclesMap[vehicle.plate_number] = vehicle.ride_count;
+          this.monthlyRidesMap[vehicle.plate_number] = vehicle.total_rides;
         });
       },
       error: (err) => {
-        console.error(' Error fetching vehicle usage data:', err);
+        console.error('Error fetching monthly vehicle usage:', err);
       },
     });
   }
@@ -116,20 +118,22 @@ export class ArchivedVehiclesComponent implements OnInit {
     });
   }
 
-  getVehicleUsageCount(plateNumber: string): number {
-    return this.topUsedVehiclesMap[plateNumber] || 0;
+
+
+  getMonthlyRideCount(plateNumber: string): number {
+    return this.monthlyRidesMap[plateNumber] || 0;
   }
 
-  getUsageLevel(plateNumber: string): 'high' | 'medium' | 'good' | 'hide' {
-    const count = this.getVehicleUsageCount(plateNumber);
+  getMonthlyUsageLevel(plateNumber: string): 'high' | 'medium' | 'good' | 'hide' {
+    const count = this.getMonthlyRideCount(plateNumber);
     if (count > 10) return 'high';
     if (count >= 5) return 'medium';
-    if (count == 0) return 'hide';
+    if (count === 0) return 'hide';
     return 'good';
   }
 
-  getUsageBarColor(plateNumber: string): string {
-    const level = this.getUsageLevel(plateNumber);
+  getMonthlyUsageBarColor(plateNumber: string): string {
+    const level = this.getMonthlyUsageLevel(plateNumber);
     switch (level) {
       case 'high':
         return '#FF5252';
@@ -144,11 +148,10 @@ export class ArchivedVehiclesComponent implements OnInit {
     }
   }
 
-  getUsageBarWidth(plateNumber: string): number {
-    const count = this.getVehicleUsageCount(plateNumber);
-    const maxRides = 15;
-    return Math.min((count / maxRides) * 100, 100);
-  }
+
+
+
+
 
   getCardClass(status: string | null | undefined): string {
     return 'card-archived';
