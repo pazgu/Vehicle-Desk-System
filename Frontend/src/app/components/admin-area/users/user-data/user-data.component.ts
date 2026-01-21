@@ -294,6 +294,9 @@ clearFilters(): void {
   this.currentPage = 1;  
 }
 
+isFilterActive(): boolean {
+  return this.searchTerm.trim() !== '' || this.selectedRole !== '';
+}
 
   closeUnblockConfirmationModal() {
     this.isUnblockConfirmationModalOpen = false;
