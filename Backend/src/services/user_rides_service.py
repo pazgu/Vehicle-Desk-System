@@ -13,6 +13,8 @@ from src.schemas.ride_status_enum import RideStatusEnum
 
 from ..utils.audit_utils import log_action
 from ..utils.auth import get_current_user
+from ..utils.socket_manager import emit_ride_status_updated, emit_order_updated
+
 
 def filter_rides(query, status: Optional[RideStatus], from_date, to_date):
     if status:
@@ -116,17 +118,42 @@ def get_all_rides(user_id: UUID, db: Session, status=None, from_date=None, to_da
     return [RideSchema(**dict(row._mapping)) for row in rows] 
 
     
-def update_ride_status(db: Session, ride_id: UUID, new_status: str, changed_by: UUID):
+async def update_ride_status(db: Session, ride_id: UUID, new_status: str, changed_by: UUID):
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(changed_by)})
-    # Fetch the ride
+    
     ride = db.query(Ride).filter(Ride.id == ride_id).first()
     if not ride:
         raise ValueError("Ride not found")
 
-    # Update the ride status
+    rider = db.query(User).filter(User.employee_id == ride.user_id).first()
+    vehicle = db.query(Vehicle).filter(Vehicle.id == ride.vehicle_id).first()
+    
     ride.status = new_status
     db.commit()
     db.refresh(ride)
+
+    if rider and rider.department_id:
+        await emit_ride_status_updated(
+            ride_id=str(ride.id),
+            new_status=new_status,
+            department_id=str(rider.department_id)
+        )
+        
+        await emit_order_updated(
+            ride_id=str(ride.id),
+            ride_data={
+                'employee_name': f"{rider.first_name} {rider.last_name}",
+                'requested_vehicle_model': vehicle.vehicle_model if vehicle else '',
+                'vehicle_type': vehicle.type if vehicle else '',  # ← ADD THIS
+                'start_datetime': ride.start_datetime.isoformat(),
+                'end_datetime': ride.end_datetime.isoformat() if ride.end_datetime else None,
+                'estimated_distance_km': float(ride.estimated_distance_km),
+                'status': new_status,
+                'destination': ride.destination,
+                'submitted_at': ride.submitted_at.isoformat() if ride.submitted_at else None,
+                'department_id': str(rider.department_id)
+            }
+        )
 
     db.execute(text("SET session.audit.user_id = DEFAULT"))
 
