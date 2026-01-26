@@ -55,7 +55,7 @@
           [routerLink]="['/admin/add-new-user']"
           class="nav-link special-link"
         >
-          | הוסף משתמש חדש
+           הוסף משתמש חדש
         </a>
 
         <a
@@ -259,94 +259,90 @@
       </div>
 
       <div class="nav-right">
-        <a
-          *ngIf="(role$ | async) === 'admin'"
-          [routerLink]="['/vehicle-dashboard']"
-          class="nav-link"
-          href="#"
-          >רכבים |
-        </a>
-        <a
-          *ngIf="(role$ | async) === 'admin'"
-          [routerLink]="['/audit-logs']"
-          class="nav-link"
-          href="#"
-        >
-          מעקב פעולות |</a
-        >
-        <div *ngIf="(role$ | async) === 'admin'" class="dropdown">
-          <button class="dropbtn">נתונים ועריכה |</button>
-          <div class="dropdown-content">
-            <a [routerLink]="['/user-data']" class="nav-link" href="#">
-              נתוני עובדים
-            </a>
-            <a [routerLink]="['/department-data']" class="nav-link" href="#">
-              נתוני מחלקות
-            </a>
-            <a [routerLink]="['/admin/guidelines']" class="nav-link" href="#">
-              הנחיות נסיעה
-            </a>
-          </div>
-        </div>
-        <a
-          *ngIf="(role$ | async) === 'admin'"
-          [routerLink]="['/admin/critical-issues']"
-          class="nav-link"
-          href="#"
-          >דוחות |</a
-        >
-        <a
-          *ngIf="(role$ | async) === 'admin'"
-          [routerLink]="['/admin/analytics']"
-          class="nav-link"
-          href="#"
-          >סטטיסטיקות</a
-        >
+  <div class="nav-right-links">
+    <a
+      *ngIf="(role$ | async) === 'admin'"
+      [routerLink]="['/vehicle-dashboard']"
+      class="nav-link"
+      href="#"
+      >רכבים</a
+    >
 
-        <a
-          *ngIf="(role$ | async) === 'supervisor'"
-          [routerLink]="['/supervisor-dashboard']"
-          class="nav-link"
-          href="#"
-          >הזמנות מחלקה |
-        </a>
-        <a
-          *ngIf="(role$ | async) === 'supervisor'"
-          [routerLink]="['/all-rides']"
-          class="nav-link"
-          href="#"
-          >ההזמנות שלי</a
-        >
+    <a
+      *ngIf="(role$ | async) === 'admin'"
+      [routerLink]="['/audit-logs']"
+      class="nav-link"
+      href="#"
+      >מעקב פעולות</a
+    >
 
-        <a
-          *ngIf="(role$ | async) === 'employee'"
-          [routerLink]="['/all-rides']"
-          class="nav-link"
-          href="#"
-          >ההזמנות שלי</a
-        >
-
-        <a
-          *ngIf="(role$ | async) === 'inspector'"
-          [routerLink]="['/inspector/inspection']"
-          class="nav-link"
-          >בדיקת רכבים יומית</a
-        >
-        <a *ngIf="isLoggedIn && !isAuthPage" routerLink="/notifications">
-          <img
-            src="/assets/images/bell-icon.png"
-            alt="Notifications"
-            class="bell-icon"
-          />
-          <span
-            class="badge"
-            *ngIf="unreadCount$ | async as count"
-            [hidden]="count === 0"
-          >
-            {{ count }}
-          </span>
-        </a>
+    <div *ngIf="(role$ | async) === 'admin'" class="dropdown">
+      <button class="dropbtn">נתונים ועריכה</button>
+      <div class="dropdown-content">
+        <a [routerLink]="['/user-data']" class="nav-link-2" href="#">נתוני עובדים</a>
+        <hr style="border: 0.07px solid #33333369; width: 100%;">
+        <a [routerLink]="['/department-data']" class="nav-link-2" href="#">נתוני מחלקות</a>
+        <hr style="border: 0.07px solid #33333369; width: 100%;">
+        <a [routerLink]="['/admin/guidelines']" class="nav-link-2" href="#">הנחיות נסיעה</a>
       </div>
+    </div>
+
+    <a
+      *ngIf="(role$ | async) === 'admin'"
+      [routerLink]="['/admin/critical-issues']"
+      class="nav-link"
+      href="#"
+      >דוחות</a
+    >
+
+    <a
+      *ngIf="(role$ | async) === 'admin'"
+      [routerLink]="['/admin/analytics']"
+      class="nav-link"
+      href="#"
+      >סטטיסטיקות</a
+    >
+
+    <a
+      *ngIf="(role$ | async) === 'supervisor'"
+      [routerLink]="['/supervisor-dashboard']"
+      class="nav-link"
+      href="#"
+      >הזמנות מחלקה</a
+    >
+
+    <a
+      *ngIf="(role$ | async) === 'supervisor'"
+      [routerLink]="['/all-rides']"
+      class="nav-link"
+      href="#"
+      >ההזמנות שלי</a
+    >
+
+    <a
+      *ngIf="(role$ | async) === 'employee'"
+      [routerLink]="['/all-rides']"
+      class="nav-link"
+      href="#"
+      >ההזמנות שלי</a
+    >
+
+    <a
+      *ngIf="(role$ | async) === 'inspector'"
+      [routerLink]="['/inspector/inspection']"
+      class="nav-link"
+      >בדיקת רכבים יומית</a
+    >
+  </div>
+
+  <a *ngIf="isLoggedIn && !isAuthPage" routerLink="/notifications" class="nav-icon">
+    <img src="/assets/images/bell-icon.png" alt="Notifications" class="bell-icon" />
+    <span class="badge" *ngIf="unreadCount$ | async as count" [hidden]="count === 0">
+      {{ count }}
+    </span>
+  </a>
+</div>
+
     </div>
   </body>
   <div class="navbar-spacer"></div>

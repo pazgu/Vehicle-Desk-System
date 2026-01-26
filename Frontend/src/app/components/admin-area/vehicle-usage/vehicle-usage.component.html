@@ -32,10 +32,11 @@
     {{ isMonthlyView ? "הצג לפי כל הזמנים" : "הצג לפי חודש" }}
   </button>
 
-  <button
+    <button
       *ngIf="isMonthlyView"
       class="clear-filter-button"
       (click)="clearMonthlyFilters()"
+      [disabled]="!isFilterActive()"
     >
       הסר סינון
     </button>

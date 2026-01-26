@@ -46,14 +46,29 @@ html {
   margin: 0 20px;
 }
 
-.nav-center a {
-  color: white;
-  text-decoration: none;
-  margin: 0 10px;
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 14px; 
 }
 
-.nav-left,
-.nav-right {
+.nav-right .nav-link,
+.nav-right .dropbtn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0px 2px;
+  background: none; }
+
+.nav-link-2{
+    padding: 6px 10px;
+    background: none;
+}
+.nav-right .nav-icon::after {
+  content: none !important;
+}
+
+
+.nav-left {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -69,6 +84,24 @@ html {
   transform: translateX(-50%);
   z-index: 0;
 }
+
+.nav-right-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-right-links > .nav-link:not(:last-child)::after,
+.nav-right-links > .dropdown:not(:last-child) .dropbtn::after {
+  content: " |";
+  margin-inline-start: 14px;
+  opacity: 0.9;
+}
+
+.nav-right .nav-icon::after {
+  content: none !important;
+}
+
 
 .logo {
   height: 56px;
@@ -100,6 +133,8 @@ label {
   padding: 0;
   margin: 0;
 }
+
+
 
 .user-menu-container::after {
   content: "";
@@ -134,14 +169,14 @@ label {
   width: 30px !important;
   height: 30px !important;
   display: block;
-  margin-right: 5px;
+  margin-right: 0; 
 }
 
 .car-icon {
   width: 35px !important;
   height: 35px !important;
   display: block;
-  margin-right: 10px;
+  margin-right: 0; 
 }
 
 .media-dropdown {
@@ -320,7 +355,11 @@ a[routerLink="/notifications"] {
 }
 
 .dropdown-content {
+  opacity: 0;
   display: none;
+  display : flex;
+  justify-content: center;
+  align-items: center;
   position: absolute;
   background-color: #f1f1f1;
   min-width: 120px;
@@ -344,11 +383,11 @@ a[routerLink="/notifications"] {
 }
 
 .dropdown-content a:hover {
-  background-color: #fff9f6;
   color: #942222;
 }
 
 .dropdown:hover .dropdown-content {
+  opacity: 1;
   display: block;
 }
 

@@ -13,6 +13,7 @@ def create_requirement(db: Session, data: RideRequirementUpdate) -> RideRequirem
     """Create a new ride requirements record."""
     new_req = RideRequirement(
         items=data.items,
+        title="Vehicle Requirements",
         updated_by=data.updated_by,
         updated_at=datetime.utcnow(),
     )
@@ -26,24 +27,11 @@ def update_requirement(db: Session, data: RideRequirementUpdate) -> RideRequirem
     """Full update (used for PUT)"""
     existing = get_latest_requirement(db)
     if not existing:
-        raise ValueError("No existing requirement to update.")
+        return create_requirement(db, data)
 
     existing.items = data.items
+    existing.title = "Vehicle Requirements"
     existing.updated_by = data.updated_by
-    existing.updated_at = datetime.utcnow()
-
-    db.commit()
-    db.refresh(existing)
-    return existing
-
-    existing = get_latest_requirement(db)
-    if not existing:
-        raise ValueError("No existing requirement to update.")
-
-    if "items" in data:
-        existing.items = data["items"]
-
-    existing.updated_by = updated_by
     existing.updated_at = datetime.utcnow()
 
     db.commit()

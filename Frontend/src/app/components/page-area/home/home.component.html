@@ -21,6 +21,11 @@
             ← חזור
           </button>
         </div>
+        <div *ngIf="isRebookMode" class="step-header">
+          <button type="button" class="back-btn" (click)="goBackToMyRides()">
+            ← חזור לנסיעות שלי
+          </button>
+        </div>
       </div>
       <hr />
 
@@ -529,44 +534,27 @@
     </ng-container>
   </div>
   <div
-    *ngIf="
-      rideForm?.get('vehicle_type') &&
-      availableCars.length === 0 &&
-        hasTouchedVehicleType() &&
-        shouldShowCarError() &&
-        canChooseVehicle() &&
-      !isRebookMode
-    "
-    class="car-validation-message"
-  >
-   <ng-container
-      *ngIf="
-        availableCars.length === 0 &&
-        !shouldShowCarError() &&
-        !isRebookMode
-      "
-    >
-      אין רכבים זמינים מסוג זה בשעות שנבחרו,
-      </ng-container>
-    <ng-container
-      *ngIf="
-        availableCars.length === 0 &&
-        shouldShowCarError() &&
-        !isRebookMode
-      "
-    >
-     אין רכבים זמינים מסוג זה בשעות שנבחרו. נא לבחור סוג רכב אחר.
-    </ng-container>
-    <ng-container
-      *ngIf="availableCars.length > 0 && shouldShowCarError()"
-    >
-      {{
-        isPendingVehicle(f.car.value)
-          ? "רכב זה אינו זמין בשעות שנבחרו"
-          : "חובה לבחור רכב"
-      }}
-    </ng-container>
-  </div>
+  *ngIf="
+    rideForm?.get('vehicle_type') &&
+    hasTouchedVehicleType() &&
+    canChooseVehicle() &&
+    !isRebookMode &&
+    (availableCars.length === 0 || shouldShowCarError())
+  "
+  class="car-validation-message"
+>
+  <ng-container *ngIf="availableCars.length === 0">
+    אין רכבים זמינים מסוג זה בשעות שנבחרו. נא לבחור סוג רכב אחר.
+  </ng-container>
+
+  <ng-container *ngIf="availableCars.length > 0 && shouldShowCarError()">
+    {{
+      isPendingVehicle(f.car.value)
+        ? "רכב זה אינו זמין בשעות שנבחרו"
+        : "חובה לבחור רכב"
+    }}
+  </ng-container>
+</div>
   </div>
             </div>
           </div>

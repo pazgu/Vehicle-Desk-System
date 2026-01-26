@@ -1,8 +1,5 @@
 <div class="card-container" [ngClass]="getCardClass(trip?.status)" dir="rtl">
-  <div *ngIf="!trip" class="loading-container">
-    <p-progressSpinner></p-progressSpinner>
-    <span>טוען פרטי נסיעה...</span>
-  </div>
+
 
   <p-card *ngIf="trip" [styleClass]="'trip-card ' + getCardClass(trip?.status)">
     <ng-template pTemplate="header">

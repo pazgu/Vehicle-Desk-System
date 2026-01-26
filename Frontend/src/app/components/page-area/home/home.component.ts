@@ -91,6 +91,7 @@ import { RebookData } from '../../../services/myrides.service';
 import { Supervisor } from '../../../models/user.model';
 import {debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
+import { createInspectorClosureTimeValidator } from './home-utils/validators';
 
 interface Employee {
   id: string;
@@ -444,8 +445,12 @@ if (start.getTime() < now.getTime()) {
       approving_supervisor: data.approving_supervisor ?? null,
     });
 
-    this.rideForm.clearValidators();
+    this.rideForm.setValidators([
+      createInspectorClosureTimeValidator()
+    ]);
+
     this.rideForm.updateValueAndValidity({ emitEvent: false });
+
   }
 
   private isVehicleFrozenError(err: any): boolean {
@@ -651,7 +656,7 @@ this.socketService.usersBlockStatus$
     }
     return false;
   }
- private setupFormSubscriptions(): void {
+  private setupFormSubscriptions(): void {
 
   this.rideForm.get('target_type')?.valueChanges
     .pipe(takeUntil(this.destroy$))
@@ -746,40 +751,45 @@ this.socketService.usersBlockStatus$
 
   this.setupDistanceCalculationSubscriptions();
   if (this.isRebookMode) {
-    ['start_hour', 'start_minute'].forEach(control => {
-      this.rideForm.get(control)?.valueChanges
-        .pipe(
-          debounceTime(500),
-          distinctUntilChanged(),
-          takeUntil(this.destroy$)
-        )
-        .subscribe(() => {
-          const startHour = this.rideForm.get('start_hour')?.value;
-          const startMinute = this.rideForm.get('start_minute')?.value;
-          const rideDate = this.rideForm.get('ride_date')?.value;
+  ['start_hour', 'start_minute'].forEach(control => {
+    this.rideForm.get(control)?.valueChanges
+      .pipe(
+        debounceTime(500),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => {
 
-          if (startHour && startMinute && rideDate) {
-            const now = new Date();
-            const startDateTime = new Date(rideDate);
-            startDateTime.setHours(parseInt(startHour, 10));
-            startDateTime.setMinutes(parseInt(startMinute, 10));
-            startDateTime.setSeconds(0, 0);
+        const startHour = this.rideForm.get('start_hour')?.value;
+        const startMinute = this.rideForm.get('start_minute')?.value;
+        const rideDate = this.rideForm.get('ride_date')?.value;
 
-            if (startDateTime.getTime() <= now.getTime()) {
-              this.rideForm.get('start_hour')?.setErrors({ pastTime: true });
-            } else {
-              const errors = this.rideForm.get('start_hour')?.errors;
-              if (errors && errors['pastTime']) {
-                delete errors['pastTime'];
-                this.rideForm.get('start_hour')?.setErrors(
-                  Object.keys(errors).length > 0 ? errors : null
-                );
-              }
+        if (startHour && startMinute && rideDate) {
+          const now = new Date();
+          const startDateTime = new Date(rideDate);
+          startDateTime.setHours(parseInt(startHour, 10));
+          startDateTime.setMinutes(parseInt(startMinute, 10));
+          startDateTime.setSeconds(0, 0);
+
+          if (startDateTime.getTime() <= now.getTime()) {
+            this.rideForm.get('start_hour')?.setErrors({ pastTime: true });
+          } else {
+            const errors = this.rideForm.get('start_hour')?.errors;
+            if (errors && errors['pastTime']) {
+              delete errors['pastTime'];
+              this.rideForm.get('start_hour')?.setErrors(
+                Object.keys(errors).length > 0 ? errors : null
+              );
             }
           }
-        });
-    });
-  }
+        }
+
+        
+        this.rideForm.updateValueAndValidity({ emitEvent: false });
+      });
+  });
+}
+
 }
 
   private updateExtendedRideReasonValidation(): void {
@@ -1048,11 +1058,24 @@ this.socketService.usersBlockStatus$
       return;
     }
     this.availableCars = this.allCars.filter((car) => car.type === selectedType);
+
+if (carControl?.errors?.['noAvailableCars'] && this.availableCars.length > 0) {
+  const errors = { ...(carControl.errors || {}) };
+  delete errors['noAvailableCars'];
+  carControl.setErrors(Object.keys(errors).length ? errors : null);
+}
+
     if (this.availableCars.length === 0) {
-      this.selectedCarId = '';
-      carControl?.setValue(null, { emitEvent: false });
-      return;
-    }
+  this.selectedCarId = '';
+  carControl?.setValue(null, { emitEvent: false });
+
+  carControl?.setErrors({ ...(carControl?.errors || {}), noAvailableCars: true });
+  carControl?.markAsTouched();
+  carControl?.markAsDirty();
+
+  return;
+}
+
 
     const firstRecommended = this.availableCars.find(
       (car) => car.is_recommended && !this.isPendingVehicle(car.id)
@@ -1090,16 +1113,18 @@ this.socketService.usersBlockStatus$
   }
 
   shouldShowCarError(): boolean {
-    const carControl = this.rideForm.get('car');
-    if (!carControl) return false;
-    const hasValidationErrors = carControl.invalid;
-    const hasPendingError = carControl.errors?.['pending'];
-    const hasRequiredError = carControl.errors?.['required'];
-    return (
-      (carControl.touched || carControl.dirty) &&
-      (hasValidationErrors || hasPendingError || hasRequiredError)
-    );
-  }
+  const carControl = this.rideForm.get('car');
+  if (!carControl) return false;
+
+  const hasNoCarsError = carControl.errors?.['noAvailableCars'];
+  const hasValidationErrors = carControl.invalid;
+
+  return (
+    (carControl.touched || carControl.dirty) &&
+    (hasValidationErrors || hasNoCarsError)
+  );
+}
+
   onRideTypeChange(): void {
     const isPrefilled = this.isRebookMode;
 
@@ -1195,6 +1220,12 @@ this.socketService.usersBlockStatus$
   const rideDate = this.rideForm.get('ride_date')?.value;
 
   if (!startHour || !startMinute || !endHour || !endMinute || !rideDate) {
+    return false;
+  }
+
+  // בדיקה אם יש שגיאות של זמן סגירה
+  if (this.rideForm.get('start_hour')?.errors?.['inspectorClosure'] ||
+      this.rideForm.get('end_hour')?.errors?.['inspectorClosure']) {
     return false;
   }
 
@@ -1659,5 +1690,11 @@ this.socketService.usersBlockStatus$
 
   closeDropdown() {
     this.isDropdownOpen = false;
+  }
+  goBackToMyRides(): void {
+    if (this.isRebookMode) {
+      this.myRidesService.clearRebookData();
+      this.router.navigate(['/all-rides']);
+    }
   }
 }
