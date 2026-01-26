@@ -26,7 +26,7 @@ from sqlalchemy import and_, or_, desc, func, text ,case
 from sqlalchemy.orm import Session, aliased
 from ..helpers.department_helpers import get_or_create_vip_department
 from src.schemas.ride_requirements_schema import RideRequirementOut, RideRequirementUpdate 
-from src.services.ride_requirements import get_latest_requirement,create_requirement
+from src.services.ride_requirements import get_latest_requirement,create_requirement, update_requirement
 # Utils
 from ..utils.auth import get_current_user, token_check, role_check
 from ..utils.database import get_db
@@ -1490,14 +1490,11 @@ def update_requirements(
 ):
     existing = get_latest_requirement(db)
     if not existing:
-        raise HTTPException(status_code=404, detail="No requirements found to update.")
-
-    existing.items = data.items
-    existing.updated_by = current_user.employee_id
-    existing.updated_at = datetime.utcnow()
-
-    db.commit()
-    db.refresh(existing)
-    return existing
-
+        data.updated_by = current_user.employee_id
+        created = create_requirement(db, data)
+        return created
+        
+    data.updated_by = current_user.employee_id
+    res = update_requirement(db, data)
+    return res
 

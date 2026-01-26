@@ -14,7 +14,8 @@ export const RIDE_STATUS_COLORS: Record<RideStatusKey, { labelHe: string; color:
   in_progress: { labelHe: 'בנסיעה', color: '#fbdda5' },
   completed: { labelHe: 'בוצע', color: '#dcf1e1' },
   cancelled_due_to_no_show: { labelHe: 'בוטלה עקב אי-הגעה', color: '#e0d6e8' },
-  cancelled_vehicle_unavailable: { labelHe: 'בוטל-רכב לא זמין', color: '#e0d6e8' },
+  cancelled_vehicle_unavailable: { labelHe: 'בוטל-רכב לא זמין', color: '#d4c5f9' },
+
 };
 
 export type VehicleStatusKey = 'available' | 'in_use' | 'frozen';
@@ -35,6 +36,7 @@ export type AuditLegendKey =
   | 'emergency'            
   | 'delete'           
   | 'cancelled_due_to_no_show'
+  | 'cancelled_vehicle_unavailable' 
   | 'exceeded_monthly_trip_quota';
 
 export const AUDIT_LEGEND_COLORS: Record<AuditLegendKey, { labelHe: string; color: string }> = {
@@ -47,6 +49,7 @@ export const AUDIT_LEGEND_COLORS: Record<AuditLegendKey, { labelHe: string; colo
   emergency: { labelHe: 'אירוע חירום', color: '#fabd84' },
   delete: { labelHe: 'נמחק', color: '#f1b5b5' },
   cancelled_due_to_no_show: { labelHe: 'בוטל עקב אי הגעה', color: '#e0d6e8' },
+    cancelled_vehicle_unavailable: { labelHe: 'בוטל - רכב לא זמין', color: '#d4c5f9' },
   exceeded_monthly_trip_quota: { labelHe: 'חריגה ממכסת נסיעות חודשית', color: '#cdb69b' },
 };
 
@@ -61,4 +64,6 @@ export const buildAuditLegendCssVars = () => ({
   '--legend-delete': AUDIT_LEGEND_COLORS.delete.color,
   '--legend-cancelled-no-show': AUDIT_LEGEND_COLORS.cancelled_due_to_no_show.color,
   '--legend-exceeded-quota': AUDIT_LEGEND_COLORS.exceeded_monthly_trip_quota.color,
+  '--legend-cancelled-vehicle-unavailable':
+    AUDIT_LEGEND_COLORS.cancelled_vehicle_unavailable.color, 
 });

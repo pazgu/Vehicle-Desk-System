@@ -17,121 +17,128 @@
         </div>
       </div>
 
-   <div class="archive-info-banner">
-  <i class="pi pi-info-circle"></i>
-  <ul class="texts">
-    <li>מאפייני רכב בארכיון: רכב מוקפא ,חוזה ההשכרה שלו פג ויש עליו לפחות נסיעה אחת.</li>
-    <li>כאן אפשר למחוק הרכב לצמיתות או לשחזר אותו.</li>
-  </ul>
-</div>
+      <div class="archive-info-banner">
+        <i class="pi pi-info-circle"></i>
+        <ul class="texts">
+          <li>
+            מאפייני רכב בארכיון: רכב מוקפא ,חוזה ההשכרה שלו פג ויש עליו לפחות
+            נסיעה אחת.
+          </li>
+          <li>כאן אפשר למחוק הרכב לצמיתות או לשחזר אותו.</li>
+        </ul>
+      </div>
 
-
-    <div class="vehicles-grid">
-      <p-card
-        *ngFor="let vehicle of filteredVehicles"
-        [styleClass]="'vehicle-card card-archived'"
-        (click)="goToVehicleDetails(vehicle.id)"
-      >
-        <div
-          class="usage-indicator"
-          [style.background-color]="getUsageBarColor(vehicle.plate_number)"
-        ></div>
-        <span
-          class="usage-number"
-          *ngIf="getVehicleUsageCount(vehicle.plate_number) > 0"
+      <div class="vehicles-grid">
+        <p-card
+          *ngFor="let vehicle of filteredVehicles"
+          [styleClass]="'vehicle-card card-archived'"
+          (click)="goToVehicleDetails(vehicle.id)"
         >
-          {{ getVehicleUsageCount(vehicle.plate_number) }} נסיעות
-        </span>
+  <div
+    class="usage-indicator"
+    [style.background-color]="getMonthlyUsageBarColor(vehicle.plate_number)"
+  ></div>
+  <span
+    class="usage-number"
+    *ngIf="getMonthlyRideCount(vehicle.plate_number) > 0"
+  >
+    {{ getMonthlyRideCount(vehicle.plate_number) }} נסיעות לחודש זה. </span
+  >
 
-        <div *ngIf="isInactive(vehicle.last_used_at)" class="inactive-badge">
-          לא פעיל
-        </div>
-
-        <div
-          style="text-align: center; margin-top: 2rem; margin-bottom: 0.2rem"
-        >
-          <img
-            [src]="vehicle.image_url || '/assets/images/default-vehicle.png'"
-            [alt]="vehicle.vehicle_model"
-            style="
-              width: 90%;
-              height: auto;
-              object-fit: cover;
-              border-radius: 8px;
-              margin-bottom: 30px;
-            "
-          />
-        </div>
-
-        <div style="display: flex; flex-direction: column; flex: 1">
-          <h3>{{ vehicle.vehicle_model }}</h3>
-          <p><strong>מספר רכב:</strong> {{ vehicle.plate_number }}</p>
-          <p><strong>סוג:</strong> {{ vehicle.type }}</p>
-
-          <p *ngIf="vehicle.ride_count !== undefined">
-            <strong>שימושים החודש:</strong> {{ vehicle.ride_count }}
-          </p>
-          <p *ngIf="vehicle.last_used_at">
-            <strong>שימוש אחרון:</strong>
-            {{ vehicle.last_used_at | date : "dd/MM/yyyy" }}
-          </p>
-          <p
-            *ngIf="vehicle.archived_at"
-            style="color: #991b1b !important; font-weight: 600 !important"
-          >
-            <strong>תאריך ארכוב:</strong>
-            {{ vehicle.archived_at | date : "dd/MM/yyyy" }}
-          </p>
+          <div *ngIf="isInactive(vehicle.last_used_at)" class="inactive-badge">
+            לא פעיל
+          </div>
 
           <div
-            style="margin-top: auto; padding-top: 0.5rem; padding-bottom: 1rem"
+            style="text-align: center; margin-top: 2rem; margin-bottom: 0.2rem"
           >
-            <span
-              class="department-tag-inline"
-              [ngClass]="{ 'no-department-tag': !vehicle.department_id }"
-            >
-              {{ vehicle.department || "לא משוייך למחלקה" }}
-            </span>
+            <img
+              [src]="vehicle.image_url || '/assets/images/default-vehicle.png'"
+              [alt]="vehicle.vehicle_model"
+              style="
+                width: 90%;
+                height: auto;
+                object-fit: cover;
+                border-radius: 8px;
+                margin-bottom: 30px;
+              "
+            />
           </div>
-        </div>
 
-        <div class="archived-actions">
-          <button
-            class="action-btn restore-btn"
-            (click)="$event.stopPropagation(); restoreVehicle(vehicle)"
-            title="שחזר רכב מהארכיון"
-          >
-            <i class="pi pi-refresh"></i>
-            <span>שחזר</span>
-          </button>
-          <button
-            class="action-btn delete-btn"
-            (click)="
-              $event.stopPropagation(); permanentlyDeleteVehicle(vehicle)
-            "
-            title="מחק לצמיתות"
-          >
-            <i class="pi pi-trash"></i>
-            <span>מחק לצמיתות</span>
-          </button>
-        </div>
-      </p-card>
-    </div>
+          <div style="display: flex; flex-direction: column; flex: 1">
+            <h3>{{ vehicle.vehicle_model }}</h3>
+            <p><strong>מספר רכב:</strong> {{ vehicle.plate_number }}</p>
+            <p><strong>סוג:</strong> {{ vehicle.type }}</p>
 
-    <div class="empty-state" *ngIf="filteredVehicles?.length === 0">
-      <div class="empty-icon">
-        <i class="pi pi-inbox"></i>
+            <p *ngIf="vehicle.ride_count !== undefined">
+              <strong>שימושים החודש:</strong> {{ vehicle.ride_count }}
+            </p>
+            <p *ngIf="vehicle.last_used_at">
+              <strong>שימוש אחרון:</strong>
+              {{ vehicle.last_used_at | date: "dd/MM/yyyy" }}
+            </p>
+            <p
+              *ngIf="vehicle.archived_at"
+              style="color: #991b1b !important; font-weight: 600 !important"
+            >
+              <strong>תאריך ארכוב:</strong>
+              {{ vehicle.archived_at | date: "dd/MM/yyyy" }}
+            </p>
+
+            <div
+              style="
+                margin-top: auto;
+                padding-top: 0.5rem;
+                padding-bottom: 1rem;
+              "
+            >
+              <span
+                class="department-tag-inline"
+                [ngClass]="{ 'no-department-tag': !vehicle.department_id }"
+              >
+                {{ vehicle.department || "לא משוייך למחלקה" }}
+              </span>
+            </div>
+          </div>
+
+          <div class="archived-actions">
+            <button
+              class="action-btn restore-btn"
+              (click)="$event.stopPropagation(); restoreVehicle(vehicle)"
+              title="שחזר רכב מהארכיון"
+            >
+              <i class="pi pi-refresh"></i>
+              <span>שחזר</span>
+            </button>
+            <button
+              class="action-btn delete-btn"
+              (click)="
+                $event.stopPropagation(); permanentlyDeleteVehicle(vehicle)
+              "
+              title="מחק לצמיתות"
+            >
+              <i class="pi pi-trash"></i>
+              <span>מחק לצמיתות</span>
+            </button>
+          </div>
+        </p-card>
       </div>
-      <h3>אין רכבים בארכיון</h3>
-      <p>לא נמצאו רכבים התואמים את הסינון שנבחר</p>
-      <button
-        class="btn btn-primary"
-        (click)="goBackToDashboard()"
-        style="margin-top: 1.5rem"
-      >
-        <span>חזור לדשבורד</span>
-        <i class="pi pi-arrow-left"></i>
-      </button>
+
+      <div class="empty-state" *ngIf="filteredVehicles?.length === 0">
+        <div class="empty-icon">
+          <i class="pi pi-inbox"></i>
+        </div>
+        <h3>אין רכבים בארכיון</h3>
+        <p>לא נמצאו רכבים התואמים את הסינון שנבחר</p>
+        <button
+          class="btn btn-primary"
+          (click)="goBackToDashboard()"
+          style="margin-top: 1.5rem"
+        >
+          <span>חזור לדשבורד</span>
+          <i class="pi pi-arrow-left"></i>
+        </button>
+      </div>
     </div>
   </div>
 </div>

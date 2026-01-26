@@ -269,11 +269,6 @@ clearFilters(): void {
             (order) => order.status === 'cancelled_due_to_no_show'
           );
           break;
-        case 'בוטל - רכב לא זמין':
-          filtered = filtered.filter(
-            (order) => order.status === 'cancelled_vehicle_unavailable'
-          );
-          break;
         default:
           break;
       }
@@ -361,8 +356,6 @@ clearFilters(): void {
         return 'בנסיעה';
       case 'cancelled_due_to_no_show':
         return 'בוטלה עקב אי-הגעה';
-      case 'cancelled_vehicle_unavailable':
-        return 'בוטל - רכב לא זמין';
       default:
         return status;
     }
