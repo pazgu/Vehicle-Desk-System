@@ -131,7 +131,8 @@
 .filters-actions {
   display: flex;
   justify-content: flex-start;
-  margin-top: 12px;
+  margin-top: 0;
+  transition: all 0.3s ease;
 }
 
 .app-clear-filters-btn {
@@ -172,3 +173,36 @@
 .app-clear-filters-btn i {
   font-size: 1rem;
 }
+
+.app-clear-filters-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: fit-content;
+  min-width: auto;
+  padding: 0.55rem 1rem;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  white-space: nowrap;
+  background: transparent;
+  color: #942222;
+  border: 2px solid #942222;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: "Alef", sans-serif;
+  margin-top: 12px;
+}
+
+.app-clear-filters-btn:disabled {
+  opacity: 0;
+  cursor: not-allowed;
+  pointer-events: none;
+  height: 0;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  border: none;
+  overflow: hidden;
+}
+

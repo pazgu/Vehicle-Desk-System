@@ -29,8 +29,8 @@ export class FilterPanelComponent implements OnChanges {
   @Output() filteredOrdersChanged = new EventEmitter<any[]>();
     dateError: boolean = false;
   @Output() clearFiltersClicked = new EventEmitter<void>();
-
-
+  @Output() startDateChanged = new EventEmitter<string>();
+  @Output() endDateChanged = new EventEmitter<string>();
   private filteredOrders: any[] = [];
   constructor(private myrideservice: MyRidesService) {}
 
@@ -53,7 +53,7 @@ export class FilterPanelComponent implements OnChanges {
     this.rideViewMode = mode;
     this.applyFiltersAndSort();
   }
-    validateDatesEndStart(): void {
+  validateDatesEndStart(): void {
     if (this.startDate && this.endDate) {
       const start = new Date(this.startDate);
       const end = new Date(this.endDate);
@@ -77,7 +77,6 @@ onClearFiltersClick(): void {
   this.applyFiltersAndSort();
   this.clearFiltersClicked.emit();
 }
-
 
   toggleFiltersVisibility(): void {
     this.showFilters = !this.showFilters;
@@ -145,12 +144,12 @@ onClearFiltersClick(): void {
     switch (this.rideViewMode) {
       case 'future':
         filtered = filtered.filter(
-          (order) => this.parseDate(order.date) >= today
+          (order) => this.parseDate(order.date) >= today,
         );
         break;
       case 'past':
         filtered = filtered.filter(
-          (order) => this.parseDate(order.date) < today
+          (order) => this.parseDate(order.date) < today,
         );
         break;
     }
@@ -183,13 +182,13 @@ onClearFiltersClick(): void {
     switch (this.sortBy) {
       case 'status':
         filtered = [...filtered].sort((a, b) =>
-          a.status.localeCompare(b.status)
+          a.status.localeCompare(b.status),
         );
         break;
       case 'date':
         filtered = [...filtered].sort(
           (a, b) =>
-            this.parseDate(a.date).getTime() - this.parseDate(b.date).getTime()
+            this.parseDate(a.date).getTime() - this.parseDate(b.date).getTime(),
         );
         break;
       case 'recent':
@@ -214,5 +213,30 @@ onClearFiltersClick(): void {
     const date = new Date(year, month - 1, day);
     date.setHours(12, 0, 0, 0);
     return date;
+  }
+isFilterActive(): boolean {
+  const hasStatus =
+    this.statusFilter !== '' &&
+    this.statusFilter !== null &&
+    this.statusFilter !== undefined;
+  const hasStartDate =
+    this.startDate !== '' &&
+    this.startDate !== null &&
+    this.startDate !== undefined;
+  const hasEndDate =
+    this.endDate !== '' &&
+    this.endDate !== null &&
+    this.endDate !== undefined;
+
+  return hasStatus || hasStartDate || hasEndDate;
+}
+  onStartDateChange(): void {
+    this.validateDatesEndStart();
+    this.onDateChange();
+  }
+
+  onEndDateChange(): void {
+    this.validateDatesEndStart();
+    this.onDateChange();
   }
 }

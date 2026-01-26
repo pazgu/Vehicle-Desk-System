@@ -57,6 +57,7 @@
           type="button"
           class="app-clear-filters-btn"
           (click)="clearFilters()"
+          [disabled]="!isFilterActive()"
         >
           הסר סינון
         </button>
@@ -79,8 +80,9 @@
           <input
             type="radio"
             name="sortOption"
+            [value]="'monthly'"
             [checked]="sortByMostUsed"
-            (change)="onSortByMostUsedChange()"
+            (click)="onSortByMostUsedChange()"
           />
           <span>מיין רכבים לפי השימוש הכי גבוה בחודש זה</span>
         </label>
@@ -93,14 +95,21 @@
           <input
             type="radio"
             name="sortOption"
+            [value]="'alltime'"
             [checked]="sortByMostUsedAllTime"
-            (change)="onSortByMostUsedAllTimeChange()"
+            (click)="onSortByMostUsedAllTimeChange()"
           />
-          <span>מיין רכבים לפי השימוש הכי גבוה בכל הזמנים</span>
+            <span>מיין רכבים לפי השימוש הכי גבוה בכל הזמנים</span>
         </label>
       </div>
-        <button type="button" class="app-clear-filters-btn" (click)="clearSorting()">
-    הסר מיון
+      <button 
+      style="margin-top: 0px;"
+        type="button" 
+        class="app-clear-filters-btn" 
+        (click)="clearSorting()"
+        [disabled]="!isSortActive()"
+      >
+        הסר מיון
   </button>
     </div>
   </div>
