@@ -271,20 +271,20 @@ async def create_order(
                 "order_status": new_ride.status
             })
 
+        vehicle = db.query(Vehicle).filter(Vehicle.id == new_ride.vehicle_id).first()
+        vehicle_model = vehicle.vehicle_model if vehicle else None
+
         await sio.emit("new_ride_request", {
             "ride_id": str(new_ride.id),
-            "user_id": str(user_id),
             "employee_name": ride_passenger_name,
-            "requested_by_name": requester_name,
-            "status": new_ride.status,
-            "destination": new_ride.stop,
-            "end_datetime": str(new_ride.end_datetime),
-            "date_and_time": str(new_ride.start_datetime),
-            "vehicle_id": str(new_ride.vehicle_id),
-            "requested_vehicle_model": getattr(new_ride, "vehicle_model", None),
+            "requested_vehicle_model": vehicle_model,
+            "date_and_time": new_ride.start_datetime.isoformat(),
+            "end_datetime": new_ride.end_datetime.isoformat() if new_ride.end_datetime else None,
+            "distance": float(new_ride.estimated_distance_km),
+            "status": str(new_ride.status),
+            "destination": new_ride.destination,
+            "submitted_at": new_ride.submitted_at.isoformat(),
             "department_id": str(department_id),
-            "distance": new_ride.estimated_distance_km,
-            "role": user.role
         })
 
         if new_ride.user_id != user_id:

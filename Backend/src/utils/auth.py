@@ -74,11 +74,16 @@ def token_check_socket(token: str) -> dict | None:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("sub")
+        role = payload.get("role")
+        department_id = payload.get("department_id")
+        
         if user_id is None:
             return None
         
         return {
             "user_id": user_id,
+            "role": role,
+            "department_id": department_id
         }
     except PyJWTError:
         return None
