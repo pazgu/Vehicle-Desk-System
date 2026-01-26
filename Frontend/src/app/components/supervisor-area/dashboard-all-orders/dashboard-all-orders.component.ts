@@ -54,7 +54,6 @@ export class DashboardAllOrdersComponent implements OnInit {
 
   ngOnInit(): void {
     const departmentId = localStorage.getItem('department_id');
-    const userId = localStorage.getItem('employee_id');
     const role = localStorage.getItem('role');
     
     if (departmentId) {
