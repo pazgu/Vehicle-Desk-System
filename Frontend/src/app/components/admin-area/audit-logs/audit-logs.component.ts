@@ -376,4 +376,8 @@ export class AuditLogsComponent implements OnInit {
       }
     );
   }
+  isFilterActive(): boolean {
+  return this.searchTerm.trim() !== '' || 
+         this.selectedRange !== '';
+}
 }

@@ -97,6 +97,17 @@ export class FilterPanelComponent implements OnInit, OnChanges {
     this.updateQueryParams.emit();
   }
 
+  isFilterActive(): boolean {
+  return this.statusFilter !== '' || 
+         this.typeFilter !== '' || 
+         this.departmentFilter !== '' || 
+         this.showInactive === true;
+}
+
+isSortActive(): boolean {
+  return this.sortByMostUsed || this.sortByMostUsedAllTime;
+}
+
   toggleFilters() {
     this.showFilters = !this.showFilters;
     if (this.showFilters) {
@@ -141,30 +152,21 @@ export class FilterPanelComponent implements OnInit, OnChanges {
   }
 
   onSortByMostUsedChange() {
-    if (this.sortByMostUsed) {
-      this.sortByMostUsed = false;
-      this.sortByMostUsedAllTime = false;
-      this.applyFilters();
-    } else {
-      this.sortByMostUsed = true;
-      this.sortByMostUsedAllTime = false;
-      this.loadVehicleUsageData();
+    if (!this.sortByMostUsed) { 
+    this.sortByMostUsed = true;
+    this.sortByMostUsedAllTime = false;
+    this.loadVehicleUsageData();
     }
     this.updateQueryParams.emit();
   }
-
-  onSortByMostUsedAllTimeChange() {
-    if (this.sortByMostUsedAllTime) {
-      this.sortByMostUsedAllTime = false;
-      this.sortByMostUsed = false;
-      this.applyFilters();
-    } else {
-      this.sortByMostUsedAllTime = true;
-      this.sortByMostUsed = false;
-      this.loadVehicleUsageDataAllTime();
-    }
-    this.updateQueryParams.emit();
+onSortByMostUsedAllTimeChange() {
+  if (!this.sortByMostUsedAllTime) {
+  this.sortByMostUsedAllTime = true;
+  this.sortByMostUsed = false;
+  this.loadVehicleUsageDataAllTime();
   }
+  this.updateQueryParams.emit();
+}
 
   loadVehicleUsageDataAllTime(): void {
     this.vehicleService.getMostUsedVehiclesAllTime().subscribe({

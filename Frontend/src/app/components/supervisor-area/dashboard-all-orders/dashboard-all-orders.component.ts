@@ -465,4 +465,9 @@ clearFilters(): void {
 
     return 'יום';
   }
+  isFilterActive(): boolean {
+  return this.statusFilter !== '' || 
+         this.startDate !== '' || 
+         this.endDate !== '';
+}
 }
