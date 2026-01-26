@@ -78,12 +78,12 @@
           *ngIf="userRole === 'admin' || userRole === 'manager'"
         >
           <input
-            type="radio"
-            name="sortOption"
-            [value]="'monthly'"
-            [checked]="sortByMostUsed"
-            (click)="onSortByMostUsedChange()"
-          />
+  type="radio"
+  name="sortOption"
+  value="monthly"
+  [(ngModel)]="sortOption"
+  (change)="onSortOptionChange()"
+/>
           <span>מיין רכבים לפי השימוש הכי גבוה בחודש זה</span>
         </label>
 
@@ -93,12 +93,12 @@
           *ngIf="userRole === 'admin' || userRole === 'manager'"
         >
           <input
-            type="radio"
-            name="sortOption"
-            [value]="'alltime'"
-            [checked]="sortByMostUsedAllTime"
-            (click)="onSortByMostUsedAllTimeChange()"
-          />
+  type="radio"
+  name="sortOption"
+  value="alltime"
+  [(ngModel)]="sortOption"
+  (change)="onSortOptionChange()"
+/>
             <span>מיין רכבים לפי השימוש הכי גבוה בכל הזמנים</span>
         </label>
       </div>
