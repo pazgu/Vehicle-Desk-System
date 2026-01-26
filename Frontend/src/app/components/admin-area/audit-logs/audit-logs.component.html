@@ -48,7 +48,11 @@
             <option value="30days">30 ימים אחרונים</option>
             <option value="custom">טווח מותאם אישית</option>
           </select>
-          <button class="app-clear-filters-btn" (click)="resetFilters()">
+          <button 
+            class="app-clear-filters-btn" 
+            (click)="resetFilters()"
+            [disabled]="!isFilterActive()"
+          >
   הסר סינון
 </button>
 
