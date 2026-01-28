@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from ..helpers.department_helpers import get_or_create_vip_department
 
-from ..helpers.user_helpers import cancel_future_rides_for_vehicle
+from ..helpers.user_helpers import cancel_future_rides_for_vehicle, cancel_future_rides_for_vehicle_with_socket
 
 # Utils
 from ..utils.auth import token_check, get_current_user, role_check
@@ -244,13 +244,17 @@ async def patch_vehicle_status(
         "freeze_details": res.get("freeze_details", "")
     })
 
+    if "notifications" in res and res["notifications"]:
+        for notif_data in res["notifications"]:
+            await sio.emit('new_notification', notif_data, room=notif_data['user_id'])
 
-    await sio.emit('reservationCanceledDueToVehicleFreeze', {
-        "vehicle_id": str(vehicle_id),
-        "status": new_status,
-        "freeze_reason": res.get("freeze_reason", ""),
-        "freeze_details": res.get("freeze_details", "")
-    })
+        await sio.emit('reservationCanceledDueToVehicleFreeze', {
+            "vehicle_id": str(vehicle_id),
+            "status": new_status,
+            "freeze_reason": res.get("freeze_reason", ""),
+            "freeze_details": res.get("freeze_details", ""),
+            "affected_users": res.get("users", [])
+        })
 
 
     return res
