@@ -68,7 +68,11 @@ export class SocketService {
 
   private connectToSocket(): void {
     const token = localStorage.getItem('access_token');
-    if (!token || this.isConnected) return;
+    if (this.socket && this.isConnected) {
+      return;
+    }
+
+    if (!token) return;
 
     this.socket = io(this.SOCKET_URL, {
       transports: ['websocket'],
@@ -140,22 +144,15 @@ export class SocketService {
         data.user_id.toString() === userId.toString()
       ) {
         this.notifications$.next(data);
-
-        const current = this.notificationService.unreadCount$.getValue();
-        this.notificationService.unreadCount$.next(current + 1);
       }
     });
 
     this.socket.on('vehicle_expiry_notification', (data: any) => {
       this.vehicleExpiry$.next(data);
-      const current = this.notificationService.unreadCount$.getValue();
-      this.notificationService.unreadCount$.next(current + 1);
     });
 
     this.socket.on('new_odometer_notification', (data: any) => {
       this.odometerNotif$.next(data);
-      const current = this.notificationService.unreadCount$.getValue();
-      this.notificationService.unreadCount$.next(current + 1);
     });
 
     this.socket.on('new_ride_request', (data: any) => {
