@@ -118,9 +118,8 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate, license_chec
         order_id=new_ride.id,
     )
 
-    # Emit via Socket.IO so frontend updates in real-time
     await sio.emit("new_notification", {
-        "id": str(uuid4()),  # אפשר לשים את האיד של ה-notification האמיתי
+        "id": str(uuid4()), 
         "user_id": str(rider_id),
         "title": "בקשת נסיעה חדשה",
         "message": f"ההזמנה שלך עבור {ride.start_location} ל-{ride.destination} נוצרה.",
