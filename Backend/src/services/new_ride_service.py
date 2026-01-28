@@ -110,6 +110,26 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate, license_chec
     db.commit()
     db.refresh(new_ride)
     db.refresh(vehicle)
+   
+    create_system_notification(
+        user_id=rider_id,
+        title="בקשת נסיעה חדשה",
+        message=f"ההזמנה שלך עבור {ride.start_location} ל-{ride.destination} נוצרה.",
+        order_id=new_ride.id,
+    )
+
+    await sio.emit("new_notification", {
+        "id": str(uuid4()), 
+        "user_id": str(rider_id),
+        "title": "בקשת נסיעה חדשה",
+        "message": f"ההזמנה שלך עבור {ride.start_location} ל-{ride.destination} נוצרה.",
+        "notification_type": "system",
+        "sent_at": datetime.now(timezone.utc).isoformat(),
+        "order_id": str(new_ride.id),
+        "order_status": new_ride.status.value,
+        "seen": False
+    })
+
 
     vehicle_info = db.query(
         Vehicle.vehicle_model,
