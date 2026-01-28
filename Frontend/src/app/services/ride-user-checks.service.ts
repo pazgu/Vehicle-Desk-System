@@ -13,6 +13,12 @@ interface UserBlockCheckResult {
   blockExpirationDate: string | null;
 }
 
+export interface UserNavigationCheckResult {
+  canNavigate: boolean;
+  reason?: 'blocked' | 'expired_license' | 'no_license';
+  blockExpirationDate?: string | null;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -114,6 +120,7 @@ export class RideUserChecksService {
       })
     );
   }
+
   checkUserBlock(userId: string): Observable<UserBlockCheckResult> {
     if (!userId) {
       console.warn(
@@ -144,6 +151,56 @@ export class RideUserChecksService {
           isBlocked: false,
           blockExpirationDate: null,
         });
+      })
+    );
+  }
+
+
+  checkUserCanCreateRide(userId: string): Observable<UserNavigationCheckResult> {
+    if (!userId) {
+      return of({ canNavigate: true });
+    }
+
+    return this.userService.getUserById(userId).pipe(
+      map((user: any) => {
+        const isBlocked = user.is_blocked === true;
+        if (isBlocked) {
+          const expirationDateStr = user.block_expires_at as string | null;
+          return {
+            canNavigate: false,
+            reason: 'blocked' as const,
+            blockExpirationDate: expirationDateStr,
+          };
+        }
+
+        const hasLicense = user.has_government_license;
+        if (!hasLicense) {
+          return {
+            canNavigate: false,
+            reason: 'no_license' as const,
+          };
+        }
+
+        const expiryDateStr = user.license_expiry_date as string | null;
+        if (expiryDateStr) {
+          const expiryDate = new Date(expiryDateStr);
+          const today = new Date();
+          expiryDate.setHours(0, 0, 0, 0);
+          today.setHours(0, 0, 0, 0);
+
+          if (expiryDate < today) {
+            return {
+              canNavigate: false,
+              reason: 'expired_license' as const,
+            };
+          }
+        }
+
+        return { canNavigate: true };
+      }),
+      catchError((err) => {
+        console.error('Failed to check user create ride eligibility:', err);
+        return of({ canNavigate: true });
       })
     );
   }

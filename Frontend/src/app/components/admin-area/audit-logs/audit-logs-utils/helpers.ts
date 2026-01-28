@@ -51,14 +51,17 @@ export function getRowBackgroundColor(log: any): string {
     return '#dc5b5b';
   }
 
-  if (
-    log.entity_type === 'Ride' &&
-    log.action === 'UPDATE' &&
-    (log.change_data?.new?.status === 'cancelled_due_to_no_show' ||
-      log.change_data?.new?.status === 'cancelled-due-to-no-show')
-  ) {
+ if (log.entity_type === 'Ride' && log.action === 'UPDATE') {
+  const status = log.change_data?.new?.status?.toLowerCase();
+
+  if (status === 'cancelled_due_to_no_show' || status === 'cancelled-due-to-no-show') {
     return '#e0d6e8';
   }
+
+  if (status === 'cancelled_vehicle_unavailable') {
+    return '#d4c5f9';
+  }
+}
 
   if (
     log.entity_type === 'User' &&

@@ -5,7 +5,7 @@ def convert_serializable(obj):
     if isinstance(obj, Decimal):
         return float(obj)
     elif isinstance(obj, datetime):
-        return obj.isoformat()  # Converts datetime to 'YYYY-MM-DDTHH:MM:SS'
+        return obj.isoformat()
     return obj
 
 def convert_decimal(obj):

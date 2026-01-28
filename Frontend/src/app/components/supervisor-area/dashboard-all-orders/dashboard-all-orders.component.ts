@@ -54,28 +54,32 @@ export class DashboardAllOrdersComponent implements OnInit {
 
   ngOnInit(): void {
     const departmentId = localStorage.getItem('department_id');
+    const role = localStorage.getItem('role');
+    
     if (departmentId) {
       this.loadOrders(departmentId);
     } else {
       console.error('Department ID not found in localStorage.');
     }
- this.route.queryParams
-  .pipe(takeUntil(this.destroy$))
-  .subscribe((params) => {
-    this.sortBy = params['sortBy'] || 'submitted_at';
-    this.statusFilter = params['status'] || '';
-    this.startDate = params['startDate'] || '';
-    this.endDate = params['endDate'] || '';
-    this.validateDates();
-  });
+  this.route.queryParams
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((params) => {
+      this.sortBy = params['sortBy'] || 'submitted_at';
+      this.statusFilter = params['status'] || '';
+      this.startDate = params['startDate'] || '';
+      this.endDate = params['endDate'] || '';
+      this.validateDates();
+    });
 
 
 this.socketService.rideRequests$
   .pipe(takeUntil(this.destroy$))
   .subscribe((newRide) => {
     const role = localStorage.getItem('role');
-    if (newRide?.role === 'supervisor') {
-      if (newRide.department_id == departmentId && role != 'admin') {
+    if (newRide && newRide.ride_id) {
+      const exists = this.orders.some(o => o.ride_id === newRide.ride_id);
+      if (exists) return;
+      if (newRide.department_id == departmentId && role !== 'admin') {
         this.orders = [newRide, ...this.orders];
         if (role === 'supervisor') {
           this.toastService.show('התקבלה בקשה חדשה', 'success');
@@ -269,11 +273,6 @@ clearFilters(): void {
             (order) => order.status === 'cancelled_due_to_no_show'
           );
           break;
-        case 'בוטל - רכב לא זמין':
-          filtered = filtered.filter(
-            (order) => order.status === 'cancelled_vehicle_unavailable'
-          );
-          break;
         default:
           break;
       }
@@ -361,8 +360,6 @@ clearFilters(): void {
         return 'בנסיעה';
       case 'cancelled_due_to_no_show':
         return 'בוטלה עקב אי-הגעה';
-      case 'cancelled_vehicle_unavailable':
-        return 'בוטל - רכב לא זמין';
       default:
         return status;
     }
@@ -465,4 +462,9 @@ clearFilters(): void {
 
     return 'יום';
   }
+  isFilterActive(): boolean {
+  return this.statusFilter !== '' || 
+         this.startDate !== '' || 
+         this.endDate !== '';
+}
 }

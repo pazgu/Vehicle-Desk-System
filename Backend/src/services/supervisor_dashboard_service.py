@@ -42,9 +42,10 @@ def get_department_orders(department_id: str, db: Session, current_user: User) -
         .join(Vehicle, Ride.vehicle_id == Vehicle.id)
         .filter(User.department_id == department_id)
         .filter(User.role == "employee")
+        .filter(Ride.status != RideStatus.cancelled_vehicle_unavailable)
+
     )
 
-    # Filter based on supervisor assignment
     if is_official:
         query = query.filter(
             or_(

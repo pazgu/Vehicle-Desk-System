@@ -13,7 +13,7 @@ from ..models.user_model import User
 from ..models.vehicle_model import Vehicle
 
 from ..utils.audit_utils import log_action
-from ..utils.socket_manager import sio
+from ..utils.socket_manager import sio, emit_new_ride_request, emit_ride_status_updated
 
 def is_offroad_vehicle(vehicle_type: str) -> bool:
     return any(keyword.lower() in vehicle_type.lower() for keyword in OFFROAD_TYPES)
@@ -132,6 +132,23 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate, license_chec
     })
 
 
+    vehicle_info = db.query(
+        Vehicle.vehicle_model,
+        Vehicle.type
+    ).filter(Vehicle.id == ride.vehicle_id).first()
+
+    await emit_new_ride_request({
+        'ride_id': str(new_ride.id),
+        'employee_name': f"{rider.first_name} {rider.last_name}",
+        'requested_vehicle_model': vehicle_info.vehicle_model if vehicle_info else None,  # ← Use tuple result
+        'date_and_time': new_ride.start_datetime.isoformat(),
+        'end_datetime': new_ride.end_datetime.isoformat() if new_ride.end_datetime else None,
+        'distance': float(new_ride.estimated_distance_km),
+        'status': new_ride.status.value,
+        'destination': new_ride.destination,
+        'submitted_at': new_ride.submitted_at.isoformat(),
+        'department_id': str(rider.department_id),
+    })
 
     if is_vip:
         admins = db.query(User).filter(User.role == "admin").all()
@@ -142,13 +159,13 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate, license_chec
                 message = f"העובד/ת {rider.first_name} {rider.last_name} ממחלקת VIP יצר בקשת נסיעה חדשה.",
             )
 
-    await sio.emit("ride_status_updated", {
-        "ride_id": str(new_ride.id),
-        "new_status": new_ride.status.value
-    })
+    await emit_ride_status_updated(
+        ride_id=str(new_ride.id),
+        new_status=new_ride.status.value,
+        department_id=str(rider.department_id)
+    )
     await send_admin_odometer_notification(vehicle.id, vehicle.mileage)
 
-    # Notification for delegated ride
     if hasattr(ride, "target_type") and ride.target_type == "other" and ride.user_id:
         delegated_notification = create_system_notification(
             user_id=ride.user_id,

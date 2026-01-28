@@ -48,7 +48,11 @@
             <option value="30days">30 ימים אחרונים</option>
             <option value="custom">טווח מותאם אישית</option>
           </select>
-          <button class="app-clear-filters-btn" (click)="resetFilters()">
+          <button 
+            class="app-clear-filters-btn" 
+            (click)="resetFilters()"
+            [disabled]="!isFilterActive()"
+          >
   הסר סינון
 </button>
 
@@ -114,7 +118,7 @@
             עקב אי הגעה
           </div>
           <div class="status-item">
-            <span class="status-indicator pending-rebook"></span> נסיעה מחדש ממתינה
+            <span class="status-indicator pending-rebook"></span> בוטל-רכב לא זמין
         </div>
       </div>
       </div>

@@ -17,13 +17,15 @@ async def connect(sid, environ, auth=None):
     if not user_info:
         return False
 
-    await sio.save_session(sid, {'user_id': str(user_info.get('user_id'))})
-    print(f"User {user_info.get('user_id')} connected with sid {sid}")
+    await sio.save_session(sid, {
+        'user_id': str(user_info.get('user_id')),
+        'role': user_info.get('role'),
+        'department_id': str(user_info.get('department_id')) if user_info.get('department_id') else None
+    })
     return True
 
 @sio.event
 async def join(sid, data):
-    """Join user to their room"""
     session = await sio.get_session(sid)
     if not session:
         return
@@ -32,7 +34,11 @@ async def join(sid, data):
     if user_id and str(user_id) == session.get('user_id'):
         await sio.enter_room(sid, str(user_id))
         user_rooms[str(user_id)] = sid
-        print(f"User {user_id} joined room")
+
+        department_id = session.get('department_id')
+        if department_id and department_id != 'None':
+            department_room = f"department_{department_id}"
+            await sio.enter_room(sid, department_room)
 
 @sio.event
 async def disconnect(sid):
@@ -41,4 +47,38 @@ async def disconnect(sid):
         user_id = session['user_id']
         if str(user_id) in user_rooms:
             del user_rooms[str(user_id)]
-    print(f"Socket disconnected: {sid}")
+
+
+async def emit_new_ride_request(ride_data: dict):
+    """Emit new ride request to department supervisors"""
+    department_id = ride_data.get('department_id')
+    if department_id:
+        department_room = f"department_{department_id}"
+        await sio.emit('new_ride_request', ride_data, room=department_room)
+
+async def emit_order_updated(ride_id: str, ride_data: dict):
+    """Emit order update to relevant department"""
+    department_id = ride_data.get('department_id')
+    if department_id:
+        department_room = f"department_{department_id}"
+        await sio.emit('order_updated', {
+            'id': ride_id,
+            **ride_data
+        }, room=department_room)
+
+async def emit_order_deleted(ride_id: str, department_id: str):
+    """Emit order deletion to relevant department"""
+    if department_id:
+        department_room = f"department_{department_id}"
+        await sio.emit('order_deleted', {
+            'order_id': ride_id
+        }, room=department_room)
+
+async def emit_ride_status_updated(ride_id: str, new_status: str, department_id: str):
+    """Emit ride status update to relevant department"""
+    if department_id:
+        department_room = f"department_{department_id}"
+        await sio.emit('ride_status_updated', {
+            'ride_id': ride_id,
+            'new_status': new_status
+        }, room=department_room)

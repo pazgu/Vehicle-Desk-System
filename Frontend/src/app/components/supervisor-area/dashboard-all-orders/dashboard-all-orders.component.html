@@ -77,7 +77,6 @@
             <option value="נדחה">נדחה</option>
             <option value="בוצע">בוצע</option>
             <option value="בוטלה עקב אי-הגעה">בוטלה עקב אי הגעה</option>
-            <option value="בוטל - רכב לא זמין">בוטל - רכב לא זמין</option>
           </select>
         </div>
 
@@ -106,14 +105,16 @@
           />
         </div>
 
-  <button
-    type="button"
-    class="app-clear-filters-btn"
-    (click)="clearFilters(); $event.stopPropagation()"
-  >
-    הסר סינון
-  </button>
-
+        <div class="filters-actions">
+          <button
+            type="button"
+            class="app-clear-filters-btn"
+            (click)="clearFilters(); $event.stopPropagation()"
+            [disabled]="!isFilterActive()"
+          >
+            הסר סינון
+          </button>
+        </div>
 
         <div *ngIf="dateError" style="color: red; margin-top: 5px">
           תאריך ההתחלה לא יכול להיות אחרי תאריך הסיום

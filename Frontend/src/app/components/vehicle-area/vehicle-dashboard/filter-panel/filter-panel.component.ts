@@ -35,14 +35,14 @@ export class FilterPanelComponent implements OnInit, OnChanges {
   departmentFilter: string = '';
   showFilters: boolean = false;
   showSort: boolean = false;
-  sortByMostUsed: boolean = false;
-  sortByMostUsedAllTime: boolean = false;
   showInactive: boolean = false;
 
   vehicleTypes: { original: string; translated: string }[] = [];
   inactiveVehicles: Vehicle[] = [];
   vehicleUsageData: Map<string, number> = new Map();
   vehicleUsageDataAllTime: Map<string, number> = new Map();
+  sortOption = ''; 
+
 
   constructor(
     private vehicleService: VehicleService,
@@ -51,7 +51,6 @@ export class FilterPanelComponent implements OnInit, OnChanges {
 
   ngOnInit(): void {
     this.fetchVehicleTypes();
-    this.loadVehicleUsageData();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -97,6 +96,30 @@ export class FilterPanelComponent implements OnInit, OnChanges {
     this.updateQueryParams.emit();
   }
 
+  isFilterActive(): boolean {
+  return this.statusFilter !== '' || 
+         this.typeFilter !== '' || 
+         this.departmentFilter !== '' || 
+         this.showInactive === true;
+}
+
+isSortActive(): boolean {
+  return this.sortOption !== '';
+}
+
+onSortOptionChange(): void {
+  if (this.sortOption === 'monthly') {
+    this.loadVehicleUsageData();
+  } else if (this.sortOption === 'alltime') {
+    this.loadVehicleUsageDataAllTime();
+  } else {
+    this.applyFilters();
+  }
+
+  this.updateQueryParams.emit();
+}
+
+
   toggleFilters() {
     this.showFilters = !this.showFilters;
     if (this.showFilters) {
@@ -133,38 +156,13 @@ export class FilterPanelComponent implements OnInit, OnChanges {
   }
 
   clearSorting(): void {
-    this.showSort = false;
-    this.sortByMostUsed = false;
-    this.sortByMostUsedAllTime = false;
-    this.applyFilters();
-    this.updateQueryParams.emit();
-  }
+  this.showSort = false;
+  this.sortOption = '';
+  this.applyFilters();
+  this.updateQueryParams.emit();
+}
 
-  onSortByMostUsedChange() {
-    if (this.sortByMostUsed) {
-      this.sortByMostUsed = false;
-      this.sortByMostUsedAllTime = false;
-      this.applyFilters();
-    } else {
-      this.sortByMostUsed = true;
-      this.sortByMostUsedAllTime = false;
-      this.loadVehicleUsageData();
-    }
-    this.updateQueryParams.emit();
-  }
 
-  onSortByMostUsedAllTimeChange() {
-    if (this.sortByMostUsedAllTime) {
-      this.sortByMostUsedAllTime = false;
-      this.sortByMostUsed = false;
-      this.applyFilters();
-    } else {
-      this.sortByMostUsedAllTime = true;
-      this.sortByMostUsed = false;
-      this.loadVehicleUsageDataAllTime();
-    }
-    this.updateQueryParams.emit();
-  }
 
   loadVehicleUsageDataAllTime(): void {
     this.vehicleService.getMostUsedVehiclesAllTime().subscribe({
@@ -201,21 +199,6 @@ export class FilterPanelComponent implements OnInit, OnChanges {
     });
   }
 
-  loadVehicleUsageAllTimeData(): void {
-    this.vehicleService.getMostUsedVehiclesAllTime().subscribe({
-      next: (response) => {
-        this.vehicleUsageDataAllTime.clear();
-        response.stats.forEach((stat: any) => {
-          this.vehicleUsageDataAllTime.set(stat.vehicle_id, stat.total_rides);
-        });
-
-        this.applyFilters();
-      },
-      error: (err) => {
-        console.error(' Error loading all-time vehicle usage data:', err);
-      },
-    });
-  }
 
   loadInactiveVehicles(): void {
     this.http
@@ -286,21 +269,24 @@ export class FilterPanelComponent implements OnInit, OnChanges {
 
     let sorted: VehicleInItem[];
 
-    if (this.sortByMostUsedAllTime) {
-      sorted = [...filtered].sort((a, b) => {
-        const countA = this.vehicleUsageDataAllTime.get(a.id) || 0;
-        const countB = this.vehicleUsageDataAllTime.get(b.id) || 0;
-        return countB - countA;
-      });
-    } else if (this.sortByMostUsed) {
-      sorted = [...filtered].sort((a, b) => {
-        const countA = this.vehicleUsageData.get(a.id) || 0;
-        const countB = this.vehicleUsageData.get(b.id) || 0;
-        return countB - countA;
-      });
-    } else {
-      sorted = [...filtered].sort((a, b) => a.status.localeCompare(b.status));
-    }
+    if (this.sortOption === 'alltime') {
+  sorted = [...filtered].sort((a, b) => {
+    const countA = this.vehicleUsageDataAllTime.get(a.id) || 0;
+    const countB = this.vehicleUsageDataAllTime.get(b.id) || 0;
+    return countB - countA;
+  });
+} else if (this.sortOption === 'monthly') {
+  sorted = [...filtered].sort((a, b) => {
+    const countA = this.vehicleUsageData.get(a.id) || 0;
+    const countB = this.vehicleUsageData.get(b.id) || 0;
+    return countB - countA;
+  });
+} else {
+  sorted = [...filtered].sort((a, b) =>
+    a.status.localeCompare(b.status)
+  );
+}
+
     this.filteredVehiclesChange.emit(sorted);
   }
 
@@ -320,37 +306,34 @@ export class FilterPanelComponent implements OnInit, OnChanges {
     return this.showInactive;
   }
 
-  getSortByMostUsed(): boolean {
-    return this.sortByMostUsed;
-  }
+setFiltersFromParams(
+  status: string,
+  type: string,
+  inactive: boolean,
+  sortOption: string = '',
+  department: string = '',
+): void {
+  this.statusFilter = status;
+  this.typeFilter = type;
+  this.departmentFilter = department;
+  this.showInactive = inactive;
+  this.sortOption = sortOption;
 
-  getSortByMostUsedAllTime(): boolean {
-    return this.sortByMostUsedAllTime;
+  if (this.showInactive) {
+    this.loadInactiveVehicles();
+  } else if (this.sortOption === 'alltime') {
+    this.loadVehicleUsageDataAllTime();
+  } else if (this.sortOption === 'monthly') {
+    this.loadVehicleUsageData();
+  } else {
+    this.applyFilters();
   }
+}
 
-  setFiltersFromParams(
-    status: string,
-    type: string,
-    inactive: boolean,
-    sortByMostUsed: boolean = false,
-    sortByMostUsedAllTime: boolean = false,
-    department: string = '',
-  ): void {
-    this.statusFilter = status;
-    this.typeFilter = type;
-    this.departmentFilter = department;
-    this.showInactive = inactive;
-    this.sortByMostUsed = sortByMostUsed;
-    this.sortByMostUsedAllTime = sortByMostUsedAllTime;
+getSortOption(): string {
+  return this.sortOption;
+}
 
-    if (this.showInactive) {
-      this.loadInactiveVehicles();
-    } else if (this.sortByMostUsedAllTime) {
-      this.loadVehicleUsageDataAllTime();
-    } else if (this.sortByMostUsed) {
-      this.loadVehicleUsageData();
-    } else {
-      this.applyFilters();
-    }
-  }
+
+
 }

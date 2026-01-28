@@ -830,3 +830,13 @@ input[type="checkbox"] {
 .pending-rebook-row {
   background-color: #d4c5f9 !important;
 }
+.app-clear-filters-btn {
+  transition: all 0.3s ease;
+  margin-top: 12px;
+}
+
+.app-clear-filters-btn:disabled {
+  opacity: 0;
+  cursor: not-allowed;
+  pointer-events: none;
+}
