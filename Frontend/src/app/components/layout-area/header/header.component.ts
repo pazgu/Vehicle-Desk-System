@@ -23,6 +23,7 @@ export class HeaderComponent implements OnInit {
   showFeedbackModal = false;
   rideIdToComplete: string | null = null;
   private destroy$ = new Subject<void>();
+  private processedNotificationIds = new Set<string>();
 
   constructor(
     private authService: AuthService,
@@ -38,16 +39,90 @@ export class HeaderComponent implements OnInit {
     this.role$ = this.authService.role$;
     this.unreadCount$ = this.notificationService.unreadCount$;
 
-   this.authService.isLoggedIn$
-  .pipe(takeUntil(this.destroy$))
-  .subscribe(value => {
-    this.isLoggedIn = value;
-    if (value) {
-      this.notificationService.refreshUnreadCount();
-    }
-  });
+    this.authService.isLoggedIn$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(value => {
+        this.isLoggedIn = value;
+        if (value) {
+          this.notificationService.refreshUnreadCount();
+        }
+      });
 
 
+    this.socketService.notifications$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((notification) => {
+        if (notification && notification.user_id && notification.id) {
+          const currentUserId = localStorage.getItem('employee_id');
+          
+          if (notification.user_id.toString() !== currentUserId) {
+            return;
+          }
+
+          if (this.processedNotificationIds.has(notification.id)) {
+            return;
+          }
+          
+          this.processedNotificationIds.add(notification.id);
+          
+          const current = this.notificationService.unreadCount$.getValue();
+          this.notificationService.unreadCount$.next(current + 1);
+          
+          setTimeout(() => {
+            this.processedNotificationIds.delete(notification.id);
+          }, 60000);
+        }
+      });
+
+    this.socketService.vehicleExpiry$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((notification) => {
+        if (notification && notification.user_id && notification.id) {
+          const currentUserId = localStorage.getItem('employee_id');
+          
+          if (notification.user_id.toString() !== currentUserId) {
+            return;
+          }
+          
+          if (this.processedNotificationIds.has(notification.id)) {
+            return;
+          }
+          
+          this.processedNotificationIds.add(notification.id);
+          
+          const current = this.notificationService.unreadCount$.getValue();
+          this.notificationService.unreadCount$.next(current + 1);
+          
+          setTimeout(() => {
+            this.processedNotificationIds.delete(notification.id);
+          }, 60000);
+        }
+      });
+
+    this.socketService.odometerNotif$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((notification) => {
+        if (notification && notification.user_id && notification.id) {
+          const currentUserId = localStorage.getItem('employee_id');
+          
+          if (notification.user_id.toString() !== currentUserId) {
+            return;
+          }
+          
+          if (this.processedNotificationIds.has(notification.id)) {
+            return;
+          }
+          
+          this.processedNotificationIds.add(notification.id);
+          
+          const current = this.notificationService.unreadCount$.getValue();
+          this.notificationService.unreadCount$.next(current + 1);
+          
+          setTimeout(() => {
+            this.processedNotificationIds.delete(notification.id);
+          }, 60000);
+        }
+      });
 
     const pendingRideId = localStorage.getItem('pending_feedback_ride');
     if (pendingRideId) {
@@ -57,21 +132,21 @@ export class HeaderComponent implements OnInit {
       this.checkFeedbackNeeded();
     }
 
-this.socketService.feedbackNeeded$
-  .pipe(takeUntil(this.destroy$))
-  .subscribe(data => {
-    if (data?.ride_id && data?.showPage) {
-      localStorage.setItem('pending_feedback_ride', data.ride_id);
-      this.rideIdToComplete = data.ride_id;
-      this.showFeedbackModal = true;
-    }
-  });
-
+    this.socketService.feedbackNeeded$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(data => {
+        if (data?.ride_id && data?.showPage) {
+          localStorage.setItem('pending_feedback_ride', data.ride_id);
+          this.rideIdToComplete = data.ride_id;
+          this.showFeedbackModal = true;
+        }
+      });
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    this.processedNotificationIds.clear();
   }
  
 
