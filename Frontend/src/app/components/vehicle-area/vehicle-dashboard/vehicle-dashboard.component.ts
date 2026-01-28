@@ -179,17 +179,18 @@ this.socketService.vehicleMileageUpdated$
 
     const departmentFilter = params['department'] || '';
     const showInactive = params['showInactive'] === 'true';
-    const sortByMostUsed = params['sortByMostUsed'] === 'true';
+    const sortOption = params['sortOption'] || '';
+
 
     if (this.filterPanel) {
       this.filterPanel.setFiltersFromParams(
-        statusFilter,
-        typeFilter,
-        showInactive,
-        sortByMostUsed,
-        false,
-        departmentFilter
-      );
+  statusFilter,
+  typeFilter,
+  showInactive,
+  sortOption,
+  departmentFilter
+);
+
     }
   });
 
@@ -204,7 +205,7 @@ this.socketService.vehicleMileageUpdated$
     const typeFilter = this.filterPanel.getTypeFilter();
     const departmentFilter = this.filterPanel.getDepartmentFilter();
     const showInactive = this.filterPanel.getShowInactive();
-    const sortByMostUsed = this.filterPanel.getSortByMostUsed();
+    const sortOption = this.filterPanel.getSortOption();
 
     if (statusFilter)
       queryParams['status'] = this.translate(
@@ -216,7 +217,8 @@ this.socketService.vehicleMileageUpdated$
       queryParams['type'] = this.translate(typeFilter, 'type', 'toEnglish');
     if (departmentFilter) queryParams['department'] = departmentFilter;
     if (showInactive) queryParams['showInactive'] = 'true';
-    if (sortByMostUsed) queryParams['sortByMostUsed'] = 'true';
+    if (sortOption) queryParams['sortOption'] = sortOption;
+
 
     this.router.navigate([], {
       relativeTo: this.route,
