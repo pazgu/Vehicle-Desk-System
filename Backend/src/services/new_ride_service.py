@@ -110,6 +110,27 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate, license_chec
     db.commit()
     db.refresh(new_ride)
     db.refresh(vehicle)
+   
+    create_system_notification(
+        user_id=rider_id,
+        title="בקשת נסיעה חדשה",
+        message=f"ההזמנה שלך עבור {ride.start_location} ל-{ride.destination} נוצרה.",
+        order_id=new_ride.id,
+    )
+
+    # Emit via Socket.IO so frontend updates in real-time
+    await sio.emit("new_notification", {
+        "id": str(uuid4()),  # אפשר לשים את האיד של ה-notification האמיתי
+        "user_id": str(rider_id),
+        "title": "בקשת נסיעה חדשה",
+        "message": f"ההזמנה שלך עבור {ride.start_location} ל-{ride.destination} נוצרה.",
+        "notification_type": "system",
+        "sent_at": datetime.now(timezone.utc).isoformat(),
+        "order_id": str(new_ride.id),
+        "order_status": new_ride.status.value,
+        "seen": False
+    })
+
 
 
     if is_vip:

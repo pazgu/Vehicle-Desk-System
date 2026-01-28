@@ -234,24 +234,29 @@ this.socketService.odometerNotif$
     }
   }
 
-  translateMessage(message: string): string {
-    const lower = message.toLowerCase();
-
-    if (
-      lower.includes('vehicle unavailable due to technical issues') ||
-      lower.includes('בוטלה עקב תקלה ברכב')
-    ) {
-      return 'הנסיעה שלך בוטלה כי הרכב הוקפא בעקבות תקלה. אנא הזמן/י נסיעה חדשה עם רכב אחר.';
-    } else if (lower.includes('נשלחה בהצלחה')) {
-      return 'הנסיעה שלך נשלחה בהצלחה. תקבל/י התראה לאחר הבדיקה והאישור.';
-    } else if (lower.includes('אושרה')) {
-      return 'הנסיעה שלך אושרה.';
-    } else if (lower.includes('נדחתה')) {
-      return 'הנסיעה שלך נדחתה.';
-    } else {
-      return message;
-    }
+ translateMessage(note: MyNotification): string {
+  switch (note.order_status) {
+    case 'pending':
+      return 'ההזמנה שלך ממתינה לאישור.';
+    case 'approved':
+      return 'ההזמנה שלך אושרה.';
+    case 'rejected':
+      return 'ההזמנה שלך נדחתה.';
+    case 'in_progress':
+      return 'הנסיעה החלה ומתבצעת כעת.';
+    case 'completed':
+      return 'הנסיעה הושלמה בהצלחה.';
+    case 'cancelled_due_to_no_show':
+      return 'הנסיעה בוטלה עקב אי־הגעה.';
+    case 'cancelled_vehicle_unavailable':
+      return 'הנסיעה בוטלה עקב תקלה ברכב. אנא הזמן/י נסיעה חדשה.';
+    default:
+      return note.message;
   }
+}
+
+
+
 
   getStatusClass(status?: string): string {
     if (!status) {
