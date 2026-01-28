@@ -29,7 +29,7 @@ from apscheduler.jobstores.base import JobLookupError
 # Utils
 from ..utils.database import get_db
 from ..utils.auth import role_check, identity_check, get_current_user, hash_password
-from ..utils.socket_manager import sio
+from ..utils.socket_manager import sio, emit_order_deleted, emit_order_updated
 from ..utils.socket_utils import convert_decimal
 from ..utils.scheduler import schedule_ride_start, scheduler
 from ..utils.time_utils import is_time_in_blocked_window
@@ -478,30 +478,31 @@ async def patch_order(
     updated_order = await patch_order_in_db(order_id, patch_data, db, changed_by=str(current_user.employee_id))
     user = db.query(User).filter(User.employee_id == updated_order.user_id).first()
     vehicle = db.query(Vehicle).filter(Vehicle.id == updated_order.vehicle_id).first()
+    department_id = str(user.department_id) if user and user.department_id else None
 
     order_data = {
-    "id": str(updated_order.id),
-    "user_id": str(updated_order.user_id),
-    "employee_name":f"{user.first_name} {user.last_name}",
-    "vehicle_id": str(updated_order.vehicle_id) if updated_order.vehicle_id else None,
-    "requested_vehicle_model":vehicle.vehicle_model,
-    "ride_type": updated_order.ride_type,
-    "start_datetime": updated_order.start_datetime,
-    "end_datetime": updated_order.end_datetime,
-    "start_location": updated_order.start_location,
-    "stop": updated_order.stop,
-    "destination": updated_order.destination,
-    "estimated_distance_km": updated_order.estimated_distance_km,
-    "actual_distance_km": updated_order.actual_distance_km,
-    "status": updated_order.status.value,
-    "license_check_passed": updated_order.license_check_passed,
-    "submitted_at": updated_order.submitted_at,
-    "emergency_event": updated_order.emergency_event,
-}
+        "ride_id": str(updated_order.id),
+        "user_id": str(updated_order.user_id),
+        "employee_name": f"{user.first_name} {user.last_name}",
+        "vehicle_id": str(updated_order.vehicle_id) if updated_order.vehicle_id else None,
+        "requested_vehicle_model": vehicle.vehicle_model if vehicle else '',
+        "ride_type": updated_order.ride_type,
+        "date_and_time": updated_order.start_datetime.isoformat(),
+        "end_datetime": updated_order.end_datetime.isoformat() if updated_order.end_datetime else None,
+        "distance": float(updated_order.estimated_distance_km),
+        "destination": updated_order.destination,
+        "status": updated_order.status.value if hasattr(updated_order.status, 'value') else str(updated_order.status).lower(),
+        "submitted_at": updated_order.submitted_at.isoformat() if updated_order.submitted_at else None,
+        "department_id": department_id
+    }
+    
     if updated_order.extra_stops:
         order_data["extra_stops"] = [str(stop) for stop in updated_order.extra_stops]
 
-    await sio.emit("order_updated", convert_decimal(order_data))
+    await emit_order_updated(
+        ride_id=str(updated_order.id),
+        ride_data=order_data
+    )
     return {
         "message": "הנסיעה עודכנה בהצלחה",
         "order": updated_order
@@ -548,16 +549,17 @@ def get_notifications_for_user(user_id: UUID, db: Session = Depends(get_db)):
 
 
 @router.delete("/api/all-orders/{order_id}")
-async def delete_order(order_id: UUID, db: Session = Depends(get_db),current_user: User = Depends(get_current_user)):
+async def delete_order(order_id: UUID, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     try:
         db.execute(text('SET session "session.audit.user_id" = :user_id'), {"user_id": str(current_user.employee_id)})
         ride = db.query(Ride).filter(Ride.id == order_id).first()
         if not ride:
             raise HTTPException(status_code=404, detail="Order not found")
+        user = db.query(User).filter(User.employee_id == ride.user_id).first()
+        department_id = str(user.department_id) if user and user.department_id else None
+
         supervisor_id = get_supervisor_id(ride.user_id, db)
         title = "ביטול נסיעה"
-
-        user = db.query(User).filter(User.employee_id == ride.user_id).first()
         actor_name = f"{user.first_name} {user.last_name}" if user else "משתמש"
 
         if supervisor_id and str(supervisor_id) == str(ride.user_id):
@@ -565,18 +567,31 @@ async def delete_order(order_id: UUID, db: Session = Depends(get_db),current_use
         else:
             message = f"המשתמש {actor_name} ביטל את הנסיעה שלו"
 
-        if supervisor_id:
-            create_system_notification(
-                user_id=supervisor_id,
-                title=title,
-                message=message,
-            )
+        notif = None
+        if supervisor_id and notif:
+            await sio.emit("new_notification", {...}, room=str(supervisor_id))
+
+            if department_id:
+                await emit_order_deleted(
+                    ride_id=str(order_id),
+                    department_id=department_id
+                )
+
+        if supervisor_id and notif:
+            await sio.emit("new_notification", {
+                "id": str(notif.id),
+                "user_id": str(notif.user_id),
+                "title": notif.title,
+                "message": notif.message,
+                "notification_type": notif.notification_type.value,
+                "sent_at": notif.sent_at.isoformat(),
+                "seen": False
+            }, room=str(supervisor_id))
 
         db.delete(ride)
         db.commit()
         update_user_pending_rebook_status(db, current_user.employee_id)
 
-        await sio.emit("order_deleted", {"order_id": str(order_id)})
         try:
             scheduler.remove_job(job_id=f"ride-start-{order_id}")
         except JobLookupError:

@@ -346,9 +346,9 @@ private setupSocketSubscriptions(): void {
 }
 
   private handleOrderUpdate(updatedRide: any): void {
-  if (!updatedRide?.id) return;
+  if (!updatedRide?.ride_id) return;
 
-  const index = this.orders.findIndex((o) => o.ride_id === updatedRide.id);
+  const index = this.orders.findIndex((o) => o.ride_id === updatedRide.ride_id);
   if (index === -1) return;
 
   const newStatus = (updatedRide.status || this.orders[index].status)
@@ -358,10 +358,13 @@ private setupSocketSubscriptions(): void {
   const updatedOrder = {
     ...this.orders[index],
     status: newStatus,
-    start_datetime: updatedRide.start_datetime ?? this.orders[index].start_datetime,
-    end_datetime: updatedRide.end_datetime ?? this.orders[index].end_datetime,
-    submitted_at: updatedRide.submitted_at ?? this.orders[index].submitted_at,
-    distance: updatedRide.estimated_distance_km ?? this.orders[index].distance,
+    employee_name: updatedRide.employee_name || this.orders[index].employee_name,
+    requested_vehicle_model: updatedRide.requested_vehicle_model || this.orders[index].requested_vehicle_model,
+    date_and_time: updatedRide.date_and_time || this.orders[index].date_and_time,
+    end_datetime: updatedRide.end_datetime || this.orders[index].end_datetime,
+    distance: updatedRide.distance || this.orders[index].distance,
+    destination: updatedRide.destination || this.orders[index].destination,
+    submitted_at: updatedRide.submitted_at || this.orders[index].submitted_at,
   };
 
   this.orders = [
@@ -394,17 +397,17 @@ private setupSocketSubscriptions(): void {
 
 
   private handleDeletedRide(deletedRide: any): void {
-  const deletedId = deletedRide?.order_id || deletedRide?.id;
-  if (!deletedId) return;
+    const deletedId = deletedRide?.ride_id;
+    if (!deletedId) return;
 
-  const index = this.orders.findIndex((o) => o.ride_id === deletedId);
-  if (index !== -1) {
-    this.orders = [
-      ...this.orders.slice(0, index),
-      ...this.orders.slice(index + 1),
-    ];
+    const index = this.orders.findIndex((o) => o.ride_id === deletedId);
+    if (index !== -1) {
+      this.orders = [
+        ...this.orders.slice(0, index),
+        ...this.orders.slice(index + 1),
+      ];
+    }
   }
-}
 
 
   goBack(): void {

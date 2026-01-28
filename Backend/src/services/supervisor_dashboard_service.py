@@ -11,6 +11,7 @@ from ..models.department_model import Department
 
 # Utils
 from ..utils.audit_utils import log_action
+from ..utils.socket_manager import emit_ride_status_updated, sio
 
 # Services
 from .vehicle_service import update_vehicle_status
@@ -27,7 +28,6 @@ from ..models.user_model import User
 from ..models.vehicle_inspection_model import VehicleInspection
 from ..models.vehicle_model import VehicleStatus, Vehicle
 
-from ..utils.socket_manager import sio
 
 def get_department_orders(department_id: str, db: Session, current_user: User) -> List[RideDashboardItem]:
 
@@ -122,10 +122,7 @@ def get_department_specific_order(department_id: str, order_id: str, db: Session
     return order_details
 
 
-async def edit_order_status(department_id: str, order_id: str, new_status: str,user_id: UUID, db: Session, rejection_reason: str | None = None) -> bool:
-    """
-    Edit the status of a specific order for a department and sends a notification.
-    """
+async def edit_order_status(department_id: str, order_id: str, new_status: str, user_id: UUID, db: Session, rejection_reason: str | None = None) -> bool:
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id)})
     
     order = (
@@ -166,12 +163,12 @@ async def edit_order_status(department_id: str, order_id: str, new_status: str,u
     user = db.query(User).filter(User.employee_id == order.user_id).first()
     vehicle = db.query(Vehicle).filter(Vehicle.id == order.vehicle_id).first()
 
-    db.execute(text("SET session.audit.user_id = DEFAULT"))
-
-    await sio.emit("ride_status_updated", {
-        "ride_id": str(order.id),
-        "new_status": order.status
-    })
+    if user and user.department_id:
+        await emit_ride_status_updated(
+            ride_id=str(order.id),
+            new_status=order.status,
+            department_id=str(user.department_id)
+        )
 
     await sio.emit("new_notification", {
         "id": str(notification.id),
@@ -182,8 +179,10 @@ async def edit_order_status(department_id: str, order_id: str, new_status: str,u
         "sent_at": notification.sent_at.isoformat(),
         "order_id": str(notification.order_id) if notification.order_id else None,
         "order_status": order.status,
-        "Seen": False
-    })
+        "seen": False
+    }, room=str(order.user_id))
+
+    db.execute(text("SET session.audit.user_id = DEFAULT"))
 
     return order, notification
 

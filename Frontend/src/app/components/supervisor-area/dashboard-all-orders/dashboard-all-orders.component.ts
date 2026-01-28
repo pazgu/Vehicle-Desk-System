@@ -12,7 +12,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { SocketService } from '../../../services/socket.service';
 import { ToastService } from '../../../services/toast.service';
 import { Location } from '@angular/common';
-import { Subject, takeUntil } from 'rxjs';
+import { filter, Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard-all-orders',
@@ -92,18 +92,18 @@ this.socketService.orderUpdated$
   .pipe(takeUntil(this.destroy$))
   .subscribe((updatedRide) => {
     const index = this.orders.findIndex(
-      (o) => o.ride_id === updatedRide.id
+      (o) => o.ride_id === updatedRide.ride_id
     );
 
     if (index !== -1) {
       const updatedOrder: RideDashboardItem = {
-        ride_id: updatedRide.id,
+        ride_id: updatedRide.ride_id,
         employee_name: updatedRide.employee_name,
         requested_vehicle_model: updatedRide.requested_vehicle_model || '',
-        date_and_time: updatedRide.start_datetime,
-        end_datetime: updatedRide.end_datetime || updatedRide.end_time,
-        distance: updatedRide.estimated_distance_km,
-        status: updatedRide.status.toLowerCase(),
+        date_and_time: updatedRide.date_and_time,
+        end_datetime: updatedRide.end_datetime,
+        distance: updatedRide.distance,
+        status: updatedRide.status.toLowerCase ? updatedRide.status.toLowerCase() : updatedRide.status,
         destination: updatedRide.destination || '',
         submitted_at: updatedRide.submitted_at || new Date().toISOString(),
       };
@@ -117,10 +117,13 @@ this.socketService.orderUpdated$
   });
 
 this.socketService.deleteRequests$
-  .pipe(takeUntil(this.destroy$))
+  .pipe(
+    takeUntil(this.destroy$),
+    filter(deletedRide => deletedRide !== null && deletedRide?.ride_id) // Add filter
+  )
   .subscribe((deletedRide) => {
     const index = this.orders.findIndex(
-      (o) => o.ride_id === deletedRide.order_id
+      (o) => o.ride_id === deletedRide.ride_id
     );
 
     if (index !== -1) {

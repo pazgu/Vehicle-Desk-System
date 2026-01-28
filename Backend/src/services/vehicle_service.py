@@ -30,6 +30,7 @@ from ..utils.audit_utils import log_action
 from src.utils.database import SessionLocal
 
 # Services
+from ..services.user_notification import create_system_notification
 
 # Schemas
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
@@ -371,6 +372,9 @@ def update_vehicle_status(
     if not vehicle:
         raise HTTPException(status_code=404, detail="Vehicle not found")
 
+    notifications_to_emit = []
+    affected_users_list = []
+
     try:
         old_status = vehicle.status
         if new_status == VehicleStatus.frozen:
@@ -428,11 +432,33 @@ def update_vehicle_status(
                 ride.emergency_event = cancellation_reason
                 ride.vehicle_id = None
                 affected_users.add(ride.user_id)
+                
+                title = "נסיעה בוטלה"
+                message = f"לצערנו הנסיעה שלך בוטלה. {cancellation_reason}"
+                
+                notif = create_system_notification(
+                    user_id=ride.user_id,
+                    title=title,
+                    message=message,
+                    order_id=ride.id
+                )
+                
+                notifications_to_emit.append({
+                    'id': str(notif.id),
+                    'user_id': str(notif.user_id),
+                    'title': notif.title,
+                    'message': notif.message,
+                    'notification_type': notif.notification_type.value,
+                    'sent_at': notif.sent_at.isoformat(),
+                    'order_id': str(ride.id),
+                    'seen': False
+                })
 
             for user_id in affected_users:
                 user = db.query(User).filter(User.employee_id == user_id).first()
                 if user:
                     user.has_pending_rebook = True
+                    affected_users_list.append(str(user_id))
 
         db.commit()
         db.refresh(vehicle)
@@ -453,7 +479,9 @@ def update_vehicle_status(
         "vehicle_id": vehicle.id, 
         "new_status": vehicle.status, 
         "freeze_reason": vehicle.freeze_reason,
-        "freeze_details": vehicle.freeze_details
+        "freeze_details": vehicle.freeze_details,
+        "notifications": notifications_to_emit,
+        "users": affected_users_list
     }
 
 

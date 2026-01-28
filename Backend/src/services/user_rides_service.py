@@ -144,10 +144,9 @@ async def update_ride_status(db: Session, ride_id: UUID, new_status: str, change
             ride_data={
                 'employee_name': f"{rider.first_name} {rider.last_name}",
                 'requested_vehicle_model': vehicle.vehicle_model if vehicle else '',
-                'vehicle_type': vehicle.type if vehicle else '',  # ← ADD THIS
-                'start_datetime': ride.start_datetime.isoformat(),
+                'date_and_time': ride.start_datetime.isoformat(),
                 'end_datetime': ride.end_datetime.isoformat() if ride.end_datetime else None,
-                'estimated_distance_km': float(ride.estimated_distance_km),
+                'distance': float(ride.estimated_distance_km),
                 'status': new_status,
                 'destination': ride.destination,
                 'submitted_at': ride.submitted_at.isoformat() if ride.submitted_at else None,
