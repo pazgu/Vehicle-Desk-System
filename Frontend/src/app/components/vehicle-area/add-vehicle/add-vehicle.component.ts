@@ -8,11 +8,15 @@ import {
   Validators,
   FormGroup,
   FormBuilder,
+  AbstractControl,
+  AsyncValidatorFn,
+  ValidationErrors,
 } from '@angular/forms';
 import { FuelType } from '../../../models/vehicle-dashboard-item/vehicle-out-item.module';
 import { Router, RouterModule } from '@angular/router';
 import { ToastService } from '../../../services/toast.service';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, of, Observable } from 'rxjs';
+import { map, catchError, debounceTime, switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-add-vehicle',
@@ -48,7 +52,11 @@ export class AddVehicleComponent implements OnInit {
 
   ngOnInit(): void {
     this.vehicleForm = this.fb.group({
-      plate_number: ['', Validators.required],
+      plate_number: [
+        '',
+        [Validators.required],
+        [this.plateNumberAsyncValidator()]
+      ],
       type: ['', Validators.required],
       fuel_type: ['', Validators.required],
       mileage: [0, [Validators.required, Validators.min(0)]],
@@ -67,27 +75,44 @@ export class AddVehicleComponent implements OnInit {
     this.fetchDepartments();
     this.fetchVehicleTypes();
 
-   this.vehicleForm
-  .get('image_url')
-  ?.valueChanges
-  .pipe(takeUntil(this.destroy$))
-  .subscribe(() => {
-    this.imagePreview = null;
-    this.imageVerified = false;
+    this.vehicleForm
+      .get('image_url')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.imagePreview = null;
+        this.imageVerified = false;
 
-    const ctrl = this.vehicleForm.get('image_url');
-    if (ctrl?.hasError('urlLoadFailed')) {
-      const { urlLoadFailed, ...rest } = ctrl.errors || {};
-      ctrl.setErrors(Object.keys(rest).length ? rest : null);
-    }
-  });
-
+        const ctrl = this.vehicleForm.get('image_url');
+        if (ctrl?.hasError('urlLoadFailed')) {
+          const { urlLoadFailed, ...rest } = ctrl.errors || {};
+          ctrl.setErrors(Object.keys(rest).length ? rest : null);
+        }
+      });
   }
 
-    ngOnDestroy(): void {
+  ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
+
+  private plateNumberAsyncValidator(): AsyncValidatorFn {
+    return (control: AbstractControl): Observable<ValidationErrors | null> => {
+      if (!control.value || control.value.trim() === '') {
+        return of(null);
+      }
+
+      return of(control.value).pipe(
+        debounceTime(500),
+        switchMap((value) =>
+          this.vehicleService.checkPlateNumber(value.trim()).pipe(
+            map((result) => (result.exists ? { plateExists: true } : null)),
+            catchError(() => of(null))
+          )
+        )
+      );
+    };
+  }
+
   fetchVehicleTypes(): void {
     this.vehicleService.getVehicleTypes().subscribe({
       next: (types: string[]) => {

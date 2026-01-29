@@ -9,6 +9,7 @@ import { ToastService } from '../../../services/toast.service';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../../page-area/confirm-dialog/confirm-dialog.component';
 import { firstValueFrom } from 'rxjs';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-archived-vehicles',
@@ -39,7 +40,8 @@ export class ArchivedVehiclesComponent implements OnInit {
     private vehicleService: VehicleService,
     private router: Router,
     private toastService: ToastService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private location: Location
   ) {}
 
   ngOnInit(): void {
@@ -263,7 +265,7 @@ export class ArchivedVehiclesComponent implements OnInit {
     return filtered;
   }
 
-  goBackToDashboard(): void {
-    this.router.navigate(['/vehicle-dashboard']);
+  goBack(): void {
+    this.location.back();
   }
 }
