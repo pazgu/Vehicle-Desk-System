@@ -45,14 +45,14 @@
 }
 
 .close-button {
-  position: absolute;
+  position: sticky;
   top: 1rem;
   left: 1rem;
   background: white;
   border: 2px solid #811313;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  width: 35px; 
+  height: 35px; 
   display: flex;
   align-items: center;
   justify-content: center;
@@ -60,7 +60,9 @@
   transition: all 0.3s ease;
   z-index: 10;
   color: #811313;
-  font-size: 1.2rem;
+  font-size: 1rem;
+  float: left;
+  margin: 1rem;
 }
 
 .close-button:hover {
