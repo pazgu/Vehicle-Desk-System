@@ -502,3 +502,12 @@ def get_fuel_type_translations(db: Session = Depends(get_db)):
         "gasoline": "בנזין"
     }
     return translations
+
+@router.get("/check-plate-number/{plate_number}")
+def check_plate_number(
+    plate_number: str,
+    db: Session = Depends(get_db),
+    payload: dict = Depends(token_check)
+):
+    existing = db.query(Vehicle).filter_by(plate_number=plate_number).first()
+    return {"exists": existing is not None}

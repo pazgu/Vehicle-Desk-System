@@ -56,14 +56,16 @@
 
       <label>מספר רישוי</label>
       <input formControlName="plate_number" type="text" />
-      <div
-        class="error"
-        *ngIf="
-          vehicleForm.get('plate_number')?.touched &&
-          vehicleForm.get('plate_number')?.invalid
-        "
-      >
-        מספר רישוי נדרש
+      <div class="error" *ngIf="vehicleForm.get('plate_number')?.touched && vehicleForm.get('plate_number')?.invalid">
+        <span *ngIf="vehicleForm.get('plate_number')?.hasError('required')">
+          מספר רישוי נדרש
+        </span>
+        <span *ngIf="vehicleForm.get('plate_number')?.hasError('plateExists')">
+          מספר רישוי זה כבר קיים במערכת
+        </span>
+      </div>
+      <div class="error" *ngIf="vehicleForm.get('plate_number')?.pending">
+        בודק מספר רישוי...
       </div>
 
       <label for="department_id">מחלקה:</label>

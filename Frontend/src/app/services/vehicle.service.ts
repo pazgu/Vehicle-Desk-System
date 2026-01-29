@@ -318,4 +318,9 @@ export class VehicleService {
     }
     return this.fuelTypeTranslations$;
    }
+  checkPlateNumber(plateNumber: string): Observable<{ exists: boolean }> {
+    return this.http.get<{ exists: boolean }>(
+      `${this.apiUrl}/check-plate-number/${plateNumber}`
+    );
+  }
 }
