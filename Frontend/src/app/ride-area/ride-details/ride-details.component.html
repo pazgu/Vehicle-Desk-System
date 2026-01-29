@@ -41,7 +41,9 @@
           </div>
 
           <div class="detail-item">
-            <span class="detail-label">תאריך התחלה:</span>
+            <span class="detail-label">
+              {{ isRideLongerThanOneDay() ? 'תאריך התחלה:' : 'תאריך:' }}
+            </span>
             <span class="detail-value">{{
               ride?.start_datetime | date : "dd/MM/yyyy"
             }}</span>
