@@ -36,7 +36,8 @@
         </button>
       </div>
 
-      <button type="button" class="add" (click)="addItem()">
+    <div class="add-section">
+      <button type="button" class="add" (click)="addItem()" [disabled]="hasEmptyItem()">
         הוסף הנחיה +
       </button>
     </div>

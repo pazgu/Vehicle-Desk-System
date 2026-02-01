@@ -121,4 +121,7 @@ export class AdminGuidelinesComponent implements OnInit {
       },
     });
   }
+  hasEmptyItem(): boolean {
+  return this.items.controls.some(ctrl => !ctrl.value?.trim());
+}
 }
