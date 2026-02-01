@@ -105,6 +105,9 @@
         [max]="maxDate"
         (ngModelChange)="onStartDateChange()"
       />
+      <div *ngIf="dateError" class="date-error-message">
+        תאריך ההתחלה לא יכול להיות אחרי תאריך הסיום
+      </div>
     </div>
 
     <div class="date-input-group">
@@ -119,9 +122,11 @@
         (ngModelChange)="onEndDateChange()"
       />
     </div>
-      <div *ngIf="dateError" style="color: red; margin-top: 5px">
-          תאריך ההתחלה לא יכול להיות אחרי תאריך הסיום
-        </div>
+
+</div>
+
+
+<div class="filters-actions">
 
         <div class="filters-actions">
     <button
