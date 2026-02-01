@@ -357,9 +357,6 @@ a[routerLink="/notifications"] {
 .dropdown-content {
   opacity: 0;
   display: none;
-  display : flex;
-  justify-content: center;
-  align-items: center;
   position: absolute;
   background-color: #f1f1f1;
   min-width: 120px;
@@ -529,6 +526,41 @@ a[routerLink="/notifications"] {
 }
 
 .user-dropdown::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: transparent;
+}
+
+.dropbtn {
+  color: white;
+  font-size: 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 10px 5px;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: transparent;
+  pointer-events: none;
+}
+
+.dropdown-content::before {
   content: "";
   position: absolute;
   top: -5px;
