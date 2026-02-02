@@ -268,18 +268,25 @@ async def create_supervisor_ride(db: Session, user_id: UUID, ride: RideCreate):
     db.refresh(vehicle)
     
     if rider_id != user_id:
+        if getattr(requester, "isRaan", True):  
+            notification_message = f"הרע\"ן של המחלקה {requester.first_name} {requester.last_name} הזמין עבורך נסיעה שאושרה אוטומטית."
+        else:
+            notification_message = f"מנהל המחלקה {requester.first_name} {requester.last_name} הזמין עבורך נסיעה שאושרה אוטומטית."
+
+        notification_title = "נסיעה הוזמנה עבורך"
+
         create_system_notification(
             user_id=rider_id,
-            title="נסיעה הוזמנה עבורך",
-            message=f"מנהל המחלקה{requester.first_name} {requester.last_name} הזמין עבורך נסיעה שאושרה אוטומטית.",
+            title=notification_title,
+            message=notification_message,
             order_id=new_ride.id
         )
 
         await sio.emit("new_notification", {
             "id": str(uuid4()),
             "user_id": str(rider_id),
-            "title": "נסיעה הוזמנה עבורך",
-            "message": f"המנהל {requester.first_name} {requester.last_name} הזמין עבורך נסיעה.",
+            "title": notification_title,
+            "message": notification_message,
             "notification_type": "system",
             "sent_at": datetime.now(timezone.utc).isoformat(),
             "order_id": str(new_ride.id),
