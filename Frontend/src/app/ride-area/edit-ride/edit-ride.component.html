@@ -80,8 +80,8 @@
                 {{ time }}
               </option>
             </select>
-            <small class="error-text" *ngIf="getFieldError('start_time')">
-              {{ getFieldError("start_time") }}
+            <small class="error-text" *ngIf="f['start_time'].touched && f['start_time'].errors?.['required']">
+              חובה למלא שדה זה
             </small>
           </div>
 
@@ -93,11 +93,8 @@
                 {{ time }}
               </option>
             </select>
-            <small class="error-text" *ngIf="getFieldError('end_time')">
-              {{ getFieldError("end_time") }}
-            </small>
-            <small class="error-text" *ngIf="rideForm.errors?.['invalidTimeRange'] && isDayRide">
-              {{ rideForm.errors?.['invalidTimeRange']?.['message'] }}
+            <small class="error-text" *ngIf="f['end_time'].touched && f['end_time'].errors?.['required']">
+              חובה למלא שדה זה
             </small>
             <small class="info-text" *ngIf="!isDayRide">
               לנסיעות יותר מיום ניתן לבחור כל שעה
@@ -105,7 +102,7 @@
           </div>
         </div>
         <div class="time-fields-container">
-          <div class="info-text-container" *ngIf="!rideForm.errors?.['futureDateTime'] && !rideForm.errors?.['inspectorClosureTime']">
+          <div class="info-text-container" *ngIf="!rideForm.errors?.['futureDateTime'] && !rideForm.errors?.['inspectorClosureTime'] && !rideForm.errors?.['invalidTimeRange']">
             <small class="info-text">
               * לא ניתן להזמין נסיעות בשעות 11:15-12:15 (מנהל רכבים לא זמין)
             </small>
@@ -123,6 +120,9 @@
               class="error-text"
             >
               {{ rideForm.errors?.['inspectorClosureTime']?.['message'] }}
+            </small>
+            <small class="error-text" *ngIf="rideForm.errors?.['invalidTimeRange'] && isDayRide">
+              {{ rideForm.errors?.['invalidTimeRange']?.['message'] }}
             </small>
           </div>
         </div>
