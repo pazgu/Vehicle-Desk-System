@@ -349,7 +349,7 @@ getExtraStopNames(): string[] {
   ngOnInit(): void {
     this.generateTimeOptions();
     this.rideId = this.route.snapshot.paramMap.get('id') || '';
-    this.minDate = this.calculateMinDate(2);
+    this.minDate = this.calculateMinDate(0);
     this.buildForm();
     this.fetchVehicleTypes();
     this.fetchCities();
@@ -1080,10 +1080,10 @@ getExtraStopNames(): string[] {
     const rideDate = this.rideForm.get('ride_date')?.value;
     const nightEndDate = this.rideForm.get('ride_date_night_end')?.value;
 
-    const start_datetime = `${rideDate}T${startTime}`;
-    const end_datetime = ridePeriod === 'night' 
-      ? `${nightEndDate}T${endTime}` 
-      : `${rideDate}T${endTime}`;
+    const start_datetime = new Date(`${rideDate}T${startTime}:00`).toISOString();
+    const end_datetime = new Date(
+      ridePeriod === 'night' ? `${nightEndDate}T${endTime}:00` : `${rideDate}T${endTime}:00`
+    ).toISOString();
 
     const startUUID = this.getCityId(
       this.rideForm.get('start_location')?.value
