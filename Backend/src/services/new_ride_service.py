@@ -266,6 +266,27 @@ async def create_supervisor_ride(db: Session, user_id: UUID, ride: RideCreate):
     db.commit()
     db.refresh(new_ride)
     db.refresh(vehicle)
+    
+    if rider_id != user_id:
+        create_system_notification(
+            user_id=rider_id,
+            title="נסיעה הוזמנה עבורך",
+            message=f"מנהל המחלקה{requester.first_name} {requester.last_name} הזמין עבורך נסיעה שאושרה אוטומטית.",
+            order_id=new_ride.id
+        )
+
+        await sio.emit("new_notification", {
+            "id": str(uuid4()),
+            "user_id": str(rider_id),
+            "title": "נסיעה הוזמנה עבורך",
+            "message": f"המנהל {requester.first_name} {requester.last_name} הזמין עבורך נסיעה.",
+            "notification_type": "system",
+            "sent_at": datetime.now(timezone.utc).isoformat(),
+            "order_id": str(new_ride.id),
+            "order_status": new_ride.status.value,
+            "seen": False
+        }, room=str(rider_id))
+
 
     await sio.emit("ride_status_updated", {
         "ride_id": str(new_ride.id),
