@@ -235,8 +235,15 @@ this.socketService.odometerNotif$
   }
 
  translateMessage(note: MyNotification): string {
+  if (note.message && note.message.trim() !== '') {
+    return note.message; 
+  }
   switch (note.order_status) {
     case 'pending':
+    
+      if (note.message && note.message.includes('ביקש/ה נסיעה')) {
+        return note.message; 
+      }
       return 'ההזמנה שלך ממתינה לאישור.';
     case 'approved':
       return 'ההזמנה שלך אושרה.';

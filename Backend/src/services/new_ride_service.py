@@ -7,7 +7,7 @@ from ..helpers.department_helpers import is_vip_department
 
 from ..schemas.new_ride_schema import RideCreate, RideResponse
 from src.constants import OFFROAD_TYPES
-from ..services.user_notification import create_system_notification, send_admin_odometer_notification
+from ..services.user_notification import create_system_notification, get_supervisor_id, send_admin_odometer_notification
 from ..models.ride_model import Ride, RideStatus
 from ..models.user_model import User
 from ..models.vehicle_model import Vehicle
@@ -110,26 +110,28 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate, license_chec
     db.commit()
     db.refresh(new_ride)
     db.refresh(vehicle)
-   
-    create_system_notification(
-        user_id=rider_id,
-        title="בקשת נסיעה חדשה",
-        message=f"ההזמנה שלך עבור {ride.start_location} ל-{ride.destination} נוצרה.",
-        order_id=new_ride.id,
-    )
-
-    await sio.emit("new_notification", {
+    
+    
+    if rider_id == user_id and not is_vip:
+        create_system_notification(
+            user_id=rider_id,
+            title="בקשת נסיעה ממתינה לאישור",
+            message="הבקשה שלך לנסיעה נשלחה וממתינה לאישור.",
+            order_id=new_ride.id
+        )
+        await sio.emit("new_notification", {
         "id": str(uuid4()), 
         "user_id": str(rider_id),
         "title": "בקשת נסיעה חדשה",
-        "message": f"ההזמנה שלך עבור {ride.start_location} ל-{ride.destination} נוצרה.",
+        "message": "הבקשה שלך לנסיעה נשלחה וממתינה לאישור.",
+        
         "notification_type": "system",
         "sent_at": datetime.now(timezone.utc).isoformat(),
         "order_id": str(new_ride.id),
         "order_status": new_ride.status.value,
         "seen": False
     })
-
+        
 
     vehicle_info = db.query(
         Vehicle.vehicle_model,
@@ -165,24 +167,7 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate, license_chec
     )
     await send_admin_odometer_notification(vehicle.id, vehicle.mileage)
 
-    if hasattr(ride, "target_type") and ride.target_type == "other" and ride.user_id:
-        delegated_notification = create_system_notification(
-            user_id=ride.user_id,
-            title="בקשת נסיעה חדשה עבורך",
-            message="משתמש אחר הגיש עבורך בקשה לנסיעה",
-            order_id=new_ride.id
-        )
-        await sio.emit("new_notification", {
-            "id": str(delegated_notification.id),
-            "user_id": str(delegated_notification.user_id),
-            "title": delegated_notification.title,
-            "message": delegated_notification.message,
-            "notification_type": delegated_notification.notification_type.value,
-            "sent_at": delegated_notification.sent_at.isoformat(),
-            "order_id": str(delegated_notification.order_id) if delegated_notification.order_id else None,
-            "order_status": new_ride.status,
-            "Seen": False
-        })
+    
 
     db.execute(text("SET session.audit.user_id = DEFAULT"))
 
@@ -195,8 +180,7 @@ async def create_ride(db: Session, user_id: UUID, ride: RideCreate, license_chec
     ride_response_dict.pop('_sa_instance_state', None)
 
     return ride_response
-
-
+    
 async def create_supervisor_ride(db: Session, user_id: UUID, ride: RideCreate):
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(user_id)})
 
@@ -282,6 +266,27 @@ async def create_supervisor_ride(db: Session, user_id: UUID, ride: RideCreate):
     db.commit()
     db.refresh(new_ride)
     db.refresh(vehicle)
+    
+    if rider_id != user_id:
+        create_system_notification(
+            user_id=rider_id,
+            title="נסיעה הוזמנה עבורך",
+            message=f"מנהל המחלקה{requester.first_name} {requester.last_name} הזמין עבורך נסיעה שאושרה אוטומטית.",
+            order_id=new_ride.id
+        )
+
+        await sio.emit("new_notification", {
+            "id": str(uuid4()),
+            "user_id": str(rider_id),
+            "title": "נסיעה הוזמנה עבורך",
+            "message": f"המנהל {requester.first_name} {requester.last_name} הזמין עבורך נסיעה.",
+            "notification_type": "system",
+            "sent_at": datetime.now(timezone.utc).isoformat(),
+            "order_id": str(new_ride.id),
+            "order_status": new_ride.status.value,
+            "seen": False
+        }, room=str(rider_id))
+
 
     await sio.emit("ride_status_updated", {
         "ride_id": str(new_ride.id),
