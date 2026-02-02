@@ -250,7 +250,7 @@ async def create_order(
         if not target_supervisor_id:
             target_supervisor_id = get_supervisor_id(user_id, db)
 
-        if target_supervisor_id:
+        if target_supervisor_id and str(target_supervisor_id) != str(new_ride.user_id):
             employee_name = get_user_name(db, new_ride.user_id)
 
             supervisor_notification = create_system_notification(
@@ -291,7 +291,7 @@ async def create_order(
             passenger_notification = create_system_notification(
                 user_id=new_ride.user_id,
                 title="נסיעה הוזמנה עבורך",
-                message=f"העובד/ת {requester_name} הזמין/ה עבורך נסיעה חדשה.",
+                message=f"העובד/ת {requester_name} הזמין/ה עבורך נסיעה חדשה הדורשת את אישורך. ",
                 order_id=new_ride.id
             )
 
