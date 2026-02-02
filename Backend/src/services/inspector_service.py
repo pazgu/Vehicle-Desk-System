@@ -10,6 +10,9 @@ from ..models.vehicle_inspection_model import VehicleInspection
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 from ..services.user_notification import create_system_notification
 from ..utils.socket_manager import sio
+from ..models.ride_model import Ride, RideStatus
+
+from ..models.notification_model import Notification, NotificationType
 
 
 async def create_inspection(data: VehicleInspectionSchema, db: Session):
@@ -36,6 +39,17 @@ async def create_inspection(data: VehicleInspectionSchema, db: Session):
             return inspection
 
         last_user_id = vehicle.last_user_id
+        last_ride = (
+        db.query(Ride)
+        .filter(
+            Ride.vehicle_id == data.vehicle_id,
+            Ride.user_id == last_user_id
+        )
+        .order_by(Ride.submitted_at.desc())
+        .first()
+    )
+
+
 
         if last_user_id:
             issues = []
@@ -59,16 +73,20 @@ async def create_inspection(data: VehicleInspectionSchema, db: Session):
 
             if message:
                 title = "תוצאות בדיקת הרכב"
-                notification = create_system_notification(
+                notification = Notification(
                     user_id=last_user_id,
                     title=title,
                     message=message,
-                    vehicle_id=data.vehicle_id
+                    vehicle_id=data.vehicle_id,
+                    order_id=last_ride.id if last_ride else None,
+                    notification_type=NotificationType.system,
+                    seen=False
                 )
+
+
                 db.add(notification)
                 db.commit()
                 db.refresh(notification)
-
                 try:
                     await sio.emit("new_notification", {
                         "id": str(notification.id),
@@ -82,7 +100,6 @@ async def create_inspection(data: VehicleInspectionSchema, db: Session):
                     })
                 except Exception as socket_error:
                     print(f"Socket emission failed: {socket_error}")
-
         try:
             await sio.emit("new_inspection", {
                 "inspection_id": str(inspection.inspection_id),
