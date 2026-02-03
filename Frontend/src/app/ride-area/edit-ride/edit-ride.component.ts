@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl  } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl, ValidationErrors  } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -305,6 +305,39 @@ getExtraStopNames(): string[] {
     );
   }
 
+  private rideDateTimeValidator = (formGroup: FormGroup): ValidationErrors | null => {
+    const rideDateControl = formGroup.get('ride_date');
+    const startTimeControl = formGroup.get('start_time');
+
+    if (!rideDateControl?.value || !startTimeControl?.value) {
+      return null;
+    }
+    const dateString = rideDateControl.value;
+    const [year, month, day] = dateString.split('-').map(Number);
+    const [hour, minute] = startTimeControl.value.split(':').map(Number);
+
+    const selectedDate = new Date(
+      year,
+      month - 1,
+      day,
+      hour,
+      minute,
+      0,
+      0
+    );
+
+    const now = new Date();
+    if (selectedDate.getTime() < now.getTime()) {
+      return {
+        futureDateTime: {
+          message: 'זמן הנסיעה לא יכול להיות בעבר.',
+        },
+      };
+    }
+
+    return null;
+  };
+
   private onPeriodChange(value: string): void {
     const nightEndControl = this.rideForm.get('ride_date_night_end');
     const rideDateControl = this.rideForm.get('ride_date');
@@ -349,7 +382,7 @@ getExtraStopNames(): string[] {
   ngOnInit(): void {
     this.generateTimeOptions();
     this.rideId = this.route.snapshot.paramMap.get('id') || '';
-    this.minDate = this.calculateMinDate(2);
+    this.minDate = this.calculateMinDate(0);
     this.buildForm();
     this.fetchVehicleTypes();
     this.fetchCities();
@@ -532,7 +565,8 @@ getExtraStopNames(): string[] {
     }, { 
       validators: [
         this.endTimeValidator,
-        this.inspectorClosureValidator
+        this.inspectorClosureValidator,
+        this.rideDateTimeValidator
       ] 
     });
   }
@@ -583,22 +617,6 @@ getExtraStopNames(): string[] {
             this.toastService.show('אין לך הרשאה לגשת לדף זה', 'error');
             this.router.navigate(['/home']);
             return;
-          }
-
-          if (isApproved) {
-            const rideDateTime = new Date(ride.start_datetime);
-            const now = new Date();
-            const timeDifferenceHours =
-              (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
-
-            if (timeDifferenceHours <= 2) {
-              this.toastService.show(
-                'אפשר לערוך הזמנה אושרת עד שעתיים לפני זמן הנסיעה',
-                'error'
-              );
-              this.router.navigate(['/home']);
-              return;
-            }
           }
         }
 
@@ -1080,10 +1098,10 @@ getExtraStopNames(): string[] {
     const rideDate = this.rideForm.get('ride_date')?.value;
     const nightEndDate = this.rideForm.get('ride_date_night_end')?.value;
 
-    const start_datetime = `${rideDate}T${startTime}`;
-    const end_datetime = ridePeriod === 'night' 
-      ? `${nightEndDate}T${endTime}` 
-      : `${rideDate}T${endTime}`;
+    const start_datetime = new Date(`${rideDate}T${startTime}:00`).toISOString();
+    const end_datetime = new Date(
+      ridePeriod === 'night' ? `${nightEndDate}T${endTime}:00` : `${rideDate}T${endTime}:00`
+    ).toISOString();
 
     const startUUID = this.getCityId(
       this.rideForm.get('start_location')?.value
@@ -1229,5 +1247,8 @@ getExtraStopNames(): string[] {
   }
   closeDropdown() {
     this.isDropdownOpen = false;
+  }
+  get f() {
+    return this.rideForm.controls;
   }
 }

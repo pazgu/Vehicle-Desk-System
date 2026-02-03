@@ -425,7 +425,8 @@ async def rebook_ride(
         order_id=data.old_ride_id,
         patch_data=data.new_ride,
         db=db,
-        changed_by=str(user.employee_id)
+        changed_by=str(user.employee_id),
+        user_role=user.role
     )
     if(user.role==UserRole.supervisor):
         updated_ride.status=RideStatus.approved
@@ -496,7 +497,11 @@ async def patch_order(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    updated_order = await patch_order_in_db(order_id, patch_data, db, changed_by=str(current_user.employee_id))
+    updated_order = await patch_order_in_db(
+    order_id, patch_data, db,
+    changed_by=str(current_user.employee_id),
+    user_role=current_user.role
+)
     user = db.query(User).filter(User.employee_id == updated_order.user_id).first()
     vehicle = db.query(Vehicle).filter(Vehicle.id == updated_order.vehicle_id).first()
     department_id = str(user.department_id) if user and user.department_id else None

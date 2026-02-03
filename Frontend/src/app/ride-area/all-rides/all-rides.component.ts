@@ -117,22 +117,13 @@ export class AllRidesComponent implements OnInit {
   editOrder(order: any): void {
     const userRole = localStorage.getItem('role');
     const isSupervisor = userRole === 'supervisor';
-    const isFuture = this.parseDate(order.date) >= new Date();
+    const [day, month, year] = order.date.split('.');
+    const rideDateTime = new Date(`${year}-${month}-${day}T${order.time}:00`);
+    const isFuture = rideDateTime.getTime() > new Date().getTime();
 
-    if (!isFuture) {
+    if (!isSupervisor && !isFuture) {
       this.toastService.show('אפשר לערוך רק הזמנות עתידיות ', 'error');
       return;
-    }
-
-    if (!isSupervisor) {
-      const isPending = order.status.toLowerCase() === 'pending';
-      if (!isPending) {
-        this.toastService.show(
-          'אפשר לערוך רק הזמנות עתידיות במצב "ממתין לאישור" ',
-          'error'
-        );
-        return;
-      }
     } else {
       const isEditableStatus = ['pending', 'approved'].includes(
         order.status.toLowerCase()
@@ -152,7 +143,7 @@ export class AllRidesComponent implements OnInit {
       const timeDifferenceHours =
         (rideDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
 
-      if (timeDifferenceHours <= 2) {
+      if (timeDifferenceHours <= 2 && !isSupervisor) {
         this.toastService.show(
           'אפשר לערוך הזמנה עד שעתיים לפני זמן הנסיעה ',
           'error'
@@ -196,7 +187,7 @@ clearFilters(): void {
       return;
     }
 
-    const isFuture = rideDateTime.getTime() > now.getTime();
+    const isFuture = rideDateTime.getTime() > new Date().getTime();
     const isRebookContext =
       status === 'cancelled_vehicle_unavailable' ||
       status === 'cancelled_vehicle_unavilable';

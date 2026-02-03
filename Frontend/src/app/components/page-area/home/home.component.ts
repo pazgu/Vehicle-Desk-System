@@ -45,7 +45,7 @@ import {
   setClosestQuarterHourTimeOnForm,
 } from './home-utils/time-helpers';
 import { getUserIdFromToken } from './home-utils/auth-helpers';
-import { timeStepValidator } from './home-utils/validators';
+import { createRebookDateTimeValidator, timeStepValidator } from './home-utils/validators';
 import {
   buildRideForm,
   resetRideForm,
@@ -447,7 +447,8 @@ if (start.getTime() < now.getTime()) {
     });
 
     this.rideForm.setValidators([
-      createInspectorClosureTimeValidator()
+      createInspectorClosureTimeValidator(),
+      createRebookDateTimeValidator()
     ]);
 
     this.rideForm.updateValueAndValidity({ emitEvent: false });
