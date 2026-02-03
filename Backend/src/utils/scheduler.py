@@ -731,7 +731,7 @@ def periodic_delete_stale_rides():
 
 
 scheduler.add_job(check_and_complete_rides, 'interval', minutes=5)
-scheduler.add_job(periodic_check_overdue_rides, 'interval', minutes=10)
+scheduler.add_job(periodic_check_overdue_rides, 'interval', minutes=5)
 scheduler.add_job(periodic_check_unblock_users, 'interval', minutes=1)
 scheduler.add_job(periodic_delete_stale_rides, 'interval', minutes=1)
 
