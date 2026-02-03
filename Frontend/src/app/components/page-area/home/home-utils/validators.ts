@@ -155,6 +155,46 @@ export function createFutureDateTimeValidator(
   };
 }
 
+export function createRebookDateTimeValidator(): ValidatorFn {
+  return (formGroup: AbstractControl): ValidationErrors | null => {
+    const rideDateControl = formGroup.get('ride_date');
+    const startHourControl = formGroup.get('start_hour');
+    const startMinuteControl = formGroup.get('start_minute');
+
+    if (
+      !rideDateControl?.value ||
+      !startHourControl?.value ||
+      !startMinuteControl?.value
+    ) {
+      return null;
+    }
+
+    const dateString = rideDateControl.value;
+    const [year, month, day] = dateString.split('-').map(Number);
+    const selectedDate = new Date(
+      year,
+      month - 1,
+      day,
+      Number(startHourControl.value),
+      Number(startMinuteControl.value),
+      0,
+      0
+    );
+
+    const now = new Date();
+    
+    if (selectedDate.getTime() < now.getTime()) {
+      return {
+        futureDateTime: {
+          message: 'זמן הנסיעה לא יכול להיות בעבר.',
+        },
+      };
+    }
+
+    return null;
+  };
+}
+
 export function createInspectorClosureTimeValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const formGroup = control as FormGroup;

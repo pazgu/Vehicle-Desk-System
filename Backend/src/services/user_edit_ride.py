@@ -17,7 +17,8 @@ async def patch_order_in_db(
     order_id: UUID,
     patch_data: OrderCardItem,
     db: Session,
-    changed_by: str
+    changed_by: str,
+    user_role: str = ""
 ):
     db.execute(
         text("SET session.audit.user_id = :user_id"),
@@ -30,13 +31,12 @@ async def patch_order_in_db(
 
     is_vip = is_vip_department(db, UUID(changed_by))
 
-    if order.status == "approved" and not is_vip:
+    if order.status == "approved" and not is_vip and user_role != "supervisor":
         raise HTTPException(
             status_code=400,
             detail="אי אפשר לערוך הזמנה שאושרה. ניתן רק לבטל ולהזמין חדשה."
         )
 
-    # Save original status
     original_status = order.status
 
     data = patch_data.dict(exclude_unset=True)
@@ -50,19 +50,10 @@ async def patch_order_in_db(
             incoming_start = incoming_start.replace(tzinfo=timezone.utc)
 
         if incoming_start < now_utc:
-            duration = None
-
-            if "end_datetime" in data and data["end_datetime"]:
-                incoming_end = data["end_datetime"]
-                if incoming_end.tzinfo is None:
-                    incoming_end = incoming_end.replace(tzinfo=timezone.utc)
-
-                duration = incoming_end - incoming_start
-
-            data["start_datetime"] = now_utc
-
-            if duration and duration.total_seconds() > 0:
-                data["end_datetime"] = now_utc + duration
+            raise HTTPException(
+                status_code=400,
+                detail="אי אפשר לקבוע שעת התחלה בעבר"
+            )
 
 
     for key, value in data.items():

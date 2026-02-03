@@ -139,6 +139,11 @@ export class ProtectedRouteGuard implements CanActivate {
       return of(false);
     }
 
+    const rebookData = this.myRidesService.getRebookDatafromService();
+    if (rebookData) {
+      return of(true);
+    }
+
     return this.myRidesService.checkPendingRebook().pipe(
       switchMap((rebookRes) => {
         if (rebookRes.has_pending) {
