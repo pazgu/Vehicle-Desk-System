@@ -10,6 +10,9 @@ from ..models.vehicle_inspection_model import VehicleInspection
 from ..schemas.check_vehicle_schema import VehicleInspectionSchema
 from ..services.user_notification import create_system_notification
 from ..utils.socket_manager import sio
+from ..models.ride_model import Ride, RideStatus
+
+from ..models.notification_model import Notification, NotificationType
 
 
 async def create_inspection(data: VehicleInspectionSchema, db: Session):
@@ -31,11 +34,75 @@ async def create_inspection(data: VehicleInspectionSchema, db: Session):
         db.refresh(inspection)
 
         vehicle = db.query(Vehicle).filter(Vehicle.id == data.vehicle_id).first()
+        
+       
+        if inspection.critical_issue_bool and inspection.issues_found:
+            admins = db.query(User).filter(User.role == UserRole.admin).all()
+            
+            plate_number = vehicle.plate_number if vehicle else "לא ידוע"
+            inspection_date_str = inspection.inspection_date.strftime("%d/%m/%Y %H:%M")
+            
+            title = " בעיה חריגה ברכב"
+            message = f"זוהתה בעיה חריגה ברכב {plate_number} בתאריך {inspection_date_str}: {inspection.issues_found}"
+            
+            for admin in admins:
+                notification = Notification(
+                    user_id=admin.employee_id,
+                    title=title,
+                    message=message,
+                    vehicle_id=data.vehicle_id,
+                    order_id=None,
+                    notification_type=NotificationType.system,
+                    seen=False
+                )
+                db.add(notification)
+                db.commit()
+                db.refresh(notification)
+                
+                try:
+                    await sio.emit("new_notification", {
+                        "id": str(notification.id),
+                        "user_id": str(notification.user_id),
+                        "title": notification.title,
+                        "message": notification.message,
+                        "notification_type": notification.notification_type.value,
+                        "sent_at": notification.sent_at.isoformat(),
+                        "vehicle_id": str(data.vehicle_id),
+                        "seen": False
+                    })
+                except Exception as socket_error:
+                    print(f"Socket emission failed for admin {admin.employee_id}: {socket_error}")
+        
         if not vehicle or not vehicle.last_user_id:
             print("No last_user_id found for vehicle, skipping notification.")
+            
+            try:
+                await sio.emit("new_inspection", {
+                    "inspection_id": str(inspection.inspection_id),
+                    "inspection_date": inspection.inspection_date.isoformat(),
+                    "inspected_by": str(inspection.inspected_by),
+                    "vehicle_id": str(inspection.vehicle_id),
+                    "clean": inspection.clean,
+                    "fuel_checked": inspection.fuel_checked,
+                    "no_items_left": inspection.no_items_left,
+                    "critical_issue_bool": inspection.critical_issue_bool,
+                    "issues_found": inspection.issues_found,
+                })
+            except Exception as socket_error:
+                print(f"Socket emission failed: {socket_error}")
+            
             return inspection
 
         last_user_id = vehicle.last_user_id
+        last_ride = (
+        db.query(Ride)
+        .filter(
+            Ride.vehicle_id == data.vehicle_id,
+            Ride.user_id == last_user_id
+        )
+        .order_by(Ride.submitted_at.desc())
+        .first()
+    )
 
         if last_user_id:
             issues = []
@@ -56,33 +123,36 @@ async def create_inspection(data: VehicleInspectionSchema, db: Session):
             else:
                 message = None  
 
+        if message:
+            title = "תוצאות בדיקת הרכב"
+            notification = Notification(
+                user_id=last_user_id,
+                title=title,
+                message=message,
+                vehicle_id=data.vehicle_id,
+                order_id=last_ride.id if last_ride else None,
+                notification_type=NotificationType.system,
+                seen=False
+            )
 
-            if message:
-                title = "תוצאות בדיקת הרכב"
-                notification = create_system_notification(
-                    user_id=last_user_id,
-                    title=title,
-                    message=message,
-                    vehicle_id=data.vehicle_id
-                )
-                db.add(notification)
-                db.commit()
-                db.refresh(notification)
-
-                try:
-                    await sio.emit("new_notification", {
-                        "id": str(notification.id),
-                        "user_id": str(notification.user_id),
-                        "title": notification.title,
-                        "message": notification.message,
-                        "notification_type": notification.notification_type.value,
-                        "sent_at": notification.sent_at.isoformat(),
-                        "vehicle_id": str(data.vehicle_id),
-                        "seen": False
-                    })
-                except Exception as socket_error:
-                    print(f"Socket emission failed: {socket_error}")
-
+            db.add(notification)
+            db.commit()
+            db.refresh(notification)
+            
+            try:
+                await sio.emit("new_notification", {
+                    "id": str(notification.id),
+                    "user_id": str(notification.user_id),
+                    "title": notification.title,
+                    "message": notification.message,
+                    "notification_type": notification.notification_type.value,
+                    "sent_at": notification.sent_at.isoformat(),
+                    "vehicle_id": str(data.vehicle_id),
+                    "seen": False
+                })
+            except Exception as socket_error:
+                print(f"Socket emission failed: {socket_error}")
+        
         try:
             await sio.emit("new_inspection", {
                 "inspection_id": str(inspection.inspection_id),
@@ -103,4 +173,4 @@ async def create_inspection(data: VehicleInspectionSchema, db: Session):
     except Exception as e:
         db.rollback()
         print(f"Failed on vehicle_id={data.vehicle_id}: {e}")
-        raise HTTPException(status_code=500, detail="אירעה שגיאה בעת שמירת בדיקת הרכב.")    
+        raise HTTPException(status_code=500, detail="אירעה שגיאה בעת שמירת בדיקת הרכב.")

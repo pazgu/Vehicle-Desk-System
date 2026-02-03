@@ -140,6 +140,7 @@ export class NewRideComponent implements OnInit {
   showGuidelines = false;
   pendingConfirmation = false;
   createdRideId: string | null = null;
+  pendingRideData: { formData: RideFormPayload; user_id: string } | null = null;
   disableDueToDepartment: boolean = false;
   departmentCheckCompleted: boolean = false;
   currentUserId: string | null = null;
@@ -1401,25 +1402,69 @@ if (carControl?.errors?.['noAvailableCars'] && this.availableCars.length > 0) {
     userId: string;
     timestamp: string;
   }) {
-    const rideId = ev.rideId || this.createdRideId;
-    const userId = ev.userId || this.currentUserId;
-    if (!rideId || !userId) {
-      console.error('[ACK] Missing rideId or userId for acknowledgment', {
-        rideId,
-        userId,
-      });
-      this.toastService.show(
-        'שגיאה: לא נמצא מזהה נסיעה או משתמש עבור אישור ההנחיות. נסה/י שוב.',
-        'error'
-      );
-      return;
-    }
+    const role = localStorage.getItem('role');
+    
+    if (this.pendingRideData) {
+      const { formData, user_id } = this.pendingRideData;
+      
+      if (role === 'employee') {
+        this.rideService.createRide(formData, user_id).subscribe({
+          next: (createdRide) => {
+            this.orderSubmitted = true;
+            this.loadFuelType(formData.vehicle_id);
+            this.socketService.sendMessage('new_ride_request', {
+              ...createdRide,
+              user_id,
+            });
+            this.loadUserOrders();
 
+            const rideId = createdRide?.id ?? createdRide?.ride_id ?? createdRide?.data?.id;
+            
+            this.saveAcknowledgment(rideId, user_id, new Date().toISOString());
+          },
+          error: (err) => {
+            this.pendingRideData = null;
+            if (this.isVehicleFrozenError(err)) {
+              this.openVehicleFrozenDialog();
+              return;
+            }
+            const translated = getRideSubmitErrorMessage(err);
+            this.toastService.show(translated, 'error');
+            this.showGuidelines = false;
+          },
+        });
+      } else if (role === 'supervisor') {
+        this.rideService.createSupervisorRide(formData, user_id).subscribe({
+          next: (createdRide) => {
+            this.orderSubmitted = true;
+            this.loadFuelType(formData.vehicle_id);
+            this.loadUserOrders();
+
+            const rideId = createdRide?.id ?? createdRide?.ride_id ?? createdRide?.data?.id;
+            
+            this.saveAcknowledgment(rideId, user_id, new Date().toISOString());
+          },
+          error: (err) => {
+            this.pendingRideData = null;
+            if (this.isVehicleFrozenError(err)) {
+              this.openVehicleFrozenDialog();
+              return;
+            }
+            const translated = getRideSubmitErrorMessage(err);
+            this.toastService.show(translated, 'error');
+            this.showGuidelines = false;
+          },
+        });
+      }
+    }
+  }
+
+  private saveAcknowledgment(rideId: string, userId: string, timestamp: string): void {
     const payload: RideAcknowledgmentPayload = {
       ride_id: rideId,
       user_id: userId,
       confirmed: true,
-      acknowledged_at: ev.timestamp,
+      acknowledged_at: timestamp,
       signature_data_url: null,
     };
 
@@ -1428,11 +1473,13 @@ if (carControl?.errors?.['noAvailableCars'] && this.availableCars.length > 0) {
       next: () => {
         this.pendingConfirmation = false;
         this.showGuidelines = false;
+        this.pendingRideData = null;
       },
       error: () => {
         this.pendingConfirmation = false;
         this.toastService.show('נרשמה שגיאה בשמירת האישור.', 'error');
         this.showGuidelines = false;
+        this.pendingRideData = null;
       },
     });
   }
@@ -1569,64 +1616,14 @@ if (carControl?.errors?.['noAvailableCars'] && this.availableCars.length > 0) {
         },
       });
     } else {
-      if (role === 'employee') {
-        this.rideService.createRide(formData, user_id).subscribe({
-          next: (createdRide) => {
-            this.orderSubmitted = true;
-            this.loadFuelType(formData.vehicle_id);
-            this.socketService.sendMessage('new_ride_request', {
-              ...createdRide,
-              user_id,
-            });
-
-            this.loadUserOrders();
-
-            this.createdRideId =
-              createdRide?.id ??
-              createdRide?.ride_id ??
-              createdRide?.data?.id ??
-              'mock-ride';
-            this.showGuidelines = true;
-          },
-          error: (err) => {
-            if (this.isVehicleFrozenError(err)) {
-              this.openVehicleFrozenDialog();
-              return;
-            }
-
-            const translated = getRideSubmitErrorMessage(err);
-            this.toastService.show(translated, 'error');
-            console.error('Submit error:', err);
-          },
-        });
-      } else if (role === 'supervisor') {
-        this.rideService.createSupervisorRide(formData, user_id).subscribe({
-          next: (createdRide) => {
-            this.orderSubmitted = true;
-
-            this.loadFuelType(formData.vehicle_id);
-
-            this.loadUserOrders();
-
-            this.createdRideId =
-              createdRide?.id ??
-              createdRide?.ride_id ??
-              createdRide?.data?.id ??
-              'mock-ride';
-            this.showGuidelines = true;
-          },
-          error: (err) => {
-            if (this.isVehicleFrozenError(err)) {
-              this.openVehicleFrozenDialog();
-              return;
-            }
-
-            const translated = getRideSubmitErrorMessage(err);
-            this.toastService.show(translated, 'error');
-            console.error('Submit error:', err);
-          },
-        });
-      }
+if (role === 'employee') {
+  this.pendingRideData = { formData, user_id };
+  this.showGuidelines = true;
+}
+     else if (role === 'supervisor') {
+  this.pendingRideData = { formData, user_id };
+  this.showGuidelines = true;
+}
     }
   }
 

@@ -44,27 +44,15 @@ export class GuidelinesModalComponent {
       this.isChecked = this.initialChecked;
     }
   }
-  onConfirm() {
-    if (!this.isChecked) return;
+onConfirm() {
+  if (!this.isChecked) return;
 
-    const payload = {
-      ride_id: this.rideId,
-      confirmed: true,
-    };
-
-    this.guidelines.confirmRide(payload).subscribe({
-      next: (res) => {
-        const ts = new Date().toISOString();
-        this.confirmed.emit({
-          rideId: this.rideId,
-          userId: this.userId,
-          timestamp: ts,
-        });
-        this.show = false;
-      },
-      error: () => {
-        console.error('Failed to confirm ride requirements');
-      },
-    });
-  }
+  const ts = new Date().toISOString();
+  this.confirmed.emit({
+    rideId: this.rideId,
+    userId: this.userId,
+    timestamp: ts,
+  });
+  this.show = false;
+}
 }

@@ -5,7 +5,7 @@
 
 .wrap {
   max-width: 800px;
-  margin: 24px auto;
+  margin: 60px auto;
   padding: 16px;
   background: #fff;
   border: 2px solid #942222;
@@ -129,4 +129,36 @@
 
 .primary:disabled:hover {
   filter: none;
+}
+.add:disabled {
+  background-color: #e5e7eb;
+  color: #9ca3af;
+  border-color: #d1d5db;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.add:disabled:hover {
+  background-color: #e5e7eb;
+  transform: none;
+  box-shadow: none;
+}
+
+.add-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.add {
+  width: 100%;
+}
+
+.add:disabled {
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  border: 2px solid #d1d5db;
+  cursor: not-allowed;
 }
