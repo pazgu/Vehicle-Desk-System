@@ -113,8 +113,9 @@
           class="modify"
           (click)="canEdit(order) ? onEditRide(order, $event) : null"
           [disabled]="!canEdit(order)"
-          [style.opacity]="canEdit(order) ? '1' : '0.5'"
+          [style.opacity]="canEdit(order) ? '1' : '1'"
           [style.cursor]="canEdit(order) ? 'pointer' : 'not-allowed'"
+          [attr.data-title]="getEditTooltip(order)"
         >
           <i class="pi pi-pencil"></i>
         </button>
@@ -122,11 +123,12 @@
         <button
           class="delete"
           [disabled]="!canDelete(order) || isPastOrder(order)"
-          [style.opacity]="canDelete(order) ? '1' : '0.5'"
+          [style.opacity]="canDelete(order) ? '1' : '1'"
           (click)="canDelete(order) ? onDeleteRide(order, $event) : null"
           [style.cursor]="
             !canDelete(order) || isPastOrder(order) ? 'not-allowed' : 'pointer'
           "
+          [attr.data-title]="getDeleteTooltip(order)"
         >
           <i class="pi pi-trash"></i>
         </button>
@@ -146,7 +148,7 @@
           class="status"
           (click)="ChangeStatus(order.ride_id)"
           [disabled]="!canChangeStatus(order)"
-          [style.opacity]="canChangeStatus(order) ? '1' : '0.5'"
+          [style.opacity]="canChangeStatus(order) ? '1' : '1'"
           [style.cursor]="canChangeStatus(order) ? 'pointer' : 'not-allowed'"
         >
           <img src="/assets/images/switch.png" class="switch" />

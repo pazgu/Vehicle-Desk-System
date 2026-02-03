@@ -317,4 +317,94 @@ canDelete(order: any, isRebookContext: boolean = false): boolean {
     event.stopPropagation();
     this.rebookRide.emit(order);
   }
+
+  getEditTooltip(order: any): string {
+  if (this.canEdit(order)) {
+    return 'ערוך נסיעה';
+  }
+
+  const status = order.status.toLowerCase();
+  
+  if (status === 'completed') {
+    return 'לא ניתן לערוך נסיעה שהושלמה';
+  }
+  if (status === 'rejected') {
+    return 'לא ניתן לערוך נסיעה שנדחתה';
+  }
+  if (status === 'cancelled') {
+    return 'לא ניתן לערוך נסיעה שבוטלה';
+  }
+  if (status === 'cancelled_due_to_no_show') {
+    return 'לא ניתן לערוך נסיעה שבוטלה עקב אי-הגעה';
+  }
+  if (status === 'in_progress') {
+    return 'לא ניתן לערוך נסיעה שכבר בתהליך';
+  }
+
+  const rideStart = this.parseDateIsrael(order.start_datetime);
+  const now = new Date();
+  const isFuture = rideStart >= now;
+
+  if (!isFuture) {
+    return 'לא ניתן לערוך נסיעה שכבר עברה';
+  }
+
+  const userRole = localStorage.getItem('role');
+  const isSupervisor = userRole === 'supervisor';
+
+  if (!isSupervisor && status !== 'pending') {
+    return 'לא ניתן לערוך נסיעה שאושרה';
+  }
+
+  if (isSupervisor && !['pending', 'approved'].includes(status)) {
+    return 'ניתן לערוך רק נסיעות במצב "ממתין לאישור" או "אושר"';
+  }
+
+  return 'לא ניתן לערוך נסיעה זו';
+}
+
+getDeleteTooltip(order: any): string {
+  if (this.canDelete(order)) {
+    return 'בטל נסיעה';
+  }
+
+  const status = order.status.toLowerCase();
+  
+  if (status === 'completed') {
+    return 'לא ניתן לבטל נסיעה שהושלמה';
+  }
+  if (status === 'rejected') {
+    return 'לא ניתן לבטל נסיעה שנדחתה';
+  }
+  if (status === 'cancelled') {
+    return 'לא ניתן לבטל נסיעה שכבר בוטלה';
+  }
+  if (status === 'cancelled_due_to_no_show') {
+    return 'לא ניתן לבטל נסיעה שבוטלה עקב אי-הגעה';
+  }
+  if (status === 'in_progress') {
+    return 'לא ניתן לבטל נסיעה שכבר בתהליך';
+  }
+
+  const rideStart = this.parseDateIsrael(order.start_datetime);
+  const now = new Date();
+  const isFuture = rideStart >= now;
+
+  if (!isFuture) {
+    return 'לא ניתן לבטל נסיעה שכבר עברה';
+  }
+
+  const userRole = localStorage.getItem('role');
+  const isSupervisor = userRole === 'supervisor';
+
+  if (!isSupervisor && status !== 'pending') {
+    return 'לא ניתן לבטל נסיעה שאושרה';
+  }
+
+  if (isSupervisor && !['pending', 'approved'].includes(status)) {
+    return 'ניתן לבטל רק נסיעות במצב "ממתין לאישור" או "אושר"';
+  }
+
+  return 'לא ניתן לבטל נסיעה זו';
+}
 }
