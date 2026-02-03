@@ -102,7 +102,8 @@ export function createSameDateNightRideValidator(): ValidatorFn {
 }
 
 export function createFutureDateTimeValidator(
-  isRebookMode: boolean = false
+  isRebookMode: boolean = false,
+  isVipOrSupervisor: boolean = false
 ): ValidatorFn {
   return (formGroup: AbstractControl): ValidationErrors | null => {
     if (isRebookMode) {
@@ -134,7 +135,6 @@ export function createFutureDateTimeValidator(
     );
 
     const now = new Date();
-    const twoHoursFromNow = new Date(now.getTime() + 2 * 60 * 60 * 1000);
 
     if (selectedDate.getTime() < now.getTime()) {
       return {
@@ -143,6 +143,11 @@ export function createFutureDateTimeValidator(
         },
       };
     }
+    if (isVipOrSupervisor) {
+      return null;
+    }
+
+    const twoHoursFromNow = new Date(now.getTime() + 2 * 60 * 60 * 1000);
     if (selectedDate.getTime() < twoHoursFromNow.getTime()) {
       return {
         futureDateTime: {
