@@ -4,16 +4,17 @@ from sqlalchemy import String, func, text
 from typing import List, Optional
 from uuid import UUID
 from datetime import timedelta ,datetime, timezone
-
+from ..utils.socket_manager import emit_ride_status_updated, emit_order_updated
 from ..models.ride_model import Ride , RideStatus
 from ..models.vehicle_model import Vehicle
+from ..models.user_model import User
 
 from ..schemas.user_rides_schema import RideSchema
 from src.schemas.ride_status_enum import RideStatusEnum
 
 from ..utils.audit_utils import log_action
 from ..utils.auth import get_current_user
-from ..utils.socket_manager import emit_ride_status_updated, emit_order_updated
+
 
 
 def filter_rides(query, status: Optional[RideStatus], from_date, to_date):
@@ -118,7 +119,13 @@ def get_all_rides(user_id: UUID, db: Session, status=None, from_date=None, to_da
     return [RideSchema(**dict(row._mapping)) for row in rows] 
 
     
-async def update_ride_status(db: Session, ride_id: UUID, new_status: str, changed_by: UUID):
+async def update_ride_status(
+    db: Session,
+    ride_id: UUID,
+    new_status: RideStatus,
+    changed_by: UUID
+):
+
     db.execute(text("SET session.audit.user_id = :user_id"), {"user_id": str(changed_by)})
     
     ride = db.query(Ride).filter(Ride.id == ride_id).first()
@@ -127,18 +134,21 @@ async def update_ride_status(db: Session, ride_id: UUID, new_status: str, change
 
     rider = db.query(User).filter(User.employee_id == ride.user_id).first()
     vehicle = db.query(Vehicle).filter(Vehicle.id == ride.vehicle_id).first()
-    
+
     ride.status = new_status
     db.commit()
     db.refresh(ride)
 
     if rider and rider.department_id:
         await emit_ride_status_updated(
-            ride_id=str(ride.id),
-            new_status=new_status,
-            department_id=str(rider.department_id)
-        )
+        ride_id=str(ride.id),
+        new_status=new_status.value, 
+        department_id=str(rider.department_id),
+        user_id=str(rider.employee_id)  
+    )
+
         
+       
         await emit_order_updated(
             ride_id=str(ride.id),
             ride_data={
@@ -147,7 +157,7 @@ async def update_ride_status(db: Session, ride_id: UUID, new_status: str, change
                 'date_and_time': ride.start_datetime.isoformat(),
                 'end_datetime': ride.end_datetime.isoformat() if ride.end_datetime else None,
                 'distance': float(ride.estimated_distance_km),
-                'status': new_status,
+                'status': new_status.value,
                 'destination': ride.destination,
                 'submitted_at': ride.submitted_at.isoformat() if ride.submitted_at else None,
                 'department_id': str(rider.department_id)
@@ -155,10 +165,7 @@ async def update_ride_status(db: Session, ride_id: UUID, new_status: str, change
         )
 
     db.execute(text("SET session.audit.user_id = DEFAULT"))
-
-
     return ride
-
 
 
 def get_ride_by_id(db: Session, ride_id: UUID) -> RideSchema:

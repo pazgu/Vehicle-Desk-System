@@ -121,19 +121,72 @@ export function createFutureDateTimeValidator(
       return null;
     }
 
-    const selectedDate = new Date(rideDateControl.value);
-    const selectedHour = Number(startHourControl.value);
-    const selectedMinute = Number(startMinuteControl.value);
-
-    selectedDate.setHours(selectedHour, selectedMinute, 0, 0);
+    const dateString = rideDateControl.value;
+    const [year, month, day] = dateString.split('-').map(Number);
+    const selectedDate = new Date(
+      year,
+      month - 1,
+      day,
+      Number(startHourControl.value),
+      Number(startMinuteControl.value),
+      0,
+      0
+    );
 
     const now = new Date();
     const twoHoursFromNow = new Date(now.getTime() + 2 * 60 * 60 * 1000);
 
+    if (selectedDate.getTime() < now.getTime()) {
+      return {
+        futureDateTime: {
+          message: 'זמן הנסיעה לא יכול להיות בעבר.',
+        },
+      };
+    }
     if (selectedDate.getTime() < twoHoursFromNow.getTime()) {
       return {
         futureDateTime: {
           message: 'לא ניתן להזמין נסיעה לשעתיים הקרובות.',
+        },
+      };
+    }
+
+    return null;
+  };
+}
+
+export function createRebookDateTimeValidator(): ValidatorFn {
+  return (formGroup: AbstractControl): ValidationErrors | null => {
+    const rideDateControl = formGroup.get('ride_date');
+    const startHourControl = formGroup.get('start_hour');
+    const startMinuteControl = formGroup.get('start_minute');
+
+    if (
+      !rideDateControl?.value ||
+      !startHourControl?.value ||
+      !startMinuteControl?.value
+    ) {
+      return null;
+    }
+
+    const dateString = rideDateControl.value;
+    const [year, month, day] = dateString.split('-').map(Number);
+    const selectedDate = new Date(
+      year,
+      month - 1,
+      day,
+      Number(startHourControl.value),
+      Number(startMinuteControl.value),
+      0,
+      0
+    );
+
+    const now = new Date();
+    
+    if (selectedDate.getTime() < now.getTime()) {
+      return {
+        futureDateTime: {
+          message: 'זמן הנסיעה לא יכול להיות בעבר.',
         },
       };
     }

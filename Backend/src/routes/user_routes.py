@@ -250,7 +250,7 @@ async def create_order(
         if not target_supervisor_id:
             target_supervisor_id = get_supervisor_id(user_id, db)
 
-        if target_supervisor_id:
+        if target_supervisor_id and str(target_supervisor_id) != str(new_ride.user_id):
             employee_name = get_user_name(db, new_ride.user_id)
 
             supervisor_notification = create_system_notification(
@@ -288,10 +288,30 @@ async def create_order(
         })
 
         if new_ride.user_id != user_id:
+            passenger = db.query(User).filter(
+                User.employee_id == new_ride.user_id
+            ).first()
+
+            is_department_supervisor = (
+                passenger.role == UserRole.supervisor and
+                passenger.department_id == department_id
+            )
+
+            if is_department_supervisor:
+                message = (
+                    f"עובד/ת {requester_name} הזמין/ה עבורך נסיעה חדשה "
+                    f"הדורשת את אישורך."
+                )
+            else:
+                message = (
+                    f"עובד/ת {requester_name} הזמין/ה עבורך נסיעה חדשה "
+                    f"והיא ממתינה לאישור."
+                )
+
             passenger_notification = create_system_notification(
                 user_id=new_ride.user_id,
                 title="נסיעה הוזמנה עבורך",
-                message=f"העובד/ת {requester_name} הזמין/ה עבורך נסיעה חדשה.",
+                message=message,
                 order_id=new_ride.id
             )
 
@@ -305,6 +325,7 @@ async def create_order(
                 "order_id": str(passenger_notification.order_id),
                 "order_status": new_ride.status
             })
+
 
         return new_ride
 
@@ -404,7 +425,8 @@ async def rebook_ride(
         order_id=data.old_ride_id,
         patch_data=data.new_ride,
         db=db,
-        changed_by=str(user.employee_id)
+        changed_by=str(user.employee_id),
+        user_role=user.role
     )
     if(user.role==UserRole.supervisor):
         updated_ride.status=RideStatus.approved
@@ -475,7 +497,11 @@ async def patch_order(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    updated_order = await patch_order_in_db(order_id, patch_data, db, changed_by=str(current_user.employee_id))
+    updated_order = await patch_order_in_db(
+    order_id, patch_data, db,
+    changed_by=str(current_user.employee_id),
+    user_role=current_user.role
+)
     user = db.query(User).filter(User.employee_id == updated_order.user_id).first()
     vehicle = db.query(Vehicle).filter(Vehicle.id == updated_order.vehicle_id).first()
     department_id = str(user.department_id) if user and user.department_id else None
