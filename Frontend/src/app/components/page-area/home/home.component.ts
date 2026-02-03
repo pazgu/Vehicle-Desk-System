@@ -45,7 +45,7 @@ import {
   setClosestQuarterHourTimeOnForm,
 } from './home-utils/time-helpers';
 import { getUserIdFromToken } from './home-utils/auth-helpers';
-import { createRebookDateTimeValidator, timeStepValidator } from './home-utils/validators';
+import { createFutureDateTimeValidator, createRebookDateTimeValidator, createSameDateNightRideValidator, createSameDayValidator, createTripDurationValidator, timeStepValidator } from './home-utils/validators';
 import {
   buildRideForm,
   resetRideForm,
@@ -179,7 +179,7 @@ export class NewRideComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this, this.checkVipStatus();
+    this.checkVipStatus();
     this.currentUserId = getUserIdFromToken(
       localStorage.getItem('access_token')
     );
@@ -189,6 +189,11 @@ export class NewRideComponent implements OnInit {
     this.isSupervisor = role === 'supervisor';
 
     this.initializeComponent();
+    
+    if (this.isSupervisor) {
+      this.updateFormValidators();
+    }
+    
     if (this.currentUserId) {
       this.rideUserChecksService
         .checkUserBlock(this.currentUserId)
@@ -203,22 +208,22 @@ export class NewRideComponent implements OnInit {
           }
         });
 
-        this.rideUserChecksService
-    .checkUserDepartment(this.currentUserId)
-    .subscribe((result) => {
-      if(result.disableDueToDepartment === true) {
-         this.toastService.showPersistent(
-            'לא ניתן לשלוח בקשה: אינך משויך למחלקה. יש ליצור קשר עם המנהל להשמה במחלקה.',
-            'error'
-          );
-          this.disableRequest = true;
-          this.disableDueToDepartment = true;
-      }
-      else{
-        this.disableDueToDepartment = false;
-        this.disableRequest = false;
-      }
-    });
+      this.rideUserChecksService
+        .checkUserDepartment(this.currentUserId)
+        .subscribe((result) => {
+          if(result.disableDueToDepartment === true) {
+            this.toastService.showPersistent(
+              'לא ניתן לשלוח בקשה: אינך משויך למחלקה. יש ליצור קשר עם המנהל להשמה במחלקה.',
+              'error'
+            );
+            this.disableRequest = true;
+            this.disableDueToDepartment = true;
+          }
+          else{
+            this.disableDueToDepartment = false;
+            this.disableRequest = false;
+          }
+        });
     }
 
     this.myRidesService.getSupervisors(this.departmentId).subscribe({
@@ -304,10 +309,12 @@ export class NewRideComponent implements OnInit {
     this.myRidesService.isVip().subscribe({
       next: (res) => {
         this.isVIP = res.is_vip;
+        this.updateFormValidators();
       },
       error: (err) => {
         console.error('Failed to check VIP status', err);
         this.isVIP = false;
+        this.updateFormValidators();
       },
     });
   }
@@ -365,7 +372,23 @@ toggleDropdown() {
       }
     }
   }
+  private updateFormValidators(): void {
+    const isVipOrSupervisor = this.isVIP || this.isSupervisor;
+    
+    const validators = [
+      createTripDurationValidator(),
+      createSameDayValidator(),
+      createSameDateNightRideValidator(),
+      createInspectorClosureTimeValidator(),
+    ];
 
+    if (!this.isRebookMode) {
+      validators.unshift(createFutureDateTimeValidator(false, isVipOrSupervisor));
+    }
+
+    this.rideForm.setValidators(validators);
+    this.rideForm.updateValueAndValidity();
+  }
   private initializeComponent(): void {
     this.fetchVehicleTypes();
     this.minDate = calculateMinDate();

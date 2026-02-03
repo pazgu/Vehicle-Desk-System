@@ -81,7 +81,8 @@ function createExtraStopsValidator(form: FormGroup): ValidatorFn {
 
 export function buildRideForm(
   fb: FormBuilder,
-  isRebook: boolean = false
+  isRebook: boolean = false,
+  isVipOrSupervisor: boolean = false
 ): FormGroup {
   const validators = [
     createTripDurationValidator(),
@@ -91,7 +92,7 @@ export function buildRideForm(
   ];
 
   if (!isRebook) {
-    validators.unshift(createFutureDateTimeValidator());
+    validators.unshift(createFutureDateTimeValidator(false, isVipOrSupervisor));
   }
 
   const form = fb.group(
