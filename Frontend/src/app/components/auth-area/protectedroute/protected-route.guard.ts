@@ -61,6 +61,7 @@ export class ProtectedRouteGuard implements CanActivate {
       '/department-data',
       '/admin/add-new-user',
       '/admin/analytics',
+      'admin/guidelines',
     ];
 
     if (
