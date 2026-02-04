@@ -428,15 +428,60 @@ async def rebook_ride(
         changed_by=str(user.employee_id),
         user_role=user.role
     )
+    
     if(user.role==UserRole.supervisor):
         updated_ride.status=RideStatus.approved
     else:
         updated_ride.status=RideStatus.pending
 
     db.execute(text('SET session "session.audit.user_id" = :user_id'), {"user_id": str(user.employee_id)})
-
     db.commit()
     db.refresh(updated_ride)
+
+    target_supervisor_id = updated_ride.approving_supervisor
+    if not target_supervisor_id:
+        target_supervisor_id = get_supervisor_id(user.employee_id, db)
+    
+    if updated_ride.status == RideStatus.pending and target_supervisor_id and str(target_supervisor_id) != str(updated_ride.user_id):
+        employee_name = get_user_name(db, updated_ride.user_id)
+        
+        supervisor_notification = create_system_notification(
+            user_id=target_supervisor_id,
+            title="בקשת נסיעה ממתינה לאישור",
+            message=f"העובד/ת {employee_name} הזמין/ה מחדש נסיעה והיא דורשת את אישורך.",
+            order_id=updated_ride.id
+        )
+
+        await sio.emit("new_notification", {
+            "id": str(supervisor_notification.id),
+            "user_id": str(supervisor_notification.user_id),
+            "title": supervisor_notification.title,
+            "message": supervisor_notification.message,
+            "notification_type": supervisor_notification.notification_type.value,
+            "sent_at": supervisor_notification.sent_at.isoformat(),
+            "order_id": str(supervisor_notification.order_id),
+            "order_status": updated_ride.status.value
+        })
+    
+        user_notification = create_system_notification(
+                user_id=updated_ride.user_id,
+                title="הזמנה ממתינה לאישור",
+                message=f"הנסיעה שלך עודכנה וממתינה לאישור",
+                order_id=updated_ride.id
+            )
+
+        await sio.emit("new_notification", {
+                "id": str(user_notification.id),
+                "user_id": str(user_notification.user_id),
+                "title": user_notification.title,
+                "message": user_notification.message,
+                "notification_type": user_notification.notification_type.value,
+                "sent_at": user_notification.sent_at.isoformat(),
+                "order_id": str(user_notification.order_id),
+                "order_status": updated_ride.status.value
+            })
+        
+    # === סוף ההוספה ===
 
     update_user_pending_rebook_status(db, user.employee_id)
 
@@ -466,7 +511,6 @@ async def rebook_ride(
         "is_extended_request": True if updated_ride.extended_ride_reason else False,
         "vehicle_model": vehicle.vehicle_model if vehicle.vehicle_model else None
     }
-
 @router.get("/api/rides_supposed-to-start")
 def check_started_approved_rides(db: Session = Depends(get_db)):
     now = datetime.now(timezone.utc)
