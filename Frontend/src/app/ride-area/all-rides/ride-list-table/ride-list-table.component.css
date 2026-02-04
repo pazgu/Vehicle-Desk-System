@@ -18,7 +18,7 @@
   position: relative;
 }
 .orders-data-row:hover {
-  z-index: 999;
+  z-index: 1;
   position: relative; 
 }
 .cell {
@@ -280,7 +280,7 @@ button:disabled {
 .modify-buttons button.status:hover {
   background-color: #c1c1c1;
   border-color: #353535;
-  z-index: 9999999999999; 
+  z-index: 1; 
 }
 
 .switch {
@@ -421,7 +421,7 @@ button:disabled {
 .modify-buttons button[data-title],
 .delete[data-title] {
   position: relative;
-  z-index: 9999999999999; 
+  z-index: 1; 
 }
 
 .modify-buttons button[data-title]::before,
@@ -448,14 +448,14 @@ button:disabled {
 .delete[data-title]:hover::before {
   opacity: 1 !important;
   visibility: visible;
-  z-index: 9999999999999; 
+  z-index: 1; 
 }
 
 
 .past-order .modify-buttons button[data-title]::before,
 .past-order .delete[data-title]::before {
   background-color: #000000;
-  z-index: 9999999999999; 
+  z-index: 1;
 
   color: #ffffff;
 }
@@ -463,7 +463,7 @@ button:disabled {
 .past-order .modify-buttons button[data-title]:hover::before,
 .past-order .delete[data-title]:hover::before {
   opacity: 1 !important;
-  z-index: 9999999999999; 
+  z-index: 1; 
 }
 
 .modify-buttons button.modify,
