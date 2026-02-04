@@ -481,7 +481,6 @@ async def rebook_ride(
                 "order_status": updated_ride.status.value
             })
         
-    # === סוף ההוספה ===
 
     update_user_pending_rebook_status(db, user.employee_id)
 
